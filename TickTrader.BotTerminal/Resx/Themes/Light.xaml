@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="Shell_BackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ShellPanel_BorderBrush" Color="#C9C9C9"/>
+    <SolidColorBrush x:Key="ShellPanel_BackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ShellPanel_ItemBackgroundBrush" Color="#C3C3C3"/>
+    <SolidColorBrush x:Key="ShellPanel_TabBackgroundBrush" Color="Transparent"/>
+    <SolidColorBrush x:Key="ShellPanel_TabHoverBrush" Color="#9CC1CF"/>
+    <SolidColorBrush x:Key="ShellPanel_ItemHoverBackgroundBrush" Color="#525252"/>
+    <SolidColorBrush x:Key="ShellPanel_ScrollBarBrush" Color="#A0A0A0"/>
+    <SolidColorBrush x:Key="ShellPanel_ScrollBarHoverBrush" Color="#777777"/>
+
+    <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="#000000"/>
+    <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="#747474"/>
+
+</ResourceDictionary>

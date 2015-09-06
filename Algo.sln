@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Api", "TickTrader.Algo.Api\TickTrader.Algo.Api.csproj", "{8901C84D-FB62-433C-A25F-4D24255B9453}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Core", "TickTrader.Algo.Core\TickTrader.Algo.Core.csproj", "{8BAB901C-10BB-4EB7-B81E-716FA05B6957}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotHost", "TickTrader.BotHost\TickTrader.BotHost.csproj", "{D4A49ACF-E6FD-47BA-8086-00CA1B114D57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotTerminal", "TickTrader.BotTerminal\TickTrader.BotTerminal.csproj", "{D5C53515-D7E3-476F-9119-3102FE30E425}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8901C84D-FB62-433C-A25F-4D24255B9453}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8901C84D-FB62-433C-A25F-4D24255B9453}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8901C84D-FB62-433C-A25F-4D24255B9453}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8901C84D-FB62-433C-A25F-4D24255B9453}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BAB901C-10BB-4EB7-B81E-716FA05B6957}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BAB901C-10BB-4EB7-B81E-716FA05B6957}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BAB901C-10BB-4EB7-B81E-716FA05B6957}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BAB901C-10BB-4EB7-B81E-716FA05B6957}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4A49ACF-E6FD-47BA-8086-00CA1B114D57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4A49ACF-E6FD-47BA-8086-00CA1B114D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4A49ACF-E6FD-47BA-8086-00CA1B114D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4A49ACF-E6FD-47BA-8086-00CA1B114D57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5C53515-D7E3-476F-9119-3102FE30E425}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5C53515-D7E3-476F-9119-3102FE30E425}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5C53515-D7E3-476F-9119-3102FE30E425}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5C53515-D7E3-476F-9119-3102FE30E425}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
