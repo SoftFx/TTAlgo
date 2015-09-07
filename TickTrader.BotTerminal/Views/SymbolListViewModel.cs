@@ -9,44 +9,25 @@ namespace TickTrader.BotTerminal
 {
     class SymbolListViewModel
     {
-        public SymbolListViewModel()
+        private SymbolCollectionModel model;
+
+        public SymbolListViewModel(SymbolCollectionModel symbolCollection)
         {
-            Symbols = new ObservableCollection<SymbolViewModel>();
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURUSD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURCAD", "Forex"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
-            Symbols.Add(new SymbolViewModel("EURJPY", "Metals"));
+            this.model = symbolCollection;
+            this.Symbols = new ObservableCollection<SymbolViewModel>();
+
+            foreach (var symbol in model)
+            {
+                Symbols.Add(new SymbolViewModel(symbol));
+            }
+
+            model.Added += m => Symbols.Add(new SymbolViewModel(m));
+            model.Removed += m =>
+                {
+                    var toRemove = Symbols.FirstOrDefault(s => s.Name == m.Name);
+                    if (toRemove != null)
+                        Symbols.Remove(toRemove);
+                };
         }
 
         public ObservableCollection<SymbolViewModel> Symbols { get; private set; }

@@ -11,13 +11,15 @@ namespace TickTrader.BotTerminal
 {
     internal class TraderModel
     {
+        public enum States { Offline, Online }
+
         public TraderModel()
         {
             Connection = new ConnectionModel();
-            Symbols = new SymbolListModel(Connection);
+            Symbols = new SymbolCollectionModel(Connection);
         }
 
         public ConnectionModel Connection { get; private set; }
-        public SymbolListModel Symbols { get; private set; }
+        public SymbolCollectionModel Symbols { get; private set; }
     }
 }

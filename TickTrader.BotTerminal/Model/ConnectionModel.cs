@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Deinitializing, () => Deinit());
             //stateControl.OnEnter(States.Online, () => shouldReconnect = true);
 
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine(from + " => " + to);
+            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + from + " => " + to);
 
             stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine(e.ToString());
         }
@@ -89,6 +89,8 @@ namespace TickTrader.BotTerminal
 
         //public event AsyncEventHandler Connected;
         public event Action Initialized = delegate { };
+        public event Action Deinitialized = delegate { };
+        public event Action Connected = delegate { };
         public event AsyncEventHandler Disconnected;
 
         private Task Init()
@@ -166,7 +168,7 @@ namespace TickTrader.BotTerminal
 
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Trade.Logon");
+            System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Trade.Logon");
             stateControl.ModifyConditions(() => isFeedLoggedIn = true);
         }
 
@@ -177,7 +179,7 @@ namespace TickTrader.BotTerminal
 
         void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Feed.Logon");
+            System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Feed.Logon");
             stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
@@ -224,6 +226,8 @@ namespace TickTrader.BotTerminal
                     });
 
                 await Task.WhenAll(stopFeed, stopTrade, fireEvent);
+
+                Deinitialized();
 
                 feedProxy = null;
                 tradeProxy = null;

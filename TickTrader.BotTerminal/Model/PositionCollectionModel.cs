@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.Model
 {
-    internal class AccountModel
+    class PositionCollectionModel
     {
-        public AccountModel()
-        {
-        }
     }
 }

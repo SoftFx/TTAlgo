@@ -3,10 +3,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    
+    <UserControl.Resources>
+        <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
+    </UserControl.Resources>
+    
     <Grid Height="23">
-        <TextBlock x:Name="Name" FontSize="11" Foreground="{DynamicResource Shell_PrimaryForeground}" TextTrimming="CharacterEllipsis"
-                   Margin="15, 1, 1, 1" VerticalAlignment="Center" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="50"/>
+        </Grid.ColumnDefinitions>
+
+        <Rectangle Width="7" Height="7" Stroke="{Binding Path=Color, Converter={StaticResource ColorRefConverter}}" Opacity="0.6" Margin="4, 0, 4, 0"
+                   VerticalAlignment="Center"/>
+        
+        <TextBlock Name="Name" Grid.Column="1" FontSize="11" Foreground="{DynamicResource Shell_PrimaryForeground}" TextTrimming="CharacterEllipsis"
+                   Margin="3, 1, 1, 1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+
+        <TextBlock Name="Bid" Grid.Column="2"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <TextBlock Name="Ask" Grid.Column="3"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
+        
     </Grid>
 </UserControl>

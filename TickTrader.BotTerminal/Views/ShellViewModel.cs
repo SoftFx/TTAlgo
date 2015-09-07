@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 
         public ShellViewModel()
         {
-            SymbolList = new SymbolListViewModel();
+            SymbolList = new SymbolListViewModel(model.Symbols);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);
