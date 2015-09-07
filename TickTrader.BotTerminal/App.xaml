@@ -12,6 +12,7 @@
                 </ResourceDictionary>
 
                 <!-- Control Styles -->
+                <ResourceDictionary Source="Resx/Styles/DataGridStyle.xaml" />
                 <ResourceDictionary Source="Resx/Styles/ExpanderStyle.xaml" />
                 <ResourceDictionary Source="Resx/Styles/ScrollViewerStyle.xaml" />
                 <ResourceDictionary Source="Resx/Styles/VerticalScrollBarStyle.xaml" />

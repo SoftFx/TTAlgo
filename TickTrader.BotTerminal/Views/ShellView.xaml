@@ -24,7 +24,7 @@
 
         <TabControl Grid.Column="0" Grid.RowSpan="3" Style="{DynamicResource ShellTabControl_Style}" Margin="5,5,0,5">
             <TabItem Header="Symbols">
-                <ContentControl x:Name="SymbolList" DockPanel.Dock="Left"/>
+                <ContentControl x:Name="SymbolList"/>
             </TabItem>
             <TabItem Header="Watchlist"/>
             <TabItem Header="ttBots"/>
@@ -46,6 +46,7 @@
 
         <TabControl Grid.Column="2" Grid.Row="2" Style="{DynamicResource ShellTabControl_Style}" Margin="0,5,5,5">
             <TabItem Header="Positions">
+                <ContentControl x:Name="PositionList"/>
             </TabItem>
             <TabItem Header="Orders"/>
             <TabItem Header="History"/>

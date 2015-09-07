@@ -9,6 +9,35 @@
     
     <UserControl.Resources>
         <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
+    
+        <Style x:Key="RateTextStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style x:Key="BidTextStyle" TargetType="TextBlock" BasedOn="{StaticResource RateTextStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding BidDirection}" Value="{x:Static l:RateChangeDirections.Up}">
+                    <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BidDirection}" Value="{x:Static l:RateChangeDirections.Down}">
+                    <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AskTextStyle" TargetType="TextBlock" BasedOn="{StaticResource RateTextStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding AskDirection}" Value="{x:Static l:RateChangeDirections.Up}">
+                    <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding AskDirection}" Value="{x:Static l:RateChangeDirections.Down}">
+                    <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
     
     <Grid Height="23">
@@ -16,17 +45,19 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
             <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="4"/>
         </Grid.ColumnDefinitions>
 
-        <Rectangle Width="7" Height="7" Stroke="{Binding Path=Color, Converter={StaticResource ColorRefConverter}}" Opacity="0.6" Margin="4, 0, 4, 0"
+        <Rectangle Width="9" Height="9" Stroke="{Binding Path=Color, Converter={StaticResource ColorRefConverter}}" Opacity="0.6" Margin="4, 0, 4, 0"
                    VerticalAlignment="Center"/>
         
         <TextBlock Name="Name" Grid.Column="1" FontSize="11" Foreground="{DynamicResource Shell_PrimaryForeground}" TextTrimming="CharacterEllipsis"
-                   Margin="3, 1, 1, 1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                   Margin="3, 0, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" />
 
-        <TextBlock Name="Bid" Grid.Column="2"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right" />
-        <TextBlock Name="Ask" Grid.Column="3"  FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
+        <TextBlock Name="Bid" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
+        <TextBlock Name="Ask" Grid.Column="4" Style="{StaticResource AskTextStyle}"/>
         
     </Grid>
 </UserControl>

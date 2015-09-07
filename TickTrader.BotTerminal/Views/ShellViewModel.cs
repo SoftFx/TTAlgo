@@ -14,6 +14,7 @@ namespace TickTrader.BotTerminal
         public ShellViewModel()
         {
             SymbolList = new SymbolListViewModel(model.Symbols);
+            PositionList = new PositionListViewModel();
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);
@@ -89,5 +90,6 @@ namespace TickTrader.BotTerminal
         //}
 
         public SymbolListViewModel SymbolList { get; private set; }
+        public PositionListViewModel PositionList { get; private set; }
     }
 }
