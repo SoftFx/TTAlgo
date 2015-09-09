@@ -38,30 +38,30 @@ namespace TickTrader.BotTerminal
         {
             if (tick.HasBid)
             {
-                BidDirection = GetDirection(Bid, tick.Bid);
+                BidDirection = GetDirection(Bid, tick.Bid, BidDirection);
                 Bid = tick.Bid;
                 NotifyOfPropertyChange("Bid");
             }
-            else
-                BidDirection = RateChangeDirections.Flat;
+            //else
+            //    BidDirection = RateChangeDirections.Flat;
 
             if (tick.HasAsk)
             {
-                AskDirection = GetDirection(Ask, tick.Ask);
+                AskDirection = GetDirection(Ask, tick.Ask, AskDirection);
                 Ask = tick.Ask;
                 NotifyOfPropertyChange("Ask");
             }
-            else
-                AskDirection = RateChangeDirections.Flat;
+            //else
+            //    AskDirection = RateChangeDirections.Flat;
 
             NotifyOfPropertyChange("BidDirection");
             NotifyOfPropertyChange("AskDirection");
         }
 
-        private static RateChangeDirections GetDirection(double? oldVal, double newVal)
+        private static RateChangeDirections GetDirection(double? oldVal, double newVal, RateChangeDirections oldDirection)
         {
             if (oldVal == null || oldVal.Value == newVal)
-                return RateChangeDirections.Flat;
+                return oldDirection;
             else if (oldVal.Value < newVal)
                 return RateChangeDirections.Up;
             return RateChangeDirections.Down;

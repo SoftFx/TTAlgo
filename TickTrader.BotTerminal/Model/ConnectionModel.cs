@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
 
             stateControl.OnEnter(States.Initializing, () => initTask = Init());
             stateControl.OnEnter(States.Deinitializing, () => Deinit());
-            //stateControl.OnEnter(States.Online, () => shouldReconnect = true);
+            stateControl.OnEnter(States.Online, () => Connected());
 
             stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + from + " => " + to);
 
@@ -123,8 +123,8 @@ namespace TickTrader.BotTerminal
                     feedCs.Address = address;
                     feedCs.Username = username;
                     feedCs.Password = password;
-                    feedCs.FixEventsFileName = "trade.events.log";
-                    feedCs.FixMessagesFileName = "trade.messages.log";
+                    feedCs.FixEventsFileName = "feed.events.log";
+                    feedCs.FixMessagesFileName = "feed.messages.log";
                     feedCs.FixLogDirectory = LogPath;
 
                     feedProxy.Initialize(feedCs.ToString());
@@ -138,7 +138,7 @@ namespace TickTrader.BotTerminal
                         TargetCompId = "EXECUTOR",
                         ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
                         SecureConnection = true,
-                        Port = 5003,
+                        Port = 5004,
                         DecodeLogFixMessages = true
                     };
 
@@ -169,7 +169,7 @@ namespace TickTrader.BotTerminal
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Trade.Logon");
-            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
+            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
         void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
@@ -180,7 +180,7 @@ namespace TickTrader.BotTerminal
         void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Feed.Logon");
-            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
         }
 
         void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)

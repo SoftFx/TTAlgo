@@ -6,6 +6,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <DataGrid />
+        <DataGrid Style="{StaticResource DataGrid_Style}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Width="*"/>
+                <DataGridTextColumn Header="Symbol" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

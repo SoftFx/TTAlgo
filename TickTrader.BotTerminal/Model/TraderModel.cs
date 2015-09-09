@@ -17,9 +17,11 @@ namespace TickTrader.BotTerminal
         {
             Connection = new ConnectionModel();
             Symbols = new SymbolCollectionModel(Connection);
+            Account = new AccountModel(Connection);
         }
 
         public ConnectionModel Connection { get; private set; }
         public SymbolCollectionModel Symbols { get; private set; }
+        public AccountModel Account { get; private set; }
     }
 }

@@ -107,12 +107,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\DataflowHelper.cs" />
+    <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\StateDescriptor.cs" />
     <Compile Include="Lib\StateMachine.cs" />
     <Compile Include="Lib\StateMachineSync.cs" />
@@ -172,6 +174,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resx\Styles\DataGridNativeStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
     <Page Include="Resx\Styles\DataGridStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -181,6 +187,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles\ScrollViewerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\ShadowPortalStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

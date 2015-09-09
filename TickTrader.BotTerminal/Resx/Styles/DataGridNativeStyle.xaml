@@ -1,0 +1,226 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style TargetType="DataGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <Style.Triggers>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ItemsControl.IsGrouping">
+                        <Condition.Value>
+                            <s:Boolean>True</s:Boolean>
+                        </Condition.Value>
+                    </Condition>
+                    <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping">
+                        <Condition.Value>
+                            <s:Boolean>False</s:Boolean>
+                        </Condition.Value>
+                    </Condition>
+                </MultiTrigger.Conditions>
+                <Setter Property="ScrollViewer.CanContentScroll">
+                    <Setter.Value>
+                        <s:Boolean>False</s:Boolean>
+                    </Setter.Value>
+                </Setter>
+            </MultiTrigger>
+        </Style.Triggers>
+        <Style.Resources>
+            <ResourceDictionary />
+        </Style.Resources>
+        <Setter Property="Panel.Background">
+            <Setter.Value>
+                <DynamicResource ResourceKey="{x:Static SystemColors.ControlBrushKey}" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="TextElement.Foreground">
+            <Setter.Value>
+                <DynamicResource ResourceKey="{x:Static SystemColors.ControlTextBrushKey}" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Border.BorderBrush">
+            <Setter.Value>
+                <SolidColorBrush>#FF688CAF</SolidColorBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Border.BorderThickness">
+            <Setter.Value>
+                <Thickness>1,1,1,1</Thickness>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="DataGrid.RowDetailsVisibilityMode">
+            <Setter.Value>
+                <x:Static Member="DataGridRowDetailsVisibilityMode.VisibleWhenSelected" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ScrollViewer.CanContentScroll">
+            <Setter.Value>
+                <s:Boolean>True</s:Boolean>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ScrollViewer.PanningMode">
+            <Setter.Value>
+                <x:Static Member="PanningMode.Both" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Stylus.IsFlicksEnabled">
+            <Setter.Value>
+                <s:Boolean>False</s:Boolean>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGrid">
+                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}" Padding="{TemplateBinding Control.Padding}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="True">
+                        <ScrollViewer Name="DG_ScrollViewer" Focusable="False">
+                            <ScrollViewer.Template>
+                                <ControlTemplate TargetType="ScrollViewer">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Button Command="SelectAll" Style="{DynamicResource {ComponentResourceKey TypeInTargetAssembly=DataGrid, ResourceId=DataGridSelectAllButtonStyle}}" Width="Auto" Visibility="Visible" Focusable="False" />
+                                        <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Visibility="Visible" Grid.Column="1" />
+                                        <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" Name="PART_ScrollContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" />
+                                        <ScrollBar Orientation="Vertical" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" Value="0" Name="PART_VerticalScrollBar" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" Grid.Column="2" Grid.Row="1" />
+                                        <Grid Grid.Column="1" Grid.Row="2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <ScrollBar Orientation="Horizontal" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Value="0" Name="PART_HorizontalScrollBar" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" Grid.Column="1" />
+                                        </Grid>
+                                    </Grid>
+                                </ControlTemplate>
+                            </ScrollViewer.Template>
+                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="DataGridColumnHeadersPresenter" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <Style.Resources>
+            <ResourceDictionary />
+        </Style.Resources>
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeadersPresenter">
+                    <Grid>
+                        <DataGridColumnHeader Name="PART_FillerColumnHeader" IsHitTestVisible="False" />
+                        <ItemsPresenter />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="DataGridColumnHeader" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" xmlns:s="clr-namespace:System;assembly=mscorlib">
+        <Style.Resources>
+            <ResourceDictionary />
+        </Style.Resources>
+        <Setter Property="Control.VerticalContentAlignment">
+            <Setter.Value>
+                <x:Static Member="VerticalAlignment.Center" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Grid>
+                        <mwt:DataGridHeaderBorder 
+                            IsHovered="{TemplateBinding UIElement.IsMouseOver}"
+                            IsPressed="{TemplateBinding ButtonBase.IsPressed}"
+                            IsClickable="{TemplateBinding DataGridColumnHeader.CanUserSort}"
+                            SortDirection="{TemplateBinding DataGridColumnHeader.SortDirection}"
+                            SeparatorBrush="{TemplateBinding DataGridColumnHeader.SeparatorBrush}" 
+                            SeparatorVisibility="{TemplateBinding DataGridColumnHeader.SeparatorVisibility}"
+                            BorderThickness="{TemplateBinding Border.BorderThickness}"
+                            Padding="{TemplateBinding Control.Padding}"
+                            BorderBrush="{TemplateBinding Border.BorderBrush}"
+                            Background="{TemplateBinding Panel.Background}">
+                            <ContentPresenter RecognizesAccessKey="True"
+                                              Content="{TemplateBinding ContentControl.Content}"
+                                              ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                                              ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                                              HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                        </mwt:DataGridHeaderBorder>
+                        <Thumb Name="PART_LeftHeaderGripper" HorizontalAlignment="Left">
+                            <Thumb.Style>
+                                <Style TargetType="Thumb">
+                                    <Style.Resources>
+                                        <ResourceDictionary />
+                                    </Style.Resources>
+                                    <Setter Property="FrameworkElement.Width">
+                                        <Setter.Value>
+                                            <s:Double>8</s:Double>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Panel.Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="FrameworkElement.Cursor">
+                                        <Setter.Value>
+                                            <Cursor>SizeWE</Cursor>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Control.Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Padding="{TemplateBinding Control.Padding}" Background="{TemplateBinding Panel.Background}" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Thumb.Style>
+                        </Thumb>
+                        <Thumb Name="PART_RightHeaderGripper" HorizontalAlignment="Right">
+                            <Thumb.Style>
+                                <Style TargetType="Thumb">
+                                    <Style.Resources>
+                                        <ResourceDictionary />
+                                    </Style.Resources>
+                                    <Setter Property="FrameworkElement.Width">
+                                        <Setter.Value>
+                                            <s:Double>8</s:Double>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Panel.Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="FrameworkElement.Cursor">
+                                        <Setter.Value>
+                                            <Cursor>SizeWE</Cursor>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Control.Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Padding="{TemplateBinding Control.Padding}" Background="{TemplateBinding Panel.Background}" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Thumb.Style>
+                        </Thumb>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+</ResourceDictionary>
