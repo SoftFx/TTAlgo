@@ -128,6 +128,10 @@
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
+    <Compile Include="Views\OrderListView.xaml.cs">
+      <DependentUpon>OrderListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OrderListViewModel.cs" />
     <Compile Include="Views\PositionListView.xaml.cs">
       <DependentUpon>PositionListView.xaml</DependentUpon>
     </Compile>
@@ -215,6 +219,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Themes\Light.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OrderListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -48,7 +48,9 @@
             <TabItem Header="Positions">
                 <ContentControl x:Name="PositionList"/>
             </TabItem>
-            <TabItem Header="Orders"/>
+            <TabItem Header="Orders">
+                <ContentControl x:Name="OrderList"/>
+            </TabItem>
             <TabItem Header="History"/>
             <TabItem Header="Journal"/>
         </TabControl>

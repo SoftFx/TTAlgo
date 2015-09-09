@@ -15,10 +15,10 @@ namespace TickTrader.BotTerminal
         {
             SymbolList = new SymbolListViewModel(model.Symbols);
             PositionList = new PositionListViewModel();
+            OrderList = new OrderListViewModel(model.Account);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);
-            //model.Connection.State.StateChanged += (oldS, S) => Execute.OnUIThread(() => UpdateCommandStates(S));
             model.Connection.State.StateChanged += UpdateCommandStates;
         }
 
@@ -91,5 +91,6 @@ namespace TickTrader.BotTerminal
 
         public SymbolListViewModel SymbolList { get; private set; }
         public PositionListViewModel PositionList { get; private set; }
+        public OrderListViewModel OrderList { get; private set; }
     }
 }

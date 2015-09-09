@@ -7,35 +7,67 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal.Lib
 {
-    public abstract class RepeatableActivity
+    public abstract class ManagedActivity
     {
-        public abstract Task Abort();
+        protected CancellationTokenSource cancelSignal;
+
+        public ManagedActivity(Func<Task> activityFactory)
+        {
+            this.ActivityFactory = activityFactory;
+        }
+
+        protected Func<Task> ActivityFactory { get; private set; }
+        public Task Task { get; protected set; }
+
+        public async Task Abort()
+        {
+            if (Task != null)
+            {
+                cancelSignal.Cancel();
+                await Task;
+                Task = null;
+            }
+        }
     }
 
     /// <summary>
     /// Warning: This class is not thread safe. Thread synchronization is up to caller.
     /// </summary>
-    public class TriggeredActivity : RepeatableActivity
+    public class RepeatableActivity : ManagedActivity
     {
-        private Task currentTask;
-        private Func<Task> activityFactory;
-        private CancellationTokenSource cancelSignal;
+        public RepeatableActivity(Func<Task> activityFactory)
+            : base(activityFactory)
+        {
+        }
+
+        public void Invoke()
+        {
+            cancelSignal = new CancellationTokenSource();
+            Task = ActivityFactory();
+        }
+    }
+
+    /// <summary>
+    /// Warning: This class is not thread safe. Thread synchronization is up to caller.
+    /// </summary>
+    public class TriggeredActivity : ManagedActivity
+    {
         private bool triggered;
 
         public TriggeredActivity(Func<Task> activityFactory)
+            : base(activityFactory)
         {
-            this.activityFactory = activityFactory;
         }
 
         public async void Trigger(bool cancelCurrent = false)
         {
-            if (currentTask != null)
+            if (Task != null)
             {
                 if (!triggered)
                 {
                     triggered = true;
                     if (cancelCurrent) cancelSignal.Cancel();
-                    await currentTask;
+                    await Task;
                 }
                 else // someone already wating for cancelation
                     return;
@@ -43,16 +75,7 @@ namespace TickTrader.BotTerminal.Lib
 
             cancelSignal = new CancellationTokenSource();
             triggered = false;
-            currentTask = activityFactory();
-         }
-
-        public async override Task Abort()
-        {
-            if (currentTask != null)
-            {
-                cancelSignal.Cancel();
-                await currentTask;
-            }
-        }
+            Task = ActivityFactory();
+         }   
     }
 }

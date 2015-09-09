@@ -47,8 +47,7 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Online, () => Connected());
 
             stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + from + " => " + to);
-
-            stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine(e.ToString());
+            stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT " + e);
         }
 
         public DataFeed FeedProxy { get { return feedProxy; } }
@@ -168,7 +167,6 @@ namespace TickTrader.BotTerminal
 
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Trade.Logon");
             stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
