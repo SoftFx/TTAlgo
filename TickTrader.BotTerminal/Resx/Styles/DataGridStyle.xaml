@@ -14,14 +14,16 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Visibility="Visible" />
+            <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Visibility="Visible"
+                                            Margin="2,0,2,0"/>
             <l:ShadowPortal x:Name="Portal" Grid.Row="1">
                 <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
                                         CanHorizontallyScroll="False" CanVerticallyScroll="False"
                                         Content="{TemplateBinding ContentControl.Content}"
                                         ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
                                         ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
-                                        Name="PART_ScrollContentPresenter"/>
+                                        Name="PART_ScrollContentPresenter"
+                                        Margin="2"/>
             </l:ShadowPortal>
             <ScrollBar x:Name="PART_VerticalScrollBar"
                        Style="{DynamicResource VerticalScrollBarStyle}"
@@ -37,7 +39,37 @@
                 <Setter TargetName="Portal" Property="IsBottomShadowVisible" Value="True" />
             </Trigger>
         </ControlTemplate.Triggers>
+    </ControlTemplate>
 
+    <!-- Row Template -->
+
+    <ControlTemplate x:Key="DataGrid_RowTemplate" TargetType="DataGridRow">
+        <Border BorderThickness="0"
+                BorderBrush="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+                Background="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+                Margin="2"
+                Name="DGR_Border"
+                SnapsToDevicePixels="True"
+                CornerRadius="2">
+            <DataGridCellsPresenter ItemsPanel="{TemplateBinding ItemsControl.ItemsPanel}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Grid.Column="1" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="true">
+                <Setter TargetName="DGR_Border" Property="Background" Value="{DynamicResource ShellPanel_ItemHoverBackgroundBrush}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="DGR_Border" Property="Background" Value="{DynamicResource ShellPanel_ItemHoverBackgroundBrush}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    
+    <!-- Cell Template-->
+
+    <ControlTemplate x:Key="DataGrid_CellTemplate">
+        <ContentPresenter Content="{TemplateBinding ContentControl.Content}"
+                          ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                          ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                          SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
     </ControlTemplate>
 
     <!-- DataGrid Template -->
@@ -73,10 +105,6 @@
         </ControlTemplate.Resources>
         <Grid>
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
                 <Rectangle x:Name="BackgroundRectangle" Grid.ColumnSpan="2" Fill="Transparent" Stretch="Fill" />
                 <ContentPresenter Content="{TemplateBinding Content}"
                                   ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
@@ -85,12 +113,19 @@
                                   VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
                                   SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
                                   Margin="{TemplateBinding Control.Padding}"/>
-                <Rectangle Width="1" Grid.Column="1" Fill="{TemplateBinding DataGridColumnHeader.SeparatorBrush}"
-                           Visibility="{TemplateBinding SeparatorVisibility}" VerticalAlignment="Stretch" Margin="0,4,0,4"/>
             </Grid>
             <Thumb Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource DataGrid_HeaderThumbStyle}"/>
             <Thumb Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource DataGrid_HeaderThumbStyle}"/>
+            <Rectangle Name="LeftMargin" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="1" Fill="Transparent" Margin="-0.5,4,-0.5,4"/>
+            <Rectangle Name="RightMargin" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="1" Fill="Transparent" Margin="-0.5,4,-0.5,4"/>
         </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter TargetName="LeftMargin" Property="Fill" Value="{DynamicResource Shell_MediateForeground}"/>
+                <Setter TargetName="RightMargin" Property="Fill" Value="{DynamicResource Shell_MediateForeground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <!-- DataGrid Style -->
@@ -102,6 +137,9 @@
         <Setter Property="Background" Value="{DynamicResource ShellPanel_BorderBrush}"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
         <Setter Property="Margin" Value="5,8,0,5"/>
+        <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"/>
+        <Setter Property="GridLinesVisibility" Value="None"/>
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
         <Style.Resources>
             <Style TargetType="DataGridColumnHeader">
                 <Setter Property="Padding" Value="4"/>
@@ -119,7 +157,13 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-        </Style.Resources>
+            <Style TargetType="DataGridRow">
+                <Setter Property="Template" Value="{StaticResource DataGrid_RowTemplate}"/>
+            </Style>
+            <Style TargetType="DataGridCell">
+                <Setter Property="Template" Value="{StaticResource DataGrid_CellTemplate}"/>
+            </Style>
+            </Style.Resources>
     </Style>
 
 </ResourceDictionary>
