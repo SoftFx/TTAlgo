@@ -7,11 +7,21 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <Grid>
-            <DataGrid Name="Orders" ItemsSource="{Binding Orders}" Style="{StaticResource DataGrid_Style}">
+            <DataGrid Name="Orders" Style="{StaticResource DataGrid_Style}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding OrderId}"/>
+                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
                     <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
                     <DataGridTextColumn Header="Side" Width="*" Binding="{Binding Side}" />
+                    <DataGridTextColumn Header="Order Type" Width="*" Binding="{Binding OrderType}" />
+                    <DataGridTextColumn Header="Amount" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="RemainingAmount" />
+                                <Binding Path="Amount" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Price" Width="*" Binding="{Binding Price}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

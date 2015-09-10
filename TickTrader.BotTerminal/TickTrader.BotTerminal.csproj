@@ -115,6 +115,7 @@
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
+    <Compile Include="Lib\ObservableSrotedList.cs" />
     <Compile Include="Lib\StateDescriptor.cs" />
     <Compile Include="Lib\StateMachine.cs" />
     <Compile Include="Lib\StateMachineSync.cs" />
@@ -123,8 +124,8 @@
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
-    <Compile Include="Model\OrderCollectionModel.cs" />
-    <Compile Include="Model\PositionCollectionModel.cs" />
+    <Compile Include="Model\OrderModel.cs" />
+    <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />

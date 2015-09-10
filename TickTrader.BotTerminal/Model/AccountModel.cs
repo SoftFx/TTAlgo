@@ -16,8 +16,8 @@ namespace TickTrader.BotTerminal
         public enum Events { Connected, CacheInitialized, Diconnected, DoneInit, DoneDeinit }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
-        private ObservableDictionary<string, Position> positions = new ObservableDictionary<string, Position>();
-        private ObservableDictionary<long, TradeRecord> orders = new ObservableDictionary<long, TradeRecord>();
+        private ObservableDictionary<string, PositionModel> positions = new ObservableDictionary<string, PositionModel>();
+        private ObservableDictionary<string, OrderModel> orders = new ObservableDictionary<string, OrderModel>();
         private ConnectionModel connection;
         private ActionBlock<Action> uiUpdater;
         //private RepeatableActivity initActivity;
@@ -61,6 +61,9 @@ namespace TickTrader.BotTerminal
             stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("AccountModel EVENT " + e);
         }
 
+        public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }
+        public ReadonlyDictionaryObserver<string, OrderModel> Orders { get; private set; }
+
         public void Init()
         {
             this.uiUpdater = DataflowHelper.CreateUiActionBlock<Action>(a => a(), 100, 100, CancellationToken.None);
@@ -69,11 +72,11 @@ namespace TickTrader.BotTerminal
 
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
-                positions.Add(fdkPosition.Symbol, fdkPosition);
+                positions.Add(fdkPosition.Symbol, new PositionModel());
 
             var fdkOrdersArray = connection.TradeProxy.Cache.TradeRecords;
             foreach (var fdkOrder in fdkOrdersArray)
-                orders.Add(long.Parse(fdkOrder.OrderId), fdkOrder);
+                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder));
             
             stateControl.PushEvent(Events.DoneInit);
         }
@@ -88,6 +91,15 @@ namespace TickTrader.BotTerminal
             stateControl.PushEvent(Events.DoneDeinit);
         }
 
+        private void UpsertOrder(ExecutionReport report)
+        {
+            OrderModel order;
+            if (orders.TryGetValue(report.OrderId, out order))
+                order.Update(report);
+            else
+                orders.Add(report.OrderId, new OrderModel(report));
+        }
+
         void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
         {
             //uiUpdater.SendAsync(()=>e.
@@ -95,15 +107,23 @@ namespace TickTrader.BotTerminal
 
         void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
-            if (e.Report.ExecutionType == ExecutionType.Canceled
-                || e.Report.ExecutionType == ExecutionType.Expired
-                || e.Report.ExecutionType == ExecutionType.Replace)
+            var execType = e.Report.ExecutionType;
+
+            if (execType == ExecutionType.Canceled
+                || execType == ExecutionType.Expired
+                || execType == ExecutionType.Replace
+                || execType == ExecutionType.Rejected
+                || e.Report.LeavesVolume == 0)
             {
-                uiUpdater.SendAsync(() => orders.Remove(long.Parse(e.Report.OrderId)));
+                uiUpdater.SendAsync(() => orders.Remove(e.Report.OrderId));
             }
-            else if(e.Report.ExecutionType == ExecutionType.New)
+            else if (execType == ExecutionType.Calculated
+                || execType == ExecutionType.Replace
+                || execType == ExecutionType.Trade
+                || execType == ExecutionType.PendingCancel
+                || execType == ExecutionType.PendingReplace)
             {
-                //uiUpdater.SendAsync(() => orders.Add(long.Parse(e.Report.OrderId), e.Report));
+                uiUpdater.SendAsync(() => UpsertOrder(e.Report));
             }
         }
 
@@ -114,20 +134,6 @@ namespace TickTrader.BotTerminal
         void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
         {
             stateControl.PushEvent(Events.CacheInitialized);
-        }
-
-        public ReadonlyDictionaryObserver<string, Position> Positions { get; private set; }
-        public ReadonlyDictionaryObserver<long, TradeRecord> Orders { get; private set; }
-    }
-
-    internal class PositionModel
-    {
-    }
-
-    internal class OrderModel
-    {
-        public OrderModel(TradeRecord record)
-        {
         }
     }
 }

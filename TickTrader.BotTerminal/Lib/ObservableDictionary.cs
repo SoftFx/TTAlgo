@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    public class ObservableDictionary<TKey, TValue> : IDictionary<TKey, TValue>, INotifyCollectionChanged
+    public class ObservableDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private Dictionary<TKey, TValue> innerDic = new Dictionary<TKey, TValue>();
 
@@ -24,7 +24,6 @@ namespace TickTrader.BotTerminal
         {
             ((IDictionary<TKey, TValue>)innerDic).Add(item);
             Added(item);
-            CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
 
         public bool Remove(TKey key)
@@ -51,6 +50,7 @@ namespace TickTrader.BotTerminal
         public void Clear()
         {
             innerDic.Clear();
+            Cleared();
         }
 
         public ReadonlyDictionaryObserver<TKey, TValue> AsReadonly()
@@ -68,12 +68,9 @@ namespace TickTrader.BotTerminal
         public bool ContainsKey(TKey key) { return innerDic.ContainsKey(key); }
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() { return innerDic.GetEnumerator(); }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return innerDic.GetEnumerator(); }
-
-        public event NotifyCollectionChangedEventHandler CollectionChanged = delegate { };
-        public event NotifyCollectionChangedEventHandler ValuesCollectionChanged = delegate { };
     }
 
-    public class ReadonlyDictionaryObserver<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>, INotifyCollectionChanged
+    public class ReadonlyDictionaryObserver<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>
     {
         private ObservableDictionary<TKey, TValue> observedDic;
 
@@ -108,26 +105,5 @@ namespace TickTrader.BotTerminal
         public int Count { get { return observedDic.Count; } }
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() { return observedDic.GetEnumerator(); }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return observedDic.GetEnumerator(); }
-
-        public event NotifyCollectionChangedEventHandler CollectionChanged
-        {
-            add { observedDic.CollectionChanged += value; }
-            remove { observedDic.CollectionChanged -= value; }
-        }
-    }
-
-    public class ReadonlyDictionaryValuesObserver<TValue> : IEnumerable<TValue>, INotifyCollectionChanged
-    {
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        public IEnumerator<TValue> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -69,7 +69,7 @@
         <ContentPresenter Content="{TemplateBinding ContentControl.Content}"
                           ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
                           ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
-                          SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                          SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"/>
     </ControlTemplate>
 
     <!-- DataGrid Template -->
@@ -162,6 +162,7 @@
             </Style>
             <Style TargetType="DataGridCell">
                 <Setter Property="Template" Value="{StaticResource DataGrid_CellTemplate}"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
             </Style.Resources>
     </Style>

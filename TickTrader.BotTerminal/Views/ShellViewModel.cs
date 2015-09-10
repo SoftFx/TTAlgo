@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
         public ShellViewModel()
         {
             SymbolList = new SymbolListViewModel(model.Symbols);
-            PositionList = new PositionListViewModel();
+            PositionList = new PositionListViewModel(model.Account);
             OrderList = new OrderListViewModel(model.Account);
             CanConnect = true;
 

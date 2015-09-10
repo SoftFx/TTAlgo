@@ -6,10 +6,19 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <DataGrid Style="{StaticResource DataGrid_Style}">
+        <DataGrid Name="Positions" Style="{StaticResource DataGrid_Style}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Width="*"/>
-                <DataGridTextColumn Header="Symbol" Width="*"/>
+                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Side" Width="*" Binding="{Binding Side}" />
+                <DataGridTextColumn Header="Amount" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0}/{1}">
+                            <Binding Path="RemainingAmount" />
+                            <Binding Path="Amount" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
