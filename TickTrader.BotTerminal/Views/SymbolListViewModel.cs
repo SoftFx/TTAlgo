@@ -21,14 +21,27 @@ namespace TickTrader.BotTerminal
                 Symbols.Add(new SymbolViewModel(symbol));
             }
 
-            model.Added += m => Symbols.Add(new SymbolViewModel(m));
+            model.Added += m =>
+                {
+                    var symbolViewModel = new SymbolViewModel(m);
+                    symbolViewModel.NewChartRequested += symbolViewModel_NewChartRequested;
+                    Symbols.Add(symbolViewModel);
+                };
             model.Removed += m =>
                 {
                     var toRemove = Symbols.FirstOrDefault(s => s.Name == m.Name);
+                    toRemove.NewChartRequested -= symbolViewModel_NewChartRequested;
                     if (toRemove != null)
                         Symbols.Remove(toRemove);
                 };
         }
+
+        void symbolViewModel_NewChartRequested(string symbol)
+        {
+            NewChartRequested(symbol);
+        }
+
+        public event Action<string> NewChartRequested = delegate { };
 
         public ObservableCollection<SymbolViewModel> Symbols { get; private set; }
     }

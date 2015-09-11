@@ -67,6 +67,13 @@ namespace TickTrader.BotTerminal
             return RateChangeDirections.Down;
         }
 
+        public void OpenChart()
+        {
+            NewChartRequested(this.model.Descriptor.Name);
+        }
+
+        public event Action<string> NewChartRequested = delegate { };
+
         public void Close()
         {
             this.model.Unsubscribe(this);

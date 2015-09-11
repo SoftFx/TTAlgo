@@ -17,12 +17,13 @@
         </Grid.ColumnDefinitions>
         
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="3*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" MinHeight="150"/>
         </Grid.RowDefinitions>
 
-        <TabControl Grid.Column="0" Grid.RowSpan="3" Style="{DynamicResource ShellTabControl_Style}" Margin="5,5,0,5">
+        <TabControl Name="LeftPanel" Grid.Column="0" Grid.Row="1" Grid.RowSpan="3" Style="{StaticResource ShellTabControl_Style}" Margin="5,5,0,5">
             <TabItem Header="Symbols">
                 <ContentControl x:Name="SymbolList"/>
             </TabItem>
@@ -30,21 +31,24 @@
             <TabItem Header="ttBots"/>
         </TabControl>
 
-        <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
+        <ContentControl Name="Charts" Grid.Column="2" Grid.Row="1" Margin="0,0,5,0"/>
 
-        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+        <StackPanel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center"
+                   Orientation="Horizontal" Margin="5" >
             <!--<TextBlock Text="Graphs Should Be Here..." FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource Shell_PrimaryForeground}"/>-->
+            
+            <Button Name="Connect" Content="Connect"/>
+            <Button Name="Disconnect" Content="Disconnect"/>
             <ComboBox 
                       ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
                       SelectedItem="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=SelectedTheme}"/>
-            <Button Name="Connect" Content="Connect"/>
-            <Button Name="Disconnect" Content="Disconnect"/>
-            <Button Name="Cancel" Content="Cancel"/>
         </StackPanel>
 
-        <GridSplitter Grid.Column="2" Grid.Row="1" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
+        <GridSplitter Grid.Column="2" Grid.Row="2" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-        <TabControl Grid.Column="2" Grid.Row="2" Style="{DynamicResource ShellTabControl_Style}" Margin="0,5,5,5">
+        <TabControl Name="BottomPanel" Grid.Column="2" Grid.Row="3" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5">
             <TabItem Header="Positions">
                 <ContentControl x:Name="PositionList"/>
             </TabItem>

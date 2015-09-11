@@ -30,9 +30,9 @@
         <!--<Label Content="Ask Bid" Foreground="{DynamicResource Shell_PrimaryForeground}" />-->
 
         <ListBox Name="Symbols"
-                    Grid.Row="1"
-                    Style="{StaticResource SymbolListBox_Style}"
-                    ItemsSource="{Binding Source={StaticResource SymbolGroupViewSrc}}">
+                 Grid.Row="1"
+                 Style="{StaticResource SymbolListBox_Style}"
+                 ItemsSource="{Binding Source={StaticResource SymbolGroupViewSrc}}">
             <ListBox.GroupStyle>
                 <GroupStyle ContainerStyle="{StaticResource SymbolListBox_GroupStyle}" Panel="{StaticResource SymbolListBox_PanelTemplate}"/>
             </ListBox.GroupStyle>

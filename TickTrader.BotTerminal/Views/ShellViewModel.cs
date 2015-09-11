@@ -16,10 +16,13 @@ namespace TickTrader.BotTerminal
             SymbolList = new SymbolListViewModel(model.Symbols);
             PositionList = new PositionListViewModel(model.Account);
             OrderList = new OrderListViewModel(model.Account);
+            Charts = new ChartCollectionViewModel(model.Connection);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);
             model.Connection.State.StateChanged += UpdateCommandStates;
+
+            SymbolList.NewChartRequested += s => Charts.Open(s);
         }
 
         private void UpdateCommandStates(ConnectionModel.States oldState, ConnectionModel.States connectionState)
@@ -92,5 +95,6 @@ namespace TickTrader.BotTerminal
         public SymbolListViewModel SymbolList { get; private set; }
         public PositionListViewModel PositionList { get; private set; }
         public OrderListViewModel OrderList { get; private set; }
+        public ChartCollectionViewModel Charts { get; private set; }
     }
 }
