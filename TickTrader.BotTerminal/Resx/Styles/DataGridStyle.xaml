@@ -17,13 +17,17 @@
             <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Visibility="Visible"
                                             Margin="2,0,2,0"/>
             <l:ShadowPortal x:Name="Portal" Grid.Row="1">
-                <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
-                                        CanHorizontallyScroll="False" CanVerticallyScroll="False"
-                                        Content="{TemplateBinding ContentControl.Content}"
-                                        ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
-                                        ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
-                                        Name="PART_ScrollContentPresenter"
-                                        Margin="2"/>
+                <Grid>
+                    <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
+                                            CanHorizontallyScroll="False" CanVerticallyScroll="False"
+                                            Content="{TemplateBinding ContentControl.Content}"
+                                            ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                                            ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                                            Name="PART_ScrollContentPresenter"
+                                            Margin="2"/>
+                    <!--<ContentPresenter Content="{Binding Path=(l:OverlayControl.Content), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"/>-->
+                    <ContentPresenter Content="{Binding Path=(l:OverlayControl.Content),RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                </Grid>
             </l:ShadowPortal>
             <ScrollBar x:Name="PART_VerticalScrollBar"
                        Style="{DynamicResource VerticalScrollBarStyle}"
@@ -77,6 +81,9 @@
     <ControlTemplate x:Key="DataGrid_Template" TargetType="DataGrid">
         <ScrollViewer Name="DG_ScrollViewer" Focusable="False" Template="{StaticResource DataGrid_ScrollViewerTemplate}">
             <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+            <!--
+                <ContentPresenter Content="{Binding Path=(l:OverlayControl.Content), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"/>
+            -->
         </ScrollViewer>
     </ControlTemplate>
 

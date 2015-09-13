@@ -15,7 +15,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <l:ShadowPortal x:Name="Portal">
-                <ScrollContentPresenter />
+                <ScrollContentPresenter/>
             </l:ShadowPortal>
             <ScrollBar x:Name="PART_VerticalScrollBar"
                        Style="{DynamicResource VerticalScrollBarStyle}"

@@ -17,7 +17,7 @@
                        Fill="Black"
                        Visibility="{TemplateBinding IsTopShadowVisible, Converter={StaticResource BoolToVisConverter}}">
                 <Rectangle.Effect>
-                    <DropShadowEffect ShadowDepth="0" BlurRadius="25" Color="Black" />
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="25" Color="Black" Opacity="0.8"/>
                 </Rectangle.Effect>
             </Rectangle>
             <Rectangle Name="BottomShadow"
@@ -28,7 +28,7 @@
                        Fill="Black"
                        Visibility="{TemplateBinding IsBottomShadowVisible, Converter={StaticResource BoolToVisConverter}}">
                 <Rectangle.Effect>
-                    <DropShadowEffect ShadowDepth="0" BlurRadius="25" Color="Black" />
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="25" Color="Black" Opacity="0.8"/>
                 </Rectangle.Effect>
             </Rectangle>
             <Border BorderThickness="4" Margin="-4" BorderBrush="{DynamicResource ShellPanel_BorderBrush}" CornerRadius="5"/>

@@ -2,9 +2,48 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
+    
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="4" >
+        <s:SciChartSurface x:Name="chart">
+            <!--<s:SciChartSurface.ChartModifier>
+                <s:ZoomExtentsModifier/>
+            </s:SciChartSurface.ChartModifier>-->
+
+            <s:SciChartSurface.ChartModifier>
+                <!-- Groups many ChartModifiers on a single chart with mouse-eventprecedence -->
+                <s:ModifierGroup>
+                    <s:YAxisDragModifier/>
+                    <s:XAxisDragModifier/>
+                    <s:MouseWheelZoomModifier/>
+                    <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
+                    <!--<s:RubberBandXyZoomModifier />-->
+                </s:ModifierGroup>
+            </s:SciChartSurface.ChartModifier>
+
+            <!--  Series  -->
+            <s:SciChartSurface.RenderableSeries>
+                <s:FastCandlestickRenderableSeries x:Name="canSeries" DataSeries="{Binding Data}"/>
+            </s:SciChartSurface.RenderableSeries>
+
+            <!--  X Axis  -->
+            <s:SciChartSurface.XAxis>
+                <s:CategoryDateTimeAxis AutoRange="Once"/>
+            </s:SciChartSurface.XAxis>
+
+            <!--   Y Axis  -->
+            <s:SciChartSurface.YAxis>
+                <s:NumericAxis GrowBy="0.1, 0.1" AutoAlignVisibleRange="True" AutoRange="Always"/>
+            </s:SciChartSurface.YAxis>
+        </s:SciChartSurface>
+        <l:BusyIndicator Visibility="{Binding Path=IsBusy, Converter={StaticResource boolToVisibilityConverter}}"/>
     </Grid>
 </UserControl>

@@ -11,12 +11,12 @@ namespace TickTrader.BotTerminal.Lib
     {
         protected CancellationTokenSource cancelSignal;
 
-        public ManagedActivity(Func<Task> activityFactory)
+        public ManagedActivity(Func<CancellationToken, Task> activityFactory)
         {
             this.ActivityFactory = activityFactory;
         }
 
-        protected Func<Task> ActivityFactory { get; private set; }
+        protected Func<CancellationToken, Task> ActivityFactory { get; private set; }
         public Task Task { get; protected set; }
 
         public async Task Abort()
@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal.Lib
     /// </summary>
     public class RepeatableActivity : ManagedActivity
     {
-        public RepeatableActivity(Func<Task> activityFactory)
+        public RepeatableActivity(Func<CancellationToken, Task> activityFactory)
             : base(activityFactory)
         {
         }
@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal.Lib
         public void Invoke()
         {
             cancelSignal = new CancellationTokenSource();
-            Task = ActivityFactory();
+            Task = ActivityFactory(cancelSignal.Token);
         }
     }
 
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal.Lib
     {
         private bool triggered;
 
-        public TriggeredActivity(Func<Task> activityFactory)
+        public TriggeredActivity(Func<CancellationToken, Task> activityFactory)
             : base(activityFactory)
         {
         }
@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal.Lib
 
             cancelSignal = new CancellationTokenSource();
             triggered = false;
-            Task = ActivityFactory();
+            Task = ActivityFactory(cancelSignal.Token);
          }   
     }
 }

@@ -1,4 +1,5 @@
-﻿using SoftFX.Extended;
+﻿using Caliburn.Micro;
+using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    class PositionListViewModel
+    class PositionListViewModel : PropertyChangedBase
     {
         private AccountModel model;
 
@@ -24,11 +25,25 @@ namespace TickTrader.BotTerminal
             model.Orders.Added += Orders_Added;
             model.Orders.Removed += Orders_Removed;
             model.Orders.Cleared += Orders_Cleared;
+
+            model.State.StateChanged += State_StateChanged;
         }
 
         public ObservableSrotedList<string, OrderModel> Positions { get; private set; }
+        public bool IsBusy { get; private set; }
 
-        void Orders_Added(KeyValuePair<string, OrderModel> pair)
+        private void UpdateState()
+        {
+            IsBusy = model.State.Current == AccountModel.States.WaitingData;
+            NotifyOfPropertyChange("IsBusy");
+        }
+
+        private void State_StateChanged(AccountModel.States arg1, AccountModel.States arg2)
+        {
+            UpdateState();
+        }
+
+        private void Orders_Added(KeyValuePair<string, OrderModel> pair)
         {
             if (Filter(pair.Value))
             {
@@ -37,7 +52,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void Order_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Order_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             OrderModel order = (OrderModel)sender;
 
@@ -50,14 +65,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void Orders_Removed(string id)
+        private void Orders_Removed(string id)
         {
             OrderModel removedOrder;
             if (Positions.Remove(id, out removedOrder))
                 removedOrder.PropertyChanged -= Order_PropertyChanged;
         }
 
-        void Orders_Cleared()
+        private void Orders_Cleared()
         {
             foreach(OrderModel order in Positions)
                 order.PropertyChanged -= Order_PropertyChanged;
@@ -75,6 +90,7 @@ namespace TickTrader.BotTerminal
             model.Orders.Added -= Orders_Added;
             model.Orders.Removed -= Orders_Removed;
             model.Orders.Cleared -= Orders_Cleared;
+            model.State.StateChanged -= State_StateChanged;
         }
     }
 

@@ -35,7 +35,8 @@ namespace TickTrader.BotTerminal
             stateControl.AddTransition(States.Online, Events.Diconnected, States.Deinitializing);
             stateControl.AddTransition(States.Deinitializing, Events.DoneDeinit, States.Offline);
 
-            stateControl.OnEnter(States.Online, Init);
+            stateControl.OnEnter(States.WaitingData, Init);
+            stateControl.OnEnter(States.Online, UpdateSnapshots);
             stateControl.OnEnter(States.Deinitializing, Deinit);
 
             connection.Initialized += () =>
@@ -63,13 +64,17 @@ namespace TickTrader.BotTerminal
 
         public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }
         public ReadonlyDictionaryObserver<string, OrderModel> Orders { get; private set; }
+        public IStateProvider<States> State { get { return stateControl; } }
 
         public void Init()
         {
             this.uiUpdater = DataflowHelper.CreateUiActionBlock<Action>(a => a(), 100, 100, CancellationToken.None);
             positions.Clear();
             orders.Clear();
+        }
 
+        public void UpdateSnapshots()
+        {
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
                 positions.Add(fdkPosition.Symbol, new PositionModel());

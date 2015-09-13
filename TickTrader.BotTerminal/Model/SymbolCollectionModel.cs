@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
             connection.FeedProxy.Tick += FeedProxy_Tick;
         }
 
-        private async Task UpdateSubscription()
+        private async Task UpdateSubscription(CancellationToken cToken)
         {
             try
             {

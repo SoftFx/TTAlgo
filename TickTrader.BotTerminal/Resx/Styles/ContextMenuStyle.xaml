@@ -1,0 +1,25 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <ControlTemplate x:Key="ContextMenu_Template" TargetType="ContextMenu">
+        <Border Background="{DynamicResource Menu_BackgroundBrush}"
+                BorderBrush="{DynamicResource Menu_BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Margin="12">
+            
+            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+            
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="12" Color="Black" Opacity="0.7"/>
+            </Border.Effect>
+        </Border>
+    </ControlTemplate>
+    
+    <Style x:Key="ContextMenu_Style" TargetType="ContextMenu">
+        <Setter Property="Template" Value="{StaticResource ContextMenu_Template}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+        <Setter Property="FontSize" Value="11"/>
+    </Style>
+    
+</ResourceDictionary>

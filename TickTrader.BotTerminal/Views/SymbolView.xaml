@@ -43,8 +43,9 @@
     </UserControl.Resources>
    
     <UserControl.ContextMenu>
-        <ContextMenu>
-            <MenuItem Header="New Chart" cal:Message.Attach="OpenChart" />
+        <ContextMenu Style="{StaticResource ContextMenu_Style}">
+            <MenuItem Header="New Chart" cal:Message.Attach="OpenChart"/>
+            <MenuItem Header="Open Order"/>
         </ContextMenu>
     </UserControl.ContextMenu>
     

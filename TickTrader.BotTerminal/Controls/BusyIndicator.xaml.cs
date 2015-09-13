@@ -1,6 +1,4 @@
-﻿using Abt.Controls.SciChart.ChartModifiers;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,19 +16,13 @@ using System.Windows.Shapes;
 namespace TickTrader.BotTerminal
 {
     /// <summary>
-    /// Interaction logic for ChartView.xaml
+    /// Interaction logic for BusyIndicator.xaml
     /// </summary>
-    public partial class ChartView : UserControl
+    public partial class BusyIndicator : UserControl
     {
-        public ChartView()
+        public BusyIndicator()
         {
             InitializeComponent();
-
-            //chart.ZoomExtents();
-            //chart.RenderableSeries[0].XAxis.AutoRange = Abt.Controls.SciChart.Visuals.Axes.AutoRange.Once;
-
-            //chart.RenderableSeries[0].YAxis.AutoRange = Abt.Controls.SciChart.Visuals.Axes.AutoRange.Once;
-         
         }
     }
 }
