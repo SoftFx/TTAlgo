@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ad="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        xmlns:cal="http://www.caliburnproject.org"
         Title="ShellView" Height="700" Width="900"
         MinWidth="500"
         MinHeight="500"
@@ -34,8 +35,25 @@
 
         <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-        <StackPanel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center"
-                   Orientation="Horizontal" Margin="5" >
+        <StackPanel Name="TempToolBox" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"  VerticalAlignment="Center" HorizontalAlignment="Left"
+                   Orientation="Horizontal" Margin="5">
+            <Menu>
+                <MenuItem Header="BotTrader">
+                    <MenuItem Header="New Order" IsEnabled="False"/>
+                    <MenuItem Header="New Chart" IsEnabled="False"/>
+                    <Separator/>
+                    <MenuItem Header="Log In" cal:Message.Attach="Connect" />
+                    <MenuItem Header="Log Out" cal:Message.Attach="Disconnect" />
+                    <Separator/>
+                    <MenuItem Header="Exit BotTrader"/>
+                </MenuItem>
+                <MenuItem Header="Preferences">
+                    <MenuItem Header="Language" IsEnabled="False"/>
+                    <l:MenuItemSelector Header="Theme"
+                                        ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
+                                        SelectedItem="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=SelectedTheme, Mode=TwoWay}"/>
+                </MenuItem>
+            </Menu>
             <!--<TextBlock Text="Graphs Should Be Here..." FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource Shell_PrimaryForeground}"/>-->
             
             <Button Name="Connect" Content="Connect"/>

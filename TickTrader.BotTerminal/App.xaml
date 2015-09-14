@@ -12,15 +12,17 @@
                 </ResourceDictionary>
 
                 <!-- Control Styles -->
-                <ResourceDictionary Source="Resx/Styles/ContextMenuStyle.xaml" />
-                <ResourceDictionary Source="Resx/Styles/ShadowPortalStyle.xaml" />
-                <ResourceDictionary Source="Resx/Styles/DataGridStyle.xaml" />
-                <ResourceDictionary Source="Resx/Styles/ExpanderStyle.xaml" />
-                <ResourceDictionary Source="Resx/Styles/ScrollViewerStyle.xaml" />
-                <ResourceDictionary Source="Resx/Styles/VerticalScrollBarStyle.xaml" />
-                <ResourceDictionary Source="Resx/Styles/ShellPanelStyle.xaml" />
+                <ResourceDictionary Source="Resx/Styles/ContextMenuStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/MenuItemStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/MenuStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ShadowPortalStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/DataGridStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ExpanderStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ScrollViewerStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/VerticalScrollBarStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ShellPanelStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ShellTabControlStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/SymbolListBoxStyle.xaml" />
+                <ResourceDictionary Source="Resx/Styles/SymbolListBoxStyle.xaml"/>
 
                 <!-- Themes -->
                 <l:ThemeSelector>

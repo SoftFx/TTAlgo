@@ -6,7 +6,8 @@
                 BorderBrush="{DynamicResource Menu_BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="4"
-                Margin="12">
+                Margin="12"
+                Padding="2">
             
             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
             

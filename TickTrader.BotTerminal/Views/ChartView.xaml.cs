@@ -1,4 +1,5 @@
 ﻿using Abt.Controls.SciChart.ChartModifiers;
+using Abt.Controls.SciChart.Visuals.Axes;
 using Abt.Controls.SciChart.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
@@ -25,12 +26,6 @@ namespace TickTrader.BotTerminal
         public ChartView()
         {
             InitializeComponent();
-
-            //chart.ZoomExtents();
-            //chart.RenderableSeries[0].XAxis.AutoRange = Abt.Controls.SciChart.Visuals.Axes.AutoRange.Once;
-
-            //chart.RenderableSeries[0].YAxis.AutoRange = Abt.Controls.SciChart.Visuals.Axes.AutoRange.Once;
-         
         }
     }
 }

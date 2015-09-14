@@ -25,8 +25,7 @@
                                             ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
                                             Name="PART_ScrollContentPresenter"
                                             Margin="2"/>
-                    <!--<ContentPresenter Content="{Binding Path=(l:OverlayControl.Content), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"/>-->
-                    <ContentPresenter Content="{Binding Path=(l:OverlayControl.Content),RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                    <ContentPresenter Content="{Binding Path=(l:OverlayControl.Content), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
                 </Grid>
             </l:ShadowPortal>
             <ScrollBar x:Name="PART_VerticalScrollBar"

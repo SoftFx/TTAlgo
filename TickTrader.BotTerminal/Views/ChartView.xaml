@@ -14,18 +14,12 @@
     
     <Grid Margin="4" >
         <s:SciChartSurface x:Name="chart">
-            <!--<s:SciChartSurface.ChartModifier>
-                <s:ZoomExtentsModifier/>
-            </s:SciChartSurface.ChartModifier>-->
-
             <s:SciChartSurface.ChartModifier>
-                <!-- Groups many ChartModifiers on a single chart with mouse-eventprecedence -->
                 <s:ModifierGroup>
                     <s:YAxisDragModifier/>
                     <s:XAxisDragModifier/>
-                    <s:MouseWheelZoomModifier/>
+                    <!--<s:MouseWheelZoomModifier/>-->
                     <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
-                    <!--<s:RubberBandXyZoomModifier />-->
                 </s:ModifierGroup>
             </s:SciChartSurface.ChartModifier>
 
@@ -36,14 +30,22 @@
 
             <!--  X Axis  -->
             <s:SciChartSurface.XAxis>
-                <s:CategoryDateTimeAxis AutoRange="Once"/>
+                <s:CategoryDateTimeAxis VisibleRange="{Binding VisibleRange, Mode=TwoWay}"/>
             </s:SciChartSurface.XAxis>
 
             <!--   Y Axis  -->
             <s:SciChartSurface.YAxis>
                 <s:NumericAxis GrowBy="0.1, 0.1" AutoAlignVisibleRange="True" AutoRange="Always"/>
             </s:SciChartSurface.YAxis>
+
+            <s:SciChartSurface.ContextMenu>
+                <ContextMenu Style="{StaticResource ContextMenu_Style}">
+                    <MenuItem Header="Chart Type"/>
+                    <MenuItem Header="Periods" ItemsSource="{Binding AvailablePeriods}"/>
+                </ContextMenu>
+            </s:SciChartSurface.ContextMenu>
+
         </s:SciChartSurface>
-        <l:BusyIndicator Visibility="{Binding Path=IsBusy, Converter={StaticResource boolToVisibilityConverter}}"/>
+        <l:BusyIndicator Visibility="{Binding Path=IsBusy, Converter={StaticResource boolToVisibilityConverter}}"/> 
     </Grid>
 </UserControl>
