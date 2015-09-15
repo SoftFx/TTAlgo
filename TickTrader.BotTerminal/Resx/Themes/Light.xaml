@@ -11,6 +11,10 @@
     <SolidColorBrush x:Key="ShellPanel_ScrollBarBrush" Color="#A0A0A0"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarHoverBrush" Color="#777777"/>
 
+    <SolidColorBrush x:Key="Menu_BackgroundBrush" Color="#E9E9E9"/>
+    <SolidColorBrush x:Key="Menu_HighlightBackgroundBrush" Color="#9CC1CF"/>
+    <SolidColorBrush x:Key="Menu_BorderBrush" Color="#525252"/>
+
     <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="#000000"/>
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="#747474"/>
     <SolidColorBrush x:Key="Shell_MediateForeground" Color="#747474"/>

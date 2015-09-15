@@ -1,4 +1,5 @@
 ﻿using Abt.Controls.SciChart.ChartModifiers;
+using Abt.Controls.SciChart.Visuals;
 using Abt.Controls.SciChart.Visuals.Axes;
 using Abt.Controls.SciChart.Visuals.RenderableSeries;
 using System;

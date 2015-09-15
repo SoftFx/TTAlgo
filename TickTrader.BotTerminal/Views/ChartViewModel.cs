@@ -1,9 +1,12 @@
 ﻿using Abt.Controls.SciChart;
 using Abt.Controls.SciChart.Model.DataSeries;
+using Abt.Controls.SciChart.Visuals.RenderableSeries;
 using Caliburn.Micro;
 using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,23 +20,22 @@ namespace TickTrader.BotTerminal
         private readonly ConnectionModel connection;
         private readonly TriggeredActivity updateActivity;
 
-        private static readonly List<KeyValuePair<string, BarPeriod>> PredefinedPeriods = new List<KeyValuePair<string,BarPeriod>>();
-
-        static ChartViewModel()
+        private static readonly BarPeriod[] PredefinedPeriods = new BarPeriod[]
         {
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("Monthly", BarPeriod.MN1));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("Weekly", BarPeriod.W1));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("Daily", BarPeriod.D1));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("4 hours", BarPeriod.H4));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("1 hour", BarPeriod.H1));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("30 minutes", BarPeriod.M30));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("15 minutes", BarPeriod.M15));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("5 minutes", BarPeriod.M5));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("1 minute", BarPeriod.M1));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("10 seconds", BarPeriod.S10));
-            PredefinedPeriods.Add(new KeyValuePair<string, BarPeriod>("1 second", BarPeriod.S1));
-        }
+            BarPeriod.MN1,
+            BarPeriod.W1,
+            BarPeriod.D1,
+            BarPeriod.H4,
+            BarPeriod.H1,
+            BarPeriod.M30,
+            BarPeriod.M15,
+            BarPeriod.M5,
+            BarPeriod.M1,
+            BarPeriod.S10,
+            BarPeriod.S1
+        };
 
+        public enum SelectableChartTypes { Candle, OHLC, Line, Mountain }
 
         public ChartViewModel(string symbol, ConnectionModel connection)
         {
@@ -42,6 +44,8 @@ namespace TickTrader.BotTerminal
             this.connection = connection;
 
             this.updateActivity = new TriggeredActivity(Update);
+
+            UpdateSeriesStyle();
 
             connection.Connected += connection_Connected;
             connection.Disconnected += connection_Disconnected;
@@ -55,8 +59,11 @@ namespace TickTrader.BotTerminal
         private bool isBusy;
         private IndexRange visibleRange = new IndexRange(0, 10);
         private OhlcDataSeries<DateTime, double> data;
+        private BarPeriod selectedPeriod = BarPeriod.M30;
+        private SelectableChartTypes chartType = SelectableChartTypes.Candle;
+        private ObservableCollection<IRenderableSeries> series = new ObservableCollection<IRenderableSeries>();
 
-        public IEnumerable<KeyValuePair<string, BarPeriod>> AvailablePeriods { get { return PredefinedPeriods; } }
+        public BarPeriod[] AvailablePeriods { get { return PredefinedPeriods; } }
 
         public IndexRange VisibleRange
         {
@@ -87,7 +94,46 @@ namespace TickTrader.BotTerminal
             set
             {
                 data = value;
+                series[0].DataSeries = value;
                 NotifyOfPropertyChange("Data");
+            }
+        }
+
+        public IRenderableSeries MainSeries
+        {
+            get { return series[0]; }
+            set
+            {
+                if (series.Count > 0)
+                    series[0] = value;
+                else
+                    series.Add(value);
+            }
+        }
+
+        public BarPeriod SelectedPeriod
+        {
+            get { return selectedPeriod; }
+            set
+            {
+                selectedPeriod = value;
+                NotifyOfPropertyChange("SelectedPeriod");
+                updateActivity.Trigger(true);
+            }
+        }
+
+        public ObservableCollection<IRenderableSeries> Series { get { return series; } }
+
+        public Array ChartTypes { get { return Enum.GetValues(typeof(SelectableChartTypes)); } }
+
+        public SelectableChartTypes SelectedChartType
+        {
+            get { return chartType; }
+            set
+            {
+                chartType = value;
+                NotifyOfPropertyChange("SelectedChartType");
+                UpdateSeriesStyle();
             }
         }
 
@@ -113,7 +159,7 @@ namespace TickTrader.BotTerminal
                 var response = await Task.Factory.StartNew(
                     () => connection.FeedProxy.Server.GetHistoryBars(
                         Symbol, DateTime.Now + TimeSpan.FromDays(1),
-                        -4000, SoftFX.Extended.PriceType.Ask, BarPeriod.H1));
+                        -4000, SoftFX.Extended.PriceType.Ask, SelectedPeriod));
 
                 cToken.ThrowIfCancellationRequested();
 
@@ -138,5 +184,26 @@ namespace TickTrader.BotTerminal
         }
 
         public string Symbol { get; private set; }
+
+        private void UpdateSeriesStyle()
+        {
+            switch (SelectedChartType)
+            {
+                case SelectableChartTypes.Candle:
+                    MainSeries = new FastCandlestickRenderableSeries();
+                    break;
+                case SelectableChartTypes.Line:
+                    MainSeries = new FastLineRenderableSeries();
+                    break;
+                case SelectableChartTypes.OHLC:
+                    MainSeries = new FastOhlcRenderableSeries();
+                    break;
+                case SelectableChartTypes.Mountain:
+                    MainSeries = new FastMountainRenderableSeries();
+                    break;
+            }
+
+            MainSeries.DataSeries = Data;
+        }
     }
 }
