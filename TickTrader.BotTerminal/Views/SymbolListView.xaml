@@ -27,6 +27,16 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
+        <ComboBox Margin="5,5,5,0" SelectedIndex="2">
+            <ComboBoxItem>Some text</ComboBoxItem>
+            <ComboBoxItem>Item</ComboBoxItem>
+            <ComboBoxItem>Another Item</ComboBoxItem>
+            <ComboBoxItem>Some text</ComboBoxItem>
+            <ComboBoxItem>Item</ComboBoxItem>
+            <ComboBoxItem>Another Item</ComboBoxItem>
+            <ComboBoxItem>Some text</ComboBoxItem>
+            <ComboBoxItem>Item</ComboBoxItem>
+        </ComboBox>
         <!--<Label Content="Ask Bid" Foreground="{DynamicResource Shell_PrimaryForeground}" />-->
 
         <ListBox Name="Symbols"

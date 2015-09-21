@@ -12,6 +12,7 @@
                 </ResourceDictionary>
 
                 <!-- Control Styles -->
+                <ResourceDictionary Source="Resx/Styles/ComboBoxStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ContextMenuStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/MenuItemStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/MenuStyle.xaml"/>
