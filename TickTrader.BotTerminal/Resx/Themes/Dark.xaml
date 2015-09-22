@@ -15,6 +15,8 @@
     <SolidColorBrush x:Key="Menu_HighlightBackgroundBrush" Color="#3B3B3B"/>
     <SolidColorBrush x:Key="Menu_BorderBrush" Color="#525252"/>
 
+    <SolidColorBrush x:Key="ControlFocusBorder" Color="#808080"/>
+
     <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="#747474"/>
     <SolidColorBrush x:Key="Shell_MediateForeground" Color="#B5B5B5"/>

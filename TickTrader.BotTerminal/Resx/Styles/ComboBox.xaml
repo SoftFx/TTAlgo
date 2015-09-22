@@ -6,7 +6,7 @@
     <ControlTemplate x:Key="ComboBox_ToggleTemplate">
         <Border BorderThickness="1"
                 CornerRadius="2"
-                BorderBrush="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
                 Background="{TemplateBinding Background}">
             <Border Background="Transparent" Width="14" HorizontalAlignment="Right">
                 <Canvas Height="5" Width="5">
@@ -74,6 +74,7 @@
                           IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                           Style="{StaticResource ComboBox_ToggleStyle}"
                           Grid.ColumnSpan="2"
+                          BorderBrush="Transparent"
                           Background="{TemplateBinding Background}"/>
             <ContentPresenter Name="contentPresenter"
                               Content="{TemplateBinding ComboBox.SelectionBoxItem}"
@@ -85,6 +86,11 @@
                               SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
                               IsHitTestVisible="False" />
         </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{DynamicResource ControlFocusBorder}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
 
@@ -110,6 +116,8 @@
         <Setter Property="Background" Value="{DynamicResource ShellPanel_BackgroundBrush}" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Style.Resources>
             <Style TargetType="ComboBoxItem">
                 <Setter Property="OverridesDefaultStyle" Value="True"/>

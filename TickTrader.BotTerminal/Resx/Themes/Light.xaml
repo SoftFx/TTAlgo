@@ -7,13 +7,15 @@
     <SolidColorBrush x:Key="ShellPanel_ItemBackgroundBrush" Color="#C3C3C3"/>
     <SolidColorBrush x:Key="ShellPanel_TabBackgroundBrush" Color="Transparent"/>
     <SolidColorBrush x:Key="ShellPanel_TabHoverBrush" Color="#9CC1CF"/>
-    <SolidColorBrush x:Key="ShellPanel_ItemHoverBackgroundBrush" Color="#525252"/>
+    <SolidColorBrush x:Key="ShellPanel_ItemHoverBackgroundBrush" Color="#9CC1CF"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarBrush" Color="#A0A0A0"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarHoverBrush" Color="#777777"/>
 
     <SolidColorBrush x:Key="Menu_BackgroundBrush" Color="#E9E9E9"/>
     <SolidColorBrush x:Key="Menu_HighlightBackgroundBrush" Color="#9CC1CF"/>
     <SolidColorBrush x:Key="Menu_BorderBrush" Color="#525252"/>
+
+    <SolidColorBrush x:Key="ControlFocusBorder" Color="#525252"/>
 
     <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="#000000"/>
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="#747474"/>

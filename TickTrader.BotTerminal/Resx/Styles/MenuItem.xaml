@@ -93,7 +93,7 @@
                     <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut" />
                     <ColumnDefinition Width="13"/>
                 </Grid.ColumnDefinitions>
-                <ContentPresenter  Name="Icon" Margin="6,0,6,0" VerticalAlignment="Center" ContentSource="Icon" />
+                <ContentPresenter Name="Icon" Margin="6,0,6,0" VerticalAlignment="Center" ContentSource="Icon" />
                 <Border Name="Check"
                         Width="13" Height="13"
                         Visibility="Collapsed"
@@ -161,6 +161,7 @@
                 <ContentPresenter Name="HeaderHost"
                                   Grid.Column="1"
                                   ContentSource="Header"
+                                  VerticalAlignment="Center"
                                   RecognizesAccessKey="True"/>
                 <TextBlock x:Name="InputGestureText"
                            Grid.Column="2"

@@ -237,51 +237,55 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
-    <Page Include="Resx\Styles\ComboBoxStyle.xaml">
+    <Page Include="Resx\Styles\ComboBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ContextMenuStyle.xaml">
+    <Page Include="Resx\Styles\ContextMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DataGridStyle.xaml">
+    <Page Include="Resx\Styles\DataGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ExpanderStyle.xaml">
+    <Page Include="Resx\Styles\Expander.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\MenuItemStyle.xaml">
+    <Page Include="Resx\Styles\MenuItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\MenuStyle.xaml">
+    <Page Include="Resx\Styles\Menu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ScrollViewerStyle.xaml">
+    <Page Include="Resx\Styles\ScrollViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ShadowPortalStyle.xaml">
+    <Page Include="Resx\Styles\ShadowPortal.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ShellPanelStyle.xaml">
+    <Page Include="Resx\Styles\ShellPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ShellTabControlStyle.xaml">
+    <Page Include="Resx\Styles\ShellTabControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\SymbolListBoxStyle.xaml">
+    <Page Include="Resx\Styles\SymbolListBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\VerticalScrollBarStyle.xaml">
+    <Page Include="Resx\Styles\TextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles\VerticalScrollBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

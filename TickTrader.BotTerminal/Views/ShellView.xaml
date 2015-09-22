@@ -8,7 +8,8 @@
         MinWidth="500"
         MinHeight="500"
         Background="{DynamicResource Shell_BackgroundBrush}"
-        SnapsToDevicePixels="True">
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display">
     <Grid>
         
         <Grid.ColumnDefinitions>

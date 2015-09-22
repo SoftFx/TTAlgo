@@ -12,18 +12,19 @@
                 </ResourceDictionary>
 
                 <!-- Control Styles -->
-                <ResourceDictionary Source="Resx/Styles/ComboBoxStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/ContextMenuStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/MenuItemStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/MenuStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/ShadowPortalStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/DataGridStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/ExpanderStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/ScrollViewerStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/VerticalScrollBarStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/ShellPanelStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/ShellTabControlStyle.xaml"/>
-                <ResourceDictionary Source="Resx/Styles/SymbolListBoxStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/TextBox.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ComboBox.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ContextMenu.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/MenuItem.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/Menu.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ShadowPortal.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/DataGrid.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/Expander.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ScrollViewer.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/VerticalScrollBar.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ShellPanel.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ShellTabControl.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/SymbolListBox.xaml"/>
 
                 <!-- Themes -->
                 <l:ThemeSelector>
