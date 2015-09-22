@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.Api
+namespace TickTrader.Algo.Core
 {
-    class InputAttribute
+    class IndicatorBuilder
     {
+
     }
 }

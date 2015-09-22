@@ -26,18 +26,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition/>
         </Grid.RowDefinitions>
-
-        <Grid Margin="5,5,5,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <TextBox Text="123" Margin="1" Grid.Column="0" />
-            <ComboBox Margin="1" Grid.Column="1">
-                <ComboBoxItem>123</ComboBoxItem>
-                <ComboBoxItem>456</ComboBoxItem>
-            </ComboBox>
-        </Grid>
         
         <!--<Label Content="Ask Bid" Foreground="{DynamicResource Shell_PrimaryForeground}" />-->
 

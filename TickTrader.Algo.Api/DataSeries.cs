@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    class OutputAttribute
+    public abstract class DataSeries<T>
+    {
+    }
+
+    public abstract class DataSeries : DataSeries<double>
     {
     }
 }
