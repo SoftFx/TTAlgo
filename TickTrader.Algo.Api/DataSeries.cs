@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    public abstract class DataSeries<T>
+    public interface DataSeries<T> : IEnumerable<T>
     {
+        T this[int index] { get; set; }
     }
 
-    public abstract class DataSeries : DataSeries<double>
+    public interface DataSeries : DataSeries<double>
     {
     }
 }
