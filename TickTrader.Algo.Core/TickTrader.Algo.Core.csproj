@@ -39,7 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlgoDataReader.cs" />
     <Compile Include="DataSeries.cs" />
+    <Compile Include="FieldMapper.cs" />
     <Compile Include="IndicatorBuilder.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

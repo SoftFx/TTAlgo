@@ -7,13 +7,39 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    //internal class CachingDataSeries<T> : Api.DataSeries<T>
-    //{
-    //}
+    internal class DataSeries<T> : Api.DataSeries<T>
+    {
+        public virtual T this[long index]
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
 
-    //internal class ProxyDataSeries<T> : Api.DataSeries<T>
+        public long Count { get { return 0; } }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class ReadonlyDataSeries<T> : DataSeries<T>
+    {
+        public override T this[long index]
+        {
+            get { return base[index]; }
+            set { /* do nothing */ }
+        }
+    }
+
+    //internal class CachingProxyDataSeries<T> : Api.DataSeries<T>
     //{
-    //    public ProxyDataSeries()
+    //    public CachingProxyDataSeries()
     //    {
     //    }
     //}
@@ -21,5 +47,5 @@ namespace TickTrader.Algo.Core
     //internal interface AlgoDataSource
     //{
 
-    //}
+    //}}
 }
