@@ -95,15 +95,15 @@ namespace TickTrader.Algo.Core.Lib
 
         public IEnumerator<T> GetEnumerator()
         {
-            return new QueueEnumarator<T>(this);
+            return new QueueEnumarator(this);
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return new QueueEnumarator<T>(this);
+            return new QueueEnumarator(this);
         }
 
-        private struct QueueEnumarator<T> : IEnumerator<T>
+        private struct QueueEnumarator : IEnumerator<T>
         {
             private CircularList<T> list;
             private int listIndex;

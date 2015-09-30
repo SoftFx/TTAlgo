@@ -24,6 +24,35 @@ namespace TickTrader.Algo.Api
             return metadata;
         }
 
+        public static IEnumerable<AlgoMetadata> InspectAssembly(Assembly targetAssembly)
+        {
+            List<AlgoMetadata> result = new List<AlgoMetadata>();
+
+            foreach (Type t in targetAssembly.GetTypes())
+            {
+                IndicatorAttribute indicatorAttr = t.GetCustomAttribute<IndicatorAttribute>(false);
+                TradeBotAttribute botAttr = t.GetCustomAttribute<TradeBotAttribute>(false);
+
+                if (indicatorAttr != null && botAttr != null)
+                    continue;
+
+                if (indicatorAttr != null)
+                {
+                    var meta = AlgoMetadata.Get(t);
+                    if (meta.AlgoLogicType == AlgoTypes.Indicator)
+                        result.Add(meta);
+                }
+                else if (botAttr != null)
+                {
+                    var meta = AlgoMetadata.Get(t);
+                    if (meta.AlgoLogicType == AlgoTypes.Robot)
+                        result.Add(meta);
+                }
+            }
+
+            return result;
+        }
+
         private List<AlgoPropertyDescriptor> allProperties = new List<AlgoPropertyDescriptor>();
         private List<ParameterDescriptor> parameters = new List<ParameterDescriptor>();
         private List<InputDescriptor> inputs = new List<InputDescriptor>();
