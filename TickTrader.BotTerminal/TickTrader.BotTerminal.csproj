@@ -124,15 +124,12 @@
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\DataflowHelper.cs" />
+    <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\ObservableSrotedList.cs" />
-    <Compile Include="Lib\StateDescriptor.cs" />
-    <Compile Include="Lib\StateMachine.cs" />
-    <Compile Include="Lib\StateMachineSync.cs" />
-    <Compile Include="Lib\StateTransition.cs" />
-    <Compile Include="Lib\TimeEvent.cs" />
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model\AccountModel.cs" />
+    <Compile Include="Model\AlgoRepositoryModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />
@@ -326,7 +323,20 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\StateMachinarium\StateMachinarium.csproj">
+      <Project>{9771258d-f820-482e-b945-310d5b4e182c}</Project>
+      <Name>StateMachinarium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
+      <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

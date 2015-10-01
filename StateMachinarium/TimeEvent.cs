@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace TickTrader.BotTerminal.Lib
+namespace StateMachinarium
 {
     internal class TimeEvent : IDisposable
     {

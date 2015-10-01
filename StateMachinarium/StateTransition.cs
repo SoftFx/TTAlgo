@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TickTrader.BotTerminal.Lib
+namespace StateMachinarium
 {
     internal class StateTransition<T>
     {

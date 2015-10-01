@@ -10,6 +10,7 @@ namespace TickTrader.BotTerminal
     internal class ShellViewModel : Screen
     {
         private TraderModel model = new TraderModel();
+        private AlgoRepositoryModel algoRep = new AlgoRepositoryModel();
 
         public ShellViewModel()
         {

@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace TickTrader.BotTerminal.Lib
+namespace StateMachinarium
 {
     public class StateMachine<T> : IStateProvider<T>
         where T : IComparable
     {
-        private IStateMachineSync _lock; // new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private static readonly Task CompletedTask = Task.FromResult<object>(null);
+
+        private IStateMachineSync _lock;
         private Dictionary<T, StateDescriptor<T>> descriptors = new Dictionary<T, StateDescriptor<T>>();
 
         [System.Diagnostics.DebuggerStepThrough]
@@ -207,7 +209,7 @@ namespace TickTrader.BotTerminal.Lib
         private Task AsyncWaitInternal(T stateToWait)
         {
             if (Current.Equals(stateToWait))
-                return CompletedTask.Default;
+                return CompletedTask;
 
             StateDescriptor<T> descriptor = GetOrAddDescriptor(stateToWait);
             return descriptor.AsyncWait();

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.BotTerminal.Lib
+namespace StateMachinarium
 {
     public interface IStateMachineSync
     {
@@ -21,11 +21,11 @@ namespace TickTrader.BotTerminal.Lib
         }
     }
 
-    public class DispatcherStateMachineSync : IStateMachineSync
+    public class NoStateMachineSync : IStateMachineSync
     {
         public void Synchronized(Action syncAction)
         {
-            Caliburn.Micro.Execute.OnUIThread(syncAction);
+            syncAction();
         }
     }
 }
