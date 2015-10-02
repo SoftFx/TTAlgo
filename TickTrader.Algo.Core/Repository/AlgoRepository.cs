@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.Algo.Core.Metadata
+namespace TickTrader.Algo.Core.Repository
 {
     public class AlgoRepository : IDisposable
     {
@@ -24,8 +24,6 @@ namespace TickTrader.Algo.Core.Metadata
         private bool isWatcherFailed;
         private Task scanTask;
         private string repPath;
-        //private BlockingCollection<AlgoAssembly> 
-        
         private Dictionary<string, AlgoAssembly> assemblies = new Dictionary<string, AlgoAssembly>();
 
         public AlgoRepository(string repPath)
@@ -142,9 +140,5 @@ namespace TickTrader.Algo.Core.Metadata
         public void Dispose()
         {
         }
-    }
-
-    public class AlgoRepositoryItem
-    {
     }
 }

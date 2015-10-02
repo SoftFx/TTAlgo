@@ -41,12 +41,17 @@
   <ItemGroup>
     <Compile Include="AlgoDataReader.cs" />
     <Compile Include="DataSeries.cs" />
-    <Compile Include="IndicatorBuilder.cs" />
+    <Compile Include="IndicatorProxy.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
-    <Compile Include="Metadata\AlgoAssembly.cs" />
-    <Compile Include="Metadata\AlgoRepository.cs" />
-    <Compile Include="Metadata\AlgoSandbox.cs" />
+    <Compile Include="Metadata\AlgoDescriptor.cs" />
+    <Compile Include="Metadata\AlgoInfo.cs" />
+    <Compile Include="Metadata\AlgoPropertyDescriptor.cs" />
+    <Compile Include="Metadata\AlgoPropertyInfo.cs" />
+    <Compile Include="Repository\AlgoAssembly.cs" />
+    <Compile Include="Repository\AlgoRepository.cs" />
+    <Compile Include="Repository\AlgoRepositoryItem.cs" />
+    <Compile Include="Repository\AlgoSandbox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

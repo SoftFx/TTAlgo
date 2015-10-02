@@ -15,10 +15,7 @@ namespace TickTrader.Algo.Api
 
         internal Algo()
         {
-            Metadata = AlgoMetadata.Get(this.GetType());
         }
-
-        internal AlgoMetadata Metadata { get; set; }
 
         protected virtual void Init() { }
 

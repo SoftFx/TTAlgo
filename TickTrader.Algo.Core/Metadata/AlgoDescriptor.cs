@@ -4,29 +4,39 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.Api
+namespace TickTrader.Algo.Core.Metadata
 {
-    internal class AlgoMetadata
+    internal class AlgoDescriptor
     {
-        private static Dictionary<Type, AlgoMetadata> cache = new Dictionary<Type, AlgoMetadata>();
+        private static Dictionary<Type, AlgoDescriptor> cacheByType = new Dictionary<Type, AlgoDescriptor>();
+        private static Dictionary<string, AlgoDescriptor> cacheByName = new Dictionary<string, AlgoDescriptor>();
 
-        public static AlgoMetadata Get(Type algoCustomType)
+        public static AlgoDescriptor Get(Type algoCustomType)
         {
-            AlgoMetadata metadata;
+            AlgoDescriptor metadata;
 
-            if (!cache.TryGetValue(algoCustomType, out metadata))
+            if (!cacheByType.TryGetValue(algoCustomType, out metadata))
             {
-                metadata = new AlgoMetadata(algoCustomType);
-                cache.Add(algoCustomType, metadata);
+                metadata = new AlgoDescriptor(algoCustomType);
+                cacheByType.Add(algoCustomType, metadata);
+                cacheByName.Add(algoCustomType.FullName, metadata);
             }
 
             return metadata;
         }
 
-        public static IEnumerable<AlgoMetadata> InspectAssembly(Assembly targetAssembly)
+        public static AlgoDescriptor Get(string algoCustomType)
         {
-            List<AlgoMetadata> result = new List<AlgoMetadata>();
+            AlgoDescriptor result;
+            cacheByName.TryGetValue(algoCustomType, out result);
+            return result;
+        }
+
+        public static IEnumerable<AlgoDescriptor> InspectAssembly(Assembly targetAssembly)
+        {
+            List<AlgoDescriptor> result = new List<AlgoDescriptor>();
 
             foreach (Type t in targetAssembly.GetTypes())
             {
@@ -38,13 +48,13 @@ namespace TickTrader.Algo.Api
 
                 if (indicatorAttr != null)
                 {
-                    var meta = AlgoMetadata.Get(t);
+                    var meta = AlgoDescriptor.Get(t);
                     if (meta.AlgoLogicType == AlgoTypes.Indicator)
                         result.Add(meta);
                 }
                 else if (botAttr != null)
                 {
-                    var meta = AlgoMetadata.Get(t);
+                    var meta = AlgoDescriptor.Get(t);
                     if (meta.AlgoLogicType == AlgoTypes.Robot)
                         result.Add(meta);
                 }
@@ -58,7 +68,7 @@ namespace TickTrader.Algo.Api
         private List<InputDescriptor> inputs = new List<InputDescriptor>();
         private List<OutputDescriptor> outputs = new List<OutputDescriptor>();
 
-        public AlgoMetadata(Type algoCustomType)
+        public AlgoDescriptor(Type algoCustomType)
         {
             this.AlgoClassType = algoCustomType;
 
@@ -79,9 +89,30 @@ namespace TickTrader.Algo.Api
                 Error = AlgoMetadataErrors.HasInvalidProperties;
         }
 
+        public AlgoInfo GetInteropCopy()
+        {
+            AlgoInfo copy = new AlgoInfo();
+            copy.Id = this.AlgoClassType.FullName;
+            copy.DisplayName = this.AlgoClassType.Name;
+            copy.AlgoLogicType = this.AlgoLogicType;
+            copy.Error = this.Error;
+
+            copy.AllProperties = allProperties.Select(p => p.GetInteropCopy()).ToList();
+            copy.Parameters = copy.AllProperties.OfType<ParameterInfo>().ToList();
+            copy.Inputs = copy.AllProperties.OfType<InputInfo>().ToList();
+            copy.Outputs = copy.AllProperties.OfType<OutputInfo>().ToList();
+
+            return copy;
+        }
+
+        public Api.Algo CreateInstance()
+        {
+            return (Api.Algo)Activator.CreateInstance(AlgoClassType);
+        }
+
         private void InspectProperties()
         {
-            var properties = AlgoClassType.GetAllAccessLevelProperties();
+            var properties = AlgoClassType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var property in properties)
             {
                 var descriptor = BuildtPropertyDescriptor(property);

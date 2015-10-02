@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotTerminal", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Samples", "TickTrader.Algo.Samples\TickTrader.Algo.Samples.csproj", "{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAlgoProject", "TestAlgoProject\TestAlgoProject.csproj", "{127406A9-5D62-4FE7-9680-1D2DEED7564F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMachinarium", "StateMachinarium\StateMachinarium.csproj", "{9771258D-F820-482E-B945-310D5B4E182C}"
 EndProject
 Global
@@ -45,10 +43,6 @@ Global
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9771258D-F820-482E-B945-310D5B4E182C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9771258D-F820-482E-B945-310D5B4E182C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9771258D-F820-482E-B945-310D5B4E182C}.Release|Any CPU.ActiveCfg = Release|Any CPU
