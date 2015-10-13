@@ -9,14 +9,12 @@ namespace TickTrader.Algo.Core
 {
     public class AlgoHost : IAlgoContext
     {
-        private IndicatorProxy proxy;
         private Dictionary<string, object> parameters = new Dictionary<string, object>();
         private Dictionary<string, IManagedDataSeries> inputs = new Dictionary<string, IManagedDataSeries>();
         private Dictionary<string, IManagedDataSeries> outputs = new Dictionary<string, IManagedDataSeries>();
 
-        public AlgoHost(IndicatorProxy proxy)
+        public AlgoHost()
         {
-            this.proxy = proxy;
         }
 
         public int Count { get; private set; }
@@ -30,11 +28,6 @@ namespace TickTrader.Algo.Core
 
             foreach (var output in outputs.Values)
                 output.Extend();
-        }
-
-        public void Calculate()
-        {
-            proxy.InvokeCalculate();
         }
 
         #region Algo init methods

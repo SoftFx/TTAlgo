@@ -42,6 +42,7 @@
     <Compile Include="AlgoDataReader.cs" />
     <Compile Include="AlgoHost.cs" />
     <Compile Include="DataSeries.cs" />
+    <Compile Include="IndicatorBuilder.cs" />
     <Compile Include="IndicatorProxy.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />

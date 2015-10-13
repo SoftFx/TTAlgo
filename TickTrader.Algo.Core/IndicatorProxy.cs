@@ -45,7 +45,6 @@ namespace TickTrader.Algo.Core
 
             foreach (var inputProperty in descriptor.Inputs)
                 inputProperty.Set(instance, context.GetInputSeries(inputProperty.Id));
-
         }
 
         public void InvokeCalculate()

@@ -11,15 +11,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Repository;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
     class ChartViewModel : Screen
     {
-        private readonly ConnectionModel connection;
-        private readonly TriggeredActivity updateActivity;
-
         private static readonly BarPeriod[] PredefinedPeriods = new BarPeriod[]
         {
             BarPeriod.MN1,
@@ -37,11 +35,16 @@ namespace TickTrader.BotTerminal
 
         public enum SelectableChartTypes { Candle, OHLC, Line, Mountain }
 
-        public ChartViewModel(string symbol, ConnectionModel connection)
+        private readonly ConnectionModel connection;
+        private readonly TriggeredActivity updateActivity;
+        private AlgoRepositoryModel repository;
+
+        public ChartViewModel(string symbol, ConnectionModel connection, AlgoRepositoryModel repository)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.connection = connection;
+            this.repository = repository;
 
             this.updateActivity = new TriggeredActivity(Update);
 
@@ -136,6 +139,8 @@ namespace TickTrader.BotTerminal
                 UpdateSeriesStyle();
             }
         }
+
+        public BindableCollection<AlgoRepositoryItem> Indicators { get { return repository.Indicators; } }
 
         #endregion
 

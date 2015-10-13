@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
             SymbolList = new SymbolListViewModel(model.Symbols);
             PositionList = new PositionListViewModel(model.Account);
             OrderList = new OrderListViewModel(model.Account);
-            Charts = new ChartCollectionViewModel(model.Connection);
+            Charts = new ChartCollectionViewModel(model.Connection, algoRep);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);
