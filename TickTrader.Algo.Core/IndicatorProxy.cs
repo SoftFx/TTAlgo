@@ -12,34 +12,40 @@ namespace TickTrader.Algo.Core
     {
         private Api.Indicator instance;
 
-        public IndicatorProxy(string descriptorId, IEnumerable<AlgoProxyParam> parameters)
-            : this(AlgoDescriptor.Get(descriptorId), parameters)
+        public IndicatorProxy(string descriptorId, IAlgoContext context)
+            : this(AlgoDescriptor.Get(descriptorId), context)
         {
         }
 
-        internal IndicatorProxy(AlgoDescriptor descriptor, IEnumerable<AlgoProxyParam> parameters)
+        internal IndicatorProxy(AlgoDescriptor descriptor, IAlgoContext context)
         {
             if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
                 throw new Exception("This is not an indicator.");
 
+            // create instance
+
             instance = (Api.Indicator)descriptor.CreateInstance();
 
-            var paramsById = parameters.ToDictionary(p => p.Id);
+            // init parameters
 
-            foreach (var property in descriptor.AllProperties)
+            foreach (var paramProperty in descriptor.Parameters)
             {
-                AlgoProxyParam param;
-                if (!paramsById.TryGetValue(property.Id, out param))
-                {
-                    if (property.PropertyType == AlgoPropertyTypes.InputSeries
-                        || property.PropertyType == AlgoPropertyTypes.OutputSeries)
-                        throw new Exception("Property " + property.Id + " is not initialized.");
-
-                    // TO DO : set default value
-                }
-
-                property.Set(instance, param.Value);
+                object paramVal;
+                if (!context.GetParameter(paramProperty.Id, out paramVal))
+                    paramVal = paramProperty.DefaultValue;
+                paramProperty.Set(instance, paramVal);
             }
+            
+            // init inputs
+
+            foreach (var inputProperty in descriptor.Inputs)
+                inputProperty.Set(instance, context.GetInputSeries(inputProperty.Id));
+
+            // init outputs
+
+            foreach (var inputProperty in descriptor.Inputs)
+                inputProperty.Set(instance, context.GetInputSeries(inputProperty.Id));
+
         }
 
         public void InvokeCalculate()
@@ -48,10 +54,10 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    [Serializable]
-    public class AlgoProxyParam
+    public interface IAlgoContext
     {
-        public string Id { get; set; }
-        public object Value { get; set; }
+        bool GetParameter(string paramId, out object paramValue);
+        object GetInputSeries(string inputId);
+        object GetOutputSeries(string inputId);
     }
 }

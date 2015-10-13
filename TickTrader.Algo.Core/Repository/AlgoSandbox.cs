@@ -17,9 +17,9 @@ namespace TickTrader.Algo.Core.Repository
             return metadata.Select(d => d.GetInteropCopy()).ToList();
         }
 
-        public IndicatorProxy CreateIndicatorProxy(string id, IEnumerable<AlgoProxyParam> paraeters)
+        public IndicatorProxy CreateIndicatorProxy(string algoId,  AlgoHost data, IEnumerable<AlgoProxyParam> parameters)
         {
-            return new IndicatorProxy(id, paraeters);
+            return new IndicatorProxy(algoId, data, parameters);
         }
     }
 }

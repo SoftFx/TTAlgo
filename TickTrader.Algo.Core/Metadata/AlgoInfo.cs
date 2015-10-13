@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core.Metadata
     /// It is used to bypass descriptor to another application domain.
     /// </summary>
     [Serializable]
-    class AlgoInfo
+    public class AlgoInfo
     {
         public string Id { get; set; }
         public string DisplayName { get; set; }

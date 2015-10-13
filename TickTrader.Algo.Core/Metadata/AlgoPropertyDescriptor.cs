@@ -74,6 +74,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public ParameterAttribute Attribute { get; private set; }
+        public object DefaultValue { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
     }
 

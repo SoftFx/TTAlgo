@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Core.Repository
         public enum Events { Start, DoneScanning, ScanFailed, NextAttempt, CloseRequested, DoneClosing }
 
         private StateMachine<States> stateControl = new StateMachine<States>();
+        private object scanUpdateLockObj = new object();
+        private object globalLockObj = new object();
         private FileSystemWatcher watcher;
         private bool isWatcherFailed;
         private Task scanTask;
@@ -43,13 +45,21 @@ namespace TickTrader.Algo.Core.Repository
             stateControl.AddScheduledEvent(States.Waiting, Events.NextAttempt, 1000);
 
             stateControl.OnEnter(States.Scanning, () => scanTask = Task.Factory.StartNew(Scan));
-
-            stateControl.PushEvent(Events.Start);
-
-            //watcher = new FileSystemWatcher(repPath, AlgoFilesPattern);
         }
 
-        public AlgoRepositoryItem Items { get; set; }
+        public event Action<AlgoRepositoryItem> Added = delegate { };
+        public event Action<AlgoRepositoryItem> Removed = delegate { };
+        public event Action<AlgoRepositoryItem> Replaced = delegate { };
+
+        public void Start()
+        {
+            stateControl.PushEvent(Events.Start);
+        }
+
+        public Task Stop()
+        {
+            return stateControl.PushEventAndAsyncWait(Events.CloseRequested, States.Closed);
+        }
 
         private void Scan()
         {
@@ -62,7 +72,10 @@ namespace TickTrader.Algo.Core.Repository
                     watcher.Created -= watcher_Changed;
                     watcher.Deleted -= watcher_Deleted;
                     watcher.Renamed -= watcher_Renamed;
+                    watcher.Error += watcher_Error;
                 }
+
+                isWatcherFailed = false;
 
                 watcher = new FileSystemWatcher(repPath);
                 watcher.Path = repPath;
@@ -74,22 +87,28 @@ namespace TickTrader.Algo.Core.Repository
                 watcher.Deleted += watcher_Deleted;
                 watcher.Renamed += watcher_Renamed;
 
-                watcher.EnableRaisingEvents = true;
-
-                string[] fileList = Directory.GetFiles(repPath, AlgoFilesPattern, SearchOption.AllDirectories);
-                foreach (string file in fileList)
+                lock (scanUpdateLockObj)
                 {
-                    if (stateControl.Current == States.Closing)
-                        break;
+                    watcher.EnableRaisingEvents = true;
 
-                    AlgoAssembly assemblyMetadata;
-                    if (!assemblies.TryGetValue(file, out assemblyMetadata))
+                    string[] fileList = Directory.GetFiles(repPath, AlgoFilesPattern, SearchOption.AllDirectories);
+                    foreach (string file in fileList)
                     {
-                        assemblyMetadata = new AlgoAssembly(file);
-                        assemblies.Add(file, assemblyMetadata);
+                        if (stateControl.Current == States.Closing)
+                            break;
+
+                        AlgoAssembly assemblyMetadata;
+                        if (!assemblies.TryGetValue(file, out assemblyMetadata))
+                        {
+                            assemblyMetadata = new AlgoAssembly(file);
+                            assemblyMetadata.Added += m => Added(m);
+                            assemblyMetadata.Removed += m => Removed(m);
+                            assemblyMetadata.Replaced += m => Replaced(m);
+                            assemblies.Add(file, assemblyMetadata);
+                        }
+                        else
+                            assemblyMetadata.CheckForChanges();
                     }
-                    else
-                        assemblyMetadata.CheckForChanges();
                 }
 
                 stateControl.PushEvent(Events.DoneScanning);
@@ -101,23 +120,31 @@ namespace TickTrader.Algo.Core.Repository
             }
         }
 
+        void watcher_Error(object sender, ErrorEventArgs e)
+        {
+            stateControl.ModifyConditions(() => isWatcherFailed = true);
+        }
+
         void watcher_Renamed(object sender, RenamedEventArgs e)
         {
-            AlgoAssembly assembly;
-            if (assemblies.TryGetValue(e.OldFullPath, out assembly))
+            lock (scanUpdateLockObj)
             {
-                assemblies.Remove(e.OldFullPath);
-                assemblies.Add(e.FullPath, assembly);
-                assembly.Rename(e.FullPath);
-            }
-            else if (assemblies.TryGetValue(e.FullPath, out assembly))
-            {
-                // I dunno
-            }
-            else
-            {
-                assembly = new AlgoAssembly(e.FullPath);
-                assemblies.Add(e.FullPath, assembly);
+                AlgoAssembly assembly;
+                if (assemblies.TryGetValue(e.OldFullPath, out assembly))
+                {
+                    assemblies.Remove(e.OldFullPath);
+                    assemblies.Add(e.FullPath, assembly);
+                    assembly.Rename(e.FullPath);
+                }
+                else if (assemblies.TryGetValue(e.FullPath, out assembly))
+                {
+                    // I dunno
+                }
+                else
+                {
+                    assembly = new AlgoAssembly(e.FullPath);
+                    assemblies.Add(e.FullPath, assembly);
+                }
             }
         }
 
@@ -127,13 +154,16 @@ namespace TickTrader.Algo.Core.Repository
 
         void watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            AlgoAssembly assembly;
-            if (assemblies.TryGetValue(e.FullPath, out assembly))
-                assembly.CheckForChanges();
-            else
+            lock (scanUpdateLockObj)
             {
-                assembly = new AlgoAssembly(e.FullPath);
-                assemblies.Add(e.FullPath, assembly);
+                AlgoAssembly assembly;
+                if (assemblies.TryGetValue(e.FullPath, out assembly))
+                    assembly.CheckForChanges();
+                else
+                {
+                    assembly = new AlgoAssembly(e.FullPath);
+                    assemblies.Add(e.FullPath, assembly);
+                }
             }
         }
 

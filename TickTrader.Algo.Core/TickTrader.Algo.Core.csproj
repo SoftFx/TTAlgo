@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlgoDataReader.cs" />
+    <Compile Include="AlgoHost.cs" />
     <Compile Include="DataSeries.cs" />
     <Compile Include="IndicatorProxy.cs" />
     <Compile Include="Lib\CircularList.cs" />

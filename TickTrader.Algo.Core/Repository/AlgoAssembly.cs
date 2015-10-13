@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -19,6 +20,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private Isolated<AlgoSandbox> isolatedSandbox;
         private StateMachine<States> stateControl = new StateMachine<States>();
+        private Dictionary<string, AlgoRepositoryItem> items = new Dictionary<string, AlgoRepositoryItem>();
         private bool isChanged;
         private Task scanTask;
 
@@ -45,6 +47,10 @@ namespace TickTrader.Algo.Core.Repository
         public string FilePath { get; private set; }
         public ScanStatuses ScanStatus { get; private set; }
         public FileInfo FileInfo { get; private set; }
+
+        public event Action<AlgoRepositoryItem> Added;
+        public event Action<AlgoRepositoryItem> Removed;
+        public event Action<AlgoRepositoryItem> Replaced;
 
         public void Dispose()
         {
@@ -79,6 +85,8 @@ namespace TickTrader.Algo.Core.Repository
                 {
                     newSandbox = new Isolated<AlgoSandbox>();
                     var metadata = newSandbox.Value.LoadAndInspect(filePath);
+
+                    Merge(metadata, newSandbox.Value);
 
                     this.FileInfo = info;
                     if (isolatedSandbox != null)
@@ -117,6 +125,39 @@ namespace TickTrader.Algo.Core.Repository
 
             if (newSandbox != null)
                 Dispose();
+        }
+
+        private void Merge(IEnumerable<AlgoInfo> newMetadata, AlgoSandbox newSandbox)
+        {
+            // upsert
+
+            foreach (AlgoInfo newInfo in newMetadata)
+            {
+                var newItem = new AlgoRepositoryItem(newSandbox, newInfo);
+
+                if (!items.ContainsKey(newInfo.Id))
+                {
+                    items.Add(newInfo.Id, newItem);
+                    Added(newItem);
+                }
+                else
+                {
+                    items[newInfo.Id] = newItem;
+                    Replaced(newItem);
+                }
+            }
+
+            // delete
+
+            var newMetadataLookup = newMetadata.ToDictionary(a => a.Id);
+            foreach (AlgoRepositoryItem item in items.Values)
+            {
+                if (!newMetadataLookup.ContainsKey(item.Descriptor.Id))
+                {
+                    items.Remove(item.Descriptor.Id);
+                    Removed(item);
+                }
+            }
         }
     }
 }

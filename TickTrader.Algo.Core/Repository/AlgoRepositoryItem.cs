@@ -9,9 +9,15 @@ namespace TickTrader.Algo.Core.Repository
 {
     public class AlgoRepositoryItem
     {
-        internal AlgoRepositoryItem(AlgoAssembly assembly, AlgoInfo info)
-        {
+        private AlgoSandbox sandbox;
 
+        internal AlgoRepositoryItem(AlgoSandbox sandbox, AlgoInfo info)
+        {
+            this.sandbox = sandbox;
+            this.Descriptor = info;
         }
+
+        public string Id { get { return Descriptor.Id; } }
+        public AlgoInfo Descriptor { get; private set; }
     }
 }

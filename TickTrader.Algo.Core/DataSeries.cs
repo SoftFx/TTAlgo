@@ -7,20 +7,12 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public static class DataSeries
+    internal interface IManagedDataSeries
     {
-        public static Api.DataSeries<T> Create<T>(IList<T> dataSrc)
-        {
-            return new ListBasedDataSeries<T>(dataSrc);
-        }
-
-        public static Api.DataSeries<T> CreateReadonly<T>(IList<T> dataSrc)
-        {
-            return new ListBasedReadonlyDataSeries<T>(dataSrc);
-        }
+        void Extend();
     }
 
-    internal class ListBasedDataSeries<T> : Api.DataSeries<T>
+    internal class ListBasedDataSeries<T> : Api.DataSeries<T>, IManagedDataSeries
     {
         private static readonly T Default;
 
@@ -34,10 +26,10 @@ namespace TickTrader.Algo.Core
                 Default = default(T);
         }
 
-        private IList<T> dataSrc;
+        private ISeriesAccessor<T> dataSrc;
         private int virtualSize;
 
-        public ListBasedDataSeries(IList<T> dataSrc)
+        public ListBasedDataSeries(ISeriesAccessor<T> dataSrc)
         {
             if (dataSrc == null)
                 throw new ArgumentNullException("dataSrc");
@@ -48,8 +40,6 @@ namespace TickTrader.Algo.Core
         public void Extend()
         {
             virtualSize++;
-            if (dataSrc.Count < virtualSize)
-                throw new InvalidOperationException("Cannot extend. Underlying list must be extended first.");
         }
 
         private bool IsInBoundaries(int index)
@@ -93,7 +83,7 @@ namespace TickTrader.Algo.Core
 
     internal class ListBasedDataSeries : ListBasedDataSeries<double>, Api.DataSeries
     {
-        public ListBasedDataSeries(IList<double> dataSrc)
+        public ListBasedDataSeries(ISeriesAccessor<double> dataSrc)
             : base(dataSrc)
         {
         }
@@ -101,7 +91,7 @@ namespace TickTrader.Algo.Core
 
     internal class ListBasedReadonlyDataSeries<T> : ListBasedDataSeries<T>
     {
-        public ListBasedReadonlyDataSeries(IList<T> dataSrc)
+        public ListBasedReadonlyDataSeries(ISeriesAccessor<T> dataSrc)
             : base(dataSrc)
         {
         }
@@ -110,6 +100,37 @@ namespace TickTrader.Algo.Core
         {
             get { return base[index]; }
             set { /* Ignore */ }
+        }
+    }
+
+    public interface ISeriesAccessor<T>
+    {
+        T this[int index] { get; set; }
+    }
+
+    public class SeriesListAdapter<T> : ISeriesAccessor<T>
+    {
+        private IList<T> list;
+        private T defaultVal;
+
+        public SeriesListAdapter(IList<T> list, T defaultVal = default(T))
+        {
+            this.list = list;
+            this.defaultVal = defaultVal;
+        }
+
+        public T this[int index]
+        {
+            get
+            {
+                if (index >= list.Count)
+                    return default(T);
+                return list[index];
+            }
+            set
+            {
+                list[index] = value;
+            }
         }
     }
 }
