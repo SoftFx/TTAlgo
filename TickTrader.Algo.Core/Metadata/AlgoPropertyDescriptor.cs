@@ -94,7 +94,10 @@ namespace TickTrader.Algo.Core.Metadata
             var propertyType = this.Info.PropertyType;
 
             if (propertyType == typeof(DataSeries))
+            {
                 DatdaSeriesBaseType = typeof(double);
+                IsShortDefinition = true;
+            }
             else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
                 DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
             else
@@ -110,6 +113,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public Type DatdaSeriesBaseType { get; private set; }
+        public bool IsShortDefinition { get; private set; }
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
     }
@@ -125,7 +129,10 @@ namespace TickTrader.Algo.Core.Metadata
             var propertyType = this.Info.PropertyType;
 
             if (propertyType == typeof(DataSeries))
+            {
                 DatdaSeriesBaseType = typeof(double);
+                IsShortDefinition = true;
+            }
             else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
                 DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
             else
@@ -141,6 +148,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public Type DatdaSeriesBaseType { get; private set; }
+        public bool IsShortDefinition { get; private set; }
         public OutputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
     }

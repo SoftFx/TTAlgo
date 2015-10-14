@@ -38,6 +38,7 @@ namespace TickTrader.BotTerminal
         private readonly ConnectionModel connection;
         private readonly TriggeredActivity updateActivity;
         private AlgoRepositoryModel repository;
+        private Bar[] rawData;
 
         public ChartViewModel(string symbol, ConnectionModel connection, AlgoRepositoryModel repository)
         {
@@ -47,6 +48,8 @@ namespace TickTrader.BotTerminal
             this.repository = repository;
 
             this.updateActivity = new TriggeredActivity(Update);
+
+            this.Indicators = new BindableCollection<IndicatorBuilderModel>();
 
             UpdateSeriesStyle();
 
@@ -142,14 +145,31 @@ namespace TickTrader.BotTerminal
 
         public BindableCollection<AlgoRepositoryItem> RepositoryIndicators { get { return repository.Indicators; } }
 
-        public BindableCollection<IndicatorModel> Indicators { get; private set; }
+        public BindableCollection<IndicatorBuilderModel> Indicators { get; private set; }
 
         #endregion
 
         public void OpenIndicator(object descriptorObj)
         {
-            AlgoRepositoryItem metadata = (AlgoRepositoryItem)descriptorObj;
-            Indicators.Add(new IndicatorModel(metadata, null));
+            try
+            {
+                AlgoRepositoryItem metadata = (AlgoRepositoryItem)descriptorObj;
+                var model = new IndicatorBuilderModel(metadata);
+                foreach (var output in model.Series)
+                {
+                    FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
+                    model.Init(rawData);
+                    chartSeries.DataSeries = output;
+                    Series.Add(chartSeries);
+                }
+                Indicators.Add(model);
+                //if (this.rawData != null)
+                    //model.Init(rawData);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
         }
 
         private Task connection_Disconnected(object sender)
@@ -178,11 +198,16 @@ namespace TickTrader.BotTerminal
 
                 var newData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in response.Bars.Reverse())
+                this.rawData = response.Bars.Reverse().ToArray();
+
+                foreach (var bar in rawData)
                     newData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
-                
+                foreach (var indicator in this.Indicators)
+                    indicator.Init(rawData);
+
                 this.Data = newData;
+                
                 if (newData.Count > 0)
                 {
                     this.VisibleRange.Max = newData.Count - 1;

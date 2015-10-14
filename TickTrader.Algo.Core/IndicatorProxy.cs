@@ -12,11 +12,6 @@ namespace TickTrader.Algo.Core
     {
         private Api.Indicator instance;
 
-        public IndicatorProxy(string descriptorId, IAlgoContext context)
-            : this(AlgoDescriptor.Get(descriptorId), context)
-        {
-        }
-
         internal IndicatorProxy(AlgoDescriptor descriptor, IAlgoContext context)
         {
             if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
@@ -43,8 +38,8 @@ namespace TickTrader.Algo.Core
 
             // init outputs
 
-            foreach (var inputProperty in descriptor.Inputs)
-                inputProperty.Set(instance, context.GetInputSeries(inputProperty.Id));
+            foreach (var outputProperty in descriptor.Outputs)
+                outputProperty.Set(instance, context.GetOutputSeries(outputProperty.Id));
         }
 
         public void InvokeCalculate()

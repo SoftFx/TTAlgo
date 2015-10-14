@@ -54,6 +54,13 @@ namespace TickTrader.Algo.Core.Lib
             return result;
         }
 
+        public void Clear()
+        {
+            this.Count = 0;
+            begin = 0;
+            end = -1;
+        }
+
         private void Expand()
         {
             int expandBy = Capacity > 0 ? Capacity : 4;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,15 +13,11 @@ namespace TickTrader.Algo.Core.Repository
     {
         public IEnumerable<AlgoInfo> LoadAndInspect(string filePath)
         {
-            Assembly algoAssembly = Assembly.LoadFile(filePath);
+            byte[] assemblyBytes = File.ReadAllBytes(filePath);
+            Assembly algoAssembly = Assembly.Load(assemblyBytes);
             var metadata = AlgoDescriptor.InspectAssembly(algoAssembly);
             return metadata.Select(d => d.GetInteropCopy()).ToList();
         }
-
-        //public IndicatorProxy CreateIndicatorProxy(string algoId, AlgoHost data, IEnumerable<AlgoProxyParam> parameters)
-        //{
-        //    return new IndicatorProxy(algoId, data, parameters);
-        //}
 
         public IndicatorBuilder CreateIndicator(string id)
         {

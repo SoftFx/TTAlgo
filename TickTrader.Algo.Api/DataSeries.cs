@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Api
     public interface DataSeries<T> : IEnumerable<T>
     {
         T this[int index] { get; set; }
-        long Count { get; }
+        int Count { get; }
     }
 
     public interface DataSeries : DataSeries<double>

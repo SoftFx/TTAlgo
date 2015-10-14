@@ -3,134 +3,148 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal interface IManagedDataSeries
+    internal interface IDataSeries
     {
-        void Extend();
+        void Reset();
     }
 
-    internal class ListBasedDataSeries<T> : Api.DataSeries<T>, IManagedDataSeries
+    internal interface IInputDataSeries : IDataSeries
     {
-        private static readonly T Default;
+        void ReRead();
+        void ReadNext();
+    }
 
-        static ListBasedDataSeries()
-        {
-            if (typeof(T) == typeof(double))
-                Default = (T)(object)double.NaN;
-            else if (typeof(T) == typeof(float))
-                Default = (T)(object)float.NaN;
-            else
-                Default = default(T);
-        }
+    internal interface IOutputDataSeries : IDataSeries
+    {
+        void ExtendBuffer();
+    }
 
-        private ISeriesAccessor<T> dataSrc;
-        private int virtualSize;
+    internal abstract class DataSeriesBase<T> : Api.DataSeries<T>, IDataSeries
+    {
+        private List<T> buffer = new List<T>();
 
-        public ListBasedDataSeries(ISeriesAccessor<T> dataSrc)
-        {
-            if (dataSrc == null)
-                throw new ArgumentNullException("dataSrc");
-
-            this.dataSrc = dataSrc;
-        }
-
-        public void Extend()
-        {
-            virtualSize++;
-        }
-
-        private bool IsInBoundaries(int index)
-        {
-            return index < 0 || index >= virtualSize;
-        }
-
-        private int GetRealIndex(int virtualIndex)
-        {
-            return virtualSize - virtualIndex - 1;
-        }
+        protected List<T> Buffer { get { return buffer; } }
 
         public virtual T this[int index]
         {
             get
             {
-                if (IsInBoundaries(index))
+                if (IsOutOfBoundaries(index))
                     return default(T);
-                return dataSrc[GetRealIndex(index)];
+                return buffer[GetRealIndex(index)];
             }
             set
             {
-                if (IsInBoundaries(index))
-                    dataSrc[GetRealIndex(index)] = value;
+                if (!IsOutOfBoundaries(index))
+                {
+                    int readlIndex = GetRealIndex(index);
+                    buffer[readlIndex] = value;
+                    OnWrite(value, readlIndex);
+                }
             }
         }
 
-        public long Count { get { return virtualSize; } }
+        protected virtual void OnWrite(T data, int index) { }
+        protected virtual void OnReset() { }
+
+        public int Count { get { return buffer.Count; } }
+
+        private int GetRealIndex(int virtualIndex)
+        {
+            return Count - virtualIndex - 1;
+        }
+
+        private bool IsOutOfBoundaries(int index)
+        {
+            return index < 0 || index >= Count;
+        }
 
         public IEnumerator<T> GetEnumerator()
         {
-            for (int i = virtualSize - 1; i >= 0; i++)
-                yield return dataSrc[i];
+            for (int i = Count - 1; i >= 0; i--)
+            {
+                var val = buffer[i];
+                yield return val;
+            }
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
-    }
 
-    internal class ListBasedDataSeries : ListBasedDataSeries<double>, Api.DataSeries
-    {
-        public ListBasedDataSeries(ISeriesAccessor<double> dataSrc)
-            : base(dataSrc)
+        void IDataSeries.Reset()
         {
+            buffer.Clear();
+            OnReset();
         }
     }
 
-    internal class ListBasedReadonlyDataSeries<T> : ListBasedDataSeries<T>
+    internal class InputDataSeries<T> : DataSeriesBase<T>, IInputDataSeries
     {
-        public ListBasedReadonlyDataSeries(ISeriesAccessor<T> dataSrc)
-            : base(dataSrc)
+        private DataSeriesReader<T> reader;
+
+        public InputDataSeries(DataSeriesReader<T> reader)
         {
+            this.reader = reader;
         }
 
-        public override T this[int index]
+        void IInputDataSeries.ReRead()
         {
-            get { return base[index]; }
-            set { /* Ignore */ }
+            if (Count > 0)
+                Buffer[Count - 1] = reader.ReRead();
+        }
+
+        void IInputDataSeries.ReadNext()
+        {
+            Buffer.Add(reader.ReadNext());
+        }
+
+        protected override void OnReset()
+        {
+            reader.Reset();
         }
     }
 
-    public interface ISeriesAccessor<T>
+    internal class InputDataSeries : InputDataSeries<double>, Api.DataSeries
     {
-        T this[int index] { get; set; }
+        public InputDataSeries(DataSeriesReader<double> reader) : base(reader) { }
     }
 
-    public class SeriesListAdapter<T> : ISeriesAccessor<T>
+    internal class OutputDataSeries<T> : DataSeriesBase<T>, IOutputDataSeries
     {
-        private IList<T> list;
+        private DataSeriesWriter<T> writer;
         private T defaultVal;
 
-        public SeriesListAdapter(IList<T> list, T defaultVal = default(T))
+        public OutputDataSeries(DataSeriesWriter<T> writer, T defaultVal = default(T))
         {
-            this.list = list;
+            this.writer = writer;
             this.defaultVal = defaultVal;
         }
 
-        public T this[int index]
+        void IOutputDataSeries.ExtendBuffer()
         {
-            get
-            {
-                if (index >= list.Count)
-                    return default(T);
-                return list[index];
-            }
-            set
-            {
-                list[index] = value;
-            }
+            Buffer.Add(defaultVal);
         }
+
+        protected override void OnWrite(T data, int index)
+        {
+            writer.WriteAt(index, data);
+        }
+
+        protected override void OnReset()
+        {
+            writer.Reset();
+        }
+    }
+
+    internal class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries
+    {
+        public OutputDataSeries(DataSeriesWriter<double> writer) : base(writer) { }
     }
 }
