@@ -17,7 +17,13 @@ namespace TickTrader.Algo.Core.Repository
             this.Descriptor = info;
         }
 
+        public IndicatorBuilder CreateIndicatorBuilder()
+        {
+            return sandbox.CreateIndicator(Id);
+        }
+
         public string Id { get { return Descriptor.Id; } }
+        public string DisplayName { get { return Descriptor.DisplayName; } }
         public AlgoInfo Descriptor { get; private set; }
     }
 }

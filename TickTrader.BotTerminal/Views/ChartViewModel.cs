@@ -140,9 +140,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public BindableCollection<AlgoRepositoryItem> Indicators { get { return repository.Indicators; } }
+        public BindableCollection<AlgoRepositoryItem> RepositoryIndicators { get { return repository.Indicators; } }
+
+        public BindableCollection<IndicatorModel> Indicators { get; private set; }
 
         #endregion
+
+        public void OpenIndicator(object descriptorObj)
+        {
+            AlgoRepositoryItem metadata = (AlgoRepositoryItem)descriptorObj;
+            Indicators.Add(new IndicatorModel(metadata, null));
+        }
 
         private Task connection_Disconnected(object sender)
         {

@@ -90,10 +90,7 @@ namespace TickTrader.Algo.Core.Repository
 
                     this.FileInfo = info;
                     if (isolatedSandbox != null)
-                    {
-                        // TO DO : fire event
                         isolatedSandbox.Dispose();
-                    }
 
                     isolatedSandbox = newSandbox;
                     ScanStatus = ScanStatuses.Scanned;
@@ -122,9 +119,6 @@ namespace TickTrader.Algo.Core.Repository
                 stateControl.PushEvent(Events.LoadFailed);
                 Debug.WriteLine(ex);
             }
-
-            if (newSandbox != null)
-                Dispose();
         }
 
         private void Merge(IEnumerable<AlgoInfo> newMetadata, AlgoSandbox newSandbox)

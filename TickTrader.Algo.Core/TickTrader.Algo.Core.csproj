@@ -39,7 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlgoDataReader.cs" />
     <Compile Include="AlgoHost.cs" />
     <Compile Include="DataSeries.cs" />
     <Compile Include="IndicatorBuilder.cs" />

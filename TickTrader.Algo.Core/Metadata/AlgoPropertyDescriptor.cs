@@ -9,7 +9,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core.Metadata
 {
     public enum AlgoPropertyTypes { Unknown, Parameter, InputSeries, OutputSeries }
-    public enum AlgoPropertyErrors { SetIsNotPublic, GetIsNotPublic, MultipleAttributes, OutputIsOnlyForIndicators, InputIsOnlyForIndicators }
+    public enum AlgoPropertyErrors { SetIsNotPublic, GetIsNotPublic, MultipleAttributes, OutputIsOnlyForIndicators, InputIsOnlyForIndicators, InputIsNotDataSeries, OutputIsNotDataSeries }
 
     internal class AlgoPropertyDescriptor
     {
@@ -42,13 +42,18 @@ namespace TickTrader.Algo.Core.Metadata
             info.Error = this.Error;
         }
 
-        protected virtual AlgoPropertyErrors? Validate()
+        protected void Validate()
         {
             if (!Info.SetMethod.IsPublic)
-                return AlgoPropertyErrors.SetIsNotPublic;
+                SetError(AlgoPropertyErrors.SetIsNotPublic);
             else if (!Info.GetMethod.IsPublic)
-                return AlgoPropertyErrors.GetIsNotPublic;
-            return null;
+                SetError(AlgoPropertyErrors.GetIsNotPublic);
+        }
+
+        protected void SetError(AlgoPropertyErrors error)
+        {
+            if (this.Error == null)
+                this.Error = error;
         }
 
         internal void Set(Api.Algo instance, object value)
@@ -63,7 +68,7 @@ namespace TickTrader.Algo.Core.Metadata
             : base(classMetadata, propertyInfo)
         {
             Attribute = (ParameterAttribute)attribute;
-            Error = Validate();
+            Validate();
         }
 
         public override AlgoPropertyInfo GetInteropCopy()
@@ -84,16 +89,27 @@ namespace TickTrader.Algo.Core.Metadata
             : base(classMetadata, propertyInfo)
         {
             Attribute = (InputAttribute)attribute;
-            Error = Validate();
+            Validate();
+
+            var propertyType = this.Info.PropertyType;
+
+            if (propertyType == typeof(DataSeries))
+                DatdaSeriesBaseType = typeof(double);
+            else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
+                DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
+            else
+                SetError(Metadata.AlgoPropertyErrors.InputIsNotDataSeries);
         }
 
         public override AlgoPropertyInfo GetInteropCopy()
         {
             InputInfo copy = new InputInfo();
             FillCommonProperties(copy);
+            copy.DataSeriesBaseTypeFullName = DatdaSeriesBaseType.FullName;
             return copy;
         }
 
+        public Type DatdaSeriesBaseType { get; private set; }
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
     }
@@ -104,16 +120,27 @@ namespace TickTrader.Algo.Core.Metadata
             : base(classMetadata, propertyInfo)
         {
             Attribute = (OutputAttribute)attribute;
-            Error = Validate();
+             Validate();
+
+            var propertyType = this.Info.PropertyType;
+
+            if (propertyType == typeof(DataSeries))
+                DatdaSeriesBaseType = typeof(double);
+            else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
+                DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
+            else
+                SetError(Metadata.AlgoPropertyErrors.OutputIsNotDataSeries);
         }
 
         public override AlgoPropertyInfo GetInteropCopy()
         {
             OutputInfo copy = new OutputInfo();
             FillCommonProperties(copy);
+            copy.DataSeriesBaseTypeFullName = DatdaSeriesBaseType.FullName;
             return copy;
         }
 
+        public Type DatdaSeriesBaseType { get; private set; }
         public OutputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
     }

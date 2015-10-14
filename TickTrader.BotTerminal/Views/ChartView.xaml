@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     
@@ -48,6 +49,8 @@
                             </DataTemplate>
                         </l:MenuItemSelector.ItemTemplate>-->
                     </l:MenuItemSelector>
+                    <MenuItem Header="Indicators" ItemsSource="{Binding RepositoryIndicators}" DisplayMemberPath="DisplayName"
+                              cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
                 </ContextMenu>
             </s:SciChartSurface.ContextMenu>
 

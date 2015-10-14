@@ -6,13 +6,19 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
-    public class IndicatorBuilder
+    public class IndicatorBuilder : MarshalByRefObject
     {
         private IndicatorProxy proxy;
+        private string indicatorId;
 
         public IndicatorBuilder(string indicatorId)
         {
             this.Host = new AlgoHost();
+            this.indicatorId = indicatorId;
+        }
+
+        public void Init()
+        {
             this.proxy = new IndicatorProxy(indicatorId, Host);
         }
 

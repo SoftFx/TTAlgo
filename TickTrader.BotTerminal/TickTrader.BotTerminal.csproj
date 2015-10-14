@@ -129,7 +129,10 @@
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
+    <Compile Include="Model\ChartDataModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
+    <Compile Include="Model\IndicatorModel.cs" />
+    <Compile Include="Model\OhlcDataSeries.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />

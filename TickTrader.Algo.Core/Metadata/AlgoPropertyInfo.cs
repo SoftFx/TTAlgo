@@ -28,11 +28,13 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class InputInfo : AlgoPropertyInfo
     {
+        public string DataSeriesBaseTypeFullName { get; set; }
     }
 
     [Serializable]
     public class OutputInfo : AlgoPropertyInfo
     {
+        public string DataSeriesBaseTypeFullName { get; set; }
     }
 
 }
