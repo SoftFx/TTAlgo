@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         {
             Execute.OnUIThread(() =>
             {
-                int inIndex = Indicators.IndexOf(item);
+                int inIndex = Indicators.IndexOf(i => i.Id == item.Id);
 
                 if (item.Descriptor.AlgoLogicType == AlgoTypes.Indicator)
                 {
@@ -64,7 +64,6 @@ namespace TickTrader.BotTerminal
                 }
                 else if (inIndex >= 0)
                     Indicators.RemoveAt(inIndex);
-
 
                 int index = algoItems.FindIndex(i => i.Id == item.Id);
                 if (index >= 0)

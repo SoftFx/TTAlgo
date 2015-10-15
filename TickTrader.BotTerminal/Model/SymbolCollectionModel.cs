@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
 
         private async void Stop()
         {
-            await updateSubscriptionActivity.Abort();            
+            await updateSubscriptionActivity.Stop();            
             stateControl.PushEvent(Events.DoneStopping);
         }
 

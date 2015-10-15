@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal.Lib
         protected Func<CancellationToken, Task> ActivityFactory { get; private set; }
         public Task Task { get; protected set; }
 
-        public async Task Abort()
+        public async Task Stop()
         {
             if (Task != null)
             {
@@ -27,6 +27,11 @@ namespace TickTrader.BotTerminal.Lib
                 await Task;
                 Task = null;
             }
+        }
+
+        public void Abrot()
+        {
+            cancelSignal.Cancel();
         }
     }
 

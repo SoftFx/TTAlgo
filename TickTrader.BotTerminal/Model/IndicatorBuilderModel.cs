@@ -18,13 +18,20 @@ namespace TickTrader.BotTerminal
         private IndicatorBuilder builder;
         private TriggeredActivity buildActivity;
         private Bar[] currentData;
+        private bool restarting;
 
         public IndicatorBuilderModel(AlgoRepositoryItem indicatorMetadata)
         {
+            AlgoId = indicatorMetadata.Id;
             Series = new List<XyDataSeries<DateTime, double>>();
-            builder = indicatorMetadata.CreateIndicatorBuilder();
+            buildActivity = new TriggeredActivity(c => BuildIndicator(builder, c, currentData));
 
-            buildActivity = new TriggeredActivity(c => BuildIndicator(c, currentData));
+            Init(indicatorMetadata);
+        }
+
+        private void Init(AlgoRepositoryItem indicatorMetadata)
+        {
+            builder = indicatorMetadata.CreateIndicatorBuilder();
 
             foreach (var input in indicatorMetadata.Descriptor.Inputs)
             {
@@ -41,7 +48,7 @@ namespace TickTrader.BotTerminal
                 if (output.DataSeriesBaseTypeFullName == "System.Double")
                 {
                     //builder.Host.AddInput<double>(input.Id, new BarDoubleReader(b => b.Open, data));
-                    XyDataSeries<DateTime, double> outputChartSeries = new XyDataSeries<DateTime,double>();
+                    XyDataSeries<DateTime, double> outputChartSeries = new XyDataSeries<DateTime, double>();
                     builder.Host.AddOutput(output.Id, new XySeriesWriter(this, outputChartSeries));
                     Series.Add(outputChartSeries);
                 }
@@ -52,43 +59,56 @@ namespace TickTrader.BotTerminal
             builder.Init();
         }
 
+        public string AlgoId { get; private set; }
         public Bar[] Data { get { return currentData; } }
+        public bool IsRestarting { get { return restarting; } }
 
-        public void Init(Bar[] data)
+        public void SetData(Bar[] data)
         {
             this.currentData = data;
+            this.restarting = true;
             buildActivity.Trigger(true);
+            Series.ForEach(s => s.Clear());
         }
 
-        private async Task BuildIndicator(System.Threading.CancellationToken cToken, Bar[] data)
+        private async Task BuildIndicator(IndicatorBuilder builder, System.Threading.CancellationToken cToken, Bar[] data)
         {
             builder.Reset();
 
+            restarting = false;
+
+            if (data == null)
+                return;
+
             await Task.Factory.StartNew(() =>
                 {
-                    for (int i = 0; i < data.Length; i++)
+                    if (cToken.IsCancellationRequested)
+                        return;
+
+                    try
                     {
-                        if (cToken.IsCancellationRequested)
-                            break;
-
-                        builder.Host.ReadNext();
-
-                        try
+                        for (int i = 0; i < data.Length; i++)
                         {
+                            builder.Host.ReadNext();
                             builder.InvokeCalculate();
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine(ex);
-                        }
 
-                        if (cToken.IsCancellationRequested)
-                            break;
+                            if (cToken.IsCancellationRequested)
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(ex);
                     }
                 });
         }
 
-        public List<XyDataSeries<DateTime, double>> Series { get; private set; } 
+        public List<XyDataSeries<DateTime, double>> Series { get; private set; }
+
+        public void Dispose()
+        {
+            buildActivity.Abrot();
+        }
     }
 
     internal class BarDoubleReader : MarshalByRefObject, DataSeriesReader<double>
@@ -140,7 +160,11 @@ namespace TickTrader.BotTerminal
             DateTime barTime = inputColelction[index].From;
 
             if (outputCollection.Count == index)
-                Execute.OnUIThread(() => outputCollection.Append(barTime, val));
+                Execute.OnUIThread(() =>
+                    {
+                        if (!indicator.IsRestarting)
+                            outputCollection.Append(barTime, val);
+                    });
         }
 
         public void Reset()

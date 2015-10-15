@@ -13,8 +13,20 @@ namespace TickTrader.Algo.Core.Repository
     {
         public IEnumerable<AlgoInfo> LoadAndInspect(string filePath)
         {
+            string directory = Path.GetDirectoryName(filePath);
+            string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
+            string pdbPath = Path.Combine(directory, pdbFileName);
+
             byte[] assemblyBytes = File.ReadAllBytes(filePath);
-            Assembly algoAssembly = Assembly.Load(assemblyBytes);
+            byte[] symbolsBytes = null;
+
+            try
+            {
+                symbolsBytes = File.ReadAllBytes(pdbPath);
+            }
+            catch (FileNotFoundException) { }
+
+            Assembly algoAssembly = Assembly.Load(assemblyBytes, symbolsBytes);
             var metadata = AlgoDescriptor.InspectAssembly(algoAssembly);
             return metadata.Select(d => d.GetInteropCopy()).ToList();
         }

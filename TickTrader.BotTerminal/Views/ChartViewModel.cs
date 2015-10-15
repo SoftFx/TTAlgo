@@ -56,6 +56,9 @@ namespace TickTrader.BotTerminal
             connection.Connected += connection_Connected;
             connection.Disconnected += connection_Disconnected;
 
+            repository.Removed += repository_Removed;
+            repository.Replaced += repository_Replaced;
+
             if (connection.State.Current == ConnectionModel.States.Online)
                 updateActivity.Trigger();
         }
@@ -155,16 +158,8 @@ namespace TickTrader.BotTerminal
             {
                 AlgoRepositoryItem metadata = (AlgoRepositoryItem)descriptorObj;
                 var model = new IndicatorBuilderModel(metadata);
-                foreach (var output in model.Series)
-                {
-                    FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-                    model.Init(rawData);
-                    chartSeries.DataSeries = output;
-                    Series.Add(chartSeries);
-                }
-                Indicators.Add(model);
-                //if (this.rawData != null)
-                    //model.Init(rawData);
+                model.SetData(rawData);
+                AddIndicator(model);
             }
             catch (Exception ex)
             {
@@ -172,14 +167,76 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void AddIndicator(IndicatorBuilderModel indicator)
+        {
+            AddOutputs(indicator);
+            Indicators.Add(indicator);
+        }
+
+        private void RemoveIndicator(IndicatorBuilderModel indicator)
+        {
+            RemoveOutputs(indicator);
+            Indicators.Remove(indicator);
+        }
+
+        private void ReplaceIndicator(int index, IndicatorBuilderModel newIndicator)
+        {
+            RemoveOutputs(Indicators[index]);
+            Indicators[index] = newIndicator;
+            AddOutputs(newIndicator);
+        }
+
+        private void AddOutputs(IndicatorBuilderModel indicator)
+        {
+            foreach (var output in indicator.Series)
+            {
+                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
+                chartSeries.DataSeries = output;
+                Series.Add(chartSeries);
+            }
+        }
+
+        private void RemoveOutputs(IndicatorBuilderModel indicator)
+        {
+            foreach (var output in indicator.Series)
+            {
+                var seriesIndex = Series.IndexOf(s => s.DataSeries == output);
+                if (seriesIndex > 0)
+                    Series.RemoveAt(seriesIndex);
+            }
+        }
+
         private Task connection_Disconnected(object sender)
         {
-            return updateActivity.Abort();
+            return updateActivity.Stop();
         }
 
         private void connection_Connected()
         {
             updateActivity.Trigger(true);
+        }
+
+        void repository_Removed(AlgoRepositoryItem item)
+        {
+            foreach (var indicator in Indicators)
+            {
+                if (indicator.AlgoId == item.Id)
+                    indicator.Dispose();
+            }
+        }
+
+        void repository_Replaced(AlgoRepositoryItem item)
+        {
+            for (int i = 0; i < Indicators.Count; i++)
+            {
+                if (Indicators[i].AlgoId == item.Id)
+                {
+                    var newModel = new IndicatorBuilderModel(item);
+                    if (rawData != null)
+                        newModel.SetData(rawData);
+                    ReplaceIndicator(i, newModel);
+                }
+            }
         }
 
         private async Task Update(CancellationToken cToken)
@@ -204,7 +261,7 @@ namespace TickTrader.BotTerminal
                     newData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
                 foreach (var indicator in this.Indicators)
-                    indicator.Init(rawData);
+                    indicator.SetData(rawData);
 
                 this.Data = newData;
                 

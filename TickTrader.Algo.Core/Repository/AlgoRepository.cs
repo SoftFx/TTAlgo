@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core.Repository
 {
     public class AlgoRepository : IDisposable
     {
-        private const string AlgoFilesPattern = "*.ttalgo";
+        private const string AlgoFilesPattern = "*.dll";
 
         public enum States { Created, Scanning, Waiting, Watching, Closing, Closed }
         public enum Events { Start, DoneScanning, ScanFailed, NextAttempt, CloseRequested, DoneClosing }

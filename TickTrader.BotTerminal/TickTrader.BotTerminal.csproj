@@ -122,6 +122,7 @@
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
+    <Compile Include="Lib\CollectionsExt.cs" />
     <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
