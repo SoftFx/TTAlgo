@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class AlgoHost : MarshalByRefObject, IAlgoContext
+    public class AlgoHost : NoTimeoutByRefObject, IAlgoContext
     {
         private AlgoDescriptor descriptor;
         private Dictionary<string, object> parameters = new Dictionary<string, object>();

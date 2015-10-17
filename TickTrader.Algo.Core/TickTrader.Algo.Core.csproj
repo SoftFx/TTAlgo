@@ -45,6 +45,7 @@
     <Compile Include="IndicatorProxy.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
+    <Compile Include="Lib\NoTimeoutByRefObject.cs" />
     <Compile Include="Metadata\AlgoDescriptor.cs" />
     <Compile Include="Metadata\AlgoInfo.cs" />
     <Compile Include="Metadata\AlgoPropertyDescriptor.cs" />

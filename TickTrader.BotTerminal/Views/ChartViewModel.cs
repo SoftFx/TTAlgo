@@ -246,6 +246,9 @@ namespace TickTrader.BotTerminal
 
             try
             {
+                foreach (var indicator in this.Indicators)
+                    indicator.SetData(null);
+
                 var response = await Task.Factory.StartNew(
                     () => connection.FeedProxy.Server.GetHistoryBars(
                         Symbol, DateTime.Now + TimeSpan.FromDays(1),

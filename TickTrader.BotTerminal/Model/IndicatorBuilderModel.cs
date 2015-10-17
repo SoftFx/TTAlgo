@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.BotTerminal.Lib;
 
@@ -111,7 +112,7 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    internal class BarDoubleReader : MarshalByRefObject, DataSeriesReader<double>
+    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
     {
         private int index;
         private Bar[] data;
@@ -142,7 +143,7 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    internal class XySeriesWriter : MarshalByRefObject, DataSeriesWriter<double>
+    internal class XySeriesWriter : NoTimeoutByRefObject, DataSeriesWriter<double>
     {
         private Bar[] inputColelction;
         private XyDataSeries<DateTime, double> outputCollection;
