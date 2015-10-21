@@ -6,7 +6,8 @@
     <SolidColorBrush x:Key="ShellPanel_BackgroundBrush" Color="#292929"/>
     <SolidColorBrush x:Key="ShellPanel_ItemBackgroundBrush" Color="#3B3B3B"/>
     <SolidColorBrush x:Key="ShellPanel_TabBackgroundBrush" Color="Transparent"/>
-    <SolidColorBrush x:Key="ShellPanel_TabHoverBrush" Color="#313131"/>
+    <SolidColorBrush x:Key="ShellPanel_SelectedTabHoverBrush" Color="#464646"/>
+    <SolidColorBrush x:Key="ShellPanel_NotSelectedTabHoverBrush" Color="#313131"/>
     <SolidColorBrush x:Key="ShellPanel_ItemHoverBackgroundBrush" Color="#525252"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarBrush" Color="#808080"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarHoverBrush" Color="#CCCCCC"/>
@@ -20,6 +21,10 @@
     <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="#747474"/>
     <SolidColorBrush x:Key="Shell_MediateForeground" Color="#B5B5B5"/>
+
+    <SolidColorBrush x:Key="Dialog_Background" Color="#666666"/>
+    <SolidColorBrush x:Key="Dialog_ControlBackground" Color="#292929"/>
+    <SolidColorBrush x:Key="Dialog_PanelBackground" Color="#B5B5B5"/>
 
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>

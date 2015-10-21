@@ -9,18 +9,25 @@ namespace TickTrader.BotTerminal
 {
     internal class ChartCollectionViewModel : Conductor<IScreen>.Collection.OneActive
     {
+        private IWindowManager wndManager;
         private ConnectionModel model;
         private AlgoRepositoryModel repository;
 
-        public ChartCollectionViewModel(ConnectionModel model, AlgoRepositoryModel repository)
+        public ChartCollectionViewModel(ConnectionModel model, AlgoRepositoryModel repository, IWindowManager wndManager)
         {
             this.model = model;
             this.repository = repository;
+            this.wndManager = wndManager;
         }
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, model, repository));
+            ActivateItem(new ChartViewModel(symbol, model, repository, wndManager));
+        }
+
+        public void CloseItem(IScreen chart)
+        {
+            chart.TryClose();
         }
     }
 }

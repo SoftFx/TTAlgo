@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,14 +11,17 @@ namespace TickTrader.BotTerminal
     internal class ShellViewModel : Screen
     {
         private TraderModel model = new TraderModel();
+        private WindowManager wndManager;
         private AlgoRepositoryModel algoRep = new AlgoRepositoryModel();
 
         public ShellViewModel()
         {
+            wndManager = new MdiWindowManager(this);
+
             SymbolList = new SymbolListViewModel(model.Symbols);
             PositionList = new PositionListViewModel(model.Account);
             OrderList = new OrderListViewModel(model.Account);
-            Charts = new ChartCollectionViewModel(model.Connection, algoRep);
+            Charts = new ChartCollectionViewModel(model.Connection, algoRep, wndManager);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);

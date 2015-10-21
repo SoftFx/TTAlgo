@@ -1,0 +1,13 @@
+﻿<Window x:Class="TickTrader.BotTerminal.IndicatorSetupView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        Title="IndicatorSetupView"
+        Height="300" Width="300"
+        Style="{StaticResource Dialog_Style}">
+    <Grid>
+        <l:FlatButton x:Name="Ok" Content="Ok" MinWidth="75" VerticalAlignment="Center" HorizontalAlignment="Center"
+                      Background="Red"
+                      HighlightBackground="Green"/>
+    </Grid>
+</Window>

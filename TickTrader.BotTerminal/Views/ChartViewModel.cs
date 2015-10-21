@@ -16,7 +16,7 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    class ChartViewModel : Screen
+    class ChartViewModel : Conductor<Screen>
     {
         private static readonly BarPeriod[] PredefinedPeriods = new BarPeriod[]
         {
@@ -39,13 +39,15 @@ namespace TickTrader.BotTerminal
         private readonly TriggeredActivity updateActivity;
         private AlgoRepositoryModel repository;
         private Bar[] rawData;
+        private IWindowManager wndManager;
 
-        public ChartViewModel(string symbol, ConnectionModel connection, AlgoRepositoryModel repository)
+        public ChartViewModel(string symbol, ConnectionModel connection, AlgoRepositoryModel repository, IWindowManager wndManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.connection = connection;
             this.repository = repository;
+            this.wndManager = wndManager;
 
             this.updateActivity = new TriggeredActivity(Update);
 
@@ -152,14 +154,20 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
+        #region Indicators
+
         public void OpenIndicator(object descriptorObj)
         {
             try
             {
-                AlgoRepositoryItem metadata = (AlgoRepositoryItem)descriptorObj;
-                var model = new IndicatorBuilderModel(metadata);
-                model.SetData(rawData);
-                AddIndicator(model);
+                var model = new IndicatorSetupViewModel((AlgoRepositoryItem)descriptorObj);
+                wndManager.ShowWindow(model);
+                ActivateItem(model);
+
+                //AlgoRepositoryItem metadata = ;
+                //var model = new IndicatorBuilderModel(metadata);
+                //model.SetData(rawData);
+                //AddIndicator(model);
             }
             catch (Exception ex)
             {
@@ -206,16 +214,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private Task connection_Disconnected(object sender)
-        {
-            return updateActivity.Stop();
-        }
-
-        private void connection_Connected()
-        {
-            updateActivity.Trigger(true);
-        }
-
         void repository_Removed(AlgoRepositoryItem item)
         {
             foreach (var indicator in Indicators)
@@ -237,6 +235,18 @@ namespace TickTrader.BotTerminal
                     ReplaceIndicator(i, newModel);
                 }
             }
+        }
+
+        #endregion
+
+        private Task connection_Disconnected(object sender)
+        {
+            return updateActivity.Stop();
+        }
+
+        private void connection_Connected()
+        {
+            updateActivity.Trigger(true);
         }
 
         private async Task Update(CancellationToken cToken)
@@ -302,6 +312,14 @@ namespace TickTrader.BotTerminal
             }
 
             MainSeries.DataSeries = Data;
+        }
+
+        public override void TryClose(bool? dialogResult = null)
+        {
+            base.TryClose(dialogResult);
+
+            if (this.ActiveItem != null)
+                this.ActiveItem.TryClose();
         }
     }
 }

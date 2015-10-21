@@ -111,15 +111,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
     <Compile Include="Controls\OverlayControl.cs" />
     <Compile Include="Controls\BusyIndicator.xaml.cs">
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ShadowPortal.cs" />
+    <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Infrustructure\MdiWindowManager.cs" />
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
@@ -147,6 +150,10 @@
       <DependentUpon>ChartView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ChartViewModel.cs" />
+    <Compile Include="Views\IndicatorSetupView.xaml.cs">
+      <DependentUpon>IndicatorSetupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\IndicatorSetupViewModel.cs" />
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
@@ -237,6 +244,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Include="Resx\Styles\ButtonStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\ComboBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -246,6 +257,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles\DataGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\DialogStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -305,6 +320,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\IndicatorSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\OrderListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -340,6 +359,7 @@
       <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

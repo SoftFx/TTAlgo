@@ -1,9 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
     
     <!-- Template -->
 
-    <ControlTemplate x:Key="ShellTabControl_Template" TargetType="TabControl">
+    <ControlTemplate x:Key="ShellTabControl_Template" TargetType="l:TabControl">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -24,22 +25,34 @@
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
                                         ContentSource="Header"
-                                        Margin="10,2"/>
+                                        Margin="{Binding Path=TabHeaderPadding, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type l:TabControl}}}"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsSelected" Value="True">
                 <Setter TargetName="HeaderItemBorder" Property="Background" Value="{DynamicResource ShellPanel_BorderBrush}" />
             </Trigger>
-            <Trigger SourceName="HeaderItemBorder" Property="Control.IsMouseOver" Value="True">
-                <Setter TargetName="HeaderItemBorder" Property="Background" Value="{DynamicResource ShellPanel_TabHoverBrush}" />
-            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True"/>
+                    <Condition SourceName="HeaderItemBorder" Property="Control.IsMouseOver" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter TargetName="HeaderItemBorder" Property="Background" Value="{DynamicResource ShellPanel_SelectedTabHoverBrush}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="False"/>
+                    <Condition SourceName="HeaderItemBorder" Property="Control.IsMouseOver" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter TargetName="HeaderItemBorder" Property="Background" Value="{DynamicResource ShellPanel_NotSelectedTabHoverBrush}" />
+            </MultiTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <!-- Style  -->
 
-    <Style x:Key="ShellTabControl_Style" TargetType="TabControl">
+    <Style x:Key="ShellTabControl_Style" TargetType="l:TabControl">
         <Setter Property="Template" Value="{StaticResource ShellTabControl_Template}" />
+        <Setter Property="TabHeaderPadding" Value="10,2" />
         <Style.Resources>
             <Style TargetType="TabItem">
                 <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>

@@ -25,12 +25,12 @@
             <RowDefinition Height="*" MinHeight="150"/>
         </Grid.RowDefinitions>
 
-        <TabControl Name="LeftPanel" Grid.Column="0" Grid.Row="1" Grid.RowSpan="3" Style="{StaticResource ShellTabControl_Style}" Margin="5,5,0,5">
+        <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="1" Grid.RowSpan="3" Style="{StaticResource ShellTabControl_Style}" Margin="5,5,0,5">
             <TabItem Header="Symbols">
                 <ContentControl x:Name="SymbolList"/>
             </TabItem>
             <TabItem Header="Algo"/>
-        </TabControl>
+        </l:TabControl>
 
         <ContentControl Name="Charts" Grid.Column="2" Grid.Row="1" Margin="0,0,5,0"/>
 
@@ -56,7 +56,7 @@
 
         <GridSplitter Grid.Column="2" Grid.Row="2" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-        <TabControl Name="BottomPanel" Grid.Column="2" Grid.Row="3" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5">
+        <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="3" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5">
             <TabItem Header="Positions">
                 <ContentControl x:Name="PositionList"/>
             </TabItem>
@@ -65,7 +65,7 @@
             </TabItem>
             <TabItem Header="History"/>
             <TabItem Header="Journal"/>
-        </TabControl>
+        </l:TabControl>
 
     </Grid>
 </Window>
