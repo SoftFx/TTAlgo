@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="TickTrader.Algo.Api">
       <HintPath>..\TickTrader.Algo.Api\bin\Debug\TickTrader.Algo.Api.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -47,7 +48,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy  /Y $(TargetPath) ..\..\..\TickTrader.BotTerminal\bin\Debug\AlgoRepository\TestAlgoProject.ttalgo</PostBuildEvent>
+    <PostBuildEvent>copy  /Y $(TargetDir)*.*  ..\..\..\TickTrader.BotTerminal\bin\Debug\AlgoRepository\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
