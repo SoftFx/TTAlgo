@@ -16,8 +16,8 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-    
-    <Style TargetType="l:FlatButton">
+
+    <Style x:Key="FlatButton_Style" TargetType="l:FlatButton">
         <Setter Property="Template" Value="{StaticResource FlatButton_Template}" />
         <Setter Property="Padding" Value="2" />
         <Setter Property="OverridesDefaultStyle" Value="True" />

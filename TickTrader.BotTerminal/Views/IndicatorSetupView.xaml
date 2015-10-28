@@ -4,10 +4,59 @@
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         Title="IndicatorSetupView"
         Height="300" Width="300"
-        Style="{StaticResource Dialog_Style}">
+        Style="{StaticResource Dialog_Style}"
+        ResizeMode="NoResize">
+    
+    <Window.Resources>
+        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButton_Style}">
+            <Setter Property="MinWidth" Value="75" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="10,7" />
+            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}" />
+            <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}" />
+        </Style>
+
+        <DataTemplate DataType="{x:Type l:AlgoParameterSetup}">
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Content="{Binding DisplayName}"/>
+                <ContentControl Content="{Binding}" HorizontalAlignment="Stretch" Grid.Column="1" IsTabStop="False">
+                    <ContentControl.Resources>
+                        <DataTemplate DataType="{x:Type l:IntParameterSetup}">
+                            <TextBox Text="{Binding Value}" Width="Auto" HorizontalAlignment="Stretch"/>
+                        </DataTemplate>
+                    </ContentControl.Resources>
+                </ContentControl>
+            </Grid>
+        </DataTemplate>
+
+    </Window.Resources>
+    
     <Grid>
-        <l:FlatButton x:Name="Ok" Content="Ok" MinWidth="75" VerticalAlignment="Center" HorizontalAlignment="Center"
-                      Background="Red"
-                      HighlightBackground="Green"/>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden" IsTabStop="False">
+            <ItemsControl ItemsSource="{Binding Properties}" IsTabStop="False" />
+        </ScrollViewer>
+        
+        <Grid Name="ButtonsPanel" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <l:FlatButton x:Name="Ok" Content="Ok"
+                          Background="{DynamicResource Dialog_OkButtonBackground}"
+                          HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+            <l:FlatButton x:Name="Reset" Content="Reset"
+                          Grid.Column="1"/>
+        </Grid>
     </Grid>
 </Window>

@@ -136,6 +136,8 @@
     <Compile Include="Model\ChartDataModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\IndicatorBuilderModel.cs" />
+    <Compile Include="Model\IndicatorSetupModel.cs" />
+    <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\OhlcDataSeries.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />

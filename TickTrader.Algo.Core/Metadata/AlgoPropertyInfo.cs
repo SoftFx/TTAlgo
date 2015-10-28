@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class ParameterInfo : AlgoPropertyInfo
     {
+        public string DataType { get; set; }
+        public object DefaultValue { get; set; }
     }
 
     [Serializable]

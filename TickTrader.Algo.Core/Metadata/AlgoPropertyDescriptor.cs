@@ -9,7 +9,18 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core.Metadata
 {
     public enum AlgoPropertyTypes { Unknown, Parameter, InputSeries, OutputSeries }
-    public enum AlgoPropertyErrors { SetIsNotPublic, GetIsNotPublic, MultipleAttributes, OutputIsOnlyForIndicators, InputIsOnlyForIndicators, InputIsNotDataSeries, OutputIsNotDataSeries }
+
+    public enum AlgoPropertyErrors
+    {
+        SetIsNotPublic,
+        GetIsNotPublic,
+        MultipleAttributes,
+        OutputIsOnlyForIndicators,
+        InputIsOnlyForIndicators,
+        InputIsNotDataSeries,
+        OutputIsNotDataSeries,
+        DefaultValueTypeMismatch
+    }
 
     internal class AlgoPropertyDescriptor
     {
@@ -60,96 +71,5 @@ namespace TickTrader.Algo.Core.Metadata
         {
             Info.SetValue(instance, value);
         }
-    }
-
-    internal class ParameterDescriptor : AlgoPropertyDescriptor
-    {
-        public ParameterDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
-            : base(classMetadata, propertyInfo)
-        {
-            Attribute = (ParameterAttribute)attribute;
-            Validate();
-        }
-
-        public override AlgoPropertyInfo GetInteropCopy()
-        {
-            ParameterInfo copy = new ParameterInfo();
-            FillCommonProperties(copy);
-            return copy;
-        }
-
-        public ParameterAttribute Attribute { get; private set; }
-        public object DefaultValue { get; private set; }
-        public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
-    }
-
-    internal class InputDescriptor : AlgoPropertyDescriptor
-    {
-        public InputDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
-            : base(classMetadata, propertyInfo)
-        {
-            Attribute = (InputAttribute)attribute;
-            Validate();
-
-            var propertyType = this.Info.PropertyType;
-
-            if (propertyType == typeof(DataSeries))
-            {
-                DatdaSeriesBaseType = typeof(double);
-                IsShortDefinition = true;
-            }
-            else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
-                DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
-            else
-                SetError(Metadata.AlgoPropertyErrors.InputIsNotDataSeries);
-        }
-
-        public override AlgoPropertyInfo GetInteropCopy()
-        {
-            InputInfo copy = new InputInfo();
-            FillCommonProperties(copy);
-            copy.DataSeriesBaseTypeFullName = DatdaSeriesBaseType.FullName;
-            return copy;
-        }
-
-        public Type DatdaSeriesBaseType { get; private set; }
-        public bool IsShortDefinition { get; private set; }
-        public InputAttribute Attribute { get; private set; }
-        public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
-    }
-
-    internal class OutputDescriptor : AlgoPropertyDescriptor
-    {
-        public OutputDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
-            : base(classMetadata, propertyInfo)
-        {
-            Attribute = (OutputAttribute)attribute;
-             Validate();
-
-            var propertyType = this.Info.PropertyType;
-
-            if (propertyType == typeof(DataSeries))
-            {
-                DatdaSeriesBaseType = typeof(double);
-                IsShortDefinition = true;
-            }
-            else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
-                DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
-            else
-                SetError(Metadata.AlgoPropertyErrors.OutputIsNotDataSeries);
-        }
-
-        public override AlgoPropertyInfo GetInteropCopy()
-        {
-            OutputInfo copy = new OutputInfo();
-            FillCommonProperties(copy);
-            copy.DataSeriesBaseTypeFullName = DatdaSeriesBaseType.FullName;
-            return copy;
-        }
-
-        public Type DatdaSeriesBaseType { get; private set; }
-        public bool IsShortDefinition { get; private set; }
-        public OutputAttribute Attribute { get; private set; }
-        public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
-    }
+    } 
 }
