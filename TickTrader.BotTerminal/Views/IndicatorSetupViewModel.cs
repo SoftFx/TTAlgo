@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,12 +21,31 @@ namespace TickTrader.BotTerminal
             //Parameters = new BindableCollection<ParameterModel>();
             //Outputs = new BindableCollection<OutputModel>();
 
-            setup = new IndicatorSetupModel(item);
+            setup = new IndicatorSetupModel(item.Descriptor);
+            setup.ValidityChanged += Validate;
+            Validate();
 
-            Properties = new BindableCollection<AlgoPropertySetup>();
-            Properties.AddRange(setup.Parameters);
+            Properties = new List<AlgoProperty>(setup.Parameters);
         }
 
-        public BindableCollection<AlgoPropertySetup> Properties { get; private set; }
+        public List<AlgoProperty> Properties { get; private set; }
+
+        public void Reset()
+        {
+            setup.Reset();
+        }
+
+        public bool CanOk { get; private set; }
+
+        public void Ok()
+        {
+
+        }
+
+        private void Validate()
+        {
+            CanOk = setup.IsValid;
+            NotifyOfPropertyChange("CanOk");
+        }
     }
 }

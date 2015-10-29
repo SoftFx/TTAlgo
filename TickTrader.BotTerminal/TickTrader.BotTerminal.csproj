@@ -136,7 +136,6 @@
     <Compile Include="Model\ChartDataModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\IndicatorBuilderModel.cs" />
-    <Compile Include="Model\IndicatorSetupModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\OhlcDataSeries.cs" />
     <Compile Include="Model\OrderModel.cs" />
@@ -359,6 +358,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj">
+      <Project>{c29222d6-e27c-4d1a-970f-a54851e0647e}</Project>
+      <Name>TickTrader.Algo.GuiModel</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

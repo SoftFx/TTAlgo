@@ -14,6 +14,10 @@
             <Trigger Property="Control.IsMouseOver" Value="True">
                 <Setter TargetName="Border" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
             </Trigger>
+            <Trigger Property="Control.IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=DisabledBackground}"/>
+                <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 

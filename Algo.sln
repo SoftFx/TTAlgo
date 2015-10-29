@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Samples", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMachinarium", "StateMachinarium\StateMachinarium.csproj", "{9771258D-F820-482E-B945-310D5B4E182C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.GuiModel", "TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj", "{C29222D6-E27C-4D1A-970F-A54851E0647E}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -47,6 +49,10 @@ Global
 		{9771258D-F820-482E-B945-310D5B4E182C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9771258D-F820-482E-B945-310D5B4E182C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9771258D-F820-482E-B945-310D5B4E182C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

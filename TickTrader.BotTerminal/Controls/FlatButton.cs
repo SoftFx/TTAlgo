@@ -14,10 +14,19 @@ namespace TickTrader.BotTerminal
         public static DependencyProperty HighlightBackgroundProperty =
             DependencyProperty.Register("HighlightBackground", typeof(Brush), typeof(FlatButton));
 
+        public static DependencyProperty DisabledBackgroundProperty =
+            DependencyProperty.Register("DisabledBackground", typeof(Brush), typeof(FlatButton));
+
         public Brush HighlightBackground
         {
             get { return (Brush)GetValue(HighlightBackgroundProperty); }
             set { SetValue(HighlightBackgroundProperty, value); }
+        }
+
+        public Brush DisabledBackground
+        {
+            get { return (Brush)GetValue(DisabledBackgroundProperty); }
+            set { SetValue(DisabledBackgroundProperty, value); }
         }
     }
 }
