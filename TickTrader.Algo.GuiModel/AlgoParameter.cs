@@ -11,7 +11,13 @@ namespace TickTrader.Algo.GuiModel
     {
         public static AlgoParameter Create(ParameterInfo descriptor)
         {
-            var newParam = CreateByType(descriptor.DataType);
+            AlgoParameter newParam;
+
+            if (descriptor.Error != null)
+                newParam = new AlgoInvalidParameter(new LocMsg(MsgCodes.NumberOverflow));
+            else
+                newParam = CreateByType(descriptor.DataType);
+
             newParam.SetMetadata(descriptor);
             return newParam;
         }
@@ -29,8 +35,10 @@ namespace TickTrader.Algo.GuiModel
         internal virtual void SetMetadata(ParameterInfo descriptor)
         {
             base.SetMetadata(descriptor);
+            this.DataType = descriptor.DataType;
         }
 
+        public string DataType { get; private set; }
         public virtual void Reset() { }
         public virtual bool IsReadonly { get { return false; } }
         public abstract object ValueObj { get; set; }

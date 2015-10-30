@@ -65,7 +65,7 @@ namespace TickTrader.Algo.GuiModel
 
             public override string ToString(double val)
             {
-                return ((double)val).ToString();
+                return ((double)val).ToString("R");
             }
         }
     }

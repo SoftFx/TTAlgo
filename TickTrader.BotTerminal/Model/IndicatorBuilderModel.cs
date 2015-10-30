@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.GuiModel;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -21,16 +22,19 @@ namespace TickTrader.BotTerminal
         private Bar[] currentData;
         private bool restarting;
 
-        public IndicatorBuilderModel(AlgoRepositoryItem indicatorMetadata)
+        public IndicatorBuilderModel(AlgoRepositoryItem indicatorMetadata, IndicatorSetupModel setup)
         {
             AlgoId = indicatorMetadata.Id;
+            Setup = setup;
             Series = new List<XyDataSeries<DateTime, double>>();
             buildActivity = new TriggeredActivity(c => BuildIndicator(builder, c, currentData));
 
-            Init(indicatorMetadata);
+            Init(indicatorMetadata, setup);
         }
 
-        private void Init(AlgoRepositoryItem indicatorMetadata)
+        public IndicatorSetupModel Setup { get; private set; }
+
+        private void Init(AlgoRepositoryItem indicatorMetadata, IndicatorSetupModel setup)
         {
             builder = indicatorMetadata.CreateIndicatorBuilder();
 
@@ -43,6 +47,9 @@ namespace TickTrader.BotTerminal
                 else
                     throw new Exception("DataSeries base type " + input.DataSeriesBaseTypeFullName + " is not supproted.");
             }
+
+            foreach (var parameter in setup.Parameters)
+                builder.Host.Setparameter(parameter.Id, parameter.ValueObj);
 
             foreach (var output in indicatorMetadata.Descriptor.Outputs)
             {

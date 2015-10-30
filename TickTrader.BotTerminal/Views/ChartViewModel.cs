@@ -160,18 +160,28 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new IndicatorSetupViewModel((AlgoRepositoryItem)descriptorObj);
+                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj);
                 wndManager.ShowWindow(model);
                 ActivateItem(model);
 
-                //AlgoRepositoryItem metadata = ;
-                //var model = new IndicatorBuilderModel(metadata);
-                //model.SetData(rawData);
-                //AddIndicator(model);
+                model.Closed += model_Closed;
+
+                
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
+            }
+        }
+
+        void model_Closed(IndicatorSetupViewModel setupModel, bool dlgResult)
+        {
+            setupModel.Closed -= model_Closed;
+            if (dlgResult)
+            {
+                var model = new IndicatorBuilderModel(setupModel.RepItem, setupModel.Setup);
+                model.SetData(rawData);
+                AddIndicator(model);
             }
         }
 
@@ -229,7 +239,7 @@ namespace TickTrader.BotTerminal
             {
                 if (Indicators[i].AlgoId == item.Id)
                 {
-                    var newModel = new IndicatorBuilderModel(item);
+                    var newModel = new IndicatorBuilderModel(item, Indicators[i].Setup);
                     if (rawData != null)
                         newModel.SetData(rawData);
                     ReplaceIndicator(i, newModel);

@@ -20,16 +20,38 @@
        
         <DataTemplate DataType="{x:Type am:AlgoParameter}">
             <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Label Content="{Binding DisplayName}"/>
-                <ContentControl Content="{Binding}" HorizontalAlignment="Stretch" Grid.Column="1" IsTabStop="False">
+                <ContentControl Content="{Binding}" HorizontalAlignment="Stretch" Grid.Row="1" IsTabStop="False">
                     <ContentControl.Resources>
+
+                        <!--  AlgoInvalidParameter  -->
+
+                        <DataTemplate DataType="{x:Type am:AlgoInvalidParameter}">
+                            <TextBox Name="input" Text="Invalid parameter" IsEnabled="False"
+                                     HorizontalAlignment="Stretch" Background="Red"/>
+                        </DataTemplate>
+
+                        <!--  IntParam  -->
+
                         <DataTemplate DataType="{x:Type am:IntParam}">
                             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
-                                     Width="Auto" HorizontalAlignment="Stretch"/>
+                                     HorizontalAlignment="Stretch"/>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding HasError}" Value="True">
+                                    <Setter TargetName="input" Property="Background" Value="Red" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+
+                        <!--  DoubleParam  -->
+                        
+                        <DataTemplate DataType="{x:Type am:DoubleParam}">
+                            <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch"/>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding HasError}" Value="True">
                                     <Setter TargetName="input" Property="Background" Value="Red" />
@@ -50,8 +72,17 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden" IsTabStop="False">
-            <ItemsControl ItemsSource="{Binding Properties}" IsTabStop="False" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      IsTabStop="False"
+                      Style="{StaticResource DialogScrollViewer_Style}">
+            <ItemsControl ItemsSource="{Binding Properties}" IsTabStop="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="2" VerticalAlignment="Top" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            
         </ScrollViewer>
         
         <Grid Name="ButtonsPanel" Grid.Row="1">

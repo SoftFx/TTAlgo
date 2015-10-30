@@ -12,7 +12,7 @@ namespace TickTrader.Algo.GuiModel
     {
         private List<AlgoParameter> parameters;
 
-        public IndicatorSetupModel(AlgoInfo descriptor)
+        public IndicatorSetupModel(AlgoInfo descriptor, IndicatorSetupModel copyFrom = null)
         {
             this.Descriptor = descriptor;
 
@@ -22,6 +22,9 @@ namespace TickTrader.Algo.GuiModel
             
             //Inputs = new List<AlgoInputSetup>();
             //Outputs = new List<AlgoOutputSetup>();
+
+            if (copyFrom != null)
+                CopyParametersFrom(copyFrom);
         }
 
         public void Reset()
@@ -32,6 +35,12 @@ namespace TickTrader.Algo.GuiModel
 
         public void CopyParametersFrom(IndicatorSetupModel otherSetup)
         {
+            foreach (var otherParam in otherSetup.Parameters)
+            {
+                var param = this.Parameters.FirstOrDefault(p => p.Id == otherParam.Id);
+                if (param != null && param.DataType == otherParam.DataType)
+                    param.ValueObj = otherParam.ValueObj;
+            }
         }
 
         private void Validate()
@@ -47,10 +56,5 @@ namespace TickTrader.Algo.GuiModel
 
         public bool IsValid {get; private set;}
         public event Action ValidityChanged = delegate { };
-
-        //public AlgoParameter GetParameter(string id)
-        //{
-        //    return Parameters.FirstOrDefault(sp => id == sp.Id);
-        //}
     }
 }

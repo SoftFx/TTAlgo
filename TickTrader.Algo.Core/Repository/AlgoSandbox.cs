@@ -5,11 +5,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    internal class AlgoSandbox : MarshalByRefObject
+    internal class AlgoSandbox : NoTimeoutByRefObject
     {
         public IEnumerable<AlgoInfo> LoadAndInspect(string filePath)
         {

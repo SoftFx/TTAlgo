@@ -77,5 +77,11 @@
                      Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
         </Grid>
     </ControlTemplate>
+    
+    <!-- Style -->
+
+    <Style x:Key="DialogScrollViewer_Style" TargetType="ScrollViewer">
+        <Setter Property="Template" Value="{StaticResource ScrollViewer_SimpleTemplate}" />
+    </Style>
 
 </ResourceDictionary>

@@ -24,6 +24,7 @@ namespace TickTrader.BotTerminal
             if (parentWnd != null)
                 wnd.Owner = parentWnd;
             wnd.ShowInTaskbar = false;
+            wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             return wnd;
         }
     }

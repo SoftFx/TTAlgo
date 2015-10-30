@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.GuiModel
 {
@@ -24,13 +25,32 @@ namespace TickTrader.Algo.GuiModel
 
         public MsgCodes Code { get; private set; }
         public object[] Params { get; private set; }
+
+
+        public static MsgCodes Convert(AlgoPropertyErrors propError)
+        {
+            switch (propError)
+            {
+                case AlgoPropertyErrors.SetIsNotPublic: return MsgCodes.PropertySetterIsNotPublic;
+                case AlgoPropertyErrors.GetIsNotPublic: return MsgCodes.PropertyGetterIsNotPublic;
+                case AlgoPropertyErrors.MultipleAttributes: return MsgCodes.PropertyHasMultipleAttributes;
+                case AlgoPropertyErrors.DefaultValueTypeMismatch: return MsgCodes.PropertyDefaultValueTypeMismatch;
+                default: return MsgCodes.UnknownError;
+
+            }
+        }
     }
 
     public enum MsgCodes
     {
+        UnknownError,
         UnsupportedPropertyType,
         NotInteger,
         NotDouble,
-        NumberOverflow
+        NumberOverflow,
+        PropertySetterIsNotPublic,
+        PropertyGetterIsNotPublic,
+        PropertyHasMultipleAttributes,
+        PropertyDefaultValueTypeMismatch
     }
 }

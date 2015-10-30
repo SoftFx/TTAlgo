@@ -12,6 +12,7 @@
                 </ResourceDictionary>
 
                 <!-- Control Styles -->
+                <ResourceDictionary Source="Resx/Styles/LabelStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ButtonStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/DialogStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/TextBox.xaml"/>
