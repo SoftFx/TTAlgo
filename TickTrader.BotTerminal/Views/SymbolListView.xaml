@@ -32,7 +32,9 @@
         <ListBox Name="Symbols"
                  Grid.Row="1"
                  Style="{StaticResource SymbolListBox_Style}"
-                 ItemsSource="{Binding Source={StaticResource SymbolGroupViewSrc}}">
+                 ItemsSource="{Binding Source={StaticResource SymbolGroupViewSrc}}"
+                 SelectedItem="{Binding SelectedSymbol}"
+                 PreviewMouseDown="Symbols_PreviewMouseDown">
             <ListBox.GroupStyle>
                 <GroupStyle ContainerStyle="{StaticResource SymbolListBox_GroupStyle}" Panel="{StaticResource SymbolListBox_PanelTemplate}"/>
             </ListBox.GroupStyle>

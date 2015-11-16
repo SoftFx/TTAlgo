@@ -11,6 +11,8 @@
                     <l:AppBootstrapper x:Key="bootstrapper" />
                 </ResourceDictionary>
 
+                <ResourceDictionary Source="Resx/Converters.xaml"/>
+
                 <!-- Control Styles -->
                 <ResourceDictionary Source="Resx/Styles/LabelStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ButtonStyle.xaml"/>

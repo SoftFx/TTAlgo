@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Core.Repository
             return metadata.Select(d => d.GetInteropCopy()).ToList();
         }
 
-        public IndicatorBuilder CreateIndicator(string id)
+        public IndicatorProxy CreateIndicator(string algoId, AlgoContext setup)
         {
-            return new IndicatorBuilder(id);
+            return new IndicatorProxy(algoId, setup);
         }
     }
 }

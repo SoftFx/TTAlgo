@@ -5,7 +5,7 @@
 
     <ControlTemplate x:Key="ComboBox_ToggleTemplate">
         <Border BorderThickness="1"
-                CornerRadius="2"
+                CornerRadius="3"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 Background="{TemplateBinding Background}">
             <Border Background="Transparent" Width="14" HorizontalAlignment="Right">
@@ -75,6 +75,7 @@
                           Style="{StaticResource ComboBox_ToggleStyle}"
                           Grid.ColumnSpan="2"
                           BorderBrush="Transparent"
+                          Foreground="{TemplateBinding Foreground}"
                           Background="{TemplateBinding Background}"/>
             <ContentPresenter Name="contentPresenter"
                               Content="{TemplateBinding ComboBox.SelectionBoxItem}"
@@ -118,6 +119,7 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Style.Resources>
             <Style TargetType="ComboBoxItem">
                 <Setter Property="OverridesDefaultStyle" Value="True"/>

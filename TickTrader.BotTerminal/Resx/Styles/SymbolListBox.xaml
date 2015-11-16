@@ -2,9 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
     <!-- ListBox Template -->
-    
+
     <ControlTemplate x:Key="SymbolListBox_Template" TargetType="ListBox">
-        <ScrollViewer Margin="0" Focusable="False" Template="{DynamicResource SymbolListBox_ScrollViewerTemplate}">
+        <ScrollViewer Margin="0" Focusable="False"
+                      Template="{DynamicResource SymbolListBox_ScrollViewerTemplate}"
+                      HorizontalScrollBarVisibility="Disabled">
             <ItemsPresenter/>
         </ScrollViewer>
     </ControlTemplate>

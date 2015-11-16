@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core.Metadata
 {
     /// <summary>
-    /// This is serializable light copy of AlgoPropertyDescriptor.
+    /// This is a serializable light copy of AlgoPropertyDescriptor.
     /// It is used to bypass descriptor to another application domain.
     /// </summary>
     [Serializable]

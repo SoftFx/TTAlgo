@@ -6,9 +6,9 @@
         <Border Name="Border" CornerRadius="2"
                 Background="{TemplateBinding Background}">
             <ContentPresenter Margin="{TemplateBinding Padding}"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              RecognizesAccessKey="True" />
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="Control.IsMouseOver" Value="True">
@@ -27,6 +27,36 @@
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="HighlightBackground" Value="Red" />
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
     
+    <!-- Auto Color Flat Button -->
+
+    <ControlTemplate x:Key="AutoColorFlatButton_Template" TargetType="Button">
+        <Border Name="Border" CornerRadius="2"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              RecognizesAccessKey="True" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value=".75" />
+            </Trigger>
+            <Trigger Property="Control.IsEnabled" Value="False">
+
+                <Setter Property="Opacity" Value="0.3"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="AutoColorFlatButton_Style" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource AutoColorFlatButton_Template}" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+    </Style>
+
 </ResourceDictionary>

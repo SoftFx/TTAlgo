@@ -16,19 +16,13 @@ using System.Windows.Shapes;
 namespace TickTrader.BotTerminal
 {
     /// <summary>
-    /// Interaction logic for SymbolListView.xaml
+    /// Interaction logic for SymbolDetailsPanel.xaml
     /// </summary>
-    public partial class SymbolListView : UserControl
+    public partial class SymbolDetailsView : UserControl
     {
-        public SymbolListView()
+        public SymbolDetailsView()
         {
             InitializeComponent();
-        }
-
-        private void Symbols_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Right)
-                e.Handled = true;
         }
     }
 }

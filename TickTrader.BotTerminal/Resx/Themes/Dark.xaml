@@ -32,6 +32,14 @@
     <SolidColorBrush x:Key="Dialog_ButtonHighlightBackground" Color="#292929"/>
 
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
+    <SolidColorBrush x:Key="RateUpHighlightColor" Color="#006836"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>
+    <SolidColorBrush x:Key="RateDownHighlightColor" Color="#F03E00"/>
+    <SolidColorBrush x:Key="RateUnknownColor" Color="#808080"/>
+    <SolidColorBrush x:Key="RateUnknownHighlightColor" Color="#6E6E6E"/>
+    
+
+    <SolidColorBrush x:Key="SellColor" Color="#009344"/>
+    <SolidColorBrush x:Key="BuyColor" Color="#F15923"/>
     
 </ResourceDictionary>

@@ -6,68 +6,88 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.BotTerminal.Lib;
+using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
     internal class IndicatorBuilderModel
     {
-        private IndicatorBuilder builder;
+        private AlgoRepositoryItem repItem;
         private TriggeredActivity buildActivity;
         private Bar[] currentData;
         private bool restarting;
 
         public IndicatorBuilderModel(AlgoRepositoryItem indicatorMetadata, IndicatorSetupModel setup)
         {
-            AlgoId = indicatorMetadata.Id;
+            repItem = indicatorMetadata;
             Setup = setup;
             Series = new List<XyDataSeries<DateTime, double>>();
-            buildActivity = new TriggeredActivity(c => BuildIndicator(builder, c, currentData));
-
-            Init(indicatorMetadata, setup);
+            buildActivity = new TriggeredActivity(c => BuildIndicator(c, currentData));
         }
 
         public IndicatorSetupModel Setup { get; private set; }
 
-        private void Init(AlgoRepositoryItem indicatorMetadata, IndicatorSetupModel setup)
+        private AlgoContext CreateContext(IndicatorSetupModel setupModel, Bar[] data)
         {
-            builder = indicatorMetadata.CreateIndicatorBuilder();
+            MultiStreamReader<Api.Bar> reader = new MultiStreamReader<Api.Bar>("mStream", new FdkBarStream(data));
 
-            foreach (var input in indicatorMetadata.Descriptor.Inputs)
+            foreach (var input in setupModel.Descriptor.Inputs)
             {
                 if (input.DataSeriesBaseTypeFullName == "System.Double")
-                {
-                    builder.Host.AddInput<double>(input.Id, new BarDoubleReader(b => b.Open, this));
-                }
+                    reader.AddMapping(input.Id, "mStream", b => b.Open);
                 else
                     throw new Exception("DataSeries base type " + input.DataSeriesBaseTypeFullName + " is not supproted.");
-            }
+            } 
 
-            foreach (var parameter in setup.Parameters)
-                builder.Host.Setparameter(parameter.Id, parameter.ValueObj);
+            AlgoContext context = new AlgoContext();
 
-            foreach (var output in indicatorMetadata.Descriptor.Outputs)
-            {
-                if (output.DataSeriesBaseTypeFullName == "System.Double")
-                {
-                    //builder.Host.AddInput<double>(input.Id, new BarDoubleReader(b => b.Open, data));
-                    XyDataSeries<DateTime, double> outputChartSeries = new XyDataSeries<DateTime, double>();
-                    builder.Host.AddOutput(output.Id, new XySeriesWriter(this, outputChartSeries));
-                    Series.Add(outputChartSeries);
-                }
-                else
-                    throw new Exception("DataSeries base type " + output.DataSeriesBaseTypeFullName + " is not supproted.");
-            }
+            foreach (var parameter in setupModel.Parameters)
+                context.SetParameter(parameter.Id, parameter.ValueObj);
 
-            builder.Init();
+            return context;
         }
 
-        public string AlgoId { get; private set; }
+        //private void Init(AlgoRepositoryItem indicatorMetadata, IndicatorSetupModel setup)
+        //{
+        //    proxy = indicatorMetadata.CreateIndicator(CreateSetup(setup, ));
+
+        //    foreach (var input in indicatorMetadata.Descriptor.Inputs)
+        //    {
+        //        if (input.DataSeriesBaseTypeFullName == "System.Double")
+        //        {
+        //            builder.Host.AddInput<double>(input.Id, new BarDoubleReader(b => b.Open, this));
+        //        }
+        //        else
+        //            throw new Exception("DataSeries base type " + input.DataSeriesBaseTypeFullName + " is not supproted.");
+        //    }
+
+        //    foreach (var parameter in setup.Parameters)
+        //        builder.Host.Setparameter(parameter.Id, parameter.ValueObj);
+
+        //    foreach (var output in indicatorMetadata.Descriptor.Outputs)
+        //    {
+        //        if (output.DataSeriesBaseTypeFullName == "System.Double")
+        //        {
+        //            //builder.Host.AddInput<double>(input.Id, new BarDoubleReader(b => b.Open, data));
+        //            XyDataSeries<DateTime, double> outputChartSeries = new XyDataSeries<DateTime, double>();
+        //            builder.Host.AddOutput(output.Id, new XySeriesWriter(this, outputChartSeries));
+        //            Series.Add(outputChartSeries);
+        //        }
+        //        else
+        //            throw new Exception("DataSeries base type " + output.DataSeriesBaseTypeFullName + " is not supproted.");
+        //    }
+
+        //    builder.Init();
+        //}
+
+        public string AlgoId { get { return repItem.Id; } }
         public Bar[] Data { get { return currentData; } }
         public bool IsRestarting { get { return restarting; } }
 
@@ -79,9 +99,9 @@ namespace TickTrader.BotTerminal
             Series.ForEach(s => s.Clear());
         }
 
-        private async Task BuildIndicator(IndicatorBuilder builder, System.Threading.CancellationToken cToken, Bar[] data)
+        private async Task BuildIndicator(CancellationToken cToken, Bar[] data)
         {
-            builder.Reset();
+            IndicatorProxy proxy = repItem.CreateIndicator(CreateContext(Setup, data));
 
             restarting = false;
 
@@ -95,10 +115,18 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        for (int i = 0; i < data.Length; i++)
+                        int count = proxy.Reader.ReadNext();
+
+                        for (int i = 0; i < count; i++)
                         {
-                            builder.Host.ReadNext();
-                            builder.InvokeCalculate();
+                            if (cToken.IsCancellationRequested)
+                                return;
+
+
+                            proxy.InvokeCalculate();
+
+                            //builder.Host.ReadNext();
+                            //builder.InvokeCalculate();
 
                             if (cToken.IsCancellationRequested)
                                 break;
@@ -119,66 +147,103 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
+    internal class FdkBarStream : InputStream<Api.Bar>
     {
-        private int index;
         private Bar[] data;
-        private Func<Bar, double> propSelector;
-        private IndicatorBuilderModel indicator;
+        private int index;
 
-        public BarDoubleReader(Func<Bar, double> propSelector, IndicatorBuilderModel indicator)
+        public FdkBarStream(Bar[] data)
         {
-            this.data = indicator.Data;
-            this.propSelector = propSelector;
-            this.indicator = indicator;
+            this.data = data;
         }
 
-        public double ReadNext()
+        public bool ReadNext(out Api.Bar rec)
         {
-            return propSelector(data[index++]);
+            if (index < data.Length)
+            {
+                rec = Convert(data[index++]);
+                return true;
+            }
+            rec = default(Api.Bar);
+            return false;
         }
 
-        public double ReRead()
+        private Api.Bar Convert(Bar fdkBar)
         {
-            return propSelector(data[index]);
+            return new Api.Bar()
+            {
+                Hi = fdkBar.High,
+                Lo = fdkBar.Low,
+            };
         }
 
-        public void Reset()
+        public bool ReadNext(Api.Bar refRec, out Api.Bar rec)
         {
-            this.index = 0;
-            this.data = indicator.Data;
-        }
-    }
-
-    internal class XySeriesWriter : NoTimeoutByRefObject, DataSeriesWriter<double>
-    {
-        private Bar[] inputColelction;
-        private XyDataSeries<DateTime, double> outputCollection;
-        private IndicatorBuilderModel indicator;
-
-        public XySeriesWriter(IndicatorBuilderModel indicator, XyDataSeries<DateTime, double> outputCollection)
-        {
-            this.inputColelction = indicator.Data;
-            this.outputCollection = outputCollection;
-            this.indicator = indicator;
-        }
-
-        public void WriteAt(int index, double val)
-        {
-            DateTime barTime = inputColelction[index].From;
-
-            if (outputCollection.Count == index)
-                Execute.OnUIThread(() =>
-                    {
-                        if (!indicator.IsRestarting)
-                            outputCollection.Append(barTime, val);
-                    });
-        }
-
-        public void Reset()
-        {
-            outputCollection.Clear();
-            this.inputColelction = indicator.Data;
+            throw new NotImplementedException();
         }
     }
+
+
+//    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
+//    {
+//        private int index;
+//        private Bar[] data;
+//        private Func<Bar, double> propSelector;
+//        private IndicatorBuilderModel indicator;
+
+//        public BarDoubleReader(Func<Bar, double> propSelector, IndicatorBuilderModel indicator)
+//        {
+//            this.data = indicator.Data;
+//            this.propSelector = propSelector;
+//            this.indicator = indicator;
+//        }
+
+//        public double ReadNext()
+//        {
+//            return propSelector(data[index++]);
+//        }
+
+//        public double ReRead()
+//        {
+//            return propSelector(data[index]);
+//        }
+
+//        public void Reset()
+//        {
+//            this.index = 0;
+//            this.data = indicator.Data;
+//        }
+//    }
+
+//    internal class XySeriesWriter : NoTimeoutByRefObject, DataSeriesWriter<double>
+//    {
+//        private Bar[] inputColelction;
+//        private XyDataSeries<DateTime, double> outputCollection;
+//        private IndicatorBuilderModel indicator;
+
+//        public XySeriesWriter(IndicatorBuilderModel indicator, XyDataSeries<DateTime, double> outputCollection)
+//        {
+//            this.inputColelction = indicator.Data;
+//            this.outputCollection = outputCollection;
+//            this.indicator = indicator;
+//        }
+
+//        public void WriteAt(int index, double val)
+//        {
+//            DateTime barTime = inputColelction[index].From;
+
+//            if (outputCollection.Count == index)
+//                Execute.OnUIThread(() =>
+//                    {
+//                        if (!indicator.IsRestarting)
+//                            outputCollection.Append(barTime, val);
+//                    });
+//        }
+
+//        public void Reset()
+//        {
+//            outputCollection.Clear();
+//            this.inputColelction = indicator.Data;
+//        }
+//    }
 }

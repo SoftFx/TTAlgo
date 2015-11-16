@@ -8,23 +8,12 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal interface IDataSeries
+    public interface IDataSeriesBuffer
     {
-        void Reset();
+        void IncrementVirtualSize();
     }
 
-    internal interface IInputDataSeries : IDataSeries
-    {
-        void ReRead();
-        void ReadNext();
-    }
-
-    internal interface IOutputDataSeries : IDataSeries
-    {
-        void ExtendBuffer();
-    }
-
-    internal abstract class DataSeriesBase<T> : Api.DataSeries<T>, IDataSeries
+    public abstract class DataSeriesBuffer<T> : Api.DataSeries<T>, IDataSeriesBuffer
     {
         private List<T> buffer = new List<T>();
 
@@ -52,7 +41,17 @@ namespace TickTrader.Algo.Core
         protected virtual void OnWrite(T data, int index) { }
         protected virtual void OnReset() { }
 
-        public int Count { get { return buffer.Count; } }
+        // virtual count
+        public int Count { get; private set; }
+        // real buffer count
+        public int BuffLength { get { return buffer.Count; } }
+
+        public void IncrementVirtualSize()
+        {
+            if (Count >= BuffLength)
+                throw new Exception("Virtual size out of buffer boundaries!");
+            Count++;
+        }
 
         private int GetRealIndex(int virtualIndex)
         {
@@ -78,73 +77,46 @@ namespace TickTrader.Algo.Core
             return GetEnumerator();
         }
 
-        void IDataSeries.Reset()
+        public void Reset()
         {
             buffer.Clear();
             OnReset();
         }
     }
 
-    internal class InputDataSeries<T> : DataSeriesBase<T>, IInputDataSeries
+    public class InputDataSeries<T> : DataSeriesBuffer<T>
     {
-        private DataSeriesReader<T> reader;
-
-        public InputDataSeries(DataSeriesReader<T> reader)
+        public InputDataSeries()
         {
-            this.reader = reader;
         }
 
-        void IInputDataSeries.ReRead()
+        public void Append(T val)
         {
-            if (Count > 0)
-                Buffer[Count - 1] = reader.ReRead();
+            Buffer.Add(val);
         }
 
-        void IInputDataSeries.ReadNext()
+        public void Append(IEnumerable<T> range)
         {
-            Buffer.Add(reader.ReadNext());
+            Buffer.AddRange(range);
         }
 
-        protected override void OnReset()
+        public void Update(int index, T val)
         {
-            reader.Reset();
         }
     }
 
-    internal class InputDataSeries : InputDataSeries<double>, Api.DataSeries
+    public class InputDataSeries : InputDataSeries<double>, Api.DataSeries
     {
-        public InputDataSeries(DataSeriesReader<double> reader) : base(reader) { }
     }
 
-    internal class OutputDataSeries<T> : DataSeriesBase<T>, IOutputDataSeries
+    public class OutputDataSeries<T> : DataSeriesBuffer<T>
     {
-        private DataSeriesWriter<T> writer;
-        private T defaultVal;
-
-        public OutputDataSeries(DataSeriesWriter<T> writer, T defaultVal = default(T))
+        public OutputDataSeries(T defaultVal = default(T))
         {
-            this.writer = writer;
-            this.defaultVal = defaultVal;
-        }
-
-        void IOutputDataSeries.ExtendBuffer()
-        {
-            Buffer.Add(defaultVal);
-        }
-
-        protected override void OnWrite(T data, int index)
-        {
-            writer.WriteAt(index, data);
-        }
-
-        protected override void OnReset()
-        {
-            writer.Reset();
         }
     }
 
-    internal class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries
+    public class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries
     {
-        public OutputDataSeries(DataSeriesWriter<double> writer) : base(writer) { }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    class SymbolListViewModel
+    internal class SymbolListViewModel : PropertyChangedBase
     {
         private SymbolCollectionModel model;
+        private SymbolViewModel selected;
 
         public SymbolListViewModel(SymbolCollectionModel symbolCollection)
         {
@@ -44,5 +46,19 @@ namespace TickTrader.BotTerminal
         public event Action<string> NewChartRequested = delegate { };
 
         public ObservableCollection<SymbolViewModel> Symbols { get; private set; }
+
+        public SymbolViewModel SelectedSymbol
+        {
+            get { return selected; }
+            set
+            {
+                if (selected != null)
+                    selected.IsSelected = false;
+                selected = value;
+                NotifyOfPropertyChange("SelectedSymbols");
+                if (selected != null)
+                    selected.IsSelected = true;
+            }
+        }
     }
 }

@@ -137,9 +137,10 @@
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\IndicatorBuilderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
-    <Compile Include="Model\OhlcDataSeries.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />
+    <Compile Include="Model\RateDirectionTracker.cs" />
+    <Compile Include="Model\RateSplitModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
@@ -167,6 +168,14 @@
       <DependentUpon>ShellView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ShellViewModel.cs" />
+    <Compile Include="Views\SymbolDetailsView.xaml.cs">
+      <DependentUpon>SymbolDetailsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SymbolDetailsViewModel.cs" />
+    <Compile Include="Views\SymbolLevel2View.xaml.cs">
+      <DependentUpon>SymbolLevel2View.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SymbolLevel2ViewModel.cs" />
     <Compile Include="Views\SymbolListView.xaml.cs">
       <DependentUpon>SymbolListView.xaml</DependentUpon>
     </Compile>
@@ -245,6 +254,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Include="Resx\Converters.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\ButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -338,6 +351,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ShellView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SymbolDetailsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SymbolLevel2View.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

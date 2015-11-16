@@ -39,10 +39,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlgoHost.cs" />
+    <Compile Include="AlgoContext.cs" />
+    <Compile Include="MultiStreamReader.cs" />
     <Compile Include="DataSeries.cs" />
-    <Compile Include="IndicatorBuilder.cs" />
+    <Compile Include="DataSeriesFactory.cs" />
     <Compile Include="IndicatorProxy.cs" />
+    <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
     <Compile Include="Lib\NoTimeoutByRefObject.cs" />

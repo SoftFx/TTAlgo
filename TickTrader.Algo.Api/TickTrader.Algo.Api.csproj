@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Algo.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="Bar.cs" />
     <Compile Include="DataSeries.cs" />
     <Compile Include="Indicator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

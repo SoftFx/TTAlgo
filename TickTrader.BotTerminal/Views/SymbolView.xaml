@@ -6,11 +6,9 @@
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
-             cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenChart]">
+             d:DesignHeight="300" d:DesignWidth="300">
     
     <UserControl.Resources>
-        <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
     
         <Style x:Key="RateTextStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -20,10 +18,10 @@
 
         <Style x:Key="BidTextStyle" TargetType="TextBlock" BasedOn="{StaticResource RateTextStyle}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding BidDirection}" Value="{x:Static l:RateChangeDirections.Up}">
+                <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
                     <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding BidDirection}" Value="{x:Static l:RateChangeDirections.Down}">
+                <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
                     <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -31,10 +29,10 @@
 
         <Style x:Key="AskTextStyle" TargetType="TextBlock" BasedOn="{StaticResource RateTextStyle}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding AskDirection}" Value="{x:Static l:RateChangeDirections.Up}">
+                <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
                     <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding AskDirection}" Value="{x:Static l:RateChangeDirections.Down}">
+                <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
                     <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -48,26 +46,52 @@
             <MenuItem Header="Open Order"/>
         </ContextMenu>
     </UserControl.ContextMenu>
-    
-    <Grid Height="23">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="50"/>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="50"/>
-            <ColumnDefinition Width="4"/>
-        </Grid.ColumnDefinitions>
-        
-        <Rectangle Name="BackgroundClickTarget" Fill="Transparent" Grid.ColumnSpan="6" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
 
-        <Rectangle Width="9" Height="9" Stroke="{Binding Path=Color, Converter={StaticResource ColorRefConverter}}" Opacity="0.6" Margin="4, 0, 4, 0"
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+
+        <Grid Name="Header" Height="23"
+              cal:Message.Attach="[Event PreviewMouseDown] = [Action TriggerState]">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="4"/>
+            </Grid.ColumnDefinitions>
+
+            <Rectangle Name="BackgroundClickTarget" Fill="Transparent" Grid.ColumnSpan="6" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+
+            <Rectangle Width="9" Height="9" Stroke="{Binding Path=Color, Converter={StaticResource ColorRefConverter}}" Opacity="0.6" Margin="4, 0, 4, 0"
                    VerticalAlignment="Center"/>
-        
-        <TextBlock Name="Name" Grid.Column="1" FontSize="11" Foreground="{DynamicResource Shell_PrimaryForeground}" TextTrimming="CharacterEllipsis"
-                   Margin="3, 0, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" />
 
-        <TextBlock Name="Bid" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
-        <TextBlock Name="Ask" Grid.Column="4" Style="{StaticResource AskTextStyle}"/> 
+            <TextBlock Name="Name" Grid.Column="1" FontSize="11" Foreground="{DynamicResource Shell_PrimaryForeground}"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="3, 0, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+
+            <TextBlock Text="{Binding Bid.Rate}" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
+            <TextBlock Text="{Binding Ask.Rate}" Grid.Column="4" Style="{StaticResource AskTextStyle}"/>
+        </Grid>
+        
+
+        <!-- Properties & Buttons -->
+
+        <ContentControl Name="DetailsPanel"
+                        Grid.Row="1"
+                        Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}"/>
+
+        <!-- level 2 -->
+
+        <ContentControl Name="Level2Panel"
+                        Grid.Row="2"
+                        Visibility="{Binding IsLevel2Visible, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}"/>
     </Grid>
+
 </UserControl>

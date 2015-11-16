@@ -165,8 +165,6 @@ namespace TickTrader.BotTerminal
                 ActivateItem(model);
 
                 model.Closed += model_Closed;
-
-                
             }
             catch (Exception ex)
             {
