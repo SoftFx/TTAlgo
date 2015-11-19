@@ -12,6 +12,10 @@ namespace TickTrader.Algo.Core.Repository
 {
     internal class AlgoSandbox : NoTimeoutByRefObject
     {
+        public AlgoSandbox()
+        {
+        }
+
         public IEnumerable<AlgoInfo> LoadAndInspect(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath);
@@ -32,9 +36,9 @@ namespace TickTrader.Algo.Core.Repository
             return metadata.Select(d => d.GetInteropCopy()).ToList();
         }
 
-        public IndicatorProxy CreateIndicator(string algoId, AlgoContext setup)
+        public IndicatorProxy CreateIndicator(string algoId, IAlgoContext context)
         {
-            return new IndicatorProxy(algoId, setup);
+            return new IndicatorProxy(algoId, context);
         }
     }
 }

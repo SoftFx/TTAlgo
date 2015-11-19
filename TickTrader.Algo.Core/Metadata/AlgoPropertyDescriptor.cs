@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Metadata
 {
@@ -22,7 +23,7 @@ namespace TickTrader.Algo.Core.Metadata
         DefaultValueTypeMismatch
     }
 
-    internal class AlgoPropertyDescriptor
+    internal class AlgoPropertyDescriptor : NoTimeoutByRefObject
     {
         public AlgoPropertyDescriptor(AlgoDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
         {

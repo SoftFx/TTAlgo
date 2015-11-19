@@ -6,16 +6,54 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IAlgoDataReader
+    public interface IDataSeriesBuffer
     {
-        int ReadNext();
-        void Update();
-        IDataSeriesBuffer GetInputBuffer(string id);
+        void IncrementVirtualSize();
     }
 
-    public interface IAlgoDataWriter
+    public interface IAlgoDataReader<TRow>
     {
-        void Extend();
-        IDataSeriesBuffer GetOutputBuffer(string id);
+        IEnumerable<TRow> ReadNext();
+        TRow ReRead();
+        void ExtendVirtual();
+        IDataSeriesBuffer BindInput(string id, InputFactory factory);
+    }
+
+    public interface IAlgoDataWriter<TRow>
+    {
+        void Init(IList<TRow> inputCache);
+        void Extend(TRow row);
+        IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
+    }
+
+    public interface InputStream<TRow>
+    {
+        bool ReadNext(out TRow rec);
+    }
+
+    public interface CollectionWriter<T, TRow>
+    {
+        void Append(TRow row, T data);
+        void WriteAt(int index, T data, TRow row);
+    }
+
+    public interface IAlgoContext
+    {
+        void Init();
+        IDataSeriesBuffer BindInput(string id, InputFactory factory);
+        IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
+        object GetParameter(string id);
+        int Read();
+        void MoveNext();
+    }
+
+    public interface InputFactory
+    {
+        InputDataSeries<T> CreateInput<T>();
+    }
+
+    public interface OutputFactory
+    {
+        OutputDataSeries<T> CreateOutput<T>();
     }
 }

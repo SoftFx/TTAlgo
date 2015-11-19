@@ -34,21 +34,37 @@ namespace TickTrader.BotTerminal
 
         public IndicatorSetupModel Setup { get; private set; }
 
-        private AlgoContext CreateContext(IndicatorSetupModel setupModel, Bar[] data)
+        private IAlgoContext CreateContext(IndicatorSetupModel setup, Bar[] data)
         {
-            MultiStreamReader<Api.Bar> reader = new MultiStreamReader<Api.Bar>("mStream", new FdkBarStream(data));
+            StreamReader<Api.Bar> reader = new StreamReader<Api.Bar>(new FdkBarStream(data));
 
-            foreach (var input in setupModel.Descriptor.Inputs)
+            foreach (var input in setup.Descriptor.Inputs)
             {
                 if (input.DataSeriesBaseTypeFullName == "System.Double")
-                    reader.AddMapping(input.Id, "mStream", b => b.Open);
+                    reader.AddMapping(input.Id, b => b.Open);
                 else
                     throw new Exception("DataSeries base type " + input.DataSeriesBaseTypeFullName + " is not supproted.");
-            } 
+            }
 
-            AlgoContext context = new AlgoContext();
+            DirectWriter<Api.Bar> writer = new DirectWriter<Api.Bar>();
 
-            foreach (var parameter in setupModel.Parameters)
+            foreach (var output in setup.Descriptor.Outputs)
+            {
+                if (output.DataSeriesBaseTypeFullName == "System.Double")
+                {
+                    XyDataSeries<DateTime, double> outputChartSeries = new XyDataSeries<DateTime, double>();
+                    writer.AddMapping(output.Id, new XySeriesWriter(outputChartSeries));
+                    Series.Add(outputChartSeries);
+                }
+                else
+                    throw new Exception("DataSeries base type " + output.DataSeriesBaseTypeFullName + " is not supproted.");
+            }
+
+            AlgoContext<Api.Bar> context = new AlgoContext<Api.Bar>();
+            context.Reader = reader;
+            context.Writer = writer;
+
+            foreach (var parameter in setup.Parameters)
                 context.SetParameter(parameter.Id, parameter.ValueObj);
 
             return context;
@@ -101,42 +117,47 @@ namespace TickTrader.BotTerminal
 
         private async Task BuildIndicator(CancellationToken cToken, Bar[] data)
         {
-            IndicatorProxy proxy = repItem.CreateIndicator(CreateContext(Setup, data));
+            try
+            {
+                IndicatorProxy proxy = repItem.CreateIndicator(CreateContext(Setup, data));
 
-            restarting = false;
+                restarting = false;
 
-            if (data == null)
-                return;
+                if (data == null)
+                    return;
 
-            await Task.Factory.StartNew(() =>
-                {
-                    if (cToken.IsCancellationRequested)
-                        return;
-
-                    try
+                await Task.Factory.StartNew(() =>
                     {
-                        int count = proxy.Reader.ReadNext();
+                        if (cToken.IsCancellationRequested)
+                            return;
 
-                        for (int i = 0; i < count; i++)
+                        int count;
+
+                        do
                         {
-                            if (cToken.IsCancellationRequested)
-                                return;
+                            count = proxy.Context.Read();
 
+                            for (int i = 0; i < count; i++)
+                            {
+                                if (cToken.IsCancellationRequested)
+                                    return;
 
-                            proxy.InvokeCalculate();
+                                proxy.Context.MoveNext();
+                                proxy.InvokeCalculate();
 
-                            //builder.Host.ReadNext();
-                            //builder.InvokeCalculate();
-
-                            if (cToken.IsCancellationRequested)
-                                break;
+                                if (cToken.IsCancellationRequested)
+                                    break;
+                            }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(ex);
-                    }
-                });
+                        while (count != 0);
+
+
+                    });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
         }
 
         public List<XyDataSeries<DateTime, double>> Series { get; private set; }
@@ -174,15 +195,49 @@ namespace TickTrader.BotTerminal
             {
                 Hi = fdkBar.High,
                 Lo = fdkBar.Low,
+                Open = fdkBar.Open,
+                Close = fdkBar.Close,
+                OpenTime = fdkBar.From
             };
-        }
-
-        public bool ReadNext(Api.Bar refRec, out Api.Bar rec)
-        {
-            throw new NotImplementedException();
         }
     }
 
+    internal class XySeriesWriter : CollectionWriter<double, Api.Bar>
+    {
+        private XyDataSeries<DateTime, double> chartData;
+
+        public XySeriesWriter(XyDataSeries<DateTime, double> chartData)
+        {
+            this.chartData = chartData;
+        }
+
+        public void Append(Api.Bar row, double data)
+        {
+            //Execute.OnUIThread(() => chartData.Append(row.OpenTime, data));
+        }
+
+        public void WriteAt(int index, double data, Api.Bar row)
+        {
+            Execute.OnUIThread(() => Update(row.OpenTime, data));
+        }
+
+        private void Update(DateTime barTime, double data)
+        {
+            int index = chartData.FindIndex(barTime, Abt.Controls.SciChart.Common.Extensions.SearchMode.Nearest);
+            if (index < 0)
+                chartData.Append(barTime, data);
+            else
+            {
+                if (chartData.XValues[index] == barTime)
+                    chartData.YValues[index] = data;
+                else if (index == chartData.Count - 1)
+                    chartData.Append(barTime, data);
+                else
+                    throw new NotImplementedException();
+            }
+
+        }
+    }
 
 //    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
 //    {

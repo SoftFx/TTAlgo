@@ -17,9 +17,9 @@ namespace TickTrader.Algo.Core.Repository
             this.Descriptor = info;
         }
 
-        public IndicatorProxy CreateIndicator(AlgoContext setup)
+        public IndicatorProxy CreateIndicator(IAlgoContext context)
         {
-            return sandbox.CreateIndicator(Id, setup);
+            return sandbox.CreateIndicator(Id, context);
         }
 
         public string Id { get { return Descriptor.Id; } }

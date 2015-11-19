@@ -8,23 +8,19 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IDataSeriesBuffer
-    {
-        void IncrementVirtualSize();
-    }
-
-    public abstract class DataSeriesBuffer<T> : Api.DataSeries<T>, IDataSeriesBuffer
+    public abstract class DataSeriesBuffer<T> : NoTimeoutByRefObject, Api.DataSeries<T>, IDataSeriesBuffer
     {
         private List<T> buffer = new List<T>();
 
         protected List<T> Buffer { get { return buffer; } }
+        protected T NanValue { get; set; }
 
         public virtual T this[int index]
         {
             get
             {
                 if (IsOutOfBoundaries(index))
-                    return default(T);
+                    return NanValue;
                 return buffer[GetRealIndex(index)];
             }
             set
@@ -32,7 +28,6 @@ namespace TickTrader.Algo.Core
                 if (!IsOutOfBoundaries(index))
                 {
                     int readlIndex = GetRealIndex(index);
-                    buffer[readlIndex] = value;
                     OnWrite(value, readlIndex);
                 }
             }
@@ -51,6 +46,16 @@ namespace TickTrader.Algo.Core
             if (Count >= BuffLength)
                 throw new Exception("Virtual size out of buffer boundaries!");
             Count++;
+        }
+
+        public void Append(T val)
+        {
+            Buffer.Add(val);
+        }
+
+        public void Append(IEnumerable<T> range)
+        {
+            Buffer.AddRange(range);
         }
 
         private int GetRealIndex(int virtualIndex)
@@ -86,18 +91,9 @@ namespace TickTrader.Algo.Core
 
     public class InputDataSeries<T> : DataSeriesBuffer<T>
     {
-        public InputDataSeries()
+        public InputDataSeries(T nanVal = default(T))
         {
-        }
-
-        public void Append(T val)
-        {
-            Buffer.Add(val);
-        }
-
-        public void Append(IEnumerable<T> range)
-        {
-            Buffer.AddRange(range);
+            NanValue = nanVal;
         }
 
         public void Update(int index, T val)
@@ -107,16 +103,35 @@ namespace TickTrader.Algo.Core
 
     public class InputDataSeries : InputDataSeries<double>, Api.DataSeries
     {
+        public InputDataSeries() : base(double.NaN) { }
     }
 
     public class OutputDataSeries<T> : DataSeriesBuffer<T>
     {
-        public OutputDataSeries(T defaultVal = default(T))
+        public OutputDataSeries(T nanVal = default(T))
         {
+            this.NanValue = nanVal;
         }
+
+        public void AppendEmpty()
+        {
+            Append(NanValue);
+            IncrementVirtualSize();
+            Appended(NanValue, Count - 1);
+        }
+
+        protected override void OnWrite(T data, int index)
+        {
+            Buffer[index] = data;
+            Updated(data, index);
+        }
+
+        public event Action<T, int> Updated = delegate { };
+        public event Action<T, int> Appended = delegate { };
     }
 
     public class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries
     {
+        public OutputDataSeries() : base(double.NaN) { }
     }
 }

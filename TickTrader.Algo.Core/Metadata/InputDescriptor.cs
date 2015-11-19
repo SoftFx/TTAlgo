@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    internal class InputDescriptor : AlgoPropertyDescriptor
+    internal class InputDescriptor : AlgoPropertyDescriptor, InputFactory
     {
         public InputDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
             : base(classMetadata, propertyInfo)
@@ -41,5 +41,13 @@ namespace TickTrader.Algo.Core.Metadata
         public bool IsShortDefinition { get; private set; }
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
+
+        InputDataSeries<T> InputFactory.CreateInput<T>()
+        {
+            if (typeof(T) == typeof(double) && IsShortDefinition)
+                return (InputDataSeries<T>)(object)new InputDataSeries();
+            else
+                return new InputDataSeries<T>();
+        }
     }
 }

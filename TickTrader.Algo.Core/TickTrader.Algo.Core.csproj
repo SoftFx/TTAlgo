@@ -40,9 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlgoContext.cs" />
-    <Compile Include="MultiStreamReader.cs" />
+    <Compile Include="StreamReader.cs" />
     <Compile Include="DataSeries.cs" />
-    <Compile Include="DataSeriesFactory.cs" />
     <Compile Include="IndicatorProxy.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\CircularList.cs" />
@@ -55,6 +54,7 @@
     <Compile Include="Metadata\InputDescriptor.cs" />
     <Compile Include="Metadata\OutputDescriptor.cs" />
     <Compile Include="Metadata\ParameterDescriptor.cs" />
+    <Compile Include="DirectWriter.cs" />
     <Compile Include="Repository\AlgoAssembly.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Repository\AlgoRepositoryItem.cs" />
