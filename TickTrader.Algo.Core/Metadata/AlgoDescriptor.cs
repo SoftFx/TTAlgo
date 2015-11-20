@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    internal class AlgoDescriptor
+    public class AlgoDescriptor
     {
         private static Dictionary<Type, AlgoDescriptor> cacheByType = new Dictionary<Type, AlgoDescriptor>();
         private static Dictionary<string, AlgoDescriptor> cacheByName = new Dictionary<string, AlgoDescriptor>();

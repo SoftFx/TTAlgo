@@ -16,13 +16,23 @@ namespace TickTrader.Algo.Core
 
         public void Extend(TRow row)
         {
-            foreach(var writer in writers.Values)
+            foreach (var writer in writers.Values)
                 writer.Extend();
         }
 
         public void AddMapping<T>(string outputId, CollectionWriter<T, TRow> targetCollection)
         {
             writers.Add(outputId, new CollectionWriter<T>(targetCollection));
+        }
+
+        public void AddMapping<T>(string outputId, List<T> targetCollection)
+        {
+            writers.Add(outputId, new CollectionWriter<T>(new ListWriter<T>(targetCollection)));
+        }
+
+        public void AddMapping<T, TList>(string outputId, List<TList> targetCollection, Func<TRow, T, TList> selector)
+        {
+            writers.Add(outputId, new CollectionWriter<T>(new ListWriter<T, TList>(targetCollection, selector)));
         }
 
         public IDataSeriesBuffer BindOutput(string id, OutputFactory factory)
@@ -33,7 +43,7 @@ namespace TickTrader.Algo.Core
             return writer.CreateProxy(factory);
         }
 
-        
+
         public void Init(IList<TRow> inputCache)
         {
             foreach (var writer in writers.Values)
@@ -70,6 +80,48 @@ namespace TickTrader.Algo.Core
                 outputProxy.Updated += (d, i) => target.WriteAt(i, d, InputData[i]);
                 outputProxy.Appended += (d, i) => target.Append(InputData[i], d);
                 return outputProxy;
+            }
+        }
+
+        private class ListWriter<T, TList> : CollectionWriter<T, TRow>
+        {
+            private IList<TList> list;
+            private Func<TRow, T, TList> selector;
+
+            public ListWriter(IList<TList> list, Func<TRow, T, TList> selector)
+            {
+                this.list = list;
+                this.selector = selector;
+            }
+
+            public void Append(TRow row, T data)
+            {
+                list.Add(selector(row, data));
+            }
+
+            public void WriteAt(int index, T data, TRow row)
+            {
+                list[index] = selector(row, data);
+            }
+        }
+
+        private class ListWriter<T> : CollectionWriter<T, TRow>
+        {
+            private IList<T> list;
+
+            public ListWriter(IList<T> list)
+            {
+                this.list = list;
+            }
+
+            public void Append(TRow row, T data)
+            {
+                list.Add(data);
+            }
+
+            public void WriteAt(int index, T data, TRow row)
+            {
+                list[index] = data;
             }
         }
     }

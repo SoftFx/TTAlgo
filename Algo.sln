@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Api", "TickTrader.Algo.Api\TickTrader.Algo.Api.csproj", "{8901C84D-FB62-433C-A25F-4D24255B9453}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Core", "TickTrader.Algo.Core\TickTrader.Algo.Core.csproj", "{8BAB901C-10BB-4EB7-B81E-716FA05B6957}"
@@ -14,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMachinarium", "StateMachinarium\StateMachinarium.csproj", "{9771258D-F820-482E-B945-310D5B4E182C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.GuiModel", "TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj", "{C29222D6-E27C-4D1A-970F-A54851E0647E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CoreUsageSample", "TickTrader.Algo.CoreUsageSample\TickTrader.Algo.CoreUsageSample.csproj", "{5206F70A-4970-4488-982D-C81E42550B07}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -53,6 +57,10 @@ Global
 		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5206F70A-4970-4488-982D-C81E42550B07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5206F70A-4970-4488-982D-C81E42550B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5206F70A-4970-4488-982D-C81E42550B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5206F70A-4970-4488-982D-C81E42550B07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

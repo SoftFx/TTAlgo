@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core.Metadata
         DefaultValueTypeMismatch
     }
 
-    internal class AlgoPropertyDescriptor : NoTimeoutByRefObject
+    public class AlgoPropertyDescriptor : NoTimeoutByRefObject
     {
         public AlgoPropertyDescriptor(AlgoDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
         {

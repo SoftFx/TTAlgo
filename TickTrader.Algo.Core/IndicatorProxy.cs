@@ -12,10 +12,10 @@ namespace TickTrader.Algo.Core
     {
         private IAlgoContext context;
 
-        public AlgoProxy(string algoId, IAlgoContext context)
+        public AlgoProxy(AlgoDescriptor descriptor, IAlgoContext context)
         {
             this.context = context;
-            Descriptor = AlgoDescriptor.Get(algoId);
+            Descriptor = descriptor;
 
             context.Init();
         }
@@ -23,8 +23,6 @@ namespace TickTrader.Algo.Core
         internal AlgoDescriptor Descriptor { get; private set; }
 
         public IAlgoContext Context { get { return context; } }
-        //public IAlgoDataReader Reader { get { return setup.Reader; } }
-        //public IAlgoDataWriter Writer { get { return setup.Writer; } }
 
         internal void BindUpParameters(Api.Algo instance)
         {
@@ -50,7 +48,17 @@ namespace TickTrader.Algo.Core
         private Api.Indicator instance;
 
         public IndicatorProxy(string algoId, IAlgoContext context)
-            : base(algoId, context)
+            : this(AlgoDescriptor.Get(algoId), context)
+        {
+        }
+
+        public IndicatorProxy(Type indicatorType, IAlgoContext context)
+            : this(AlgoDescriptor.Get(indicatorType), context)
+        {
+        }
+
+        public IndicatorProxy(AlgoDescriptor descriptor, IAlgoContext context)
+            : base(descriptor, context)
         {
             if (Descriptor.AlgoLogicType != AlgoTypes.Indicator)
                 throw new Exception("This is not an indicator.");

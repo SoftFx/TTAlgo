@@ -193,11 +193,12 @@ namespace TickTrader.BotTerminal
         {
             return new Api.Bar()
             {
-                Hi = fdkBar.High,
-                Lo = fdkBar.Low,
+                High = fdkBar.High,
+                Low = fdkBar.Low,
                 Open = fdkBar.Open,
                 Close = fdkBar.Close,
-                OpenTime = fdkBar.From
+                OpenTime = fdkBar.From,
+                Volume = fdkBar.Volume
             };
         }
     }

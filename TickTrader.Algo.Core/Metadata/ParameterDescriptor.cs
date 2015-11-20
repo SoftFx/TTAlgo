@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Metadata
 {
-    internal class ParameterDescriptor : AlgoPropertyDescriptor
+    public class ParameterDescriptor : AlgoPropertyDescriptor
     {
         public ParameterDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
             : base(classMetadata, propertyInfo)
