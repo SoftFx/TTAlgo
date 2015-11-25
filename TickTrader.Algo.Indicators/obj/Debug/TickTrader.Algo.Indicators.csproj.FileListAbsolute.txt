@@ -1,0 +1,17 @@
+D:\testPr\TickTrader.Algo.Indicators\bin\Debug\TestAlgoProject.dll
+D:\testPr\TickTrader.Algo.Indicators\bin\Debug\TestAlgoProject.pdb
+D:\testPr\TickTrader.Algo.Indicators\bin\Debug\nunit.framework.dll
+D:\testPr\TickTrader.Algo.Indicators\bin\Debug\TickTrader.Algo.Api.dll
+D:\testPr\TickTrader.Algo.Indicators\bin\Debug\nunit.framework.xml
+D:\testPr\TickTrader.Algo.Indicators\bin\Debug\TickTrader.Algo.Api.pdb
+D:\testPr\TickTrader.Algo.Indicators\obj\Debug\TickTrader.Algo.Indicators.csprojResolveAssemblyReference.cache
+D:\testPr\TickTrader.Algo.Indicators\obj\Debug\TestAlgoProject.dll
+D:\testPr\TickTrader.Algo.Indicators\obj\Debug\TestAlgoProject.pdb
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\bin\Debug\TickTrader.Algo.Indicators.dll
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\bin\Debug\TickTrader.Algo.Indicators.pdb
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\bin\Debug\nunit.framework.dll
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\bin\Debug\nunit.framework.xml
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\bin\Debug\TickTrader.Algo.Api.pdb
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\obj\Debug\TickTrader.Algo.Indicators.csprojResolveAssemblyReference.cache
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\obj\Debug\TickTrader.Algo.Indicators.dll
+D:\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Indicators\obj\Debug\TickTrader.Algo.Indicators.pdb

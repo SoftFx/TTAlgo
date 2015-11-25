@@ -1,0 +1,1 @@
+﻿On twoDays EURUSD test realisation give a 1.014e-10 error
