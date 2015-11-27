@@ -42,14 +42,10 @@ namespace TickTrader.Algo.Indicators.Functions
 
 
         public static double SmoothedMA(int position, int period, double prev_value, List<double> price, int isSeries = 1)
-          {
+        {
         //---
             double result = 0.0;
         //--- check position
-            if (price.Count == 91)
-            {
-                int a = 0;
-            }
 
             if(period>0)
             {
@@ -63,7 +59,7 @@ namespace TickTrader.Algo.Indicators.Functions
                     if (position < price.Count - period)
                         result = (prev_value * (period - 1) + price[position]) / period;
                 }
-                 else
+                else
                 {
                     if (position==period-1)
                     {
@@ -74,9 +70,25 @@ namespace TickTrader.Algo.Indicators.Functions
                         result = (prev_value * (period - 1) + price[position]) / period;
                 }
               
-             }
+            }
         //---
            return(result);
-          }
+        }
+
+        public static double ExponentialMA(int position, int period, double prev_value, List<double> price, int isSeries = 1)
+        {
+            //---
+            double result = 0.0;
+            //--- check position
+
+            if (period > 0)
+            {
+                double pr = 2.0 / (period + 1.0);
+                if (position < price.Count)
+                    result = prev_value * (1-pr) + price[position] *pr;
             }
+            //---
+            return (result);
+        }
+    }
 }

@@ -50,8 +50,13 @@
     <Compile Include="Accumulation\Accumulation.cs" />
     <Compile Include="Alligator\Alligator.cs" />
     <Compile Include="ATR\ATR.cs" />
+    <Compile Include="Awesome\Awesome.cs" />
     <Compile Include="Bands\Bands.cs" />
+    <Compile Include="Bears\Bears.cs" />
+    <Compile Include="Bulls\Bulls.cs" />
+    <Compile Include="CCI\CCI.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
+    <Compile Include="HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Momentum\Momentum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleMovingAverage\SimpleMovingAverage.cs" />
