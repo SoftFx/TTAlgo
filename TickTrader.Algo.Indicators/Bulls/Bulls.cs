@@ -26,12 +26,12 @@ namespace TickTrader.Algo.Indicators.Bulls
 
             ExtBullsBuffer[0] = Double.NaN;
 
-            if (Bars.Count == 0)
+            if (Bars.Count == 1)
             {
                 ExtBullsBuffer[0] = Bars[0].High - Bars[0].Close;
                 PrevEMA = Bars[0].Close;
             }
-            else
+            if (Bars.Count > 1)
             {
                 double buf = MovingAverages.ExponentialMA(0, BullsPeriod, PrevEMA,
                     Bars.Take(1).Select(b => b.Close).ToList());
