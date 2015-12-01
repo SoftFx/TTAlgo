@@ -1,9 +1,0 @@
-d:\testPr\TestAlgoProject\bin\Debug\TestAlgoProject.dll
-d:\testPr\TestAlgoProject\bin\Debug\TestAlgoProject.pdb
-d:\testPr\TestAlgoProject\bin\Debug\TickTrader.Algo.Api.dll
-d:\testPr\TestAlgoProject\bin\Debug\TickTrader.Algo.Api.pdb
-d:\testPr\TestAlgoProject\obj\Debug\TestAlgoProject.csprojResolveAssemblyReference.cache
-d:\testPr\TestAlgoProject\obj\Debug\TestAlgoProject.dll
-d:\testPr\TestAlgoProject\obj\Debug\TestAlgoProject.pdb
-D:\testPr\TestAlgoProject\bin\Debug\nunit.framework.dll
-D:\testPr\TestAlgoProject\bin\Debug\nunit.framework.xml
