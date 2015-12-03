@@ -27,27 +27,21 @@ namespace TickTrader.Algo.Indicators.MACD
         [Output]
         public DataSeries ExtSignalBuffer { get; set; }
 
-        private double prevFastVal = 0;
-        private double prevSlowVal = 0;
 
+        private double prevTF;
         protected override void Calculate()
         {
             ExtMacdBuffer[0] = Double.NaN;
             ExtSignalBuffer[0] = Double.NaN;
 
-            if (Close.Count == Math.Max(InpFastEMA, InpSlowEMA))
-            {
-                prevFastVal = Close[0];
-                prevSlowVal = Close[0];
-            }
 
             if (Close.Count >= Math.Max(InpFastEMA, InpSlowEMA))
             {
-                double fastVal = MovingAverages.ExponentialMA(0, InpFastEMA, prevFastVal, Close.ToList());
-                double slowVal = MovingAverages.ExponentialMA(0, InpSlowEMA, prevSlowVal, Close.ToList());
+                //double fastVal = MovingAverages.ExponentialMA(0, InpFastEMA, prevFastVal, Close.ToList());
+                double fastVal = MovingAverages.ExponentialMAinPlace(0, InpFastEMA, Close.ToList());
+                //double slowVal = MovingAverages.ExponentialMA(0, InpSlowEMA, prevSlowVal, Close.ToList());
+                double slowVal = MovingAverages.ExponentialMAinPlace(0, InpSlowEMA, Close.ToList());
                 ExtMacdBuffer[0] = fastVal - slowVal;
-                prevFastVal = fastVal;
-                prevSlowVal = slowVal;
             }
 
             if (Close.Count >= Math.Max(InpFastEMA, InpSlowEMA) + InpSignalSMA - 1)

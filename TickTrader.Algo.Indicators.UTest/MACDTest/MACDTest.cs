@@ -61,8 +61,8 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 250; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                Assert.Greater(1e-8, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                Assert.Greater(1e-8, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }
@@ -105,8 +105,8 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 250; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                Assert.Greater(1e-8, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                Assert.Greater(1e-8, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }
@@ -149,8 +149,8 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 350; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }
@@ -193,8 +193,8 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 350; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }

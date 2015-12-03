@@ -68,7 +68,11 @@
     <Compile Include="IchimokuTest\IchimokuTest.cs" />
     <Compile Include="MACDTest\MACDTest.cs" />
     <Compile Include="MomentumTest\MomentumTest.cs" />
+    <Compile Include="OsMATest\OsMATest.cs" />
+    <Compile Include="PorabolicTest\PorabolicTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RSITest\RSITest.cs" />
+    <Compile Include="StochasticTest\StochasticTest.cs" />
     <Compile Include="TTQuoteFileReader.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -83,7 +87,9 @@
   <ItemGroup>
     <Content Include="AccumulationTest\TestReport.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

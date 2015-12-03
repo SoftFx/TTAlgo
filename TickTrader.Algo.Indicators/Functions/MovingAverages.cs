@@ -90,5 +90,31 @@ namespace TickTrader.Algo.Indicators.Functions
             //---
             return (result);
         }
+
+        public static double ExponentialMAinPlace(int position, int period, List<double> price, int isSeries = 1)
+        {
+            //---
+            double result = 0.0;
+            //--- check position
+
+
+
+            if (period > 0)
+            {
+                double pr = 2.0 / (period + 1.0);
+                double mul = 1;
+                int i = position;
+                while (i < price.Count && mul > 0.000000001)
+                {
+                    result += price[i]*pr*mul;
+                    mul *= (1 - pr);
+                    i++;
+                }
+            }
+            //---
+            return (result);
+        }
+
+
     }
 }
