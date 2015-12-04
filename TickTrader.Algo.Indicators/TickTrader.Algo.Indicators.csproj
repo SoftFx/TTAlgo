@@ -66,8 +66,11 @@
     <Compile Include="RSI\RSI.cs" />
     <Compile Include="SimpleMovingAverage\SimpleMovingAverage.cs" />
     <Compile Include="Stochastic\Stochastic.cs" />
+    <Compile Include="ZigZag\ZigZag.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="ZigZag\backup.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy  /Y $(TargetDir)*.* d:\botTer\AlgoRepository\</PostBuildEvent>

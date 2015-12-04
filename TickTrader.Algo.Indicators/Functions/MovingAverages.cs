@@ -75,6 +75,30 @@ namespace TickTrader.Algo.Indicators.Functions
            return(result);
         }
 
+        public static double SmoothedMAinPlace(int position, int period,  List<double> price, int isSeries = 1)
+        {
+            //---
+            double result = 0.0;
+            //--- check position
+            double reg = 0;
+            if (period > 0)
+            {
+                double pr = 1.0 / period;
+                double mul = 1;
+                
+                int i = position;
+                while (i < price.Count && mul > 0.000000001)
+                {
+                    result += price[i] * pr * mul;
+                    reg += pr*mul;
+                    mul *= (1 - pr);
+                    i++;
+                }
+            }
+            //---
+            return (result/reg);
+        }
+
         public static double ExponentialMA(int position, int period, double prev_value, List<double> price, int isSeries = 1)
         {
             //---

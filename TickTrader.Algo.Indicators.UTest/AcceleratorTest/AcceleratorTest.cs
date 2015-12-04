@@ -45,9 +45,9 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
             writer.AddMapping("ExtDnBuffer", testResDn);
 
             builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
-            builder.SetParameter("PeriodFast", 5.0);
-            builder.SetParameter("PeriodSlow", 34.0);
-            builder.SetParameter("DataLimit", 38.0);
+            builder.SetParameter("PeriodFast", 5);
+            builder.SetParameter("PeriodSlow", 34);
+            builder.SetParameter("DataLimit", 38);
 
             builder.ReadAllAndBuild();
 
@@ -92,9 +92,9 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
             writer.AddMapping("ExtDnBuffer", testResDn);
 
             builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
-            builder.SetParameter("PeriodFast", 5.0);
-            builder.SetParameter("PeriodSlow", 34.0);
-            builder.SetParameter("DataLimit", 38.0);
+            builder.SetParameter("PeriodFast", 5);
+            builder.SetParameter("PeriodSlow", 34);
+            builder.SetParameter("DataLimit", 38);
 
             builder.ReadAllAndBuild();
 
@@ -139,9 +139,9 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
             writer.AddMapping("ExtDnBuffer", testResDn);
 
             builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
-            builder.SetParameter("PeriodFast", 5.0);
-            builder.SetParameter("PeriodSlow", 34.0);
-            builder.SetParameter("DataLimit", 38.0);
+            builder.SetParameter("PeriodFast", 5);
+            builder.SetParameter("PeriodSlow", 34);
+            builder.SetParameter("DataLimit", 38);
 
             builder.ReadAllAndBuild();
 
@@ -186,9 +186,9 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
             writer.AddMapping("ExtDnBuffer", testResDn);
 
             builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
-            builder.SetParameter("PeriodFast", 5.0);
-            builder.SetParameter("PeriodSlow", 34.0);
-            builder.SetParameter("DataLimit", 38.0);
+            builder.SetParameter("PeriodFast", 5);
+            builder.SetParameter("PeriodSlow", 34);
+            builder.SetParameter("DataLimit", 38);
 
             builder.ReadAllAndBuild();
 

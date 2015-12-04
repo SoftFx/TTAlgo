@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Functions;
 
 
 namespace TickTrader.Algo.Indicators.Accelerator
 {
     public class Accelerator : Indicator
     {
-        [Parameter(DefaultValue = 5.0)]
-        public double PeriodFast { get; set; }
+        [Parameter(DefaultValue = 5)]
+        public int PeriodFast { get; set; }
 
-        [Parameter(DefaultValue = 34.0)]
-        public double PeriodSlow { get; set; }
+        [Parameter(DefaultValue = 34)]
+        public int PeriodSlow { get; set; }
 
-        [Parameter(DefaultValue = 38.0)]
-        public double DataLimit { get; set; }
+        [Parameter(DefaultValue = 38)]
+        public int DataLimit { get; set; }
 
 
         [Input]
@@ -32,50 +33,41 @@ namespace TickTrader.Algo.Indicators.Accelerator
         [Output]
         public DataSeries ExtDnBuffer { get; set; }
 
-        private List<double> ExtMacdBuf;
+
 
         protected override void Calculate()
         {
-            if(ExtMacdBuf==null)
-                ExtMacdBuf=new List<double>(Bars.Count);
-            //--- check for rates total
-            if (Bars.Count <= DataLimit)
-            {
-                ExtUpBuffer[0] = Double.NaN;
-                ExtDnBuffer[0] = Double.NaN;
-                ExtACBuffer[0] = Double.NaN;
-                return;
-            }
 
-            ExtMacdBuf.Add(Bars.Take(Convert.ToInt32(PeriodFast)).Select(b => (b.High+b.Low)/2).Average()
-                - Bars.Take(Convert.ToInt32(PeriodSlow)).Select(b => (b.High + b.Low) / 2).Average());
+            ExtUpBuffer[0] = Double.NaN;
+            ExtDnBuffer[0] = Double.NaN;
+            ExtACBuffer[0] = Double.NaN;
 
             double Signal = 0.0;
-            if (ExtMacdBuf.Count <= 5)
+            double prevSignal = 0.0;
+      
+
+            if (Bars.Count >= 6 + Math.Max(PeriodFast, PeriodSlow))
             {
-                Signal = ExtMacdBuf.Take(5).Average();
-            }
-            else
-            {
+                double macd = GetMACD(0);
+                double macdPrev = GetMACD(1);
+
                 for (int i = 0; i < 5; i++)
                 {
-                    Signal += ExtMacdBuf[ExtMacdBuf.Count - 1 - i];
+                    Signal += GetMACD(i);
                 }
                 Signal /= 5;
-            }
 
-            //--- signal line counted in the 2-nd additional buffer
+                for (int i = 1; i < 6; i++)
+                {
+                    prevSignal += GetMACD(i);
+                }
+                prevSignal /= 5;
 
-            //--- dispatch values between 2 buffers
-            bool up = true;
-
-            double current = ExtMacdBuf[ExtMacdBuf.Count - 1] - Signal;
-            if(ExtACBuffer[1]!=Double.NaN)
-                up = current > ExtACBuffer[1];
-            else
-                up = current > 0.0;
-
-            if (!up)
+                bool up = true;
+                double current = macd - Signal;
+                double prev = macdPrev - prevSignal;
+                up = current > prev;
+                if (!up)
                 {
                     ExtUpBuffer[0] = 0.0;
                     ExtDnBuffer[0] = current;
@@ -88,5 +80,18 @@ namespace TickTrader.Algo.Indicators.Accelerator
                 ExtACBuffer[0] = current;
             }
 
+            }
+        private double GetMACD(int pos)
+        {
+            
+            double fastRes = MovingAverages.SimpleMA(pos, PeriodFast,
+                Bars.Take(pos + PeriodFast).Select(b => (b.High + b.Low)/2).ToList());
+            double slowRes = MovingAverages.SimpleMA(pos, PeriodSlow,
+                Bars.Take(pos + PeriodSlow).Select(b => (b.High + b.Low) / 2).ToList());
+            return fastRes - slowRes;
         }
+
+    }
+
+
 }

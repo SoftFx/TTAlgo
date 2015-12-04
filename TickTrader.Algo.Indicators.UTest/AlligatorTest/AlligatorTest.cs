@@ -222,13 +222,8 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
             {
                 double a = testResBlue[testInd] * 13 - testResBlue[testInd - 1] * 12;
                 double b = metaResBlue[testInd] * 13 - metaResBlue[testInd - 1] * 12;
-                Assert.Greater(1e-8, Math.Abs((testResBlue[testInd] * 13 - testResBlue[testInd - 1] * 12) - (metaResBlue[testInd] * 13 - metaResBlue[testInd - 1] * 12)));
                 Assert.Greater(1e-6, Math.Abs(testResBlue[testInd] - metaResBlue[testInd]));
-
-                Assert.Greater(1e-8, Math.Abs((testResRed[testInd] * 13 - testResRed[testInd - 1] * 12) - (metaResRed[testInd] * 13 - metaResRed[testInd - 1] * 12)));
                 Assert.Greater(1e-6, Math.Abs(testResRed[testInd] - metaResRed[testInd]));
-
-                Assert.Greater(1e-8, Math.Abs((testResLime[testInd] * 13 - testResLime[testInd - 1] * 12) - (metaResLime[testInd] * 13 - metaResLime[testInd - 1] * 12)));
                 Assert.Greater(1e-6, Math.Abs(testResLime[testInd] - metaResLime[testInd]));
             }
         }
@@ -292,13 +287,8 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
             {
                 double a = testResBlue[testInd] * 13 - testResBlue[testInd - 1] * 12;
                 double b = metaResBlue[testInd] * 13 - metaResBlue[testInd - 1] * 12;
-                Assert.Greater(1e-8, Math.Abs((testResBlue[testInd] * 13 - testResBlue[testInd - 1] * 12) - (metaResBlue[testInd] * 13 - metaResBlue[testInd - 1] * 12)));
                 Assert.Greater(1e-6, Math.Abs(testResBlue[testInd] - metaResBlue[testInd]));
-
-                Assert.Greater(1e-8, Math.Abs((testResRed[testInd] * 13 - testResRed[testInd - 1] * 12) - (metaResRed[testInd] * 13 - metaResRed[testInd - 1] * 12)));
                 Assert.Greater(1e-6, Math.Abs(testResRed[testInd] - metaResRed[testInd]));
-
-                Assert.Greater(1e-8, Math.Abs((testResLime[testInd] * 13 - testResLime[testInd - 1] * 12) - (metaResLime[testInd] * 13 - metaResLime[testInd - 1] * 12)));
                 Assert.Greater(1e-6, Math.Abs(testResLime[testInd] - metaResLime[testInd]));
             }
         }

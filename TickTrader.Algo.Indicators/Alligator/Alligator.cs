@@ -44,8 +44,11 @@ namespace TickTrader.Algo.Indicators.Alligator
 
         protected override void Calculate()
         {
-            ExtBlueBuffer[0] = Indicators.Functions.MovingAverages.SmoothedMA(InpJawsShift,
-                InpJawsPeriod, ExtBlueBuffer[1], (Bars.Select(b => (b.High + b.Low)/2)).ToList());
+            ExtBlueBuffer[0] = MovingAverages.SmoothedMAinPlace(InpJawsShift, InpJawsPeriod,
+                (Bars.Select(b => (b.High + b.Low)/2)).ToList());/*
+                
+                MovingAverages.SmoothedMA(InpJawsShift, InpJawsPeriod, ExtBlueBuffer[1],
+                (Bars.Select(b => (b.High + b.Low)/2)).ToList());*/
             ExtRedBuffer[0] = Indicators.Functions.MovingAverages.SmoothedMA(InpTeethShift,
                 InpTeethPeriod, ExtRedBuffer[1], (Bars.Select(b => (b.High + b.Low) / 2)).ToList());
             ExtLimeBuffer[0] = Indicators.Functions.MovingAverages.SmoothedMA(InpLipsShift,
