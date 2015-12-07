@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Indicators.MACD
             ExtMacdBuffer[0] = Double.NaN;
             ExtSignalBuffer[0] = Double.NaN;
 
+            List<double> localSignalBuffer = new List<double>();
 
             if (Close.Count >= Math.Max(InpFastEMA, InpSlowEMA))
             {
@@ -44,9 +45,17 @@ namespace TickTrader.Algo.Indicators.MACD
                 ExtMacdBuffer[0] = fastVal - slowVal;
             }
 
+            
             if (Close.Count >= Math.Max(InpFastEMA, InpSlowEMA) + InpSignalSMA - 1)
             {
-                ExtSignalBuffer[0] = MovingAverages.SimpleMA(0, InpSignalSMA, ExtMacdBuffer.ToList());
+                for (int i = 0; i < InpSignalSMA; i++)
+                {
+                    double fastVal = MovingAverages.ExponentialMAinPlace(i, InpFastEMA, Close.ToList());
+                    double slowVal = MovingAverages.ExponentialMAinPlace(i, InpSlowEMA, Close.ToList());
+                    localSignalBuffer.Add(fastVal - slowVal); 
+                }
+
+                ExtSignalBuffer[0] = MovingAverages.SimpleMA(0, InpSignalSMA, localSignalBuffer);
             }
 
 

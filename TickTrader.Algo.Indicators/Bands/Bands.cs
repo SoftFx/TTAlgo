@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Functions;
 
 namespace TickTrader.Algo.Indicators.Bands
 {
@@ -7,8 +10,8 @@ namespace TickTrader.Algo.Indicators.Bands
     [Indicator]
     public class Bands : Indicator
     {
-        [Parameter(DefaultValue = 20.0)]
-        public double Period { get; set; }
+        [Parameter(DefaultValue = 20)]
+        public int Period { get; set; }
 
         [Parameter(DefaultValue = 0.0)]
         public double Shift { get; set; }
@@ -38,9 +41,11 @@ namespace TickTrader.Algo.Indicators.Bands
 
             //--- middle line
 
-            ExtMovingBuffer[0] = SimpleMovAv(0, Convert.ToInt32(Period), Close);
+            ExtMovingBuffer[0] = MovingAverages.SimpleMA(0,Period, Close.Take(Period).ToList());
+            List<double> bufferForSTDcalc = new List<double>();
+            //SimpleMovAv(0, Convert.ToInt32(Period), Close);
             //--- calculate and write down StdDev
-            double stdDev = StdDev_Func(0, Close, ExtMovingBuffer, Convert.ToInt32(Period));
+            double stdDev = StdDev_Func(0, Close, ExtMovingBuffer[0], Convert.ToInt32(Period));
             //--- upper line
             ExtUpperBuffer[0] = ExtMovingBuffer[0] + Deviations * stdDev;
             //--- lower line
@@ -48,23 +53,8 @@ namespace TickTrader.Algo.Indicators.Bands
             //---
         }
 
-        protected double SimpleMovAv(int position, int period, DataSeries price)
-        {
-            //---
-            double result = 0.0;
-            //--- check position
-            if (position <= price.Count - Period && period > 0)
-            {
-                //--- calculate value
-                for (int i = 0; i < period; i++)
-                    result += price[position + i];
-                result /= period;
-            }
-            //---
-            return (result);
-        }
 
-        protected double StdDev_Func(int position, DataSeries price, DataSeries movAvPrice, int period)
+        protected double StdDev_Func(int position, DataSeries price, double averageValue, int period)
         {
 
             //--- variables
@@ -74,7 +64,7 @@ namespace TickTrader.Algo.Indicators.Bands
             {
                 //--- calcualte StdDev
                 for (int i = 0; i < period; i++)
-                    stdDevDTmp += Math.Pow(price[position + i] - movAvPrice[position], 2);
+                    stdDevDTmp += Math.Pow(price[position + i] - averageValue, 2);
                 stdDevDTmp = Math.Sqrt(stdDevDTmp / period);
             }
             //--- return calculated value

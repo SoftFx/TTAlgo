@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Indicators.Bulls
         [Output]
         public DataSeries ExtBullsBuffer { get; set; }
 
-        private double PrevEMA;
+        //private double PrevEMA;
         protected override void Calculate()
         {
 
@@ -29,15 +29,18 @@ namespace TickTrader.Algo.Indicators.Bulls
             if (Bars.Count == 1)
             {
                 ExtBullsBuffer[0] = Bars[0].High - Bars[0].Close;
-                PrevEMA = Bars[0].Close;
+                //PrevEMA = Bars[0].Close;
             }
             if (Bars.Count > 1)
             {
-                double buf = MovingAverages.ExponentialMA(0, BullsPeriod, PrevEMA,
-                    Bars.Take(1).Select(b => b.Close).ToList());
+                //double buf = MovingAverages.ExponentialMA(0, BullsPeriod, PrevEMA,
+                //    Bars.Take(1).Select(b => b.Close).ToList());
+
+
+                double buf = MovingAverages.ExponentialMAinPlace(0, BullsPeriod, Bars.Select(b => b.Close).ToList());
 
                 ExtBullsBuffer[0] = Bars[0].High - buf;
-                PrevEMA = buf;
+                //PrevEMA = buf;
             }
         }
     }

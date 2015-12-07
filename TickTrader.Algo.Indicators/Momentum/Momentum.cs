@@ -10,8 +10,8 @@ namespace  TickTrader.Algo.Indicators.Momentum
     [Indicator]
     public class Momentum : TickTrader.Algo.Api.Indicator
     {
-        [Parameter(DefaultValue = 14.0)]
-        public double Period { get; set; }
+        [Parameter(DefaultValue = 14)]
+        public int Period { get; set; }
 
         [Input]
         public DataSeries Close { get; set; }
@@ -30,8 +30,8 @@ namespace  TickTrader.Algo.Indicators.Momentum
             else
             {
                 double a = Close[0];
-                double b = Close[Convert.ToInt32(Period)];
-                ExtMomBuffer[0] = Close[0] * 100 / Close[Convert.ToInt32(Period)];
+                double b = Close[Period];
+                ExtMomBuffer[0] = Close[0] * 100 / Close[Period];
             }
 
         }

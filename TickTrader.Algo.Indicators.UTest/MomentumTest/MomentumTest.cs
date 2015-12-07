@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             writer.AddMapping("ExtMomBuffer", testRes);
 
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
-            builder.SetParameter("Period", 14.0);
+            builder.SetParameter("Period", 14);
 
             builder.ReadAllAndBuild();
 
@@ -69,7 +69,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             writer.AddMapping("ExtMomBuffer", testRes);
 
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
-            builder.SetParameter("Period", 14.0);
+            builder.SetParameter("Period", 14);
 
             builder.ReadAllAndBuild();
 
@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             writer.AddMapping("ExtMomBuffer", testRes);
 
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
-            builder.SetParameter("Period", 14.0);
+            builder.SetParameter("Period", 14);
 
             builder.ReadAllAndBuild();
 
@@ -139,7 +139,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             writer.AddMapping("ExtMomBuffer", testRes);
 
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
-            builder.SetParameter("Period", 14.0);
+            builder.SetParameter("Period", 14);
 
             builder.ReadAllAndBuild();
 

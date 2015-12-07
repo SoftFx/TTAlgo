@@ -30,34 +30,32 @@ namespace TickTrader.Algo.Indicators.OsMA
         private double prevSlowVal;
 
         private List<double> ExtMacdBuffer = new List<double>();
-        private List<double> ExtSignalBuffer = new List<double>();
-
-
+        //private List<double> ExtSignalBuffer = new List<double>();
+        private double fastVal;
+        private double slowVal;
+        private double signal;
         protected override void Calculate()
         {
 
 
-            if (Close.Count == Math.Max(InpFastEMA, InpSlowEMA))
-            {
-                prevFastVal = Close[0];
-                prevSlowVal = Close[0];
-            }
-
+            ExtMacdBuffer.Clear();
+            
             if (Close.Count >= Math.Max(InpFastEMA, InpSlowEMA))
             {
-                double fastVal = MovingAverages.ExponentialMA(0, InpFastEMA, prevFastVal, Close.ToList());
-                double slowVal = MovingAverages.ExponentialMA(0, InpSlowEMA, prevSlowVal, Close.ToList());
-                ExtMacdBuffer.Add(fastVal - slowVal);
-                prevFastVal = fastVal;
-                prevSlowVal = slowVal;
+                for (int i = InpSignalSMA - 1; i >= 0; i--)
+                {
+                    fastVal = MovingAverages.ExponentialMAinPlace(i, InpFastEMA, Close.ToList());
+                    slowVal = MovingAverages.ExponentialMAinPlace(i, InpSlowEMA, Close.ToList());
+                    ExtMacdBuffer.Add(fastVal - slowVal);
+                }
             }
 
             if (Close.Count >= Math.Max(InpFastEMA, InpSlowEMA) + InpSignalSMA - 1)
             {
-                ExtSignalBuffer.Add(MovingAverages.SimpleMA(ExtMacdBuffer.Count - InpSignalSMA, InpSignalSMA,
-                    ExtMacdBuffer));
+                signal = MovingAverages.SimpleMA(ExtMacdBuffer.Count - InpSignalSMA, InpSignalSMA,
+                    ExtMacdBuffer);
 
-                ExtOsmaBuffer[0] = ExtMacdBuffer.Last() - ExtSignalBuffer.Last();
+                ExtOsmaBuffer[0] = ExtMacdBuffer.Last() - signal;
             }
         }
     }

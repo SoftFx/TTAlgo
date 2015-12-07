@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             int bidsLen = testResBB.Count;
             for (int testInd = 150; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
+                Assert.Greater(1e-8, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
 
             }
         }
@@ -89,7 +89,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             int bidsLen = testResBB.Count;
             for (int testInd = 150; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
+                Assert.Greater(1e-8, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
 
             }
         }
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             int bidsLen = testResBB.Count;
             for (int testInd = 200; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
+                Assert.Greater(1e-5, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
 
             }
         }
@@ -161,7 +161,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             int bidsLen = testResBB.Count;
             for (int testInd = 200; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
+                Assert.Greater(1e-5, Math.Abs(testResBB[testInd] - metaResBB[testInd]));
 
             }
         }

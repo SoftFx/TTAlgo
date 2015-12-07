@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             writer.AddMapping("ExtLowerBuffer", testResLw);
 
             builder = new IndicatorBuilder<Bar>(typeof(Bands.Bands), reader, writer);
-            builder.SetParameter("Period", 20.0);
+            builder.SetParameter("Period", 20);
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
   
@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             writer.AddMapping("ExtLowerBuffer", testResLw);
 
             builder = new IndicatorBuilder<Bar>(typeof(Bands.Bands), reader, writer);
-            builder.SetParameter("Period", 20.0);
+            builder.SetParameter("Period", 20);
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
 
@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             writer.AddMapping("ExtLowerBuffer", testResLw);
 
             builder = new IndicatorBuilder<Bar>(typeof(Bands.Bands), reader, writer);
-            builder.SetParameter("Period", 20.0);
+            builder.SetParameter("Period", 20);
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
 
@@ -184,7 +184,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             writer.AddMapping("ExtLowerBuffer", testResLw);
 
             builder = new IndicatorBuilder<Bar>(typeof(Bands.Bands), reader, writer);
-            builder.SetParameter("Period", 20.0);
+            builder.SetParameter("Period", 20);
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
 
