@@ -14,29 +14,31 @@ namespace TickTrader.Algo.Indicators.Functions
         //---
             double result = 0.0;
             //--- check position
-
-            if (isSeries == 1)
+            if (position >= 0)
             {
-                if (position + period <= price.Count && period > 0)
+                if (isSeries == 1)
                 {
-                    //--- calculate value
+                    if (position + period <= price.Count && period > 0)
+                    {
+                        //--- calculate value
 
-                    for (int i = 0; i < period; i++)
-                        result += price[position + i];
-                    result /= period;
+                        for (int i = 0; i < period; i++)
+                            result += price[position + i];
+                        result /= period;
+                    }
+                }
+                else
+                {
+
+                    if (position >= period - 1 && period > 0)
+                    {
+                        //--- calculate value
+                        for (int i = 0; i < period; i++) result += price[position - i];
+                        result /= period;
+                    }
                 }
             }
-            else
-            {
-                
-               if (position >= period - 1 && period > 0)
-               {
-                    //--- calculate value
-                    for (int i = 0; i < period; i++) result += price[position - i];
-                    result /= period;
-                    }
-            }
-        //---
+            //---
            return(result);
           }
 
@@ -47,7 +49,7 @@ namespace TickTrader.Algo.Indicators.Functions
             double result = 0.0;
         //--- check position
 
-            if(period>0)
+            if(period>0 && position >= 0)
             {
                  if (isSeries == 1)
                  {
@@ -81,7 +83,7 @@ namespace TickTrader.Algo.Indicators.Functions
             double result = 0.0;
             //--- check position
             double reg = 0;
-            if (period > 0)
+            if (period > 0 && position >= 0)
             {
                 double pr = 1.0 / period;
                 double mul = 1;
@@ -105,7 +107,7 @@ namespace TickTrader.Algo.Indicators.Functions
             double result = 0.0;
             //--- check position
 
-            if (period > 0)
+            if (period > 0 && position >= 0)
             {
                 double pr = 2.0 / (period + 1.0);
                 if (position < price.Count)
@@ -123,7 +125,7 @@ namespace TickTrader.Algo.Indicators.Functions
 
 
 
-            if (period > 0)
+            if (period > 0 && position >= 0)
             {
                 double pr = 2.0 / (period + 1.0);
                 double mul = 1;
@@ -138,6 +140,26 @@ namespace TickTrader.Algo.Indicators.Functions
             //---
             return (result);
         }
+
+        public static double LinearWMA(int position, int period, List<double> price, int isSeries = 1)
+        {
+            //---
+            double result = 0.0;
+            //--- check position
+
+            if (position>=0 && period > 0 && price.Count >= position + period)
+            {
+                for (int i = 0; i < period; i++)
+                {
+                    double mul = 2.0/(period*(period + 1));
+                    result += price[position+i] *mul*(period - i);
+                }
+            }
+            //---
+            return (result);
+        }
+
+
 
 
     }

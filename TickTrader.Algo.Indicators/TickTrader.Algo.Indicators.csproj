@@ -55,6 +55,7 @@
     <Compile Include="Bears\Bears.cs" />
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
+    <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Ichimoku\Ichimoku.cs" />
@@ -71,6 +72,7 @@
   <ItemGroup>
     <Content Include="ZigZag\backup.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy  /Y $(TargetDir)*.* d:\botTer\AlgoRepository\</PostBuildEvent>
