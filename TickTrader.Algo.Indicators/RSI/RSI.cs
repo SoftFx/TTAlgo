@@ -23,23 +23,16 @@ namespace TickTrader.Algo.Indicators.RSI
 
 
 
-        private double prevPos;
-        private double prevNeg;
+
+        private double diff;
         private double Pos;
         private double Neg;
 
-        private double diff;
-        double sump;
-        double sumn;
         protected override void Calculate()
         {
-            if (Bars.Count == 1)
-            {
-                sumn = 0.0;
-                sump = 0.0;
-            }
 
-            if (Bars.Count > 1 && Bars.Count <= InpRSIPeriod + 1)
+
+/*            if (Bars.Count > 1 && Bars.Count <= InpRSIPeriod + 1)
             {
                 diff = Bars[0].Close - Bars[1].Close;
                 if (diff > 0)
@@ -47,13 +40,24 @@ namespace TickTrader.Algo.Indicators.RSI
                 else
                     sumn -= diff;
             }
-
+            */
             if (Bars.Count == InpRSIPeriod + 1)
             {
+                
+                double sump=0;
+                double sumn=0;
+
+                for (int i = 0; i < InpRSIPeriod; i++)
+                {
+                    diff = Bars[i].Close - Bars[i+1].Close;
+                    if (diff > 0)
+                        sump += diff;
+                    else
+                        sumn -= diff;
+                }
                 Pos = sump / InpRSIPeriod;
                 Neg = sumn / InpRSIPeriod;
-                prevPos = Pos;
-                prevNeg = Neg;
+
                 if (Neg != 0.0)
                     ExtRSIBuffer[0] = 100.0 - (100.0 / (1.0 + Pos / Neg));
                 else
@@ -68,12 +72,17 @@ namespace TickTrader.Algo.Indicators.RSI
 
             if (Bars.Count > InpRSIPeriod + 1)
             {
-                diff = Bars[0].Close - Bars[1].Close;
-
-                Pos = (prevPos * (InpRSIPeriod - 1) + (diff > 0.0 ? diff : 0.0)) / InpRSIPeriod;
-                Neg = (prevNeg * (InpRSIPeriod - 1) + (diff < 0.0 ? -diff : 0.0)) / InpRSIPeriod;
-                prevPos = Pos;
-                prevNeg = Neg;
+                double mult = 1.0/ InpRSIPeriod;
+                Pos = 0;
+                Neg = 0;
+                for (int i = 0; i < Bars.Count - 1 && mult > 0.0000000001; i++)
+                {
+                    diff = Bars[i].Close - Bars[i+1].Close;
+                    Pos += mult*(diff > 0.0 ? diff : 0.0);
+                    Neg += mult*(diff < 0.0 ? -diff : 0.0);
+                    mult *= ((InpRSIPeriod - 1)*1.0)/InpRSIPeriod;
+                }
+               
                 if (Neg != 0.0)
                     ExtRSIBuffer[0] = 100.0 - 100.0 / (1 + Pos / Neg);
                 else

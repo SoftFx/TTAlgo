@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
