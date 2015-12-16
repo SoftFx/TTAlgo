@@ -38,11 +38,12 @@
 
         <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Margin="3">
             <MenuItem Header="BotTrader">
-                <MenuItem Header="New Order" IsEnabled="False"/>
-                <MenuItem Header="New Chart" IsEnabled="False"/>
+                <MenuItem Header="New Order..." IsEnabled="False"/>
+                <MenuItem Header="New Chart..." IsEnabled="False"/>
                 <Separator/>
-                <MenuItem Header="Log In" cal:Message.Attach="Connect" />
+                <MenuItem Header="Log In..." cal:Message.Attach="Connect" />
                 <MenuItem Header="Log Out" cal:Message.Attach="Disconnect" />
+                <MenuItem Header="Manage Accounts..." cal:Message.Attach="ManageAccounts"/>
                 <Separator/>
                 <MenuItem Header="Exit BotTrader"/>
             </MenuItem>

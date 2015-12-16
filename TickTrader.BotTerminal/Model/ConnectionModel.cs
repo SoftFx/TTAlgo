@@ -24,19 +24,21 @@ namespace TickTrader.BotTerminal
         private string password;
         private CancellationTokenSource stopSignal;
         private Task initTask;
-        private bool shouldReconnect;
+        //private bool shouldReconnect;
         private bool isFeedLoggedIn;
         private bool isTradeLoggedIn;
 
         public ConnectionModel()
         {
+            FeedCache = new FeedHistoryProviderModel();
+
             stateControl.AddTransition(States.Offline, Events.Started, States.Initializing);
-            stateControl.AddTransition(States.Offline, () => shouldReconnect, States.Initializing);
+            //stateControl.AddTransition(States.Offline, () => shouldReconnect, States.Initializing);
             stateControl.AddTransition(States.Initializing, Events.DoneInit, States.WaitingLogon);
             stateControl.AddTransition(States.Initializing, Events.InitFailed, States.Deinitializing);
             stateControl.AddTransition(States.Initializing, Events.OnLogout, States.Deinitializing);
             stateControl.AddTransition(States.Initializing, Events.StopRequested, States.Deinitializing);
-            stateControl.AddTransition(States.WaitingLogon, ()=> isFeedLoggedIn && isTradeLoggedIn, States.Online);
+            stateControl.AddTransition(States.WaitingLogon, () => isFeedLoggedIn && isTradeLoggedIn, States.Online);
             stateControl.AddTransition(States.WaitingLogon, Events.OnLogout, States.Deinitializing);
             stateControl.AddTransition(States.WaitingLogon, Events.StopRequested, States.Deinitializing);
             stateControl.AddTransition(States.Online, Events.OnLogout, States.Deinitializing);
@@ -45,7 +47,7 @@ namespace TickTrader.BotTerminal
 
             stateControl.OnEnter(States.Initializing, () => initTask = Init());
             stateControl.OnEnter(States.Deinitializing, () => Deinit());
-            stateControl.OnEnter(States.Online, () => Connected());
+            stateControl.OnEnter(States.Online, () => { FeedCache.Start(feedProxy); Connected(); });
 
             stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + from + " => " + to);
             stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT " + e);
@@ -53,6 +55,7 @@ namespace TickTrader.BotTerminal
 
         public DataFeed FeedProxy { get { return feedProxy; } }
         public DataTrade TradeProxy { get { return tradeProxy; } }
+        public FeedHistoryProviderModel FeedCache { get; private set; }
         public Exception LastError { get; private set; }
 
         public IStateProvider<States> State { get { return stateControl; } }
@@ -196,6 +199,8 @@ namespace TickTrader.BotTerminal
                 await initTask; // wait init task to stop
 
                 Task fireEvent = Disconnected.InvokeAsync(this);
+
+                await FeedCache.Shutdown();
 
                 Task stopFeed = Task.Factory.StartNew(
                     () =>

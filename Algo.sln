@@ -19,11 +19,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.GuiModel", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CoreUsageSample", "TickTrader.Algo.CoreUsageSample\TickTrader.Algo.CoreUsageSample.csproj", "{5206F70A-4970-4488-982D-C81E42550B07}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.UnitTests", "TickTrader.Algo.UnitTests\TickTrader.Algo.UnitTests.csproj", "{CF68B434-FB6E-4061-8921-454EDBC429EB}"
+EndProject
 Global
-	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
-		Manager = AnkhSVN - Subversion Support for Visual Studio
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -61,6 +59,10 @@ Global
 		{5206F70A-4970-4488-982D-C81E42550B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5206F70A-4970-4488-982D-C81E42550B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5206F70A-4970-4488-982D-C81E42550B07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF68B434-FB6E-4061-8921-454EDBC429EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF68B434-FB6E-4061-8921-454EDBC429EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF68B434-FB6E-4061-8921-454EDBC429EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF68B434-FB6E-4061-8921-454EDBC429EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

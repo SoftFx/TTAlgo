@@ -12,7 +12,7 @@
         <CollectionViewSource x:Key="SymbolGroupViewSrc" Source="{Binding Symbols}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Group" />
-                <scm:SortDescription PropertyName="Name" />
+                <scm:SortDescription PropertyName="SymbolName" />
             </CollectionViewSource.SortDescriptions>
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="Group" />

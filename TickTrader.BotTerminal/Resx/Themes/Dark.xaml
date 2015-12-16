@@ -25,6 +25,8 @@
     <SolidColorBrush x:Key="Dialog_Background" Color="#666666"/>
     <SolidColorBrush x:Key="Dialog_ControlBackground" Color="#292929"/>
     <SolidColorBrush x:Key="Dialog_ControlFocusBorder" Color="#292929"/>
+    <SolidColorBrush x:Key="Dialog_PageHeaderBackground" Color="#292929"/>
+    <SolidColorBrush x:Key="Dialog_PageHeaderHoverBackground" Color="#525252"/>
     <SolidColorBrush x:Key="Dialog_PanelBackground" Color="#B5B5B5"/>
     <SolidColorBrush x:Key="Dialog_OkButtonBackground" Color="#009245"/>
     <SolidColorBrush x:Key="Dialog_OkButtonHighlightBackground" Color="#00BA61"/>

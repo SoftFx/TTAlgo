@@ -10,7 +10,9 @@ namespace TickTrader.BotTerminal
 {
     internal class ShellViewModel : Screen
     {
-        private TraderModel model = new TraderModel();
+        private ConnectionModel connection;
+        private TraderModel trade;
+        private FeedModel feed;
         private WindowManager wndManager;
         private AlgoRepositoryModel algoRep = new AlgoRepositoryModel();
 
@@ -18,14 +20,18 @@ namespace TickTrader.BotTerminal
         {
             wndManager = new MdiWindowManager(this);
 
-            SymbolList = new SymbolListViewModel(model.Symbols);
-            PositionList = new PositionListViewModel(model.Account);
-            OrderList = new OrderListViewModel(model.Account);
-            Charts = new ChartCollectionViewModel(model.Connection, algoRep, wndManager);
+            connection = new ConnectionModel();
+            trade = new TraderModel(connection);
+            feed = new FeedModel(connection);
+
+            SymbolList = new SymbolListViewModel(feed.Symbols);
+            PositionList = new PositionListViewModel(trade.Account);
+            OrderList = new OrderListViewModel(trade.Account);
+            Charts = new ChartCollectionViewModel(feed, algoRep, wndManager);
             CanConnect = true;
 
-            UpdateCommandStates(ConnectionModel.States.Offline, model.Connection.State.Current);
-            model.Connection.State.StateChanged += UpdateCommandStates;
+            UpdateCommandStates(ConnectionModel.States.Offline, connection.State.Current);
+            connection.State.StateChanged += UpdateCommandStates;
 
             SymbolList.NewChartRequested += s => Charts.Open(s);
         }
@@ -49,8 +55,8 @@ namespace TickTrader.BotTerminal
             try
             {
                 //SetBusyConnecting(true);
-                await model.Connection.ChangeConnection("tp.st.soft-fx.eu", "1000", "123");
-                model.Connection.StartConnecting();
+                await connection.ChangeConnection("tp.st.soft-fx.eu", "1000", "123");
+                connection.StartConnecting();
             }
             catch (Exception ex)
             {
@@ -64,7 +70,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 //SetBusyConnecting(true);
-                await model.Connection.DisconnectAsync();
+                await connection.DisconnectAsync();
             }
             catch (Exception ex)
             {
@@ -77,7 +83,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await model.Connection.DisconnectAsync();
+                await connection.DisconnectAsync();
             }
             catch (Exception ex)
             {
@@ -88,7 +94,20 @@ namespace TickTrader.BotTerminal
         protected override void OnDeactivate(bool close)
         {
             if (close)
-                model.Connection.StartDisconnecting();
+                connection.StartDisconnecting();
+        }
+
+        public void ManageAccounts()
+        {
+            try
+            {
+                LoginDialogViewModel model = new LoginDialogViewModel();
+                wndManager.ShowDialog(model);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
         }
 
         //private void SetBusyConnecting(bool val)

@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
                 };
             model.Removed += m =>
                 {
-                    var toRemove = Symbols.FirstOrDefault(s => s.Name == m.Name);
+                    var toRemove = Symbols.FirstOrDefault(s => s.SymbolName == m.Name);
                     toRemove.NewChartRequested -= symbolViewModel_NewChartRequested;
                     if (toRemove != null)
                         Symbols.Remove(toRemove);

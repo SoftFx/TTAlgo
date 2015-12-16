@@ -26,7 +26,7 @@ namespace TickTrader.Algo.CoreUsageSample
                 IndicatorBuilder<Api.Bar> builder = new IndicatorBuilder<Bar>(typeof(MovingAverage), reader, writer);
                 builder.SetParameter("Range", 10);
 
-                builder.ReadAllAndBuild();
+                reader.ReadAll();
             }
 
             results.ForEach(d => Console.WriteLine(d));

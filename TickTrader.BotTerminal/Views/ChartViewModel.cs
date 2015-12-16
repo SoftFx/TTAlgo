@@ -33,294 +33,76 @@ namespace TickTrader.BotTerminal
             BarPeriod.S1
         };
 
-        public enum SelectableChartTypes { Candle, OHLC, Line, Mountain }
-
-        private readonly ConnectionModel connection;
-        private readonly TriggeredActivity updateActivity;
+        private readonly FeedModel feed;
         private AlgoRepositoryModel repository;
-        private Bar[] rawData;
         private IWindowManager wndManager;
+        private ChartModelBase activeChart;
+        private BarChartModel barChart;
+        private TickChartModel tickChart;
 
-        public ChartViewModel(string symbol, ConnectionModel connection, AlgoRepositoryModel repository, IWindowManager wndManager)
+        public ChartViewModel(string symbol, FeedModel feed, AlgoRepositoryModel repository, IWindowManager wndManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
-            this.connection = connection;
+            this.feed = feed;
             this.repository = repository;
             this.wndManager = wndManager;
 
-            this.updateActivity = new TriggeredActivity(Update);
+            SymbolModel smb = feed.Symbols[symbol];
 
-            this.Indicators = new BindableCollection<IndicatorBuilderModel>();
+            this.barChart = new BarChartModel(smb, feed);
+            this.tickChart = new TickChartModel(smb, feed);
 
-            UpdateSeriesStyle();
+            //repository.Removed += repository_Removed;
+            //repository.Replaced += repository_Replaced;
 
-            connection.Connected += connection_Connected;
-            connection.Disconnected += connection_Disconnected;
+            periodActivatos.Add("MN1", () => ActivateBarChart(BarPeriod.MN1));
+            periodActivatos.Add("W1", () => ActivateBarChart(BarPeriod.W1));
+            periodActivatos.Add("D1", () => ActivateBarChart(BarPeriod.D1));
+            periodActivatos.Add("H4", () => ActivateBarChart(BarPeriod.H4));
+            periodActivatos.Add("H1", () => ActivateBarChart(BarPeriod.H1));
+            periodActivatos.Add("M30", () => ActivateBarChart(BarPeriod.M30));
+            periodActivatos.Add("M15", () => ActivateBarChart(BarPeriod.M15));
+            periodActivatos.Add("M5", () => ActivateBarChart(BarPeriod.M5));
+            periodActivatos.Add("M1", () => ActivateBarChart(BarPeriod.M1));
+            periodActivatos.Add("S10", () => ActivateBarChart(BarPeriod.S10));
+            periodActivatos.Add("S1", () => ActivateBarChart(BarPeriod.S1));
+            periodActivatos.Add("Ticks", () => ActivateTickChart());
 
-            repository.Removed += repository_Removed;
-            repository.Replaced += repository_Replaced;
-
-            if (connection.State.Current == ConnectionModel.States.Online)
-                updateActivity.Trigger();
+            SelectedPeriod = periodActivatos.ElementAt(1);
         }
 
         #region Bindable Properties
 
-        private bool isBusy;
-        private IndexRange visibleRange = new IndexRange(0, 10);
-        private OhlcDataSeries<DateTime, double> data;
-        private BarPeriod selectedPeriod = BarPeriod.M30;
-        private SelectableChartTypes chartType = SelectableChartTypes.Candle;
-        private ObservableCollection<IRenderableSeries> series = new ObservableCollection<IRenderableSeries>();
+        private readonly Dictionary<string, System.Action> periodActivatos = new Dictionary<string, System.Action>();
+        private KeyValuePair<string, System.Action> selectedPeriod;
 
-        public BarPeriod[] AvailablePeriods { get { return PredefinedPeriods; } }
+        public Dictionary<string, System.Action> AvailablePeriods { get { return periodActivatos; } }
 
-        public IndexRange VisibleRange
+        public ChartModelBase Chart
         {
-            get { return visibleRange; }
-            set
+            get { return activeChart; }
+            private set
             {
-                visibleRange = value;
-                NotifyOfPropertyChange("VisibleRange");
+                activeChart = value;
+                NotifyOfPropertyChange();
             }
         }
 
-        public bool IsBusy
-        {
-            get { return isBusy; }
-            set
-            {
-                if (this.isBusy != value)
-                {
-                    this.isBusy = value;
-                    NotifyOfPropertyChange("IsBusy");
-                }
-            }
-        }
-
-        public OhlcDataSeries<DateTime, double> Data
-        {
-            get { return data; }
-            set
-            {
-                data = value;
-                series[0].DataSeries = value;
-                NotifyOfPropertyChange("Data");
-            }
-        }
-
-        public IRenderableSeries MainSeries
-        {
-            get { return series[0]; }
-            set
-            {
-                if (series.Count > 0)
-                    series[0] = value;
-                else
-                    series.Add(value);
-            }
-        }
-
-        public BarPeriod SelectedPeriod
+        public KeyValuePair<string, System.Action> SelectedPeriod
         {
             get { return selectedPeriod; }
             set
             {
                 selectedPeriod = value;
                 NotifyOfPropertyChange("SelectedPeriod");
-                updateActivity.Trigger(true);
-            }
-        }
-
-        public ObservableCollection<IRenderableSeries> Series { get { return series; } }
-
-        public Array ChartTypes { get { return Enum.GetValues(typeof(SelectableChartTypes)); } }
-
-        public SelectableChartTypes SelectedChartType
-        {
-            get { return chartType; }
-            set
-            {
-                chartType = value;
-                NotifyOfPropertyChange("SelectedChartType");
-                UpdateSeriesStyle();
-            }
-        }
-
-        public BindableCollection<AlgoRepositoryItem> RepositoryIndicators { get { return repository.Indicators; } }
-
-        public BindableCollection<IndicatorBuilderModel> Indicators { get; private set; }
-
-        #endregion
-
-        #region Indicators
-
-        public void OpenIndicator(object descriptorObj)
-        {
-            try
-            {
-                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj);
-                wndManager.ShowWindow(model);
-                ActivateItem(model);
-
-                model.Closed += model_Closed;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-            }
-        }
-
-        void model_Closed(IndicatorSetupViewModel setupModel, bool dlgResult)
-        {
-            setupModel.Closed -= model_Closed;
-            if (dlgResult)
-            {
-                var model = new IndicatorBuilderModel(setupModel.RepItem, setupModel.Setup);
-                model.SetData(rawData);
-                AddIndicator(model);
-            }
-        }
-
-        private void AddIndicator(IndicatorBuilderModel indicator)
-        {
-            AddOutputs(indicator);
-            Indicators.Add(indicator);
-        }
-
-        private void RemoveIndicator(IndicatorBuilderModel indicator)
-        {
-            RemoveOutputs(indicator);
-            Indicators.Remove(indicator);
-        }
-
-        private void ReplaceIndicator(int index, IndicatorBuilderModel newIndicator)
-        {
-            RemoveOutputs(Indicators[index]);
-            Indicators[index] = newIndicator;
-            AddOutputs(newIndicator);
-        }
-
-        private void AddOutputs(IndicatorBuilderModel indicator)
-        {
-            foreach (var output in indicator.Series)
-            {
-                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-                chartSeries.DataSeries = output;
-                Series.Add(chartSeries);
-            }
-        }
-
-        private void RemoveOutputs(IndicatorBuilderModel indicator)
-        {
-            foreach (var output in indicator.Series)
-            {
-                var seriesIndex = Series.IndexOf(s => s.DataSeries == output);
-                if (seriesIndex > 0)
-                    Series.RemoveAt(seriesIndex);
-            }
-        }
-
-        void repository_Removed(AlgoRepositoryItem item)
-        {
-            foreach (var indicator in Indicators)
-            {
-                if (indicator.AlgoId == item.Id)
-                    indicator.Dispose();
-            }
-        }
-
-        void repository_Replaced(AlgoRepositoryItem item)
-        {
-            for (int i = 0; i < Indicators.Count; i++)
-            {
-                if (Indicators[i].AlgoId == item.Id)
-                {
-                    var newModel = new IndicatorBuilderModel(item, Indicators[i].Setup);
-                    if (rawData != null)
-                        newModel.SetData(rawData);
-                    ReplaceIndicator(i, newModel);
-                }
+                selectedPeriod.Value();
             }
         }
 
         #endregion
-
-        private Task connection_Disconnected(object sender)
-        {
-            return updateActivity.Stop();
-        }
-
-        private void connection_Connected()
-        {
-            updateActivity.Trigger(true);
-        }
-
-        private async Task Update(CancellationToken cToken)
-        {
-            this.Data = null;
-            this.IsBusy = true;
-
-            try
-            {
-                foreach (var indicator in this.Indicators)
-                    indicator.SetData(null);
-
-                var response = await Task.Factory.StartNew(
-                    () => connection.FeedProxy.Server.GetHistoryBars(
-                        Symbol, DateTime.Now + TimeSpan.FromDays(1),
-                        -4000, SoftFX.Extended.PriceType.Ask, SelectedPeriod));
-
-                cToken.ThrowIfCancellationRequested();
-
-                var newData = new OhlcDataSeries<DateTime, double>();
-
-                this.rawData = response.Bars.Reverse().ToArray();
-
-                foreach (var bar in rawData)
-                    newData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
-
-                foreach (var indicator in this.Indicators)
-                    indicator.SetData(rawData);
-
-                this.Data = newData;
-                
-                if (newData.Count > 0)
-                {
-                    this.VisibleRange.Max = newData.Count - 1;
-                    this.VisibleRange.Min = Math.Max(0, newData.Count - 101);
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-
-            this.IsBusy = false;
-        }
 
         public string Symbol { get; private set; }
-
-        private void UpdateSeriesStyle()
-        {
-            switch (SelectedChartType)
-            {
-                case SelectableChartTypes.Candle:
-                    MainSeries = new FastCandlestickRenderableSeries();
-                    break;
-                case SelectableChartTypes.Line:
-                    MainSeries = new FastLineRenderableSeries();
-                    break;
-                case SelectableChartTypes.OHLC:
-                    MainSeries = new FastOhlcRenderableSeries();
-                    break;
-                case SelectableChartTypes.Mountain:
-                    MainSeries = new FastMountainRenderableSeries();
-                    break;
-            }
-
-            MainSeries.DataSeries = Data;
-        }
 
         public override void TryClose(bool? dialogResult = null)
         {
@@ -328,6 +110,20 @@ namespace TickTrader.BotTerminal
 
             if (this.ActiveItem != null)
                 this.ActiveItem.TryClose();
+        }
+
+        private void ActivateBarChart(BarPeriod period)
+        {
+            this.Chart = barChart;
+            barChart.Activate(period);
+            //tickChart.Deactivate();
+        }
+
+        private void ActivateTickChart()
+        {
+            this.Chart = tickChart;
+            tickChart.Activate();
+            //barChart.Deactivate();
         }
     }
 }

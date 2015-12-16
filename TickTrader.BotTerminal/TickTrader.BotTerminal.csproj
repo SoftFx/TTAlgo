@@ -34,9 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Abt.Controls.SciChart.Wpf, Version=3.5.0.7128, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
-      <HintPath>..\packages\SciChart.3.5.0.7128\lib\net45\Abt.Controls.SciChart.Wpf.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Abt.Controls.SciChart.Wpf">
+      <HintPath>..\lib\Abt.Controls.SciChart.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="Caliburn.Micro, Version=2.0.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.Core.3.0.0-beta1\lib\net45\Caliburn.Micro.dll</HintPath>
@@ -111,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
     <Compile Include="Controls\OverlayControl.cs" />
@@ -131,11 +131,17 @@
     <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\ObservableSrotedList.cs" />
     <Compile Include="Lib\UiTaskScheduler.cs" />
+    <Compile Include="Model.Charts\BarChatModel.cs" />
+    <Compile Include="Model.Charts\ChartModelBase.cs" />
+    <Compile Include="Model.Charts\ChartNavigator.cs" />
+    <Compile Include="Model.Charts\IndicatorsCollection.cs" />
+    <Compile Include="Model.Charts\TickChartModel.cs" />
+    <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
-    <Compile Include="Model\ChartDataModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
-    <Compile Include="Model\IndicatorBuilderModel.cs" />
+    <Compile Include="Model.Charts\IndicatorBuilderModel.cs" />
+    <Compile Include="Model\FeedHistoryProviderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />
@@ -144,6 +150,11 @@
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
+    <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Auth\LoginPageView.xaml.cs">
+      <DependentUpon>LoginPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\LoginPageViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -156,6 +167,14 @@
       <DependentUpon>IndicatorSetupView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\IndicatorSetupViewModel.cs" />
+    <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
+      <DependentUpon>LoginDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
+    <Compile Include="Views.Auth\ManageAccountsPageView.xaml.cs">
+      <DependentUpon>ManageAccountsPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\ManageAccountsPageViewModel.cs" />
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
@@ -258,6 +277,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Images\Images.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\ButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -271,6 +294,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles\DataGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\DialogPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -291,6 +318,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles\Menu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\PasswordBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -330,6 +361,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Auth\LoginPageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -339,6 +374,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\IndicatorSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Auth\LoginDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Auth\ManageAccountsPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -388,6 +431,9 @@
       <Project>{c29222d6-e27c-4d1a-970f-a54851e0647e}</Project>
       <Name>TickTrader.Algo.GuiModel</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resx\Images\fxopen.ico" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
