@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnStartup(object sender, System.Windows.StartupEventArgs e)
         {
-            DisplayRootViewFor<ShellViewModel>();
+            DisplayRootViewFor<ShellViewModel>(); 
         }
     }
 }
