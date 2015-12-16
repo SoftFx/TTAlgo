@@ -14,7 +14,7 @@
     </UserControl.Resources>
     
     <Grid Margin="4" >
-        <s:SciChartSurface x:Name="chart" RenderableSeries="{Binding Series}">
+        <s:SciChartSurface RenderableSeries="{Binding Chart.Series}">
             <s:SciChartSurface.ChartModifier>
                 <s:ModifierGroup>
                     <s:YAxisDragModifier/>
@@ -31,7 +31,8 @@
 
             <!--  X Axis  -->
             <s:SciChartSurface.XAxis>
-                <s:CategoryDateTimeAxis VisibleRange="{Binding VisibleRange, Mode=TwoWay}"/>
+                <!--<s:CategoryDateTimeAxis VisibleRange="{Binding Chart.VisibleRange, Mode=TwoWay}"  />-->
+                <s:DateTimeAxis VisibleRange="{Binding Chart.VisibleRange, Mode=TwoWay}" />
             </s:SciChartSurface.XAxis>
 
             <!--   Y Axis  -->
@@ -41,8 +42,8 @@
 
             <s:SciChartSurface.ContextMenu>
                 <ContextMenu Style="{StaticResource ContextMenu_Style}">
-                    <l:MenuItemSelector Header="Chart Type" ItemsSource="{Binding ChartTypes}" SelectedItem="{Binding SelectedChartType, Mode=TwoWay}"/>
-                    <l:MenuItemSelector Header="Periods" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}">
+                    <l:MenuItemSelector Header="Chart Type" ItemsSource="{Binding Chart.ChartTypes}" SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}"/>
+                    <l:MenuItemSelector Header="Periods" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}" DisplayMemberPath="Key">
                         <!--<l:MenuItemSelector.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Key, Mode=OneWay}"/>
@@ -55,6 +56,6 @@
             </s:SciChartSurface.ContextMenu>
 
         </s:SciChartSurface>
-        <l:BusyIndicator Visibility="{Binding Path=IsBusy, Converter={StaticResource boolToVisibilityConverter}}"/> 
+        <l:BusyIndicator Visibility="{Binding Path=Chart.IsLoading, Converter={StaticResource boolToVisibilityConverter}}"/> 
     </Grid>
 </UserControl>

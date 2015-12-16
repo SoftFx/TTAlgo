@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
                 Color = model.Descriptor.Color;
         }
 
-        public string Name { get { return model.Name; } }
+        public string SymbolName { get { return model.Name; } }
         public string Group { get { return "Forex"; } }
         public int Color { get; private set; }
 

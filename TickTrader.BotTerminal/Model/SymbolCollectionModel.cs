@@ -81,7 +81,7 @@ namespace TickTrader.BotTerminal
                 pendingSubscribe = false;
                 foreach (SymbolModel symbol in symbols.Values)
                 {
-                    if (symbol.RequestedSubscription != symbol.CurrentSubscription)
+                    if (!SubscriptionInfo.IsEquals(symbol.RequestedSubscription, symbol.CurrentSubscription))
                     {
                         if (depth == -1 || depth == symbol.RequestedSubscription.Depth)
                         {
@@ -94,6 +94,7 @@ namespace TickTrader.BotTerminal
                 }
 
                 //await Task.Delay(1000);
+                Debug.WriteLine("SubscribeToQuotes(" + toSubscribe.Count + ")");
                 await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
             }
             catch (Exception ex) { Debug.WriteLine("SymbolListModel.UpdateSubscription() ERROR: " + ex.Message); }
@@ -157,6 +158,17 @@ namespace TickTrader.BotTerminal
 
         public event Action<SymbolModel> Added = delegate { };
         public event Action<SymbolModel> Removed = delegate { };
+
+        public SymbolModel this[string key]
+        {
+            get
+            {
+                SymbolModel result;
+                if (!this.symbols.TryGetValue(key, out result))
+                    throw new ArgumentException("Symbol Not Found: " + key);
+                return result;
+            }
+        }
 
         public IEnumerator<SymbolModel> GetEnumerator()
         {

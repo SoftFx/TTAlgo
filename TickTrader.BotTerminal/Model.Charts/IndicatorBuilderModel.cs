@@ -128,30 +128,28 @@ namespace TickTrader.BotTerminal
 
                 await Task.Factory.StartNew(() =>
                     {
-                        if (cToken.IsCancellationRequested)
-                            return;
+                        //if (cToken.IsCancellationRequested)
+                        //    return;
 
-                        int count;
+                        //int count;
 
-                        do
-                        {
-                            count = proxy.Context.Read();
+                        //do
+                        //{
+                        //    count = proxy.Context.Read();
 
-                            for (int i = 0; i < count; i++)
-                            {
-                                if (cToken.IsCancellationRequested)
-                                    return;
+                        //    for (int i = 0; i < count; i++)
+                        //    {
+                        //        if (cToken.IsCancellationRequested)
+                        //            return;
 
-                                proxy.Context.MoveNext();
-                                proxy.InvokeCalculate();
+                        //        proxy.Context.MoveNext();
+                        //        proxy.InvokeCalculate();
 
-                                if (cToken.IsCancellationRequested)
-                                    break;
-                            }
-                        }
-                        while (count != 0);
-
-
+                        //        if (cToken.IsCancellationRequested)
+                        //            break;
+                        //    }
+                        //}
+                        //while (count != 0);
                     });
             }
             catch (Exception ex)
@@ -164,7 +162,7 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            buildActivity.Abrot();
+            buildActivity.Cancel();
         }
     }
 

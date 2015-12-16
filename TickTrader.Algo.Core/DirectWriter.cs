@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
 {
     public class DirectWriter<TRow> : IAlgoDataWriter<TRow>
     {
-        private Dictionary<string, ICollectionWriter> writers = new Dictionary<string, ICollectionWriter>();
+        private Dictionary<string, IMapping> mappings = new Dictionary<string, IMapping>();
 
         public DirectWriter()
         {
@@ -16,29 +16,29 @@ namespace TickTrader.Algo.Core
 
         public void Extend(TRow row)
         {
-            foreach (var writer in writers.Values)
+            foreach (var writer in mappings.Values)
                 writer.Extend();
         }
 
         public void AddMapping<T>(string outputId, CollectionWriter<T, TRow> targetCollection)
         {
-            writers.Add(outputId, new CollectionWriter<T>(targetCollection));
+            mappings.Add(outputId, new Mapping<T>(targetCollection));
         }
 
         public void AddMapping<T>(string outputId, List<T> targetCollection)
         {
-            writers.Add(outputId, new CollectionWriter<T>(new ListWriter<T>(targetCollection)));
+            mappings.Add(outputId, new Mapping<T>(new ListWriter<T>(targetCollection)));
         }
 
         public void AddMapping<T, TList>(string outputId, List<TList> targetCollection, Func<TRow, T, TList> selector)
         {
-            writers.Add(outputId, new CollectionWriter<T>(new ListWriter<T, TList>(targetCollection, selector)));
+            mappings.Add(outputId, new Mapping<T>(new ListWriter<T, TList>(targetCollection, selector)));
         }
 
         public IDataSeriesBuffer BindOutput(string id, OutputFactory factory)
         {
-            ICollectionWriter writer;
-            if (!writers.TryGetValue(id, out writer))
+            IMapping writer;
+            if (!mappings.TryGetValue(id, out writer))
                 throw new Exception("Output '" + id + "' is not mapped.");
             return writer.CreateProxy(factory);
         }
@@ -46,23 +46,23 @@ namespace TickTrader.Algo.Core
 
         public void Init(IList<TRow> inputCache)
         {
-            foreach (var writer in writers.Values)
+            foreach (var writer in mappings.Values)
                 writer.InputData = inputCache;
         }
 
-        private interface ICollectionWriter
+        private interface IMapping
         {
             void Extend();
             IList<TRow> InputData { get; set; }
             IDataSeriesBuffer CreateProxy(OutputFactory factory);
         }
 
-        private class CollectionWriter<T> : MarshalByRefObject, ICollectionWriter
+        private class Mapping<T> : MarshalByRefObject, IMapping
         {
             private CollectionWriter<T, TRow> target;
             private OutputDataSeries<T> outputProxy;
 
-            public CollectionWriter(CollectionWriter<T, TRow> targetCollection)
+            public Mapping(CollectionWriter<T, TRow> targetCollection)
             {
                 this.target = targetCollection;
             }
@@ -78,7 +78,6 @@ namespace TickTrader.Algo.Core
             {
                 outputProxy = factory.CreateOutput<T>();
                 outputProxy.Updated += (d, i) => target.WriteAt(i, d, InputData[i]);
-                outputProxy.Appended += (d, i) => target.Append(InputData[i], d);
                 return outputProxy;
             }
         }

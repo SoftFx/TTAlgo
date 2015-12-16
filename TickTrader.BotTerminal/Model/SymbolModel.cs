@@ -23,6 +23,7 @@ namespace TickTrader.BotTerminal
         public SymbolInfo Descriptor { get; private set; }
         public SubscriptionInfo CurrentSubscription { get; set; }
         public SubscriptionInfo RequestedSubscription { get; private set; }
+        public Quote LastQuote { get; private set; }
 
         public event Action<SymbolInfo> InfoUpdated = delegate { };
 
@@ -35,6 +36,7 @@ namespace TickTrader.BotTerminal
         public void CastNewTick(Quote tick)
         {
             listeners.ForEach(l => l.OnRateUpdate(tick));
+            LastQuote = tick;
         }
 
         public void Subscribe(IRateUpdatesListener listener)
@@ -76,14 +78,9 @@ namespace TickTrader.BotTerminal
         public bool Subscribed { get; private set; }
         public int Depth { get; private set; }
 
-        public static bool operator ==(SubscriptionInfo c1, SubscriptionInfo c2)
+        public static bool IsEquals(SubscriptionInfo s1, SubscriptionInfo s2)
         {
-            return c1.Equals(c2);
-        }
-
-        public static bool operator !=(SubscriptionInfo c1, SubscriptionInfo c2)
-        {
-            return !c1.Equals(c2);
+            return s1.Subscribed == s2.Subscribed && s1.Depth == s2.Depth;
         }
     }
 

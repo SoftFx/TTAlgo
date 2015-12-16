@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
 {
     public class IndicatorBuilder<TRow>
     {
-        private AlgoContext<TRow> conext = new AlgoContext<TRow>();
+        private AlgoContext<TRow> context = new AlgoContext<TRow>();
         private Func<IAlgoContext, IndicatorProxy> factory;
         private IndicatorProxy insatnceProxy;
 
@@ -37,46 +37,42 @@ namespace TickTrader.Algo.Core
 
             this.factory = factory;
 
-            conext.Reader = reader;
-            conext.Writer = writer;
+            context.Reader = reader;
+            context.Writer = writer;
+
+            reader.Appended += Reader_Appended;
+            reader.AppendedRange += Reader_AppendedRange;
+            reader.Initialized += Init;
+        }
+
+        private void Init()
+        {
+            if (insatnceProxy == null)
+                insatnceProxy = factory(context);
+
+            context.Init();
+        }
+
+        private void Reader_Appended(TRow row)
+        {
+            BuildOne(row);
+        }
+
+        private void Reader_AppendedRange(IEnumerable<TRow> rows)
+        {
+            foreach (var row in rows)
+                BuildOne(row);
         }
 
         public void SetParameter(string id, object val)
         {
-            conext.SetParameter(id, val);
+            context.SetParameter(id, val);
         }
 
-        public void ReadAllAndBuild()
+        private void BuildOne(TRow row)
         {
-            ReadAllAndBuild(CancellationToken.None);
-        }
-
-        public void ReadAllAndBuild(CancellationToken cToken)
-        {
-            if (insatnceProxy != null)
-                throw new InvalidOperationException("Indicator has been already built!");
-
-            insatnceProxy = factory(conext);
-
-            int count;
-
-            do
-            {
-                count = insatnceProxy.Context.Read();
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (cToken.IsCancellationRequested)
-                        return;
-
-                    insatnceProxy.Context.MoveNext();
-                    insatnceProxy.InvokeCalculate();
-
-                    if (cToken.IsCancellationRequested)
-                        break;
-                }
-            }
-            while (count != 0);
+            context.MoveNext(row);
+            insatnceProxy.InvokeCalculate();
         }
     }
 }

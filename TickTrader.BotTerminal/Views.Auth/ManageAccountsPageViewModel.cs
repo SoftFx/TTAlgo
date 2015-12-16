@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    class ChartDataModel
+    class ManageAccountsPageViewModel
     {
     }
 }

@@ -21,4 +21,12 @@ namespace TickTrader.Algo.Api
             Calculate();
         }
     }
+
+    public abstract class BarIndicator : Indicator
+    {
+    }
+
+    public abstract class TickIndicator : Indicator
+    {
+    }
 }

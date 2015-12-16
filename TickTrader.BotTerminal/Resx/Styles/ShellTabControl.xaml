@@ -15,8 +15,8 @@
                 <ContentPresenter ContentSource="SelectedContent"/>
             </Border>
         </Grid>
-    </ControlTemplate>    
-    
+    </ControlTemplate>
+
     <!-- Item Header Template -->
 
     <ControlTemplate x:Key="ShellTabControl_HeaderTemplate" TargetType="TabItem">
