@@ -9,8 +9,6 @@ namespace TickTrader.Algo.Indicators.OsMA
     [Indicator]
     public class OsMA : Indicator
     {
-
-
         [Parameter(DefaultValue = 12)]
         public int InpFastEMA { get; set; }
         [Parameter(DefaultValue = 26)]
@@ -24,11 +22,7 @@ namespace TickTrader.Algo.Indicators.OsMA
 
         [Output]
         public DataSeries ExtOsmaBuffer { get; set; }
-
         
-        private double prevFastVal;
-        private double prevSlowVal;
-
         private List<double> ExtMacdBuffer = new List<double>();
         //private List<double> ExtSignalBuffer = new List<double>();
         private double fastVal;

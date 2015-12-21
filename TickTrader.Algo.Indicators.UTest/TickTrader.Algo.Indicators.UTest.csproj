@@ -47,9 +47,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api">
-      <HintPath>..\..\GIT\REPOSITORIES\tt-algo-project\tt-algo-project\TickTrader.Algo.Api\bin\Debug\TickTrader.Algo.Api.dll</HintPath>
-    </Reference>
     <Reference Include="TickTrader.Algo.Core">
       <HintPath>..\TickTrader.Algo.Core\bin\Debug\TickTrader.Algo.Core.dll</HintPath>
     </Reference>
@@ -80,6 +77,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
