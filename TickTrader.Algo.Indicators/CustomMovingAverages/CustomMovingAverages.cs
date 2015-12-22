@@ -13,11 +13,11 @@ namespace TickTrader.Algo.Indicators.CustomMovingAverages
         public int Mode { get; set; } //  0 - MODE_EMA  1 - MODE_LWMA  2 - MODE_SMMA   3 - MODE_SMA
 
         [Parameter(DefaultValue = 0)]
-        public int InpMAShift { get; set; } //  0 - MODE_EMA  1 - MODE_LWMA  2 - MODE_SMMA   3 - MODE_SMA
+        public int InpMAShift { get; set; } 
 
 
         [Parameter(DefaultValue = 13)]
-        public int InpMAPeriod { get; set; } //  0 - MODE_EMA  1 - MODE_LWMA  2 - MODE_SMMA   3 - MODE_SMA
+        public int InpMAPeriod { get; set; } 
 
 
 

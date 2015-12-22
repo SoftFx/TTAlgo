@@ -48,6 +48,7 @@
     <Compile Include="Bears\Bears.cs" />
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
+    <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Ichimoku\Ichimoku.cs" />
@@ -70,9 +71,7 @@
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="CustomMovingAverages\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
