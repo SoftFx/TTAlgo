@@ -48,6 +48,11 @@ namespace TickTrader.Algo.Core
             Count++;
         }
 
+        public virtual void AppendEmpty()
+        {
+            Append(NanValue);
+        }
+
         public void Append(T val)
         {
             Buffer.Add(val);
@@ -113,13 +118,6 @@ namespace TickTrader.Algo.Core
             this.NanValue = nanVal;
         }
 
-        public void AppendEmpty()
-        {
-            Append(NanValue);
-            IncrementVirtualSize();
-            Appended(NanValue, Count - 1);
-        }
-
         protected override void OnWrite(T data, int index)
         {
             Buffer[index] = data;
@@ -127,7 +125,6 @@ namespace TickTrader.Algo.Core
         }
 
         public event Action<T, int> Updated = delegate { };
-        public event Action<T, int> Appended = delegate { };
     }
 
     public class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries

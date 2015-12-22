@@ -9,13 +9,15 @@ namespace TickTrader.Algo.Core
     public interface IDataSeriesBuffer
     {
         void IncrementVirtualSize();
+        void AppendEmpty();
     }
 
     public interface IAlgoDataReader<TRow>
     {
-        IEnumerable<TRow> ReadNext();
-        TRow ReRead();
-        void ExtendVirtual();
+        event Action Initialized;
+        event Action<TRow> Appended;
+        event Action<IEnumerable<TRow>> AppendedRange;
+        event Action<TRow> Updated;
         IDataSeriesBuffer BindInput(string id, InputFactory factory);
     }
 
@@ -39,12 +41,9 @@ namespace TickTrader.Algo.Core
 
     public interface IAlgoContext
     {
-        void Init();
         IDataSeriesBuffer BindInput(string id, InputFactory factory);
         IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
         object GetParameter(string id);
-        int Read();
-        void MoveNext();
     }
 
     public interface InputFactory

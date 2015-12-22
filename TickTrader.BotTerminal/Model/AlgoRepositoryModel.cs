@@ -18,12 +18,9 @@ namespace TickTrader.BotTerminal
 
         public AlgoRepositoryModel()
         {
-            string appDir =  AppDomain.CurrentDomain.BaseDirectory;
-            string repDir = Path.Combine(appDir, "AlgoRepository");
-
             this.Indicators = new BindableCollection<AlgoRepositoryItem>();
 
-            rep = new AlgoRepository(repDir);
+            rep = new AlgoRepository(EnvService.Instance.AlgoRepositoryFolder);
             rep.Added += rep_Added;
             rep.Removed += rep_Removed;
             rep.Replaced += rep_Replaced;

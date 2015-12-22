@@ -16,8 +16,6 @@ namespace TickTrader.Algo.Core
         {
             this.context = context;
             Descriptor = descriptor;
-
-            context.Init();
         }
 
         internal AlgoDescriptor Descriptor { get; private set; }

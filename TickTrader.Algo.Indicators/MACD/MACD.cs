@@ -28,7 +28,6 @@ namespace TickTrader.Algo.Indicators.MACD
         public DataSeries ExtSignalBuffer { get; set; }
 
 
-        private double prevTF;
         protected override void Calculate()
         {
             ExtMacdBuffer[0] = Double.NaN;

@@ -1,0 +1,29 @@
+﻿using Abt.Controls.SciChart;
+using Abt.Controls.SciChart.Visuals.Axes;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TickTrader.BotTerminal
+{
+    internal abstract class ChartNavigator
+    {
+        public abstract IRange VisibleRange { get; }
+    }
+
+    internal class UniformChartNavigator : ChartNavigator
+    {
+        private IndexRange visibleRange = new IndexRange();
+
+        public override IRange VisibleRange { get { return visibleRange; } }
+    }
+
+    internal class NonUniformChartNavigator : ChartNavigator
+    {
+        private DateRange visibleRange = new DateRange();
+
+        public override IRange VisibleRange { get { return visibleRange; } }
+    }
+}

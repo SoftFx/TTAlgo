@@ -4,6 +4,7 @@
 
     <ControlTemplate x:Key="FlatButton_Template" TargetType="l:FlatButton">
         <Border Name="Border" CornerRadius="2"
+                IsHitTestVisible="True"
                 Background="{TemplateBinding Background}">
             <ContentPresenter Margin="{TemplateBinding Padding}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

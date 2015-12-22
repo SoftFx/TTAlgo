@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal.Lib
             }
         }
 
-        public void Abrot()
+        public void Cancel()
         {
             cancelSignal.Cancel();
         }

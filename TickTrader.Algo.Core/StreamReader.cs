@@ -19,6 +19,12 @@ namespace TickTrader.Algo.Core
             this.chunkSize = chunkSize;
         }
 
+        public event Action Initialized;
+        public event Action<TRow> Appended;
+        public event Action<IEnumerable<TRow>> AppendedRange;
+        public event Action<TRow> Updated;
+        
+
         public void AddMapping<TInput>(string inputId, Func<TRow, TInput> selector)
         {
             var mapping = new Mapping<TInput>(selector);
@@ -31,9 +37,22 @@ namespace TickTrader.Algo.Core
             mappingsById.Add(inputId, mapping);
         }
 
-        public IEnumerable<TRow> ReadNext()
+        public void ReadAll()
         {
+            Initialized();
+
             List<TRow> buffer = new List<TRow>();
+            do
+            {
+                buffer.Clear();
+                ReadNext(buffer);
+                AppendedRange(buffer);
+            }
+            while (buffer.Count > 0);
+        }
+
+        private void ReadNext(List<TRow> buffer)
+        {
             while (buffer.Count < chunkSize)
             {
                 TRow rec;
@@ -47,19 +66,6 @@ namespace TickTrader.Algo.Core
 
             foreach (var mapping in mappingsById.Values)
                 mapping.Flush();
-
-            return buffer;
-        }
-
-        public void ExtendVirtual()
-        {
-            foreach (var mapping in mappingsById.Values)
-                mapping.Extend();
-        }
-
-        public TRow ReRead()
-        {
-            throw new NotImplementedException();
         }
 
         public IDataSeriesBuffer BindInput(string id, InputFactory factory)
@@ -75,7 +81,6 @@ namespace TickTrader.Algo.Core
             void AppendNan();
             void Append(TRow rec);
             void Flush();
-            void Extend();
             IDataSeriesBuffer CreateProxy(InputFactory factory);
         }
 
@@ -106,11 +111,6 @@ namespace TickTrader.Algo.Core
             {
                 inputProxy.Append(cacheBuff);
                 cacheBuff.Clear();
-            }
-
-            public void Extend()
-            {
-                inputProxy.IncrementVirtualSize();
             }
 
             public IDataSeriesBuffer CreateProxy(InputFactory factory)
