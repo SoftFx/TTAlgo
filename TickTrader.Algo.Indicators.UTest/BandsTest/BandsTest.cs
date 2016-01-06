@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.BandsTest
 {
-    [TestFixture]
-    class BandsTest
+    [TestClass]
+    public class BandsTest
     {
 
         private StreamReader file;
@@ -18,13 +18,13 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
         private List<double> testResMov;
         private List<double> testResUp;
         private List<double> testResLw;
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResMov = new List<double>();
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -64,13 +64,13 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             int bidsLen = testResMov.Count;
             for (int testInd = 20; testInd < bidsLen - 20; testInd++)
             {
-                Assert.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResMov = new List<double>();
@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -110,14 +110,14 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             int bidsLen = testResMov.Count;
             for (int testInd = 20; testInd < bidsLen - 20; testInd++)
             {
-                Assert.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
             }
         }
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResMov = new List<double>();
@@ -129,7 +129,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -157,13 +157,13 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             int bidsLen = testResMov.Count;
             for (int testInd = 20; testInd < bidsLen - 20; testInd++)
             {
-                Assert.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResMov = new List<double>();
@@ -175,7 +175,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -203,9 +203,9 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             int bidsLen = testResMov.Count;
             for (int testInd = 20; testInd < bidsLen - 20; testInd++)
             {
-                Assert.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
-                Assert.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResMov[testInd] - metaResMov[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResUp[testInd] - metaResUp[testInd]));
+                AssertX.Greater(0.000001, Math.Abs(testResLw[testInd] - metaResLw[testInd]));
             }
         }
 

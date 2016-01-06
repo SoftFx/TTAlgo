@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,8 +17,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> askData;
         private XyDataSeries<DateTime, double> bidData;
 
-        public TickChartModel(SymbolModel symbol, FeedModel feed)
-            : base(symbol, feed)
+        public TickChartModel(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
+            : base(symbol, repository, feed)
         {
             ReserveTopSeries(2);
 
@@ -44,6 +45,12 @@ namespace TickTrader.BotTerminal
         {
             get { return Series[1]; }
             set { Series[1] = value; }
+        }
+
+        protected override void ClearData()
+        {
+            AskSeries.DataSeries = null;
+            BidSeries.DataSeries = null;
         }
 
         protected override async Task LoadData(CancellationToken cToken)
@@ -114,6 +121,11 @@ namespace TickTrader.BotTerminal
 
             AskSeries.DataSeries = askData;
             BidSeries.DataSeries = bidData;
+        }
+
+        protected override bool IsIndicatorSupported(AlgoInfo descriptor)
+        {
+            return true;
         }
 
         private IPointMarker CreateMarker(Color fillColor, Color strokeColor)

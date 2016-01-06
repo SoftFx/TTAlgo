@@ -39,40 +39,46 @@ namespace TickTrader.Algo.Core
 
             context.Reader = reader;
             context.Writer = writer;
-
-            reader.Appended += Reader_Appended;
-            reader.AppendedRange += Reader_AppendedRange;
-            reader.Initialized += Init;
         }
 
-        private void Init()
+        public void ReadAllAndBuild()
         {
-            if (insatnceProxy == null)
-                insatnceProxy = factory(context);
+            ReadAllAndBuild(CancellationToken.None);
+        }
+
+        public void ReadAllAndBuild(CancellationToken cToken)
+        {
+            if (insatnceProxy != null)
+                throw new InvalidOperationException("Indicator has been already built!");
+
+            insatnceProxy = factory(context);
 
             context.Init();
-        }
 
-        private void Reader_Appended(TRow row)
-        {
-            BuildOne(row);
-        }
+            int count;
 
-        private void Reader_AppendedRange(IEnumerable<TRow> rows)
-        {
-            foreach (var row in rows)
-                BuildOne(row);
+            do
+            {
+                count = context.Read();
+
+                for (int i = 0; i < count; i++)
+                {
+                    if (cToken.IsCancellationRequested)
+                        return;
+
+                    context.MoveNext();
+                    insatnceProxy.InvokeCalculate();
+
+                    if (cToken.IsCancellationRequested)
+                        break;
+                }
+            }
+            while (count != 0);
         }
 
         public void SetParameter(string id, object val)
         {
             context.SetParameter(id, val);
-        }
-
-        private void BuildOne(TRow row)
-        {
-            context.MoveNext(row);
-            insatnceProxy.InvokeCalculate();
         }
     }
 }

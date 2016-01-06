@@ -9,15 +9,15 @@ namespace TickTrader.Algo.Core
     public class DirectWriter<TRow> : IAlgoDataWriter<TRow>
     {
         private Dictionary<string, IMapping> mappings = new Dictionary<string, IMapping>();
+        private List<TRow> inputData = new List<TRow>();
 
         public DirectWriter()
         {
         }
 
-        public void Extend(TRow row)
+        public void Extend(List<TRow> rows)
         {
-            foreach (var writer in mappings.Values)
-                writer.Extend();
+            inputData.AddRange(rows);
         }
 
         public void AddMapping<T>(string outputId, CollectionWriter<T, TRow> targetCollection)
@@ -35,14 +35,14 @@ namespace TickTrader.Algo.Core
             mappings.Add(outputId, new Mapping<T>(new ListWriter<T, TList>(targetCollection, selector)));
         }
 
-        public IDataSeriesBuffer BindOutput(string id, OutputFactory factory)
+        public void BindOutput<T>(string id, OutputDataSeries<T> buffer)
         {
-            IMapping writer;
-            if (!mappings.TryGetValue(id, out writer))
+            IMapping mapping;
+            if (!mappings.TryGetValue(id, out mapping))
                 throw new Exception("Output '" + id + "' is not mapped.");
-            return writer.CreateProxy(factory);
+            mapping.InputData = inputData;
+            ((Mapping<T>)mapping).SetBuffer(buffer);
         }
-
 
         public void Init(IList<TRow> inputCache)
         {
@@ -52,9 +52,7 @@ namespace TickTrader.Algo.Core
 
         private interface IMapping
         {
-            void Extend();
             IList<TRow> InputData { get; set; }
-            IDataSeriesBuffer CreateProxy(OutputFactory factory);
         }
 
         private class Mapping<T> : MarshalByRefObject, IMapping
@@ -67,19 +65,14 @@ namespace TickTrader.Algo.Core
                 this.target = targetCollection;
             }
 
-            public void Extend()
+            public void SetBuffer(OutputDataSeries<T> buffer)
             {
-                outputProxy.AppendEmpty();
+                outputProxy = buffer;
+                outputProxy.Updated += (d, i) => target.WriteAt(i, d, InputData[i]);
+                outputProxy.Appended += (d, i) => target.Append(InputData[i], d);
             }
 
             public IList<TRow> InputData { get; set; }
-
-            public IDataSeriesBuffer CreateProxy(OutputFactory factory)
-            {
-                outputProxy = factory.CreateOutput<T>();
-                outputProxy.Updated += (d, i) => target.WriteAt(i, d, InputData[i]);
-                return outputProxy;
-            }
         }
 
         private class ListWriter<T, TList> : CollectionWriter<T, TRow>

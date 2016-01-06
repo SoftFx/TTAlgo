@@ -10,24 +10,28 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.GuiModel
 {
-    public class IndicatorSetupModel : ObservableObject
+    public class IndicatorSetup : ObservableObject
     {
-        private List<AlgoParameter> parameters;
+        private List<ParameterSetup> parameters;
+        private List<InputSetup> inputs;
 
-        public IndicatorSetupModel(AlgoInfo descriptor, IndicatorSetupModel copyFrom = null)
+        public IndicatorSetup(AlgoInfo descriptor, Func<InputInfo, InputSetup> inputSetupFactory, IndicatorSetup copyFrom = null)
         {
             this.Descriptor = descriptor;
 
-            parameters = descriptor.Parameters.Select(AlgoParameter.Create).ToList();
+            parameters = descriptor.Parameters.Select(ParameterSetup.Create).ToList();
             parameters.ForEach(p => p.ErrorChanged += s => Validate());
+
+            inputs = descriptor.Inputs.Select(inputSetupFactory).ToList();
+            inputs.ForEach(i => i.ErrorChanged += s => Validate());
+
             Validate();
-            
-            //Inputs = new List<AlgoInputSetup>();
-            //Outputs = new List<AlgoOutputSetup>();
 
             if (copyFrom != null)
                 CopyParametersFrom(copyFrom);
         }
+
+        //public Func<InputInfo, InputSetup> InputSetupFactory { get; set; }
 
         public void Reset()
         {
@@ -35,7 +39,7 @@ namespace TickTrader.Algo.GuiModel
                 p.Reset();
         }
 
-        public void CopyParametersFrom(IndicatorSetupModel otherSetup)
+        public void CopyParametersFrom(IndicatorSetup otherSetup)
         {
             foreach (var otherParam in otherSetup.Parameters)
             {
@@ -53,10 +57,12 @@ namespace TickTrader.Algo.GuiModel
 
         //public IList<AlgoInputSetup> Inputs { get; private set; }
         //public IList<AlgoOutputSetup> Outputs { get; private set; }
-        public IEnumerable<AlgoParameter> Parameters { get { return parameters; } }
+        public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
+        public IEnumerable<InputSetup> Inputs { get { return inputs; } }
         public AlgoInfo Descriptor { get; private set; }
 
         public bool IsValid {get; private set;}
         public event Action ValidityChanged = delegate { };
     }
+
 }

@@ -18,7 +18,7 @@
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}" />
         </Style>
        
-        <DataTemplate DataType="{x:Type am:AlgoParameter}">
+        <DataTemplate DataType="{x:Type am:ParameterSetup}">
             <Grid Margin="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -37,7 +37,7 @@
 
                         <!--  IntParam  -->
 
-                        <DataTemplate DataType="{x:Type am:IntParam}">
+                        <DataTemplate DataType="{x:Type am:IntParamSetup}">
                             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch"/>
                             <DataTemplate.Triggers>
@@ -49,7 +49,7 @@
 
                         <!--  DoubleParam  -->
                         
-                        <DataTemplate DataType="{x:Type am:DoubleParam}">
+                        <DataTemplate DataType="{x:Type am:DoubleParamSetup}">
                             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch"/>
                             <DataTemplate.Triggers>

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 {
-    [TestFixture]
-    class HeikenAshiTest
+    [TestClass]
+    public class HeikenAshiTest
     {
 
         private StreamReader file;
@@ -20,13 +20,13 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
         private List<double> testResHAOpen;
         private List<double> metaResHAClose;
         private List<double> testResHAClose;
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResHAHL = new List<double>();
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -70,15 +70,15 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
             for (int testInd = 35; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
             }
         }
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResHAHL = new List<double>();
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -122,14 +122,14 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
             for (int testInd = 35; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResHAHL = new List<double>();
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -173,15 +173,15 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
             for (int testInd = 35; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
             }
         }
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResHAHL = new List<double>();
@@ -195,7 +195,7 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -225,10 +225,10 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
             for (int testInd = 35; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHALH[testInd] - metaResHALH[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAHL[testInd] - metaResHAHL[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAOpen[testInd] - metaResHAOpen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResHAClose[testInd] - metaResHAClose[testInd]));
             }
         }
 

@@ -14,8 +14,8 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, object> parameters = new Dictionary<string, object>();
         private List<IDataSeriesBuffer> inputs = new List<IDataSeriesBuffer>();
         private List<IDataSeriesBuffer> outputs = new List<IDataSeriesBuffer>();
-        private List<TRow> dataCache = new List<TRow>();
         private int virtualPos;
+        private int readPos;
 
         public AlgoContext()
         {
@@ -24,6 +24,9 @@ namespace TickTrader.Algo.Core
         public IAlgoDataReader<TRow> Reader { get; set; }
         public IAlgoDataWriter<TRow> Writer { get; set; }
 
+        internal int VirtualPos { get { return virtualPos; } }
+        internal int ReadPos { get { return readPos; } }
+
         public void SetParameter(string paramId, object value)
         {
             parameters[paramId] = value;
@@ -31,28 +34,35 @@ namespace TickTrader.Algo.Core
 
         public void Init()
         {
-            if (Writer != null)
-                Writer.Init(dataCache);
+            //if (Writer != null)
+                //Writer.Init(dataCache);
 
             if (Reader == null)
                 throw new InvalidOperationException("Data Reader is not set!");
         }
 
-        //public int Read()
-        //{
-        //    int oldSize = dataCache.Count;
-        //    dataCache.AddRange(Reader.ReadNext());
-        //    return dataCache.Count - oldSize;
-        //}
-
-        public void MoveNext(TRow row)
+        public void ReRead()
         {
-            dataCache.Add(row);
+            //int lastIndex = BufferSize - 1;
+            //var row = Reader.ReadAt(lastIndex);
+            //dataCache[lastIndex] = row;
+        }
 
-            //if (virtualPos >= dataCache.Count)
-            //throw new InvalidOperationException("Virtual position cannot be out of buffer boundaries.");
+        public int Read()
+        {
+            var buff = Reader.ReadAt(ReadPos, 100);
 
-            Writer.Extend(row);
+            Writer.Extend(buff);
+
+            readPos += buff.Count;
+
+            return buff.Count;
+        }
+
+        public void MoveNext()
+        {
+            if (virtualPos >= ReadPos)
+                throw new InvalidOperationException("End of buffer!");
 
             foreach (var input in inputs)
                 input.IncrementVirtualSize();
@@ -71,24 +81,22 @@ namespace TickTrader.Algo.Core
             return paramVal;
         }
 
-        public IDataSeriesBuffer BindInput(string id, InputFactory factory)
+        public void BindInput<T>(string id, InputDataSeries<T> buffer)
         {
             if (Reader == null)
                 throw new InvalidOperationException("Data Reader is not set!");
 
-            var input = Reader.BindInput(id, factory);
-            inputs.Add(input);
-            return input;
+            inputs.Add(buffer);
+            Reader.BindInput<T>(id, buffer);
         }
 
-        public IDataSeriesBuffer BindOutput(string id, OutputFactory factory)
+        public void BindOutput<T>(string id, OutputDataSeries<T> buffer)
         {
             if (Writer == null)
                 throw new InvalidOperationException("Data Writer is not set!");
 
-            var output = Writer.BindOutput(id, factory);
-            outputs.Add(output);
-            return output;
+            outputs.Add(buffer);
+            Writer.BindOutput(id, buffer);
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.MACDTest
 {
-    [TestFixture]
-    class MACDTest
+    [TestClass]
+    public class MACDTest
     {
 
         private StreamReader file;
@@ -17,13 +17,13 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
         private List<double> metaResSig;
         private List<double> testResSig;
 
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
 
-       [Test]
+       [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResMACD = new List<double>();
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -61,13 +61,13 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 250; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-8, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-8, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                AssertX.Greater(1e-8, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                AssertX.Greater(1e-8, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResMACD = new List<double>();
@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -105,13 +105,13 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 250; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-8, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-8, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                AssertX.Greater(1e-8, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                AssertX.Greater(1e-8, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResMACD = new List<double>();
@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -149,13 +149,13 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 350; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-6, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-6, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResMACD = new List<double>();
@@ -166,7 +166,7 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
             writer = new DirectWriter<Bar>();
@@ -193,8 +193,8 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
             int bidsLen = metaResMACD.Count;
             for (int testInd = 350; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-6, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
-                Assert.Greater(1e-6, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResMACD[testInd] - metaResMACD[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResSig[testInd] - metaResSig[testInd]));
 
             }
         }

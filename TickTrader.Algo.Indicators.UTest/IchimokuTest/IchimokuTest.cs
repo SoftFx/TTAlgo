@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 
 namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 {
-    class IchimokuTest
+    public class IchimokuTest
     {
         private StreamReader file;
 
@@ -27,13 +27,13 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
         private List<double> metaResSpB2;
         private List<double> testResSpB2;
 
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Bar> builder;
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResTen = new List<double>();
@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -90,17 +90,17 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             for (int testInd = 50; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResTen = new List<double>();
@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -157,17 +157,17 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             for (int testInd = 50; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResTen = new List<double>();
@@ -187,7 +187,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -224,17 +224,17 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             for (int testInd = 50; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResTen = new List<double>();
@@ -254,7 +254,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -291,13 +291,13 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             for (int testInd = 50; testInd < bidsLen; testInd++)
             {
 
-                Assert.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
-                Assert.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResTen[testInd] - testResTen[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResKij[testInd] - testResKij[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA[testInd] - testResSpA[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpA2[testInd] - testResSpA2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB[testInd] - testResSpB[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResSpB2[testInd] - testResSpB2[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(metaResChk[testInd] - testResChk[testInd]));
             }
         }
 

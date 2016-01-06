@@ -1,26 +1,26 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
 {
-    [TestFixture]
-    class AccumulationTest
+    [TestClass]
+    public class AccumulationTest
     {
 
         private StreamReader file;
         private List<double> metaResAD;
         private List<double> testResAD;
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResAD = new List<double>();
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -51,11 +51,11 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             int bidsLen = testResAD.Count;
             for (int testInd = 1; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs((testResAD[testInd]-testResAD[0]) - (metaResAD[testInd]-metaResAD[0]))); //Here we did norming by subtraction [0] element
+                AssertX.Greater(1e-10, Math.Abs((testResAD[testInd]-testResAD[0]) - (metaResAD[testInd]-metaResAD[0]))); //Here we did norming by subtraction [0] element
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResAD = new List<double>();
@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -86,12 +86,12 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             int bidsLen = testResAD.Count;
             for (int testInd = 1; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(2e-10, Math.Abs((testResAD[testInd] - testResAD[0]) - (metaResAD[testInd] - metaResAD[0]))); //Here we did norming by subtraction [0] element
+                AssertX.Greater(2e-10, Math.Abs((testResAD[testInd] - testResAD[0]) - (metaResAD[testInd] - metaResAD[0]))); //Here we did norming by subtraction [0] element
             }
         }
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResAD = new List<double>();
@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -122,11 +122,11 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             int bidsLen = testResAD.Count;
             for (int testInd = 1; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResAD[testInd] - testResAD[0] - metaResAD[testInd] + metaResAD[0])); //Here we did norming by subtraction [0] element
+                AssertX.Greater(1e-10, Math.Abs(testResAD[testInd] - testResAD[0] - metaResAD[testInd] + metaResAD[0])); //Here we did norming by subtraction [0] element
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResAD = new List<double>();
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             int bidsLen = testResAD.Count;
             for (int testInd = 1; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResAD[testInd] - testResAD[0] - metaResAD[testInd] + metaResAD[0])); //Here we did norming by subtraction [0] element
+                AssertX.Greater(1e-10, Math.Abs(testResAD[testInd] - testResAD[0] - metaResAD[testInd] + metaResAD[0])); //Here we did norming by subtraction [0] element
             }
         }
       

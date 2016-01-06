@@ -40,8 +40,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlgoContext.cs" />
+    <Compile Include="AsyncDatasource.cs" />
+    <Compile Include="DynamicDataSource.Collection.cs" />
+    <Compile Include="DynamicDataSource.cs" />
+    <Compile Include="DynamicDataSource.Reader.cs" />
     <Compile Include="IndicatorBuilder.cs" />
-    <Compile Include="StreamReader.cs" />
+    <Compile Include="IndicatorBuilderBase.cs" />
+    <Compile Include="ReaderBase.cs" />
+    <Compile Include="DirectReader.cs" />
     <Compile Include="DataSeries.cs" />
     <Compile Include="IndicatorProxy.cs" />
     <Compile Include="Interfaces.cs" />

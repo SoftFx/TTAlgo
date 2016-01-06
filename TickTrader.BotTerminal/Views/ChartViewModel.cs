@@ -50,8 +50,8 @@ namespace TickTrader.BotTerminal
 
             SymbolModel smb = feed.Symbols[symbol];
 
-            this.barChart = new BarChartModel(smb, feed);
-            this.tickChart = new TickChartModel(smb, feed);
+            this.barChart = new BarChartModel(smb, repository, feed);
+            this.tickChart = new TickChartModel(smb, repository, feed);
 
             //repository.Removed += repository_Removed;
             //repository.Replaced += repository_Replaced;
@@ -110,6 +110,33 @@ namespace TickTrader.BotTerminal
 
             if (this.ActiveItem != null)
                 this.ActiveItem.TryClose();
+        }
+
+        public void OpenIndicator(object descriptorObj)
+        {
+            try
+            {
+                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj);
+                wndManager.ShowWindow(model);
+                ActivateItem(model);
+
+                model.Closed += model_Closed;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+        }
+
+        void model_Closed(IndicatorSetupViewModel setupModel, bool dlgResult)
+        {
+            setupModel.Closed -= model_Closed;
+            if (dlgResult)
+            {
+                var model = new IndicatorBuilderModel(setupModel.RepItem, setupModel.Setup);
+                //model.SetData(rawData);
+                //AddIndicator(model);
+            }
         }
 
         private void ActivateBarChart(BarPeriod period)

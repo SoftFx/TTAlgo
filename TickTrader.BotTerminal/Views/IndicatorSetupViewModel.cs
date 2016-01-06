@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorSetupViewModel : Screen
     {
-        private IndicatorSetupModel setup;
+        private IndicatorSetup setup;
         private bool dlgResult;
         private AlgoRepositoryModel repModel;
 
@@ -28,8 +28,8 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public List<AlgoProperty> Properties { get; private set; }
-        public IndicatorSetupModel Setup { get { return setup; } }
+        public List<PropertySetupBase> Properties { get; private set; }
+        public IndicatorSetup Setup { get { return setup; } }
         public AlgoRepositoryItem RepItem { get; private set; }
 
         public void Reset()
@@ -59,11 +59,11 @@ namespace TickTrader.BotTerminal
             if (setup != null)
                 setup.ValidityChanged -= Validate;
 
-            setup = new IndicatorSetupModel(RepItem.Descriptor, setup);
+            setup = new IndicatorSetup(RepItem.Descriptor, d => new BarInputSetup() , setup);
             setup.ValidityChanged += Validate;
             Validate();
 
-            Properties = new List<AlgoProperty>(setup.Parameters);
+            Properties = new List<PropertySetupBase>(setup.Parameters);
             NotifyOfPropertyChange("Properties");
         }
 

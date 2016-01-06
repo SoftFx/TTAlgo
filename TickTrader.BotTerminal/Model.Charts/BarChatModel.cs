@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,8 +16,8 @@ namespace TickTrader.BotTerminal
         private OhlcDataSeries<DateTime, double> chartData;
         private BarPeriod period;
 
-        public BarChartModel(SymbolModel symbol, FeedModel feed)
-            : base(symbol, feed)
+        public BarChartModel(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
+            : base(symbol, repository, feed)
         {
             ReserveTopSeries(1);
 
@@ -40,9 +41,14 @@ namespace TickTrader.BotTerminal
             base.Activate();
         }
 
+        protected override void ClearData()
+        {
+            MainSeries.DataSeries = null;
+            chartData = null;
+        }
+
         protected async override Task LoadData(CancellationToken cToken)
         {
-            this.chartData = null;
             //foreach (var indicator in this.Indicators)
             //    indicator.SetData(null);
 
@@ -93,6 +99,11 @@ namespace TickTrader.BotTerminal
             }
 
             MainSeries.DataSeries = chartData;
+        }
+
+        protected override bool IsIndicatorSupported(AlgoInfo descriptor)
+        {
+            return true;
         }
     }
 }

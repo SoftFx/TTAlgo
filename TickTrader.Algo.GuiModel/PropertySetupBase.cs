@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.GuiModel
 {
-    public abstract class AlgoProperty : ObservableObject
+    public abstract class PropertySetupBase : ObservableObject
     {
         private LocMsg error;
 
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.GuiModel
         public string Id { get; private set; }
         public bool HasError { get { return this.error != null; } }
 
-        public event Action<AlgoProperty> ErrorChanged = delegate { };
+        public event Action<PropertySetupBase> ErrorChanged = delegate { };
 
         public LocMsg Error
         {

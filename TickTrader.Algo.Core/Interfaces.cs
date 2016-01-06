@@ -9,23 +9,24 @@ namespace TickTrader.Algo.Core
     public interface IDataSeriesBuffer
     {
         void IncrementVirtualSize();
-        void AppendEmpty();
     }
 
     public interface IAlgoDataReader<TRow>
     {
-        event Action Initialized;
-        event Action<TRow> Appended;
-        event Action<IEnumerable<TRow>> AppendedRange;
-        event Action<TRow> Updated;
-        IDataSeriesBuffer BindInput(string id, InputFactory factory);
+        TRow ReadAt(int index);
+        List<TRow> ReadAt(int index, int pageSize);
+        void BindInput<T>(string id, InputDataSeries<T> buffer);
+    }
+
+    public interface IObservableDataReader<TRow> : IAlgoDataReader<TRow>
+    {
+        event Action<int> Updated;
     }
 
     public interface IAlgoDataWriter<TRow>
     {
-        void Init(IList<TRow> inputCache);
-        void Extend(TRow row);
-        IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
+        void Extend(List<TRow> rows);
+        void BindOutput<T>(string id, OutputDataSeries<T> buffer);
     }
 
     public interface InputStream<TRow>
@@ -41,18 +42,8 @@ namespace TickTrader.Algo.Core
 
     public interface IAlgoContext
     {
-        IDataSeriesBuffer BindInput(string id, InputFactory factory);
-        IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
+        void BindInput<T>(string id, InputDataSeries<T> buffer);
+        void BindOutput<T>(string id, OutputDataSeries<T> buffer);
         object GetParameter(string id);
-    }
-
-    public interface InputFactory
-    {
-        InputDataSeries<T> CreateInput<T>();
-    }
-
-    public interface OutputFactory
-    {
-        OutputDataSeries<T> CreateOutput<T>();
     }
 }

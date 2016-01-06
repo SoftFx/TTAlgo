@@ -39,9 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlgoParameter.cs" />
-    <Compile Include="AlgoProperty.cs" />
-    <Compile Include="IndicatorSetupModel.cs" />
+    <Compile Include="InputSetup.cs" />
+    <Compile Include="ParameterSetup.cs" />
+    <Compile Include="PropertySetupBase.cs" />
+    <Compile Include="IndicatorSetup.cs" />
     <Compile Include="LocMsg.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

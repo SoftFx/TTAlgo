@@ -37,20 +37,15 @@ namespace TickTrader.Algo.Core
         protected virtual void OnReset() { }
 
         // virtual count
-        public int Count { get; private set; }
+        public int Count { get; protected set; }
         // real buffer count
         public int BuffLength { get { return buffer.Count; } }
 
-        public void IncrementVirtualSize()
+        public virtual void IncrementVirtualSize()
         {
             if (Count >= BuffLength)
                 throw new Exception("Virtual size out of buffer boundaries!");
             Count++;
-        }
-
-        public virtual void AppendEmpty()
-        {
-            Append(NanValue);
         }
 
         public void Append(T val)
@@ -124,6 +119,14 @@ namespace TickTrader.Algo.Core
             Updated(data, index);
         }
 
+        public override void IncrementVirtualSize()
+        {
+            Append(NanValue);
+            Count++;
+            Appended(NanValue, Count - 1);
+        }
+
+        public event Action<T, int> Appended = delegate { };
         public event Action<T, int> Updated = delegate { };
     }
 

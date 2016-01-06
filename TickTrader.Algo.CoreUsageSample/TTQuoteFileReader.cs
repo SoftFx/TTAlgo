@@ -8,16 +8,27 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
-    class TTQuoteFileReader : InputStream<Bar>
+    class TTQuoteFileReader
     {
-        private System.IO.StreamReader reader;
-
-        public TTQuoteFileReader(System.IO.StreamReader reader)
+        public static List<Bar> ReadFile(string path)
         {
-            this.reader = reader;
+            using (var file = System.IO.File.OpenText(path))
+            {
+                List<Bar> result = new List<Bar>();
+
+                while (true)
+                {
+                    Bar nextBar;
+                    if (!ReadNext(out nextBar, file))
+                        break;
+                    result.Add(nextBar);
+                }
+
+                return result;
+            }
         }
 
-        public bool ReadNext(out Bar bar)
+        private static bool ReadNext(out Bar bar, System.IO.StreamReader reader)
         {
             bar = new Bar();
 

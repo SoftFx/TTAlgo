@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.RSITest
 {
-    [TestFixture]
-    class RSITest
+    [TestClass]
+    public class RSITest
     {
 
         private StreamReader file;
@@ -16,13 +16,13 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
         private List<double> testResRSI;
 
 
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResRSI = new List<double>();
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -55,11 +55,11 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResRSI = new List<double>();
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -92,12 +92,12 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResRSI = new List<double>();
@@ -106,7 +106,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -130,11 +130,11 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResRSI = new List<double>();
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
             int bidsLen = metaResRSI.Count;
             for (int testInd = 400; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
+                AssertX.Greater(1e-6, Math.Abs(testResRSI[testInd] - metaResRSI[testInd]));
             }
         }
 

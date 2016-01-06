@@ -21,30 +21,22 @@ namespace TickTrader.BotTerminal
     {
         private AlgoRepositoryItem repItem;
         private TriggeredActivity buildActivity;
-        private Bar[] currentData;
         private bool restarting;
 
-        public IndicatorBuilderModel(AlgoRepositoryItem indicatorMetadata, IndicatorSetupModel setup)
+        public IndicatorBuilderModel(AlgoRepositoryItem indicatorMetadata, IndicatorSetup setup)
         {
             repItem = indicatorMetadata;
             Setup = setup;
             Series = new List<XyDataSeries<DateTime, double>>();
-            buildActivity = new TriggeredActivity(c => BuildIndicator(c, currentData));
+            buildActivity = new TriggeredActivity(c => BuildIndicator(c));
         }
 
-        public IndicatorSetupModel Setup { get; private set; }
+        public IndicatorSetup Setup { get; private set; }
 
-        private IAlgoContext CreateContext(IndicatorSetupModel setup, Bar[] data)
+        private IAlgoContext CreateContext(IndicatorSetup setup)
         {
-            StreamReader<Api.Bar> reader = new StreamReader<Api.Bar>(new FdkBarStream(data));
-
-            foreach (var input in setup.Descriptor.Inputs)
-            {
-                if (input.DataSeriesBaseTypeFullName == "System.Double")
-                    reader.AddMapping(input.Id, b => b.Open);
-                else
-                    throw new Exception("DataSeries base type " + input.DataSeriesBaseTypeFullName + " is not supproted.");
-            }
+            foreach (var input in setup.Inputs)
+                input.Bind();
 
             DirectWriter<Api.Bar> writer = new DirectWriter<Api.Bar>();
 
@@ -61,8 +53,8 @@ namespace TickTrader.BotTerminal
             }
 
             AlgoContext<Api.Bar> context = new AlgoContext<Api.Bar>();
-            context.Reader = reader;
-            context.Writer = writer;
+            //context.Reader = reader;
+            //context.Writer = writer;
 
             foreach (var parameter in setup.Parameters)
                 context.SetParameter(parameter.Id, parameter.ValueObj);
@@ -104,27 +96,25 @@ namespace TickTrader.BotTerminal
         //}
 
         public string AlgoId { get { return repItem.Id; } }
-        public Bar[] Data { get { return currentData; } }
         public bool IsRestarting { get { return restarting; } }
 
-        public void SetData(Bar[] data)
+        public void Start()
         {
-            this.currentData = data;
             this.restarting = true;
             buildActivity.Trigger(true);
             Series.ForEach(s => s.Clear());
         }
 
-        private async Task BuildIndicator(CancellationToken cToken, Bar[] data)
+        private async Task BuildIndicator(CancellationToken cToken)
         {
             try
             {
-                IndicatorProxy proxy = repItem.CreateIndicator(CreateContext(Setup, data));
+                //IndicatorProxy proxy = repItem.CreateIndicator(CreateContext(Setup, data));
 
                 restarting = false;
 
-                if (data == null)
-                    return;
+                //if (data == null)
+                //    return;
 
                 await Task.Factory.StartNew(() =>
                     {
@@ -212,7 +202,7 @@ namespace TickTrader.BotTerminal
 
         public void Append(Api.Bar row, double data)
         {
-            //Execute.OnUIThread(() => chartData.Append(row.OpenTime, data));
+            Execute.OnUIThread(() => chartData.Append(row.OpenTime, data));
         }
 
         public void WriteAt(int index, double data, Api.Bar row)

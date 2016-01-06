@@ -7,11 +7,11 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.GuiModel
 {
-    public abstract class AlgoParameter : AlgoProperty
+    public abstract class ParameterSetup : PropertySetupBase
     {
-        public static AlgoParameter Create(ParameterInfo descriptor)
+        public static ParameterSetup Create(ParameterInfo descriptor)
         {
-            AlgoParameter newParam;
+            ParameterSetup newParam;
 
             if (descriptor.Error != null)
                 newParam = new AlgoInvalidParameter(new LocMsg(MsgCodes.NumberOverflow));
@@ -22,12 +22,12 @@ namespace TickTrader.Algo.GuiModel
             return newParam;
         }
 
-        private static AlgoParameter CreateByType(string typeFullName)
+        private static ParameterSetup CreateByType(string typeFullName)
         {
             switch (typeFullName)
             {
-                case "System.Int32": return new IntParam();
-                case "System.Double": return new DoubleParam();
+                case "System.Int32": return new IntParamSetup();
+                case "System.Double": return new DoubleParamSetup();
                 default: return new AlgoInvalidParameter(new LocMsg(MsgCodes.UnsupportedPropertyType));
             }
         }
@@ -45,17 +45,17 @@ namespace TickTrader.Algo.GuiModel
         public abstract string ValueStr { get; set; }
     }
 
-    public class IntParam : AlgoParameter<int>
+    public class IntParamSetup : ParameterSetup<int>
     {
         internal override UiConverter<int> Converter { get { return UiConverter.Int; } }
     }
 
-    public class DoubleParam : AlgoParameter<double>
+    public class DoubleParamSetup : ParameterSetup<double>
     {
         internal override UiConverter<double> Converter { get { return UiConverter.Double; } }
     }
 
-    public class AlgoParameter<T> : AlgoParameter
+    public class ParameterSetup<T> : ParameterSetup
     {
         private T value;
         private string strValue;
@@ -116,7 +116,7 @@ namespace TickTrader.Algo.GuiModel
         }
     }
 
-    public class AlgoInvalidParameter : AlgoParameter
+    public class AlgoInvalidParameter : ParameterSetup
     {
         public AlgoInvalidParameter(LocMsg error)
         {

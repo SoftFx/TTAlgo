@@ -1,26 +1,26 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.ATRTest
 {
-    [TestFixture]
-    class ATRTest 
+    [TestClass]
+    public class ATRTest 
     {
 
         private StreamReader file;
         private List<double> metaResATR;
         private List<double> testResATR;
-        private StreamReader<Bar> reader;
+        private DirectReader<Bar> reader;
         private DirectWriter<Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_OneDay()
         {
             metaResATR = new List<double>();
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -56,13 +56,13 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
             int bidsLen = testResATR.Count;
             for (int testInd = 20; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
             }
         }
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresEURUSD_TwoDay()
         {
             metaResATR = new List<double>();
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -98,14 +98,14 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
             int bidsLen = testResATR.Count;
             for (int testInd = 20; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
             }
         }
 
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_OneDay()
         {
             metaResATR = new List<double>();
@@ -113,7 +113,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -141,14 +141,14 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
             int bidsLen = testResATR.Count;
             for (int testInd = 20; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
             }
         }
 
 
 
 
-        [Test]
+        [TestMethod]
         public void TestMeasuresXAUUSD_TwoDay()
         {
             metaResATR = new List<double>();
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new StreamReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
             writer = new DirectWriter<Bar>();
@@ -184,7 +184,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATRTest
             int bidsLen = testResATR.Count;
             for (int testInd = 20; testInd < bidsLen; testInd++)
             {
-                Assert.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
+                AssertX.Greater(1e-10, Math.Abs(testResATR[testInd] - metaResATR[testInd]));
             }
         }
 

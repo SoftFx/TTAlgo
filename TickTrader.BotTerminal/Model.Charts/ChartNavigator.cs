@@ -10,20 +10,38 @@ namespace TickTrader.BotTerminal
 {
     internal abstract class ChartNavigator
     {
-        public abstract IRange VisibleRange { get; }
+        public ChartNavigator()
+        {
+            TimeAxis = CreateAxis();
+        }
+
+        //public abstract IRange VisibleRange { get; }
+        public AxisBase TimeAxis { get; private set; }
+
+        protected abstract AxisBase CreateAxis();
     }
 
     internal class UniformChartNavigator : ChartNavigator
     {
         private IndexRange visibleRange = new IndexRange();
 
-        public override IRange VisibleRange { get { return visibleRange; } }
+        //public override IRange VisibleRange { get { return visibleRange; } }
+
+        protected override AxisBase CreateAxis()
+        {
+            return new CategoryDateTimeAxis() { VisibleRange = visibleRange };
+        }
     }
 
     internal class NonUniformChartNavigator : ChartNavigator
     {
         private DateRange visibleRange = new DateRange();
 
-        public override IRange VisibleRange { get { return visibleRange; } }
+        //public override IRange VisibleRange { get { return visibleRange; } }
+
+        protected override AxisBase CreateAxis()
+        {
+            return new DateTimeAxis() { VisibleRange = visibleRange };
+        }
     }
 }

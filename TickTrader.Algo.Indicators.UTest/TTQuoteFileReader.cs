@@ -8,16 +8,24 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest
 {
-    class TTQuoteFileReader : InputStream<Bar>
+    public class TTQuoteFileReader : List<Bar>
     {
         private System.IO.StreamReader reader;
 
         public TTQuoteFileReader(System.IO.StreamReader reader)
         {
             this.reader = reader;
+
+            while (true)
+            {
+                Bar nextbar;
+                if (!ReadNext(out nextbar))
+                    break;
+                Add(nextbar);
+            }
         }
 
-        public bool ReadNext(out Bar bar)
+        private bool ReadNext(out Bar bar)
         {
             bar = new Bar();
 

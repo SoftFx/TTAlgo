@@ -14,7 +14,7 @@
     </UserControl.Resources>
     
     <Grid Margin="4" >
-        <s:SciChartSurface RenderableSeries="{Binding Chart.Series}">
+        <s:SciChartSurface RenderableSeries="{Binding Chart.Series}" XAxis="{Binding Chart.Navigator.TimeAxis}">
             <s:SciChartSurface.ChartModifier>
                 <s:ModifierGroup>
                     <s:YAxisDragModifier/>
@@ -30,10 +30,10 @@
             </s:SciChartSurface.RenderableSeries>-->
 
             <!--  X Axis  -->
-            <s:SciChartSurface.XAxis>
-                <!--<s:CategoryDateTimeAxis VisibleRange="{Binding Chart.VisibleRange, Mode=TwoWay}"  />-->
-                <s:DateTimeAxis VisibleRange="{Binding Chart.VisibleRange, Mode=TwoWay}" />
-            </s:SciChartSurface.XAxis>
+            <!--<s:SciChartSurface.XAxis>
+                --><!--<s:CategoryDateTimeAxis VisibleRange="{Binding Chart.VisibleRange, Mode=TwoWay}"  />--><!--
+                <s:DateTimeAxis VisibleRange="{Binding Chart.Navigator.VisibleRange, Mode=TwoWay}" />
+            </s:SciChartSurface.XAxis>-->
 
             <!--   Y Axis  -->
             <s:SciChartSurface.YAxis>
@@ -42,15 +42,19 @@
 
             <s:SciChartSurface.ContextMenu>
                 <ContextMenu Style="{StaticResource ContextMenu_Style}">
+                    <l:MenuItemSelector Header="Periods" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}" DisplayMemberPath="Key"/>
+                    <Separator/>
                     <l:MenuItemSelector Header="Chart Type" ItemsSource="{Binding Chart.ChartTypes}" SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}"/>
-                    <l:MenuItemSelector Header="Periods" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}" DisplayMemberPath="Key">
-                        <!--<l:MenuItemSelector.ItemTemplate>
+                    
+                    <!--<l:MenuItemSelector.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Key, Mode=OneWay}"/>
                             </DataTemplate>
                         </l:MenuItemSelector.ItemTemplate>-->
-                    </l:MenuItemSelector>
-                    <MenuItem Header="Indicators" ItemsSource="{Binding RepositoryIndicators}" DisplayMemberPath="DisplayName"
+
+                    <l:MenuItemSelector Header="Timeline" ItemsSource="{Binding Chart.AvailableTimelines}" SelectedItem="{Binding Chart.TimelineType, Mode=TwoWay}"/>
+                    <Separator/>
+                    <MenuItem Header="Indicators" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
                               cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
                 </ContextMenu>
             </s:SciChartSurface.ContextMenu>

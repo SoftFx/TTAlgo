@@ -7,117 +7,59 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class StreamReader<TRow> : IAlgoDataReader<TRow>
+    public class DirectReader<TRow> : ReaderBase<TRow>, IAlgoDataReader<TRow>
     {
-        private InputStream<TRow> stream;
-        private Dictionary<string, IMapping> mappingsById = new Dictionary<string, IMapping>();
-        private int chunkSize;
+        private IList<TRow> srcCollection;
 
-        public StreamReader(InputStream<TRow> stream, int chunkSize = 100)
+        public DirectReader(IList<TRow> srcCollection)
         {
-            this.stream = stream;
-            this.chunkSize = chunkSize;
+            this.srcCollection = srcCollection;
         }
-
-        public event Action Initialized;
-        public event Action<TRow> Appended;
-        public event Action<IEnumerable<TRow>> AppendedRange;
-        public event Action<TRow> Updated;
-        
 
         public void AddMapping<TInput>(string inputId, Func<TRow, TInput> selector)
         {
-            var mapping = new Mapping<TInput>(selector);
-            mappingsById.Add(inputId, mapping);
+            AddMapping(inputId, new Mapping<TInput>(selector));
         }
 
         public void AddMapping(string inputId, Func<TRow, double> selector)
         {
-            var mapping = new Mapping<double>(selector);
-            mappingsById.Add(inputId, mapping);
+            AddMapping(inputId, new Mapping<double>(selector));
         }
 
-        public void ReadAll()
+        public TRow ReadAt(int index)
         {
-            Initialized();
-
-            List<TRow> buffer = new List<TRow>();
-            do
-            {
-                buffer.Clear();
-                ReadNext(buffer);
-                AppendedRange(buffer);
-            }
-            while (buffer.Count > 0);
+            throw new NotImplementedException();
         }
 
-        private void ReadNext(List<TRow> buffer)
+        public List<TRow> ReadAt(int index, int pageSize)
         {
-            while (buffer.Count < chunkSize)
-            {
-                TRow rec;
-                if (!stream.ReadNext(out rec))
-                    break;
-                buffer.Add(rec);
+            var page = TakeAt(index, pageSize).ToList();
 
-                foreach (var mapping in mappingsById.Values)
-                    mapping.Append(rec);
+            foreach (TRow row in page)
+            {
+                foreach (var mapping in Mappings)
+                    mapping.Append(row);
             }
 
-            foreach (var mapping in mappingsById.Values)
+            foreach (var mapping in Mappings)
                 mapping.Flush();
+
+            return page;
         }
 
-        public IDataSeriesBuffer BindInput(string id, InputFactory factory)
+        private IEnumerable<TRow> TakeAt(int index, int pageSize)
         {
-            IMapping mapping;
-            if (!mappingsById.TryGetValue(id, out mapping))
-                throw new Exception("Input '" + id + "' is not mapped.");
-            return mapping.CreateProxy(factory);
+            if (index < srcCollection.Count)
+            {
+                int size = 0;
+                while (size < pageSize && index < srcCollection.Count)
+                    yield return srcCollection[index++];
+            }
         }
 
-        private interface IMapping
+        public void BindInput<T>(string id, InputDataSeries<T> buffer)
         {
-            void AppendNan();
-            void Append(TRow rec);
-            void Flush();
-            IDataSeriesBuffer CreateProxy(InputFactory factory);
-        }
-
-        private class Mapping<TIn> : IMapping
-        {
-            private List<TIn> cacheBuff = new List<TIn>();
-            private Func<TRow, TIn> selector;
-            private TIn nanValue;
-            private InputDataSeries<TIn> inputProxy;
-
-            public Mapping(Func<TRow, TIn> selector, TIn nanValue = default(TIn))
-            {
-                this.selector = selector;
-                this.nanValue = nanValue;
-            }
-
-            public void Append(TRow record)
-            {
-                cacheBuff.Add(selector(record));
-            }
-
-            public void AppendNan()
-            {
-                cacheBuff.Add(nanValue);
-            }
-
-            public void Flush()
-            {
-                inputProxy.Append(cacheBuff);
-                cacheBuff.Clear();
-            }
-
-            public IDataSeriesBuffer CreateProxy(InputFactory factory)
-            {
-                inputProxy = factory.CreateInput<TIn>();
-                return inputProxy;
-            }
+            ((Mapping<T>)GetMappingOrThrow(id)).SetProxy(buffer);
         }
     }
 
