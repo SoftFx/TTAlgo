@@ -113,10 +113,6 @@ namespace TickTrader.Algo.Indicators.ZigZag
                     lastZZlow = 0.0;
                     lastZZhigh = 0.0;
                 }
-                if (Bars.Count >= 1353)
-                {
-                    int a = 1;
-                }
                 switch (whatlookfor)
                 {
                     case 0: // look for peak or lawn 
