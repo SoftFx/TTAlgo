@@ -45,7 +45,7 @@
     <Compile Include="DynamicDataSource.cs" />
     <Compile Include="DynamicDataSource.Reader.cs" />
     <Compile Include="IndicatorBuilder.cs" />
-    <Compile Include="IndicatorBuilderBase.cs" />
+    <Compile Include="RealtimeIndicatorBuilder.cs" />
     <Compile Include="ReaderBase.cs" />
     <Compile Include="DirectReader.cs" />
     <Compile Include="DataSeries.cs" />

@@ -6,76 +6,65 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
-    //public partial class DynamicDataSource<TRow>
-    //{
-    //    public class Reader : ReaderBase<TRow>, IAlgoDataReader<TRow>, IDisposable
-    //    {
-    //        private DynamicDataSource<TRow> dataSrc;
-    //        private int position;
-    //        private int validPosition;
-    //        private bool isReading;
-    //        private Collection primaryCollection;
+    public partial class DynamicDataSource<TRow>
+    {
+        public class Reader : ReaderBase<TRow>, IObservableDataReader<TRow>, IDisposable
+        {
+            private DynamicDataSource<TRow> dataSrc;
+            private Collection primaryCollection;
 
-    //        internal Reader(DynamicDataSource<TRow> ds, Collection primaryCollection)
-    //        {
-    //            this.dataSrc = ds;
-    //            this.primaryCollection = primaryCollection;
-    //            this.primaryCollection.Updated += PrimaryCollection_Updated;
-    //        }
+            internal Reader(DynamicDataSource<TRow> ds, Collection primaryCollection)
+            {
+                this.dataSrc = ds;
+                this.primaryCollection = primaryCollection;
+                this.primaryCollection.Updated += PrimaryCollection_Updated;
+            }
 
-    //        public void Start()
-    //        {
-    //            dataSrc.syncObject.DoSynchronized(() =>
-    //            {
-    //                Awake();   
-    //            });
-    //        }
+            public TRow ReadAt(int index)
+            {
+                throw new NotImplementedException();
+            }
 
-    //        private void Awake()
-    //        {
-    //            if (!isReading)
-    //            {
-    //                isReading = true;
-    //                Task.Factory.StartNew(DoRead);
-    //            }
-    //        }
+            public List<TRow> ReadAt(int index, int pageSize)
+            {
+                lock (dataSrc.syncObject)
+                {
+                    var page = primaryCollection.TakeAt(index, 100).ToList();
 
-    //        private void DoRead()
-    //        {
-    //            while (true)
-    //            {
-    //                //dataSrc.syncObject.DoSynchronized();
+                    foreach (TRow row in page)
+                    {
+                        foreach (var mapping in Mappings)
+                            mapping.Append(row);
+                    }
 
-    //                int toRead = primaryCollection.Count;
-    //            }
+                    foreach (var mapping in Mappings)
+                        mapping.Flush();
 
-    //        }
+                    return page;
+                }
+            }
 
-    //        private void PrimaryCollection_Updated(int index, TRow row)
-    //        {
-    //            isUpdated = true;
-    //            Awake();
-    //        }
+            public void BindInput<T>(string id, InputDataSeries<T> buffer)
+            {
+                ((Mapping<T>)GetMappingOrThrow(id)).SetProxy(buffer);
+            }
 
-    //        public event Action<TRow> Appended;
-    //        public event Action<IEnumerable<TRow>> AppendedRange;
+            private void PrimaryCollection_Updated(int index, TRow row)
+            {
+                if (this.Updated != null)
+                    Updated(index);
+            }
 
-    //        public event Action Initialized;
-    //        public event Action<TRow> Updated;
+            public event Action<int> Updated;
 
-    //        public IDataSeriesBuffer BindInput(string id, InputFactory factory)
-    //        {
-    //        }
-
-    //        public void Dispose()
-    //        {
-    //            dataSrc.syncObject.DoSynchronized(() =>
-    //            {
-    //                primaryCollection.Updated -= PrimaryCollection_Updated;
-    //                dataSrc.RemoveCollectionRef(primaryCollection.Id);
-    //            });
-    //        }
-
-    //    }
-    //}
+            public void Dispose()
+            {
+                lock (dataSrc.syncObject)
+                {
+                    primaryCollection.Updated -= PrimaryCollection_Updated;
+                    dataSrc.RemoveCollectionRef(primaryCollection.Id);
+                }
+            }
+        }
+    }
 }
