@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Indicators.UTest.OsMATest
             builder.SetParameter("InpSignalSMA", 9);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-OsMA.txt");
             string resStr;
@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Indicators.UTest.OsMATest
             builder.SetParameter("InpSignalSMA", 9);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-OsMA.txt");
             string resStr;
@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Indicators.UTest.OsMATest
             builder.SetParameter("InpSignalSMA", 9);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-OsMA.txt");
             string resStr;
@@ -161,7 +161,7 @@ namespace TickTrader.Algo.Indicators.UTest.OsMATest
             builder.SetParameter("InpSignalSMA", 9);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-OsMA.txt");
             string resStr;

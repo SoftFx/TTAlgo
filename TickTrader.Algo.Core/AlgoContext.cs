@@ -43,9 +43,9 @@ namespace TickTrader.Algo.Core
 
         public void ReRead()
         {
-            //int lastIndex = BufferSize - 1;
-            //var row = Reader.ReadAt(lastIndex);
-            //dataCache[lastIndex] = row;
+            int lastIndex = ReadPos;
+            var row = Reader.ReadAt(lastIndex);
+            Writer.UpdateLast(row);
         }
 
         public int Read()

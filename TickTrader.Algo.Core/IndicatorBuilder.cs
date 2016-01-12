@@ -41,19 +41,24 @@ namespace TickTrader.Algo.Core
             context.Writer = writer;
         }
 
-        public void ReadAllAndBuild()
+        public void Build()
         {
-            ReadAllAndBuild(CancellationToken.None);
+            Build(CancellationToken.None);
         }
 
-        public void ReadAllAndBuild(CancellationToken cToken)
+        public void RebuildLast()
         {
-            if (insatnceProxy != null)
-                throw new InvalidOperationException("Indicator has been already built!");
+            context.ReRead();
+            insatnceProxy.InvokeCalculate();
+        }
 
-            insatnceProxy = factory(context);
-
-            context.Init();
+        public void Build(CancellationToken cToken)
+        {
+            if (insatnceProxy == null)
+            {
+                insatnceProxy = factory(context);
+                context.Init();
+            }
 
             int count;
 

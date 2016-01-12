@@ -20,6 +20,11 @@ namespace TickTrader.Algo.Core
             inputData.AddRange(rows);
         }
 
+        public void UpdateLast(TRow row)
+        {
+            inputData[inputData.Count - 1] = row;
+        }
+
         public void AddMapping<T>(string outputId, CollectionWriter<T, TRow> targetCollection)
         {
             mappings.Add(outputId, new Mapping<T>(targetCollection));
@@ -42,12 +47,6 @@ namespace TickTrader.Algo.Core
                 throw new Exception("Output '" + id + "' is not mapped.");
             mapping.InputData = inputData;
             ((Mapping<T>)mapping).SetBuffer(buffer);
-        }
-
-        public void Init(IList<TRow> inputCache)
-        {
-            foreach (var writer in mappings.Values)
-                writer.InputData = inputCache;
         }
 
         private interface IMapping

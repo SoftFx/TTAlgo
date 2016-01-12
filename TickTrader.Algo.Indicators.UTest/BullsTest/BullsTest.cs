@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             builder.SetParameter("BullsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Bulls.txt");
             string resStr;
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             builder.SetParameter("BullsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Bulls.txt");
             string resStr;
@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             builder.SetParameter("BullsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Bulls.txt");
             string resStr;
@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Indicators.UTest.BullsTest
             builder.SetParameter("BullsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Bulls.txt");
             string resStr;

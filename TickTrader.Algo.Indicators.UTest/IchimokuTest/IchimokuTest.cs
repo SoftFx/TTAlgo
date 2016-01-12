@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Ichimoku.txt");
             string resStr;
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Ichimoku.txt");
             string resStr;
@@ -204,7 +204,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Ichimoku.txt");
             string resStr;
@@ -271,7 +271,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Ichimoku.txt");
             string resStr;

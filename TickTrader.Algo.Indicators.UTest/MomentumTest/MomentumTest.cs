@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Momentum.txt");
@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Momentum.txt");
@@ -106,7 +106,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Momentum.txt");
@@ -141,7 +141,7 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
             builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Momentum.txt");

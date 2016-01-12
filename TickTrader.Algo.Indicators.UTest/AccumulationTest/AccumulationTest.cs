@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             builder = new IndicatorBuilder<Bar>(typeof(Accumulation.Accumulation), reader, writer);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Accumulator.txt");
             string resStr;
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             builder = new IndicatorBuilder<Bar>(typeof(Accumulation.Accumulation), reader, writer);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Accumulator.txt");
             string resStr;
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             builder = new IndicatorBuilder<Bar>(typeof(Accumulation.Accumulation), reader, writer);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Accumulator.txt");
             string resStr;
@@ -144,7 +144,7 @@ namespace TickTrader.Algo.Indicators.UTest.AccumulationTest
             builder = new IndicatorBuilder<Bar>(typeof(Accumulation.Accumulation), reader, writer);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Accumulator.txt");
             string resStr;

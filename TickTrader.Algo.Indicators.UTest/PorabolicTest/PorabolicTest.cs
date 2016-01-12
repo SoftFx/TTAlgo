@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
 
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Parabolic.txt");
             string resStr;
@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
 
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Parabolic.txt");
             string resStr;
@@ -123,7 +123,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
 
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Parabolic.txt");
             string resStr;
@@ -162,7 +162,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
 
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Parabolic.txt");
             string resStr;

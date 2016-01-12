@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
             builder.SetParameter("BearsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Bears.txt");
             string resStr;
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
             builder.SetParameter("BearsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Bears.txt");
             string resStr;
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
             builder.SetParameter("BearsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Bears.txt");
             string resStr;
@@ -147,7 +147,7 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
             builder.SetParameter("BearsPeriod", 13);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Bears.txt");
             string resStr;

@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core
     public interface IAlgoDataWriter<TRow>
     {
         void Extend(List<TRow> rows);
+        void UpdateLast(TRow row);
         void BindOutput<T>(string id, OutputDataSeries<T> buffer);
     }
 

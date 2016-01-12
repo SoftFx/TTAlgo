@@ -10,7 +10,7 @@ namespace TestAlgoProject
     [Indicator]
     public class SimpleMovingAverage : Indicator
     {
-        [Parameter]
+        [Parameter(DefaultValue = 5)]
         public int Window { get; set; }
 
         [Input]

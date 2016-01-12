@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
             builder.SetParameter("InpLipsShift", 3);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Alligator.txt");
             string resStr;
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
             builder.SetParameter("InpLipsShift", 3);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Alligator.txt");
             string resStr;
@@ -194,7 +194,7 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
             builder.SetParameter("InpLipsShift", 3);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Alligator.txt");
             string resStr;
@@ -259,7 +259,7 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
             builder.SetParameter("InpLipsShift", 3);
 
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Alligator.txt");
             string resStr;

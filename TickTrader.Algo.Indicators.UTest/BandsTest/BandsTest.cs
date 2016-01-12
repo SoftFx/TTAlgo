@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
   
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-Bands.txt");
             string resStr;
@@ -95,7 +95,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-Bands.txt");
             string resStr;
@@ -142,7 +142,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-Bands.txt");
             string resStr;
@@ -188,7 +188,7 @@ namespace TickTrader.Algo.Indicators.UTest.BandsTest
             builder.SetParameter("Shift", 0.0);
             builder.SetParameter("Deviations", 2.0);
 
-            builder.ReadAllAndBuild();
+            builder.Build();
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-Bands.txt");
             string resStr;
