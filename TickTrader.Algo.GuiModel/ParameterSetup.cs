@@ -14,7 +14,7 @@ namespace TickTrader.Algo.GuiModel
             ParameterSetup newParam;
 
             if (descriptor.Error != null)
-                newParam = new AlgoInvalidParameter(new LocMsg(MsgCodes.NumberOverflow));
+                newParam = new AlgoInvalidParameter(new LocMsg(descriptor.Error.Value));
             else
                 newParam = CreateByType(descriptor.DataType);
 

@@ -13,13 +13,15 @@ namespace TickTrader.BotTerminal
     internal class IndicatorSetupViewModel : Screen
     {
         private IndicatorSetup setup;
+        private IIndicatorSetupFactory setupFactory;
         private bool dlgResult;
         private AlgoRepositoryModel repModel;
 
-        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoRepositoryItem item)
+        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoRepositoryItem item, IIndicatorSetupFactory setupFactory)
         {
             this.DisplayName = "Add Indicator";
             this.RepItem = item;
+            this.setupFactory = setupFactory;
             this.repModel = repModel;
 
             repModel.Removed += repModel_Removed;
@@ -56,10 +58,12 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
+            IndicatorSetup oldSetup = setup;
+
             if (setup != null)
                 setup.ValidityChanged -= Validate;
 
-            setup = new IndicatorSetup(RepItem.Descriptor, d => new BarInputSetup() , setup);
+            setup = setupFactory.CreateSetup(RepItem.Descriptor);
             setup.ValidityChanged += Validate;
             Validate();
 
@@ -93,5 +97,10 @@ namespace TickTrader.BotTerminal
             repModel.Removed -= repModel_Removed;
             repModel.Replaced -= repModel_Replaced;
         }
+    }
+
+    internal interface IIndicatorSetupFactory
+    {
+        IndicatorSetup CreateSetup(AlgoInfo descriptor);
     }
 }

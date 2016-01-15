@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
@@ -99,6 +101,11 @@ namespace TickTrader.BotTerminal
             }
 
             MainSeries.DataSeries = chartData;
+        }
+
+        public override IndicatorSetup CreateSetup(AlgoRepositoryItem item)
+        {
+            return new IndicatorSetup_Bars(item.Descriptor);
         }
 
         protected override bool IsIndicatorSupported(AlgoInfo descriptor)

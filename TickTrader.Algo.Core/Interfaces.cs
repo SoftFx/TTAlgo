@@ -30,11 +30,6 @@ namespace TickTrader.Algo.Core
         void BindOutput<T>(string id, OutputDataSeries<T> buffer);
     }
 
-    public interface InputStream<TRow>
-    {
-        bool ReadNext(out TRow rec);
-    }
-
     public interface CollectionWriter<T, TRow>
     {
         void Append(TRow row, T data);

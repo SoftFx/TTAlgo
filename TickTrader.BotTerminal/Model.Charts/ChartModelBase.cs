@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.GuiModel;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -124,6 +125,8 @@ namespace TickTrader.BotTerminal
                 UpdateSeriesStyle();
             }
         }
+
+        public abstract IndicatorSetup CreateSetup(AlgoRepositoryItem item);
 
         protected abstract void ClearData();
         protected abstract Task LoadData(CancellationToken cToken);

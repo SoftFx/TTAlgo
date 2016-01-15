@@ -26,6 +26,9 @@ namespace TickTrader.Algo.Api
             try
             {
                 Init();
+
+                foreach (Indicator i in nestedIndicators)
+                    i.DoInit();
             }
             finally
             {

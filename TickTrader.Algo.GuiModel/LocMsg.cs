@@ -11,6 +11,11 @@ namespace TickTrader.Algo.GuiModel
     {
         private readonly static object[] emptyParams = new object[0];
 
+        public LocMsg(AlgoPropertyErrors error)
+            : this(Convert(error))
+        {
+        }
+
         public LocMsg(MsgCodes code)
         {
             this.Code = code;

@@ -18,6 +18,9 @@ namespace TickTrader.Algo.Api
 
         internal void DoCalculate()
         {
+            foreach (Indicator i in nestedIndicators)
+                i.DoCalculate();
+
             Calculate();
         }
     }

@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
             TimeAxis = CreateAxis();
         }
 
-        //public abstract IRange VisibleRange { get; }
+        public abstract IRange VisibleRange { get; }
         public AxisBase TimeAxis { get; private set; }
 
         protected abstract AxisBase CreateAxis();
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
     {
         private IndexRange visibleRange = new IndexRange();
 
-        //public override IRange VisibleRange { get { return visibleRange; } }
+        public override IRange VisibleRange { get { return visibleRange; } }
 
         protected override AxisBase CreateAxis()
         {
@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
     {
         private DateRange visibleRange = new DateRange();
 
-        //public override IRange VisibleRange { get { return visibleRange; } }
+        public override IRange VisibleRange { get { return visibleRange; } }
 
         protected override AxisBase CreateAxis()
         {

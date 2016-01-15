@@ -8,7 +8,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class IndicatorBuilder<TRow>
+    public class IndicatorBuilder<TRow> : IIndicatorBuilder
     {
         private AlgoContext<TRow> context = new AlgoContext<TRow>();
         private Func<IAlgoContext, IndicatorProxy> factory;
@@ -85,5 +85,12 @@ namespace TickTrader.Algo.Core
         {
             context.SetParameter(id, val);
         }
+    }
+
+    public interface IIndicatorBuilder
+    {
+        void Build();
+        void Build(CancellationToken cToken);
+        void RebuildLast();
     }
 }

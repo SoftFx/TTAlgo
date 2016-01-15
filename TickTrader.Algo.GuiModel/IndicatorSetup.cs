@@ -10,28 +10,29 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.GuiModel
 {
-    public class IndicatorSetup : ObservableObject
+    public abstract class IndicatorSetup : ObservableObject
     {
         private List<ParameterSetup> parameters;
-        private List<InputSetup> inputs;
 
-        public IndicatorSetup(AlgoInfo descriptor, Func<InputInfo, InputSetup> inputSetupFactory, IndicatorSetup copyFrom = null)
+        public IndicatorSetup(AlgoInfo descriptor)
         {
             this.Descriptor = descriptor;
 
             parameters = descriptor.Parameters.Select(ParameterSetup.Create).ToList();
             parameters.ForEach(p => p.ErrorChanged += s => Validate());
 
-            inputs = descriptor.Inputs.Select(inputSetupFactory).ToList();
-            inputs.ForEach(i => i.ErrorChanged += s => Validate());
+            foreach (var i in descriptor.Inputs)
+                CreateInput(i);
+
+            foreach (var i in Inputs)
+                i.ErrorChanged += s => Validate();
 
             Validate();
-
-            if (copyFrom != null)
-                CopyParametersFrom(copyFrom);
         }
 
-        //public Func<InputInfo, InputSetup> InputSetupFactory { get; set; }
+        protected abstract void CreateInput(InputInfo descriptor);
+
+        public abstract IEnumerable<InputSetup> Inputs { get; }
 
         public void Reset()
         {
@@ -39,7 +40,7 @@ namespace TickTrader.Algo.GuiModel
                 p.Reset();
         }
 
-        public void CopyParametersFrom(IndicatorSetup otherSetup)
+        public virtual void CopyFrom(IndicatorSetup otherSetup)
         {
             foreach (var otherParam in otherSetup.Parameters)
             {
@@ -55,14 +56,41 @@ namespace TickTrader.Algo.GuiModel
             ValidityChanged();
         }
 
-        //public IList<AlgoInputSetup> Inputs { get; private set; }
-        //public IList<AlgoOutputSetup> Outputs { get; private set; }
         public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
-        public IEnumerable<InputSetup> Inputs { get { return inputs; } }
         public AlgoInfo Descriptor { get; private set; }
 
-        public bool IsValid {get; private set;}
+        public bool IsValid { get; private set; }
         public event Action ValidityChanged = delegate { };
     }
 
+    public abstract class BarIndicatorSetup : IndicatorSetup
+    {
+        private List<BarInputSetup> inputs = new List<BarInputSetup>();
+
+        public BarIndicatorSetup(AlgoInfo descriptor)
+            : base(descriptor)
+        {
+        }
+
+        public override IEnumerable<InputSetup> Inputs { get { return inputs; } }
+
+        protected abstract BarInputSetup CreateBarInput(InputInfo descriptor);
+
+        protected override sealed void CreateInput(InputInfo descriptor)
+        {
+            BarInputSetup inputSetup;
+
+            if (!descriptor.IsValid)
+                inputSetup = new BarInputSetup.Invalid(descriptor, new LocMsg(descriptor.Error.Value));
+            else
+                inputSetup = CreateBarInput(descriptor);
+
+            inputs.Add(inputSetup);
+        }
+
+        public void ConfigureReader(DirectReader<Api.Bar> reader)
+        {
+            inputs.ForEach(r => r.Configure(reader));
+        }
+    }
 }
