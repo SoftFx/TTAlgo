@@ -105,7 +105,8 @@ namespace TickTrader.BotTerminal
 
         public override IndicatorSetup CreateSetup(AlgoRepositoryItem item)
         {
-            return new IndicatorSetup_Bars(item.Descriptor);
+            throw new NotImplementedException();
+            //return new IndicatorSetup_Bars(item.Descriptor);
         }
 
         protected override bool IsIndicatorSupported(AlgoInfo descriptor)

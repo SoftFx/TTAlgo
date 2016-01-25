@@ -116,7 +116,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj);
+                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj, null);
                 wndManager.ShowWindow(model);
                 ActivateItem(model);
 
@@ -133,7 +133,7 @@ namespace TickTrader.BotTerminal
             setupModel.Closed -= model_Closed;
             if (dlgResult)
             {
-                var model = new IndicatorBuilderModel(setupModel.RepItem, setupModel.Setup);
+                //var model = new IndicatorBuilderModel(setupModel.RepItem, setupModel.Setup);
                 //model.SetData(rawData);
                 //AddIndicator(model);
             }

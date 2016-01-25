@@ -134,9 +134,7 @@
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
-    <Compile Include="Model.Charts\IndicatorModel.cs" />
     <Compile Include="Model.Charts\IndicatorsCollection.cs" />
-    <Compile Include="Model.Charts\IndicatorSetup_Bars.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
