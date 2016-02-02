@@ -61,6 +61,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Amount.
+        /// </summary>
+        internal static string Amount {
+            get {
+                return ResourceManager.GetString("Amount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BotTrader.
         /// </summary>
         internal static string BotTrader {
@@ -160,6 +169,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OrderType.
+        /// </summary>
+        internal static string OrderType {
+            get {
+                return ResourceManager.GetString("OrderType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Positions.
         /// </summary>
         internal static string Positions {
@@ -174,6 +192,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         internal static string Preferences {
             get {
                 return ResourceManager.GetString("Preferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Symbol.
+        /// </summary>
+        internal static string Symbol {
+            get {
+                return ResourceManager.GetString("Symbol", resourceCulture);
             }
         }
         

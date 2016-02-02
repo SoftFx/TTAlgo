@@ -26,9 +26,9 @@
             
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
-                <DataGridTextColumn Header="Side" Width="*" Binding="{Binding Side}" />
-                <DataGridTextColumn Header="Amount" Width="*">
+                <DataGridTextColumn Header="{l:Resx Symbol}" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="{l:Resx Side}" Width="*" Binding="{Binding Side}" />
+                <DataGridTextColumn Header="{l:Resx Amount}" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="RemainingAmount" />
