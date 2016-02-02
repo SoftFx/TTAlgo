@@ -112,6 +112,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\FlatButton.cs" />
+    <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
     <Compile Include="Controls\OverlayControl.cs" />
     <Compile Include="Controls\BusyIndicator.xaml.cs">
@@ -122,6 +123,25 @@
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Extensions\ResxCore.cs" />
+    <Compile Include="Extensions\ResxExtension.cs" />
+    <Compile Include="Extensions\ResxBindingExtension.cs" />
+    <Compile Include="Extensions\ResxFormatExtension.cs" />
+    <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
+      <DependentUpon>gui.en-gb.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resx\Locales\gui.Designer.cs">
+      <DependentUpon>gui.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resx\Locales\gui.ru-ru.Designer.cs">
+      <DependentUpon>gui.ru-ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Infrustructure\MdiWindowManager.cs" />
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
@@ -218,6 +238,18 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Resx\Locales\gui.en-gb.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.en-gb.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Locales\gui.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Locales\gui.ru-ru.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.ru-ru.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
