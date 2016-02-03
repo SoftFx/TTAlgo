@@ -26,10 +26,10 @@
         </Grid.RowDefinitions>
 
         <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="1" Grid.RowSpan="3" Style="{StaticResource ShellTabControl_Style}" Margin="5,5,0,5">
-            <TabItem Header="{l:Resx Symbols}">
+            <TabItem Header="{l:Resx Tab_Symbols}">
                 <ContentControl x:Name="SymbolList"/>
             </TabItem>
-            <TabItem Header="Algo"/>
+            <TabItem Header="{l:Resx Tab_Algo}"/>
         </l:TabControl>
 
         <ContentControl Name="Charts" Grid.Column="2" Grid.Row="1" Margin="0,0,5,0"/>
@@ -37,21 +37,21 @@
         <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
 
         <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Margin="3">
-            <MenuItem Header="{l:Resx BotTrader}" >
-                <MenuItem Header="{l:Resx NewOrder}" IsEnabled="False"/>
-                <MenuItem Header="{l:Resx NewChart}" IsEnabled="False"/>
+            <MenuItem Header="{l:Resx Menu_BotTrader}" >
+                <MenuItem Header="{l:Resx Menu_NewOrder}" IsEnabled="False"/>
+                <MenuItem Header="{l:Resx Menu_NewChart}" IsEnabled="False"/>
                 <Separator/>
-                <MenuItem Header="{l:Resx LogIn}" cal:Message.Attach="Connect" />
-                <MenuItem Header="{l:Resx LogOut}" cal:Message.Attach="Disconnect" />
-                <MenuItem Header="{l:Resx ManageAccounts}" cal:Message.Attach="ManageAccounts"/>
+                <MenuItem Header="{l:Resx Menu_LogIn}" cal:Message.Attach="Connect" />
+                <MenuItem Header="{l:Resx Menu_LogOut}" cal:Message.Attach="Disconnect" />
+                <MenuItem Header="{l:Resx Menu_ManageAccounts}" cal:Message.Attach="ManageAccounts"/>
                 <Separator/>
-                <MenuItem Header="{l:Resx ExitBotTrader}"/>
+                <MenuItem Header="{l:Resx Menu_ExitBotTrader}"/>
             </MenuItem>
-            <MenuItem Header="{l:Resx Preferences}">
-                <l:MenuItemSelector Header="{l:Resx Language}"
+            <MenuItem Header="{l:Resx Menu_Preferences}">
+                <l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
                                         SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>
-                <l:MenuItemSelector Header="{l:Resx Theme}"
+                <l:MenuItemSelector Header="{l:Resx Menu_Theme}"
                                         ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
                                         SelectedItem="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=SelectedTheme, Mode=TwoWay}">
                     <l:MenuItemSelector.ItemTemplate>
@@ -66,14 +66,14 @@
         <GridSplitter Grid.Column="2" Grid.Row="2" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
 
         <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="3" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5">
-            <TabItem Header="{l:Resx Positions}">
+            <TabItem Header="{l:Resx Tab_Positions}">
                 <ContentControl x:Name="PositionList"/>
             </TabItem>
-            <TabItem Header="{l:Resx Orders}">
+            <TabItem Header="{l:Resx Tab_Orders}">
                 <ContentControl x:Name="OrderList"/>
             </TabItem>
-            <TabItem Header="{l:Resx History}"/>
-            <TabItem Header="{l:Resx Journal}"/>
+            <TabItem Header="{l:Resx Tab_History}"/>
+            <TabItem Header="{l:Resx Tab_Journal}"/>
         </l:TabControl>
 
     </Grid>

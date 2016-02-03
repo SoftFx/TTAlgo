@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
                 new Locale() { Code="ru-ru", Name="Русский" }
             };
 
-            _selectedLocale = Locales[0];
+            Activate(Locales.First());
         }
 
         private void Activate(Locale locale)

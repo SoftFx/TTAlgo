@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         {
             get
             {
-                return _resxmanager.GetObject(key, culture ?? CurrentCulture) ?? key;
+                return _resxmanager.GetObject(key, culture ?? CurrentCulture) ?? string.Format("$${0}$$", key);
             }
         }
 

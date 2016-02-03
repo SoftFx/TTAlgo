@@ -11,10 +11,10 @@
             <DataGrid Name="Orders" Style="{StaticResource DataGrid_Style}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
-                    <DataGridTextColumn Header="{l:Resx Symbol}" Width="*" Binding="{Binding Symbol}" />
-                    <DataGridTextColumn Header="{l:Resx Side}" Width="*" Binding="{Binding Side}" />
-                    <DataGridTextColumn Header="{l:Resx OrderType}" Width="*" Binding="{Binding OrderType}" />
-                    <DataGridTextColumn Header="{l:Resx Amount}" Width="*">
+                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Symbol}" />
+                    <DataGridTextColumn Header="{l:Resx Order_Side}" Width="*" Binding="{Binding Side}" />
+                    <DataGridTextColumn Header="{l:Resx Order_OrderType}" Width="*" Binding="{Binding OrderType}" />
+                    <DataGridTextColumn Header="{l:Resx Order_Amount}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding StringFormat="{}{0}/{1}">
                                 <Binding Path="RemainingAmount" />
@@ -22,7 +22,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="{l:Resx Price}" Width="*" Binding="{Binding Price}" />
+                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Price}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

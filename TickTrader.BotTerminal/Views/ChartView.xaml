@@ -42,19 +42,31 @@
 
             <s:SciChartSurface.ContextMenu>
                 <ContextMenu Style="{StaticResource ContextMenu_Style}">
-                    <l:MenuItemSelector Header="Periods" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}" DisplayMemberPath="Key"/>
+                    <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}" DisplayMemberPath="Key"/>
                     <Separator/>
-                    <l:MenuItemSelector Header="Chart Type" ItemsSource="{Binding Chart.ChartTypes}" SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}"/>
-                    
+                    <l:MenuItemSelector Header="{l:Resx ContextMenu_ChartType}" ItemsSource="{Binding Chart.ChartTypes}" SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}">
+                        <l:MenuItemSelector.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{l:ResxBinding Prefix=ChartType_}"></TextBlock>
+                            </DataTemplate>
+                        </l:MenuItemSelector.ItemTemplate>
+                    </l:MenuItemSelector>
+
                     <!--<l:MenuItemSelector.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Key, Mode=OneWay}"/>
                             </DataTemplate>
                         </l:MenuItemSelector.ItemTemplate>-->
 
-                    <l:MenuItemSelector Header="Timeline" ItemsSource="{Binding Chart.AvailableTimelines}" SelectedItem="{Binding Chart.TimelineType, Mode=TwoWay}"/>
+                    <l:MenuItemSelector Header="{l:Resx ContextMenu_Timeline}" ItemsSource="{Binding Chart.AvailableTimelines}" SelectedItem="{Binding Chart.TimelineType, Mode=TwoWay}">
+                        <l:MenuItemSelector.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{l:ResxBinding Prefix=TimelineType_}"></TextBlock>
+                            </DataTemplate>
+                        </l:MenuItemSelector.ItemTemplate>
+                    </l:MenuItemSelector>
                     <Separator/>
-                    <MenuItem Header="Indicators" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
+                    <MenuItem Header="{l:Resx ContextMenu_Indicators}" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
                               cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
                 </ContextMenu>
             </s:SciChartSurface.ContextMenu>

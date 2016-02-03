@@ -117,59 +117,122 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Amount" xml:space="preserve">
-    <value>Сумма</value>
+  <data name="ChartType_Candle" xml:space="preserve">
+    <value>Свеча</value>
   </data>
-  <data name="BotTrader" xml:space="preserve">
+  <data name="ChartType_DigitalLine" xml:space="preserve">
+    <value>Цифровая линия?</value>
+  </data>
+  <data name="ChartType_DigitalMountain" xml:space="preserve">
+    <value>Цифровая область?</value>
+  </data>
+  <data name="ChartType_Line" xml:space="preserve">
+    <value>Линия</value>
+  </data>
+  <data name="ChartType_Mountain" xml:space="preserve">
+    <value>Область</value>
+  </data>
+  <data name="ChartType_OHLC" xml:space="preserve">
+    <value>OHLC</value>
+  </data>
+  <data name="ChartType_Scatter" xml:space="preserve">
+    <value>Точечный</value>
+  </data>
+  <data name="ContextMenu_ChartType" xml:space="preserve">
+    <value>Тип графика</value>
+  </data>
+  <data name="ContextMenu_Indicators" xml:space="preserve">
+    <value>Индикаторы</value>
+  </data>
+  <data name="ContextMenu_NewChart" xml:space="preserve">
+    <value>Новый график</value>
+  </data>
+  <data name="ContextMenu_OpenOrder" xml:space="preserve">
+    <value>Открыть ордер</value>
+  </data>
+  <data name="ContextMenu_Periods" xml:space="preserve">
+    <value>Период обновления</value>
+  </data>
+  <data name="ContextMenu_Timeline" xml:space="preserve">
+    <value>Шкала времени</value>
+  </data>
+  <data name="Menu_BotTrader" xml:space="preserve">
     <value>BotTrader</value>
   </data>
-  <data name="ExitBotTrader" xml:space="preserve">
+  <data name="Menu_ExitBotTrader" xml:space="preserve">
     <value>Выход</value>
   </data>
-  <data name="History" xml:space="preserve">
-    <value>История</value>
-  </data>
-  <data name="Journal" xml:space="preserve">
-    <value>Журнал</value>
-  </data>
-  <data name="Language" xml:space="preserve">
+  <data name="Menu_Language" xml:space="preserve">
     <value>Язык</value>
   </data>
-  <data name="LogIn" xml:space="preserve">
+  <data name="Menu_LogIn" xml:space="preserve">
     <value>Логин</value>
   </data>
-  <data name="LogOut" xml:space="preserve">
-    <value>Log out</value>
+  <data name="Menu_LogOut" xml:space="preserve">
+    <value>Выйти </value>
   </data>
-  <data name="ManageAccounts" xml:space="preserve">
-    <value>Управление счетами</value>
+  <data name="Menu_ManageAccounts" xml:space="preserve">
+    <value>Управление аккаунтом</value>
   </data>
-  <data name="NewChart" xml:space="preserve">
-    <value>Новый График</value>
+  <data name="Menu_NewChart" xml:space="preserve">
+    <value>Новый график</value>
   </data>
-  <data name="NewOrder" xml:space="preserve">
-    <value>Новый Ордер</value>
+  <data name="Menu_NewOrder" xml:space="preserve">
+    <value>Новый ордер</value>
   </data>
-  <data name="Orders" xml:space="preserve">
-    <value>Ордера</value>
-  </data>
-  <data name="OrderType" xml:space="preserve">
-    <value>Тип ордера</value>
-  </data>
-  <data name="Positions" xml:space="preserve">
-    <value>Позиции</value>
-  </data>
-  <data name="Preferences" xml:space="preserve">
+  <data name="Menu_Preferences" xml:space="preserve">
     <value>Настройки</value>
   </data>
-  <data name="Symbol" xml:space="preserve">
+  <data name="Menu_Theme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Order_Amount" xml:space="preserve">
+    <value>Сумма</value>
+  </data>
+  <data name="Order_OrderType" xml:space="preserve">
+    <value>Тип ордера</value>
+  </data>
+  <data name="Order_Price" xml:space="preserve">
+    <value>Цена</value>
+  </data>
+  <data name="Order_Side" xml:space="preserve">
+    <value>Сторона?</value>
+  </data>
+  <data name="Order_Symbol" xml:space="preserve">
     <value>Символ</value>
   </data>
-  <data name="Symbols" xml:space="preserve">
-    <value>Символы</value>
+  <data name="Position_Amount" xml:space="preserve">
+    <value>Сумма</value>
   </data>
-  <data name="Theme" xml:space="preserve">
-    <value>Тема</value>
+  <data name="Position_Side" xml:space="preserve">
+    <value>Сторона?</value>
+  </data>
+  <data name="Position_Symbol" xml:space="preserve">
+    <value>Символ</value>
+  </data>
+  <data name="SymbolDetails_Buy" xml:space="preserve">
+    <value>Купить</value>
+  </data>
+  <data name="SymbolDetails_Sell" xml:space="preserve">
+    <value>Продать</value>
+  </data>
+  <data name="Tab_Algo" xml:space="preserve">
+    <value>Алго?</value>
+  </data>
+  <data name="Tab_History" xml:space="preserve">
+    <value>История</value>
+  </data>
+  <data name="Tab_Journal" xml:space="preserve">
+    <value>Журнал</value>
+  </data>
+  <data name="Tab_Orders" xml:space="preserve">
+    <value>Оредра</value>
+  </data>
+  <data name="Tab_Positions" xml:space="preserve">
+    <value>Позиции</value>
+  </data>
+  <data name="Tab_Symbols" xml:space="preserve">
+    <value>Символы</value>
   </data>
   <data name="Theme_Dark" xml:space="preserve">
     <value>Темная</value>
@@ -177,7 +240,10 @@
   <data name="Theme_Light" xml:space="preserve">
     <value>Светлая</value>
   </data>
-  <data name="Price" xml:space="preserve">
-    <value>Цена</value>
+  <data name="TimelineType_Real" xml:space="preserve">
+    <value>Реальная?</value>
+  </data>
+  <data name="TimelineType_Uniform" xml:space="preserve">
+    <value>Унифицированная?</value>
   </data>
 </root>

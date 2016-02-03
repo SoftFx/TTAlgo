@@ -61,169 +61,358 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Amount.
+        ///   Looks up a localized string similar to ##Candle##.
         /// </summary>
-        internal static string Amount {
+        internal static string ChartType_Candle {
             get {
-                return ResourceManager.GetString("Amount", resourceCulture);
+                return ResourceManager.GetString("ChartType_Candle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to BotTrader.
+        ///   Looks up a localized string similar to ##Digital Line##.
         /// </summary>
-        internal static string BotTrader {
+        internal static string ChartType_DigitalLine {
             get {
-                return ResourceManager.GetString("BotTrader", resourceCulture);
+                return ResourceManager.GetString("ChartType_DigitalLine", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exit.
+        ///   Looks up a localized string similar to ##Digital Mountain##.
         /// </summary>
-        internal static string ExitBotTrader {
+        internal static string ChartType_DigitalMountain {
             get {
-                return ResourceManager.GetString("ExitBotTrader", resourceCulture);
+                return ResourceManager.GetString("ChartType_DigitalMountain", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to History.
+        ///   Looks up a localized string similar to ##Line##.
         /// </summary>
-        internal static string History {
+        internal static string ChartType_Line {
             get {
-                return ResourceManager.GetString("History", resourceCulture);
+                return ResourceManager.GetString("ChartType_Line", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Journal.
+        ///   Looks up a localized string similar to ##Mountain##.
         /// </summary>
-        internal static string Journal {
+        internal static string ChartType_Mountain {
             get {
-                return ResourceManager.GetString("Journal", resourceCulture);
+                return ResourceManager.GetString("ChartType_Mountain", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Language.
+        ///   Looks up a localized string similar to ##OHLC##.
         /// </summary>
-        internal static string Language {
+        internal static string ChartType_OHLC {
             get {
-                return ResourceManager.GetString("Language", resourceCulture);
+                return ResourceManager.GetString("ChartType_OHLC", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log In.
+        ///   Looks up a localized string similar to ##Scatter##.
         /// </summary>
-        internal static string LogIn {
+        internal static string ChartType_Scatter {
             get {
-                return ResourceManager.GetString("LogIn", resourceCulture);
+                return ResourceManager.GetString("ChartType_Scatter", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log Out.
+        ///   Looks up a localized string similar to ##Chart Type##.
         /// </summary>
-        internal static string LogOut {
+        internal static string ContextMenu_ChartType {
             get {
-                return ResourceManager.GetString("LogOut", resourceCulture);
+                return ResourceManager.GetString("ContextMenu_ChartType", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manage Accounts.
+        ///   Looks up a localized string similar to ##Indicators##.
         /// </summary>
-        internal static string ManageAccounts {
+        internal static string ContextMenu_Indicators {
             get {
-                return ResourceManager.GetString("ManageAccounts", resourceCulture);
+                return ResourceManager.GetString("ContextMenu_Indicators", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New Chart.
+        ///   Looks up a localized string similar to ##New Chart##.
         /// </summary>
-        internal static string NewChart {
+        internal static string ContextMenu_NewChart {
             get {
-                return ResourceManager.GetString("NewChart", resourceCulture);
+                return ResourceManager.GetString("ContextMenu_NewChart", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New Order.
+        ///   Looks up a localized string similar to ##Open Order##.
         /// </summary>
-        internal static string NewOrder {
+        internal static string ContextMenu_OpenOrder {
             get {
-                return ResourceManager.GetString("NewOrder", resourceCulture);
+                return ResourceManager.GetString("ContextMenu_OpenOrder", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Orders.
+        ///   Looks up a localized string similar to ##Periods##.
         /// </summary>
-        internal static string Orders {
+        internal static string ContextMenu_Periods {
             get {
-                return ResourceManager.GetString("Orders", resourceCulture);
+                return ResourceManager.GetString("ContextMenu_Periods", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OrderType.
+        ///   Looks up a localized string similar to ##Timeline##.
         /// </summary>
-        internal static string OrderType {
+        internal static string ContextMenu_Timeline {
             get {
-                return ResourceManager.GetString("OrderType", resourceCulture);
+                return ResourceManager.GetString("ContextMenu_Timeline", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Positions.
+        ///   Looks up a localized string similar to ##BotTrader##.
         /// </summary>
-        internal static string Positions {
+        internal static string Menu_BotTrader {
             get {
-                return ResourceManager.GetString("Positions", resourceCulture);
+                return ResourceManager.GetString("Menu_BotTrader", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Preferences.
+        ///   Looks up a localized string similar to ##Exit##.
         /// </summary>
-        internal static string Preferences {
+        internal static string Menu_ExitBotTrader {
             get {
-                return ResourceManager.GetString("Preferences", resourceCulture);
+                return ResourceManager.GetString("Menu_ExitBotTrader", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Symbol.
+        ///   Looks up a localized string similar to ##Language##.
         /// </summary>
-        internal static string Symbol {
+        internal static string Menu_Language {
             get {
-                return ResourceManager.GetString("Symbol", resourceCulture);
+                return ResourceManager.GetString("Menu_Language", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Symbols.
+        ///   Looks up a localized string similar to ##Log In##.
         /// </summary>
-        internal static string Symbols {
+        internal static string Menu_LogIn {
             get {
-                return ResourceManager.GetString("Symbols", resourceCulture);
+                return ResourceManager.GetString("Menu_LogIn", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Theme.
+        ///   Looks up a localized string similar to ##Log Out##.
         /// </summary>
-        internal static string Theme {
+        internal static string Menu_LogOut {
             get {
-                return ResourceManager.GetString("Theme", resourceCulture);
+                return ResourceManager.GetString("Menu_LogOut", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dark.
+        ///   Looks up a localized string similar to ##Manage accounts##.
+        /// </summary>
+        internal static string Menu_ManageAccounts {
+            get {
+                return ResourceManager.GetString("Menu_ManageAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##New Chart##.
+        /// </summary>
+        internal static string Menu_NewChart {
+            get {
+                return ResourceManager.GetString("Menu_NewChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##New Order##.
+        /// </summary>
+        internal static string Menu_NewOrder {
+            get {
+                return ResourceManager.GetString("Menu_NewOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Preferences##.
+        /// </summary>
+        internal static string Menu_Preferences {
+            get {
+                return ResourceManager.GetString("Menu_Preferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Theme##.
+        /// </summary>
+        internal static string Menu_Theme {
+            get {
+                return ResourceManager.GetString("Menu_Theme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Amount##.
+        /// </summary>
+        internal static string Order_Amount {
+            get {
+                return ResourceManager.GetString("Order_Amount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Order type##.
+        /// </summary>
+        internal static string Order_OrderType {
+            get {
+                return ResourceManager.GetString("Order_OrderType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Price##.
+        /// </summary>
+        internal static string Order_Price {
+            get {
+                return ResourceManager.GetString("Order_Price", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Side##.
+        /// </summary>
+        internal static string Order_Side {
+            get {
+                return ResourceManager.GetString("Order_Side", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Symbol##.
+        /// </summary>
+        internal static string Order_Symbol {
+            get {
+                return ResourceManager.GetString("Order_Symbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Amount##.
+        /// </summary>
+        internal static string Position_Amount {
+            get {
+                return ResourceManager.GetString("Position_Amount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Side##.
+        /// </summary>
+        internal static string Position_Side {
+            get {
+                return ResourceManager.GetString("Position_Side", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Symbol##.
+        /// </summary>
+        internal static string Position_Symbol {
+            get {
+                return ResourceManager.GetString("Position_Symbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Buy##.
+        /// </summary>
+        internal static string SymbolDetails_Buy {
+            get {
+                return ResourceManager.GetString("SymbolDetails_Buy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Sell##.
+        /// </summary>
+        internal static string SymbolDetails_Sell {
+            get {
+                return ResourceManager.GetString("SymbolDetails_Sell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Algo##.
+        /// </summary>
+        internal static string Tab_Algo {
+            get {
+                return ResourceManager.GetString("Tab_Algo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##History##.
+        /// </summary>
+        internal static string Tab_History {
+            get {
+                return ResourceManager.GetString("Tab_History", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Journal##.
+        /// </summary>
+        internal static string Tab_Journal {
+            get {
+                return ResourceManager.GetString("Tab_Journal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Orders##.
+        /// </summary>
+        internal static string Tab_Orders {
+            get {
+                return ResourceManager.GetString("Tab_Orders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Positions##.
+        /// </summary>
+        internal static string Tab_Positions {
+            get {
+                return ResourceManager.GetString("Tab_Positions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Symbols##.
+        /// </summary>
+        internal static string Tab_Symbols {
+            get {
+                return ResourceManager.GetString("Tab_Symbols", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Dark##.
         /// </summary>
         internal static string Theme_Dark {
             get {
@@ -232,11 +421,29 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Light.
+        ///   Looks up a localized string similar to ##Light##.
         /// </summary>
         internal static string Theme_Light {
             get {
                 return ResourceManager.GetString("Theme_Light", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Real##.
+        /// </summary>
+        internal static string TimelineType_Real {
+            get {
+                return ResourceManager.GetString("TimelineType_Real", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Uniform##.
+        /// </summary>
+        internal static string TimelineType_Uniform {
+            get {
+                return ResourceManager.GetString("TimelineType_Uniform", resourceCulture);
             }
         }
     }
