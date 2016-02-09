@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Api
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class IndicatorAttribute : Attribute
     {
+        public bool IsOverlay { get; set; }
         public string DisplayName { get; set; }
         public string Category { get; set; }
     }

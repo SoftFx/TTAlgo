@@ -51,6 +51,8 @@ namespace TickTrader.Algo.Core.Metadata
         {
             if (string.IsNullOrWhiteSpace(displayName))
                 DisplayName = Info.Name;
+            else
+                DisplayName = displayName;
         }
 
         protected void FillCommonProperties(AlgoPropertyInfo info)

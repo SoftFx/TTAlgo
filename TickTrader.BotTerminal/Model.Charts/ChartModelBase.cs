@@ -143,12 +143,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IIndicatorConfig CreateIndicatorConfig(string alogId)
+        public IIndicatorConfig CreateIndicatorConfig(AlgoCatalogItem item)
         {
-            var repItem = AvailableIndicators.FirstOrDefault(i => i.Id == alogId);
-            if (repItem == null)
-                return null;
-            return CreateInidactorConfig(repItem);
+            return CreateInidactorConfig(item);
         }
 
         public void AddOrUpdateIndicator(IIndicatorConfig config)

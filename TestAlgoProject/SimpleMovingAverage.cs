@@ -7,17 +7,17 @@ using TickTrader.Algo.Api;
 
 namespace TestAlgoProject
 {
-    [Indicator]
+    [Indicator(DisplayName = "Simple Moving Average")]
     public class SimpleMovingAverage : Indicator
     {
         [Parameter(DefaultValue = 5)]
         public int Window { get; set; }
 
-        [Parameter(DefaultValue = 5)]
-        public int Window2 { get; set; }
+        [Parameter(DefaultValue = 0.0)]
+        public double Shift { get; set; }
 
-        [Parameter(DefaultValue = 15)]
-        public int Window3 { get; set; }
+        [Parameter(DisplayName = "Some property!")]
+        public double Ololo { get; set; }
 
         [Input]
         public DataSeries Input { get; set; }
@@ -27,7 +27,7 @@ namespace TestAlgoProject
 
         protected override void Calculate()
         {
-            Output[0] = Input.Take(10).Average();
+            Output[0] = Input.Take(10).Average() + Shift;
         }
     }
 

@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
 
     internal interface IIndicatorHost
     {
-        IIndicatorConfig CreateIndicatorConfig(string algoId);
+        IIndicatorConfig CreateIndicatorConfig(AlgoCatalogItem catalogItem);
         void AddOrUpdateIndicator(IIndicatorConfig cfg);
     }
 

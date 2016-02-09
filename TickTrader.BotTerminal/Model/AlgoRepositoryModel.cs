@@ -33,6 +33,8 @@ namespace TickTrader.BotTerminal
             rep.Added += Rep_Added;
             rep.Removed += Rep_Removed;
             rep.Replaced += Rep_Replaced;
+
+            rep.Start();
         }
 
         public void Add(AlgoDescriptor descriptor)
@@ -82,6 +84,8 @@ namespace TickTrader.BotTerminal
             var item = new AlgoDynamicItem(repItem);
             itemsById[repItem.Id] = new AlgoDynamicItem(repItem);
             Replaced(item);
+
+            System.Diagnostics.Debug.WriteLine("AlgoRepositoryModel.Replaced " + repItem.Descriptor.Parameters.Count() +  " params");
         }
     }
 

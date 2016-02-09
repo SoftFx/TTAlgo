@@ -72,9 +72,14 @@ namespace TickTrader.BotTerminal
             if (cfg != null)
                 cfg.UiModel.ValidityChanged -= Validate;
 
-            cfg = host.CreateIndicatorConfig(RepItem.Descriptor.Id);
+            cfg = host.CreateIndicatorConfig(RepItem);
             cfg.UiModel.ValidityChanged += Validate;
             Validate();
+
+            System.Diagnostics.Debug.WriteLine("IndicatorSetupViewModel.Init() "
+                + cfg.UiModel.Parameters.Count() + " params "
+                + cfg.UiModel.Inputs.Count() + " inputs "
+                + cfg.UiModel.Outputs.Count() + " outputs ");
 
             NotifyOfPropertyChange("Setup");
         }
