@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         private bool dlgResult;
         private AlgoRepositoryModel repModel;
 
-        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoRepositoryItem item, IIndicatorHost host)
+        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoCatalogItem item, IIndicatorHost host)
         {
             this.DisplayName = "Add Indicator";
             this.RepItem = item;
@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         }
 
         public IndicatorSetupBase Setup { get { return cfg.UiModel; } }
-        public AlgoRepositoryItem RepItem { get; private set; }
+        public AlgoCatalogItem RepItem { get; private set; }
 
         public void Reset()
         {
@@ -85,7 +85,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange("CanOk");
         }
 
-        void repModel_Replaced(AlgoRepositoryItem newItem)
+        void repModel_Replaced(AlgoCatalogItem newItem)
         {
             if (newItem.Id == RepItem.Id)
             {
@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void repModel_Removed(AlgoRepositoryItem removedItem)
+        void repModel_Removed(AlgoCatalogItem removedItem)
         {
             if (removedItem.Id == RepItem.Id)
                 TryClose();

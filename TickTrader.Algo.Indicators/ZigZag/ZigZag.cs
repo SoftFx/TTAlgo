@@ -9,8 +9,6 @@ namespace TickTrader.Algo.Indicators.ZigZag
     [Indicator]
     public class ZigZag : Indicator
     {
-
-
         [Parameter(DefaultValue = 12)]
         public int InpDepth { get; set; }
 
@@ -22,8 +20,6 @@ namespace TickTrader.Algo.Indicators.ZigZag
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
-
-
 
         [Output]
         public DataSeries ExtZigzagBuffer { get; set; }
@@ -172,6 +168,5 @@ namespace TickTrader.Algo.Indicators.ZigZag
             }
 
         }
-
     }
 }

@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Core.Metadata
                 else
                     DefaultValue = Attribute.DefaultValue;
             }
+
+            InitDisplayName(Attribute.DisplayName);
         }
 
         public override AlgoPropertyInfo GetInteropCopy()

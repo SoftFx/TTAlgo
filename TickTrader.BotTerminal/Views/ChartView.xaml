@@ -68,7 +68,7 @@
                     <Separator/>
                     <MenuItem Header="Add Indicator" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
                               cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
-                    <l:MenuItemSelector Header="Indicators" ItemsSource="{Binding Chart.Indicators}" DisplayMemberPath="DisplayName" />
+                    <MenuItem Header="Indicators" ItemsSource="{Binding Chart.Indicators}" DisplayMemberPath="DisplayName" />
                 </ContextMenu>
             </s:SciChartSurface.ContextMenu>
 

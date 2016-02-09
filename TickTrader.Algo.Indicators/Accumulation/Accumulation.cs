@@ -6,12 +6,11 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Indicators.Accumulation
 {
+    [Indicator]
     public class Accumulation : Indicator
     {
-
         [Input]
         public DataSeries<Bar> Bars { get; set; }
-
 
         [Output]
         public DataSeries ExtADBuffer { get; set; }
@@ -33,6 +32,5 @@ namespace TickTrader.Algo.Indicators.Accumulation
             if (Bars.Count > 1)
                 ExtADBuffer[0] += ExtADBuffer[1];
         }
-
     }
 }

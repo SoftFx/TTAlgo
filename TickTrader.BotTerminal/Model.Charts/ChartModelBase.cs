@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private BindableCollection<IRenderableSeries> series = new BindableCollection<IRenderableSeries>();
         private IndicatorsCollection indicators;
-        private AlgoRepositoryModel repository;
+        private AlgoCatalog catalog;
         private SelectableChartTypes chartType;
         private bool isLoading;
         private bool isUpdateRequired;
@@ -38,30 +38,30 @@ namespace TickTrader.BotTerminal
         private TimelineTypes timelineType;
         private long indicatorNextId = 1;
 
-        public ChartModelBase(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
+        public ChartModelBase(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
         {
             this.Feed = feed;
             this.Model = symbol;
-            this.repository = repository;
+            this.catalog = catalog;
             this.indicators = new IndicatorsCollection(series);
 
             TimelineType = TimelineTypes.Uniform;
 
-            this.AvailableIndicators = new BindableCollection<AlgoRepositoryItem>();
+            this.AvailableIndicators = new BindableCollection<AlgoCatalogItem>();
 
             this.isOnline = feed.Connection.State.Current == ConnectionModel.States.Online;
             feed.Connection.Connected += Connection_Connected;
             feed.Connection.Disconnected += Connection_Disconnected;
 
-            foreach (var indicator in repository.Indicators)
+            foreach (var indicator in catalog.Indicators)
             {
                 if (IsIndicatorSupported(indicator.Descriptor))
                     AvailableIndicators.Add(indicator);
             }
 
-            repository.Added += Repository_Added;
-            repository.Removed += Repository_Removed;
-            repository.Replaced += Repository_Replaced;
+            catalog.Added += Repository_Added;
+            catalog.Removed += Repository_Removed;
+            catalog.Replaced += Repository_Replaced;
 
             stateController.AddTransition(States.Idle, () => isUpdateRequired && isOnline, States.UpdatingData);
             stateController.AddTransition(States.Idle, () => isCloseRequested, States.Closed);
@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
         protected ConnectionModel Connection { get { return Feed.Connection; } }
 
         public ObservableCollection<IRenderableSeries> Series { get { return series; } }
-        public BindableCollection<AlgoRepositoryItem> AvailableIndicators { get; private set; }
+        public BindableCollection<AlgoCatalogItem> AvailableIndicators { get; private set; }
         public BindableCollection<IndicatorModel> Indicators { get { return indicators.Values; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public IEnumerable<TimelineTypes> AvailableTimelines { get { return new TimelineTypes[] { TimelineTypes.Uniform, TimelineTypes.Real }; } }
@@ -165,7 +165,7 @@ namespace TickTrader.BotTerminal
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract void UpdateSeriesStyle();
         protected abstract bool IsIndicatorSupported(AlgoInfo descriptor);
-        protected abstract IIndicatorConfig CreateInidactorConfig(AlgoRepositoryItem repItem);
+        protected abstract IIndicatorConfig CreateInidactorConfig(AlgoCatalogItem repItem);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -209,15 +209,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Repository_Replaced(AlgoRepositoryItem obj)
+        private void Repository_Replaced(AlgoCatalogItem obj)
         {
         }
 
-        private void Repository_Removed(AlgoRepositoryItem obj)
+        private void Repository_Removed(AlgoCatalogItem obj)
         {
         }
 
-        private void Repository_Added(AlgoRepositoryItem obj)
+        private void Repository_Added(AlgoCatalogItem obj)
         {
         }
 
@@ -234,9 +234,9 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            repository.Added -= Repository_Added;
-            repository.Removed -= Repository_Removed;
-            repository.Replaced -= Repository_Replaced;
+            catalog.Added -= Repository_Added;
+            catalog.Removed -= Repository_Removed;
+            catalog.Replaced -= Repository_Replaced;
         }
     }
 }

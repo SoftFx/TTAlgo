@@ -127,6 +127,7 @@
     <Compile Include="Extensions\ResxExtension.cs" />
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
+    <Compile Include="Model\AlgoRepositoryModel.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -161,7 +162,7 @@
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model.Indicators\Interfaces.cs" />
     <Compile Include="Model\AccountModel.cs" />
-    <Compile Include="Model\AlgoRepositoryModel.cs" />
+    <Compile Include="Model\AlgoCatalog.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model.Indicators\IndicatorBuilderModel.cs" />
     <Compile Include="Model\FeedHistoryProviderModel.cs" />
@@ -465,6 +466,10 @@
     <ProjectReference Include="..\TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj">
       <Project>{c29222d6-e27c-4d1a-970f-a54851e0647e}</Project>
       <Name>TickTrader.Algo.GuiModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

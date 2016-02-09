@@ -4,7 +4,6 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.Alligator
 {
-
     [Indicator]
     public class Alligator : Indicator
     {
@@ -22,13 +21,12 @@ namespace TickTrader.Algo.Indicators.Alligator
 
         [Parameter(DefaultValue = 5)]
         public int InpLipsPeriod { get; set; }
+
         [Parameter(DefaultValue = 3)]
         public int InpLipsShift { get; set; }
         
-
         [Input]
         public DataSeries<Bar> Bars { get; set; }
-
 
         [Output]
         public DataSeries ExtBlueBuffer { get; set; }
@@ -39,9 +37,6 @@ namespace TickTrader.Algo.Indicators.Alligator
         [Output]
         public DataSeries ExtLimeBuffer { get; set; }
         
-        
-
-
         protected override void Calculate()
         {
             ExtBlueBuffer[0] = MovingAverages.SmoothedMAinPlace(InpJawsShift, InpJawsPeriod,
@@ -57,8 +52,5 @@ namespace TickTrader.Algo.Indicators.Alligator
             /*ExtLimeBuffer[0] = Indicators.Functions.MovingAverages.SmoothedMA(InpLipsShift,
                 InpLipsPeriod, ExtLimeBuffer[1], (Bars.Select(b => (b.High + b.Low) / 2)).ToList());*/
         }
-
-        
-        
     }
 }

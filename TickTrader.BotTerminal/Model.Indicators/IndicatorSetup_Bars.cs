@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
                 case "System.Double": return new BarInputSetup.BarToDouble(descriptor);
-                case "TickTrader.Algo.Api": return new BarInputSetup.BarToBar(descriptor);
+                case "TickTrader.Algo.Api.Bar": return new BarInputSetup.BarToBar(descriptor);
                 default: return new BarInputSetup.Invalid(descriptor, "UnsupportedInputType");
             }
         }

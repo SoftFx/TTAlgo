@@ -27,6 +27,8 @@ namespace TickTrader.Algo.Core.Metadata
                 DatdaSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
             else
                 SetError(Metadata.AlgoPropertyErrors.InputIsNotDataSeries);
+
+            InitDisplayName(Attribute.DisplayName);
         }
 
         public override AlgoPropertyInfo GetInteropCopy()

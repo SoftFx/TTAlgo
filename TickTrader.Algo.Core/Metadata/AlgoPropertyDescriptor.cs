@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public string Id { get { return Info.Name; } }
+        public string DisplayName { get; private set; }
         public AlgoDescriptor ClassMetadata { get; private set; }
         public PropertyInfo Info { get; private set; }
         public virtual AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Unknown; } }
@@ -46,12 +47,18 @@ namespace TickTrader.Algo.Core.Metadata
             return info;
         }
 
+        protected void InitDisplayName(string displayName)
+        {
+            if (string.IsNullOrWhiteSpace(displayName))
+                DisplayName = Info.Name;
+        }
+
         protected void FillCommonProperties(AlgoPropertyInfo info)
         {
-            info.Id = this.Id;
-            info.DisplayName = this.Info.Name;
-            info.PropertyType = this.PropertyType;
-            info.Error = this.Error;
+            info.Id = Id;
+            info.DisplayName = DisplayName;
+            info.PropertyType = PropertyType;
+            info.Error = Error;
         }
 
         protected void Validate()

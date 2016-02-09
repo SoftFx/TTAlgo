@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
         private TraderModel trade;
         private FeedModel feed;
         private WindowManager wndManager;
-        private AlgoRepositoryModel algoRep = new AlgoRepositoryModel();
+        private AlgoCatalog catalog = new AlgoCatalog();
 
         public ShellViewModel()
         {
@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
             SymbolList = new SymbolListViewModel(feed.Symbols);
             PositionList = new PositionListViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
-            Charts = new ChartCollectionViewModel(feed, algoRep, wndManager);
+            Charts = new ChartCollectionViewModel(feed, catalog, wndManager);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, connection.State.Current);

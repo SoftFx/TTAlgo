@@ -19,8 +19,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> askData;
         private XyDataSeries<DateTime, double> bidData;
 
-        public TickChartModel(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
-            : base(symbol, repository, feed)
+        public TickChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
+            : base(symbol, catalog, feed)
         {
             ReserveTopSeries(2);
 
@@ -130,7 +130,7 @@ namespace TickTrader.BotTerminal
             return true;
         }
 
-        protected override IIndicatorConfig CreateInidactorConfig(AlgoRepositoryItem repItem)
+        protected override IIndicatorConfig CreateInidactorConfig(AlgoCatalogItem repItem)
         {
             throw new NotImplementedException();
         }

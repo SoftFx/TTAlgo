@@ -34,24 +34,24 @@ namespace TickTrader.BotTerminal
         };
 
         private readonly FeedModel feed;
-        private AlgoRepositoryModel repository;
+        private AlgoCatalog catalog;
         private IWindowManager wndManager;
         private ChartModelBase activeChart;
         private BarChartModel barChart;
         private TickChartModel tickChart;
 
-        public ChartViewModel(string symbol, FeedModel feed, AlgoRepositoryModel repository, IWindowManager wndManager)
+        public ChartViewModel(string symbol, FeedModel feed, AlgoCatalog catalog, IWindowManager wndManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.feed = feed;
-            this.repository = repository;
+            this.catalog = catalog;
             this.wndManager = wndManager;
 
             SymbolModel smb = feed.Symbols[symbol];
 
-            this.barChart = new BarChartModel(smb, repository, feed);
-            this.tickChart = new TickChartModel(smb, repository, feed);
+            this.barChart = new BarChartModel(smb, catalog, feed);
+            this.tickChart = new TickChartModel(smb, catalog, feed);
 
             //repository.Removed += repository_Removed;
             //repository.Replaced += repository_Replaced;
@@ -116,7 +116,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj, Chart);
+                var model = new IndicatorSetupViewModel(catalog, (AlgoCatalogItem)descriptorObj, Chart);
                 wndManager.ShowWindow(model);
                 ActivateItem(model);
 

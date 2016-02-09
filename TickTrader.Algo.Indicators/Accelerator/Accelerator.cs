@@ -6,6 +6,7 @@ using TickTrader.Algo.Indicators.Functions;
 
 namespace TickTrader.Algo.Indicators.Accelerator
 {
+    [Indicator]
     public class Accelerator : Indicator
     {
         [Parameter(DefaultValue = 5)]
@@ -17,10 +18,8 @@ namespace TickTrader.Algo.Indicators.Accelerator
         [Parameter(DefaultValue = 38)]
         public int DataLimit { get; set; }
 
-
         [Input]
         public DataSeries<Bar> Bars { get; set; }
-
 
         [Output]
         public DataSeries ExtACBuffer { get; set; }
@@ -30,8 +29,6 @@ namespace TickTrader.Algo.Indicators.Accelerator
 
         [Output]
         public DataSeries ExtDnBuffer { get; set; }
-
-
 
         protected override void Calculate()
         {

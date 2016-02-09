@@ -37,7 +37,7 @@ namespace TestAlgoProject
         [Input]
         public DataSeries Input { get; set; }
 
-        [Output]
+        [Output]    
         public DataSeries Output { get; set; }
 
         protected override void Calculate()

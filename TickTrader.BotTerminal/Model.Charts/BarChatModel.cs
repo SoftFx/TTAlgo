@@ -21,8 +21,8 @@ namespace TickTrader.BotTerminal
         private readonly List<Api.Bar> indicatorData = new List<Api.Bar>();
         private BarPeriod period;
 
-        public BarChartModel(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
-            : base(symbol, repository, feed)
+        public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
+            : base(symbol, catalog, feed)
         {
             ReserveTopSeries(1);
 
@@ -112,7 +112,7 @@ namespace TickTrader.BotTerminal
             return true;
         }
 
-        protected override IIndicatorConfig CreateInidactorConfig(AlgoRepositoryItem repItem)
+        protected override IIndicatorConfig CreateInidactorConfig(AlgoCatalogItem repItem)
         {
             return new IndicatorConfig(repItem, this);
         }
@@ -134,9 +134,9 @@ namespace TickTrader.BotTerminal
         private class IndicatorConfig : IIndicatorConfig
         {
             private BarChartModel chart;
-            private AlgoRepositoryItem repItem;
+            private AlgoCatalogItem repItem;
 
-            public IndicatorConfig(AlgoRepositoryItem repItem, BarChartModel chart)
+            public IndicatorConfig(AlgoCatalogItem repItem, BarChartModel chart)
             {
                 this.chart = chart;
                 this.repItem = repItem;

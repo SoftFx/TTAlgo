@@ -1,86 +1,130 @@
-﻿using Caliburn.Micro;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    class AlgoRepositoryModel
+    internal class AlgoRepositoryModel
     {
-        private AlgoRepository rep;
-        private List<AlgoRepositoryItem> algoItems = new List<AlgoRepositoryItem>();
+        private List<AlgoRepository> repositories = new List<AlgoRepository>();
+        private SortedDictionary<string, AlgoCatalogItem> itemsById = new SortedDictionary<string, AlgoCatalogItem>();
 
         public AlgoRepositoryModel()
         {
-            this.Indicators = new BindableCollection<AlgoRepositoryItem>();
-
-            rep = new AlgoRepository(EnvService.Instance.AlgoRepositoryFolder);
-            rep.Added += rep_Added;
-            rep.Removed += rep_Removed;
-            rep.Replaced += rep_Replaced;
-
-            rep.Start();
         }
 
-        public event Action<AlgoRepositoryItem> Added = delegate { };
-        public event Action<AlgoRepositoryItem> Removed = delegate { };
-        public event Action<AlgoRepositoryItem> Replaced = delegate { };
+        public IEnumerable<AlgoCatalogItem> Items { get { return itemsById.Values; } }
 
-        public BindableCollection<AlgoRepositoryItem> Indicators { get; private set; }
+        public event Action<AlgoCatalogItem> Added = delegate { };
+        public event Action<AlgoCatalogItem> Removed = delegate { };
+        public event Action<AlgoCatalogItem> Replaced = delegate { };
 
-        void rep_Added(AlgoRepositoryItem item)
+        public void AddFolder(string path)
         {
-            Execute.OnUIThread(() =>
-            {
-                if (item.Descriptor.AlgoLogicType == AlgoTypes.Indicator)
-                    Indicators.Add(item);
+            AlgoRepository rep = new AlgoRepository(path);
+            repositories.Add(rep);
 
-                algoItems.Add(item);
-                Added(item);
-            });
+            rep.Added += Rep_Added;
+            rep.Removed += Rep_Removed;
+            rep.Replaced += Rep_Replaced;
         }
 
-        void rep_Replaced(AlgoRepositoryItem item)
+        public void Add(AlgoDescriptor descriptor)
         {
-            Execute.OnUIThread(() =>
-            {
-                int inIndex = Indicators.IndexOf(i => i.Id == item.Id);
-
-                if (item.Descriptor.AlgoLogicType == AlgoTypes.Indicator)
-                {
-                    if (inIndex >= 0)
-                        Indicators[inIndex] = item;
-                    else
-                        Indicators.Add(item);
-                }
-                else if (inIndex >= 0)
-                    Indicators.RemoveAt(inIndex);
-
-                int index = algoItems.FindIndex(i => i.Id == item.Id);
-                if (index >= 0)
-                {
-                    algoItems[index] = item;
-                    Replaced(item);
-                }
-            });
+            OnAdd(new AlgoStaticItem(descriptor));
         }
 
-        void rep_Removed(AlgoRepositoryItem item)
+        public void AddAssembly(Assembly assembly)
         {
-            Execute.OnUIThread(() =>
-            {
-                if (item.Descriptor.AlgoLogicType == AlgoTypes.Indicator)
-                    Indicators.Remove(item);
+            var descritpors = AlgoDescriptor.InspectAssembly(assembly);
+            foreach (var d in descritpors)
+                Add(d);
+        }
 
-                algoItems.Remove(item);
-                Removed(item);
-            });
+        protected virtual void OnAdd(AlgoCatalogItem item)
+        {
+            itemsById.Add(item.Id, item);
+            Added(item);
+        }
+
+        protected virtual void OnReplace(AlgoCatalogItem item)
+        {
+            itemsById[item.Id] = item;
+            Replaced(item);
+        }
+
+        protected virtual void OnRemove(AlgoCatalogItem item)
+        {
+            itemsById.Remove(item.Id);
+            Removed(item);
+        }
+
+        private void Rep_Added(AlgoRepositoryItem repItem)
+        {
+            OnAdd(new AlgoDynamicItem(repItem));
+        }
+
+        private void Rep_Removed(AlgoRepositoryItem repItem)
+        {
+            AlgoCatalogItem removedItem;
+            if (itemsById.TryGetValue(repItem.Id, out removedItem))
+                OnRemove(removedItem);
+        }
+
+        private void Rep_Replaced(AlgoRepositoryItem repItem)
+        {
+            var item = new AlgoDynamicItem(repItem);
+            itemsById[repItem.Id] = new AlgoDynamicItem(repItem);
+            Replaced(item);
+        }
+    }
+
+    internal abstract class AlgoCatalogItem
+    {
+        public AlgoCatalogItem(AlgoInfo descriptor)
+        {
+            this.Descriptor = descriptor;
+        }
+
+        public string Id { get { return Descriptor.Id; } }
+        public string DisplayName { get { return Descriptor.DisplayName; } }
+        public AlgoInfo Descriptor { get; private set; }
+
+        public abstract IndicatorProxy CreateIndicator(IAlgoContext context);
+    }
+
+    internal class AlgoDynamicItem : AlgoCatalogItem
+    {
+        private AlgoRepositoryItem repItem;
+
+        public AlgoDynamicItem(AlgoRepositoryItem repItem)
+            : base(repItem.Descriptor)
+        {
+            this.repItem = repItem;
+        }
+
+        public override IndicatorProxy CreateIndicator(IAlgoContext context)
+        {
+            return repItem.CreateIndicator(context);
+        }
+    }
+
+    internal class AlgoStaticItem : AlgoCatalogItem
+    {
+        public AlgoStaticItem(AlgoDescriptor descriptor)
+            : base(descriptor.GetInteropCopy())
+        {
+        }
+
+        public override IndicatorProxy CreateIndicator(IAlgoContext context)
+        {
+            return new IndicatorProxy(Descriptor.Id, context);
         }
     }
 }

@@ -73,7 +73,10 @@ namespace TickTrader.Algo.Core.Metadata
             this.AlgoClassType = algoCustomType;
 
             if (typeof(Indicator).IsAssignableFrom(algoCustomType))
+            {
                 AlgoLogicType = AlgoTypes.Indicator;
+                InspectIndicatorAttr();
+            }
             else
             {
                 AlgoLogicType = AlgoTypes.Unknown;
@@ -87,13 +90,16 @@ namespace TickTrader.Algo.Core.Metadata
                 Error = AlgoMetadataErrors.HasUnknownProperties;
             else if (allProperties.Any(p => !p.IsValid))
                 Error = AlgoMetadataErrors.HasInvalidProperties;
+
+            if (string.IsNullOrWhiteSpace(DisplayName))
+                DisplayName = algoCustomType.Name;
         }
 
         public AlgoInfo GetInteropCopy()
         {
             AlgoInfo copy = new AlgoInfo();
             copy.Id = this.AlgoClassType.FullName;
-            copy.DisplayName = this.AlgoClassType.Name;
+            copy.DisplayName = this.DisplayName;
             copy.AlgoLogicType = this.AlgoLogicType;
             copy.Error = this.Error;
 
@@ -108,6 +114,20 @@ namespace TickTrader.Algo.Core.Metadata
         public Api.Algo CreateInstance()
         {
             return (Api.Algo)Activator.CreateInstance(AlgoClassType);
+        }
+
+        private void InspectIndicatorAttr()
+        {
+            IndicatorAttribute indicatorAttr = AlgoClassType.GetCustomAttribute<IndicatorAttribute>(false);
+            if (indicatorAttr != null)
+                DisplayName = indicatorAttr.DisplayName;
+        }
+
+        private void InspectBotAttr()
+        {
+            TradeBotAttribute botAttr = AlgoClassType.GetCustomAttribute<TradeBotAttribute>(false);
+            if (botAttr != null)
+                DisplayName = botAttr.DisplayName;
         }
 
         private void InspectProperties()
@@ -156,6 +176,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public Type AlgoClassType { get; private set; }
+        public string DisplayName { get; private set; }
         public AlgoTypes AlgoLogicType { get; private set; }
         public AlgoMetadataErrors? Error { get; private set; }
         public bool IsValid { get { return Error == null; } }
