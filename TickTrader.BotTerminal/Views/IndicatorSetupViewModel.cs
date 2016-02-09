@@ -12,16 +12,16 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorSetupViewModel : Screen
     {
-        private IndicatorSetup setup;
-        private IIndicatorSetupFactory setupFactory;
+        private IIndicatorConfig cfg;
+        private IIndicatorHost host;
         private bool dlgResult;
         private AlgoRepositoryModel repModel;
 
-        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoRepositoryItem item, IIndicatorSetupFactory setupFactory)
+        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoRepositoryItem item, IIndicatorHost host)
         {
             this.DisplayName = "Add Indicator";
             this.RepItem = item;
-            this.setupFactory = setupFactory;
+            this.host = host;
             this.repModel = repModel;
 
             repModel.Removed += repModel_Removed;
@@ -30,13 +30,12 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public List<PropertySetupBase> Properties { get; private set; }
-        public IndicatorSetup Setup { get { return setup; } }
+        public IndicatorSetupBase Setup { get { return cfg.UiModel; } }
         public AlgoRepositoryItem RepItem { get; private set; }
 
         public void Reset()
         {
-            setup.Reset();
+            Setup.Reset();
         }
 
         public bool CanOk { get; private set; }
@@ -46,6 +45,16 @@ namespace TickTrader.BotTerminal
         public void Ok()
         {
             dlgResult = true;
+
+            try
+            {
+                host.AddOrUpdateIndicator(cfg);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+
             TryClose();
         }
 
@@ -58,22 +67,21 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            IndicatorSetup oldSetup = setup;
+            IIndicatorConfig oldCfg = cfg;
 
-            if (setup != null)
-                setup.ValidityChanged -= Validate;
+            if (cfg != null)
+                cfg.UiModel.ValidityChanged -= Validate;
 
-            setup = setupFactory.CreateSetup(RepItem.Descriptor);
-            setup.ValidityChanged += Validate;
+            cfg = host.CreateIndicatorConfig(RepItem.Descriptor.Id);
+            cfg.UiModel.ValidityChanged += Validate;
             Validate();
 
-            Properties = new List<PropertySetupBase>(setup.Parameters);
-            NotifyOfPropertyChange("Properties");
+            NotifyOfPropertyChange("Setup");
         }
 
         private void Validate()
         {
-            CanOk = setup.IsValid;
+            CanOk = cfg.UiModel.IsValid;
             NotifyOfPropertyChange("CanOk");
         }
 
@@ -97,10 +105,5 @@ namespace TickTrader.BotTerminal
             repModel.Removed -= repModel_Removed;
             repModel.Replaced -= repModel_Replaced;
         }
-    }
-
-    internal interface IIndicatorSetupFactory
-    {
-        IndicatorSetup CreateSetup(AlgoInfo descriptor);
     }
 }

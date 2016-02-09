@@ -9,7 +9,7 @@ namespace TickTrader.Algo.GuiModel
 {
     public abstract class PropertySetupBase : ObservableObject
     {
-        private LocMsg error;
+        private GuiModelMsg error;
 
         internal void SetMetadata(AlgoPropertyInfo descriptor)
         {
@@ -24,7 +24,10 @@ namespace TickTrader.Algo.GuiModel
 
         public event Action<PropertySetupBase> ErrorChanged = delegate { };
 
-        public LocMsg Error
+        public abstract void CopyFrom(PropertySetupBase srcProperty);
+        public abstract void Reset();
+
+        public GuiModelMsg Error
         {
             get { return error; }
             set
@@ -35,5 +38,11 @@ namespace TickTrader.Algo.GuiModel
                 NotifyPropertyChanged("HasError");
             }
         }
+    }
+
+    public class NullProperty : PropertySetupBase
+    {
+        public override void CopyFrom(PropertySetupBase srcProperty) { }
+        public override void Reset() { }
     }
 }

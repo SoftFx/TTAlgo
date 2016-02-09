@@ -20,6 +20,13 @@ namespace TickTrader.Algo.Core
             inputData.AddRange(rows);
         }
 
+        public void Reset()
+        {
+            inputData.Clear();
+            foreach (var mapping in mappings.Values)
+                mapping.Reset();
+        }
+
         public void UpdateLast(TRow row)
         {
             inputData[inputData.Count - 1] = row;
@@ -52,6 +59,7 @@ namespace TickTrader.Algo.Core
         private interface IMapping
         {
             IList<TRow> InputData { get; set; }
+            void Reset();
         }
 
         private class Mapping<T> : MarshalByRefObject, IMapping
@@ -72,6 +80,11 @@ namespace TickTrader.Algo.Core
             }
 
             public IList<TRow> InputData { get; set; }
+
+            public void Reset()
+            {
+                target.Reset();
+            }
         }
 
         private class ListWriter<T, TList> : CollectionWriter<T, TRow>
@@ -94,6 +107,11 @@ namespace TickTrader.Algo.Core
             {
                 list[index] = selector(row, data);
             }
+
+            public void Reset()
+            {
+                list.Clear();
+            }
         }
 
         private class ListWriter<T> : CollectionWriter<T, TRow>
@@ -113,6 +131,11 @@ namespace TickTrader.Algo.Core
             public void WriteAt(int index, T data, TRow row)
             {
                 list[index] = data;
+            }
+
+            public void Reset()
+            {
+                list.Clear();
             }
         }
     }

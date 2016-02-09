@@ -13,6 +13,12 @@ namespace TestAlgoProject
         [Parameter(DefaultValue = 5)]
         public int Window { get; set; }
 
+        [Parameter(DefaultValue = 5)]
+        public int Window2 { get; set; }
+
+        [Parameter(DefaultValue = 15)]
+        public int Window3 { get; set; }
+
         [Input]
         public DataSeries Input { get; set; }
 

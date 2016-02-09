@@ -125,14 +125,14 @@ namespace TickTrader.BotTerminal
             BidSeries.DataSeries = bidData;
         }
 
-        public override IndicatorSetup CreateSetup(AlgoRepositoryItem item)
-        {
-            return null;
-        }
-
         protected override bool IsIndicatorSupported(AlgoInfo descriptor)
         {
             return true;
+        }
+
+        protected override IIndicatorConfig CreateInidactorConfig(AlgoRepositoryItem repItem)
+        {
+            throw new NotImplementedException();
         }
 
         private IPointMarker CreateMarker(Color fillColor, Color strokeColor)

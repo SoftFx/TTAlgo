@@ -14,6 +14,11 @@ namespace TickTrader.Algo.Core
         private Func<IAlgoContext, IndicatorProxy> factory;
         private IndicatorProxy insatnceProxy;
 
+        public IndicatorBuilder(string algoId, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
+            : this(c => new IndicatorProxy(algoId, c), reader, writer)
+        {
+        }
+
         public IndicatorBuilder(Type algoCustomType, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
             : this(c => new IndicatorProxy(AlgoDescriptor.Get(algoCustomType), c), reader, writer)
         {
@@ -85,12 +90,10 @@ namespace TickTrader.Algo.Core
         {
             context.SetParameter(id, val);
         }
-    }
 
-    public interface IIndicatorBuilder
-    {
-        void Build();
-        void Build(CancellationToken cToken);
-        void RebuildLast();
+        public void Reset()
+        {
+            context.Reset();
+        }
     }
 }

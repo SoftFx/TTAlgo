@@ -10,45 +10,63 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class IndicatorsCollection 
+    internal class IndicatorsCollection
     {
+        private bool isStarted;
         private BindableCollection<IRenderableSeries> series;
 
         public IndicatorsCollection(BindableCollection<IRenderableSeries> outputSeriesCollection)
         {
             this.series = outputSeriesCollection;
+            this.Values = new BindableCollection<IndicatorModel>();
         }
 
-        public BindableCollection<IndicatorBuilderModel> Values { get; private set; }
+        public BindableCollection<IndicatorModel> Values { get; private set; }
 
-        public void Add(IndicatorBuilderModel indicator)
+        public void Start()
+        {
+            isStarted = true;
+            foreach (var i in Values)
+                i.Start();
+        }
+
+        public Task Stop()
+        {
+            isStarted = false;
+            var tasks = Values.Select(i => i.Stop());
+            return Task.WhenAll(tasks);
+        }
+
+        public void AddOrReplace(IndicatorModel indicator)
         {
             AddOutputs(indicator);
             Values.Add(indicator);
+            if (isStarted)
+                indicator.Start();
         }
 
-        public void RemoveAt(int index)
-        {
-            RemoveOutputs(Values[index]);
-            Values.RemoveAt(index);
-        }
+        //public void RemoveAt(int index)
+        //{
+        //    RemoveOutputs(Values[index]);
+        //    Values.RemoveAt(index);
+        //}
 
-        public void Remove(IndicatorBuilderModel indicator)
+        public void Remove(IndicatorModel indicator)
         {
             RemoveOutputs(indicator);
             Values.Remove(indicator);
         }
 
-        public void ReplaceAt(int index, IndicatorBuilderModel newIndicator)
+        private void ReplaceAt(int index, IndicatorModel newIndicator)
         {
             RemoveOutputs(Values[index]);
             Values[index] = newIndicator;
             AddOutputs(newIndicator);
         }
 
-        private void AddOutputs(IndicatorBuilderModel indicator)
+        private void AddOutputs(IndicatorModel indicator)
         {
-            foreach (var output in indicator.Series)
+            foreach (var output in indicator.SeriesCollection)
             {
                 FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
                 chartSeries.DataSeries = output;
@@ -56,9 +74,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void RemoveOutputs(IndicatorBuilderModel indicator)
+        private void RemoveOutputs(IndicatorModel indicator)
         {
-            foreach (var output in indicator.Series)
+            foreach (var output in indicator.SeriesCollection)
             {
                 var seriesIndex = series.IndexOf(s => s.DataSeries == output);
                 if (seriesIndex > 0)

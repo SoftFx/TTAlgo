@@ -69,7 +69,7 @@ namespace TickTrader.BotTerminal
             periodActivatos.Add("S1", () => ActivateBarChart(BarPeriod.S1));
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
-            SelectedPeriod = periodActivatos.ElementAt(1);
+            SelectedPeriod = periodActivatos.ElementAt(5);
         }
 
         #region Bindable Properties
@@ -116,7 +116,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj, null);
+                var model = new IndicatorSetupViewModel(repository, (AlgoRepositoryItem)descriptorObj, Chart);
                 wndManager.ShowWindow(model);
                 ActivateItem(model);
 
@@ -131,12 +131,6 @@ namespace TickTrader.BotTerminal
         void model_Closed(IndicatorSetupViewModel setupModel, bool dlgResult)
         {
             setupModel.Closed -= model_Closed;
-            if (dlgResult)
-            {
-                //var model = new IndicatorBuilderModel(setupModel.RepItem, setupModel.Setup);
-                //model.SetData(rawData);
-                //AddIndicator(model);
-            }
         }
 
         private void ActivateBarChart(BarPeriod period)

@@ -40,10 +40,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InputSetup.cs" />
+    <Compile Include="OutputSetup.cs" />
     <Compile Include="ParameterSetup.cs" />
     <Compile Include="PropertySetupBase.cs" />
-    <Compile Include="IndicatorSetup.cs" />
-    <Compile Include="LocMsg.cs" />
+    <Compile Include="IndicatorSetupBase.cs" />
+    <Compile Include="GuiModelMsg.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UiConverter.cs" />

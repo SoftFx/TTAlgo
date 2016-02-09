@@ -84,6 +84,7 @@ namespace TickTrader.Algo.Core
 
         public void Reset()
         {
+            Count = 0;
             buffer.Clear();
             OnReset();
         }

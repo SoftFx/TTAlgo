@@ -10,7 +10,9 @@ using TickTrader.Algo.Core.Metadata;
 namespace TickTrader.Algo.GuiModel
 {
     public abstract class InputSetup : PropertySetupBase
-    {   
+    {
+        public override void CopyFrom(PropertySetupBase srcProperty) { }
+        public override void Reset() { }
     }
 
     public abstract class BarInputSetup : InputSetup
@@ -19,7 +21,16 @@ namespace TickTrader.Algo.GuiModel
 
         public class Invalid : BarInputSetup
         {
-            public Invalid(InputInfo descriptor, LocMsg error)
+            public Invalid(InputInfo descriptor, object error = null)
+            {
+                SetMetadata(descriptor);
+                if (error == null)
+                    this.Error = new GuiModelMsg(descriptor.Error.Value);
+                else
+                    this.Error = new GuiModelMsg(error);
+            }
+
+            public Invalid(InputInfo descriptor, GuiModelMsg error)
             {
                 SetMetadata(descriptor);
                 this.Error = error;

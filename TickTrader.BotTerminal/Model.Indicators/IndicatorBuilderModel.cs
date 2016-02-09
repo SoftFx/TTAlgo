@@ -205,6 +205,11 @@ namespace TickTrader.BotTerminal
             Execute.OnUIThread(() => chartData.Append(row.OpenTime, data));
         }
 
+        public void Reset()
+        {
+            Execute.OnUIThread(() => chartData.Clear());
+        }
+
         public void WriteAt(int index, double data, Api.Bar row)
         {
             Execute.OnUIThread(() => Update(row.OpenTime, data));

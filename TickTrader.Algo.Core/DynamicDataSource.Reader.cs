@@ -44,6 +44,11 @@ namespace TickTrader.Algo.Core
                 }
             }
 
+
+            public void Reset()
+            {
+            }
+
             public void BindInput<T>(string id, InputDataSeries<T> buffer)
             {
                 ((Mapping<T>)GetMappingOrThrow(id)).SetProxy(buffer);

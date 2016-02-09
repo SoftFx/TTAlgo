@@ -19,7 +19,7 @@ namespace TickTrader.Algo.GuiModel
 
         internal class IntConverter : UiConverter<int>
         {
-            public override int Parse(string str, out LocMsg error)
+            public override int Parse(string str, out GuiModelMsg error)
             {
                 error = null;
                 try
@@ -28,11 +28,11 @@ namespace TickTrader.Algo.GuiModel
                 }
                 catch (FormatException)
                 {
-                    error = new LocMsg(MsgCodes.NotInteger);
+                    error = new GuiModelMsg(MsgCodes.NotInteger);
                 }
                 catch (OverflowException)
                 {
-                    error = new LocMsg(MsgCodes.NumberOverflow);
+                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
                 }
                 return 0;
             }
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.GuiModel
 
         internal class DoubleConverter : UiConverter<double>
         {
-            public override double Parse(string str, out LocMsg error)
+            public override double Parse(string str, out GuiModelMsg error)
             {
                 error = null;
                 try
@@ -54,11 +54,11 @@ namespace TickTrader.Algo.GuiModel
                 }
                 catch (FormatException)
                 {
-                    error = new LocMsg(MsgCodes.NotDouble);
+                    error = new GuiModelMsg(MsgCodes.NotDouble);
                 }
                 catch (OverflowException)
                 {
-                    error = new LocMsg(MsgCodes.NumberOverflow);
+                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
                 }
                 return 0;
             }
@@ -72,7 +72,7 @@ namespace TickTrader.Algo.GuiModel
 
     public abstract class UiConverter<T>
     {
-        public abstract T Parse(string str, out LocMsg error);
+        public abstract T Parse(string str, out GuiModelMsg error);
         public abstract string ToString(T val);
     }
 }

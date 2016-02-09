@@ -73,6 +73,21 @@ namespace TickTrader.Algo.Core
             virtualPos++;
         }
 
+        public void Reset()
+        {
+            foreach (var input in inputs)
+                input.Reset();
+
+            foreach (var output in outputs)
+                output.Reset();
+
+            Reader.Reset();
+            Writer.Reset();
+
+            virtualPos = 0;
+            readPos = 0;
+        }
+
         public object GetParameter(string id)
         {
             object paramVal;

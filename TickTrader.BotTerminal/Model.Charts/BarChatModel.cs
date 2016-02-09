@@ -10,12 +10,15 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Core;
+using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private OhlcDataSeries<DateTime, double> chartData;
+        private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
+        private readonly List<Api.Bar> indicatorData = new List<Api.Bar>();
         private BarPeriod period;
 
         public BarChartModel(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
@@ -46,7 +49,7 @@ namespace TickTrader.BotTerminal
         protected override void ClearData()
         {
             MainSeries.DataSeries = null;
-            chartData = null;
+            chartData.Clear();
         }
 
         protected async override Task LoadData(CancellationToken cToken)
@@ -63,9 +66,10 @@ namespace TickTrader.BotTerminal
 
             cToken.ThrowIfCancellationRequested();
 
-            this.chartData = new OhlcDataSeries<DateTime, double>();
+            var rawData = response.Bars.Reverse().ToList();
 
-            var rawData = response.Bars.Reverse().ToArray();
+            indicatorData.Clear();
+            Convert(rawData, indicatorData);
 
             foreach (var bar in rawData)
                 chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
@@ -103,15 +107,73 @@ namespace TickTrader.BotTerminal
             MainSeries.DataSeries = chartData;
         }
 
-        public override IndicatorSetup CreateSetup(AlgoRepositoryItem item)
-        {
-            throw new NotImplementedException();
-            //return new IndicatorSetup_Bars(item.Descriptor);
-        }
-
         protected override bool IsIndicatorSupported(AlgoInfo descriptor)
         {
             return true;
+        }
+
+        protected override IIndicatorConfig CreateInidactorConfig(AlgoRepositoryItem repItem)
+        {
+            return new IndicatorConfig(repItem, this);
+        }
+
+        private static void Convert(List<Bar> fdkData, List<Api.Bar> chartData)
+        {
+            chartData.AddRange(
+            fdkData.Select(b => new Api.Bar()
+            {
+                Open = b.Open,
+                Close = b.Close,
+                High = b.High,
+                Low = b.Low,
+                OpenTime = b.From,
+                Volume = b.Volume
+            }));
+        }
+
+        private class IndicatorConfig : IIndicatorConfig
+        {
+            private BarChartModel chart;
+            private AlgoRepositoryItem repItem;
+
+            public IndicatorConfig(AlgoRepositoryItem repItem, BarChartModel chart)
+            {
+                this.chart = chart;
+                this.repItem = repItem;
+                this.InstanceId = chart.GetNextIndicatorId();
+                this.UiModel = new IndicatorSetup_Bars(repItem.Descriptor);
+            }
+
+            public long InstanceId { get; private set; }
+            public AlgoInfo Descriptor { get { return UiModel.Descriptor; } }
+            public IndicatorSetupBase UiModel { get; private set; }
+
+            public IIndicatorBuilder CreateBuilder(ISeriesContainer seriesTarget)
+            {
+                DirectReader<Api.Bar> reader = new DirectReader<Api.Bar>(chart.indicatorData);
+
+                foreach (var input in UiModel.Inputs)
+                    ((BarInputSetup)input).Configure(reader);
+
+                DirectWriter<Api.Bar> writer = new DirectWriter<Api.Bar>();
+
+                foreach (var output in UiModel.Outputs)
+                {
+                    if (output is ColoredLineOutputSetup)
+                    {
+                        XyDataSeries<DateTime, double> series = new XyDataSeries<DateTime, double>();
+                        writer.AddMapping(output.Id, new XySeriesWriter(series));
+                        seriesTarget.AddSeries(series);
+                    }
+                }
+
+                IndicatorBuilder<Api.Bar> buidler = new IndicatorBuilder<Api.Bar>(repItem.CreateIndicator, reader, writer);
+
+                foreach (var parameter in UiModel.Parameters)
+                    buidler.SetParameter(parameter.Id, parameter.ValueObj);
+
+                return buidler;
+            }
         }
     }
 }

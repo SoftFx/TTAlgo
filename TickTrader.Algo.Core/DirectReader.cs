@@ -47,13 +47,17 @@ namespace TickTrader.Algo.Core
             return page;
         }
 
+        public void Reset()
+        {
+        }
+
         private IEnumerable<TRow> TakeAt(int index, int pageSize)
         {
-            if (index < srcCollection.Count)
+            for (int size = 0; size < pageSize; size++)
             {
-                int size = 0;
-                while (size < pageSize && index < srcCollection.Count)
-                    yield return srcCollection[index++];
+                if (index >= srcCollection.Count)
+                    break;
+                yield return srcCollection[index++];
             }
         }
 

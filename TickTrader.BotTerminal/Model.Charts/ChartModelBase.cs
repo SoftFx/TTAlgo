@@ -1,6 +1,7 @@
 ﻿using Abt.Controls.SciChart;
 using Abt.Controls.SciChart.Visuals.RenderableSeries;
 using Caliburn.Micro;
+using StateMachinarium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,17 +19,24 @@ namespace TickTrader.BotTerminal
     public enum SelectableChartTypes { Candle, OHLC, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
     public enum TimelineTypes { Real, Uniform }
 
-    internal abstract class ChartModelBase : PropertyChangedBase, IDisposable
+    internal abstract class ChartModelBase : PropertyChangedBase, IIndicatorHost, IDisposable
     {
+        private enum States { Idle, UpdatingData, Closed }
+        private enum Events { DoneUpdating }
+
+        private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private BindableCollection<IRenderableSeries> series = new BindableCollection<IRenderableSeries>();
         private IndicatorsCollection indicators;
         private AlgoRepositoryModel repository;
         private SelectableChartTypes chartType;
         private bool isLoading;
-        private readonly TriggeredActivity updateActivity;
+        private bool isUpdateRequired;
+        private bool isCloseRequested;
+        private bool isOnline;
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
         private ChartNavigator navigator;
         private TimelineTypes timelineType;
+        private long indicatorNextId = 1;
 
         public ChartModelBase(SymbolModel symbol, AlgoRepositoryModel repository, FeedModel feed)
         {
@@ -36,11 +44,14 @@ namespace TickTrader.BotTerminal
             this.Model = symbol;
             this.repository = repository;
             this.indicators = new IndicatorsCollection(series);
-            this.updateActivity = new TriggeredActivity(Update);
 
             TimelineType = TimelineTypes.Uniform;
 
             this.AvailableIndicators = new BindableCollection<AlgoRepositoryItem>();
+
+            this.isOnline = feed.Connection.State.Current == ConnectionModel.States.Online;
+            feed.Connection.Connected += Connection_Connected;
+            feed.Connection.Disconnected += Connection_Disconnected;
 
             foreach (var indicator in repository.Indicators)
             {
@@ -51,6 +62,14 @@ namespace TickTrader.BotTerminal
             repository.Added += Repository_Added;
             repository.Removed += Repository_Removed;
             repository.Replaced += Repository_Replaced;
+
+            stateController.AddTransition(States.Idle, () => isUpdateRequired && isOnline, States.UpdatingData);
+            stateController.AddTransition(States.Idle, () => isCloseRequested, States.Closed);
+            stateController.AddTransition(States.UpdatingData, Events.DoneUpdating, States.Idle);
+
+            stateController.OnEnter(States.UpdatingData, ()=> Update(CancellationToken.None));
+
+            stateController.StateChanged += (o, n) => System.Diagnostics.Debug.WriteLine("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
         protected SymbolModel Model { get; private set; }
@@ -59,15 +78,14 @@ namespace TickTrader.BotTerminal
 
         public ObservableCollection<IRenderableSeries> Series { get { return series; } }
         public BindableCollection<AlgoRepositoryItem> AvailableIndicators { get; private set; }
-        public BindableCollection<IndicatorBuilderModel> Indicators { get { return indicators.Values; } }
+        public BindableCollection<IndicatorModel> Indicators { get { return indicators.Values; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public IEnumerable<TimelineTypes> AvailableTimelines { get { return new TimelineTypes[] { TimelineTypes.Uniform, TimelineTypes.Real }; } }
         public string Symbol { get { return Model.Name; } }
 
         protected void Activate()
         {
-            if (Feed.Connection.State.Current == ConnectionModel.States.Online)
-                updateActivity.Trigger();
+            stateController.ModifyConditions(() => isUpdateRequired = true);
         }
 
         protected void ReserveTopSeries(int count)
@@ -78,7 +96,6 @@ namespace TickTrader.BotTerminal
 
         public void Deactivate()
         {
-            updateActivity.Cancel();
         }
 
         public bool IsLoading
@@ -126,31 +143,53 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public abstract IndicatorSetup CreateSetup(AlgoRepositoryItem item);
+        public IIndicatorConfig CreateIndicatorConfig(string alogId)
+        {
+            var repItem = AvailableIndicators.FirstOrDefault(i => i.Id == alogId);
+            if (repItem == null)
+                return null;
+            return CreateInidactorConfig(repItem);
+        }
+
+        public void AddOrUpdateIndicator(IIndicatorConfig config)
+        {
+            indicators.AddOrReplace(new IndicatorModel(config));
+        }
+
+        protected long GetNextIndicatorId()
+        {
+            return indicatorNextId++;
+        }
 
         protected abstract void ClearData();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract void UpdateSeriesStyle();
         protected abstract bool IsIndicatorSupported(AlgoInfo descriptor);
+        protected abstract IIndicatorConfig CreateInidactorConfig(AlgoRepositoryItem repItem);
 
         protected void Support(SelectableChartTypes chartType)
         {
             this.supportedChartTypes.Add(chartType);
         }
 
-        private async Task Update(CancellationToken cToken)
+        private async void Update(CancellationToken cToken)
         {
             this.IsLoading = true;
 
             try
             {
+                isUpdateRequired = false;
                 ClearData();
+                await indicators.Stop();
                 await LoadData(cToken);
+                indicators.Start();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("ChartModelBase.Update() ERROR " + ex.ToString());
             }
+
+            stateController.PushEvent(Events.DoneUpdating);
 
             this.IsLoading = false;
         }
@@ -180,6 +219,17 @@ namespace TickTrader.BotTerminal
 
         private void Repository_Added(AlgoRepositoryItem obj)
         {
+        }
+
+        private Task Connection_Disconnected(object sender)
+        {
+            stateController.ModifyConditions(() => isOnline = false);
+            return Task.FromResult(new object());
+        }
+
+        private void Connection_Connected()
+        {
+            stateController.ModifyConditions(() => isOnline = true);
         }
 
         public void Dispose()

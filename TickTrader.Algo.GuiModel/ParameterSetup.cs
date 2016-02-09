@@ -14,7 +14,7 @@ namespace TickTrader.Algo.GuiModel
             ParameterSetup newParam;
 
             if (descriptor.Error != null)
-                newParam = new AlgoInvalidParameter(new LocMsg(descriptor.Error.Value));
+                newParam = new AlgoInvalidParameter(new GuiModelMsg(descriptor.Error.Value));
             else
                 newParam = CreateByType(descriptor.DataType);
 
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.GuiModel
             {
                 case "System.Int32": return new IntParamSetup();
                 case "System.Double": return new DoubleParamSetup();
-                default: return new AlgoInvalidParameter(new LocMsg(MsgCodes.UnsupportedPropertyType));
+                default: return new AlgoInvalidParameter(new GuiModelMsg(MsgCodes.UnsupportedPropertyType));
             }
         }
 
@@ -39,7 +39,6 @@ namespace TickTrader.Algo.GuiModel
         }
 
         public string DataType { get; private set; }
-        public virtual void Reset() { }
         public virtual bool IsReadonly { get { return false; } }
         public abstract object ValueObj { get; set; }
         public abstract string ValueStr { get; set; }
@@ -101,11 +100,18 @@ namespace TickTrader.Algo.GuiModel
             get { return strValue; }
             set
             {
-                LocMsg error;
+                GuiModelMsg error;
                 this.Value = GetConverterOrThrow().Parse(value, out error);
                 this.strValue = value;
                 this.Error = error;
             }
+        }
+
+        public override void CopyFrom(PropertySetupBase srcProperty)
+        {
+            var typedSrcProperty = srcProperty as ParameterSetup<T>;
+            if (typedSrcProperty != null)
+                this.value = typedSrcProperty.value;
         }
 
         private UiConverter<T> GetConverterOrThrow()
@@ -118,7 +124,7 @@ namespace TickTrader.Algo.GuiModel
 
     public class AlgoInvalidParameter : ParameterSetup
     {
-        public AlgoInvalidParameter(LocMsg error)
+        public AlgoInvalidParameter(GuiModelMsg error)
         {
             this.Error = error;
         }
@@ -126,5 +132,8 @@ namespace TickTrader.Algo.GuiModel
         public override bool IsReadonly { get { return true; } }
         public override object ValueObj { get; set; }
         public override string ValueStr { get; set; }
+
+        public override void CopyFrom(PropertySetupBase srcProperty) { }
+        public override void Reset() { }
     }
 }

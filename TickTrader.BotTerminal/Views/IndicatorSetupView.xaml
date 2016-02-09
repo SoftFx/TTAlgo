@@ -75,7 +75,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False"
                       Style="{StaticResource DialogScrollViewer_Style}">
-            <ItemsControl ItemsSource="{Binding Properties}" IsTabStop="False">
+            <ItemsControl ItemsSource="{Binding Setup.Parameters}" IsTabStop="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="2" VerticalAlignment="Top" />
