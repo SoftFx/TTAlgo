@@ -49,8 +49,9 @@ namespace SoftFx.FxCalendar.Providers
 
                 ActionAfterDownloading();
             }
-            catch
+            catch(Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine("Failed to download fx-news. Reason: " + ex.Message);
                 ActionAfterFailure();
             }
         }

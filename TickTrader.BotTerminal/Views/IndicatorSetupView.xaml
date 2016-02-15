@@ -58,6 +58,17 @@
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
+                        
+                        <!--   StringParam  -->
+                        <DataTemplate DataType="{x:Type am:StringParamSetup}">
+                            <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch"/>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding HasError}" Value="True">
+                                    <Setter TargetName="input" Property="Background" Value="Red" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
                     </ContentControl.Resources>
                 </ContentControl>
             </Grid>

@@ -12,10 +12,26 @@ namespace TickTrader.Algo.GuiModel
         {
             Int = new IntConverter();
             Double = new DoubleConverter();
+            String = new StringConverter();
         }
 
         public static UiConverter<int> Int { get; private set; }
         public static UiConverter<double> Double { get; private set; }
+        public static UiConverter<string> String { get; private set; }
+
+        internal class StringConverter : UiConverter<string>
+        {
+            public override string Parse(string str, out GuiModelMsg error)
+            {
+                error = null;
+                return str;
+            }
+
+            public override string ToString(string val)
+            {
+                return val;
+            }
+        }
 
         internal class IntConverter : UiConverter<int>
         {

@@ -28,6 +28,7 @@ namespace TickTrader.Algo.GuiModel
             {
                 case "System.Int32": return new IntParamSetup();
                 case "System.Double": return new DoubleParamSetup();
+                case "System.String": return new StringParamSetup();
                 default: return new AlgoInvalidParameter(new GuiModelMsg(MsgCodes.UnsupportedPropertyType));
             }
         }
@@ -52,6 +53,11 @@ namespace TickTrader.Algo.GuiModel
     public class DoubleParamSetup : ParameterSetup<double>
     {
         internal override UiConverter<double> Converter { get { return UiConverter.Double; } }
+    }
+
+    public class StringParamSetup : ParameterSetup<string>
+    {
+        internal override UiConverter<string> Converter { get { return UiConverter.String; } }
     }
 
     public class ParameterSetup<T> : ParameterSetup
