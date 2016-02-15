@@ -16,9 +16,6 @@ namespace TestAlgoProject
         [Parameter(DefaultValue = 0.0)]
         public double Shift { get; set; }
 
-        [Parameter(DisplayName = "Some property!")]
-        public double Ololo { get; set; }
-
         [Input]
         public DataSeries Input { get; set; }
 
@@ -27,7 +24,48 @@ namespace TestAlgoProject
 
         protected override void Calculate()
         {
-            Output[0] = Input.Take(10).Average() + Shift;
+            if (Output.Count >= Window)
+                Output[0] = Input.Take(Window).Average() + Shift;
+        }
+    }
+
+    [Indicator]
+    public class SimpleTime : Indicator
+    {
+        [Parameter(DefaultValue = 1.1)]
+        public double Scale { get; set; }
+
+        [Input]
+        public DataSeries<Bar> Input { get; set; }
+
+        [Output]
+        public DataSeries Output { get; set; }
+
+        protected override void Calculate()
+        {
+            Output[0] = Input[0].High * Scale;
+        }
+    }
+
+    [Indicator]
+    public class TimeBased : Indicator
+    {
+        private SimpleTime simpleTimeIndicator;
+
+        [Input]
+        public DataSeries<Bar> Input { get; set; }
+
+        [Output]
+        public DataSeries Output { get; set; }
+
+        protected override void Init()
+        {
+            simpleTimeIndicator = new SimpleTime() { Input = Input, Scale = 1.1 };
+        }
+
+        protected override void Calculate()
+        {
+            Output[0] = 2;
         }
     }
 
@@ -37,7 +75,7 @@ namespace TestAlgoProject
         [Input]
         public DataSeries Input { get; set; }
 
-        [Output]    
+        [Output]
         public DataSeries Output { get; set; }
 
         protected override void Calculate()

@@ -127,6 +127,7 @@ namespace TickTrader.BotTerminal
                 High = b.High,
                 Low = b.Low,
                 OpenTime = b.From,
+                CloseTime =  b.To,
                 Volume = b.Volume
             }));
         }
