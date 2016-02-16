@@ -1,7 +1,4 @@
-﻿using Abt.Controls.SciChart;
-using Abt.Controls.SciChart.Model.DataSeries;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
@@ -18,21 +15,6 @@ namespace TickTrader.BotTerminal
 {
     class ChartViewModel : Conductor<Screen>
     {
-        private static readonly BarPeriod[] PredefinedPeriods = new BarPeriod[]
-        {
-            BarPeriod.MN1,
-            BarPeriod.W1,
-            BarPeriod.D1,
-            BarPeriod.H4,
-            BarPeriod.H1,
-            BarPeriod.M30,
-            BarPeriod.M15,
-            BarPeriod.M5,
-            BarPeriod.M1,
-            BarPeriod.S10,
-            BarPeriod.S1
-        };
-
         private readonly FeedModel feed;
         private AlgoCatalog catalog;
         private IWindowManager wndManager;
@@ -70,6 +52,11 @@ namespace TickTrader.BotTerminal
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
             SelectedPeriod = periodActivatos.ElementAt(5);
+
+            IndicatorPanes = new ObservableCollection<IndicatorPaneViewModel>();
+            IndicatorPanes.Add(new IndicatorPaneViewModel());
+            IndicatorPanes.Add(new IndicatorPaneViewModel());
+            IndicatorPanes.Add(new IndicatorPaneViewModel());
         }
 
         #region Bindable Properties
@@ -99,6 +86,8 @@ namespace TickTrader.BotTerminal
                 selectedPeriod.Value();
             }
         }
+
+        public ObservableCollection<IndicatorPaneViewModel> IndicatorPanes { get; private set; }
 
         #endregion
 

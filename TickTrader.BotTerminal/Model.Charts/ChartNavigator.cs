@@ -1,5 +1,5 @@
-﻿using Abt.Controls.SciChart;
-using Abt.Controls.SciChart.Visuals.Axes;
+﻿using SciChart.Charting.Visuals.Axes;
+using SciChart.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

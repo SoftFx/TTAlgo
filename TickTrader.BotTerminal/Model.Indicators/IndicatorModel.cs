@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Abt.Controls.SciChart.Model.DataSeries;
 using System.Threading;
 using TickTrader.Algo.Core;
 using StateMachinarium;
+using SciChart.Charting.Model.DataSeries;
 
 namespace TickTrader.BotTerminal
 {

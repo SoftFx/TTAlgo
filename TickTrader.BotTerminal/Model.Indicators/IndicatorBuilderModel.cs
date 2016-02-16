@@ -1,6 +1,5 @@
-﻿using Abt.Controls.SciChart.Model.DataSeries;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
+using SciChart.Charting.Model.DataSeries;
 using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
@@ -217,7 +216,7 @@ namespace TickTrader.BotTerminal
 
         private void Update(DateTime barTime, double data)
         {
-            int index = chartData.FindIndex(barTime, Abt.Controls.SciChart.Common.Extensions.SearchMode.Nearest);
+            int index = chartData.FindIndex(barTime, SciChart.Charting.Common.Extensions.SearchMode.Nearest);
             if (index < 0)
                 chartData.Append(barTime, data);
             else
@@ -229,7 +228,6 @@ namespace TickTrader.BotTerminal
                 else
                     throw new NotImplementedException();
             }
-
         }
     }
 

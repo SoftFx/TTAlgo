@@ -1,6 +1,5 @@
-﻿using Abt.Controls.SciChart;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
+using SciChart.Charting.Visuals.RenderableSeries;
 using StateMachinarium;
 using System;
 using System.Collections.Generic;

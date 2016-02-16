@@ -15,7 +15,8 @@ namespace TickTrader.BotTerminal
     {
         public App()
         {
-            Abt.Controls.SciChart.Visuals.SciChartSurface.SetRuntimeLicenseKey(@"
+            Abt.Licensing.Core.Credentials.SetRuntimeLicenseKey
+                (@"
                 <LicenseContract>
                   <Customer></Customer>
                   <OrderId>ABT151130-2635-55161</OrderId>

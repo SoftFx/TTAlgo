@@ -1,4 +1,4 @@
-﻿using Abt.Controls.SciChart.Model.DataSeries;
+﻿using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,4 @@
-﻿using Abt.Controls.SciChart.Model.DataSeries;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
-using SoftFX.Extended;
+﻿using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +10,8 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.Algo.Core;
 using Api = TickTrader.Algo.Api;
+using SciChart.Charting.Model.DataSeries;
+using SciChart.Charting.Visuals.RenderableSeries;
 
 namespace TickTrader.BotTerminal
 {

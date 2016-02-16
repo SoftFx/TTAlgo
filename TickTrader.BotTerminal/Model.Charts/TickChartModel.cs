@@ -1,6 +1,6 @@
-﻿using Abt.Controls.SciChart.Model.DataSeries;
-using Abt.Controls.SciChart.Visuals.PointMarkers;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
+﻿using SciChart.Charting.Model.DataSeries;
+using SciChart.Charting.Visuals.PointMarkers;
+using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,8 +95,8 @@ namespace TickTrader.BotTerminal
                     AskSeries = new FastLineRenderableSeries();
                     BidSeries = new FastLineRenderableSeries();
 
-                    AskSeries.SeriesColor = Colors.Red;
-                    BidSeries.SeriesColor = Colors.Green;
+                    AskSeries.Stroke = Colors.Red;
+                    BidSeries.Stroke = Colors.Green;
 
                     break;
                 case SelectableChartTypes.Mountain:
@@ -108,8 +108,8 @@ namespace TickTrader.BotTerminal
                     AskSeries = new FastLineRenderableSeries() { IsDigitalLine = true };
                     BidSeries = new FastLineRenderableSeries() { IsDigitalLine = true };
 
-                    AskSeries.SeriesColor = Colors.Red;
-                    BidSeries.SeriesColor = Colors.Green;
+                    AskSeries.Stroke = Colors.Red;
+                    BidSeries.Stroke = Colors.Green;
                     break;
 
                 case SelectableChartTypes.Scatter:
