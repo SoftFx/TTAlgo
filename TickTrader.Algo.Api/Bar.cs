@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
+    [Serializable]
     public struct Bar
     {
         public double Open { get; set; }
@@ -14,5 +15,6 @@ namespace TickTrader.Algo.Api
         public double Low { get; set; }
         public double Volume { get; set; }
         public DateTime OpenTime { get; set; }
+        public DateTime CloseTime { get; set; }
     }
 }
