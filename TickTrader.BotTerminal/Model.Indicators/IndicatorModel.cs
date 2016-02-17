@@ -44,6 +44,7 @@ namespace TickTrader.BotTerminal
         public long Id { get { return config.InstanceId; } }
         public string DisplayName { get { return "[" + Id + "] " + config.Descriptor.DisplayName; } }
         public IEnumerable<IDataSeries> SeriesCollection { get { return seriesList; } }
+        public bool IsOverlay { get { return config.Descriptor.IsOverlay; } }
 
         public void Start()
         {

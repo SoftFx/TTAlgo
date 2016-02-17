@@ -1,35 +1,53 @@
-﻿using SciChart.Charting.Visuals.Axes;
+﻿using Caliburn.Micro;
+using SciChart.Charting.Visuals.Axes;
 using SciChart.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class ChartNavigator
+    internal abstract class ChartNavigator : PropertyChangedBase
     {
+        private IRange visiableRange;
+
         public ChartNavigator()
         {
-            TimeAxis = CreateAxis();
         }
 
-        public abstract IRange VisibleRange { get; }
-        public AxisBase TimeAxis { get; private set; }
+        public IRange VisibleRange
+        {
+            get { return visiableRange; }
+            set
+            {
+                visiableRange = value;
+                NotifyOfPropertyChange("VisibleRange");
+            }
+        }
 
-        protected abstract AxisBase CreateAxis();
+        public AxisBase CreateAxis()
+        {
+            var axis = CreateAxisInternal();
+            Binding rangeBinding = new Binding("VisibleRange");
+            rangeBinding.Source = this;
+            rangeBinding.Mode = BindingMode.TwoWay;
+            axis.SetBinding(AxisBase.VisibleRangeProperty, rangeBinding);
+            return axis;
+        }
+
+        protected abstract AxisBase CreateAxisInternal();
     }
 
     internal class UniformChartNavigator : ChartNavigator
     {
         private IndexRange visibleRange = new IndexRange();
 
-        public override IRange VisibleRange { get { return visibleRange; } }
-
-        protected override AxisBase CreateAxis()
+        protected override AxisBase CreateAxisInternal()
         {
-            return new CategoryDateTimeAxis() { VisibleRange = visibleRange };
+            return new  CategoryDateTimeAxis();
         }
     }
 
@@ -37,9 +55,7 @@ namespace TickTrader.BotTerminal
     {
         private DateRange visibleRange = new DateRange();
 
-        public override IRange VisibleRange { get { return visibleRange; } }
-
-        protected override AxisBase CreateAxis()
+        protected override AxisBase CreateAxisInternal()
         {
             return new DateTimeAxis() { VisibleRange = visibleRange };
         }

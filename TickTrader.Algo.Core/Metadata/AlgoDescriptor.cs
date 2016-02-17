@@ -102,6 +102,7 @@ namespace TickTrader.Algo.Core.Metadata
             copy.DisplayName = this.DisplayName;
             copy.AlgoLogicType = this.AlgoLogicType;
             copy.Error = this.Error;
+            copy.IsOverlay = this.IsOverlay;
 
             copy.AllProperties = allProperties.Select(p => p.GetInteropCopy()).ToList();
             copy.Parameters = copy.AllProperties.OfType<ParameterInfo>().ToList();
@@ -120,7 +121,10 @@ namespace TickTrader.Algo.Core.Metadata
         {
             IndicatorAttribute indicatorAttr = AlgoClassType.GetCustomAttribute<IndicatorAttribute>(false);
             if (indicatorAttr != null)
+            {
                 DisplayName = indicatorAttr.DisplayName;
+                IsOverlay = indicatorAttr.IsOverlay;
+            }
         }
 
         private void InspectBotAttr()
@@ -180,6 +184,7 @@ namespace TickTrader.Algo.Core.Metadata
         public AlgoTypes AlgoLogicType { get; private set; }
         public AlgoMetadataErrors? Error { get; private set; }
         public bool IsValid { get { return Error == null; } }
+        public bool IsOverlay { get; private set; }
         public IEnumerable<AlgoPropertyDescriptor> AllProperties { get { return allProperties; } }
         public IEnumerable<ParameterDescriptor> Parameters { get { return parameters; } }
         public IEnumerable<InputDescriptor> Inputs { get { return inputs; } }

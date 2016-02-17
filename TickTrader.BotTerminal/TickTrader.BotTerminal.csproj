@@ -138,7 +138,9 @@
     <Compile Include="Extensions\ResxExtension.cs" />
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
+    <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
+    <Compile Include="Model\CollectionComposer.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>

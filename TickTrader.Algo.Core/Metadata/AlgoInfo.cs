@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core.Metadata
         public string Category { get; set; }
         public AlgoTypes AlgoLogicType { get; set; }
         public AlgoMetadataErrors? Error { get; set; }
+        public bool IsOverlay { get; set; } 
         public bool IsValid { get { return Error == null; } }
         public IEnumerable<AlgoPropertyInfo> AllProperties { get; set; }
         public IEnumerable<ParameterInfo> Parameters { get; set; }

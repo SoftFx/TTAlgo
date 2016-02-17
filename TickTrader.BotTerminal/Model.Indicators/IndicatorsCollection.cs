@@ -13,15 +13,19 @@ namespace TickTrader.BotTerminal
     internal class IndicatorsCollection
     {
         private bool isStarted;
-        private BindableCollection<IRenderableSeries> series;
+        //private BindableCollection<IRenderableSeries> series;
 
-        public IndicatorsCollection(BindableCollection<IRenderableSeries> outputSeriesCollection)
+        public IndicatorsCollection()
         {
-            this.series = outputSeriesCollection;
-            this.Values = new BindableCollection<IndicatorModel>();
+            //this.series = outputSeriesCollection;
+            this.Values = new List<IndicatorModel>();
         }
 
-        public BindableCollection<IndicatorModel> Values { get; private set; }
+        public List<IndicatorModel> Values { get; private set; }
+
+        public event Action<IndicatorModel> Added;
+        public event Action<IndicatorModel> Removed;
+        public event Action<IndicatorModel> Replaced;
 
         public void Start()
         {
@@ -39,8 +43,9 @@ namespace TickTrader.BotTerminal
 
         public void AddOrReplace(IndicatorModel indicator)
         {
-            AddOutputs(indicator);
+            //AddOutputs(indicator);
             Values.Add(indicator);
+            Added(indicator);
             if (isStarted)
                 indicator.Start();
         }
@@ -53,35 +58,37 @@ namespace TickTrader.BotTerminal
 
         public void Remove(IndicatorModel indicator)
         {
-            RemoveOutputs(indicator);
-            Values.Remove(indicator);
+            //RemoveOutputs(indicator);
+            if (Values.Remove(indicator))
+                Removed(indicator);
         }
 
         private void ReplaceAt(int index, IndicatorModel newIndicator)
         {
-            RemoveOutputs(Values[index]);
+            //RemoveOutputs(Values[index]);
             Values[index] = newIndicator;
-            AddOutputs(newIndicator);
+            Replaced(newIndicator);
+            //AddOutputs(newIndicator);
         }
 
-        private void AddOutputs(IndicatorModel indicator)
-        {
-            foreach (var output in indicator.SeriesCollection)
-            {
-                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-                chartSeries.DataSeries = output;
-                series.Add(chartSeries);
-            }
-        }
+        //private void AddOutputs(IndicatorModel indicator)
+        //{
+        //    foreach (var output in indicator.SeriesCollection)
+        //    {
+        //        FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
+        //        chartSeries.DataSeries = output;
+        //        series.Add(chartSeries);
+        //    }
+        //}
 
-        private void RemoveOutputs(IndicatorModel indicator)
-        {
-            foreach (var output in indicator.SeriesCollection)
-            {
-                var seriesIndex = series.IndexOf(s => s.DataSeries == output);
-                if (seriesIndex > 0)
-                    series.RemoveAt(seriesIndex);
-            }
-        }
+        //private void RemoveOutputs(IndicatorModel indicator)
+        //{
+        //    foreach (var output in indicator.SeriesCollection)
+        //    {
+        //        var seriesIndex = series.IndexOf(s => s.DataSeries == output);
+        //        if (seriesIndex > 0)
+        //            series.RemoveAt(seriesIndex);
+        //    }
+        //}
     }
 }

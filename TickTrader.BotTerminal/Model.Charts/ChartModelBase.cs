@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.RenderableSeries;
 using StateMachinarium;
 using System;
@@ -36,13 +37,14 @@ namespace TickTrader.BotTerminal
         private ChartNavigator navigator;
         private TimelineTypes timelineType;
         private long indicatorNextId = 1;
+        private AxisBase timeAxis;
 
         public ChartModelBase(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
         {
             this.Feed = feed;
             this.Model = symbol;
             this.catalog = catalog;
-            this.indicators = new IndicatorsCollection(series);
+            this.indicators = new IndicatorsCollection();
 
             TimelineType = TimelineTypes.Uniform;
 
@@ -77,7 +79,7 @@ namespace TickTrader.BotTerminal
 
         public ObservableCollection<IRenderableSeries> Series { get { return series; } }
         public BindableCollection<AlgoCatalogItem> AvailableIndicators { get; private set; }
-        public BindableCollection<IndicatorModel> Indicators { get { return indicators.Values; } }
+        public IndicatorsCollection Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public IEnumerable<TimelineTypes> AvailableTimelines { get { return new TimelineTypes[] { TimelineTypes.Uniform, TimelineTypes.Real }; } }
         public string Symbol { get { return Model.Name; } }
@@ -127,7 +129,19 @@ namespace TickTrader.BotTerminal
             private set
             {
                 navigator = value;
-                NotifyOfPropertyChange("Navigator");
+                TimeAxis = value.CreateAxis();
+                if (NavigatorChanged != null)
+                    NavigatorChanged();
+            }
+        }
+
+        public AxisBase TimeAxis
+        {
+            get { return timeAxis; }
+            set
+            {
+                timeAxis = value;
+                NotifyOfPropertyChange("TimeAxis");
             }
         }
 
@@ -141,6 +155,8 @@ namespace TickTrader.BotTerminal
                 UpdateSeriesStyle();
             }
         }
+
+        public event System.Action NavigatorChanged;
 
         public IIndicatorConfig CreateIndicatorConfig(AlgoCatalogItem item)
         {

@@ -67,8 +67,7 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type l:IndicatorPaneViewModel}">
-            <!--<ContentControl cal:View.Model="{Binding}" />-->
-            <s:SciChartSurface />
+            <ContentControl cal:View.Model="{Binding}" />
         </DataTemplate>
 
     </UserControl.Resources>
@@ -83,15 +82,15 @@
 
     <ItemsControl>
         <ItemsControl.Resources>
-            <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding IndicatorPanes}"/>
+            <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding Panes}"/>
         </ItemsControl.Resources>
         <ItemsControl.ItemsSource>
             <CompositeCollection>
                 <Grid>
-                    <s:SciChartSurface RenderableSeries="{Binding Chart.Series}"
+                    <s:SciChartSurface RenderableSeries="{Binding Series}"
                                        Style="{StaticResource MainChartStyle}"
-                               XAxis="{Binding Chart.Navigator.TimeAxis}"
-                               ContextMenu="{StaticResource MainChartPanelContextMenu}">
+                                       XAxis="{Binding Chart.TimeAxis}"
+                                       ContextMenu="{StaticResource MainChartPanelContextMenu}">
                         <s:SciChartSurface.YAxis>
                             <s:NumericAxis GrowBy="0.1, 0.1" AutoRange="Always"/>
                         </s:SciChartSurface.YAxis>

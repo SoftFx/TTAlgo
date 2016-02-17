@@ -54,9 +54,6 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            //foreach (var indicator in this.Indicators)
-            //    indicator.SetData(null);
-
             var periodCopy = this.period;
 
             var response = await Task.Factory.StartNew(
@@ -74,16 +71,7 @@ namespace TickTrader.BotTerminal
             foreach (var bar in rawData)
                 chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
-            //foreach (var indicator in this.Indicators)
-            //    indicator.SetData(rawData);
-
             MainSeries.DataSeries = chartData;
-
-            if (chartData.Count > 0)
-            {
-                //this.VisibleRange.Max = chartData.Count - 1;
-                //this.VisibleRange.Min = Math.Max(0, chartData.Count - 101);
-            }
         }
 
         protected override void UpdateSeriesStyle()

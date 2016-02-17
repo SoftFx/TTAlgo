@@ -8,6 +8,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-    <s:SciChartSurface/>
+        <s:SciChartSurface RenderableSeries="{Binding Series}"
+                           XAxis="{Binding TimeAxis}">
+            <s:SciChartSurface.YAxis>
+                <s:NumericAxis GrowBy="0.1, 0.1" AutoRange="Always"/>
+            </s:SciChartSurface.YAxis>
+        </s:SciChartSurface>
     </Grid>
 </UserControl>
