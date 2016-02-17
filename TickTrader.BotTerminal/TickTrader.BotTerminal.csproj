@@ -129,9 +129,9 @@
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ShadowPortal.cs" />
+    <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
-    <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
