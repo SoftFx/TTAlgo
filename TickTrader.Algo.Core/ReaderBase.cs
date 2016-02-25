@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
             void AppendNan();
             void Append(TRow rec);
             void Flush();
+            void SetBuffer(object buffer);
         }
 
         protected class Mapping<TIn> : IMapping
@@ -45,9 +46,9 @@ namespace TickTrader.Algo.Core
                 this.nanValue = nanValue;
             }
 
-            internal void SetProxy(InputDataSeries<TIn> inputProxy)
+            public void SetBuffer(object buffer)
             {
-                this.inputProxy = inputProxy;
+                this.inputProxy = (InputDataSeries<TIn>)buffer;
             }
 
             public void Append(TRow record)

@@ -61,9 +61,9 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void BindInput<T>(string id, InputDataSeries<T> buffer)
+        public void BindInput(string id, object buffer)
         {
-            ((Mapping<T>)GetMappingOrThrow(id)).SetProxy(buffer);
+            GetMappingOrThrow(id).SetBuffer(buffer);
         }
     }
 

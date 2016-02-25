@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,22 +24,17 @@ namespace TickTrader.BotTerminal
             this.indicator = indicator;
 
             foreach (var output in indicator.SeriesCollection)
-            {
-                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-                chartSeries.DataSeries = output;
-                Series.Add(chartSeries);
-            }
+                Series.Add(output);
 
             UpdateAxis();
             chart.NavigatorChanged += UpdateAxis;
+        }
 
-            //XyDataSeries<int> dataSeries = new XyDataSeries<int>();
-            //dataSeries.Append(Enumerable.Range(0, 100), Enumerable.Range(0, 100));
+        public string Header { get; private set; }
 
-            //FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-            //chartSeries.DataSeries = dataSeries;
-            //Series.Add(chartSeries);
-            
+        public void Close()
+        {
+            chart.NavigatorChanged -= UpdateAxis;
         }
 
         private void UpdateAxis()

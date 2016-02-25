@@ -12,12 +12,12 @@ namespace TickTrader.BotTerminal
 {
     public class IndicatorSetup_Bars : IndicatorSetupBase
     {
-        public IndicatorSetup_Bars(AlgoInfo descriptor)
+        public IndicatorSetup_Bars(AlgoDescriptor descriptor)
             : base(descriptor)
         {
         }
 
-        protected override InputSetup CreateInput(InputInfo descriptor)
+        protected override InputSetup CreateInput(InputDescriptor descriptor)
         {
             if (!descriptor.IsValid)
                 return new BarInputSetup.Invalid(descriptor);
@@ -30,12 +30,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override OutputSetup CreateOuput(OutputInfo descriptor)
+        protected override OutputSetup CreateOuput(OutputDescriptor descriptor)
         {
             if (descriptor.DataSeriesBaseTypeFullName == "System.Double")
                 return new ColoredLineOutputSetup(descriptor);
             else
-                return new NotSupportedOuput(descriptor);
+                return new ColoredLineOutputSetup(descriptor, Algo.GuiModel.MsgCodes.UnsupportedPropertyType);
         }
     }
 }

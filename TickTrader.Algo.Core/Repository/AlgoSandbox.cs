@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core.Repository
         {
         }
 
-        public IEnumerable<AlgoInfo> LoadAndInspect(string filePath)
+        public IEnumerable<AlgoDescriptor> LoadAndInspect(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath);
             string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
@@ -32,13 +32,7 @@ namespace TickTrader.Algo.Core.Repository
             catch (FileNotFoundException) { }
 
             Assembly algoAssembly = Assembly.Load(assemblyBytes, symbolsBytes);
-            var metadata = AlgoDescriptor.InspectAssembly(algoAssembly);
-            return metadata.Select(d => d.GetInteropCopy()).ToList();
-        }
-
-        public IndicatorProxy CreateIndicator(string algoId, IAlgoContext context)
-        {
-            return new IndicatorProxy(algoId, context);
+            return AlgoDescriptor.InspectAssembly(algoAssembly);
         }
     }
 }

@@ -8,35 +8,28 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class ParameterDescriptor : AlgoPropertyDescriptor
     {
-        public ParameterDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
+        public ParameterDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, ParameterAttribute attribute)
             : base(classMetadata, propertyInfo)
         {
-            Attribute = (ParameterAttribute)attribute;
-            Validate();
+            Validate(propertyInfo);
 
-            if (Attribute.DefaultValue != null)
+            if (attribute.DefaultValue != null)
             {
-                if (Attribute.DefaultValue.GetType() != propertyInfo.PropertyType)
+                if (attribute.DefaultValue.GetType() != propertyInfo.PropertyType)
                     SetError(AlgoPropertyErrors.DefaultValueTypeMismatch);
                 else
-                    DefaultValue = Attribute.DefaultValue;
+                    DefaultValue = attribute.DefaultValue;
             }
 
-            InitDisplayName(Attribute.DisplayName);
+            InitDisplayName(attribute.DisplayName);
+
+            this.DataType = propertyInfo.PropertyType.FullName;
         }
 
-        public override AlgoPropertyInfo GetInteropCopy()
-        {
-            ParameterInfo copy = new ParameterInfo();
-            FillCommonProperties(copy);
-            copy.DataType = Info.PropertyType.FullName;
-            copy.DefaultValue = DefaultValue;
-            return copy;
-        }
-
-        public ParameterAttribute Attribute { get; private set; }
+        public string DataType { get; private set; }
         public object DefaultValue { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
     }

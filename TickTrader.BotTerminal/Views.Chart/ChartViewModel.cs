@@ -39,7 +39,11 @@ namespace TickTrader.BotTerminal
             this.tickChart = new TickChartModel(smb, catalog, feed);
 
             Panes = new ObservableCollection<IndicatorPaneViewModel>();
-            Series = new ObservableCollection<IRenderableSeries>();
+            Series = new ObservableComposer<IRenderableSeries>();
+            OverlaySeries = new ObservableCollection<IRenderableSeries>();
+            Indicators = new ObservableCollection<IndicatorModel>();
+
+            Indicators.CollectionChanged += (s, a) => NotifyOfPropertyChange("HasIndicators");
 
             //repository.Removed += repository_Removed;
             //repository.Replaced += repository_Replaced;
@@ -94,8 +98,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ObservableCollection<IRenderableSeries> Series { get; set; }
-        public ObservableCollection<IndicatorPaneViewModel> Panes { get; set; }
+        public ObservableComposer<IRenderableSeries> Series { get; private set; }
+        public ObservableCollection<IRenderableSeries> OverlaySeries { get; private set; }
+        public ObservableCollection<IndicatorPaneViewModel> Panes { get; private set; }
+        public ObservableCollection<IndicatorModel> Indicators { get; private set; }
+
+        public bool HasIndicators { get { return Indicators.Count > 0; } }
 
         #endregion
 
@@ -145,11 +153,13 @@ namespace TickTrader.BotTerminal
         }
 
         private void InitChart()
-        {            
-            AddSeriesRange(barChart.Series);
+        {
+            Series.SourceCollections.Add(Chart.Series);
 
             foreach (var i in barChart.Indicators.Values)
                 AddIndicator(i);
+
+            Series.SourceCollections.Add(OverlaySeries);
 
             barChart.Indicators.Added += AddIndicator;
             barChart.Indicators.Removed += RemoveIndicator;
@@ -158,8 +168,9 @@ namespace TickTrader.BotTerminal
 
         private void DisposeChart()
         {
+            Series.SourceCollections.Clear();
             Panes.Clear();
-            Series.Clear();
+            OverlaySeries.Clear();
 
             if (barChart != null)
             {
@@ -177,6 +188,8 @@ namespace TickTrader.BotTerminal
 
         private void AddIndicator(IndicatorModel i)
         {
+            Indicators.Add(i);
+
             if (i.IsOverlay)
                 AddOutputs(i);
             else
@@ -185,19 +198,28 @@ namespace TickTrader.BotTerminal
 
         private void RemoveIndicator(IndicatorModel i)
         {
+            Indicators.Remove(i);
+
             int paneIndex = Panes.IndexOf(p => p.IndicatorId == i.Id);
-            if (paneIndex > 0)
+            if (paneIndex >= 0)
+            {
+                Panes[paneIndex].Close();
                 Panes.RemoveAt(paneIndex);
+            }
 
             RemoveOutputs(i);
         }
 
         private void ReplaceIndicator(IndicatorModel i)
         {
+            var indIndex =  Indicators.IndexOf(i);
+            if (indIndex >= 0)
+                Indicators[indIndex] = i;
+
             if (Panes.Any(p => p.IndicatorId == i.Id) && !i.IsOverlay)
             {
-                int index = Panes.IndexOf(p => p.IndicatorId == i.Id);
-                Panes[index] = new IndicatorPaneViewModel(i, this.Chart);
+                int paneIndex = Panes.IndexOf(p => p.IndicatorId == i.Id);
+                Panes[paneIndex] = new IndicatorPaneViewModel(i, this.Chart);
             }
             else
             {
@@ -209,21 +231,13 @@ namespace TickTrader.BotTerminal
         private void AddOutputs(IndicatorModel indicator)
         {
             foreach (var output in indicator.SeriesCollection)
-            {
-                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-                chartSeries.DataSeries = output;
-                Series.Add(chartSeries);
-            }
+                OverlaySeries.Add(output);
         }
 
         private void RemoveOutputs(IndicatorModel indicator)
         {
             foreach (var output in indicator.SeriesCollection)
-            {
-                var seriesIndex = Series.IndexOf(s => s.DataSeries == output);
-                if (seriesIndex > 0)
-                    Series.RemoveAt(seriesIndex);
-            }
+                OverlaySeries.Remove(output);
         }
     }
 }

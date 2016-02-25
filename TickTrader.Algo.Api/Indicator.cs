@@ -6,30 +6,24 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    public abstract class Indicator : Algo
+    public abstract class Indicator : AlgoPlugin
     {
         public Indicator()
         {
-            if (currentInstance != null)
-                currentInstance.nestedIndicators.Add(this);
+            //if (currentInstance != null)
+            //    currentInstance.nestedIndicators.Add(this);
         }
 
         protected abstract void Calculate();
 
-        internal void DoCalculate()
+        internal void InvokeCalculate()
         {
-            foreach (Indicator i in nestedIndicators)
-                i.DoCalculate();
-
             Calculate();
+
+            //foreach (Indicator i in nestedIndicators)
+            //    i.DoCalculate();
+
+            //Calculate();
         }
-    }
-
-    public abstract class BarIndicator : Indicator
-    {
-    }
-
-    public abstract class TickIndicator : Indicator
-    {
     }
 }

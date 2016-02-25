@@ -11,13 +11,13 @@ namespace TickTrader.Algo.GuiModel
     {
         private GuiModelMsg error;
 
-        internal void SetMetadata(AlgoPropertyInfo descriptor)
+        internal void SetMetadata(AlgoPropertyDescriptor descriptor)
         {
             this.DisplayName = descriptor.DisplayName;
             this.Id = descriptor.Id;
         }
 
-        public bool Valid { get { return Error != null; } }
+        public bool IsValid { get { return Error == null; } }
         public string DisplayName { get; private set; }
         public string Id { get; private set; }
         public bool HasError { get { return this.error != null; } }
@@ -34,6 +34,7 @@ namespace TickTrader.Algo.GuiModel
             {
                 this.error = value;
                 ErrorChanged(this);
+                NotifyPropertyChanged("IsValid");
                 NotifyPropertyChanged("Error");
                 NotifyPropertyChanged("HasError");
             }

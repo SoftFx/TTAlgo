@@ -158,14 +158,14 @@ namespace TickTrader.BotTerminal
 
         public event System.Action NavigatorChanged;
 
-        public IIndicatorConfig CreateIndicatorConfig(AlgoCatalogItem item)
+        public IIndicatorSetup CreateIndicatorConfig(AlgoCatalogItem item)
         {
             return CreateInidactorConfig(item);
         }
 
-        public void AddOrUpdateIndicator(IIndicatorConfig config)
+        public void AddOrUpdateIndicator(IIndicatorSetup config)
         {
-            indicators.AddOrReplace(new IndicatorModel(config));
+            indicators.AddOrReplace(config.CreateIndicator());
         }
 
         protected long GetNextIndicatorId()
@@ -176,8 +176,8 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract void UpdateSeriesStyle();
-        protected abstract bool IsIndicatorSupported(AlgoInfo descriptor);
-        protected abstract IIndicatorConfig CreateInidactorConfig(AlgoCatalogItem repItem);
+        protected abstract bool IsIndicatorSupported(AlgoDescriptor descriptor);
+        protected abstract IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem);
 
         protected void Support(SelectableChartTypes chartType)
         {

@@ -10,40 +10,51 @@ namespace TickTrader.Algo.Core
 {
     public class IndicatorBuilder<TRow> : IIndicatorBuilder
     {
-        private AlgoContext<TRow> context = new AlgoContext<TRow>();
-        private Func<IAlgoContext, IndicatorProxy> factory;
-        private IndicatorProxy insatnceProxy;
+        private IndicatorFixture fixture;
+        private int readPos;
 
-        public IndicatorBuilder(string algoId, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
-            : this(c => new IndicatorProxy(algoId, c), reader, writer)
-        {
-        }
-
-        public IndicatorBuilder(Type algoCustomType, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
-            : this(c => new IndicatorProxy(AlgoDescriptor.Get(algoCustomType), c), reader, writer)
+        public IndicatorBuilder(Type algoLocalDomainType, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
+            : this(AlgoDescriptor.Get(algoLocalDomainType), reader, writer)
         {
         }
 
         public IndicatorBuilder(AlgoDescriptor descriptor, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
-            : this(c => new IndicatorProxy(descriptor, c), reader, writer)
         {
-        }
+            if (descriptor == null)
+                throw new ArgumentNullException("descriptor");
 
-        public IndicatorBuilder(Func<IAlgoContext, IndicatorProxy> factory, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
-        {
-            if (factory == null)
-                throw new ArgumentNullException("factory");
-
+            if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
+                throw new InvalidPluginType("Supplied descriptor is not of Indicator type!");
+           
             if (reader == null)
                 throw new ArgumentNullException("reader");
 
             if (writer == null)
                 throw new ArgumentNullException("writer");
 
-            this.factory = factory;
+            this.Reader = reader;
+            this.Writer = writer;
 
-            context.Reader = reader;
-            context.Writer = writer;
+            fixture = descriptor.CreateIndicator();
+
+            Init();
+        }
+
+        protected IAlgoDataReader<TRow> Reader { get; private set; }
+        protected IAlgoDataWriter<TRow> Writer { get; private set; }
+
+        private void Init()
+        {
+            if (Reader == null)
+                throw new InvalidOperationException("Data Reader is not set!");
+
+            foreach (var input in fixture.Inputs)
+                Reader.BindInput(input.Key, input.Value);
+
+            foreach (var output in fixture.Outputs)
+                Writer.BindOutput(output.Key, output.Value);
+
+            fixture.InvokeInit();
         }
 
         public void Build()
@@ -53,31 +64,25 @@ namespace TickTrader.Algo.Core
 
         public void RebuildLast()
         {
-            context.ReRead();
-            insatnceProxy.InvokeCalculate();
+            ReRead();
+            fixture.InvokeCalculate();
         }
 
         public void Build(CancellationToken cToken)
         {
-            if (insatnceProxy == null)
-            {
-                insatnceProxy = factory(context);
-                context.Init();
-            }
-
             int count;
 
             do
             {
-                count = context.Read();
+                count = Read();
 
                 for (int i = 0; i < count; i++)
                 {
                     if (cToken.IsCancellationRequested)
                         return;
 
-                    context.MoveNext();
-                    insatnceProxy.InvokeCalculate();
+                    MoveNext();
+                    fixture.InvokeCalculate();
 
                     if (cToken.IsCancellationRequested)
                         break;
@@ -86,14 +91,44 @@ namespace TickTrader.Algo.Core
             while (count != 0);
         }
 
+        private int Read()
+        {
+            var buff = Reader.ReadAt(readPos, 100);
+
+            Writer.Extend(buff);
+
+            readPos += buff.Count;
+
+            return buff.Count;
+        }
+
+        private void ReRead()
+        {
+            var row = Reader.ReadAt(readPos);
+            Writer.UpdateLast(row);
+        }
+
+        private void MoveNext()
+        {
+            if (fixture.VirtualPos >= readPos)
+                throw new InvalidOperationException("End of buffer!");
+
+            fixture.MoveNext();
+        }
+
         public void SetParameter(string id, object val)
         {
-            context.SetParameter(id, val);
+            fixture.SetParameter(id, val);
         }
 
         public void Reset()
         {
-            context.Reset();
+            fixture.Reset();
+
+            Reader.Reset();
+            Writer.Reset();
+
+            readPos = 0;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             var response = await Task.Factory.StartNew(
                 () => Connection.FeedProxy.Server.GetHistoryBars(
                     Symbol, DateTime.Now + TimeSpan.FromDays(1),
-                    -4000, SoftFX.Extended.PriceType.Ask, periodCopy));
+                    -10000, SoftFX.Extended.PriceType.Ask, periodCopy));
 
             cToken.ThrowIfCancellationRequested();
 
@@ -95,12 +95,12 @@ namespace TickTrader.BotTerminal
             MainSeries.DataSeries = chartData;
         }
 
-        protected override bool IsIndicatorSupported(AlgoInfo descriptor)
+        protected override bool IsIndicatorSupported(AlgoDescriptor descriptor)
         {
             return true;
         }
 
-        protected override IIndicatorConfig CreateInidactorConfig(AlgoCatalogItem repItem)
+        protected override IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem)
         {
             return new IndicatorConfig(repItem, this);
         }
@@ -120,12 +120,12 @@ namespace TickTrader.BotTerminal
             }));
         }
 
-        private class IndicatorConfig : IIndicatorConfig
+        private class IndicatorConfig : IIndicatorSetup
         {
             private BarChartModel chart;
             private AlgoCatalogItem repItem;
 
-            public IndicatorConfig(AlgoCatalogItem repItem, BarChartModel chart)
+            public IndicatorConfig(AlgoCatalogItem repItem, BarChartModel chart, IndicatorSetup_Bars srcSetup = null)
             {
                 this.chart = chart;
                 this.repItem = repItem;
@@ -134,10 +134,10 @@ namespace TickTrader.BotTerminal
             }
 
             public long InstanceId { get; private set; }
-            public AlgoInfo Descriptor { get { return UiModel.Descriptor; } }
+            public AlgoDescriptor Descriptor { get { return UiModel.Descriptor; } }
             public IndicatorSetupBase UiModel { get; private set; }
 
-            public IIndicatorBuilder CreateBuilder(ISeriesContainer seriesTarget)
+            public IndicatorModel CreateIndicator()
             {
                 DirectReader<Api.Bar> reader = new DirectReader<Api.Bar>(chart.indicatorData);
 
@@ -146,23 +146,38 @@ namespace TickTrader.BotTerminal
 
                 DirectWriter<Api.Bar> writer = new DirectWriter<Api.Bar>();
 
+                var outputSeries = new Dictionary<ColoredLineOutputSetup, IDataSeries>();
+
                 foreach (var output in UiModel.Outputs)
                 {
                     if (output is ColoredLineOutputSetup)
                     {
                         XyDataSeries<DateTime, double> series = new XyDataSeries<DateTime, double>();
                         writer.AddMapping(output.Id, new XySeriesWriter(series));
-                        seriesTarget.AddSeries(series);
+                        outputSeries[(ColoredLineOutputSetup)output] = series;
                     }
                 }
 
-                IndicatorBuilder<Api.Bar> buidler = new IndicatorBuilder<Api.Bar>(repItem.CreateIndicator, reader, writer);
+                IndicatorBuilder<Api.Bar> buidler = new IndicatorBuilder<Api.Bar>(repItem.Descriptor, reader, writer);
 
                 foreach (var parameter in UiModel.Parameters)
                     buidler.SetParameter(parameter.Id, parameter.ValueObj);
 
-                return buidler;
+                IndicatorModel model = new IndicatorModel(this, buidler);
+
+                foreach (var output in outputSeries)
+                    model.AddSeries(output.Key, output.Value);
+
+                return model;
+            }
+
+            public IIndicatorSetup CreateCopy()
+            {
+                var copy = new IndicatorConfig(repItem, chart);
+                copy.UiModel.CopyFrom(UiModel);
+                return copy;
             }
         }
     }
 }
+    

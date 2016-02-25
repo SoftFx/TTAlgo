@@ -23,51 +23,40 @@ namespace TickTrader.Algo.Core.Metadata
         DefaultValueTypeMismatch
     }
 
+    [Serializable]
     public class AlgoPropertyDescriptor : NoTimeoutByRefObject
     {
+        private ByRefAccessor propertyAccessor;
+
         public AlgoPropertyDescriptor(AlgoDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
         {
             this.ClassMetadata = classMetadata;
-            this.Info = reflectioInfo;
             this.Error = error;
+            this.propertyAccessor = new ByRefAccessor(reflectioInfo);
+
+            this.Id = reflectioInfo.Name;
         }
 
-        public string Id { get { return Info.Name; } }
+        public string Id { get; private set; }
         public string DisplayName { get; private set; }
         public AlgoDescriptor ClassMetadata { get; private set; }
-        public PropertyInfo Info { get; private set; }
         public virtual AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Unknown; } }
         public AlgoPropertyErrors? Error { get; protected set; }
         public bool IsValid { get { return Error == null; } }
 
-        public virtual AlgoPropertyInfo GetInteropCopy()
-        {
-            AlgoPropertyInfo info = new AlgoPropertyInfo();
-            FillCommonProperties(info);
-            return info;
-        }
-
         protected void InitDisplayName(string displayName)
         {
             if (string.IsNullOrWhiteSpace(displayName))
-                DisplayName = Info.Name;
+                DisplayName = Id;
             else
                 DisplayName = displayName;
         }
 
-        protected void FillCommonProperties(AlgoPropertyInfo info)
+        protected void Validate(PropertyInfo info)
         {
-            info.Id = Id;
-            info.DisplayName = DisplayName;
-            info.PropertyType = PropertyType;
-            info.Error = Error;
-        }
-
-        protected void Validate()
-        {
-            if (!Info.SetMethod.IsPublic)
+            if (!info.SetMethod.IsPublic)
                 SetError(AlgoPropertyErrors.SetIsNotPublic);
-            else if (!Info.GetMethod.IsPublic)
+            else if (!info.GetMethod.IsPublic)
                 SetError(AlgoPropertyErrors.GetIsNotPublic);
         }
 
@@ -77,9 +66,24 @@ namespace TickTrader.Algo.Core.Metadata
                 this.Error = error;
         }
 
-        internal void Set(Api.Algo instance, object value)
+        internal void Set(Api.AlgoPlugin instance, object value)
         {
-            Info.SetValue(instance, value);
+            propertyAccessor.Set(instance, value);
+        }
+
+        private class ByRefAccessor : NoTimeoutByRefObject
+        {
+            private PropertyInfo info;
+
+            public ByRefAccessor(PropertyInfo info)
+            {
+                this.info = info;
+            }
+
+            public void Set(Api.AlgoPlugin instance, object value)
+            {
+                info.SetValue(instance, value);
+            }
         }
     } 
 }

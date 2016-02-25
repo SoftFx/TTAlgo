@@ -45,9 +45,7 @@ namespace TickTrader.BotTerminal
         {
             //AddOutputs(indicator);
             Values.Add(indicator);
-            Added(indicator);
-            if (isStarted)
-                indicator.Start();
+            OnAdd(indicator);
         }
 
         //public void RemoveAt(int index)
@@ -56,12 +54,15 @@ namespace TickTrader.BotTerminal
         //    Values.RemoveAt(index);
         //}
 
-        public void Remove(IndicatorModel indicator)
-        {
-            //RemoveOutputs(indicator);
-            if (Values.Remove(indicator))
-                Removed(indicator);
-        }
+        //public void Remove(IndicatorModel indicator)
+        //{
+        //    //RemoveOutputs(indicator);
+        //    if (Values.Remove(indicator))
+        //    {
+        //        OnRemove(indicator);
+        //        Removed(indicator);
+        //    }
+        //}
 
         private void ReplaceAt(int index, IndicatorModel newIndicator)
         {
@@ -69,6 +70,23 @@ namespace TickTrader.BotTerminal
             Values[index] = newIndicator;
             Replaced(newIndicator);
             //AddOutputs(newIndicator);
+        }
+
+        private void OnAdd(IndicatorModel indicator)
+        {
+            indicator.Closed += Indicator_Closed;
+            if (isStarted)
+                indicator.Start();
+            Added(indicator);
+        }
+
+        private void Indicator_Closed(IndicatorModel indicator)
+        {
+            indicator.Closed -= Indicator_Closed;
+            if (!Values.Remove(indicator))
+                throw new Exception("Faile to remove inidactor " + indicator.Id);
+            if (Removed != null)
+                Removed(indicator);
         }
 
         //private void AddOutputs(IndicatorModel indicator)

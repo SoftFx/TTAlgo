@@ -6,6 +6,7 @@
                 BorderThickness="1"
                 CornerRadius="3"
                 BorderBrush="Transparent"
+                Margin="{TemplateBinding Margin}"
                 Background="{TemplateBinding Panel.Background}"
                 SnapsToDevicePixels="True">
             <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Name="PART_ContentHost" Focusable="False" />

@@ -14,9 +14,9 @@ namespace TickTrader.Algo.Core.Metadata
             : base(classMetadata, propertyInfo)
         {
             Attribute = (InputAttribute)attribute;
-            Validate();
+            Validate(propertyInfo);
 
-            var propertyType = this.Info.PropertyType;
+            var propertyType = propertyInfo.PropertyType;
 
             if (propertyType == typeof(DataSeries))
             {
@@ -31,15 +31,8 @@ namespace TickTrader.Algo.Core.Metadata
             InitDisplayName(Attribute.DisplayName);
         }
 
-        public override AlgoPropertyInfo GetInteropCopy()
-        {
-            InputInfo copy = new InputInfo();
-            FillCommonProperties(copy);
-            copy.DataSeriesBaseTypeFullName = DatdaSeriesBaseType.FullName;
-            return copy;
-        }
-
         public Type DatdaSeriesBaseType { get; private set; }
+        public string DataSeriesBaseTypeFullName { get { return DatdaSeriesBaseType.FullName; } }
         public bool IsShortDefinition { get; private set; }
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }

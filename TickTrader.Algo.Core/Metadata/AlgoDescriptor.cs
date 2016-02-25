@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class AlgoDescriptor
     {
         private static Dictionary<Type, AlgoDescriptor> cacheByType = new Dictionary<Type, AlgoDescriptor>();
@@ -67,6 +69,7 @@ namespace TickTrader.Algo.Core.Metadata
         private List<ParameterDescriptor> parameters = new List<ParameterDescriptor>();
         private List<InputDescriptor> inputs = new List<InputDescriptor>();
         private List<OutputDescriptor> outputs = new List<OutputDescriptor>();
+        private PluginFactory factory;
 
         public AlgoDescriptor(Type algoCustomType)
         {
@@ -84,37 +87,31 @@ namespace TickTrader.Algo.Core.Metadata
                 return;
             }
 
+            InspectCopyrightAttr();
             InspectProperties();
 
-            if (allProperties.Any(p => p.PropertyType == AlgoPropertyTypes.Unknown))
-                Error = AlgoMetadataErrors.HasUnknownProperties;
-            else if (allProperties.Any(p => !p.IsValid))
+            if (allProperties.Any(p => !p.IsValid))
                 Error = AlgoMetadataErrors.HasInvalidProperties;
 
             if (string.IsNullOrWhiteSpace(DisplayName))
                 DisplayName = algoCustomType.Name;
+
+            this.factory = new PluginFactory(AlgoClassType);
+            this.Id = AlgoClassType.FullName;
         }
 
-        public AlgoInfo GetInteropCopy()
+        public IndicatorFixture CreateIndicator()
         {
-            AlgoInfo copy = new AlgoInfo();
-            copy.Id = this.AlgoClassType.FullName;
-            copy.DisplayName = this.DisplayName;
-            copy.AlgoLogicType = this.AlgoLogicType;
-            copy.Error = this.Error;
-            copy.IsOverlay = this.IsOverlay;
+            if (AlgoLogicType != AlgoTypes.Indicator)
+                throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
 
-            copy.AllProperties = allProperties.Select(p => p.GetInteropCopy()).ToList();
-            copy.Parameters = copy.AllProperties.OfType<ParameterInfo>().ToList();
-            copy.Inputs = copy.AllProperties.OfType<InputInfo>().ToList();
-            copy.Outputs = copy.AllProperties.OfType<OutputInfo>().ToList();
-
-            return copy;
+            return factory.CreateIndicator();
         }
 
-        public Api.Algo CreateInstance()
+        public void Validate()
         {
-            return (Api.Algo)Activator.CreateInstance(AlgoClassType);
+            if (Error != null)
+                throw new AlgoMetadataException(Error.Value, allProperties.Where(p => !p.IsValid));
         }
 
         private void InspectIndicatorAttr()
@@ -123,8 +120,16 @@ namespace TickTrader.Algo.Core.Metadata
             if (indicatorAttr != null)
             {
                 DisplayName = indicatorAttr.DisplayName;
+                Category = indicatorAttr.Category;
                 IsOverlay = indicatorAttr.IsOverlay;
             }
+        }
+
+        private void InspectCopyrightAttr()
+        {
+            CopyrightAttribute copyrightAttr = AlgoClassType.GetCustomAttribute<CopyrightAttribute>(false);
+            if (copyrightAttr != null)
+                Copyright = copyrightAttr.Text;
         }
 
         private void InspectBotAttr()
@@ -159,7 +164,7 @@ namespace TickTrader.Algo.Core.Metadata
                 return new AlgoPropertyDescriptor(this, property, AlgoPropertyErrors.MultipleAttributes);
             else if (algoAttribute is OutputAttribute)
             {
-                var descriptor = new OutputDescriptor(this, property, algoAttribute);
+                var descriptor = new OutputDescriptor(this, property, (OutputAttribute)algoAttribute);
                 outputs.Add(descriptor);
                 return descriptor;
             }
@@ -171,7 +176,7 @@ namespace TickTrader.Algo.Core.Metadata
             }
             else if (algoAttribute is ParameterAttribute)
             {
-                var descriptor = new ParameterDescriptor(this, property, algoAttribute);
+                var descriptor = new ParameterDescriptor(this, property, (ParameterAttribute)algoAttribute);
                 parameters.Add(descriptor);
                 return descriptor;
             }
@@ -179,8 +184,11 @@ namespace TickTrader.Algo.Core.Metadata
             throw new Exception("Unknwon property attribute!");
         }
 
+        public string Id { get; private set; }
         public Type AlgoClassType { get; private set; }
         public string DisplayName { get; private set; }
+        public string Category { get; private set; }
+        public string Copyright { get; private set; }
         public AlgoTypes AlgoLogicType { get; private set; }
         public AlgoMetadataErrors? Error { get; private set; }
         public bool IsValid { get { return Error == null; } }
@@ -189,8 +197,43 @@ namespace TickTrader.Algo.Core.Metadata
         public IEnumerable<ParameterDescriptor> Parameters { get { return parameters; } }
         public IEnumerable<InputDescriptor> Inputs { get { return inputs; } }
         public IEnumerable<OutputDescriptor> Outputs { get { return outputs; } }
+
+        private class PluginFactory : NoTimeoutByRefObject, IAlgoActivator
+        {
+            private Type pluginType;
+            private AlgoPlugin instance;
+
+            public PluginFactory(Type algoType)
+            {
+                this.pluginType = algoType;
+            }
+
+            private void  CreateInstance()
+            {
+                try
+                {
+                    Api.AlgoPlugin.activator = this;
+                    Activator.CreateInstance(pluginType);
+                }
+                finally
+                {
+                    Api.AlgoPlugin.activator = null;
+                }
+            }
+
+            public IndicatorFixture CreateIndicator()
+            {
+                CreateInstance();
+                return new IndicatorFixture(instance);
+            }
+
+            void IAlgoActivator.Activate(AlgoPlugin instance)
+            {
+                this.instance = instance;
+            }
+        }
     }
 
     public enum AlgoTypes { Indicator, Robot, Unknown }
-    public enum AlgoMetadataErrors { HasInvalidProperties, HasUnknownProperties, UnknwonBaseType }
+    public enum AlgoMetadataErrors { HasInvalidProperties, UnknwonBaseType }
 }

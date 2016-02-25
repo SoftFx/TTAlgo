@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
     {
         TRow ReadAt(int index);
         List<TRow> ReadAt(int index, int pageSize);
-        void BindInput<T>(string id, InputDataSeries<T> buffer);
+        void BindInput(string id, object buffer);
         void Reset();
     }
 
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core
     {
         void Extend(List<TRow> rows);
         void UpdateLast(TRow row);
-        void BindOutput<T>(string id, OutputDataSeries<T> buffer);
+        void BindOutput(string id, object buffer);
         void Reset();
     }
 

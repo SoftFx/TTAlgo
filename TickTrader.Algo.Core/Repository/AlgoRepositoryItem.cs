@@ -11,19 +11,14 @@ namespace TickTrader.Algo.Core.Repository
     {
         private AlgoSandbox sandbox;
 
-        internal AlgoRepositoryItem(AlgoSandbox sandbox, AlgoInfo info)
+        internal AlgoRepositoryItem(AlgoSandbox sandbox, AlgoDescriptor info)
         {
             this.sandbox = sandbox;
             this.Descriptor = info;
         }
 
-        public IndicatorProxy CreateIndicator(IAlgoContext context)
-        {
-            return sandbox.CreateIndicator(Id, context);
-        }
-
         public string Id { get { return Descriptor.Id; } }
         public string DisplayName { get { return Descriptor.DisplayName; } }
-        public AlgoInfo Descriptor { get; private set; }
+        public AlgoDescriptor Descriptor { get; private set; }
     }
 }

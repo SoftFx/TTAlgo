@@ -91,16 +91,14 @@ namespace TickTrader.BotTerminal
 
     internal abstract class AlgoCatalogItem
     {
-        public AlgoCatalogItem(AlgoInfo descriptor)
+        public AlgoCatalogItem(AlgoDescriptor descriptor)
         {
             this.Descriptor = descriptor;
         }
 
         public string Id { get { return Descriptor.Id; } }
         public string DisplayName { get { return Descriptor.DisplayName; } }
-        public AlgoInfo Descriptor { get; private set; }
-
-        public abstract IndicatorProxy CreateIndicator(IAlgoContext context);
+        public AlgoDescriptor Descriptor { get; private set; }
     }
 
     internal class AlgoDynamicItem : AlgoCatalogItem
@@ -112,23 +110,13 @@ namespace TickTrader.BotTerminal
         {
             this.repItem = repItem;
         }
-
-        public override IndicatorProxy CreateIndicator(IAlgoContext context)
-        {
-            return repItem.CreateIndicator(context);
-        }
     }
 
     internal class AlgoStaticItem : AlgoCatalogItem
     {
         public AlgoStaticItem(AlgoDescriptor descriptor)
-            : base(descriptor.GetInteropCopy())
+            : base(descriptor)
         {
-        }
-
-        public override IndicatorProxy CreateIndicator(IAlgoContext context)
-        {
-            return new IndicatorProxy(Descriptor.Id, context);
         }
     }
 }

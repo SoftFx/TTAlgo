@@ -121,11 +121,11 @@ namespace TickTrader.Algo.Core.Repository
             }
         }
 
-        private void Merge(IEnumerable<AlgoInfo> newMetadata, AlgoSandbox newSandbox)
+        private void Merge(IEnumerable<AlgoDescriptor> newMetadata, AlgoSandbox newSandbox)
         {
             // upsert
 
-            foreach (AlgoInfo newInfo in newMetadata)
+            foreach (AlgoDescriptor newInfo in newMetadata)
             {
                 var newItem = new AlgoRepositoryItem(newSandbox, newInfo);
 

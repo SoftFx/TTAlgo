@@ -133,11 +133,13 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Converters\ColorRef.cs" />
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
     <Compile Include="Extensions\ResxExtension.cs" />
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
+    <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
     <Compile Include="Model\CollectionComposer.cs" />
@@ -204,10 +206,10 @@
       <DependentUpon>ChartView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Chart\ChartViewModel.cs" />
-    <Compile Include="Views\IndicatorSetupView.xaml.cs">
+    <Compile Include="Views.Chart\IndicatorSetupView.xaml.cs">
       <DependentUpon>IndicatorSetupView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\IndicatorSetupViewModel.cs" />
+    <Compile Include="Views.Chart\IndicatorSetupViewModel.cs" />
     <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
@@ -430,7 +432,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\IndicatorSetupView.xaml">
+    <Page Include="Views.Chart\IndicatorSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

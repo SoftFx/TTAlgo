@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorSetupViewModel : Screen
     {
-        private IIndicatorConfig cfg;
+        private IIndicatorSetup cfg;
         private IIndicatorHost host;
         private bool dlgResult;
         private AlgoRepositoryModel repModel;
@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            IIndicatorConfig oldCfg = cfg;
+            IIndicatorSetup oldCfg = cfg;
 
             if (cfg != null)
                 cfg.UiModel.ValidityChanged -= Validate;

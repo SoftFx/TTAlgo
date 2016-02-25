@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.Ichimoku
 {
 
-    [Indicator]
+    [Indicator(IsOverlay = true)]
     public class Ichimoku : Indicator
     {
 
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Indicators.Ichimoku
             ExtSpanB2_Buffer[0] = Double.NaN;
 
             double high_value, low_value;
-            
+
             //--- Tenkan Sen
             if (Bars.Count >= InpTenkan)
             {
@@ -84,21 +84,21 @@ namespace TickTrader.Algo.Indicators.Ichimoku
             //--- Senkou Span A
             if (Bars.Count > InpKijun)
             {
-                ExtSpanA_Buffer[0] = (ExtKijunBuffer[InpKijun] + ExtTenkanBuffer[InpKijun])/2;
+                ExtSpanA_Buffer[0] = (ExtKijunBuffer[InpKijun] + ExtTenkanBuffer[InpKijun]) / 2;
                 ExtSpanA2_Buffer[0] = ExtSpanA_Buffer[0];
             }
 
             //--- Senkou Span B
-            if (Bars.Count >= InpSenkou+InpKijun)
+            if (Bars.Count >= InpSenkou + InpKijun)
             {
                 high_value = Bars[InpKijun].High;
                 low_value = Bars[InpKijun].Low;
                 for (int i = 1; i < InpSenkou; i++)
                 {
-                    if (high_value < Bars[InpKijun+i].High)
-                        high_value = Bars[InpKijun+i].High;
-                    if (low_value > Bars[InpKijun+i].Low)
-                        low_value = Bars[InpKijun+i].Low;
+                    if (high_value < Bars[InpKijun + i].High)
+                        high_value = Bars[InpKijun + i].High;
+                    if (low_value > Bars[InpKijun + i].Low)
+                        low_value = Bars[InpKijun + i].Low;
                 }
                 ExtSpanB_Buffer[0] = (high_value + low_value) / 2;
                 ExtSpanB2_Buffer[0] = ExtSpanB_Buffer[0];

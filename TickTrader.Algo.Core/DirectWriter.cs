@@ -47,19 +47,20 @@ namespace TickTrader.Algo.Core
             mappings.Add(outputId, new Mapping<T>(new ListWriter<T, TList>(targetCollection, selector)));
         }
 
-        public void BindOutput<T>(string id, OutputDataSeries<T> buffer)
+        public void BindOutput(string id, object buffer)
         {
             IMapping mapping;
             if (!mappings.TryGetValue(id, out mapping))
                 throw new Exception("Output '" + id + "' is not mapped.");
             mapping.InputData = inputData;
-            ((Mapping<T>)mapping).SetBuffer(buffer);
+            mapping.SetBuffer(buffer);
         }
 
         private interface IMapping
         {
             IList<TRow> InputData { get; set; }
             void Reset();
+            void SetBuffer(object buffer);
         }
 
         private class Mapping<T> : MarshalByRefObject, IMapping
@@ -72,9 +73,9 @@ namespace TickTrader.Algo.Core
                 this.target = targetCollection;
             }
 
-            public void SetBuffer(OutputDataSeries<T> buffer)
+            public void SetBuffer(object buffer)
             {
-                outputProxy = buffer;
+                outputProxy = (OutputDataSeries<T>)buffer;
                 outputProxy.Updated += (d, i) => target.WriteAt(i, d, InputData[i]);
                 outputProxy.Appended += (d, i) => target.Append(InputData[i], d);
             }

@@ -6,20 +6,17 @@ using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.Porabolic
 {
 
-    [Indicator]
+    [Indicator(IsOverlay = true)]
     public class Porabolic : Indicator
     {
-
-
         [Parameter(DefaultValue = 0.02)]
         public double InpSARStep { get; set; }
+
         [Parameter(DefaultValue = 0.2)]
         public double InpSARMaximum { get; set; }
         
-
         [Input]
         public DataSeries<Bar> Bars { get; set; }
-
 
         [Output]
         public DataSeries ExtSARBuffer { get; set; }

@@ -98,8 +98,8 @@
     <!-- ComboBox Item Template -->
     
     <ControlTemplate x:Key="ComboBox_ItemTemplate" TargetType="ComboBoxItem">
-        <Border Name="itemBorder" CornerRadius="2">
-            <ContentPresenter Margin="{TemplateBinding Padding}"/>
+        <Border Name="itemBorder" CornerRadius="2" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="UIElement.IsMouseOver" Value="True">
@@ -110,23 +110,28 @@
 
     <!-- ComboBox Style -->
     
-    <Style TargetType="ComboBox">
+    <Style x:Key="ComboBoxMainStyle" TargetType="ComboBox">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="Template" Value="{StaticResource ComboBox_Template}" />
         <Setter Property="Padding" Value="4,1,3,1" />
-        <Setter Property="Background" Value="{DynamicResource ShellPanel_BackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Style.Resources>
             <Style TargetType="ComboBoxItem">
                 <Setter Property="OverridesDefaultStyle" Value="True"/>
                 <Setter Property="Padding" Value="4,1,4,1" />
                 <Setter Property="Template" Value="{StaticResource ComboBox_ItemTemplate}" />
+                <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=1, AncestorType=ItemsControl}}"/>
+                <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=1, AncestorType=ItemsControl}}"/>
             </Style>
         </Style.Resources>
     </Style>
+
+    <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxMainStyle}"/>
     
 </ResourceDictionary>

@@ -10,22 +10,18 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal interface IIndicatorConfig
+    internal interface IIndicatorSetup
     {
         long InstanceId { get; }
-        AlgoInfo Descriptor { get; }
+        AlgoDescriptor Descriptor { get; }
         IndicatorSetupBase UiModel { get; }
-        IIndicatorBuilder CreateBuilder(ISeriesContainer seriesTarget);
+        IndicatorModel CreateIndicator();
+        IIndicatorSetup CreateCopy();
     }
 
     internal interface IIndicatorHost
     {
-        IIndicatorConfig CreateIndicatorConfig(AlgoCatalogItem catalogItem);
-        void AddOrUpdateIndicator(IIndicatorConfig cfg);
-    }
-
-    internal interface ISeriesContainer
-    {
-        void AddSeries(IDataSeries series);
+        IIndicatorSetup CreateIndicatorConfig(AlgoCatalogItem catalogItem);
+        void AddOrUpdateIndicator(IIndicatorSetup cfg);
     }
 }

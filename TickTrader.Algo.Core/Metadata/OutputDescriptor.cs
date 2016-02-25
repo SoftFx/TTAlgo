@@ -8,15 +8,15 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class OutputDescriptor : AlgoPropertyDescriptor
     {
-        public OutputDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
+        public OutputDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, OutputAttribute attribute)
             : base(classMetadata, propertyInfo)
         {
-            Attribute = (OutputAttribute)attribute;
-            Validate();
+            Validate(propertyInfo);
 
-            var propertyType = this.Info.PropertyType;
+            var propertyType = propertyInfo.PropertyType;
 
             if (propertyType == typeof(DataSeries))
             {
@@ -28,20 +28,21 @@ namespace TickTrader.Algo.Core.Metadata
             else
                 SetError(Metadata.AlgoPropertyErrors.OutputIsNotDataSeries);
 
-            InitDisplayName(Attribute.DisplayName);
-        }
+            this.DefaultThickness = attribute.DefaultThickness;
+            this.DefaultColor = attribute.DefaultColor;
+            this.DefaultLineStyle = attribute.DefaultLineStyle;
+            this.PlotType = attribute.PlotType;
 
-        public override AlgoPropertyInfo GetInteropCopy()
-        {
-            OutputInfo copy = new OutputInfo();
-            FillCommonProperties(copy);
-            copy.DataSeriesBaseTypeFullName = DatdaSeriesBaseType.FullName;
-            return copy;
+            InitDisplayName(attribute.DisplayName);
         }
 
         public Type DatdaSeriesBaseType { get; private set; }
+        public string DataSeriesBaseTypeFullName { get { return DatdaSeriesBaseType.FullName; } }
         public bool IsShortDefinition { get; private set; }
-        public OutputAttribute Attribute { get; private set; }
+        public double DefaultThickness { get; private set; }
+        public Colors DefaultColor { get; private set; }
+        public LineStyles DefaultLineStyle { get; private set; }
+        public PlotType PlotType { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
 
         public OutputDataSeries<T> CreateOutput<T>()

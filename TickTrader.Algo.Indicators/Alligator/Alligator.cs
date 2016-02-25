@@ -5,6 +5,7 @@ using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.Alligator
 {
     [Indicator]
+    [Copyright("2016 Soft-Fx")]
     public class Alligator : Indicator
     {
         [Parameter(DefaultValue = 13)]
@@ -28,13 +29,13 @@ namespace TickTrader.Algo.Indicators.Alligator
         [Input]
         public DataSeries<Bar> Bars { get; set; }
 
-        [Output]
+        [Output(DefaultColor = Colors.BlueViolet)]
         public DataSeries ExtBlueBuffer { get; set; }
         
-        [Output]
+        [Output(DefaultColor = Colors.IndianRed)]
         public DataSeries ExtRedBuffer { get; set; }
 
-        [Output]
+        [Output(DefaultColor = Colors.Lime, DefaultThickness = 3)]
         public DataSeries ExtLimeBuffer { get; set; }
         
         protected override void Calculate()

@@ -43,11 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algo.cs" />
+    <Compile Include="AlgoPlugin.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
+    <Compile Include="Colors.cs" />
     <Compile Include="DataSeries.cs" />
+    <Compile Include="IAlgoActivator.cs" />
     <Compile Include="Indicator.cs" />
+    <Compile Include="LineStyles.cs" />
+    <Compile Include="PlotType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

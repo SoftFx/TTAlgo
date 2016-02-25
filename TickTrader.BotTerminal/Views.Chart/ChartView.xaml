@@ -10,37 +10,60 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <UserControl.Resources>
+
+        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButton_Style}">
+            <Setter Property="HighlightBackground" Value="{DynamicResource Menu_BackgroundBrush}"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="Padding" Value="3,2,3,2"/>
+        </Style>
         
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
 
         <ContextMenu x:Key="MainChartPanelContextMenu" Style="{StaticResource ContextMenu_Style}">
-            <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}" ItemsSource="{Binding AvailablePeriods}" SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}" DisplayMemberPath="Key"/>
+            
+            <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}"
+                                ItemsSource="{Binding AvailablePeriods}"
+                                SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
+                                DisplayMemberPath="Key"/>
+            
             <Separator/>
-            <l:MenuItemSelector Header="{l:Resx ContextMenu_ChartType}" ItemsSource="{Binding Chart.ChartTypes}" SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}">
+
+            <l:MenuItemSelector Header="{l:Resx ContextMenu_ChartType}"
+                                ItemsSource="{Binding Chart.ChartTypes}"
+                                SelectedItem="{Binding Chart.SelectedChartType, Mode=TwoWay}">
                 <l:MenuItemSelector.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{l:ResxBinding Prefix=ChartType_}"></TextBlock>
+                        <TextBlock Text="{l:ResxBinding Prefix=ChartType_}"/>
                     </DataTemplate>
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>
 
-            <!--<l:MenuItemSelector.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Key, Mode=OneWay}"/>
-                            </DataTemplate>
-                        </l:MenuItemSelector.ItemTemplate>-->
-
-            <l:MenuItemSelector Header="{l:Resx ContextMenu_Timeline}" ItemsSource="{Binding Chart.AvailableTimelines}" SelectedItem="{Binding Chart.TimelineType, Mode=TwoWay}">
+            <l:MenuItemSelector Header="{l:Resx ContextMenu_Timeline}"
+                                ItemsSource="{Binding Chart.AvailableTimelines}"
+                                SelectedItem="{Binding Chart.TimelineType, Mode=TwoWay}">
                 <l:MenuItemSelector.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{l:ResxBinding Prefix=TimelineType_}"></TextBlock>
+                        <TextBlock Text="{l:ResxBinding Prefix=TimelineType_}"/>
                     </DataTemplate>
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>
             <Separator/>
+            
             <MenuItem Header="Add Indicator" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
                               cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
-            <MenuItem Header="Indicators" ItemsSource="{Binding Chart.Indicators}" DisplayMemberPath="DisplayName" />
+            
+            <MenuItem Header="Indicators" ItemsSource="{Binding Indicators}"
+                      Visibility="{Binding Converter={StaticResource BoolToVisConverter}, Path=HasIndicators}">
+                <MenuItem.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                            <l:FlatButton Content="x" VerticalAlignment="Center" cal:Message.Attach="Close"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </MenuItem.ItemTemplate>
+            </MenuItem>
+            
         </ContextMenu>
 
         <Style x:Key="MainChartStyle" TargetType="s:SciChartSurface">

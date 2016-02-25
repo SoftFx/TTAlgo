@@ -9,7 +9,7 @@ namespace TickTrader.Algo.GuiModel
 {
     public abstract class ParameterSetup : PropertySetupBase
     {
-        public static ParameterSetup Create(ParameterInfo descriptor)
+        public static ParameterSetup Create(ParameterDescriptor descriptor)
         {
             ParameterSetup newParam;
 
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.GuiModel
             }
         }
 
-        internal virtual void SetMetadata(ParameterInfo descriptor)
+        internal virtual void SetMetadata(ParameterDescriptor descriptor)
         {
             base.SetMetadata(descriptor);
             this.DataType = descriptor.DataType;
@@ -65,13 +65,12 @@ namespace TickTrader.Algo.GuiModel
         private T value;
         private string strValue;
 
-        internal override void SetMetadata(ParameterInfo descriptor)
+        internal override void SetMetadata(ParameterDescriptor descriptor)
         {
             base.SetMetadata(descriptor);
 
             if (descriptor.DefaultValue != null)
                 this.DefaultValue = (T)descriptor.DefaultValue;
-            Reset();
         }
 
         internal virtual UiConverter<T> Converter { get { return null; } }

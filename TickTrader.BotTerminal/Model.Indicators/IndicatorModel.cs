@@ -7,28 +7,32 @@ using System.Threading;
 using TickTrader.Algo.Core;
 using StateMachinarium;
 using SciChart.Charting.Model.DataSeries;
+using TickTrader.Algo.GuiModel;
+using SciChart.Charting.Visuals.RenderableSeries;
 
 namespace TickTrader.BotTerminal
 {
-    internal class IndicatorModel : ISeriesContainer
+    internal class IndicatorModel
     {
         private enum States { Idle, Building, Stopping }
         private enum Events { Start, StopRequest, DoneBuildig }
 
         private StateMachine<States> stateController = new StateMachine<States>();
-        private IIndicatorConfig config;
-        private List<IDataSeries> seriesList = new List<IDataSeries>();
+        private IIndicatorSetup setup;
+        private List<IRenderableSeries> seriesList = new List<IRenderableSeries>();
         private CancellationTokenSource stopSrc;
         private IIndicatorBuilder builder;
 
-        public IndicatorModel(IIndicatorConfig config)
+        public IndicatorModel(IIndicatorSetup setup, IIndicatorBuilder builder)
         {
-            if (config == null)
+            if (setup == null)
                 throw new ArgumentNullException("config");
 
-            this.config = config;
+            if (builder == null)
+                throw new ArgumentNullException("builder");
 
-            this.builder = config.CreateBuilder(this);
+            this.setup = setup;
+            this.builder = builder;
 
             stateController.AddTransition(States.Idle, Events.Start, States.Building);
             stateController.AddTransition(States.Building, Events.StopRequest, States.Stopping);
@@ -41,10 +45,13 @@ namespace TickTrader.BotTerminal
             stateController.StateChanged += (o, n) => System.Diagnostics.Debug.WriteLine("Indicator [" + Id + "] " + o + " => " + n);
         }
 
-        public long Id { get { return config.InstanceId; } }
-        public string DisplayName { get { return "[" + Id + "] " + config.Descriptor.DisplayName; } }
-        public IEnumerable<IDataSeries> SeriesCollection { get { return seriesList; } }
-        public bool IsOverlay { get { return config.Descriptor.IsOverlay; } }
+        public long Id { get { return setup.InstanceId; } }
+        public string DisplayName { get { return "[" + Id + "] " + setup.Descriptor.DisplayName; } }
+        public IEnumerable<IRenderableSeries> SeriesCollection { get { return seriesList; } }
+        public bool IsOverlay { get { return setup.Descriptor.IsOverlay; } }
+        public IndicatorSetupBase Setup { get { return setup.UiModel; } }
+
+        public event Action<IndicatorModel> Closed;
 
         public void Start()
         {
@@ -57,9 +64,17 @@ namespace TickTrader.BotTerminal
             return stateController.PushEventAndAsyncWait(Events.StopRequest, States.Idle);
         }
 
-        public IIndicatorConfig GetFactoryClone()
+        public IIndicatorSetup CreateSetupClone()
         {
-            throw new NotImplementedException();
+            return setup.CreateCopy();
+        }
+
+        public void Close()
+        {
+            Stop();
+
+            if (Closed != null)
+                Closed(this);
         }
 
         private async void BuildIndicator(CancellationToken cToken)
@@ -78,9 +93,16 @@ namespace TickTrader.BotTerminal
             stateController.PushEvent(Events.DoneBuildig);
         }
 
-        public void AddSeries(IDataSeries series)
+        public void AddSeries(ColoredLineOutputSetup setup, IDataSeries data)
         {
-            seriesList.Add(series);
+            if (setup.IsEnabled)
+            {
+                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
+                chartSeries.DataSeries = data;
+                chartSeries.Stroke = setup.LineColor;
+                chartSeries.StrokeThickness = setup.LineThickness;
+                seriesList.Add(chartSeries);
+            }
         }
     }
 }

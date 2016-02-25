@@ -7,6 +7,21 @@
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+
+    <UserControl.Resources>
+        <Style TargetType="s:SciChartSurface">
+            <Setter Property="ChartModifier">
+                <Setter.Value>
+                    <s:ModifierGroup>
+                        <s:YAxisDragModifier/>
+                        <s:XAxisDragModifier/>
+                        <!--<s:ZoomPanModifier ClipModeX="ClipAtExtents"/>-->
+                    </s:ModifierGroup>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
     <Grid>
         <s:SciChartSurface RenderableSeries="{Binding Series}"
                            XAxis="{Binding TimeAxis}">

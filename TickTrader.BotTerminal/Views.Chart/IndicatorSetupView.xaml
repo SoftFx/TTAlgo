@@ -17,7 +17,71 @@
             <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}" />
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}" />
         </Style>
-       
+
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="2,0,2,0"/>
+        </Style>
+
+        <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxMainStyle}">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Margin" Value="2,0,2,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <Style x:Key="LineSampleStyle" TargetType="Line">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Stretch" Value="Fill"/>
+            <Setter Property="X2" Value="1"/>
+            <Setter Property="Stroke" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
+
+        <DataTemplate x:Key="LineThicknessItem">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions><TextBlock Text="{Binding}" Grid.Column="0" />
+                <Line Grid.Column="1" Style="{StaticResource LineSampleStyle}" StrokeThickness="{Binding}"/>
+            </Grid>
+        </DataTemplate>
+
+        <!--  Output Setup Template  -->
+
+        <DataTemplate DataType="{x:Type am:ColoredLineOutputSetup}">
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <Label Grid.Column="0" Content="{Binding DisplayName}"/>
+                <CheckBox Grid.Column="1" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding IsValid}" Margin="5,0,5,0"/>
+                <ComboBox Grid.Column="2" IsEditable="False" IsEnabled="{Binding IsEnabled}"
+                          SelectedItem="{Binding LineThickness}" ItemsSource="{Binding AvailableThicknesses}"
+                          ItemTemplate="{StaticResource LineThicknessItem}"/>
+                <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" />
+                <Rectangle Grid.Column="4" Width="15" Height="15"
+                           Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
+                           Stroke="{DynamicResource Dialog_ControlBackground}"
+                           Margin="5,0,5,0" StrokeThickness="1" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  Parameter Setup Template  -->
+
         <DataTemplate DataType="{x:Type am:ParameterSetup}">
             <Grid Margin="3">
                 <Grid.RowDefinitions>
@@ -39,7 +103,7 @@
 
                         <DataTemplate DataType="{x:Type am:IntParamSetup}">
                             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
-                                     HorizontalAlignment="Stretch"/>
+                                     HorizontalAlignment="Stretch" Margin="0"/>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding HasError}" Value="True">
                                     <Setter TargetName="input" Property="Background" Value="Red" />
@@ -51,7 +115,7 @@
                         
                         <DataTemplate DataType="{x:Type am:DoubleParamSetup}">
                             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
-                                     HorizontalAlignment="Stretch"/>
+                                     HorizontalAlignment="Stretch" Margin="0"/>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding HasError}" Value="True">
                                     <Setter TargetName="input" Property="Background" Value="Red" />
@@ -60,6 +124,7 @@
                         </DataTemplate>
                         
                         <!--   StringParam  -->
+                        
                         <DataTemplate DataType="{x:Type am:StringParamSetup}">
                             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch"/>
@@ -69,6 +134,8 @@
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
+                        
+                        
                     </ContentControl.Resources>
                 </ContentControl>
             </Grid>
@@ -86,14 +153,21 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False"
                       Style="{StaticResource DialogScrollViewer_Style}">
-            <ItemsControl ItemsSource="{Binding Setup.Parameters}" IsTabStop="False">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Columns="2" VerticalAlignment="Top" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-            
+            <StackPanel>
+                
+                <ItemsControl ItemsSource="{Binding Setup.Parameters}" IsTabStop="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2" VerticalAlignment="Top" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+                
+                <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
+                
+            </StackPanel>
         </ScrollViewer>
         
         <Grid Name="ButtonsPanel" Grid.Row="1">

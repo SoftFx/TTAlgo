@@ -5,7 +5,7 @@ using TickTrader.Algo.Api;
 
 namespace TestAlgoProject
 {
-    [Indicator(DisplayName = "Economic Calendar")]
+    [Indicator(DisplayName = "Economic Calendar", IsOverlay = true)]
     class FxCalendarIndicator : Indicator
     {
         private FxStreetCalendar streetNewsProvider;
@@ -20,7 +20,7 @@ namespace TestAlgoProject
         [Input]
         public DataSeries<Bar> Input { get; set; }
 
-        [Output]
+        [Output(DefaultColor = Colors.Azure)]
         public DataSeries Output { get; set; }
 
         protected override void Init()

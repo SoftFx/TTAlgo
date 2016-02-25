@@ -17,7 +17,16 @@ namespace TickTrader.Algo.Api
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class OutputAttribute : Attribute
     {
+        public OutputAttribute()
+        {
+            DefaultColor = Colors.Auto;
+        }
+
         public string DisplayName { get; set; }
+        public Colors DefaultColor { get; set; }
+        public LineStyles DefaultLineStyle { get; set; }
+        public float DefaultThickness { get; set; }
+        public PlotType PlotType { get; set; }
     }
 
     [Serializable]
@@ -43,5 +52,17 @@ namespace TickTrader.Algo.Api
     {
         public string DisplayName { get; set; }
         public string Category { get; set; }
+    }
+
+    [Serializable]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class CopyrightAttribute : Attribute
+    {
+        public CopyrightAttribute(string copyrightText)
+        {
+            this.Text = copyrightText;
+        }
+
+        public string Text { get; set; }
     }
 }

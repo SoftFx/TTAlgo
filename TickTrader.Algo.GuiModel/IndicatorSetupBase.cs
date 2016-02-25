@@ -17,7 +17,7 @@ namespace TickTrader.Algo.GuiModel
         private List<InputSetup> inputs;
         private List<OutputSetup> outputs;
 
-        public IndicatorSetupBase(AlgoInfo descriptor)
+        public IndicatorSetupBase(AlgoDescriptor descriptor)
         {
             this.Descriptor = descriptor;
 
@@ -28,15 +28,16 @@ namespace TickTrader.Algo.GuiModel
             allProperties = parameters.Concat<PropertySetupBase>(inputs).Concat(outputs).ToList();
             allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
+            Reset();
             Validate();
         }
 
-        protected abstract InputSetup CreateInput(InputInfo descriptor);
-        protected abstract OutputSetup CreateOuput(OutputInfo descriptor);
+        protected abstract InputSetup CreateInput(InputDescriptor descriptor);
+        protected abstract OutputSetup CreateOuput(OutputDescriptor descriptor);
 
         public void Reset()
         {
-            foreach (var p in Parameters)
+            foreach (var p in allProperties)
                 p.Reset();
         }
 
@@ -59,7 +60,7 @@ namespace TickTrader.Algo.GuiModel
         public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
         public IEnumerable<InputSetup> Inputs { get { return inputs; } }
         public IEnumerable<PropertySetupBase> Outputs { get { return outputs; } }
-        public AlgoInfo Descriptor { get; private set; }
+        public AlgoDescriptor Descriptor { get; private set; }
 
         public bool IsValid { get; private set; }
         public event Action ValidityChanged = delegate { };

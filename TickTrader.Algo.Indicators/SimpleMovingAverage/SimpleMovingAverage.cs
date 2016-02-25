@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Indicators.SimpleMovingAverage
 {
-    [Indicator]
+    [Indicator(IsOverlay = true)]
     public class MyIndicator : TickTrader.Algo.Api.Indicator
     {
         [Parameter(DefaultValue = 5.0)]

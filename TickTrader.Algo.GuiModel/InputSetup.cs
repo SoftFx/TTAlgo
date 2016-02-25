@@ -21,7 +21,7 @@ namespace TickTrader.Algo.GuiModel
 
         public class Invalid : BarInputSetup
         {
-            public Invalid(InputInfo descriptor, object error = null)
+            public Invalid(InputDescriptor descriptor, object error = null)
             {
                 SetMetadata(descriptor);
                 if (error == null)
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.GuiModel
                     this.Error = new GuiModelMsg(error);
             }
 
-            public Invalid(InputInfo descriptor, GuiModelMsg error)
+            public Invalid(InputDescriptor descriptor, GuiModelMsg error)
             {
                 SetMetadata(descriptor);
                 this.Error = error;
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.GuiModel
 
         public class BarToDouble : BarInputSetup
         {
-            public BarToDouble(InputInfo descriptor)
+            public BarToDouble(InputDescriptor descriptor)
             {
                 SetMetadata(descriptor);
             }
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.GuiModel
 
         public class BarToBar : BarInputSetup
         {
-            public BarToBar(InputInfo descriptor)
+            public BarToBar(InputDescriptor descriptor)
             {
                 SetMetadata(descriptor);
             }
