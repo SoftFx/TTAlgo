@@ -31,7 +31,6 @@ namespace TickTrader.Algo.Indicators.CustomMovingAverages
         private double MovCC;
         protected override void Calculate()
         {
-            ExtCCIBuffer[0] = Double.NaN;
             if(InpMAShift >= 0)
             {
                 if (Close.Count >= InpMAPeriod + InpMAShift)

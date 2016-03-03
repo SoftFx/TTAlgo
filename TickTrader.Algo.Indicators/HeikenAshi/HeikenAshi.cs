@@ -24,10 +24,6 @@ namespace TickTrader.Algo.Indicators.HeikenAshi
 
         protected override void Calculate()
         {
-            ExtLowHighBuffer[0] = Double.NaN;
-            ExtHighLowBuffer[0] = Double.NaN;
-            ExtCloseBuffer[0] = Double.NaN;
-            ExtOpenBuffer[0] = Double.NaN;
             if (Bars.Count == 1)
             {
                 if (Bars[0].Open < Bars[0].Close)

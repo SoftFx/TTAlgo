@@ -24,7 +24,6 @@ namespace TickTrader.Algo.Indicators.Bears
         protected override void Calculate()
         {
 
-            ExtBearsBuffer[0] = Double.NaN;
 
             if (Bars.Count == 1)
             {
