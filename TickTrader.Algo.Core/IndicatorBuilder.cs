@@ -48,11 +48,11 @@ namespace TickTrader.Algo.Core
             if (Reader == null)
                 throw new InvalidOperationException("Data Reader is not set!");
 
-            foreach (var input in fixture.Inputs)
-                Reader.BindInput(input.Key, input.Value);
+            foreach (var inputDescriptor in fixture.Descriptor.Inputs)
+                Reader.BindInput(inputDescriptor.Id, fixture.GetInput(inputDescriptor.Id));
 
-            foreach (var output in fixture.Outputs)
-                Writer.BindOutput(output.Key, output.Value);
+            foreach (var outputDescriptor in fixture.Descriptor.Outputs)
+                Writer.BindOutput(outputDescriptor.Id, fixture.GetOutput(outputDescriptor.Id));
 
             fixture.InvokeInit();
         }

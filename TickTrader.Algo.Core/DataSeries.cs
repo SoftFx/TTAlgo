@@ -8,7 +8,17 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class DataSeriesBuffer<T> : NoTimeoutByRefObject, Api.DataSeries<T>, IDataSeriesBuffer
+    internal abstract class DataSeriesBuffer : NoTimeoutByRefObject, IDataSeriesBuffer
+    {
+        public string Id { get; internal set; }
+
+        public abstract Type SeriesDataType { get; }
+
+        public abstract void IncrementVirtualSize();
+        public abstract void Reset();
+    }
+
+    internal abstract class DataSeriesBuffer<T> : DataSeriesBuffer, Api.DataSeries<T>
     {
         private List<T> buffer = new List<T>();
 
@@ -41,7 +51,9 @@ namespace TickTrader.Algo.Core
         // real buffer count
         public int BuffLength { get { return buffer.Count; } }
 
-        public virtual void IncrementVirtualSize()
+        public override Type SeriesDataType { get { return typeof(T); } }
+
+        public override void IncrementVirtualSize()
         {
             if (Count >= BuffLength)
                 throw new Exception("Virtual size out of buffer boundaries!");
@@ -82,7 +94,7 @@ namespace TickTrader.Algo.Core
             return GetEnumerator();
         }
 
-        public void Reset()
+        public override void Reset()
         {
             Count = 0;
             buffer.Clear();
@@ -90,7 +102,7 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public class InputDataSeries<T> : DataSeriesBuffer<T>
+    internal class InputDataSeries<T> : DataSeriesBuffer<T>
     {
         public InputDataSeries(T nanVal = default(T))
         {
@@ -102,12 +114,12 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public class InputDataSeries : InputDataSeries<double>, Api.DataSeries
+    internal class InputDataSeries : InputDataSeries<double>, Api.DataSeries
     {
         public InputDataSeries() : base(double.NaN) { }
     }
 
-    public class OutputDataSeries<T> : DataSeriesBuffer<T>
+    internal class OutputDataSeries<T> : DataSeriesBuffer<T>
     {
         public OutputDataSeries(T nanVal = default(T))
         {
@@ -131,7 +143,7 @@ namespace TickTrader.Algo.Core
         public event Action<T, int> Updated = delegate { };
     }
 
-    public class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries
+    internal class OutputDataSeries : OutputDataSeries<double>, Api.DataSeries
     {
         public OutputDataSeries() : base(double.NaN) { }
     }

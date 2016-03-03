@@ -9,8 +9,7 @@ namespace TickTrader.Algo.Core
 {
     public interface IDataSeriesBuffer
     {
-        void IncrementVirtualSize();
-        void Reset();
+        Type SeriesDataType { get; }
     }
 
     public interface IAlgoDataReader<TRow>
@@ -41,18 +40,23 @@ namespace TickTrader.Algo.Core
         void Reset();
     }
 
-    public interface IAlgoContext
-    {
-        void BindInput<T>(string id, InputDataSeries<T> buffer);
-        void BindOutput<T>(string id, OutputDataSeries<T> buffer);
-        object GetParameter(string id);
-    }
-
     public interface IIndicatorBuilder
     {
         void Build();
         void Build(CancellationToken cToken);
         void RebuildLast();
         void Reset();
+    }
+
+    public interface IMetadataProvider
+    {
+    }
+
+    public interface IDataSeriesProvider
+    {
+    }
+
+    public interface IAccountDataProvider
+    {
     }
 }

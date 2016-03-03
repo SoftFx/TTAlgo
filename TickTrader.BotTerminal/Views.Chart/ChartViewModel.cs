@@ -48,17 +48,17 @@ namespace TickTrader.BotTerminal
             //repository.Removed += repository_Removed;
             //repository.Replaced += repository_Replaced;
 
-            periodActivatos.Add("MN1", () => ActivateBarChart(BarPeriod.MN1));
-            periodActivatos.Add("W1", () => ActivateBarChart(BarPeriod.W1));
-            periodActivatos.Add("D1", () => ActivateBarChart(BarPeriod.D1));
-            periodActivatos.Add("H4", () => ActivateBarChart(BarPeriod.H4));
-            periodActivatos.Add("H1", () => ActivateBarChart(BarPeriod.H1));
-            periodActivatos.Add("M30", () => ActivateBarChart(BarPeriod.M30));
-            periodActivatos.Add("M15", () => ActivateBarChart(BarPeriod.M15));
-            periodActivatos.Add("M5", () => ActivateBarChart(BarPeriod.M5));
-            periodActivatos.Add("M1", () => ActivateBarChart(BarPeriod.M1));
-            periodActivatos.Add("S10", () => ActivateBarChart(BarPeriod.S10));
-            periodActivatos.Add("S1", () => ActivateBarChart(BarPeriod.S1));
+            periodActivatos.Add("MN1", () => ActivateBarChart(BarPeriod.MN1, "MMMM yyyy"));
+            periodActivatos.Add("W1", () => ActivateBarChart(BarPeriod.W1, "d MMMM yyyy"));
+            periodActivatos.Add("D1", () => ActivateBarChart(BarPeriod.D1, "d MMMM yyyy"));
+            periodActivatos.Add("H4", () => ActivateBarChart(BarPeriod.H4, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add("H1", () => ActivateBarChart(BarPeriod.H1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add("M30", () => ActivateBarChart(BarPeriod.M30, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add("M15", () => ActivateBarChart(BarPeriod.M15, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add("M5", () => ActivateBarChart(BarPeriod.M5, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add("M1", () => ActivateBarChart(BarPeriod.M1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add("S10", () => ActivateBarChart(BarPeriod.S10, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add("S1", () => ActivateBarChart(BarPeriod.S1, "d MMMM yyyy HH:mm:ss"));
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
             SelectedPeriod = periodActivatos.ElementAt(5);
@@ -138,8 +138,9 @@ namespace TickTrader.BotTerminal
             setupModel.Closed -= model_Closed;
         }
 
-        private void ActivateBarChart(BarPeriod period)
+        private void ActivateBarChart(BarPeriod period, string dateLabelFormat)
         {
+            barChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = barChart;
             barChart.Activate(period);
             //tickChart.Deactivate();

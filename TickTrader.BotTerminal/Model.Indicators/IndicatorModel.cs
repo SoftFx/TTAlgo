@@ -97,6 +97,7 @@ namespace TickTrader.BotTerminal
         {
             if (setup.IsEnabled)
             {
+                data.SeriesName = setup.Descriptor.Id;
                 FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
                 chartSeries.DataSeries = data;
                 chartSeries.Stroke = setup.LineColor;

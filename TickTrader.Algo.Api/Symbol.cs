@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    internal interface IAlgoActivator
+    public interface Symbol
     {
-        void Activate(AlgoPlugin instance);
+        string Id { get; }
+        int Digits { get; }
+    }
+
+    public interface SymbolList : IReadOnlyList<Symbol>
+    {
+
     }
 }

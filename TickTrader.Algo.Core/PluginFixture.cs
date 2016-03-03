@@ -10,12 +10,12 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginFixture : NoTimeoutByRefObject, IAlgoActivator
+    public class PluginFixture : NoTimeoutByRefObject, IPluginActivator, IPluginContext
     {
         private AlgoPlugin plugin;
         private List<PluginFixture> nestedIndacators = new List<PluginFixture>();
-        private Dictionary<string, IDataSeriesBuffer> inputs = new Dictionary<string, IDataSeriesBuffer>();
-        private Dictionary<string, IDataSeriesBuffer> outputs = new Dictionary<string, IDataSeriesBuffer>();
+        private Dictionary<string, DataSeriesBuffer> inputs = new Dictionary<string, DataSeriesBuffer>();
+        private Dictionary<string, DataSeriesBuffer> outputs = new Dictionary<string, DataSeriesBuffer>();
         private int virtualPos;
 
         internal PluginFixture(AlgoPlugin plugin)
@@ -32,8 +32,8 @@ namespace TickTrader.Algo.Core
 
         public AlgoDescriptor Descriptor { get; private set; }
         public int VirtualPos { get { return virtualPos; } }
-        public IReadOnlyDictionary<string, IDataSeriesBuffer> Inputs { get { return inputs; } }
-        public IReadOnlyDictionary<string, IDataSeriesBuffer> Outputs { get { return outputs; } }
+        //public IReadOnlyDictionary<string, IDataSeriesBuffer> Inputs { get { return inputs; } }
+        //public IReadOnlyDictionary<string, IDataSeriesBuffer> Outputs { get { return outputs; } }
 
         protected AlgoPlugin PluginInstance { get { return plugin; } }
 
@@ -43,6 +43,16 @@ namespace TickTrader.Algo.Core
             if (paramDescriptor == null)
                 throw new InvalidOperationException("Can't find parameter with id = " + id);
             paramDescriptor.Set(plugin, val);
+        }
+
+        public IDataSeriesBuffer GetInput(string id)
+        {
+            return inputs[id];
+        }
+
+        public IDataSeriesBuffer GetOutput(string id)
+        {
+            return outputs[id];
         }
 
         public void MoveNext()
@@ -88,10 +98,16 @@ namespace TickTrader.Algo.Core
             Descriptor.Validate();
         }
 
-        void IAlgoActivator.Activate(AlgoPlugin instance)
+        IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
         {
             if (instance is Indicator)
-                nestedIndacators.Add(new PluginFixture(instance));
+            {
+                var fixture = new IndicatorFixture(instance);
+                nestedIndacators.Add(fixture);
+                return fixture;
+            }
+
+            return null;
         }
 
         protected void InitParameters()
@@ -134,6 +150,16 @@ namespace TickTrader.Algo.Core
             MethodInfo method = GetType().GetMethod(methodName);
             MethodInfo genericMethod = method.MakeGenericMethod(genericType);
             genericMethod.Invoke(this, parameters);
+        }
+
+        public OrderList GetOrdersCollection()
+        {
+            throw new NotImplementedException();
+        }
+
+        public PositionList GetPositionsCollection()
+        {
+            throw new NotImplementedException();
         }
     }
 
