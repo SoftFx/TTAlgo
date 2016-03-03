@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Functions;
-namespace TickTrader.Algo.Indicators.Porabolic
+namespace TickTrader.Algo.Indicators.Parabolic
 {
 
     [Indicator(IsOverlay = true)]
-    public class Porabolic : Indicator
+    public class Parabolic : Indicator
     {
         [Parameter(DefaultValue = 0.02)]
         public double InpSARStep { get; set; }

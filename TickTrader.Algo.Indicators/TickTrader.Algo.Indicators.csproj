@@ -58,7 +58,7 @@
     <Compile Include="MACD\MACD.cs" />
     <Compile Include="Momentum\Momentum.cs" />
     <Compile Include="OsMA\OsMA.cs" />
-    <Compile Include="Porabolic\Porabolic.cs" />
+    <Compile Include="Parabolic\Parabolic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RSI\RSI.cs" />
     <Compile Include="Stochastic\Stochastic.cs" />

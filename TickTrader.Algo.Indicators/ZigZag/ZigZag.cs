@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.ZigZag
 {
 
-    [Indicator]
+    [Indicator(IsOverlay = true)]
     public class ZigZag : Indicator
     {
         [Parameter(DefaultValue = 12)]
