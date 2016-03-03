@@ -23,7 +23,6 @@ namespace TickTrader.Algo.Indicators.CCI
         private double MovCC;
         protected override void Calculate()
         {
-            ExtCCIBuffer[0] = Double.NaN;
             if (CCIPeriod > 0)
             {
 

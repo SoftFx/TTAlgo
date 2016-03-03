@@ -25,7 +25,7 @@ namespace  TickTrader.Algo.Indicators.Momentum
         {
             if (Close.Count < Period + 1)
             {
-                ExtMomBuffer[0] = Double.NaN;
+
             }
             else
             {

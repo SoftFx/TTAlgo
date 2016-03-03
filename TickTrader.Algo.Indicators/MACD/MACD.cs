@@ -30,8 +30,6 @@ namespace TickTrader.Algo.Indicators.MACD
 
         protected override void Calculate()
         {
-            ExtMacdBuffer[0] = Double.NaN;
-            ExtSignalBuffer[0] = Double.NaN;
 
             List<double> localSignalBuffer = new List<double>();
 

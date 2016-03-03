@@ -33,10 +33,6 @@ namespace TickTrader.Algo.Indicators.Accelerator
         protected override void Calculate()
         {
 
-            ExtUpBuffer[0] = Double.NaN;
-            ExtDnBuffer[0] = Double.NaN;
-            ExtACBuffer[0] = Double.NaN;
-
             double Signal = 0.0;
             double prevSignal = 0.0;
       

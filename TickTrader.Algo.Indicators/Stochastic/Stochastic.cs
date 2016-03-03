@@ -32,8 +32,6 @@ namespace TickTrader.Algo.Indicators.Stochastic
 
         protected override void Calculate()
         {
-            ExtMainBuffer[0] = double.NaN;
-            ExtSignalBuffer[0] = double.NaN;
 
             if (Bars.Count >= InpKPeriod + InpDPeriod + InpSlowing - 2)
             {

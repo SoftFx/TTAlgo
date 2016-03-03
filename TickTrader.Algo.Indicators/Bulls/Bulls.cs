@@ -24,7 +24,6 @@ namespace TickTrader.Algo.Indicators.Bulls
         protected override void Calculate()
         {
 
-            ExtBullsBuffer[0] = Double.NaN;
 
             if (Bars.Count == 1)
             {

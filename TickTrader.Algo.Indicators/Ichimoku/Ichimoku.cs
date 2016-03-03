@@ -41,12 +41,6 @@ namespace TickTrader.Algo.Indicators.Ichimoku
 
         protected override void Calculate()
         {
-            ExtTenkanBuffer[0] = Double.NaN;
-            ExtKijunBuffer[0] = Double.NaN;
-            ExtSpanA_Buffer[0] = Double.NaN;
-            ExtSpanB_Buffer[0] = Double.NaN;
-            ExtSpanA2_Buffer[0] = Double.NaN;
-            ExtSpanB2_Buffer[0] = Double.NaN;
 
             double high_value, low_value;
 

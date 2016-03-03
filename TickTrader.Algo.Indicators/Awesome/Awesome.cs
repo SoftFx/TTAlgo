@@ -33,9 +33,7 @@ namespace TickTrader.Algo.Indicators.Awesome
         protected override void Calculate()
         {
 
-            ExtAOBuffer[0] = Double.NaN;
-            ExtUpBuffer[0] = Double.NaN;
-            ExtDnBuffer[0] = Double.NaN;
+
 
             if (Bars.Count >= Math.Max(PeriodFast,PeriodSlow))
             {

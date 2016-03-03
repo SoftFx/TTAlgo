@@ -27,7 +27,6 @@ namespace TickTrader.Algo.Indicators.ATR
         protected override void Calculate()
         {
             
-            ExtATRBuffer[0] = Double.NaN;
             if (Bars.Count > InpAtrPeriod)
             {
                 ExtTRBuffer = new List<double>(InpAtrPeriod);
