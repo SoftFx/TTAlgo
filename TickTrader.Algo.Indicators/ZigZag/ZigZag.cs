@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
         int lasthighpos = 0, lastlowpos = 0;
         protected override void Calculate()
         {
-            ExtZigzagBuffer[0] = 0.0;
+
             ExtHighBuffer.Add(0.0);
             ExtLowBuffer.Add(0.0);
             if (Bars.Count == 1430)
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
                         if (ExtLowBuffer[Bars.Count - 1 - InpBackstep] != 0.0 && ExtLowBuffer[Bars.Count - 1 - InpBackstep] < lastZZlow &&
                             ExtHighBuffer[Bars.Count - 1 - InpBackstep] == 0.0)
                         {
-                            ExtZigzagBuffer[Bars.Count - lastlowpos + InpBackstep] = 0.0;
+                            ExtZigzagBuffer[Bars.Count - lastlowpos + InpBackstep] = Double.NaN;
                             lastlowpos = Bars.Count;
                             lastZZlow = ExtLowBuffer[Bars.Count - 1 - InpBackstep];
                             ExtZigzagBuffer[InpBackstep] = lastZZlow;
@@ -151,7 +151,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
                         if (ExtHighBuffer[Bars.Count - 1 - InpBackstep] != 0.0 && ExtHighBuffer[Bars.Count - 1 - InpBackstep] > lastZZhigh &&
                             ExtLowBuffer[Bars.Count - 1 - InpBackstep] == 0.0)
                         {
-                            ExtZigzagBuffer[Bars.Count - lasthighpos + InpBackstep] = 0.0;
+                            ExtZigzagBuffer[Bars.Count - lasthighpos + InpBackstep] = Double.NaN;
                             lasthighpos = Bars.Count;
                             lastZZhigh = ExtHighBuffer[Bars.Count - 1 - InpBackstep];
                             ExtZigzagBuffer[InpBackstep] = lastZZhigh;
