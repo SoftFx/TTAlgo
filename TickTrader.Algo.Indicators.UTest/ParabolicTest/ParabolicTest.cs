@@ -5,10 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
-namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
+namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
 {
     [TestClass]
-    public class PorabolicTest
+    public class ParabolicTest
     {
 
         private StreamReader file;
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Porabolic.Porabolic), reader, writer);
+            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Porabolic.Porabolic), reader, writer);
+            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Porabolic.Porabolic), reader, writer);
+            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Porabolic.Porabolic), reader, writer);
+            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
