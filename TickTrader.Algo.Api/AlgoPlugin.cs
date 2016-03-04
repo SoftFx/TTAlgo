@@ -9,13 +9,38 @@ namespace TickTrader.Algo.Api
     public abstract class AlgoPlugin
     {
         [ThreadStatic]
-        internal static IAlgoActivator activator;
+        internal static IPluginActivator activator;
+
+        private IPluginContext context;
+        private OrderList orders;
+        private PositionList positions;
 
         internal AlgoPlugin()
         {
             if (activator == null)
                 throw new InvalidOperationException("Algo context is not initialized!");
-            activator.Activate(this);
+
+            this.context = activator.Activate(this);
+        }
+
+        protected OrderList Orders
+        {
+            get
+            {
+                if (orders == null)
+                    orders = context.GetOrdersCollection();
+                return orders;
+            }
+        }
+
+        protected PositionList Positions
+        {
+            get
+            {
+                if (positions == null)
+                    positions =  context.GetPositionsCollection();
+                return positions;
+            }
         }
 
         protected virtual void Init() { }

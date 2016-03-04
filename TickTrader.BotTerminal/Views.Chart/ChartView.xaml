@@ -11,6 +11,14 @@
 
     <UserControl.Resources>
 
+        <ControlTemplate x:Key="IndicatorOutputRolloverTooltipTemplate">
+            <Rectangle Fill="Red" Width="5" Height="5"/>
+        </ControlTemplate>
+
+        <Style TargetType="s:FastLineRenderableSeries">
+            <Setter Property="RolloverMarkerTemplate" Value="{StaticResource IndicatorOutputRolloverTooltipTemplate}"/>
+        </Style>
+
         <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButton_Style}">
             <Setter Property="HighlightBackground" Value="{DynamicResource Menu_BackgroundBrush}"/>
             <Setter Property="Margin" Value="5,0,0,0"/>
@@ -25,6 +33,10 @@
                                 ItemsSource="{Binding AvailablePeriods}"
                                 SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
                                 DisplayMemberPath="Key"/>
+            
+            <Separator/>
+
+            <MenuItem Header="Crosshair" IsCheckable="True" IsChecked="{Binding Chart.IsCrosshairEnabled}"/>
             
             <Separator/>
 
@@ -69,11 +81,15 @@
         <Style x:Key="MainChartStyle" TargetType="s:SciChartSurface">
             <Setter Property="ChartModifier">
                 <Setter.Value>
-                    <s:ModifierGroup>
+                    <s:ModifierGroup s:MouseManager.MouseEventGroup="SymbolChartSharedMouse">
                         <s:YAxisDragModifier/>
                         <s:XAxisDragModifier/>
                         <s:MouseWheelZoomModifier/>
                         <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
+                        <s:CursorModifier ShowTooltipOn="Always"
+                                          ShowTooltip="True"
+                                          TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
+                                          IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
                     </s:ModifierGroup>
                 </Setter.Value>
             </Setter>

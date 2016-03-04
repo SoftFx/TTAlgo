@@ -12,10 +12,15 @@
         <Style TargetType="s:SciChartSurface">
             <Setter Property="ChartModifier">
                 <Setter.Value>
-                    <s:ModifierGroup>
+                    <s:ModifierGroup s:MouseManager.MouseEventGroup="SymbolChartSharedMouse">
                         <s:YAxisDragModifier/>
                         <s:XAxisDragModifier/>
-                        <!--<s:ZoomPanModifier ClipModeX="ClipAtExtents"/>-->
+                        <s:CursorModifier ShowTooltipOn="Always"
+                                          ShowTooltip="True"
+                                          TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
+                                          IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
+                        <s:MouseWheelZoomModifier/>
+                        <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
                     </s:ModifierGroup>
                 </Setter.Value>
             </Setter>
@@ -26,7 +31,7 @@
         <s:SciChartSurface RenderableSeries="{Binding Series}"
                            XAxis="{Binding TimeAxis}">
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis GrowBy="0.1, 0.1" AutoRange="Always"/>
+                <s:NumericAxis GrowBy="0.0001, 0.00001" AutoRange="Always"/>
             </s:SciChartSurface.YAxis>
         </s:SciChartSurface>
     </Grid>

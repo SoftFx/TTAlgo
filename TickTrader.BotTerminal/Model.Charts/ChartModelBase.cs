@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
@@ -38,6 +39,8 @@ namespace TickTrader.BotTerminal
         private TimelineTypes timelineType;
         private long indicatorNextId = 1;
         private AxisBase timeAxis;
+        private bool isCrosshairEnabled;
+        private string dateAxisLabelFormat;
 
         public ChartModelBase(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
         {
@@ -130,6 +133,12 @@ namespace TickTrader.BotTerminal
             {
                 navigator = value;
                 TimeAxis = value.CreateAxis();
+
+                Binding cursorTextFormatBinding = new Binding("DateAxisLabelFormat");
+                cursorTextFormatBinding.Source = this;
+                cursorTextFormatBinding.Mode = BindingMode.TwoWay;
+                TimeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
+
                 if (NavigatorChanged != null)
                     NavigatorChanged();
             }
@@ -153,6 +162,26 @@ namespace TickTrader.BotTerminal
                 chartType = value;
                 NotifyOfPropertyChange("SelectedChartType");
                 UpdateSeriesStyle();
+            }
+        }
+
+        public bool IsCrosshairEnabled
+        {
+            get { return isCrosshairEnabled; }
+            set
+            {
+                this.isCrosshairEnabled = value;
+                NotifyOfPropertyChange("IsCrosshairEnabled");
+            }
+        }
+
+        public string DateAxisLabelFormat
+        {
+            get { return dateAxisLabelFormat; }
+            set
+            {
+                this.dateAxisLabelFormat = value;
+                NotifyOfPropertyChange("DateAxisLabelFormat");
             }
         }
 

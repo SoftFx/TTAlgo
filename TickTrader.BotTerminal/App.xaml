@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="Resx/Images/Images.xaml"/>
 
                 <!-- Control Styles -->
+                <ResourceDictionary Source="Resx/Styles/Charts.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/DialogPageControl.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/LabelStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ButtonStyle.xaml"/>

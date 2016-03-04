@@ -198,10 +198,10 @@ namespace TickTrader.Algo.Core.Metadata
         public IEnumerable<InputDescriptor> Inputs { get { return inputs; } }
         public IEnumerable<OutputDescriptor> Outputs { get { return outputs; } }
 
-        private class PluginFactory : NoTimeoutByRefObject, IAlgoActivator
+        private class PluginFactory : NoTimeoutByRefObject, IPluginActivator
         {
             private Type pluginType;
-            private AlgoPlugin instance;
+            private PluginFixture fixture;
 
             public PluginFactory(Type algoType)
             {
@@ -224,12 +224,18 @@ namespace TickTrader.Algo.Core.Metadata
             public IndicatorFixture CreateIndicator()
             {
                 CreateInstance();
-                return new IndicatorFixture(instance);
+                return (IndicatorFixture)fixture;
             }
 
-            void IAlgoActivator.Activate(AlgoPlugin instance)
+            IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
             {
-                this.instance = instance;
+                if (instance is Indicator)
+                {
+                    fixture = new IndicatorFixture(instance);
+                    return fixture;
+                }
+
+                return null;
             }
         }
     }

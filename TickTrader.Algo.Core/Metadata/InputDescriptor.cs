@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Core.Metadata
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
 
-        public InputDataSeries<T> CreateInput<T>()
+        internal DataSeriesBuffer<T> CreateInput<T>()
         {
             if (typeof(T) == typeof(double) && IsShortDefinition)
                 return (InputDataSeries<T>)(object)new InputDataSeries();

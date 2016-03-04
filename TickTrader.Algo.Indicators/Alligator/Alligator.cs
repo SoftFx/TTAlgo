@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.Alligator
 {
-    [Indicator]
+    [Indicator(IsOverlay = true)]
     [Copyright("2016 Soft-Fx")]
     public class Alligator : Indicator
     {
