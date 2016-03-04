@@ -127,15 +127,18 @@ namespace TickTrader.Algo.Indicators.Functions
 
             if (period > 0 && position >= 0)
             {
+                double wSum = 0;
                 double pr = 2.0 / (period + 1.0);
                 double mul = 1;
                 int i = position;
                 while (i < price.Count && mul > 0.000000001)
                 {
+                    wSum+= pr * mul;
                     result += price[i]*pr*mul;
                     mul *= (1 - pr);
                     i++;
                 }
+                result /= wSum;
             }
             //---
             return (result);
