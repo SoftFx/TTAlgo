@@ -32,8 +32,6 @@ namespace TickTrader.Algo.Core
 
         public AlgoDescriptor Descriptor { get; private set; }
         public int VirtualPos { get { return virtualPos; } }
-        //public IReadOnlyDictionary<string, IDataSeriesBuffer> Inputs { get { return inputs; } }
-        //public IReadOnlyDictionary<string, IDataSeriesBuffer> Outputs { get { return outputs; } }
 
         protected AlgoPlugin PluginInstance { get { return plugin; } }
 
