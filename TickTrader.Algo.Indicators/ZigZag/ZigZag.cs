@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
         [Input]
         public DataSeries<Bar> Bars { get; set; }
 
-        [Output]
+        [Output(DefaultColor = Colors.Red)]
         public DataSeries ExtZigzagBuffer { get; set; }
 
         private double extremum;

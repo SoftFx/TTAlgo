@@ -7,7 +7,7 @@ using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.Bands
 {
 
-    [Indicator]
+    [Indicator(IsOverlay = true)]
     public class Bands : Indicator
     {
         [Parameter(DefaultValue = 20)]
@@ -40,16 +40,18 @@ namespace TickTrader.Algo.Indicators.Bands
         {
 
             //--- middle line
-
-            ExtMovingBuffer[0] = MovingAverages.SimpleMA(0,Period, Close.Take(Period).ToList());
-            List<double> bufferForSTDcalc = new List<double>();
-            //SimpleMovAv(0, Convert.ToInt32(Period), Close);
-            //--- calculate and write down StdDev
-            double stdDev = StdDev_Func(0, Close, ExtMovingBuffer[0], Convert.ToInt32(Period));
-            //--- upper line
-            ExtUpperBuffer[0] = ExtMovingBuffer[0] + Deviations * stdDev;
-            //--- lower line
-            ExtLowerBuffer[0] = ExtMovingBuffer[0] - Deviations * stdDev;
+            if (Close.Count() >= Period)
+            {
+                ExtMovingBuffer[0] = MovingAverages.SimpleMA(0, Period, Close.Take(Period).ToList());
+                List<double> bufferForSTDcalc = new List<double>();
+                //SimpleMovAv(0, Convert.ToInt32(Period), Close);
+                //--- calculate and write down StdDev
+                double stdDev = StdDev_Func(0, Close, ExtMovingBuffer[0], Convert.ToInt32(Period));
+                //--- upper line
+                ExtUpperBuffer[0] = ExtMovingBuffer[0] + Deviations*stdDev;
+                //--- lower line
+                ExtLowerBuffer[0] = ExtMovingBuffer[0] - Deviations*stdDev;
+            }
             //---
         }
 

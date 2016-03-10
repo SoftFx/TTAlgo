@@ -5,10 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
-namespace TickTrader.Algo.Indicators.UTest.PorabolicTest
+namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
 {
     [TestClass]
-    public class PorabolicTest
+    public class ParabolicTest
     {
 
         private StreamReader file;

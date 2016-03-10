@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
             formatBinding.ConverterParameter = Key;
             formatBinding.Converter = this;
 
-            formatBinding.Bindings.Add(new Binding(nameof(ResxCore.CurrentCulture))
+            formatBinding.Bindings.Add(new Binding("CurrentCulture")
             {
                 Source = ResxCore.Instance,
                 Mode = BindingMode.OneWay

@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             resxBinding.ConverterParameter = Prefix;
             resxBinding.Converter = this;
             resxBinding.Bindings.Add(
-                new Binding(nameof(ResxCore.CurrentCulture))
+                new Binding("CurrentCulture")
                 {
                     Source = ResxCore.Instance,
                     Mode = BindingMode.OneWay
