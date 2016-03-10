@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
             private set
             {
                 _currentCulture = value;
-                NotifyPropertyChanged(nameof(CurrentCulture));
+                NotifyPropertyChanged("CurrentCulture");
             }
         }
 

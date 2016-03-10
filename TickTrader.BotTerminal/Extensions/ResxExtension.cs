@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            var resxBinding = new Binding(nameof(ResxCore.CurrentCulture));
+            var resxBinding = new Binding("CurrentCulture");
             resxBinding.Source = ResxCore.Instance;
             resxBinding.Converter = this;
             resxBinding.ConverterParameter = _key;
