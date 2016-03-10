@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
                     System.Diagnostics.Debug.WriteLine("Settings provider is not configured for property with key '" + settingName + "'. Fill attached property 'Settings.Provider' to specify a provider.");
             }
                 
-            var resxBinding = new Binding(nameof(PropertyProxy.Value));
+            var resxBinding = new Binding("Value");
             resxBinding.FallbackValue = Default;
             if (provider != null)
                 resxBinding.Source = new PropertyProxy(settingName, provider);
