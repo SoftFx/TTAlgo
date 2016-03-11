@@ -101,8 +101,8 @@
 
   <target name="FtpPublish">
     <exec program="${WinScpPath}" verbose="true">
-      <arg value="sftp://${Ftp.User}:${Ftp.Pwd}@${Ftp.Host}" />
       <arg value="/command" />
+      <arg value='"open sftp://${Ftp.User}:${Ftp.Pwd}@${Ftp.Host} -certificate=*"' />
       <arg value='"put ""${PublishFolder}"""' />
       <arg value='"close"' />
       <arg value='"exit"' />
