@@ -24,6 +24,7 @@
     <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
     <call target="CreateBinPackage" />
+    <call target="GenerateSetupHmtl" />
   </target>
 
   <target name="Publish" >
@@ -70,6 +71,16 @@
       <arg value="/p:ApplicationVersion=${Build}" />
     </exec>
     
+  </target>
+
+  <target name="GenerateSetupHmtl">
+    <copy file="${SourcesDir}ClickOnce\BotTerminal.Setup.html" tofile="${PublishFolder}\setup.html">
+      <filterchain>
+        <replacetokens>
+          <token key="Build.Number" value="${Build}" />
+        </replacetokens>
+      </filterchain>
+    </copy>
   </target>
 
   <target name="CleanUpFolder">
