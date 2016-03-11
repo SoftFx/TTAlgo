@@ -9,31 +9,31 @@
   <property name="SourcesDir"		    value="c:\platform.algo\"							      unless="${property::exists('SourcesDir')}" />
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
 
-  <property name="PublishFolder"		value="${SourcesDir}bt.publish\"					  unless="${property::exists('PublishFolder')}" />
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
   
   <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.exe" unless="${property::exists('WinScpPath')}" />
   
   <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
+  <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
 
   <target name="help">
     <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Publish|Clean]"/>
   </target>
 
   <target name="Build" >
-    <property name="Build.Target" value="Build" />
+    <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
+    <call target="CreateBinPackage" />
   </target>
 
   <target name="Publish" >
-    <property name="Build.Target" value="Publish" />
-    <call target="RunMSBuild" />
     <call target="FtpPublish" />
   </target>
 
   <target name="Clean" >
     <property name="Build.Target" value="Clean" />
-    <call target="CleanUpBinPackages" />
+    <call target="RunMSBuild" />
+    <call target="CleanUpFolder" />
   </target>
 
   <target name="RunMSBuild">
@@ -55,7 +55,8 @@
     </if>
 
     <exec program="${MSBuildDir}msbuild.exe" >
-      <arg value="/target:${MSBuild.Target}" />
+      <arg value="${MSBuild.SolutionFile}" />
+      <arg value="/t:${MSBuild.Target}" />
       <arg value="/maxcpucount" />
       <arg value="/fl" />
       <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
@@ -65,18 +66,21 @@
       <arg value="/p:Configuration=${MSBuild.Configuration}" />
       <arg value="/p:Platform=${MSBuild.Platform}" />
       <arg value="/p:SolutionDir=${MSBuild.SourcesDir}" />
-      <arg value="${MSBuild.SolutionFile}" />
-      <arg value="/p:PublishDir=${PublishFolder}" />
       <arg value="/p:InstallUrl=${InstallUrl}" />
       <arg value="/p:ApplicationVersion=${Build}" />
     </exec>
     
   </target>
 
-  <target name="CleanUpBinPackages">
+  <target name="CleanUpFolder">
     <delete>
       <fileset basedir="${OutpuFolder}">
         <include name="*.zip" />
+      </fileset>
+    </delete>
+    <delete>
+      <fileset basedir="${PublishFolder}">
+        <include name="**/*" />
       </fileset>
     </delete>
   </target>  
