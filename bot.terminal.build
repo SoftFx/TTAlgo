@@ -3,28 +3,29 @@
   <property name="MSBuildDir"		    value="C:\Program Files (x86)\MSBuild\14.0\Bin\amd64\"		unless="${property::exists('MSBuildDir')}" />
 
   <tstamp property="Date"		        pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
-  <property name="Build"		        value="${Date}"						                  unless="${property::exists('Build')}" />
+  <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
   <property name="Configuration"	  value="Release"							                unless="${property::exists('Configuration')}" />
 
   <property name="SourcesDir"		    value=".\"							                    unless="${property::exists('SourcesDir')}" />
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
 
+  <property name="PublishFolder"		value="${SourcesDir}build.publish\"					unless="${property::exists('PublishFolder')}" />
+  <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
+  
   <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
 
   <target name="help">
-    <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|BuildAndPublish|Clean]"/>
+    <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Publish|Clean]"/>
   </target>
 
   <target name="Build" >
     <property name="Build.Target" value="Build" />
     <call target="RunMSBuild" />
-    <call target="CreateBinPackage" />
   </target>
 
-  <target name="BuildAndPublish" >
-    <property name="Build.Target" value="Clean, Publish" />
+  <target name="Publish" >
+    <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
-    <call target="CreateBinPackage" />
   </target>
 
   <target name="Clean" >
@@ -40,7 +41,16 @@
     <property name="MSBuild.Output" value="${SourcesDir}BotTerminal.build-${Configuration}.log" />
     <property name="MSBuild.Configuration" value="${Configuration}" />
     <property name="MSBuild.Platform" value="Any CPU" />
-    
+
+    <if test="${MSBuild.Target=='Publish' and property::exists('Publish.User') and  property::exists('Publish.Password')}">      
+      <exec program="net">
+        <arg value="use" />
+        <arg value="${PublishFolder}" />
+        <arg value="${Publish.Password}" />
+        <arg value="/USER:${Publish.User}" />
+    </exec>
+    </if>
+
     <exec program="${MSBuildDir}msbuild.exe" >
       <arg value="/target:${MSBuild.Target}" />
       <arg value="/maxcpucount" />
@@ -53,6 +63,9 @@
       <arg value="/p:Platform=${MSBuild.Platform}" />
       <arg value="/p:SolutionDir=${MSBuild.SourcesDir}" />
       <arg value="${MSBuild.SolutionFile}" />
+      <arg value="/p:PublishDir=${PublishFolder}" />
+      <arg value="/p:InstallUrl=${InstallUrl}" />
+      <arg value="/p:ApplicationVersion=${Build}" />
     </exec>
     
   </target>
@@ -66,8 +79,6 @@
   </target>  
 
   <target name="CreateBinPackage">
-
-    <call target="CleanUpBinPackages" />
     
     <property name="BinDir" value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}" />
     <property name="DestArchive" value="${OutpuFolder}BotTerminal ${Build}.zip" />
