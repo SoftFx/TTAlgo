@@ -6,11 +6,13 @@
   <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
   <property name="Configuration"	  value="Release"							                unless="${property::exists('Configuration')}" />
 
-  <property name="SourcesDir"		    value=".\"							                    unless="${property::exists('SourcesDir')}" />
+  <property name="SourcesDir"		    value="c:\platform.algo\"							      unless="${property::exists('SourcesDir')}" />
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
 
-  <property name="PublishFolder"		value="${SourcesDir}build.publish\"					unless="${property::exists('PublishFolder')}" />
+  <property name="PublishFolder"		value="${SourcesDir}bt.publish\"					  unless="${property::exists('PublishFolder')}" />
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
+  
+  <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.exe" unless="${property::exists('WinScpPath')}" />
   
   <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
 
@@ -26,6 +28,7 @@
   <target name="Publish" >
     <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
+    <call target="FtpPublish" />
   </target>
 
   <target name="Clean" >
@@ -90,6 +93,16 @@
       </fileset>
     </zip>
     
+  </target>
+
+  <target name="FtpPublish">
+    <exec program="${WinScpPath}" verbose="true">
+      <arg value="sftp://${Ftp.User}:${Ftp.Pwd}@${Ftp.Host}" />
+      <arg value="/command" />
+      <arg value='"put ""${PublishFolder}"""' />
+      <arg value='"close"' />
+      <arg value='"exit"' />
+    </exec>
   </target>
   
 </project>
