@@ -26,6 +26,7 @@
                 <ResourceDictionary Source="Resx/Styles/PasswordBox.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/TextBox.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ComboBox.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/CheckBox.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ContextMenu.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/MenuItem.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/Menu.xaml"/>
