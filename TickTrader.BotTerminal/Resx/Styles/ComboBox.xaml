@@ -167,7 +167,7 @@
             </TextBox>
         </Grid>
         <ControlTemplate.Triggers>
-            <Trigger Property="IsFocused" Value="True">
+            <Trigger SourceName="PART_EditableTextBox" Property="IsFocused" Value="True">
                 <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{DynamicResource ControlFocusBorder}" />
             </Trigger>
         </ControlTemplate.Triggers>
