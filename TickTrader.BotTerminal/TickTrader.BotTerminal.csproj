@@ -22,7 +22,7 @@
     <UpdateMode>Background</UpdateMode>
     <UpdateInterval>1</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>true</UpdatePeriodically>
+    <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://tp.dev.soft-fx.eu/bt.setup/</InstallUrl>
@@ -387,6 +387,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles\Charts.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\CheckBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

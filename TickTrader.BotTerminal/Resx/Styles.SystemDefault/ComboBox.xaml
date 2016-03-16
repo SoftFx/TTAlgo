@@ -291,7 +291,20 @@
                                     </ToggleButton.Style>
                                 </ToggleButton>
                                 <Border Background="#FFFFFFFF" Name="Border" Margin="{TemplateBinding Border.BorderThickness}">
-                                    <TextBox IsReadOnly="False" HorizontalContentAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding Control.VerticalContentAlignment}" Name="PART_EditableTextBox" Margin="{TemplateBinding Control.Padding}" xml:space="preserve"><TextBox.Style><Style TargetType="TextBox"><Style.Resources><ResourceDictionary /></Style.Resources><Setter Property="FrameworkElement.OverridesDefaultStyle"><Setter.Value><s:Boolean>True</s:Boolean></Setter.Value></Setter><Setter Property="UIElement.AllowDrop"><Setter.Value><s:Boolean>True</s:Boolean></Setter.Value></Setter><Setter Property="FrameworkElement.MinWidth"><Setter.Value><s:Double>0</s:Double></Setter.Value></Setter><Setter Property="FrameworkElement.MinHeight"><Setter.Value><s:Double>0</s:Double></Setter.Value></Setter><Setter Property="FrameworkElement.FocusVisualStyle"><Setter.Value><x:Null /></Setter.Value></Setter><Setter Property="ScrollViewer.PanningMode"><Setter.Value><x:Static Member="PanningMode.VerticalFirst" /></Setter.Value></Setter><Setter Property="Stylus.IsFlicksEnabled"><Setter.Value><s:Boolean>False</s:Boolean></Setter.Value></Setter><Setter Property="Control.Template"><Setter.Value><ControlTemplate TargetType="TextBox"><ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Background="#00FFFFFF" Name="PART_ContentHost" Focusable="False" /></ControlTemplate></Setter.Value></Setter></Style></TextBox.Style></TextBox>
+                                    <TextBox IsReadOnly="False" HorizontalContentAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding Control.VerticalContentAlignment}" Name="PART_EditableTextBox" Margin="{TemplateBinding Control.Padding}" xml:space="preserve">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox"><Style.Resources><ResourceDictionary /></Style.Resources>
+                                                <Setter Property="FrameworkElement.OverridesDefaultStyle"><Setter.Value><s:Boolean>True</s:Boolean></Setter.Value></Setter>
+                                                <Setter Property="UIElement.AllowDrop"><Setter.Value><s:Boolean>True</s:Boolean></Setter.Value></Setter>
+                                                <Setter Property="FrameworkElement.MinWidth"><Setter.Value><s:Double>0</s:Double></Setter.Value></Setter>
+                                                <Setter Property="FrameworkElement.MinHeight"><Setter.Value><s:Double>0</s:Double></Setter.Value></Setter>
+                                                <Setter Property="FrameworkElement.FocusVisualStyle"><Setter.Value><x:Null /></Setter.Value></Setter>
+                                                <Setter Property="ScrollViewer.PanningMode"><Setter.Value><x:Static Member="PanningMode.VerticalFirst" /></Setter.Value></Setter>
+                                                <Setter Property="Stylus.IsFlicksEnabled"><Setter.Value><s:Boolean>False</s:Boolean></Setter.Value></Setter>
+                                                <Setter Property="Control.Template"><Setter.Value>
+                                                    <ControlTemplate TargetType="TextBox">
+                                                    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Background="#00FFFFFF" Name="PART_ContentHost" Focusable="False" />
+                                                    </ControlTemplate></Setter.Value></Setter></Style></TextBox.Style></TextBox>
                                 </Border>
                             </Grid>
                             <ControlTemplate.Triggers>
