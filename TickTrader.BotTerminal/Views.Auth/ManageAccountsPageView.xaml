@@ -6,7 +6,30 @@
              xmlns:local="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-        <Label>OLOL! MANAGE ACCOUNTS RLY!</Label>
+    <UserControl.Resources>
+
+        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid  Margin="5">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="55"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Content="Accounts" FontSize="26" VerticalAlignment="Center" />
+
+        <DataGrid Name="Positions" Grid.Row="1">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Account" Width="1.8*" Binding="{Binding Login}"/>
+                <DataGridTextColumn Header="Password" Width="*" Binding="{Binding PasswordToken}" />
+                <DataGridTextColumn Header="Server" Width="1.8*" Binding="{Binding Side}" />
+            </DataGrid.Columns>
+
+        </DataGrid>
     </Grid>
 </UserControl>

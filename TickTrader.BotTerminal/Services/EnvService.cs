@@ -16,6 +16,11 @@ namespace TickTrader.BotTerminal
             FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");
 
             EnsureFolder(AlgoRepositoryFolder);
+
+            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            UserDataStorage = new XmlObjectStorage(new FolderBinStorage(appDataFolder));
+            ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(appDataFolder)));
         }
 
         private static EnvService instance = new EnvService();
@@ -23,7 +28,8 @@ namespace TickTrader.BotTerminal
 
         public string FeedHistoryCacheFolder { get; private set; }
         public string AlgoRepositoryFolder { get; private set; }
-
+        public IObjectStorage UserDataStorage { get; private set; }
+        public IObjectStorage ProtectedUserDataStorage { get; private set; }
 
         private void EnsureFolder(string folderPath)
         {

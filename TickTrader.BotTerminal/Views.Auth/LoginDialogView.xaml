@@ -10,13 +10,6 @@
         ResizeMode="NoResize"
         Background="{DynamicResource Dialog_Background}">
     <Grid>
-        <l:DialogPageControl Style="{StaticResource DialogPageControl_Style}" Margin="5">
-            <TabItem Header="Sign In">
-                <ContentControl Name="LoginPage"/>
-            </TabItem>
-            <TabItem Header="Manage Accounts">
-                <ContentControl Name="ManageAccountsPage"/>
-            </TabItem>
-        </l:DialogPageControl>
+        <l:DialogPageControl x:Name="Items" Style="{StaticResource DialogPageControl_Style}" Margin="5"/>
     </Grid>
 </Window>

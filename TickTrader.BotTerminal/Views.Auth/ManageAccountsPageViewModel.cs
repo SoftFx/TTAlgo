@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,11 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    class ManageAccountsPageViewModel
+    internal class ManageAccountsPageViewModel : Screen, ILoginDialogPage
     {
+        public ManageAccountsPageViewModel()
+        {
+            DisplayName = "AccountsPageTitle";
+        }
     }
 }

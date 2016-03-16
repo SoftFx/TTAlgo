@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    class LoginPageViewModel : Screen, ILoginDialogPage
+    internal class ManageServersPageViewModel : Screen, ILoginDialogPage
     {
-        public LoginPageViewModel()
+        public ManageServersPageViewModel()
         {
-            DisplayName = "LoginPageTitle";
+            DisplayName = "ServersPageTitle";
         }
     }
 }

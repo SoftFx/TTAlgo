@@ -10,7 +10,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Border Background="{DynamicResource Dialog_PageHeaderBackground}" BorderThickness="0" CornerRadius="4" Width="{TemplateBinding HeaderWidth}">
+            <Border Background="{DynamicResource Dialog_PageControlPanelBackground}" BorderThickness="0" CornerRadius="4" Width="{TemplateBinding HeaderWidth}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="100"/>
@@ -20,7 +20,7 @@
                     <TabPanel IsItemsHost="true" VerticalAlignment="Top" Grid.Row="1"/>
                 </Grid>
             </Border>
-            <ContentPresenter Grid.Column="1" Grid.RowSpan="2" ContentSource="SelectedContent"/>
+            <ContentPresenter Grid.Column="1" Grid.RowSpan="2" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}"/>
         </Grid>
     </ControlTemplate>
 
@@ -57,6 +57,7 @@
         <Setter Property="HeaderWidth" Value="130"/>
         <Setter Property="TabHeaderPadding" Value="5,2,5,2"/>
         <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Padding" Value="5,0,0,0"/>
         <Style.Resources>
             <Style TargetType="TabItem">
                 <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
@@ -64,5 +65,7 @@
             </Style>
         </Style.Resources>
     </Style>
+
+    <Style BasedOn="{StaticResource DialogPageControl_Style}" TargetType="l:DialogPageControl" />
 
 </ResourceDictionary>

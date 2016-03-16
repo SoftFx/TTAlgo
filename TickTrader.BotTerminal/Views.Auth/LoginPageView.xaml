@@ -18,31 +18,53 @@
 
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
             <Setter Property="Margin" Value="5,0,5,0"/>
+            <Setter Property="Height" Value="18" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style BasedOn="{StaticResource {x:Type PasswordBox}}" TargetType="PasswordBox">
+            <Setter Property="Margin" Value="5,0,5,0"/>
+            <Setter Property="Height" Value="18" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style TargetType="Label">
+            <Setter Property="Margin" Value="5,4,5,1" />
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="12" />
         </Style>
 
     </UserControl.Resources>
 
     <Grid Margin="5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="55"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="15"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="55"/>   <!-- 0 Title  -->
+            <RowDefinition Height="Auto"/> <!-- 1 Account label -->
+            <RowDefinition Height="Auto"/> <!-- 2 Account Input -->
+            <RowDefinition Height="Auto"/> <!-- 3 Password label -->
+            <RowDefinition Height="Auto"/> <!-- 4 Password Input -->
+            <RowDefinition Height="Auto"/> <!-- 5 Server label -->
+            <RowDefinition Height="Auto"/> <!-- 6 Server input -->
+            <RowDefinition Height="15"/>   <!-- 7 Some space  -->
+            <RowDefinition Height="Auto"/> <!-- 8 Check box  -->
+            <RowDefinition Height="Auto"/> <!-- 9 Check box  -->
+            <RowDefinition Height="*"/>    <!-- 10 Some space  -->
+            <RowDefinition Height="Auto"/> <!-- 11 Connect button  -->
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Content="Log In" FontSize="26" VerticalAlignment="Center" />
-        <Label Grid.Row="1" Content="Account number"/>
-        <ComboBox Grid.Row="2" Name="AccountInput" Margin="5,0,5,0" FontSize="14" IsEditable="True"/>
-        <Label Grid.Row="3" Content="Password"/>
-        <PasswordBox Grid.Row="4" Name="PasswordInput" Margin="5,0,5,0" />
-        <CheckBox Grid.Row="6" Name="SaveAccount" Content="Remember Account"/>
-        <CheckBox Grid.Row="7" Name="SavePassword" Content="Remember Password"/>
-        <l:FlatButton Grid.Row="9" x:Name="Connect" Content="Connect" Margin="8"
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.ColumnSpan="2" Content="Log In" FontSize="26" VerticalAlignment="Center" />
+        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Account number"/>
+        <ComboBox Grid.Row="2" Name="AccountInput" IsEditable="True"/>
+        <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Password"/>
+        <PasswordBox Grid.Row="4" Grid.ColumnSpan="2" Name="PasswordInput" />
+        <Label Grid.Row="5" Grid.ColumnSpan="2" Content="Server"/>
+        <ComboBox Grid.Row="6" Name="ServerInput" IsEditable="True"/>
+        <CheckBox Grid.Row="8" Grid.ColumnSpan="2" Name="SaveAccount" Content="Remember Account"/>
+        <CheckBox Grid.Row="9" Grid.ColumnSpan="2" Name="SavePassword" Content="Remember Password"/>
+        <l:FlatButton Grid.Row="11" x:Name="Connect" Content="Connect" Margin="8"
                       Background="{DynamicResource Dialog_OkButtonBackground}"
                       HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
     </Grid>

@@ -23,6 +23,7 @@
     <SolidColorBrush x:Key="Shell_MediateForeground" Color="#B5B5B5"/>
 
     <SolidColorBrush x:Key="Dialog_Background" Color="#666666"/>
+    <SolidColorBrush x:Key="Dialog_PageControlPanelBackground" Color="#003A5C"/>
     <SolidColorBrush x:Key="Dialog_ControlBackground" Color="#292929"/>
     <SolidColorBrush x:Key="Dialog_ControlFocusBorder" Color="#292929"/>
     <SolidColorBrush x:Key="Dialog_PageHeaderBackground" Color="#292929"/>
