@@ -50,7 +50,7 @@
                         CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
                 </Border>
-                <TextBlock Text="{Binding Login}" Margin="3,0,3,0" VerticalAlignment="Center" FontSize="12"  />
+                <TextBlock Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" FontSize="12"  />
             </StackPanel>
         </DataTemplate>
 
