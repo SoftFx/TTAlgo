@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         mc:Ignorable="d"
-        Title="Trading Accounts - Bot Trader"
         Height="420" Width="450"
         ResizeMode="NoResize"
         Background="{DynamicResource Dialog_Background}">

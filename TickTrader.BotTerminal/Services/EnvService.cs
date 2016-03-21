@@ -20,8 +20,7 @@ namespace TickTrader.BotTerminal
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
             UserDataStorage = new XmlObjectStorage(new FolderBinStorage(appDataFolder));
-            //ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(appDataFolder)));
-            ProtectedUserDataStorage = new XmlObjectStorage(new FolderBinStorage(appDir));
+            ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(appDataFolder)));
         }
 
         private static EnvService instance = new EnvService();

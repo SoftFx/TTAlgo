@@ -30,8 +30,8 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Log In";
 
-            if (Accounts.Count > 0)
-                ApplyAccount(Accounts[0]);
+            if (authModel.CurrentAccount != null)
+                ApplyAccount(authModel.CurrentAccount);
             else
             {
                 if (authModel.Servers.Count > 0)

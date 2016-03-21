@@ -16,7 +16,7 @@
                         <RowDefinition Height="100"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Image Source="{StaticResource FxopenIcon}" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Image Source="{StaticResource PagedControlImage}" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TabPanel IsItemsHost="true" VerticalAlignment="Top" Grid.Row="1"/>
                 </Grid>
             </Border>

@@ -92,8 +92,8 @@ namespace TickTrader.BotTerminal
             using (var encryptedStream = binaryStorage.LoadData(fileName))
             {
                 var encryptedData = encryptedStream.ToArray();
-                ProtectedData.Unprotect(encryptedData, entropy, scope);
-                return new MemoryStream(encryptedData);
+                var unencryptedData = ProtectedData.Unprotect(encryptedData, entropy, scope);
+                return new MemoryStream(unencryptedData);
             }
         }
 

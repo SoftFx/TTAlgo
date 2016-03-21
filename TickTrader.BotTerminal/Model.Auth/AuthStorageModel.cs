@@ -11,6 +11,8 @@ namespace TickTrader.BotTerminal
     public class AuthStorageModel : IChangableObject, IPersistableObject<AuthStorageModel>
     {
         private ObservableList<AccountSorageEntry> accounts;
+        private string lastLogin;
+        private string lastServer;
 
         public AuthStorageModel()
         {
@@ -26,9 +28,33 @@ namespace TickTrader.BotTerminal
             };
         }
 
+        public string LastLogin
+        {
+            get { return lastLogin; }
+            set { lastLogin = value; }
+        }
+
+        public string LastServer
+        {
+            get { return lastServer; }
+            set { lastServer = value; }
+        }
+
+        public void UpdateLast(string login, string server)
+        {
+            if (lastLogin != login && lastServer != server)
+            {
+                lastLogin = login;
+                lastServer = server;
+                OnChanged();
+            }
+        }
+
         public AuthStorageModel(AuthStorageModel src)
         {
             accounts = new ObservableList<AccountSorageEntry>(src.accounts.Select(a => a.Clone()));
+            lastLogin = src.lastLogin;
+            lastServer = src.lastServer;
         }
 
         public ObservableList<AccountSorageEntry> Accounts { get { return accounts; } }

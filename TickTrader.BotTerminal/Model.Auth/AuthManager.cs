@@ -30,6 +30,8 @@ namespace TickTrader.BotTerminal
         public void SaveLogin(string login, string password, string server)
         {
             storage.Update(new AccountSorageEntry(login, password, server));
+            storage.UpdateLast(login, server);
+            UpdateCurrent();
         }
 
         private void Accounts_Changed(object sender, ListChangedEventArgs<AccountSorageEntry> e)
@@ -57,6 +59,17 @@ namespace TickTrader.BotTerminal
 
             foreach (var acc in storage.Accounts)
                 Accounts.Add(CreateNewEntry(acc));
+
+            if (!string.IsNullOrWhiteSpace(storage.LastLogin) && string.IsNullOrWhiteSpace(storage.LastServer))
+                UpdateCurrent();
+
+            if (CurrentAccount == null && Accounts.Count > 0)
+                CurrentAccount = Accounts[0];
+        }
+
+        private void UpdateCurrent()
+        {
+            CurrentAccount = Accounts.FirstOrDefault(a => a.Login == storage.LastLogin && a.Server.Address == storage.LastServer);
         }
 
         private AccountAuthEntry CreateNewEntry(AccountSorageEntry record)
@@ -74,6 +87,7 @@ namespace TickTrader.BotTerminal
             return new ServerAuthEntry(address);
         }
 
+        public AccountAuthEntry CurrentAccount { get; private set; }
         public ObservableCollection<AccountAuthEntry> Accounts { get; private set; }
         public ObservableCollection<ServerAuthEntry> Servers { get; private set; }
     }

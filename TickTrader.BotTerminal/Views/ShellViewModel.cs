@@ -20,6 +20,8 @@ namespace TickTrader.BotTerminal
 
         public ShellViewModel()
         {
+            DisplayName = "Bot Trader";
+
             storage = new PersistModel();
 
             wndManager = new MdiWindowManager(this);

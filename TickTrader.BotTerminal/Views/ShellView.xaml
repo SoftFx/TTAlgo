@@ -11,6 +11,7 @@
         Top="{l:Setting Window.Top}"
         MinWidth="500"
         MinHeight="500"
+        Icon="{StaticResource MainAppIcon}"
         Background="{DynamicResource Shell_BackgroundBrush}"
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display">

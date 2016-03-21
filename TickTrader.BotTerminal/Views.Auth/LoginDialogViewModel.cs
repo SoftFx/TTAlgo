@@ -9,14 +9,12 @@ namespace TickTrader.BotTerminal
 {
     internal class LoginDialogViewModel : Conductor<ILoginDialogPage>.Collection.OneActive
     {
-        public LoginDialogViewModel()
-        {
-        }
-
         public enum StartPageOptions { LogIn }
 
         public LoginDialogViewModel(AuthManager magaer, ConnectionModel connection, StartPageOptions startOptions = StartPageOptions.LogIn)
         {
+            DisplayName = "Log In";
+
             LoginPage = new LoginPageViewModel(magaer, connection);
             LoginPage.Done += () => TryClose();
 
