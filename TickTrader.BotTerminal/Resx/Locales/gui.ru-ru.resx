@@ -166,7 +166,7 @@
     <value>Язык</value>
   </data>
   <data name="Menu_LogIn" xml:space="preserve">
-    <value>Логин</value>
+    <value>Логин...</value>
   </data>
   <data name="Menu_LogOut" xml:space="preserve">
     <value>Выйти </value>

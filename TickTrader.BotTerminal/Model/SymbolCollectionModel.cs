@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
 
             connection.Initialized += connection_Initialized;
             connection.Deinitialized += connection_Deinitialized;
-            connection.Disconnected += s => stateControl.PushEventAndAsyncWait(Events.Disconnected, States.Offline);
+            connection.Disconnected += s => stateControl.PushEventAndWait(Events.Disconnected, States.Offline);
 
             stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("SymbolListModel STATE " + from + " => " + to);
 

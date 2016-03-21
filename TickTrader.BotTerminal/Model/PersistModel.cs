@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.BotTerminal.Model
+namespace TickTrader.BotTerminal
 {
     internal class PersistModel
     {
@@ -12,11 +12,11 @@ namespace TickTrader.BotTerminal.Model
 
         public PersistModel()
         {
-            var loginStController = new ObjectPersistController<LoginStorageModel>(EnvService.Instance.ProtectedUserDataStorage);
-            LoginStorage = loginStController.Value;
+            var loginStController = new ObjectPersistController<AuthStorageModel>("UserAuthSettings", EnvService.Instance.ProtectedUserDataStorage);
+            AuthSettingsStorage = loginStController.Value;
         }
 
-        public LoginStorageModel LoginStorage { get; private set; }
+        public AuthStorageModel AuthSettingsStorage { get; private set; }
 
         public Task Stop()
         {

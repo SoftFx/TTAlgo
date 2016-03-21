@@ -30,7 +30,9 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
     </Style>
+
     
     <!-- Auto Color Flat Button -->
 

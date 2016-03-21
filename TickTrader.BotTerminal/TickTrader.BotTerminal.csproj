@@ -120,6 +120,7 @@
       <HintPath>..\lib\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Security" />
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -173,15 +174,16 @@
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
+    <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Lib.Collections\Interfaces.cs" />
     <Compile Include="Lib.Collections\ObservableList.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
-    <Compile Include="Infrustructure\ObjectPersistController.cs" />
+    <Compile Include="Model.Auth\AuthConfigSection.cs" />
+    <Compile Include="Model.Auth\AuthManager.cs" />
+    <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
-    <Compile Include="Model\CollectionComposer.cs" />
-    <Compile Include="Model.Auth\LoginStorageModel.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
@@ -234,10 +236,6 @@
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
-    <Compile Include="Views.Auth\ManageServersPageView.xaml.cs">
-      <DependentUpon>ManageServersPageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views.Auth\ManageServersPageViewModel.cs" />
     <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
     </Compile>
@@ -258,10 +256,6 @@
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
-    <Compile Include="Views.Auth\ManageAccountsPageView.xaml.cs">
-      <DependentUpon>ManageAccountsPageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views.Auth\ManageAccountsPageViewModel.cs" />
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
@@ -474,10 +468,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Auth\ManageServersPageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views.Chart\IndicatorPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -495,10 +485,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Auth\LoginDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views.Auth\ManageAccountsPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

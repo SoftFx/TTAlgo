@@ -7,9 +7,20 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ObservableList<T> : IList<T>, IObservableList<T>, IReadonlyObservableList<T>, IReadOnlyList<T>
+    [Serializable]
+    public class ObservableList<T> : IList<T>, IObservableList<T>, IReadonlyObservableList<T>, IReadOnlyList<T>
     {
-        private List<T> innerList = new List<T>();
+        private List<T> innerList;
+
+        public ObservableList()
+        {
+            innerList = new List<T>();
+        }
+
+        public ObservableList(IEnumerable<T> initialData)
+        {
+            innerList = new List<T>(initialData);
+        }
 
         public T this[int index]
         {
