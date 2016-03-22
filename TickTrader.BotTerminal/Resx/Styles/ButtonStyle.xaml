@@ -33,7 +33,32 @@
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
     </Style>
 
-    
+    <!--Icon Button -->
+
+    <ControlTemplate x:Key="IconButton_Template" TargetType="Button">
+        <Border Name="Border" CornerRadius="2"
+                IsHitTestVisible="True"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter TargetName="Border" Property="Control.Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="IconButton_Style" TargetType="Button" >
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}" />
+        <Setter Property="Template" Value="{StaticResource IconButton_Template}" />
+        <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}" />
+    </Style>
+
+
     <!-- Auto Color Flat Button -->
 
     <ControlTemplate x:Key="AutoColorFlatButton_Template" TargetType="Button">

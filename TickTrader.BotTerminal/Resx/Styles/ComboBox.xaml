@@ -5,7 +5,7 @@
 
     <ControlTemplate x:Key="ComboBox_ToggleTemplate">
         <Border BorderThickness="1"
-                CornerRadius="3"
+                CornerRadius="4"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 Background="{TemplateBinding Background}">
             <Border Background="Transparent" Width="14" HorizontalAlignment="Right">
