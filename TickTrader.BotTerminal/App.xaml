@@ -30,6 +30,7 @@
                 <ResourceDictionary Source="Resx/Styles/ContextMenu.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/MenuItem.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/Menu.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ToolBar.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ShadowPortal.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/DataGrid.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/Expander.xaml"/>
