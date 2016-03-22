@@ -138,6 +138,33 @@
   <data name="ChartType_Scatter" xml:space="preserve">
     <value>##Scatter##</value>
   </data>
+  <data name="ConnectionErrorCode_BlockedAccount" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_InvalidCredentials" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_LoginDeleted" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_NetworkError" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_ServerError" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_ServerLogout" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_SlowConnection" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_Timeout" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
+  <data name="ConnectionErrorCode_Unknown" xml:space="preserve">
+    <value>#EMPTY#</value>
+  </data>
   <data name="ContextMenu_ChartType" xml:space="preserve">
     <value>##Chart Type##</value>
   </data>

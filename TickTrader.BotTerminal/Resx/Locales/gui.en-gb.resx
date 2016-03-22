@@ -138,6 +138,33 @@
   <data name="ChartType_Scatter" xml:space="preserve">
     <value>Scatter</value>
   </data>
+  <data name="ConnectionErrorCode_BlockedAccount" xml:space="preserve">
+    <value>Authentication error. Your account is blocked</value>
+  </data>
+  <data name="ConnectionErrorCode_InvalidCredentials" xml:space="preserve">
+    <value>Authentication error. Please check your account number and password</value>
+  </data>
+  <data name="ConnectionErrorCode_LoginDeleted" xml:space="preserve">
+    <value>Authentication error. Your account is deleted</value>
+  </data>
+  <data name="ConnectionErrorCode_NetworkError" xml:space="preserve">
+    <value>Cannot connect server, please check your network connection</value>
+  </data>
+  <data name="ConnectionErrorCode_ServerError" xml:space="preserve">
+    <value>Server returned error, please contact the support service</value>
+  </data>
+  <data name="ConnectionErrorCode_ServerLogout" xml:space="preserve">
+    <value>Server is restarting, please retry after a while</value>
+  </data>
+  <data name="ConnectionErrorCode_SlowConnection" xml:space="preserve">
+    <value>Cannot connect server due to very slow connection, please contact your network administrator</value>
+  </data>
+  <data name="ConnectionErrorCode_Timeout" xml:space="preserve">
+    <value>Cannot connect server due to connection timeout, please check your network connection</value>
+  </data>
+  <data name="ConnectionErrorCode_Unknown" xml:space="preserve">
+    <value>Unexpected error, please contact the support service. You may see logs for further details</value>
+  </data>
   <data name="ContextMenu_ChartType" xml:space="preserve">
     <value>Chart Type</value>
   </data>
@@ -166,7 +193,7 @@
     <value>Language</value>
   </data>
   <data name="Menu_LogIn" xml:space="preserve">
-    <value>Log In</value>
+    <value>Log In...</value>
   </data>
   <data name="Menu_LogOut" xml:space="preserve">
     <value>Log Out</value>

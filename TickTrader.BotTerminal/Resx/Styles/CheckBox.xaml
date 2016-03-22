@@ -4,6 +4,7 @@
     <Style TargetType="CheckBox">
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -13,7 +14,7 @@
                             <Border x:Name="Border"
                                         Width="15" Height="15"
                                         CornerRadius="4" 
-                                        Background="{DynamicResource ShellPanel_BackgroundBrush}"
+                                        Background="{DynamicResource Dialog_ControlBackground}"
                                         BorderThickness="1">
                                 <Path x:Name="CheckMark"
                                         SnapsToDevicePixels="False" 
@@ -37,9 +38,10 @@
                         <Trigger Property="IsMouseOver" Value="true">
                             <Setter TargetName="CheckMark" Property="Stroke" Value="{DynamicResource Shell_PrimaryForeground}" />
                         </Trigger>
-                        <!--<Trigger Property="IsEnabled" Value="false">
+                        <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
-                        </Trigger>-->
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

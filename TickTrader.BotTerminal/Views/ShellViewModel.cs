@@ -10,16 +10,23 @@ namespace TickTrader.BotTerminal
 {
     internal class ShellViewModel : Screen
     {
+        private AuthManager authModel;
         private ConnectionModel connection;
         private TraderModel trade;
         private FeedModel feed;
         private WindowManager wndManager;
         private AlgoCatalog catalog = new AlgoCatalog();
+        private PersistModel storage;
 
         public ShellViewModel()
         {
+            DisplayName = "Bot Trader";
+
+            storage = new PersistModel();
+
             wndManager = new MdiWindowManager(this);
 
+            authModel = new AuthManager(storage.AuthSettingsStorage);
             connection = new ConnectionModel();
             trade = new TraderModel(connection);
             feed = new FeedModel(connection);
@@ -50,19 +57,17 @@ namespace TickTrader.BotTerminal
         public bool CanDisconnect { get; private set; }
         public bool CanCancel { get; private set; }
 
-        public async Task Connect()
+        public void Connect()
         {
             try
             {
-                //SetBusyConnecting(true);
-                await connection.ChangeConnection("tp.st.soft-fx.eu", "1000", "123");
-                connection.StartConnecting();
+                LoginDialogViewModel model = new LoginDialogViewModel(authModel, connection);
+                wndManager.ShowDialog(model);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
-            //SetBusyConnecting(false);
         }
 
         public async Task Disconnect()
@@ -99,22 +104,8 @@ namespace TickTrader.BotTerminal
 
         public void ManageAccounts()
         {
-            try
-            {
-                LoginDialogViewModel model = new LoginDialogViewModel();
-                wndManager.ShowDialog(model);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-            }
+            
         }
-
-        //private void SetBusyConnecting(bool val)
-        //{
-        //    CanConnect = !val;
-        //    NotifyOfPropertyChange("CanConnect");
-        //}
 
         public SymbolListViewModel SymbolList { get; private set; }
         public PositionListViewModel PositionList { get; private set; }

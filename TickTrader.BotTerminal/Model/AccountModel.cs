@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
             };
 
             connection.Connected += () => stateControl.PushEvent(Events.Connected);
-            connection.Disconnected += s => stateControl.PushEventAndAsyncWait(Events.Diconnected, States.Offline);
+            connection.Disconnected += s => stateControl.PushEventAndWait(Events.Diconnected, States.Offline);
 
             stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("AccountModel STATE " + from + " => " + to);
             stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("AccountModel EVENT " + e);

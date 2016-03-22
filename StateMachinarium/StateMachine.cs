@@ -13,6 +13,7 @@ namespace StateMachinarium
         private static readonly Task CompletedTask = Task.FromResult<object>(null);
 
         private IStateMachineSync _lock;
+        private LinkedList<StateAwaiter> stateWaiters = new LinkedList<StateAwaiter>();
         private Dictionary<T, StateDescriptor<T>> descriptors = new Dictionary<T, StateDescriptor<T>>();
 
         [System.Diagnostics.DebuggerStepThrough]
@@ -119,6 +120,25 @@ namespace StateMachinarium
         }
 
         [System.Diagnostics.DebuggerStepThrough]
+        public Task ModifyConditionsAndWait(Action modifyAction, Predicate<T> stateCondition)
+        {
+            Task waitTask = null;
+            _lock.Synchronized(() =>
+            {
+                modifyAction();
+                CheckConditions();
+                waitTask = AsyncWaitInternal(stateCondition);
+            });
+            return waitTask;
+        }
+
+        [System.Diagnostics.DebuggerStepThrough]
+        public Task ModifyConditionsAndWait(Action modifyAction, T state)
+        {
+            return ModifyConditionsAndWait(modifyAction, s => state.Equals(s));
+        }
+
+        [System.Diagnostics.DebuggerStepThrough]
         public void PushEvent(object eventId)
         {
             _lock.Synchronized(() => PushEventInternal(eventId));
@@ -187,6 +207,8 @@ namespace StateMachinarium
                 if (newStateDesciptor != null)
                     newStateDesciptor.OnEnter();
 
+                ReleaseAwaiters();
+
                 StateChanged(oldState, Current);
 
                 ScheduleEventsForState(newStateDesciptor);
@@ -198,39 +220,69 @@ namespace StateMachinarium
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        public Task AsyncWait(T stateToWait)
+        public Task AsyncWait(Predicate<T> condition)
         {
             Task waitTask = null;
-            _lock.Synchronized(() => waitTask = AsyncWaitInternal(stateToWait));
+            _lock.Synchronized(() => waitTask = AsyncWaitInternal(condition));
             return waitTask;
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        private Task AsyncWaitInternal(T stateToWait)
+        public Task AsyncWait(T stateToWait)
         {
-            if (Current.Equals(stateToWait))
-                return CompletedTask;
-
-            StateDescriptor<T> descriptor = GetOrAddDescriptor(stateToWait);
-            return descriptor.AsyncWait();
+            return AsyncWait(s => stateToWait.Equals(s));
         }
 
         [System.Diagnostics.DebuggerStepThrough]
-        public Task PushEventAndAsyncWait(object eventId, T stateToWait)
+        private Task AsyncWaitInternal(Predicate<T> stateCondition)
+        {
+            if(stateCondition(Current))
+                return CompletedTask;
+
+            StateAwaiter waiter = new StateAwaiter(stateCondition);
+            stateWaiters.AddLast(waiter);
+            return waiter.Task;
+        }
+
+        [System.Diagnostics.DebuggerStepThrough]
+        public Task PushEventAndWait(object eventId, Predicate<T> stateCondition)
         {
             Task waitTask = null;
             _lock.Synchronized(() =>
             {
                 PushEventInternal(eventId);
-                waitTask = AsyncWaitInternal(stateToWait);
+                waitTask = AsyncWaitInternal(stateCondition);
             });
             return waitTask;
+        }
+
+        [System.Diagnostics.DebuggerStepThrough]
+        public Task PushEventAndWait(object eventId, T stateToWait)
+        {
+            return PushEventAndWait(eventId, s => stateToWait.Equals(s));
         }
 
         [System.Diagnostics.DebuggerStepThrough]
         public void Wait(T stateToWait)
         {
             AsyncWait(stateToWait).Wait();
+        }
+
+        [System.Diagnostics.DebuggerStepThrough]
+        private void ReleaseAwaiters()
+        {
+            var node = stateWaiters.First;
+            while (node != null)
+            {
+                var nextNode = node.Next;
+                if (node.Value.Condition(Current))
+                {
+                    stateWaiters.Remove(node);
+                    node.Value.Fire();
+                }
+
+                node = nextNode;
+            }
         }
 
         #region Event Scheduler
@@ -275,6 +327,23 @@ namespace StateMachinarium
         }
 
         #endregion
+
+        private class StateAwaiter
+        {
+            public StateAwaiter(Predicate<T> stateCondition)
+            {
+                this.Condition = stateCondition;
+            }
+
+            private TaskCompletionSource<object> scr = new TaskCompletionSource<object>();
+            public Task Task { get { return scr.Task; } }
+            public Predicate<T> Condition { get; private set; }
+
+            public void Fire()
+            {
+                scr.SetResult(null);
+            }
+        }
     }
 
     public interface IStateProvider<T>

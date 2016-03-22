@@ -120,7 +120,9 @@
       <HintPath>..\lib\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\System.Threading.Tasks.Dataflow.dll</HintPath>
@@ -172,10 +174,17 @@
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
+    <Compile Include="Infrustructure\ObjectPersistController.cs" />
+    <Compile Include="Infrustructure\ObjectStorage.cs" />
+    <Compile Include="Lib.Collections\Interfaces.cs" />
+    <Compile Include="Lib.Collections\ObservableList.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
+    <Compile Include="Model.Auth\AuthConfigSection.cs" />
+    <Compile Include="Model.Auth\AuthManager.cs" />
+    <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
-    <Compile Include="Model\CollectionComposer.cs" />
+    <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -223,7 +232,6 @@
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
     <Compile Include="Services\EnvService.cs" />
-    <Compile Include="Services\ObjectStorageService.cs" />
     <Compile Include="Views.Auth\LoginPageView.xaml.cs">
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
@@ -248,10 +256,6 @@
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
-    <Compile Include="Views.Auth\ManageAccountsPageView.xaml.cs">
-      <DependentUpon>ManageAccountsPageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views.Auth\ManageAccountsPageViewModel.cs" />
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
@@ -488,10 +492,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Auth\ManageAccountsPageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\OrderListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -560,6 +560,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="softfx.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resx\Images\softfx.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

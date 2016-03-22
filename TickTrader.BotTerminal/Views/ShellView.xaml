@@ -11,6 +11,7 @@
         Top="{l:Setting Window.Top}"
         MinWidth="500"
         MinHeight="500"
+        Icon="{StaticResource MainAppIcon}"
         Background="{DynamicResource Shell_BackgroundBrush}"
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display">
@@ -47,7 +48,6 @@
                 <Separator/>
                 <MenuItem Header="{l:Resx Menu_LogIn}" cal:Message.Attach="Connect" />
                 <MenuItem Header="{l:Resx Menu_LogOut}" cal:Message.Attach="Disconnect" />
-                <MenuItem Header="{l:Resx Menu_ManageAccounts}" cal:Message.Attach="ManageAccounts"/>
                 <Separator/>
                 <MenuItem Header="{l:Resx Menu_ExitBotTrader}"/>
             </MenuItem>

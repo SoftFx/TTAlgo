@@ -93,6 +93,9 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+
+    <!-- ComboBox Template (Editable Mode) -->
+
     <ControlTemplate x:Key="Editable_ComboBox_Template" TargetType="ComboBox">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -197,6 +200,7 @@
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Padding" Value="2 3 3 3"/>
         <Style.Resources>
             <Style TargetType="ComboBoxItem">
                 <Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -208,11 +212,9 @@
         </Style.Resources>
         <Style.Triggers>
             <Trigger Property="ComboBox.IsEditable" Value="True">
-                <Setter Property="Padding" Value="4 0 3 0"/>
                 <Setter Property="Template" Value="{StaticResource Editable_ComboBox_Template}"></Setter>
             </Trigger>
             <Trigger Property="ComboBox.IsEditable" Value="False">
-                <Setter Property="Padding" Value="4,1,3,1" />
                 <Setter Property="Template" Value="{StaticResource ComboBox_Template}"></Setter>
             </Trigger>
         </Style.Triggers>

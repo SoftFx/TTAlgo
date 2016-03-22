@@ -14,6 +14,17 @@ namespace TickTrader.BotTerminal
         {
             Initialize();
 
+            MessageBinder.SpecialValues.Add("$password", context =>
+            {
+                var view = (FrameworkElement)context.View;
+                var pwd = view.FindName("PasswordInput") as System.Windows.Controls.PasswordBox;
+
+                if (pwd == null)
+                    throw new Exception("To use $password you should have PasswordBox named 'PasswordInput' on your View.");
+
+                return pwd.Password;
+            });
+
             MessageBinder.SpecialValues.Add("$originalsourcecontext", context =>
             {
                 var args = context.EventArgs as RoutedEventArgs;

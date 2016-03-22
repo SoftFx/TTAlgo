@@ -49,23 +49,27 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Deinitializing, () => Deinit());
             stateControl.OnEnter(States.Online, () => { FeedCache.Start(feedProxy); Connected(); });
 
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + from + " => " + to);
+            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + to);
             stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT " + e);
         }
 
         public DataFeed FeedProxy { get { return feedProxy; } }
         public DataTrade TradeProxy { get { return tradeProxy; } }
         public FeedHistoryProviderModel FeedCache { get; private set; }
-        public Exception LastError { get; private set; }
+        public ConnectionErrorCodes LastError { get; private set; }
 
         public IStateProvider<States> State { get { return stateControl; } }
 
-        public async Task ChangeConnection(string address, string username, string password)
+        public async Task<ConnectionErrorCodes> Connect(string address, string username, string password)
         {
             await DisconnectAsync();
             this.address = address;
             this.username = username;
             this.password = password;
+            await stateControl.PushEventAndWait(Events.Started, s => s == States.Offline || s == States.Online);
+            if (State.Current != States.Online)
+                return LastError;
+            return ConnectionErrorCodes.None;
         }
 
         public void StartConnecting()
@@ -87,7 +91,7 @@ namespace TickTrader.BotTerminal
 
         public Task DisconnectAsync()
         {
-            return stateControl.PushEventAndAsyncWait(Events.StopRequested, States.Offline);
+            return stateControl.PushEventAndWait(Events.StopRequested, States.Offline);
         }
 
         //public event AsyncEventHandler Connected;
@@ -99,6 +103,7 @@ namespace TickTrader.BotTerminal
         private Task Init()
         {
             stopSignal = new CancellationTokenSource();
+            LastError = ConnectionErrorCodes.None;
 
             return Task.Factory.StartNew(() =>
             {
@@ -163,7 +168,8 @@ namespace TickTrader.BotTerminal
                 }
                 catch (Exception ex)
                 {
-                    LastError = ex;
+                    System.Diagnostics.Debug.WriteLine("ConnectionModel.Init() failed: " + ex);
+                    LastError = ConnectionErrorCodes.Unknown;
                     stateControl.PushEvent(Events.InitFailed);
                 }
             });
@@ -171,12 +177,33 @@ namespace TickTrader.BotTerminal
 
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Trade.Logon");
             stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
         void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
         {
-            stateControl.PushEvent(Events.OnLogout);
+            stateControl.SyncContext.Synchronized(() =>
+            {
+                if (LastError == ConnectionErrorCodes.None)
+                    LastError = Convert(e.Reason);
+                stateControl.PushEvent(Events.OnLogout);
+            });
+        }
+
+        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        {
+            switch (fdkCode)
+            {
+                case LogoutReason.BlockedAccount: return ConnectionErrorCodes.BlockedAccount;
+                case LogoutReason.InvalidCredentials: return ConnectionErrorCodes.InvalidCredentials;
+                case LogoutReason.NetworkError: return ConnectionErrorCodes.NetworkError;
+                case LogoutReason.ServerError: return ConnectionErrorCodes.ServerError;
+                case LogoutReason.ServerLogout: return ConnectionErrorCodes.ServerLogout;
+                case LogoutReason.SlowConnection: return ConnectionErrorCodes.SlowConnection;
+                case LogoutReason.LoginDeleted: return ConnectionErrorCodes.LoginDeleted;
+                default: return ConnectionErrorCodes.Unknown;
+            }
         }
 
         void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
@@ -187,7 +214,12 @@ namespace TickTrader.BotTerminal
 
         void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
         {
-            stateControl.PushEvent(Events.OnLogout);
+            stateControl.SyncContext.Synchronized(() =>
+            {
+                if (LastError == ConnectionErrorCodes.None)
+                    LastError = Convert(e.Reason);
+                stateControl.PushEvent(Events.OnLogout);
+            });
         }
 
         private async void Deinit()
@@ -244,5 +276,20 @@ namespace TickTrader.BotTerminal
         {
             get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs"); }
         }
+    }
+
+    public enum ConnectionErrorCodes
+    {
+        None,
+        Unknown,
+        NetworkError,
+        Timeout,
+        BlockedAccount,
+        ClientInitiated,
+        InvalidCredentials,
+        SlowConnection,
+        ServerError,
+        LoginDeleted,
+        ServerLogout
     }
 }

@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
 
         public Task Stop()
         {
-            return stateController.PushEventAndAsyncWait(Events.StopRequest, States.Idle);
+            return stateController.PushEventAndWait(Events.StopRequest, States.Idle);
         }
 
         public IIndicatorSetup CreateSetupClone()

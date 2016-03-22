@@ -124,6 +124,87 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_BlockedAccount {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_BlockedAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_InvalidCredentials {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_InvalidCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_LoginDeleted {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_LoginDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_NetworkError {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_NetworkError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_ServerError {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_ServerError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_ServerLogout {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_ServerLogout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_SlowConnection {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_SlowConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_Timeout {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #EMPTY#.
+        /// </summary>
+        internal static string ConnectionErrorCode_Unknown {
+            get {
+                return ResourceManager.GetString("ConnectionErrorCode_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Chart Type##.
         /// </summary>
         internal static string ContextMenu_ChartType {
