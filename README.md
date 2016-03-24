@@ -15,37 +15,37 @@ In order to compile project it is required to add NuGet Package Sources for
 
  - Trend
   	- [ ] Average Directional Movement Index
-  	- [ ] Bollinger Bands
+  	- [x] Bollinger Bands (duplicate of Common/Bands)
   	- [ ] Envelopes
-  	- [ ] Ichimoku Kinko Hyo
-  	- [ ] Moving Average
-  	- [ ] Parabolic SAR
+  	- [ ] Ichimoku Kinko Hyo (duplicate of Common/Ichimoku)
+  	- [x] Moving Average (duplicate of Common/Custom Moving Averages)
+  	- [ ] Parabolic SAR (duplicate of Common/Parabolic)
   	- [ ] Standard Deviation
  - Oscillators
  	- [ ] Average True Range
- 	- [ ] Bears Power
- 	- [ ] Bulls Power
+ 	- [x] Bears Power (duplicate of Common/Bears)
+ 	- [x] Bulls Power (duplicate of Common/Bulls)
  	- [ ] Commodity Channel Index
  	- [ ] DeMarker
  	- [ ] Force Index
- 	- [ ] MACD
- 	- [ ] Momentum
+ 	- [x] MACD (duplicate of Common/MACD)
+ 	- [x] Momentum (duplicate of Common/Momentum)
  	- [ ] Moving Average of Oscillator
  	- [ ] Relative Strength Index
  	- [ ] Relative Vigor Index
- 	- [ ] Stochastic Oscillator
+ 	- [x] Stochastic Oscillator (duplicate of Common/Stochastic)
  	- [ ] Williams' Percent Range
  - Volumes
- 	- [ ] Accumulation/Distribution
+ 	- [x] Accumulation/Distribution (duplicate of Common/Accumulation)
  	- [ ] Money Flow Index
  	- [ ] On Balance Volume
  	- [ ] Volumes
  - Bill Williams
- 	- [ ] Accelerator Oscillator
- 	- [ ] Alligator
- 	- [ ] Awesome Oscillator
+ 	- [x] Accelerator Oscillator (duplicate of Common/Accelerator)
+ 	- [x] Alligator (duplicate of Common/Alligator)
+ 	- [x] Awesome Oscillator (duplicate of Common/Awesome)
  	- [ ] Fractals
- 	- [ ] Gator Oscillator
+ 	- [ ] Gator Oscillators
  	- [ ] Market Facilitation Index
  - Common
 	 - [x] Accelerator
