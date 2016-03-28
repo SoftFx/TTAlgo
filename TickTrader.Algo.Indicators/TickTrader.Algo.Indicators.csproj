@@ -48,6 +48,7 @@
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
+    <Compile Include="Functions\AppliedPrice.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Ichimoku\Ichimoku.cs" />
@@ -58,6 +59,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RSI\RSI.cs" />
     <Compile Include="Stochastic\Stochastic.cs" />
+    <Compile Include="Trend\MovingAverage\EMA.cs" />
+    <Compile Include="Trend\MovingAverage\IMA.cs" />
+    <Compile Include="Trend\MovingAverage\LWMA.cs" />
+    <Compile Include="Trend\MovingAverage\MABase.cs" />
+    <Compile Include="Trend\MovingAverage\MovingAverage.cs" />
+    <Compile Include="Trend\MovingAverage\SMA.cs" />
+    <Compile Include="Trend\MovingAverage\SMMA.cs" />
     <Compile Include="ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +78,7 @@
       <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
