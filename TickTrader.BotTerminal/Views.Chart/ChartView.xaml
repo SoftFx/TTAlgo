@@ -28,6 +28,8 @@
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
 
         <ContextMenu x:Key="MainChartPanelContextMenu" Style="{StaticResource ContextMenu_Style}">
+
+            <MenuItem Header="{l:Resx ContextMenu_OpenOrder}" cal:Message.Attach="OpenOrder"></MenuItem>
             
             <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}"
                                 ItemsSource="{Binding AvailablePeriods}"

@@ -240,6 +240,14 @@
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Chart\IndicatorPaneViewModel.cs" />
+    <Compile Include="Views.Order\MarketOrderPageView.xaml.cs">
+      <DependentUpon>MarketOrderPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\MarketOrderPageViewModel.cs" />
+    <Compile Include="Views.Order\OpenOrderDialogView.xaml.cs">
+      <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -473,6 +481,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Chart\IndicatorPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Order\MarketOrderPageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Order\OpenOrderDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

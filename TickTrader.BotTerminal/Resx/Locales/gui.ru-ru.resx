@@ -148,7 +148,7 @@
     <value>Новый график</value>
   </data>
   <data name="ContextMenu_OpenOrder" xml:space="preserve">
-    <value>Открыть ордер</value>
+    <value>Открыть новый ордер</value>
   </data>
   <data name="ContextMenu_Periods" xml:space="preserve">
     <value>Период обновления</value>
@@ -186,6 +186,9 @@
   <data name="Menu_Theme" xml:space="preserve">
     <value>Тема</value>
   </data>
+  <data name="OrderDialog_Title" xml:space="preserve">
+    <value>Открыть ордер</value>
+  </data>
   <data name="Order_Amount" xml:space="preserve">
     <value>Сумма</value>
   </data>
@@ -200,6 +203,9 @@
   </data>
   <data name="Order_Symbol" xml:space="preserve">
     <value>Символ</value>
+  </data>
+  <data name="Order_Volume" xml:space="preserve">
+    <value>Объем</value>
   </data>
   <data name="Position_Amount" xml:space="preserve">
     <value>Сумма</value>
