@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         {
             base.Init();
             _sum = 0;
-            _cache = new Queue<double>();
+            _cache = new Queue<double>(Period + 1);
         }
 
         public override void Reset()
@@ -35,12 +35,16 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             if (Accumulated < Period)
             {
                 Accumulated++;
+                if (Accumulated < Period)
+                {
+                    return double.NaN;
+                }
             }
             else
             {
                 _sum -= _cache.Dequeue();
             }
-            return _sum / Accumulated;
+            return _sum / Period;
 
         }
     }

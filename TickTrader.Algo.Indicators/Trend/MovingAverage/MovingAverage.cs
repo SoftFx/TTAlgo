@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
     {
         public enum Method
         {
-            Simple, Exponential, Smoothed, LinearWeighted
+            Simple, Exponential, Smoothed, LinearWeighted, CustomExponential, Triangular
         }
 
         [Parameter(DefaultValue = 7, DisplayName = "Period")]
@@ -33,6 +33,9 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             get { return (int) _targetPrice; }
             set { _targetPrice = (AppliedPrice.Target) value; }
         }
+
+        [Parameter(DefaultValue = 0.25, DisplayName = "Smooth Factor(CustomEMA)")]
+        public double SmoothFactor { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -60,27 +63,37 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                 case Method.LinearWeighted:
                     MAInstance = new LWMA(Period, Shift, _targetPrice);
                     break;
+                case Method.CustomExponential:
+                    MAInstance = new CustomEMA(Period, Shift, _targetPrice, SmoothFactor);
+                    break;
             }
             MAInstance.Init();
         }
 
         protected override void Calculate()
         {
-            var res = MAInstance.Calculate(Bars[0]);
-            if (MAInstance.Accumulated == Period)
+            // should be removed when Init problem will be solved
+            if (Bars.Count == 1)
             {
-                if (Shift > 0)
+                Init();
+            }
+            // ---------------------
+            var res = MAInstance.Calculate(Bars[0]);
+            if (Shift > 0)
+            {
+                if (Bars.Count > Shift)
                 {
-                    if (Bars.Count > Period + Shift)
-                    {
-                        MA[0] = MACache.Dequeue();
-                    }
-                    MACache.Enqueue(res);
+                    MA[0] = MACache.Dequeue();
                 }
-                else if (Shift <= 0 && -Shift < Bars.Count)
+                else
                 {
-                    MA[-Shift] = res;
+                    MA[0] = double.NaN;
                 }
+                MACache.Enqueue(res);
+            }
+            else if (Shift <= 0 && -Shift < Bars.Count)
+            {
+                MA[-Shift] = res;
             }
         }
     }
