@@ -68,3 +68,21 @@ In order to compile project it is required to add NuGet Package Sources for
 	 - [x] RSI
 	 - [x] Stochastic
 	 - [x] ZigZag
+
+## Applied Price values('Apply To' field)
+ - Close = 0
+ - Open = 1
+ - High = 2
+ - Low = 3
+ - Median = 4
+ - Typical = 5
+ - Weighted = 6
+
+## Moving Average methods
+ - Simple = 0
+ - Exponential = 1 (Smooth Factor = 2/(Period + 1) as in Meta)
+ - Smoothed = 2
+ - LinearWeighted = 3
+ - Custom Exponential = 4 (Smooth Factor can be specified. Found [here](https://intranet.fxopen.org/wiki/display/TIC/Moving+Average))
+ - Triangular = 5 (Found [here](https://intranet.fxopen.org/wiki/display/TIC/Moving+Average))
+
