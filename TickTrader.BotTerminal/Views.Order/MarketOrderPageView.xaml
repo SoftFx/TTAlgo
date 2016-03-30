@@ -10,26 +10,23 @@
         <Style BasedOn="{StaticResource FlatButton_Style}" TargetType="l:FlatButton"/>
 
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
-            <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
 
         <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="TextBox">
-            <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="0 2 0 0"/>
         </Style>
 
         <Style TargetType="Label" BasedOn="{StaticResource DialogLabel_Style}">
-            <Setter Property="FontSize" Value="12" />
             <Setter Property="Padding" Value="0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style TargetType="TextBlock">
             <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="SnapsToDevicePixels" Value="False"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{DynamicResource Shell_MediateForeground}"/>
             <Setter Property="Margin" Value="0"></Setter>
         </Style>
@@ -46,7 +43,7 @@
 
     <Grid Margin="5" IsEnabled="{Binding IsEditable}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="55"/>
+            <RowDefinition Height="50"/>
             <!--0 Title-->
             <RowDefinition Height="Auto"/>
             <!--1 Separator-->
@@ -71,7 +68,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="8"></RowDefinition>
+                <RowDefinition Height="5"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
@@ -83,31 +80,31 @@
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <Label Grid.Row="0" Grid.ColumnSpan="3" Content="Symbol" Margin="0 0 0 2" HorizontalAlignment="Left"></Label>
+            <Label Grid.Row="0" Grid.ColumnSpan="3" Content="Symbol" HorizontalAlignment="Left"></Label>
 
             <ComboBox Grid.Row="1" Grid.ColumnSpan="3" IsEditable="False"/>
 
-            <l:FlatButton Grid.Row="3" Grid.Column="0"  
-                          Background="{DynamicResource RateUpColor}"
-                          HighlightBackground="{DynamicResource RateUpHighlightColor}">
-                <StackPanel Margin="4">
+            <l:FlatButton Grid.Row="3" Grid.Column="0"
+                          Background="{DynamicResource RateDownColor}"
+                          HighlightBackground="{DynamicResource RateDownHighlightColor}">
+                <StackPanel Margin="2">
                     <Label Content="{l:Resx SymbolDetails_Sell}" HorizontalAlignment="Center"></Label>
-                    <Label Content="125.953" HorizontalAlignment="Center" FontSize="18" />
+                    <Label Content="125.953" HorizontalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </l:FlatButton>
             <l:FlatButton Grid.Row="3" Grid.Column="2"
-                          Background="{DynamicResource RateDownColor}"
-                          HighlightBackground="{DynamicResource RateDownHighlightColor}">
-                <StackPanel Margin="4">
+                          Background="{DynamicResource RateUpColor}"
+                          HighlightBackground="{DynamicResource RateUpHighlightColor}">
+                <StackPanel Margin="2">
                     <Label Content="{l:Resx SymbolDetails_Buy}" HorizontalAlignment="Center"></Label>
-                    <Label Content="128.953" HorizontalAlignment="Center" FontSize="18" />
+                    <Label Content="128.953" HorizontalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </l:FlatButton>
 
             <TextBlock Grid.Row="4" Grid.ColumnSpan="3" 
                        Text="Change: -12.6 (-0.11%); High: 1.11861; Low: 1.11488"
                        HorizontalAlignment="Center"
-                       Margin="0 4 0 0"/>
+                       Margin="0 2 0 0"/>
         </Grid>
 
         <GridSplitter Grid.Row="3"/>
@@ -127,7 +124,7 @@
             </Grid.ColumnDefinitions>
 
             <Label Grid.Row="0" Grid.Column="0" Content="{l:Resx Order_Volume}" VerticalAlignment="Bottom" HorizontalAlignment="Left"></Label>
-            <CheckBox  Grid.Row="0" Grid.Column="2" Content="Market Range"></CheckBox>
+            <CheckBox  Grid.Row="0" Grid.Column="2" x:Name="MarketRange" Content="Market Range"></CheckBox>
 
             <Grid Grid.Row="1" Grid.Column="0">
                 <Grid.ColumnDefinitions>
@@ -144,16 +141,16 @@
                     <ColumnDefinition Width="0.25*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <ComboBox Grid.Column="0"></ComboBox>
+                <ComboBox Grid.Column="0" IsEnabled="{Binding ElementName=MarketRange, Path=IsChecked}"></ComboBox>
                 <Label Grid.Column="1" Content="Pips" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="3 0 0 0"></Label>
             </Grid>
 
             <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="Pip value:" Margin="0 0 4 0"/>
+                <TextBlock Text="Pip value:" Margin="0 0 5 0"/>
                 <TextBlock Text="$ 0.09"/>
             </StackPanel>
             <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal">
-                <TextBlock Text="Margin:" Margin="0 0 4 0"/>
+                <TextBlock Text="Margin:" Margin="0 0 5 0"/>
                 <TextBlock Text="$ 10.00"/>
             </StackPanel>
         </Grid>
@@ -167,7 +164,8 @@
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="10"></RowDefinition>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -179,21 +177,21 @@
             <CheckBox Grid.Row="0" Grid.Column="2" x:Name="CheckBoxTakeProfit" Content="Take Profit"></CheckBox>
 
             <ComboBox Grid.Row="2" Grid.Column="0" IsEnabled="{Binding ElementName=CheckBoxStopLoss, Path=IsChecked}"></ComboBox>
-            <Label Grid.Row="2" Grid.Column="1" Content="Pips"></Label>
+            <Label Grid.Row="2" Grid.Column="1" Content="Pips" Margin="29,4,28,4"></Label>
             <ComboBox Grid.Row="2" Grid.Column="2" IsEnabled="{Binding ElementName=CheckBoxTakeProfit, Path=IsChecked}"></ComboBox>
 
             <TextBox Grid.Row="3" Grid.Column="0" IsEnabled="{Binding ElementName=CheckBoxStopLoss, Path=IsChecked}"></TextBox>
-            <Label Grid.Row="3" Grid.Column="1" Content="Balance"></Label>
+            <Label Grid.Row="3" Grid.Column="1" Content="Balance" Margin="19,5"></Label>
             <TextBox Grid.Row="3" Grid.Column="2" IsEnabled="{Binding ElementName=CheckBoxTakeProfit, Path=IsChecked}"></TextBox>
 
             <TextBox Grid.Row="4" Grid.Column="0" IsEnabled="{Binding ElementName=CheckBoxStopLoss, Path=IsChecked}"></TextBox>
-            <Label Grid.Row="4" Grid.Column="1" Content="Profit"></Label>
+            <Label Grid.Row="4" Grid.Column="1" Content="Profit" Margin="25,5"></Label>
             <TextBox Grid.Row="4" Grid.Column="2" IsEnabled="{Binding ElementName=CheckBoxTakeProfit, Path=IsChecked}"></TextBox>
 
             <TextBox Grid.Row="5" Grid.ColumnSpan="3" 
                      TextWrapping="Wrap"
                      Height="60"
-                     Margin="0 8 0 0" />
+                     Margin="0 10 0 0" Grid.RowSpan="2" />
         </Grid>
 
     </Grid>

@@ -15,17 +15,14 @@
         <Style BasedOn="{StaticResource RadioFlatButton_Style}" TargetType="l:RadioFlatButton"/>
         
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
-            <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
 
         <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="TextBox">
-            <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="0 2 0 0"/>
         </Style>
 
         <Style TargetType="Label" BasedOn="{StaticResource DialogLabel_Style}">
-            
             <Setter Property="Padding" Value="0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -35,7 +32,6 @@
             <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="SnapsToDevicePixels" Value="False"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="FontSize" Value="11" />
             <Setter Property="Foreground" Value="{DynamicResource Shell_MediateForeground}"/>
             <Setter Property="Margin" Value="0"></Setter>
         </Style>
