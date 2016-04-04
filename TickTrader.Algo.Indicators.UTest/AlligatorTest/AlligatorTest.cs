@@ -18,8 +18,8 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
         private List<double> testResRed;
         private List<double> metaResLime;
         private List<double> testResLime;
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
@@ -36,16 +36,16 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBlueBuffer", testResBlue);
             writer.AddMapping("ExtRedBuffer", testResRed);
             writer.AddMapping("ExtLimeBuffer", testResLime);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Alligator.Alligator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Alligator.Alligator), reader, writer);
             builder.SetParameter("InpJawsPeriod", 13);
             builder.SetParameter("InpJawsShift", 8);
             builder.SetParameter("InpTeethPeriod", 8);
@@ -106,16 +106,16 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBlueBuffer", testResBlue);
             writer.AddMapping("ExtRedBuffer", testResRed);
             writer.AddMapping("ExtLimeBuffer", testResLime);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Alligator.Alligator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Alligator.Alligator), reader, writer);
             builder.SetParameter("InpJawsPeriod", 13);
             builder.SetParameter("InpJawsShift", 8);
             builder.SetParameter("InpTeethPeriod", 8);
@@ -176,16 +176,16 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBlueBuffer", testResBlue);
             writer.AddMapping("ExtRedBuffer", testResRed);
             writer.AddMapping("ExtLimeBuffer", testResLime);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Alligator.Alligator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Alligator.Alligator), reader, writer);
             builder.SetParameter("InpJawsPeriod", 13);
             builder.SetParameter("InpJawsShift", 8);
             builder.SetParameter("InpTeethPeriod", 8);
@@ -241,16 +241,16 @@ namespace TickTrader.Algo.Indicators.UTest.AlligatorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBlueBuffer", testResBlue);
             writer.AddMapping("ExtRedBuffer", testResRed);
             writer.AddMapping("ExtLimeBuffer", testResLime);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Alligator.Alligator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Alligator.Alligator), reader, writer);
             builder.SetParameter("InpJawsPeriod", 13);
             builder.SetParameter("InpJawsShift", 8);
             builder.SetParameter("InpTeethPeriod", 8);

@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
     internal interface IIndicatorSetup
     {
         long InstanceId { get; }
-        AlgoDescriptor Descriptor { get; }
+        AlgoPluginDescriptor Descriptor { get; }
         IndicatorSetupBase UiModel { get; }
         IndicatorModel CreateIndicator();
         IIndicatorSetup CreateCopy();

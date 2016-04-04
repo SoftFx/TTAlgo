@@ -17,8 +17,8 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
         private List<double> metaResSig;
         private List<double> testResSig;
 
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
@@ -34,14 +34,14 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMacdBuffer", testResMACD);
             writer.AddMapping("ExtSignalBuffer", testResSig);
 
-            builder = new IndicatorBuilder<Bar>(typeof(MACD.MACD), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(MACD.MACD), reader, writer);
             builder.SetParameter("InpFastEMA", 12);
             builder.SetParameter("InpSlowEMA", 26);
             builder.SetParameter("InpSignalSMA", 9);
@@ -78,14 +78,14 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMacdBuffer", testResMACD);
             writer.AddMapping("ExtSignalBuffer", testResSig);
 
-            builder = new IndicatorBuilder<Bar>(typeof(MACD.MACD), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(MACD.MACD), reader, writer);
             builder.SetParameter("InpFastEMA", 12);
             builder.SetParameter("InpSlowEMA", 26);
             builder.SetParameter("InpSignalSMA", 9);
@@ -122,14 +122,14 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMacdBuffer", testResMACD);
             writer.AddMapping("ExtSignalBuffer", testResSig);
 
-            builder = new IndicatorBuilder<Bar>(typeof(MACD.MACD), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(MACD.MACD), reader, writer);
             builder.SetParameter("InpFastEMA", 12);
             builder.SetParameter("InpSlowEMA", 26);
             builder.SetParameter("InpSignalSMA", 9);
@@ -166,14 +166,14 @@ namespace TickTrader.Algo.Indicators.UTest.MACDTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMacdBuffer", testResMACD);
             writer.AddMapping("ExtSignalBuffer", testResSig);
 
-            builder = new IndicatorBuilder<Bar>(typeof(MACD.MACD), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(MACD.MACD), reader, writer);
             builder.SetParameter("InpFastEMA", 12);
             builder.SetParameter("InpSlowEMA", 26);
             builder.SetParameter("InpSignalSMA", 9);

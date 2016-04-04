@@ -37,14 +37,14 @@ namespace TickTrader.BotTerminal
             rep.Start();
         }
 
-        public void Add(AlgoDescriptor descriptor)
+        public void Add(AlgoPluginDescriptor descriptor)
         {
             OnAdd(new AlgoStaticItem(descriptor));
         }
 
         public void AddAssembly(Assembly assembly)
         {
-            var descritpors = AlgoDescriptor.InspectAssembly(assembly);
+            var descritpors = AlgoPluginDescriptor.InspectAssembly(assembly);
             foreach (var d in descritpors)
                 Add(d);
         }
@@ -67,19 +67,19 @@ namespace TickTrader.BotTerminal
             Removed(item);
         }
 
-        private void Rep_Added(AlgoRepositoryItem repItem)
+        private void Rep_Added(AlgoPluginRef repItem)
         {
             OnAdd(new AlgoDynamicItem(repItem));
         }
 
-        private void Rep_Removed(AlgoRepositoryItem repItem)
+        private void Rep_Removed(AlgoPluginRef repItem)
         {
             AlgoCatalogItem removedItem;
             if (itemsById.TryGetValue(repItem.Id, out removedItem))
                 OnRemove(removedItem);
         }
 
-        private void Rep_Replaced(AlgoRepositoryItem repItem)
+        private void Rep_Replaced(AlgoPluginRef repItem)
         {
             var item = new AlgoDynamicItem(repItem);
             itemsById[repItem.Id] = new AlgoDynamicItem(repItem);
@@ -91,21 +91,21 @@ namespace TickTrader.BotTerminal
 
     internal abstract class AlgoCatalogItem
     {
-        public AlgoCatalogItem(AlgoDescriptor descriptor)
+        public AlgoCatalogItem(AlgoPluginDescriptor descriptor)
         {
             this.Descriptor = descriptor;
         }
 
         public string Id { get { return Descriptor.Id; } }
         public string DisplayName { get { return Descriptor.DisplayName; } }
-        public AlgoDescriptor Descriptor { get; private set; }
+        public AlgoPluginDescriptor Descriptor { get; private set; }
     }
 
     internal class AlgoDynamicItem : AlgoCatalogItem
     {
-        private AlgoRepositoryItem repItem;
+        private AlgoPluginRef repItem;
 
-        public AlgoDynamicItem(AlgoRepositoryItem repItem)
+        public AlgoDynamicItem(AlgoPluginRef repItem)
             : base(repItem.Descriptor)
         {
             this.repItem = repItem;
@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
 
     internal class AlgoStaticItem : AlgoCatalogItem
     {
-        public AlgoStaticItem(AlgoDescriptor descriptor)
+        public AlgoStaticItem(AlgoPluginDescriptor descriptor)
             : base(descriptor)
         {
         }

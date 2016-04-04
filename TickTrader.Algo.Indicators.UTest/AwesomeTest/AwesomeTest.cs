@@ -18,8 +18,8 @@ namespace TickTrader.Algo.Indicators.UTest.AwesomeTest
         private List<double> testResUp;
         private List<double> metaResDn;
         private List<double> testResDn;
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
@@ -36,15 +36,15 @@ namespace TickTrader.Algo.Indicators.UTest.AwesomeTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtAOBuffer", testResAO);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Awesome.Awesome), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Awesome.Awesome), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
 
@@ -79,15 +79,15 @@ namespace TickTrader.Algo.Indicators.UTest.AwesomeTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtAOBuffer", testResAO);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Awesome.Awesome), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Awesome.Awesome), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
 
@@ -122,15 +122,15 @@ namespace TickTrader.Algo.Indicators.UTest.AwesomeTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtAOBuffer", testResAO);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Awesome.Awesome), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Awesome.Awesome), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
 
@@ -165,15 +165,15 @@ namespace TickTrader.Algo.Indicators.UTest.AwesomeTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtAOBuffer", testResAO);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Awesome.Awesome), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Awesome.Awesome), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
 

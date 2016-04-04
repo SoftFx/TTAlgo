@@ -27,9 +27,9 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
         private List<double> metaResSpB2;
         private List<double> testResSpB2;
 
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
-        private IndicatorBuilder<Bar> builder;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
+        private IndicatorBuilder<Api.Bar> builder;
 
 
 
@@ -53,10 +53,10 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtTenkanBuffer", testResTen);
             writer.AddMapping("ExtKijunBuffer", testResKij);
             writer.AddMapping("ExtSpanA_Buffer", testResSpA);
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             writer.AddMapping("ExtSpanA2_Buffer", testResSpA2);
             writer.AddMapping("ExtSpanB2_Buffer", testResSpB2);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
             builder.SetParameter("InpTenkan", 9);
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
@@ -120,10 +120,10 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtTenkanBuffer", testResTen);
             writer.AddMapping("ExtKijunBuffer", testResKij);
             writer.AddMapping("ExtSpanA_Buffer", testResSpA);
@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             writer.AddMapping("ExtSpanA2_Buffer", testResSpA2);
             writer.AddMapping("ExtSpanB2_Buffer", testResSpB2);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
             builder.SetParameter("InpTenkan", 9);
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
@@ -187,10 +187,10 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtTenkanBuffer", testResTen);
             writer.AddMapping("ExtKijunBuffer", testResKij);
             writer.AddMapping("ExtSpanA_Buffer", testResSpA);
@@ -199,7 +199,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             writer.AddMapping("ExtSpanA2_Buffer", testResSpA2);
             writer.AddMapping("ExtSpanB2_Buffer", testResSpB2);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
             builder.SetParameter("InpTenkan", 9);
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);
@@ -254,10 +254,10 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtTenkanBuffer", testResTen);
             writer.AddMapping("ExtKijunBuffer", testResKij);
             writer.AddMapping("ExtSpanA_Buffer", testResSpA);
@@ -266,7 +266,7 @@ namespace TickTrader.Algo.Indicators.UTest.IchimokuTest
             writer.AddMapping("ExtSpanA2_Buffer", testResSpA2);
             writer.AddMapping("ExtSpanB2_Buffer", testResSpB2);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Ichimoku.Ichimoku), reader, writer);
             builder.SetParameter("InpTenkan", 9);
             builder.SetParameter("InpKijun", 26);
             builder.SetParameter("InpSenkou", 52);

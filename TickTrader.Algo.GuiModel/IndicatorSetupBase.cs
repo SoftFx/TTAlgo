@@ -17,7 +17,7 @@ namespace TickTrader.Algo.GuiModel
         private List<InputSetup> inputs;
         private List<OutputSetup> outputs;
 
-        public IndicatorSetupBase(AlgoDescriptor descriptor)
+        public IndicatorSetupBase(AlgoPluginDescriptor descriptor)
         {
             this.Descriptor = descriptor;
 
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.GuiModel
         public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
         public IEnumerable<InputSetup> Inputs { get { return inputs; } }
         public IEnumerable<PropertySetupBase> Outputs { get { return outputs; } }
-        public AlgoDescriptor Descriptor { get; private set; }
+        public AlgoPluginDescriptor Descriptor { get; private set; }
 
         public bool IsValid { get; private set; }
         public event Action ValidityChanged = delegate { };

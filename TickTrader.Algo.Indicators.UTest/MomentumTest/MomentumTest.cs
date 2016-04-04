@@ -15,8 +15,8 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
         private StreamReader file;
         private List<double> metaRes;
         private List<double> testRes;
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
         [TestMethod]
@@ -27,13 +27,13 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMomBuffer", testRes);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
             builder.Build();
@@ -62,13 +62,13 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMomBuffer", testRes);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
             builder.Build();
@@ -97,13 +97,13 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMomBuffer", testRes);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
             builder.Build();
@@ -132,13 +132,13 @@ namespace TickTrader.Algo.Indicators.UTest.MomentumTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Close", b => b.Close);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtMomBuffer", testRes);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Momentum.Momentum), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Momentum.Momentum), reader, writer);
             builder.SetParameter("Period", 14);
 
             builder.Build();

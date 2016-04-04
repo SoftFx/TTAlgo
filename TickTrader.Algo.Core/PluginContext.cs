@@ -10,15 +10,18 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginFixture : NoTimeoutByRefObject, IPluginActivator, IPluginContext
+    /// <summary>
+    /// Note: PluginContext is located in separate domain in case of isolated execution
+    /// </summary>
+    public class PluginContext : NoTimeoutByRefObject, IPluginActivator, IPluginDataProvider
     {
         private AlgoPlugin plugin;
-        private List<PluginFixture> nestedIndacators = new List<PluginFixture>();
+        private List<PluginContext> nestedIndacators = new List<PluginContext>();
         private Dictionary<string, DataSeriesBuffer> inputs = new Dictionary<string, DataSeriesBuffer>();
         private Dictionary<string, DataSeriesBuffer> outputs = new Dictionary<string, DataSeriesBuffer>();
         private int virtualPos;
 
-        internal PluginFixture(AlgoPlugin plugin)
+        internal PluginContext(AlgoPlugin plugin)
         {
             this.plugin = plugin;
             SetThisAsActivator();
@@ -30,7 +33,7 @@ namespace TickTrader.Algo.Core
             AlgoPlugin.activator = this;
         }
 
-        public AlgoDescriptor Descriptor { get; private set; }
+        public AlgoPluginDescriptor Descriptor { get; private set; }
         public int VirtualPos { get { return virtualPos; } }
 
         protected AlgoPlugin PluginInstance { get { return plugin; } }
@@ -53,6 +56,9 @@ namespace TickTrader.Algo.Core
             return outputs[id];
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void MoveNext()
         {
             foreach (var indicator in nestedIndacators)
@@ -92,15 +98,15 @@ namespace TickTrader.Algo.Core
 
         private void Init()
         {
-            Descriptor = AlgoDescriptor.Get(plugin.GetType());
+            Descriptor = AlgoPluginDescriptor.Get(plugin.GetType());
             Descriptor.Validate();
         }
 
-        IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
+        IPluginDataProvider IPluginActivator.Activate(AlgoPlugin instance)
         {
             if (instance is Indicator)
             {
-                var fixture = new IndicatorFixture(instance);
+                var fixture = new IndicatorContext(instance);
                 nestedIndacators.Add(fixture);
                 return fixture;
             }
@@ -159,11 +165,49 @@ namespace TickTrader.Algo.Core
         {
             throw new NotImplementedException();
         }
+
+        public MarketSeries GetMainMarketSeries()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Leve2Series GetMainLevel2Series()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static AlgoPluginDescriptor GetDescriptorOrThrow(string id)
+        {
+            AlgoPluginDescriptor descriptor = AlgoPluginDescriptor.Get(id);
+
+            if (descriptor == null)
+                throw new ArgumentException("Cannot find plugin descriptor: " + id);
+
+            return descriptor;
+        }
+
+        public static PluginContext Create(string id)
+        {
+            AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
+            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType);
+            return factory.Create();
+        }
+
+        public static IndicatorContext CreateIndicator(string id)
+        {
+            AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
+
+            if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
+                throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
+
+            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType);
+            return (IndicatorContext)factory.Create();
+        }
     }
 
-    public class IndicatorFixture : PluginFixture
+    public class IndicatorContext : PluginContext
     {
-        public IndicatorFixture(AlgoPlugin plugin)
+        internal IndicatorContext(AlgoPlugin plugin)
             : base(plugin)
         {
             InitParameters();

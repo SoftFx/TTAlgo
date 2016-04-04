@@ -5,13 +5,14 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.DataflowConcept;
 
 namespace TickTrader.Algo.Core.Metadata
 {
     [Serializable]
     public class OutputDescriptor : AlgoPropertyDescriptor
     {
-        public OutputDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, OutputAttribute attribute)
+        public OutputDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, OutputAttribute attribute)
             : base(classMetadata, propertyInfo)
         {
             Validate(propertyInfo);
@@ -51,6 +52,14 @@ namespace TickTrader.Algo.Core.Metadata
                 return (OutputDataSeries<T>)(object)new OutputDataSeries();
             else
                 return new OutputDataSeries<T>();
+        }
+
+        internal DataSeriesProxy<T> CreateOutput2<T>()
+        {
+            if (typeof(T) == typeof(double) && IsShortDefinition)
+                return (DataSeriesProxy<T>)(object)new DataSeriesProxy();
+            else
+                return new DataSeriesProxy<T>();
         }
     }
 }

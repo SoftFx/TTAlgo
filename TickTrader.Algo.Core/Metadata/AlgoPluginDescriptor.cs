@@ -10,18 +10,19 @@ using TickTrader.Algo.Core.Lib;
 namespace TickTrader.Algo.Core.Metadata
 {
     [Serializable]
-    public class AlgoDescriptor
+    public class AlgoPluginDescriptor
     {
-        private static Dictionary<Type, AlgoDescriptor> cacheByType = new Dictionary<Type, AlgoDescriptor>();
-        private static Dictionary<string, AlgoDescriptor> cacheByName = new Dictionary<string, AlgoDescriptor>();
+        private static Dictionary<Type, AlgoPluginDescriptor> cacheByType = new Dictionary<Type, AlgoPluginDescriptor>();
+        private static Dictionary<string, AlgoPluginDescriptor> cacheByName = new Dictionary<string, AlgoPluginDescriptor>();
+        private static Dictionary<Assembly, List<AlgoPluginDescriptor>> cacheByAssembly = new Dictionary<Assembly, List<AlgoPluginDescriptor>>();
 
-        public static AlgoDescriptor Get(Type algoCustomType)
+        public static AlgoPluginDescriptor Get(Type algoCustomType)
         {
-            AlgoDescriptor metadata;
+            AlgoPluginDescriptor metadata;
 
             if (!cacheByType.TryGetValue(algoCustomType, out metadata))
             {
-                metadata = new AlgoDescriptor(algoCustomType);
+                metadata = new AlgoPluginDescriptor(algoCustomType);
                 cacheByType.Add(algoCustomType, metadata);
                 cacheByName.Add(algoCustomType.FullName, metadata);
             }
@@ -29,40 +30,49 @@ namespace TickTrader.Algo.Core.Metadata
             return metadata;
         }
 
-        public static AlgoDescriptor Get(string algoCustomType)
+        public static AlgoPluginDescriptor Get(string algoCustomType)
         {
-            AlgoDescriptor result;
+            AlgoPluginDescriptor result;
             cacheByName.TryGetValue(algoCustomType, out result);
             return result;
         }
 
-        public static IEnumerable<AlgoDescriptor> InspectAssembly(Assembly targetAssembly)
+        public static IEnumerable<AlgoPluginDescriptor> InspectAssembly(Assembly targetAssembly)
         {
-            List<AlgoDescriptor> result = new List<AlgoDescriptor>();
-
-            foreach (Type t in targetAssembly.GetTypes())
+            lock(cacheByAssembly)
             {
-                IndicatorAttribute indicatorAttr = t.GetCustomAttribute<IndicatorAttribute>(false);
-                TradeBotAttribute botAttr = t.GetCustomAttribute<TradeBotAttribute>(false);
-
-                if (indicatorAttr != null && botAttr != null)
-                    continue;
-
-                if (indicatorAttr != null)
+                if (cacheByAssembly.ContainsKey(targetAssembly))
+                    return cacheByAssembly[targetAssembly];
+                else
                 {
-                    var meta = AlgoDescriptor.Get(t);
-                    if (meta.AlgoLogicType == AlgoTypes.Indicator)
-                        result.Add(meta);
-                }
-                else if (botAttr != null)
-                {
-                    var meta = AlgoDescriptor.Get(t);
-                    if (meta.AlgoLogicType == AlgoTypes.Robot)
-                        result.Add(meta);
+                    List<AlgoPluginDescriptor> descriptors = new List<AlgoPluginDescriptor>();
+
+                    foreach (Type t in targetAssembly.GetTypes())
+                    {
+                        IndicatorAttribute indicatorAttr = t.GetCustomAttribute<IndicatorAttribute>(false);
+                        TradeBotAttribute botAttr = t.GetCustomAttribute<TradeBotAttribute>(false);
+
+                        if (indicatorAttr != null && botAttr != null)
+                            continue;
+
+                        if (indicatorAttr != null)
+                        {
+                            var meta = AlgoPluginDescriptor.Get(t);
+                            if (meta.AlgoLogicType == AlgoTypes.Indicator)
+                                descriptors.Add(meta);
+                        }
+                        else if (botAttr != null)
+                        {
+                            var meta = AlgoPluginDescriptor.Get(t);
+                            if (meta.AlgoLogicType == AlgoTypes.Robot)
+                                descriptors.Add(meta);
+                        }
+                    }
+
+                    cacheByAssembly.Add(targetAssembly, descriptors);
+                    return descriptors;
                 }
             }
-
-            return result;
         }
 
         private List<AlgoPropertyDescriptor> allProperties = new List<AlgoPropertyDescriptor>();
@@ -71,7 +81,7 @@ namespace TickTrader.Algo.Core.Metadata
         private List<OutputDescriptor> outputs = new List<OutputDescriptor>();
         private PluginFactory factory;
 
-        public AlgoDescriptor(Type algoCustomType)
+        public AlgoPluginDescriptor(Type algoCustomType)
         {
             this.AlgoClassType = algoCustomType;
 
@@ -98,14 +108,6 @@ namespace TickTrader.Algo.Core.Metadata
 
             this.factory = new PluginFactory(AlgoClassType);
             this.Id = AlgoClassType.FullName;
-        }
-
-        public IndicatorFixture CreateIndicator()
-        {
-            if (AlgoLogicType != AlgoTypes.Indicator)
-                throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
-
-            return factory.CreateIndicator();
         }
 
         public void Validate()
@@ -196,48 +198,7 @@ namespace TickTrader.Algo.Core.Metadata
         public IEnumerable<AlgoPropertyDescriptor> AllProperties { get { return allProperties; } }
         public IEnumerable<ParameterDescriptor> Parameters { get { return parameters; } }
         public IEnumerable<InputDescriptor> Inputs { get { return inputs; } }
-        public IEnumerable<OutputDescriptor> Outputs { get { return outputs; } }
-
-        private class PluginFactory : NoTimeoutByRefObject, IPluginActivator
-        {
-            private Type pluginType;
-            private PluginFixture fixture;
-
-            public PluginFactory(Type algoType)
-            {
-                this.pluginType = algoType;
-            }
-
-            private void  CreateInstance()
-            {
-                try
-                {
-                    Api.AlgoPlugin.activator = this;
-                    Activator.CreateInstance(pluginType);
-                }
-                finally
-                {
-                    Api.AlgoPlugin.activator = null;
-                }
-            }
-
-            public IndicatorFixture CreateIndicator()
-            {
-                CreateInstance();
-                return (IndicatorFixture)fixture;
-            }
-
-            IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
-            {
-                if (instance is Indicator)
-                {
-                    fixture = new IndicatorFixture(instance);
-                    return fixture;
-                }
-
-                return null;
-            }
-        }
+        public IEnumerable<OutputDescriptor> Outputs { get { return outputs; } }    
     }
 
     public enum AlgoTypes { Indicator, Robot, Unknown }

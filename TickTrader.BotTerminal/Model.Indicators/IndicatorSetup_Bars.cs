@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     public class IndicatorSetup_Bars : IndicatorSetupBase
     {
-        public IndicatorSetup_Bars(AlgoDescriptor descriptor)
+        public IndicatorSetup_Bars(AlgoPluginDescriptor descriptor)
             : base(descriptor)
         {
         }

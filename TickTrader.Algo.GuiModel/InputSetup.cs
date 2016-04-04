@@ -17,7 +17,7 @@ namespace TickTrader.Algo.GuiModel
 
     public abstract class BarInputSetup : InputSetup
     {
-        public abstract void Configure(DirectReader<Bar> reader);
+        public abstract void Configure(DirectReader<Api.Bar> reader);
 
         public class Invalid : BarInputSetup
         {
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.GuiModel
                 this.Error = error;
             }
 
-            public override void Configure(DirectReader<Bar> reader)
+            public override void Configure(DirectReader<Api.Bar> reader)
             {
                 throw new Exception("Cannot configure invalid input!");
             }
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.GuiModel
                 SetMetadata(descriptor);
             }
 
-            public override void Configure(DirectReader<Bar> reader)
+            public override void Configure(DirectReader<Api.Bar> reader)
             {
                 reader.AddMapping(Id, b => b.High);
             }
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.GuiModel
                 SetMetadata(descriptor);
             }
 
-            public override void Configure(DirectReader<Bar> reader)
+            public override void Configure(DirectReader<Api.Bar> reader)
             {
                 reader.AddMapping(Id, b => b);
             }

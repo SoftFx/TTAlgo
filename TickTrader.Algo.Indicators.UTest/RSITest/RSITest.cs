@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
         private List<double> testResRSI;
 
 
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
@@ -31,14 +31,14 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtRSIBuffer", testResRSI);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(RSI.RSI), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(RSI.RSI), reader, writer);
             builder.SetParameter("InpRSIPeriod", 14);
 
 
@@ -68,14 +68,14 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtRSIBuffer", testResRSI);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(RSI.RSI), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(RSI.RSI), reader, writer);
             builder.SetParameter("InpRSIPeriod", 14);
 
 
@@ -106,14 +106,14 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtRSIBuffer", testResRSI);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(RSI.RSI), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(RSI.RSI), reader, writer);
             builder.SetParameter("InpRSIPeriod", 14);
 
 
@@ -143,14 +143,14 @@ namespace TickTrader.Algo.Indicators.UTest.RSITest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtRSIBuffer", testResRSI);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(RSI.RSI), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(RSI.RSI), reader, writer);
             builder.SetParameter("InpRSIPeriod", 14);
 
 

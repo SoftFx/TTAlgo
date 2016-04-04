@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     internal class BarChartModel : ChartModelBase
     {
         private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
-        private readonly List<Api.Bar> indicatorData = new List<Api.Bar>();
+        private readonly List<Algo.Core.Bar> indicatorData = new List<Algo.Core.Bar>();
         private BarPeriod period;
 
         public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
             MainSeries.DataSeries = chartData;
         }
 
-        protected override bool IsIndicatorSupported(AlgoDescriptor descriptor)
+        protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
         {
             return true;
         }
@@ -105,10 +105,10 @@ namespace TickTrader.BotTerminal
             return new IndicatorConfig(repItem, this);
         }
 
-        private static void Convert(List<Bar> fdkData, List<Api.Bar> chartData)
+        private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.Bar> chartData)
         {
             chartData.AddRange(
-            fdkData.Select(b => new Api.Bar()
+            fdkData.Select(b => new Algo.Core.Bar()
             {
                 Open = b.Open,
                 Close = b.Close,
@@ -134,12 +134,12 @@ namespace TickTrader.BotTerminal
             }
 
             public long InstanceId { get; private set; }
-            public AlgoDescriptor Descriptor { get { return UiModel.Descriptor; } }
+            public AlgoPluginDescriptor Descriptor { get { return UiModel.Descriptor; } }
             public IndicatorSetupBase UiModel { get; private set; }
 
             public IndicatorModel CreateIndicator()
             {
-                DirectReader<Api.Bar> reader = new DirectReader<Api.Bar>(chart.indicatorData);
+                DirectReader<Algo.Core.Bar> reader = new DirectReader<Algo.Core.Bar>(chart.indicatorData);
 
                 foreach (var input in UiModel.Inputs)
                     ((BarInputSetup)input).Configure(reader);

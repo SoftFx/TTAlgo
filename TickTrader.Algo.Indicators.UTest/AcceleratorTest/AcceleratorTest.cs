@@ -17,8 +17,8 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
         private List<double> testResAc;
         private List<double> testResUp;
         private List<double> testResDn;
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
         [TestMethod]
@@ -33,15 +33,15 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtACBuffer", testResAc);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Accelerator.Accelerator), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
             builder.SetParameter("DataLimit", 38);
@@ -80,15 +80,15 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtACBuffer", testResAc);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Accelerator.Accelerator), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
             builder.SetParameter("DataLimit", 38);
@@ -127,15 +127,15 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtACBuffer", testResAc);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Accelerator.Accelerator), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
             builder.SetParameter("DataLimit", 38);
@@ -174,15 +174,15 @@ namespace TickTrader.Algo.Indicators.UTest.AcceleratorTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtACBuffer", testResAc);
             writer.AddMapping("ExtUpBuffer", testResUp);
             writer.AddMapping("ExtDnBuffer", testResDn);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Accelerator.Accelerator), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Accelerator.Accelerator), reader, writer);
             builder.SetParameter("PeriodFast", 5);
             builder.SetParameter("PeriodSlow", 34);
             builder.SetParameter("DataLimit", 38);

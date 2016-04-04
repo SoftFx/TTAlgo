@@ -43,11 +43,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bar.cs" />
+    <Compile Include="DataflowConcept\BuffersCoordinator.cs" />
+    <Compile Include="DataflowConcept\DataSeriesProxy.cs" />
+    <Compile Include="DataflowConcept\IndicatorBuilderSlim.cs" />
+    <Compile Include="DataflowConcept\PluginContext.cs" />
+    <Compile Include="PluginFactory.cs" />
+    <Compile Include="DataflowConcept\Fixtures.cs" />
+    <Compile Include="DataflowConcept\PluginExecutor.cs" />
+    <Compile Include="DataflowConcept\ExecutionContext.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="AlgoContext.cs" />
     <Compile Include="IndicatorBuilder2.cs" />
+    <Compile Include="Lib\Dataflow.cs" />
+    <Compile Include="Metadata\AlgoPluginRef.cs" />
     <Compile Include="PluginExecutor.cs" />
-    <Compile Include="PluginFixture.cs" />
+    <Compile Include="PluginContext.cs" />
     <Compile Include="AsyncDatasource.cs" />
     <Compile Include="IndicatorBuilder.cs" />
     <Compile Include="ReaderBase.cs" />
@@ -57,7 +68,7 @@
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
     <Compile Include="Lib\NoTimeoutByRefObject.cs" />
-    <Compile Include="Metadata\AlgoDescriptor.cs" />
+    <Compile Include="Metadata\AlgoPluginDescriptor.cs" />
     <Compile Include="Metadata\AlgoPropertyDescriptor.cs" />
     <Compile Include="Metadata\InputDescriptor.cs" />
     <Compile Include="Metadata\OutputDescriptor.cs" />

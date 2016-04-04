@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -47,9 +48,9 @@ namespace TickTrader.Algo.Core.Repository
             stateControl.OnEnter(States.Scanning, () => scanTask = Task.Factory.StartNew(Scan));
         }
 
-        public event Action<AlgoRepositoryItem> Added = delegate { };
-        public event Action<AlgoRepositoryItem> Removed = delegate { };
-        public event Action<AlgoRepositoryItem> Replaced = delegate { };
+        public event Action<AlgoPluginRef> Added = delegate { };
+        public event Action<AlgoPluginRef> Removed = delegate { };
+        public event Action<AlgoPluginRef> Replaced = delegate { };
 
         public void Start()
         {

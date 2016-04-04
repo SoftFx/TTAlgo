@@ -14,8 +14,8 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
         private List<double> metaResBB;
         private List<double> testResBB;
 
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
         [TestMethod]
@@ -27,13 +27,13 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBearsBuffer", testResBB);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Bears.Bears), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Bears.Bears), reader, writer);
             builder.SetParameter("BearsPeriod", 13);
 
 
@@ -64,13 +64,13 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBearsBuffer", testResBB);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Bears.Bears), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Bears.Bears), reader, writer);
             builder.SetParameter("BearsPeriod", 13);
 
 
@@ -101,13 +101,13 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBearsBuffer", testResBB);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Bears.Bears), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Bears.Bears), reader, writer);
             builder.SetParameter("BearsPeriod", 13);
 
 
@@ -137,13 +137,13 @@ namespace TickTrader.Algo.Indicators.UTest.BearsTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtBearsBuffer", testResBB);
 
-            builder = new IndicatorBuilder<Bar>(typeof(Bears.Bears), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Bears.Bears), reader, writer);
             builder.SetParameter("BearsPeriod", 13);
 
 

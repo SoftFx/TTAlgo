@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private Isolated<AlgoSandbox> isolatedSandbox;
         private StateMachine<States> stateControl = new StateMachine<States>();
-        private Dictionary<string, AlgoRepositoryItem> items = new Dictionary<string, AlgoRepositoryItem>();
+        private Dictionary<string, AlgoPluginRef> items = new Dictionary<string, AlgoPluginRef>();
         private bool isChanged;
         private Task scanTask;
 
@@ -48,9 +48,9 @@ namespace TickTrader.Algo.Core.Repository
         public ScanStatuses ScanStatus { get; private set; }
         public FileInfo FileInfo { get; private set; }
 
-        public event Action<AlgoRepositoryItem> Added;
-        public event Action<AlgoRepositoryItem> Removed;
-        public event Action<AlgoRepositoryItem> Replaced;
+        public event Action<AlgoPluginRef> Added;
+        public event Action<AlgoPluginRef> Removed;
+        public event Action<AlgoPluginRef> Replaced;
 
         public void Dispose()
         {
@@ -121,13 +121,13 @@ namespace TickTrader.Algo.Core.Repository
             }
         }
 
-        private void Merge(IEnumerable<AlgoDescriptor> newMetadata, AlgoSandbox newSandbox)
+        private void Merge(IEnumerable<AlgoPluginDescriptor> newMetadata, AlgoSandbox newSandbox)
         {
             // upsert
 
-            foreach (AlgoDescriptor newInfo in newMetadata)
+            foreach (AlgoPluginDescriptor newInfo in newMetadata)
             {
-                var newItem = new AlgoRepositoryItem(newSandbox, newInfo);
+                var newItem = new IsolatedPluginRef(newInfo, newSandbox);
 
                 if (!items.ContainsKey(newInfo.Id))
                 {
@@ -144,7 +144,7 @@ namespace TickTrader.Algo.Core.Repository
             // delete
 
             var newMetadataLookup = newMetadata.ToDictionary(a => a.Id);
-            foreach (AlgoRepositoryItem item in items.Values)
+            foreach (AlgoPluginRef item in items.Values)
             {
                 if (!newMetadataLookup.ContainsKey(item.Descriptor.Id))
                 {

@@ -10,15 +10,15 @@ namespace TickTrader.Algo.Core
 {
     public class IndicatorBuilder<TRow> : IIndicatorBuilder
     {
-        private IndicatorFixture fixture;
+        private IndicatorContext fixture;
         private int readPos;
 
         public IndicatorBuilder(Type algoLocalDomainType, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
-            : this(AlgoDescriptor.Get(algoLocalDomainType), reader, writer)
+            : this(AlgoPluginDescriptor.Get(algoLocalDomainType), reader, writer)
         {
         }
 
-        public IndicatorBuilder(AlgoDescriptor descriptor, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
+        public IndicatorBuilder(AlgoPluginDescriptor descriptor, IAlgoDataReader<TRow> reader, IAlgoDataWriter<TRow> writer)
         {
             if (descriptor == null)
                 throw new ArgumentNullException("descriptor");
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core
             this.Reader = reader;
             this.Writer = writer;
 
-            fixture = descriptor.CreateIndicator();
+            fixture = IndicatorContext.CreateIndicator(descriptor.Id);
 
             Init();
         }

@@ -125,7 +125,7 @@ namespace TickTrader.BotTerminal
             BidSeries.DataSeries = bidData;
         }
 
-        protected override bool IsIndicatorSupported(AlgoDescriptor descriptor)
+        protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
         {
             return true;
         }

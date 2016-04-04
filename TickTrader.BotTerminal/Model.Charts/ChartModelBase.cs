@@ -205,7 +205,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract void UpdateSeriesStyle();
-        protected abstract bool IsIndicatorSupported(AlgoDescriptor descriptor);
+        protected abstract bool IsIndicatorSupported(AlgoPluginDescriptor descriptor);
         protected abstract IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem);
 
         protected void Support(SelectableChartTypes chartType)

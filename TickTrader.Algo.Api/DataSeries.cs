@@ -15,4 +15,12 @@ namespace TickTrader.Algo.Api
     public interface DataSeries : DataSeries<double>
     {
     }
+
+    public interface TimeSeries : DataSeries<DateTime>
+    {
+    }
+
+    public interface BookSeries : DataSeries<IReadOnlyList<BookEntry>>
+    {
+    }
 }

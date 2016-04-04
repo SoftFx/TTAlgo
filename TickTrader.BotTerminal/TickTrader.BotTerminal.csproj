@@ -153,6 +153,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Controls\ColorPicker.cs" />
+    <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
@@ -178,6 +180,7 @@
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Lib.Collections\Interfaces.cs" />
     <Compile Include="Lib.Collections\ObservableList.cs" />
+    <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />

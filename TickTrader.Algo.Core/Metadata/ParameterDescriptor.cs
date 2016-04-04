@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class ParameterDescriptor : AlgoPropertyDescriptor
     {
-        public ParameterDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, ParameterAttribute attribute)
+        public ParameterDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, ParameterAttribute attribute)
             : base(classMetadata, propertyInfo)
         {
             Validate(propertyInfo);

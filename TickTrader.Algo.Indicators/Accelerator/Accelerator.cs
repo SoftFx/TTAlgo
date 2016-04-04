@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Accelerator
         public int DataLimit { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public MarketSeries Bars { get; set; }
 
         [Output]
         public DataSeries ExtACBuffer { get; set; }
@@ -74,7 +74,6 @@ namespace TickTrader.Algo.Indicators.Accelerator
             }
         private double GetMACD(int pos)
         {
-            
             double fastRes = MovingAverages.SimpleMA(pos, PeriodFast,
                 Bars.Take(pos + PeriodFast).Select(b => (b.High + b.Low)/2).ToList());
             double slowRes = MovingAverages.SimpleMA(pos, PeriodSlow,

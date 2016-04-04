@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
         private List<double> testResPor;
 
 
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
@@ -31,14 +31,14 @@ namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
@@ -70,14 +70,14 @@ namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
@@ -110,14 +110,14 @@ namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 
@@ -149,14 +149,14 @@ namespace TickTrader.Algo.Indicators.UTest.ParabolicTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02-2015.11.03_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtSARBuffer", testResPor);
 
 
-            builder = new IndicatorBuilder<Bar>(typeof(Parabolic.Parabolic), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(Parabolic.Parabolic), reader, writer);
             builder.SetParameter("InpSARStep", 0.02);
             builder.SetParameter("InpSARMaximum", 0.2);
 

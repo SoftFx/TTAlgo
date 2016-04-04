@@ -12,7 +12,6 @@ namespace TickTrader.Algo.Indicators.HeikenAshi
         [Input]
         public DataSeries<Bar> Bars { get; set; }
 
-
         [Output]
         public DataSeries ExtLowHighBuffer { get; set; }
         [Output]

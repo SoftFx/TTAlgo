@@ -11,7 +11,9 @@ namespace TickTrader.Algo.Api
         [ThreadStatic]
         internal static IPluginActivator activator;
 
-        private IPluginContext context;
+        private IPluginDataProvider context;
+        private MarketSeries mainMarketSeries;
+        private Leve2Series mainLevel2Series;
         private OrderList orders;
         private PositionList positions;
 
@@ -21,6 +23,26 @@ namespace TickTrader.Algo.Api
                 throw new InvalidOperationException("Algo context is not initialized!");
 
             this.context = activator.Activate(this);
+        }
+
+        protected MarketSeries MainMarketSeries
+        {
+            get
+            {
+                if (mainMarketSeries == null)
+                    mainMarketSeries = context.GetMainMarketSeries();
+                return mainMarketSeries;
+            }
+        }
+
+        protected Leve2Series MainLevel2Series
+        {
+            get
+            {
+                if (mainLevel2Series != null)
+                    mainLevel2Series = context.GetMainLevel2Series();
+                return mainLevel2Series;
+            }
         }
 
         protected OrderList Orders

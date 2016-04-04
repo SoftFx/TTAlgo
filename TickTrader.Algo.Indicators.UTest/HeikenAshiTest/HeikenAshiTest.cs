@@ -20,8 +20,8 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
         private List<double> testResHAOpen;
         private List<double> metaResHAClose;
         private List<double> testResHAClose;
-        private DirectReader<Bar> reader;
-        private DirectWriter<Bar> writer;
+        private DirectReader<Api.Bar> reader;
+        private DirectWriter<Api.Bar> writer;
         private IndicatorBuilder<Api.Bar> builder;
 
 
@@ -40,16 +40,16 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtLowHighBuffer", testResHALH);
             writer.AddMapping("ExtHighLowBuffer", testResHAHL);
             writer.AddMapping("ExtOpenBuffer", testResHAOpen);
             writer.AddMapping("ExtCloseBuffer", testResHAClose);
 
-            builder = new IndicatorBuilder<Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
 
 
 
@@ -92,16 +92,16 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-EURUSD\EURUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtLowHighBuffer", testResHALH);
             writer.AddMapping("ExtHighLowBuffer", testResHAHL);
             writer.AddMapping("ExtOpenBuffer", testResHAOpen);
             writer.AddMapping("ExtCloseBuffer", testResHAClose);
 
-            builder = new IndicatorBuilder<Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
 
 
 
@@ -143,16 +143,16 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtLowHighBuffer", testResHALH);
             writer.AddMapping("ExtHighLowBuffer", testResHAHL);
             writer.AddMapping("ExtOpenBuffer", testResHAOpen);
             writer.AddMapping("ExtCloseBuffer", testResHAClose);
 
-            builder = new IndicatorBuilder<Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
 
 
 
@@ -195,16 +195,16 @@ namespace TickTrader.Algo.Indicators.UTest.HeikenAshiTest
 
             file = File.OpenText(@"..\..\..\IndicatorFiles\2015.11.02_indicators-XAUUSD\XAUUSD-M1-bids.txt");
 
-            reader = new DirectReader<Bar>(new TTQuoteFileReader(file));
+            reader = new DirectReader<Api.Bar>(new TTQuoteFileReader(file));
             reader.AddMapping("Bars", b => b);
 
-            writer = new DirectWriter<Bar>();
+            writer = new DirectWriter<Api.Bar>();
             writer.AddMapping("ExtLowHighBuffer", testResHALH);
             writer.AddMapping("ExtHighLowBuffer", testResHAHL);
             writer.AddMapping("ExtOpenBuffer", testResHAOpen);
             writer.AddMapping("ExtCloseBuffer", testResHAClose);
 
-            builder = new IndicatorBuilder<Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
+            builder = new IndicatorBuilder<Api.Bar>(typeof(HeikenAshi.HeikenAshi), reader, writer);
 
 
 

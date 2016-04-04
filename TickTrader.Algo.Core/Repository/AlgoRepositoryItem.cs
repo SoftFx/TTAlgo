@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core.Repository
     {
         private AlgoSandbox sandbox;
 
-        internal AlgoRepositoryItem(AlgoSandbox sandbox, AlgoDescriptor info)
+        internal AlgoRepositoryItem(AlgoSandbox sandbox, AlgoPluginDescriptor info)
         {
             this.sandbox = sandbox;
             this.Descriptor = info;
@@ -19,6 +19,6 @@ namespace TickTrader.Algo.Core.Repository
 
         public string Id { get { return Descriptor.Id; } }
         public string DisplayName { get { return Descriptor.DisplayName; } }
-        public AlgoDescriptor Descriptor { get; private set; }
+        public AlgoPluginDescriptor Descriptor { get; private set; }
     }
 }
