@@ -4,7 +4,7 @@ using TickTrader.Algo.Indicators.Functions;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Moving Average")]
+    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Trend/Moving Average")]
     public class MovingAverage : Indicator
     {
         public enum Method
@@ -65,6 +65,9 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                     break;
                 case Method.CustomExponential:
                     MAInstance = new CustomEMA(Period, Shift, _targetPrice, SmoothFactor);
+                    break;
+                case Method.Triangular:
+                    MAInstance = new TriMA(Period, Shift, _targetPrice);
                     break;
             }
             MAInstance.Init();

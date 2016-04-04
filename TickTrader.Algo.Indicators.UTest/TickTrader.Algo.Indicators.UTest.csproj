@@ -58,6 +58,8 @@
     <Compile Include="AwesomeTest\AwesomeTest.cs" />
     <Compile Include="BandsTest\BandsTest.cs" />
     <Compile Include="BearsTest\BearsTest.cs" />
+    <Compile Include="BillWilliamsTests\Alligator\AlligatorTest.cs" />
+    <Compile Include="BillWilliamsTests\Alligator\AlligatorTestCase.cs" />
     <Compile Include="BullsTest\BullsTest.cs" />
     <Compile Include="CCITest\CCITest.cs" />
     <Compile Include="HeikenAshiTest\HeikenAshiTest.cs" />

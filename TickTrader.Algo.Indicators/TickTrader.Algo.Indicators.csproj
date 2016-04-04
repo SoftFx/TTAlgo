@@ -45,6 +45,7 @@
     <Compile Include="Awesome\Awesome.cs" />
     <Compile Include="Bands\Bands.cs" />
     <Compile Include="Bears\Bears.cs" />
+    <Compile Include="BillWilliams\Alligator\Alligator.cs" />
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
