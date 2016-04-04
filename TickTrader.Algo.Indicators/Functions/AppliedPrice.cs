@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Indicators.Functions
                     res = (bar.High + bar.Low + bar.Close)/3;
                     break;
                 case Target.Weighted:
-                    res = (bar.High + bar.Low + 2*bar.Close)/3;
+                    res = (bar.High + bar.Low + 2*bar.Close)/4;
                     break;
             }
 

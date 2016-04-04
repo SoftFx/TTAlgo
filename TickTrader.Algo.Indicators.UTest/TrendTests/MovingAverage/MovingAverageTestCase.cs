@@ -27,8 +27,8 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
             TargetPrice = 0;
             SmoothFactor = smoothFactor;
             CurBufferIndex = 0;
-            AnswerBuffers = new List<double>[4*6];
-            for (var i = 0; i < 4*6; i++)
+            AnswerBuffers = new List<double>[4*7];
+            for (var i = 0; i < 4*7; i++)
             {
                 AnswerBuffers[i] = new List<double>();
             }
@@ -57,11 +57,11 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
         protected override void CheckAnswer(string path)
         {
             for (var i = 0; i < 4; i++)
-                for (var j = 0; j < 6; j++)
+                for (var j = 0; j < 7; j++)
                 {
                     TargetMethod = i;
                     TargetPrice = j;
-                    CurBufferIndex = 6*i + j;
+                    CurBufferIndex = 7*i + j;
                     var metaAnswer = new List<double>();
                     var answerPath = $"{path}_{TargetMethod}_{TargetPrice}.bin";
                     using (var file = File.Open(answerPath, FileMode.Open, FileAccess.Read))
@@ -104,11 +104,11 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
         protected override void Run()
         {
             for (var i = 0; i < 4; i++)
-                for (var j = 0; j < 6; j++)
+                for (var j = 0; j < 7; j++)
                 {
                     TargetMethod = i;
                     TargetPrice = j;
-                    CurBufferIndex = 6*i + j;
+                    CurBufferIndex = 7*i + j;
                     Writer = new DirectWriter<Bar>();
                     SetupWriter();
                     Builder = new IndicatorBuilder<Bar>(IndicatorType, Reader, Writer);
