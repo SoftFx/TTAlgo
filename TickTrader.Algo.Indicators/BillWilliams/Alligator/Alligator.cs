@@ -64,30 +64,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         private void InitMAInstance(out IMA instance, out Queue<double> cache, int period, int shift)
         {
             cache = new Queue<double>();
-            switch (_targetMethod)
-            {
-                case MovingAverage.Method.Simple:
-                    instance = new SMA(period, shift, _targetPrice);
-                    break;
-                case MovingAverage.Method.Exponential:
-                    instance = new EMA(period, shift, _targetPrice);
-                    break;
-                case MovingAverage.Method.Smoothed:
-                    instance = new SMMA(period, shift, _targetPrice);
-                    break;
-                case MovingAverage.Method.LinearWeighted:
-                    instance = new LWMA(period, shift, _targetPrice);
-                    break;
-                case MovingAverage.Method.CustomExponential:
-                    instance = new CustomEMA(period, shift, _targetPrice, 2.0/(period + 1));
-                    break;
-                case MovingAverage.Method.Triangular:
-                    instance = new TriMA(period, shift, _targetPrice);
-                    break;
-                default:
-                    instance = null;
-                    return;
-            }
+            instance = MovingAverage.CreateMAInstance(period, shift, _targetMethod, _targetPrice);
             instance.Init();
         }
 
@@ -98,27 +75,6 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
             InitMAInstance(out _lips, out _lipsCache, LipsPeriod, LipsShift);
         }
 
-        private void SetValue(DataSeries series, IMA instance, Queue<double> cache)
-        {
-            var res = instance.Calculate(Bars[0]);
-            if (instance.Shift > 0)
-            {
-                if (Bars.Count > instance.Shift)
-                {
-                    series[0] = cache.Dequeue();
-                }
-                else
-                {
-                    series[0] = double.NaN;
-                }
-                cache.Enqueue(res);
-            }
-            else if (instance.Shift <= 0 && -instance.Shift < Bars.Count)
-            {
-                series[-instance.Shift] = res;
-            }
-        }
-
         protected override void Calculate()
         {
             //--------------------
@@ -127,9 +83,9 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
                 Init();
             }
             //--------------------
-            SetValue(Jaws, _jaws, _jawsCache);
-            SetValue(Teeth, _teeth, _teethCache);
-            SetValue(Lips, _lips, _lipsCache);
+            Utility.ApplyShiftedValue(Jaws, _jaws.Shift, _jaws.Calculate(Bars[0]), _jawsCache, Bars.Count);
+            Utility.ApplyShiftedValue(Teeth, _teeth.Shift, _teeth.Calculate(Bars[0]), _teethCache, Bars.Count);
+            Utility.ApplyShiftedValue(Lips, _lips.Shift, _lips.Calculate(Bars[0]), _lipsCache, Bars.Count);
         }
     }
 
