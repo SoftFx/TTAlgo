@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Accelerator
         public int DataLimit { get; set; }
 
         [Input]
-        public MarketSeries Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output]
         public DataSeries ExtACBuffer { get; set; }

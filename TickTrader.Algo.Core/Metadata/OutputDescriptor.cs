@@ -46,14 +46,6 @@ namespace TickTrader.Algo.Core.Metadata
         public PlotType PlotType { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
 
-        internal OutputDataSeries<T> CreateOutput<T>()
-        {
-            if (typeof(T) == typeof(double) && IsShortDefinition)
-                return (OutputDataSeries<T>)(object)new OutputDataSeries();
-            else
-                return new OutputDataSeries<T>();
-        }
-
         internal DataSeriesProxy<T> CreateOutput2<T>()
         {
             if (typeof(T) == typeof(double) && IsShortDefinition)

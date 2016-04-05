@@ -79,7 +79,6 @@ namespace TickTrader.Algo.Core.Metadata
         private List<ParameterDescriptor> parameters = new List<ParameterDescriptor>();
         private List<InputDescriptor> inputs = new List<InputDescriptor>();
         private List<OutputDescriptor> outputs = new List<OutputDescriptor>();
-        private PluginFactory factory;
 
         public AlgoPluginDescriptor(Type algoCustomType)
         {
@@ -106,7 +105,6 @@ namespace TickTrader.Algo.Core.Metadata
             if (string.IsNullOrWhiteSpace(DisplayName))
                 DisplayName = algoCustomType.Name;
 
-            this.factory = new PluginFactory(AlgoClassType);
             this.Id = AlgoClassType.FullName;
         }
 

@@ -12,10 +12,9 @@ namespace TickTrader.Algo.Api
         internal static IPluginActivator activator;
 
         private IPluginDataProvider context;
-        private MarketSeries mainMarketSeries;
-        private Leve2Series mainLevel2Series;
-        private OrderList orders;
-        private PositionList positions;
+        private SymbolProvider symbolProvider;
+        private MarketDataProvider marketDataProvider;
+        private AccountDataProvider accountDataProvider;
 
         internal AlgoPlugin()
         {
@@ -25,43 +24,33 @@ namespace TickTrader.Algo.Api
             this.context = activator.Activate(this);
         }
 
-        protected MarketSeries MainMarketSeries
+        protected AccountDataProvider Account
         {
             get
             {
-                if (mainMarketSeries == null)
-                    mainMarketSeries = context.GetMainMarketSeries();
-                return mainMarketSeries;
+                if (accountDataProvider == null)
+                    accountDataProvider = context.GetAccountDataProvider();
+                return accountDataProvider;
             }
         }
 
-        protected Leve2Series MainLevel2Series
+        protected MarketDataProvider MarketSeries
         {
             get
             {
-                if (mainLevel2Series != null)
-                    mainLevel2Series = context.GetMainLevel2Series();
-                return mainLevel2Series;
+                if (marketDataProvider == null)
+                    marketDataProvider = context.GetMarketDataProvider();
+                return marketDataProvider;
             }
         }
 
-        protected OrderList Orders
+        protected SymbolProvider Symbols
         {
             get
             {
-                if (orders == null)
-                    orders = context.GetOrdersCollection();
-                return orders;
-            }
-        }
-
-        protected PositionList Positions
-        {
-            get
-            {
-                if (positions == null)
-                    positions =  context.GetPositionsCollection();
-                return positions;
+                if (symbolProvider == null)
+                    symbolProvider = context.GetSymbolProvider();
+                return symbolProvider;
             }
         }
 

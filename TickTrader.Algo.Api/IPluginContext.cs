@@ -8,10 +8,9 @@ namespace TickTrader.Algo.Api
 {
     internal interface IPluginDataProvider
     {
-        OrderList GetOrdersCollection();
-        PositionList GetPositionsCollection();
-        MarketSeries GetMainMarketSeries();
-        Leve2Series GetMainLevel2Series();
+        MarketDataProvider GetMarketDataProvider();
+        AccountDataProvider GetAccountDataProvider();
+        SymbolProvider GetSymbolProvider();
     }
 
     internal interface IPluginActivator

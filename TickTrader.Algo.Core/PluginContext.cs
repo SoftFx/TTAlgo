@@ -10,20 +10,19 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    /// <summary>
-    /// Note: PluginContext is located in separate domain in case of isolated execution
-    /// </summary>
-    public class PluginContext : NoTimeoutByRefObject, IPluginActivator, IPluginDataProvider
+    internal class PluginContext : NoTimeoutByRefObject, IPluginActivator
     {
         private AlgoPlugin plugin;
+        private IPluginDataProvider provider;
         private List<PluginContext> nestedIndacators = new List<PluginContext>();
-        private Dictionary<string, DataSeriesBuffer> inputs = new Dictionary<string, DataSeriesBuffer>();
-        private Dictionary<string, DataSeriesBuffer> outputs = new Dictionary<string, DataSeriesBuffer>();
-        private int virtualPos;
+        private Dictionary<string, IDataSeriesProxy> inputs = new Dictionary<string, IDataSeriesProxy>();
+        private Dictionary<string, IDataSeriesProxy> outputs = new Dictionary<string, IDataSeriesProxy>();
 
-        internal PluginContext(AlgoPlugin plugin)
+        internal PluginContext(AlgoPlugin plugin, IPluginDataProvider provider, BuffersCoordinator coordinator)
         {
             this.plugin = plugin;
+            this.provider = provider;
+            this.Coordinator = coordinator;
             SetThisAsActivator();
             Init();
         }
@@ -33,8 +32,8 @@ namespace TickTrader.Algo.Core
             AlgoPlugin.activator = this;
         }
 
+        public BuffersCoordinator Coordinator { get; private set; }
         public AlgoPluginDescriptor Descriptor { get; private set; }
-        public int VirtualPos { get { return virtualPos; } }
 
         protected AlgoPlugin PluginInstance { get { return plugin; } }
 
@@ -46,45 +45,19 @@ namespace TickTrader.Algo.Core
             paramDescriptor.Set(plugin, val);
         }
 
-        public IDataSeriesBuffer GetInput(string id)
+        public IDataSeriesProxy GetInput(string id)
         {
             return inputs[id];
         }
 
-        public IDataSeriesBuffer GetOutput(string id)
+        public DataSeriesProxy<T> GetInput<T>(string id)
+        {
+            return (DataSeriesProxy<T>)inputs[id];
+        }
+
+        public IDataSeriesProxy GetOutput(string id)
         {
             return outputs[id];
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void MoveNext()
-        {
-            foreach (var indicator in nestedIndacators)
-                indicator.MoveNext();
-
-            foreach (var input in inputs.Values)
-                input.IncrementVirtualSize();
-
-            foreach (var output in outputs.Values)
-                output.IncrementVirtualSize();
-
-            virtualPos++;
-        }
-
-        public void Reset()
-        {
-            foreach (var indicator in nestedIndacators)
-                indicator.MoveNext();
-
-            foreach (var input in inputs.Values)
-                input.Reset();
-
-            foreach (var output in outputs.Values)
-                output.Reset();
-
-            virtualPos = 0;
         }
 
         public void InvokeInit()
@@ -106,9 +79,9 @@ namespace TickTrader.Algo.Core
         {
             if (instance is Indicator)
             {
-                var fixture = new IndicatorContext(instance);
-                nestedIndacators.Add(fixture);
-                return fixture;
+                var context = new IndicatorContext(instance, this.provider, Coordinator);
+                nestedIndacators.Add(context);
+                return this.provider;
             }
 
             return null;
@@ -137,14 +110,16 @@ namespace TickTrader.Algo.Core
 
         public void BindInput<T>(InputDescriptor d)
         {
-            var input = d.CreateInput<T>();
+            var input = d.CreateInput2<T>();
+            input.Buffer = new EmptyBuffer<T>();
             d.Set(plugin, input);
             inputs.Add(d.Id, input);
         }
 
         public void BindOutput<T>(OutputDescriptor d)
         {
-            var output = d.CreateOutput<T>();
+            var output = d.CreateOutput2<T>();
+            output.Buffer = new OutputBuffer<T>(Coordinator);
             d.Set(plugin, output);
             outputs.Add(d.Id, output);
         }
@@ -154,26 +129,6 @@ namespace TickTrader.Algo.Core
             MethodInfo method = GetType().GetMethod(methodName);
             MethodInfo genericMethod = method.MakeGenericMethod(genericType);
             genericMethod.Invoke(this, parameters);
-        }
-
-        public OrderList GetOrdersCollection()
-        {
-            throw new NotImplementedException();
-        }
-
-        public PositionList GetPositionsCollection()
-        {
-            throw new NotImplementedException();
-        }
-
-        public MarketSeries GetMainMarketSeries()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Leve2Series GetMainLevel2Series()
-        {
-            throw new NotImplementedException();
         }
 
         private static AlgoPluginDescriptor GetDescriptorOrThrow(string id)
@@ -186,29 +141,29 @@ namespace TickTrader.Algo.Core
             return descriptor;
         }
 
-        public static PluginContext Create(string id)
+        public static PluginContext Create(string id, IPluginDataProvider dataProvider)
         {
             AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType);
+            PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, dataProvider);
             return factory.Create();
         }
 
-        public static IndicatorContext CreateIndicator(string id)
+        public static IndicatorContext CreateIndicator(string id, IPluginDataProvider dataProvider)
         {
             AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
 
             if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
                 throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
 
-            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType);
+            PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, dataProvider);
             return (IndicatorContext)factory.Create();
         }
     }
 
-    public class IndicatorContext : PluginContext
+    internal class IndicatorContext : PluginContext
     {
-        internal IndicatorContext(AlgoPlugin plugin)
-            : base(plugin)
+        internal IndicatorContext(AlgoPlugin plugin, IPluginDataProvider provider, BuffersCoordinator coordinator)
+            : base(plugin, provider, coordinator)
         {
             InitParameters();
             BindUpInputs();
@@ -220,4 +175,6 @@ namespace TickTrader.Algo.Core
             ((Indicator)PluginInstance).InvokeCalculate();
         }
     }
+
+    
 }

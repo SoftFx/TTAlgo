@@ -8,14 +8,16 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class PluginFactory : IPluginActivator
+    internal class PluginFactory2 : IPluginActivator
     {
         private Type pluginType;
+        private IPluginDataProvider dataProvider;
         private PluginContext wrapper;
 
-        public PluginFactory(Type algoType)
+        public PluginFactory2(Type algoType, IPluginDataProvider dataProvider)
         {
             this.pluginType = algoType;
+            this.dataProvider = dataProvider;
         }
 
         private void CreateInstance()
@@ -41,8 +43,8 @@ namespace TickTrader.Algo.Core
         {
             if (instance is Indicator)
             {
-                wrapper = new IndicatorContext(instance);
-                return wrapper;
+                wrapper = new IndicatorContext(instance, dataProvider, new BuffersCoordinator());
+                return dataProvider;
             }
             else
                 throw new Exception("Unknown plugin class");

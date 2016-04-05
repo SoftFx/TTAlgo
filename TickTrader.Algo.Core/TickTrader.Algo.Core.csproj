@@ -43,27 +43,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bar.cs" />
-    <Compile Include="DataflowConcept\BuffersCoordinator.cs" />
-    <Compile Include="DataflowConcept\DataSeriesProxy.cs" />
-    <Compile Include="DataflowConcept\IndicatorBuilderSlim.cs" />
-    <Compile Include="DataflowConcept\PluginContext.cs" />
+    <Compile Include="BarEntity.cs" />
+    <Compile Include="BuffersCoordinator.cs" />
+    <Compile Include="DataSeriesProxy.cs" />
+    <Compile Include="IndicatorBuilder.cs" />
+    <Compile Include="PluginContext.cs" />
     <Compile Include="PluginFactory.cs" />
-    <Compile Include="DataflowConcept\Fixtures.cs" />
-    <Compile Include="DataflowConcept\PluginExecutor.cs" />
-    <Compile Include="DataflowConcept\ExecutionContext.cs" />
+    <Compile Include="Fixtures.cs" />
+    <Compile Include="PluginExecutor.cs" />
+    <Compile Include="ExecutionContext.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="AlgoContext.cs" />
-    <Compile Include="IndicatorBuilder2.cs" />
     <Compile Include="Lib\Dataflow.cs" />
     <Compile Include="Metadata\AlgoPluginRef.cs" />
-    <Compile Include="PluginExecutor.cs" />
-    <Compile Include="PluginContext.cs" />
     <Compile Include="AsyncDatasource.cs" />
-    <Compile Include="IndicatorBuilder.cs" />
-    <Compile Include="ReaderBase.cs" />
-    <Compile Include="DirectReader.cs" />
-    <Compile Include="DataSeries.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
@@ -73,7 +66,6 @@
     <Compile Include="Metadata\InputDescriptor.cs" />
     <Compile Include="Metadata\OutputDescriptor.cs" />
     <Compile Include="Metadata\ParameterDescriptor.cs" />
-    <Compile Include="DirectWriter.cs" />
     <Compile Include="Repository\AlgoAssembly.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Repository\AlgoRepositoryItem.cs" />

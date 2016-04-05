@@ -32,22 +32,29 @@ namespace TickTrader.Algo.CoreUsageSample
 
             var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
 
-            IndicatorBuilderSlim builder = new IndicatorBuilderSlim(AlgoPluginDescriptor.Get(typeof(MovingAverage)));
+            IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(MovingAverage)));
 
+            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = 5000, RemainingAmount = 5000 });
+
+            builder.MainSymbol = "EURUSD";
             builder.GetBarSeries("EURUSD").Append(data);
-            builder.MapInput<Bar>("Input1", "EURUSD");
-            builder.MapInput<Bar, double>("Input2", "EURUSD", b => b.High);
+            builder.MapBarInput("Input1", "EURUSD");
+            builder.MapBarInput("Input2", "EURUSD", b => b.High);
             builder.SetParameter("Range", 10);
 
             builder.BuildNext(data.Count);
 
-            builder.GetBarSeries("EURUSD").Last = new Bar() { High = 100 };
+            builder.Account.Orders.Add(new OrderEntity(11) { Symbol = "EURUSD", TotalAmount = 6000, RemainingAmount = 6000 });
+
+            builder.GetBarSeries("EURUSD").Last = new BarEntity() { High = 100 };
             builder.RebuildLast();
 
             var output1 = builder.GetOutput("Output1");
             var output2 = builder.GetOutput("Output2");
+            var output3 = builder.GetOutput("Output3");
+
             for (int i = 0; i < builder.DataSize; i++)
-                Console.WriteLine(output1[i] + " - " + output2[i]);
+                Console.WriteLine(output1[i] + " - " + output2[i] + " - " + output3[i]);
 
             Console.Write("Press any key to continue...");
             Console.Read();

@@ -7,7 +7,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest
 {
-    public class TTQuoteFileReader : List<Bar>
+    public class TTQuoteFileReader : List<BarEntity>
     {
         private System.IO.StreamReader reader;
 
@@ -17,16 +17,16 @@ namespace TickTrader.Algo.Indicators.UTest
 
             while (true)
             {
-                Bar nextbar;
+                BarEntity nextbar;
                 if (!ReadNext(out nextbar))
                     break;
                 Add(nextbar);
             }
         }
 
-        private bool ReadNext(out Bar bar)
+        private bool ReadNext(out BarEntity bar)
         {
-            bar = new Bar();
+            bar = new BarEntity();
 
             string line = reader.ReadLine();
             if (line == null)

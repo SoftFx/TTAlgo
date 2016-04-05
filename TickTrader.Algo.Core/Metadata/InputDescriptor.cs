@@ -9,6 +9,7 @@ using TickTrader.Algo.Core.DataflowConcept;
 
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class InputDescriptor : AlgoPropertyDescriptor
     {
         public InputDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
@@ -22,6 +23,16 @@ namespace TickTrader.Algo.Core.Metadata
             if (propertyType == typeof(DataSeries))
             {
                 DatdaSeriesBaseType = typeof(double);
+                IsShortDefinition = true;
+            }
+            else if (propertyType == typeof(TimeSeries))
+            {
+                DatdaSeriesBaseType = typeof(DateTime);
+                IsShortDefinition = true;
+            }
+            else if (propertyType == typeof(BarSeries))
+            {
+                DatdaSeriesBaseType = typeof(Api.Bar);
                 IsShortDefinition = true;
             }
             else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
@@ -38,18 +49,14 @@ namespace TickTrader.Algo.Core.Metadata
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
 
-        internal DataSeriesBuffer<T> CreateInput<T>()
-        {
-            if (typeof(T) == typeof(double) && IsShortDefinition)
-                return (InputDataSeries<T>)(object)new InputDataSeries();
-            else
-                return new InputDataSeries<T>();
-        }
-
         internal DataSeriesProxy<T> CreateInput2<T>()
         {
             if (typeof(T) == typeof(double) && IsShortDefinition)
                 return (DataSeriesProxy<T>)(object)new DataSeriesProxy();
+            else if (typeof(T) == typeof(DateTime) && IsShortDefinition)
+                return (DataSeriesProxy<T>)(object)new TimeSeriesProxy();
+            else if (typeof(T) == typeof(Api.Bar) && IsShortDefinition)
+                return (DataSeriesProxy<T>)(object)new BarSeriesProxy();
             else
                 return new DataSeriesProxy<T>();
         }

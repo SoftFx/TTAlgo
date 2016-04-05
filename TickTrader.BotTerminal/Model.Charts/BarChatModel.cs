@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     internal class BarChartModel : ChartModelBase
     {
         private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
-        private readonly List<Algo.Core.Bar> indicatorData = new List<Algo.Core.Bar>();
+        private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
 
         public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
@@ -105,10 +105,10 @@ namespace TickTrader.BotTerminal
             return new IndicatorConfig(repItem, this);
         }
 
-        private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.Bar> chartData)
+        private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
         {
             chartData.AddRange(
-            fdkData.Select(b => new Algo.Core.Bar()
+            fdkData.Select(b => new Algo.Core.BarEntity()
             {
                 Open = b.Open,
                 Close = b.Close,
@@ -139,7 +139,7 @@ namespace TickTrader.BotTerminal
 
             public IndicatorModel CreateIndicator()
             {
-                DirectReader<Algo.Core.Bar> reader = new DirectReader<Algo.Core.Bar>(chart.indicatorData);
+                DirectReader<Algo.Core.BarEntity> reader = new DirectReader<Algo.Core.BarEntity>(chart.indicatorData);
 
                 foreach (var input in UiModel.Inputs)
                     ((BarInputSetup)input).Configure(reader);

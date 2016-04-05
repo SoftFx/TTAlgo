@@ -9,15 +9,15 @@ namespace TickTrader.Algo.CoreUsageSample
 {
     class TTQuoteFileReader
     {
-        public static List<Bar> ReadFile(string path)
+        public static List<BarEntity> ReadFile(string path)
         {
             using (var file = System.IO.File.OpenText(path))
             {
-                List<Bar> result = new List<Bar>();
+                List<BarEntity> result = new List<BarEntity>();
 
                 while (true)
                 {
-                    Bar nextBar;
+                    BarEntity nextBar;
                     if (!ReadNext(out nextBar, file))
                         break;
                     result.Add(nextBar);
@@ -27,9 +27,9 @@ namespace TickTrader.Algo.CoreUsageSample
             }
         }
 
-        private static bool ReadNext(out Bar bar, System.IO.StreamReader reader)
+        private static bool ReadNext(out BarEntity bar, System.IO.StreamReader reader)
         {
-            bar = new Bar();
+            bar = new BarEntity();
 
             string line = reader.ReadLine();
             if (line == null)

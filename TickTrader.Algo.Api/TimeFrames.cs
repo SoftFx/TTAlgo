@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    public interface BookEntry
+    public enum TimeFrames
     {
+        D,
+        W,
+        H4,
+        H1,
+        M1,
+        Ticks
     }
 }
