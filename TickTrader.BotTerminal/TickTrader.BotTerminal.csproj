@@ -158,6 +158,7 @@
     <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
     <Compile Include="Controls\NoParentPanel.cs" />
+    <Compile Include="Controls\NumericUpDown.cs" />
     <Compile Include="Controls\OverlayControl.cs" />
     <Compile Include="Controls\BusyIndicator.xaml.cs">
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
@@ -390,6 +391,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\NumericUpDownStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\ButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -481,6 +486,10 @@
     <Page Include="Resx\Themes\Light.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views.Auth\LoginPageView.xaml">
       <SubType>Designer</SubType>

@@ -1,0 +1,112 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:TickTrader.BotTerminal">
+    
+    <ControlTemplate x:Key="FlatRepeatUpBtn_Template" TargetType="{x:Type RepeatButton}">
+        <Border Name="Border" CornerRadius="0 3 0 0"
+                IsHitTestVisible="True"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}">
+            <Canvas Height="5" Width="5">
+                <Polygon x:Name="ArrowUp" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,5 2.5,0 5,5" />
+            </Canvas>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="ArrowUp" Property="Fill" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="FlatRepeatDownBtn_Template" TargetType="{x:Type RepeatButton}">
+        <Border Name="Border" CornerRadius="0 0 3 0"
+                IsHitTestVisible="True"
+                Background="{TemplateBinding Background}">
+            <Canvas Height="5" Width="5">
+                <Polygon x:Name="ArrowDown" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,0 2.5,5 5,0" />
+            </Canvas>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="ArrowDown" Property="Fill" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="RepeateBtnBase_Style" TargetType="RepeatButton">
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="IsTabStop" Value="True"/>
+    </Style>
+
+    <Style x:Key="RepeatUpBtn_Style" TargetType="RepeatButton" BasedOn="{StaticResource RepeateBtnBase_Style}">
+        <Setter Property="Template" Value="{StaticResource FlatRepeatUpBtn_Template}"/>
+        <Setter Property="Margin" Value="0 2 2 0"/>
+    </Style>
+
+    <Style x:Key="RepeatDownBtn_Style" TargetType="RepeatButton" BasedOn="{StaticResource RepeateBtnBase_Style}">
+        <Setter Property="Template" Value="{StaticResource FlatRepeatDownBtn_Template}"/>
+        <Setter Property="Margin" Value="0 0 2 2"/>
+    </Style>
+
+    <Style TargetType="{x:Type local:NumericUpDown}">
+        <Setter Property="Background" Value="{DynamicResource ShellPanel_BackgroundBrush}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:NumericUpDown}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition Width="14"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox IsReadOnly="False"
+                                 Grid.ColumnSpan="2"
+                                 Padding="2 0 17 0"
+                                 Margin="0"
+                                 Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                 Name="TextboxContent"
+                                 HorizontalContentAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                                 VerticalContentAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                                 xml:space="preserve"/>
+
+                        <Grid Grid.Column="1" Focusable="False">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                </Grid.RowDefinitions>
+
+                                <RepeatButton Grid.Row="0"
+                                              x:Name="IncreaseBtn"
+                                              Style="{StaticResource RepeatUpBtn_Style}"
+                                              Command="local:NumericUpDown.IncreaseCommand"
+                                              IsEnabled="{TemplateBinding CanIncrease}"/>
+
+                                <RepeatButton Grid.Row="1"
+                                              x:Name="DecreaseBtn"
+                                              Style="{StaticResource RepeatDownBtn_Style}"
+                                              Command="local:NumericUpDown.DecreaseCommand"
+                                              IsEnabled="{TemplateBinding CanDecrease}"/>
+                            </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger SourceName="IncreaseBtn" Property="IsFocused" Value="True">
+                            <Setter TargetName="TextboxContent" Property="FocusManager.FocusedElement" Value="{Binding ElementName=TextboxContent}"></Setter>
+                        </Trigger>
+                        <Trigger SourceName="DecreaseBtn" Property="IsFocused" Value="True">
+                            <Setter TargetName="TextboxContent" Property="FocusManager.FocusedElement" Value="{Binding ElementName=TextboxContent}"></Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+</ResourceDictionary>
