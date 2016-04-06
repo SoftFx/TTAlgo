@@ -12,7 +12,11 @@
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
-
+        
+        <Style BasedOn="{StaticResource {x:Type l:NumericUpDown}}" TargetType="l:NumericUpDown">
+            <Setter Property="Margin" Value="0 2 0 0" />
+        </Style>
+        
         <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="TextBox">
             <Setter Property="Margin" Value="0 2 0 0"/>
         </Style>
@@ -141,7 +145,7 @@
                     <ColumnDefinition Width="0.25*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <ComboBox Grid.Column="0" IsEnabled="{Binding ElementName=MarketRange, Path=IsChecked}"></ComboBox>
+                <l:NumericUpDown Grid.Column="0" IsEnabled="{Binding ElementName=MarketRange, Path=IsChecked}"></l:NumericUpDown>
                 <Label Grid.Column="1" Content="Pips" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="3 0 0 0"></Label>
             </Grid>
 
@@ -176,9 +180,9 @@
             <CheckBox Grid.Row="0" Grid.Column="0" x:Name="CheckBoxStopLoss" Content="Stop Loss"></CheckBox>
             <CheckBox Grid.Row="0" Grid.Column="2" x:Name="CheckBoxTakeProfit" Content="Take Profit"></CheckBox>
 
-            <ComboBox Grid.Row="2" Grid.Column="0" IsEnabled="{Binding ElementName=CheckBoxStopLoss, Path=IsChecked}"></ComboBox>
+            <l:NumericUpDown Grid.Row="2" Grid.Column="0" IsEnabled="{Binding ElementName=CheckBoxStopLoss, Path=IsChecked}"></l:NumericUpDown>
             <Label Grid.Row="2" Grid.Column="1" Content="Pips" Margin="29,4,28,4"></Label>
-            <ComboBox Grid.Row="2" Grid.Column="2" IsEnabled="{Binding ElementName=CheckBoxTakeProfit, Path=IsChecked}"></ComboBox>
+            <l:NumericUpDown Grid.Row="2" Grid.Column="2" IsEnabled="{Binding ElementName=CheckBoxTakeProfit, Path=IsChecked}"></l:NumericUpDown>
 
             <TextBox Grid.Row="3" Grid.Column="0" IsEnabled="{Binding ElementName=CheckBoxStopLoss, Path=IsChecked}"></TextBox>
             <Label Grid.Row="3" Grid.Column="1" Content="Balance" Margin="19,5"></Label>
