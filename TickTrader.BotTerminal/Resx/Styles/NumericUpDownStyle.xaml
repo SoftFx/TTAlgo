@@ -68,7 +68,7 @@
 
                         <TextBox IsReadOnly="False"
                                  Grid.ColumnSpan="2"
-                                 Padding="2 0 17 0"
+                                 Padding="2 2 17 2"
                                  Margin="0"
                                  Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                  Name="TextboxContent"
