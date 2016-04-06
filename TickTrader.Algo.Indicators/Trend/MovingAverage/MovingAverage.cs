@@ -46,30 +46,42 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         private IMA MAInstance;
         private Queue<double> MACache;
 
+        internal static IMA CreateMAInstance(int period, int shift, Method targetMethod, AppliedPrice.Target targetPrice,
+            double smoothFactor = double.NaN)
+        {
+            IMA instance = null;
+            if (double.IsNaN(smoothFactor))
+            {
+                smoothFactor = 2.0/(period + 1);
+            }
+            switch (targetMethod)
+            {
+                case Method.Simple:
+                    instance = new SMA(period, shift, targetPrice);
+                    break;
+                case Method.Exponential:
+                    instance = new EMA(period, shift, targetPrice);
+                    break;
+                case Method.Smoothed:
+                    instance = new SMMA(period, shift, targetPrice);
+                    break;
+                case Method.LinearWeighted:
+                    instance = new LWMA(period, shift, targetPrice);
+                    break;
+                case Method.CustomExponential:
+                    instance = new CustomEMA(period, shift, targetPrice, smoothFactor);
+                    break;
+                case Method.Triangular:
+                    instance = new TriMA(period, shift, targetPrice);
+                    break;
+            }
+            return instance;
+        }
+
         protected override void Init()
         {
             MACache = new Queue<double>();
-            switch (_targetMethod)
-            {
-                case Method.Simple:
-                    MAInstance = new SMA(Period, Shift, _targetPrice);
-                    break;
-                case Method.Exponential:
-                    MAInstance = new EMA(Period, Shift, _targetPrice);
-                    break;
-                case Method.Smoothed:
-                    MAInstance = new SMMA(Period, Shift, _targetPrice);
-                    break;
-                case Method.LinearWeighted:
-                    MAInstance = new LWMA(Period, Shift, _targetPrice);
-                    break;
-                case Method.CustomExponential:
-                    MAInstance = new CustomEMA(Period, Shift, _targetPrice, SmoothFactor);
-                    break;
-                case Method.Triangular:
-                    MAInstance = new TriMA(Period, Shift, _targetPrice);
-                    break;
-            }
+            MAInstance = CreateMAInstance(Period, Shift, _targetMethod, _targetPrice, SmoothFactor);
             MAInstance.Init();
         }
 
@@ -81,23 +93,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                 Init();
             }
             // ---------------------
-            var res = MAInstance.Calculate(Bars[0]);
-            if (Shift > 0)
-            {
-                if (Bars.Count > Shift)
-                {
-                    MA[0] = MACache.Dequeue();
-                }
-                else
-                {
-                    MA[0] = double.NaN;
-                }
-                MACache.Enqueue(res);
-            }
-            else if (Shift <= 0 && -Shift < Bars.Count)
-            {
-                MA[-Shift] = res;
-            }
+            Utility.ApplyShiftedValue(MA, Shift, MAInstance.Calculate(Bars[0]), MACache, Bars.Count);
         }
     }
 }
