@@ -74,10 +74,14 @@
     <Compile Include="RSITest\RSITest.cs" />
     <Compile Include="StochasticTest\StochasticTest.cs" />
     <Compile Include="TestCase.cs" />
+    <Compile Include="TrendTests\BollingerBands\BollingerBandsTest.cs" />
+    <Compile Include="TrendTests\BollingerBands\BollingerBandsTestCase.cs" />
     <Compile Include="TrendTests\Envelopes\EnvelopesTest.cs" />
     <Compile Include="TrendTests\Envelopes\EnvelopesTestCase.cs" />
     <Compile Include="TrendTests\MovingAverage\MovingAverageTest.cs" />
     <Compile Include="TrendTests\MovingAverage\MovingAverageTestCase.cs" />
+    <Compile Include="TrendTests\StandardDeviation\StandardDeviationTest.cs" />
+    <Compile Include="TrendTests\StandardDeviation\StandardDeviationTestCase.cs" />
     <Compile Include="TTQuoteBinaryFileReader.cs" />
     <Compile Include="TTQuoteFileReader.cs" />
     <Compile Include="ZigZagTest\ZigZagTest.cs" />
