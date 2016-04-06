@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
@@ -21,6 +23,17 @@ namespace TickTrader.Algo.Indicators.UTest
         {
             PricesCount = pricesCount;
             AnswerUnitSize = answerUnitSize;
+        }
+
+        protected override void SetupReader()
+        {
+            Reader.AddMapping("Bars", b => b);
+        }
+
+        protected override void SetupBuilder()
+        {
+            Builder.Reset();
+            Builder.SetParameter("TargetPrice", TargetPrice);
         }
 
         protected override void Setup()
@@ -85,6 +98,56 @@ namespace TickTrader.Algo.Indicators.UTest
                         CheckAnswerUnit(k, metaAnswer);
                     }
                 }
+        }
+    }
+
+    public abstract class PricesTestCase : PricesTestCase<List<double>[]>
+    {
+        public int Period { get; protected set; }
+        public int Shift { get; protected set; }
+
+        protected PricesTestCase(Type indicatorType, string quotesPath, string answerPath, int pricesCount,
+            int answerUnitSize, int period, int shift)
+            : base(indicatorType, quotesPath, answerPath, pricesCount, answerUnitSize)
+        {
+            Period = period;
+            Shift = shift;
+        }
+
+        protected override void SetupBuilder()
+        {
+            base.SetupBuilder();
+            Builder.SetParameter("Period", Period);
+            Builder.SetParameter("Shift", Shift);
+        }
+
+        protected override List<double>[] CreateAnswerBuffer()
+        {
+            var res = new List<double>[AnswerUnitSize/8];
+            for (var k = 0; k < AnswerUnitSize/8; k++)
+            {
+                res[k] = new List<double>();
+            }
+            return res;
+        }
+
+        protected override void ReadAnswerUnit(BinaryReader reader, List<double>[] metaAnswer)
+        {
+            for (var k = 0; k < AnswerUnitSize/8; k++)
+            {
+                metaAnswer[k].Add(reader.ReadDouble());
+            }
+        }
+
+        protected override void CheckAnswerUnit(int index, List<double>[] metaAnswer)
+        {
+            for (var k = 0; k < AnswerUnitSize/8; k++)
+            {
+                AnswerBuffers[CurBufferIndex][k][index] = double.IsNaN(AnswerBuffers[CurBufferIndex][k][index])
+                    ? 0
+                    : AnswerBuffers[CurBufferIndex][k][index];
+                AssertX.Greater(Epsilon, Math.Abs(metaAnswer[k][index] - AnswerBuffers[CurBufferIndex][k][index]));
+            }
         }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 {
-    public class AlligatorTestCase : MethodsPricesTestCase<List<double>[]>
+    public class AlligatorTestCase : MethodsPricesTestCase
     {
         public int JawsPeriod { get; protected set; }
         public int JawsShift { get; protected set; }
@@ -16,7 +13,7 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 
         public AlligatorTestCase(Type indicatorType, string quotesPath, string answerPath, int jawsPeriod, int jawsShift,
             int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
-            : base(indicatorType, quotesPath, answerPath, 4, 7, 24)
+            : base(indicatorType, quotesPath, answerPath, 4, 7, 24, 0, 0)
         {
             JawsPeriod = jawsPeriod;
             JawsShift = jawsShift;
@@ -41,43 +38,15 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
         protected override void SetupBuilder()
         {
             Builder.Reset();
+            Builder.SetParameter("TargetMethod", TargetMethod);
+            Builder.SetParameter("TargetPrice", TargetPrice);
+
             Builder.SetParameter("JawsPeriod", JawsPeriod);
             Builder.SetParameter("JawsShift", JawsShift);
             Builder.SetParameter("TeethPeriod", TeethPeriod);
             Builder.SetParameter("TeethShift", TeethShift);
             Builder.SetParameter("LipsPeriod", LipsPeriod);
             Builder.SetParameter("LipsShift", LipsShift);
-            Builder.SetParameter("TargetMethod", TargetMethod);
-            Builder.SetParameter("TargetPrice", TargetPrice);
-        }
-
-        protected override List<double>[] CreateAnswerBuffer()
-        {
-            var res = new List<double>[3];
-            for (var k = 0; k < 3; k++)
-            {
-                res[k] = new List<double>();
-            }
-            return res;
-        }
-
-        protected override void ReadAnswerUnit(BinaryReader reader, List<double>[] metaAnswer)
-        {
-            for (var k = 0; k < 3; k++)
-            {
-                metaAnswer[k].Add(reader.ReadDouble());
-            }
-        }
-
-        protected override void CheckAnswerUnit(int index, List<double>[] metaAnswer)
-        {
-            for (var k = 0; k < 3; k++)
-            {
-                AnswerBuffers[CurBufferIndex][k][index] = double.IsNaN(AnswerBuffers[CurBufferIndex][k][index])
-                    ? 0
-                    : AnswerBuffers[CurBufferIndex][k][index];
-                AssertX.Greater(Epsilon, Math.Abs(metaAnswer[k][index] - AnswerBuffers[CurBufferIndex][k][index]));
-            }
         }
     }
 }
