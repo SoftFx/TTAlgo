@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
@@ -8,11 +6,11 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
     {
         private double _prev;
         private double _multiplier;
-        private Queue<double> _cache;
+        private LinkedList<double> _valueCache;
 
         public double SmoothFactor { get; private set; }
 
-        public CustomEMA(int period, int shift, AppliedPrice.Target targetPrice, double smoothFactor) : base(period, shift, targetPrice)
+        public CustomEMA(int period, double smoothFactor) : base(period)
         {
             SmoothFactor = smoothFactor;
         }
@@ -22,44 +20,43 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             base.Init();
             _prev = double.NaN;
             _multiplier = SmoothFactor;
-            _cache = new Queue<double>(Period + 1);
+            _valueCache = new LinkedList<double>();
         }
 
         public override void Reset()
         {
             base.Reset();
             _prev = double.NaN;
-            _multiplier = 1;
-            _cache.Clear();
+            _multiplier = SmoothFactor;
+            _valueCache.Clear();
         }
 
-        public override double Calculate(Bar bar)
+        protected override void InvokeAdd(double value)
         {
             if (Accumulated < Period)
             {
-                Accumulated++;
-                if (Accumulated < Period)
-                {
-                    _multiplier *= 1 - SmoothFactor;
-                }
+                _multiplier *= 1 - SmoothFactor;
             }
-            if (_cache.Count + 1 > Period)
+            if (Accumulated > Period)
             {
-                _prev -= _cache.Dequeue()*_multiplier - _cache.Peek()*_multiplier;
+                _prev -= _valueCache.First.Value*_multiplier;
+                _valueCache.RemoveFirst();
+                Accumulated--;
+                _prev += _valueCache.First.Value*_multiplier;
             }
-            var appliedPrice = AppliedPrice.Calculate(bar, TargetPrice);
-            double res;
-            if (double.IsNaN(_prev))
-            {
-                res = appliedPrice;
-            }
-            else
-            {
-                res = SmoothFactor*appliedPrice + (1 - SmoothFactor)*_prev;
-            }
-            _cache.Enqueue(appliedPrice);
-            _prev = res;
-            return res;
+            _valueCache.AddLast(value);
+            _prev = double.IsNaN(_prev) ? value : SmoothFactor*value + (1 - SmoothFactor)*_prev;
+        }
+
+        protected override void InvokeUpdateLast(double value)
+        {
+            _valueCache.Last.Value = value;
+            _prev = (Accumulated == 1) ? value : _prev + SmoothFactor*value - SmoothFactor*LastAdded;
+        }
+
+        protected override void SetCurrentResult()
+        {
+            Result = _prev;
         }
     }
 }

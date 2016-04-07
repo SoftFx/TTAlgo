@@ -65,8 +65,10 @@
     <Compile Include="Trend\MovingAverage\IMA.cs" />
     <Compile Include="Trend\MovingAverage\LWMA.cs" />
     <Compile Include="Trend\MovingAverage\MABase.cs" />
+    <Compile Include="Trend\MovingAverage\MovingAverage.cs" />
     <Compile Include="Trend\MovingAverage\SMA.cs" />
     <Compile Include="Trend\MovingAverage\SMMA.cs" />
+    <Compile Include="Trend\MovingAverage\TriMA.cs" />
     <Compile Include="ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>

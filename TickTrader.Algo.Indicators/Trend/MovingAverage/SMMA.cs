@@ -1,7 +1,4 @@
-﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
-
-namespace TickTrader.Algo.Indicators.Trend.MovingAverage
+﻿namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal class SMMA : MABase
     {
@@ -9,7 +6,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         private double _prev;
         private double _prevsum;
 
-        public SMMA(int period, int shift, AppliedPrice.Target targetPrice) : base(period, shift, targetPrice)
+        public SMMA(int period) : base(period)
         {
         }
 
@@ -29,36 +26,51 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             _prev = double.NaN;
         }
 
-        public override double Calculate(Bar bar)
+        protected override void InvokeAdd(double value)
         {
-            var appliedPrice = AppliedPrice.Calculate(bar, TargetPrice);
-            if (Accumulated < Period)
+            if (Accumulated <= Period)
             {
-                Accumulated++;
-                _sum += appliedPrice;
-                if (Accumulated < Period)
+                _sum += value;
+            }
+            if (Accumulated >= Period)
+            {
+                if (double.IsNaN(_prev))
                 {
-                    return double.NaN;
+                    _prev = _sum/Period;
+                }
+                else if (double.IsNaN(_prevsum))
+                {
+                    _prevsum = _sum - _prev + value;
+                    _prev = _prevsum/Period;
+                }
+                else
+                {
+                    _prevsum = _prevsum - _prev + value;
+                    _prev = _prevsum/Period;
                 }
             }
-            double res;
-            if (double.IsNaN(_prev))
+        }
+
+        protected override void InvokeUpdateLast(double value)
+        {
+            if (Accumulated <= Period)
             {
-                res = _sum/Period;
+                _sum += value - LastAdded;
             }
-            else if (double.IsNaN(_prevsum))
+            if (Accumulated == Period)
             {
-                _prevsum = _sum - _prev + appliedPrice;
-                res = _prevsum/Period;
+                _prev = _sum/Period;
             }
             else
             {
-                _prevsum = _prevsum - _prev + appliedPrice;
-                res = _prevsum/Period;
+                _prevsum += value - LastAdded;
+                _prev = _prevsum/Period;
             }
-            _prev = res;
+        }
 
-            return res;
+        protected override void SetCurrentResult()
+        {
+            Result = Accumulated < Period ? double.NaN : _prev;
         }
     }
 }
