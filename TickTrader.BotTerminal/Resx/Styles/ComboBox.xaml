@@ -217,6 +217,9 @@
             <Trigger Property="ComboBox.IsEditable" Value="False">
                 <Setter Property="Template" Value="{StaticResource ComboBox_Template}"></Setter>
             </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{DynamicResource Dialog_ControlDisabledBackground}"/>
+            </Trigger>
         </Style.Triggers>
     </Style>
 

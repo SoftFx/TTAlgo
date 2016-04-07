@@ -6,7 +6,6 @@
                 BorderThickness="1"
                 CornerRadius="3"
                 BorderBrush="Transparent"
-                Margin="{TemplateBinding Margin}"
                 Background="{TemplateBinding Panel.Background}"
                 SnapsToDevicePixels="True">
             <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Name="PART_ContentHost" Focusable="False" />
@@ -23,6 +22,11 @@
         <Setter Property="Background" Value="{DynamicResource ShellPanel_BackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="Padding" Value="2"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{DynamicResource Dialog_ControlDisabledBackground}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
     
 </ResourceDictionary>

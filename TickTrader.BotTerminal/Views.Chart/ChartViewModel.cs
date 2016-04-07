@@ -117,6 +117,19 @@ namespace TickTrader.BotTerminal
                 this.ActiveItem.TryClose();
         }
 
+        public void OpenOrder()
+        {
+            try
+            {
+                var openOrderModel = new OpenOrderDialogViewModel();
+                wndManager.ShowWindow(openOrderModel);
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+        }
+
         public void OpenIndicator(object descriptorObj)
         {
             try

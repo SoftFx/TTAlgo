@@ -21,18 +21,15 @@
 
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
             <Setter Property="Margin" Value="5,0,5,0"/>
-            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <Style BasedOn="{StaticResource {x:Type PasswordBox}}" TargetType="PasswordBox">
             <Setter Property="Margin" Value="5,0,5,0"/>
-            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <Style TargetType="Label" BasedOn="{StaticResource DialogLabel_Style}">
             <Setter Property="Margin" Value="5,4,5,1" />
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <Style TargetType="TextBlock">
@@ -41,7 +38,6 @@
             <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="Margin" Value="5,4,5,1" />
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <DataTemplate x:Key="AccountAuthInfoTemplate" DataType="{x:Type l:AccountSorageEntry}">
@@ -50,7 +46,7 @@
                         CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
                 </Border>
-                <TextBlock Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" FontSize="12"  />
+                <TextBlock Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
             </StackPanel>
         </DataTemplate>
 
@@ -58,7 +54,7 @@
 
     <Grid Margin="5" IsEnabled="{Binding IsEditable}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="55"/>   <!-- 0 Title  -->
+            <RowDefinition Height="50"/>   <!-- 0 Title  -->
             <RowDefinition Height="Auto"/> <!-- 1 Account label -->
             <RowDefinition Height="Auto"/> <!-- 2 Account Input -->
             <RowDefinition Height="Auto"/> <!-- 3 Password label -->

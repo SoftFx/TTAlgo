@@ -160,14 +160,17 @@
     <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
     <Compile Include="Controls\NoParentPanel.cs" />
+    <Compile Include="Controls\NumericUpDown.cs" />
     <Compile Include="Controls\OverlayControl.cs" />
     <Compile Include="Controls\BusyIndicator.xaml.cs">
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\RadioFlatButton.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
+    <Compile Include="Controls\ToggleFlatButton.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
@@ -247,6 +250,18 @@
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Chart\IndicatorPaneViewModel.cs" />
+    <Compile Include="Views.Order\PendingOrderPageView.xaml.cs">
+      <DependentUpon>PendingOrderPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\MarketOrderPageView.xaml.cs">
+      <DependentUpon>MarketOrderPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\PendingOrderPageViewModel.cs" />
+    <Compile Include="Views.Order\MarketOrderPageViewModel.cs" />
+    <Compile Include="Views.Order\OpenOrderDialogView.xaml.cs">
+      <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -383,6 +398,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\NumericUpDownStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\ButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -459,6 +478,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resx\Styles\ToolBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\VerticalScrollBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -475,11 +498,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views.Auth\LoginPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Chart\IndicatorPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Order\PendingOrderPageView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.Order\MarketOrderPageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Order\OpenOrderDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

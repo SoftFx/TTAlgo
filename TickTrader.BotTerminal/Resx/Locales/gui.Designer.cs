@@ -394,6 +394,24 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Volume##.
+        /// </summary>
+        internal static string Order_Volume {
+            get {
+                return ResourceManager.GetString("Order_Volume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Open order##.
+        /// </summary>
+        internal static string OrderDialog_Title {
+            get {
+                return ResourceManager.GetString("OrderDialog_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Amount##.
         /// </summary>
         internal static string Position_Amount {
