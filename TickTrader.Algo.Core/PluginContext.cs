@@ -14,27 +14,42 @@ namespace TickTrader.Algo.Core
     {
         private AlgoPlugin plugin;
         private IPluginDataProvider provider;
-        private List<PluginContext> nestedIndacators = new List<PluginContext>();
+        private List<IndicatorContext> nestedIndacators = new List<IndicatorContext>();
         private Dictionary<string, IDataSeriesProxy> inputs = new Dictionary<string, IDataSeriesProxy>();
         private Dictionary<string, IDataSeriesProxy> outputs = new Dictionary<string, IDataSeriesProxy>();
 
-        internal PluginContext(AlgoPlugin plugin, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal PluginContext(AlgoPlugin plugnInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
         {
-            this.plugin = plugin;
             this.provider = provider;
+            this.plugin = plugnInstance;
             this.Coordinator = coordinator;
-            SetThisAsActivator();
-            Init();
+
+            Descriptor = AlgoPluginDescriptor.Get(plugin.GetType());
+            Descriptor.Validate();
         }
 
-        protected void SetThisAsActivator()
+        internal PluginContext(Func<AlgoPlugin> pluginFactoy, IPluginDataProvider provider, BuffersCoordinator coordinator)
         {
-            AlgoPlugin.activator = this;
+            this.provider = provider;
+            this.Coordinator = coordinator;
+
+            try
+            {
+                AlgoPlugin.activator = this;
+                plugin = pluginFactoy();
+            }
+            finally
+            {
+                AlgoPlugin.activator = null;
+            }
+
+            Descriptor = AlgoPluginDescriptor.Get(plugin.GetType());
+            Descriptor.Validate();
         }
 
         public BuffersCoordinator Coordinator { get; private set; }
         public AlgoPluginDescriptor Descriptor { get; private set; }
-
+        protected IReadOnlyList<IndicatorContext> NestedIndicators { get { return nestedIndacators; } }
         protected AlgoPlugin PluginInstance { get { return plugin; } }
 
         public void SetParameter(string id, object val)
@@ -60,28 +75,38 @@ namespace TickTrader.Algo.Core
             return outputs[id];
         }
 
-        public void InvokeInit()
+        private void InvokeInit()
         {
-            foreach (var indicator in nestedIndacators)
-                indicator.InvokeInit();
-
-            SetThisAsActivator();
             plugin.InvokeInit();
         }
 
-        private void Init()
+        public void Init()
         {
-            Descriptor = AlgoPluginDescriptor.Get(plugin.GetType());
-            Descriptor.Validate();
+            try
+            {
+                AlgoPlugin.activator = this;
+
+                for (int i = nestedIndacators.Count - 1; i >= 0; i--)
+                    nestedIndacators[i].InvokeInit();
+
+                InvokeInit();
+            }
+            finally
+            {
+                AlgoPlugin.activator = null;
+            }
         }
 
         IPluginDataProvider IPluginActivator.Activate(AlgoPlugin instance)
         {
+            if (plugin == null) // Activate() is called from constructor
+                return provider;
+
             if (instance is Indicator)
             {
                 var context = new IndicatorContext(instance, this.provider, Coordinator);
                 nestedIndacators.Add(context);
-                return this.provider;
+                return provider;
             }
 
             return null;
@@ -141,12 +166,6 @@ namespace TickTrader.Algo.Core
             return descriptor;
         }
 
-        public static PluginContext Create(string id, IPluginDataProvider dataProvider)
-        {
-            AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType, dataProvider);
-            return factory.Create();
-        }
 
         public static IndicatorContext CreateIndicator(string id, IPluginDataProvider dataProvider)
         {
@@ -155,26 +174,46 @@ namespace TickTrader.Algo.Core
             if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
                 throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
 
-            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType, dataProvider);
-            return (IndicatorContext)factory.Create();
+            descriptor.Validate();
+
+            return new IndicatorContext(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
         }
     }
 
     internal class IndicatorContext : PluginContext
     {
-        internal IndicatorContext(AlgoPlugin plugin, IPluginDataProvider provider, BuffersCoordinator coordinator)
-            : base(plugin, provider, coordinator)
+        internal IndicatorContext(AlgoPlugin pluginInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
+            : base(pluginInstance, provider, coordinator)
         {
             InitParameters();
             BindUpInputs();
             BindUpOutputs();
         }
 
-        public void InvokeCalculate()
+        internal IndicatorContext(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
+            : base(pluginFactory, provider, new BuffersCoordinator())
+        {
+            InitParameters();
+            BindUpInputs();
+            BindUpOutputs();
+        }
+
+        private void InvokeCalculate()
         {
             ((Indicator)PluginInstance).InvokeCalculate();
         }
-    }
 
-    
+        public void Calculate()
+        {
+            for (int i = NestedIndicators.Count - 1; i >= 0; i--)
+                NestedIndicators[i].InvokeCalculate();
+
+            InvokeCalculate();
+        }
+
+        public override string ToString()
+        {
+            return "Indicator: " + Descriptor.DisplayName;
+        }
+    }
 }

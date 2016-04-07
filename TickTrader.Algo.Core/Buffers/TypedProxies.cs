@@ -23,6 +23,7 @@ namespace TickTrader.Algo.Core
         private ProxyBuffer<Bar, double> closeBuffer = new ProxyBuffer<Bar, double>(b => b.Close);
         private ProxyBuffer<Bar, double> highBuffer = new ProxyBuffer<Bar, double>(b => b.High);
         private ProxyBuffer<Bar, double> lowBuffer = new ProxyBuffer<Bar, double>(b => b.Low);
+        private ProxyBuffer<Bar, double> medianBuffer = new ProxyBuffer<Bar, double>(b => (b.High + b.Low) / 2);
         private ProxyBuffer<Bar, double> volumeBuffer = new ProxyBuffer<Bar, double>(b => b.Volume);
         private ProxyBuffer<Bar, DateTime> openTimeBuffer = new ProxyBuffer<Bar, DateTime>(b => b.OpenTime);
 
@@ -32,6 +33,7 @@ namespace TickTrader.Algo.Core
             Close = new DataSeriesProxy() { Buffer = closeBuffer };
             High = new DataSeriesProxy() { Buffer = highBuffer };
             Low = new DataSeriesProxy() { Buffer = lowBuffer };
+            Median = new DataSeriesProxy() { Buffer = medianBuffer };
             Volume = new DataSeriesProxy() { Buffer = volumeBuffer };
             OpenTime = new TimeSeriesProxy() { Buffer = openTimeBuffer };
             SymbolCode = string.Empty;
@@ -49,6 +51,7 @@ namespace TickTrader.Algo.Core
                 closeBuffer.SrcBuffer = value;
                 highBuffer.SrcBuffer = value;
                 lowBuffer.SrcBuffer = value;
+                medianBuffer.SrcBuffer = value;
                 volumeBuffer.SrcBuffer = value;
                 openTimeBuffer.SrcBuffer = value;
             }
@@ -58,6 +61,7 @@ namespace TickTrader.Algo.Core
         public Api.DataSeries Close { get; private set; }
         public Api.DataSeries High { get; private set; }
         public Api.DataSeries Low { get; private set; }
+        public Api.DataSeries Median { get; private set; }
         public Api.DataSeries Volume { get; private set; }
         public Api.TimeSeries OpenTime { get; private set; }
     }

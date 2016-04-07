@@ -18,10 +18,8 @@ namespace TickTrader.Algo.Api
 
         internal AlgoPlugin()
         {
-            if (activator == null)
-                throw new InvalidOperationException("Algo context is not initialized!");
-
-            this.context = activator.Activate(this);
+            if (activator != null)
+                this.context = activator.Activate(this);
         }
 
         protected AccountDataProvider Account

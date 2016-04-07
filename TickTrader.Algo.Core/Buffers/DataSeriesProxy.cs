@@ -26,19 +26,22 @@ namespace TickTrader.Algo.Core
         {
             get
             {
-                if (IsOutOfBoundaries(index))
+                int readlIndex = GetRealIndex(index);
+
+                if (IsOutOfBoundaries(readlIndex))
                     return DefaultValue;
 
-                return Buffer[index];
+                return Buffer[readlIndex];
             }
 
             set
             {
-                if (Readonly || IsOutOfBoundaries(index))
+                int realIndex = GetRealIndex(index);
+
+                if (Readonly || IsOutOfBoundaries(realIndex))
                     return;
 
-                int readlIndex = GetRealIndex(index);
-                Buffer[readlIndex] = value;
+                Buffer[realIndex] = value;
             }
         }
 

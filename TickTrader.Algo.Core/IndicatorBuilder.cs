@@ -111,14 +111,14 @@ namespace TickTrader.Algo.Core
                 if (cToken.IsCancellationRequested)
                     return;
                 pluginProxy.Coordinator.MoveNext();
-                pluginProxy.InvokeCalculate();
+                pluginProxy.Calculate();
             }
         }
 
         public void RebuildLast()
         {
             LazyInit();
-            pluginProxy.InvokeCalculate();
+            pluginProxy.Calculate();
         }
 
         public void Reset()
@@ -131,7 +131,7 @@ namespace TickTrader.Algo.Core
             if (isInitialized)
                 return;
 
-            pluginProxy.InvokeInit();
+            pluginProxy.Init();
 
             isInitialized = true;
         }
