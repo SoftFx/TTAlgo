@@ -15,5 +15,6 @@ namespace TickTrader.Algo.Api
         double Volume { get; }
         DateTime OpenTime { get; }
         DateTime CloseTime { get; }
+        bool IsEmpty { get; }
     }
 }

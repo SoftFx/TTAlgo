@@ -17,26 +17,33 @@ namespace TickTrader.Algo.GuiModel
 
     public abstract class BarInputSetup : InputSetup
     {
-        public abstract void Configure(DirectReader<Api.Bar> reader);
+        public BarInputSetup(InputDescriptor descriptor, string symbolCode)
+        {
+            SetMetadata(descriptor);
+            SymbolCode = symbolCode;
+        }
+
+        public string SymbolCode { get; private set; }
+        public abstract void Configure(IndicatorBuilder builder);
 
         public class Invalid : BarInputSetup
         {
             public Invalid(InputDescriptor descriptor, object error = null)
+                : base(descriptor, null)
             {
-                SetMetadata(descriptor);
                 if (error == null)
                     this.Error = new GuiModelMsg(descriptor.Error.Value);
                 else
                     this.Error = new GuiModelMsg(error);
             }
 
-            public Invalid(InputDescriptor descriptor, GuiModelMsg error)
+            public Invalid(InputDescriptor descriptor, string symbol, GuiModelMsg error)
+                : base(descriptor, symbol)
             {
-                SetMetadata(descriptor);
                 this.Error = error;
             }
 
-            public override void Configure(DirectReader<Api.Bar> reader)
+            public override void Configure(IndicatorBuilder builder)
             {
                 throw new Exception("Cannot configure invalid input!");
             }
@@ -44,27 +51,29 @@ namespace TickTrader.Algo.GuiModel
 
         public class BarToDouble : BarInputSetup
         {
-            public BarToDouble(InputDescriptor descriptor)
+            public BarToDouble(InputDescriptor descriptor, string symbolCode)
+                : base(descriptor, symbolCode)
             {
                 SetMetadata(descriptor);
             }
 
-            public override void Configure(DirectReader<Api.Bar> reader)
+            public override void Configure(IndicatorBuilder builder)
             {
-                reader.AddMapping(Id, b => b.High);
+                builder.MapBarInput(Descriptor.Id, SymbolCode, b => b.High);
             }
         }
 
         public class BarToBar : BarInputSetup
         {
-            public BarToBar(InputDescriptor descriptor)
+            public BarToBar(InputDescriptor descriptor, string symbolCode)
+                : base(descriptor, symbolCode)
             {
                 SetMetadata(descriptor);
             }
 
-            public override void Configure(DirectReader<Api.Bar> reader)
+            public override void Configure(IndicatorBuilder builder)
             {
-                reader.AddMapping(Id, b => b);
+                builder.MapBarInput(Descriptor.Id, SymbolCode);
             }
         }
     }

@@ -43,20 +43,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BarEntity.cs" />
-    <Compile Include="BuffersCoordinator.cs" />
-    <Compile Include="DataSeriesProxy.cs" />
+    <Compile Include="Entities\AccountEntity.cs" />
+    <Compile Include="Entities\BarEntity.cs" />
+    <Compile Include="Buffers\BuffersCoordinator.cs" />
+    <Compile Include="Buffers\CachingProxyBuffer.cs" />
+    <Compile Include="Buffers\EmptyBuffer.cs" />
+    <Compile Include="Buffers\InputBuffer.cs" />
+    <Compile Include="Buffers\Interfaces.cs" />
+    <Compile Include="Buffers\OutputBuffer.cs" />
+    <Compile Include="Buffers\ProxyBuffer.cs" />
+    <Compile Include="Entities\EventArgs.cs" />
+    <Compile Include="Entities\OrderEntity.cs" />
+    <Compile Include="Entities\OrdersCollection.cs" />
     <Compile Include="IndicatorBuilder.cs" />
+    <Compile Include="Metadata\EmptyValue.cs" />
     <Compile Include="PluginContext.cs" />
     <Compile Include="PluginFactory.cs" />
-    <Compile Include="Fixtures.cs" />
     <Compile Include="PluginExecutor.cs" />
     <Compile Include="ExecutionContext.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="AlgoContext.cs" />
     <Compile Include="Lib\Dataflow.cs" />
     <Compile Include="Metadata\AlgoPluginRef.cs" />
-    <Compile Include="AsyncDatasource.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
@@ -71,6 +78,8 @@
     <Compile Include="Repository\AlgoRepositoryItem.cs" />
     <Compile Include="Repository\AlgoSandbox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Buffers\DataSeriesProxy.cs" />
+    <Compile Include="Buffers\TypedProxies.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\StateMachinarium\StateMachinarium.csproj">

@@ -26,29 +26,6 @@ namespace TickTrader.Algo.Core
         event Action<int> Updated;
     }
 
-    public interface IAlgoDataWriter<TRow>
-    {
-        void Extend(List<TRow> rows);
-        void UpdateLast(TRow row);
-        void BindOutput(string id, object buffer);
-        void Reset();
-    }
-
-    public interface CollectionWriter<T, TRow>
-    {
-        void Append(TRow row, T data);
-        void WriteAt(int index, T data, TRow row);
-        void Reset();
-    }
-
-    public interface IIndicatorBuilder
-    {
-        void Build();
-        void Build(CancellationToken cToken);
-        void RebuildLast();
-        void Reset();
-    }
-
     public interface IMetadataProvider
     {
         IEnumerable<Symbol> Symbols { get; }
@@ -62,6 +39,8 @@ namespace TickTrader.Algo.Core
     public interface ICustomDataSeriesProvider
     {
     }
+
+    
 
     public interface IAccountDataProvider
     {

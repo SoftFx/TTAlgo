@@ -13,13 +13,13 @@ namespace TickTrader.Algo.GuiModel
 
         internal void SetMetadata(AlgoPropertyDescriptor descriptor)
         {
-            this.DisplayName = descriptor.DisplayName;
-            this.Id = descriptor.Id;
+            this.Descriptor = descriptor;
         }
 
+        public AlgoPropertyDescriptor Descriptor { get; private set; }
         public bool IsValid { get { return Error == null; } }
-        public string DisplayName { get; private set; }
-        public string Id { get; private set; }
+        public string DisplayName { get { return Descriptor.DisplayName; } }
+        public string Id { get { return Descriptor.Id; } }
         public bool HasError { get { return this.error != null; } }
 
         public event Action<PropertySetupBase> ErrorChanged = delegate { };

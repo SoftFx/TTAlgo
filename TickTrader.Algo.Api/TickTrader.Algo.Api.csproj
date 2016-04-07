@@ -49,6 +49,7 @@
     <Compile Include="Bar.cs" />
     <Compile Include="Colors.cs" />
     <Compile Include="DataSeries.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="IPluginContext.cs" />
     <Compile Include="Indicator.cs" />
     <Compile Include="LineStyles.cs" />

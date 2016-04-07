@@ -144,7 +144,7 @@ namespace TickTrader.Algo.Core
         public static PluginContext Create(string id, IPluginDataProvider dataProvider)
         {
             AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-            PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, dataProvider);
+            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType, dataProvider);
             return factory.Create();
         }
 
@@ -155,7 +155,7 @@ namespace TickTrader.Algo.Core
             if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
                 throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
 
-            PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, dataProvider);
+            PluginFactory factory = new PluginFactory(descriptor.AlgoClassType, dataProvider);
             return (IndicatorContext)factory.Create();
         }
     }

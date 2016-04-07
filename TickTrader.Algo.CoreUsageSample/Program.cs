@@ -13,23 +13,6 @@ namespace TickTrader.Algo.CoreUsageSample
     {
         static void Main(string[] args)
         {
-            //List<Double> results = new List<double>();
-            //List<Bar> input = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
-
-            //DirectReader<Bar> reader = new DirectReader<Bar>(input);
-            //reader.AddMapping("Input", b => b);
-
-            //DirectWriter<Bar> writer = new DirectWriter<Bar>();
-            //writer.AddMapping("Output", results);
-
-            //IndicatorBuilder<Bar> builder = new IndicatorBuilder<Bar>(typeof(MovingAverage), reader, writer);
-            //builder.SetParameter("Range", 10);
-
-            //builder.Build();
-
-            //results.ForEach(d => Console.WriteLine(d));
-            //Console.Read();
-
             var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
 
             IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(MovingAverage)));

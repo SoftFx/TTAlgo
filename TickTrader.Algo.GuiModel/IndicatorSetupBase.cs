@@ -20,10 +20,13 @@ namespace TickTrader.Algo.GuiModel
         public IndicatorSetupBase(AlgoPluginDescriptor descriptor)
         {
             this.Descriptor = descriptor;
+        }
 
-            parameters = descriptor.Parameters.Select(ParameterSetup.Create).ToList();
-            inputs = descriptor.Inputs.Select(CreateInput).ToList();
-            outputs = descriptor.Outputs.Select(CreateOuput).ToList();
+        protected void Init()
+        {
+            parameters = Descriptor.Parameters.Select(ParameterSetup.Create).ToList();
+            inputs = Descriptor.Inputs.Select(CreateInput).ToList();
+            outputs = Descriptor.Outputs.Select(CreateOuput).ToList();
 
             allProperties = parameters.Concat<PropertySetupBase>(inputs).Concat(outputs).ToList();
             allProperties.ForEach(p => p.ErrorChanged += s => Validate());

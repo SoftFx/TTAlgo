@@ -8,13 +8,13 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class PluginFactory2 : IPluginActivator
+    internal class PluginFactory : IPluginActivator
     {
         private Type pluginType;
         private IPluginDataProvider dataProvider;
         private PluginContext wrapper;
 
-        public PluginFactory2(Type algoType, IPluginDataProvider dataProvider)
+        public PluginFactory(Type algoType, IPluginDataProvider dataProvider)
         {
             this.pluginType = algoType;
             this.dataProvider = dataProvider;

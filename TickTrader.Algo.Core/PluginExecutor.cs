@@ -14,18 +14,18 @@ namespace TickTrader.Algo.Core.DataflowConcept
     /// </summary>
     public class BarIndicatorExecutor
     {
-        private ExecutionContext marshalContext;
-        private IRealtimeFeedProvider<BarEntity> dataPovider;
+        //private ExecutionContext marshalContext;
+        //private IRealtimeFeedProvider<BarEntity> dataPovider;
 
-        public BarIndicatorExecutor(AlgoPluginRef pluginRef, string mainSymbolId,
-            IRealtimeFeedProvider<BarEntity> dataPovider)
-        {
-            this.MarshalContext = marshalContext;
-            this.dataPovider = dataPovider;
-            this.marshalContext = pluginRef.CreateContext();
-        }
+        //public BarIndicatorExecutor(AlgoPluginRef pluginRef, string mainSymbolId,
+        //    IRealtimeFeedProvider<BarEntity> dataPovider)
+        //{
+        //    this.MarshalContext = marshalContext;
+        //    this.dataPovider = dataPovider;
+        //    this.marshalContext = pluginRef.CreateContext();
+        //}
 
-        public ExecutionContext MarshalContext { get; private set; }
+        //public ExecutionContext MarshalContext { get; private set; }
 
 
         //private class Builder : MarshalByRefObject

@@ -21,9 +21,9 @@ namespace TickTrader.BotTerminal
         private IIndicatorSetup setup;
         private List<IRenderableSeries> seriesList = new List<IRenderableSeries>();
         private CancellationTokenSource stopSrc;
-        private IIndicatorBuilder builder;
+        private IndicatorBuilder builder;
 
-        public IndicatorModel(IIndicatorSetup setup, IIndicatorBuilder builder)
+        public IndicatorModel(IIndicatorSetup setup, IndicatorBuilder builder)
         {
             if (setup == null)
                 throw new ArgumentNullException("config");
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             stateController.AddTransition(States.Building, Events.DoneBuildig, States.Idle);
             stateController.AddTransition(States.Stopping, Events.DoneBuildig, States.Idle);
 
-            stateController.OnEnter(States.Building, () => BuildIndicator(stopSrc.Token));
+            stateController.OnEnter(States.Building, () => BuildIndicator(stopSrc.Token, setup.DataLen));
             stateController.OnEnter(States.Stopping, () => stopSrc.Cancel());
 
             stateController.StateChanged += (o, n) => System.Diagnostics.Debug.WriteLine("Indicator [" + Id + "] " + o + " => " + n);
@@ -77,13 +77,11 @@ namespace TickTrader.BotTerminal
                 Closed(this);
         }
 
-        private async void BuildIndicator(CancellationToken cToken)
+        private async void BuildIndicator(CancellationToken cToken, int size)
         {
             try
             {
-                builder.Reset();
-
-                await Task.Factory.StartNew(() => builder.Build(cToken));
+                await Task.Factory.StartNew(() => builder.BuildNext(size, cToken));
             }
             catch (Exception ex)
             {
