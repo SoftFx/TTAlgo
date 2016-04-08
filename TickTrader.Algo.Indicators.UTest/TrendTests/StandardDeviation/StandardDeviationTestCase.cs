@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.StandardDeviation
 {
     public class StandardDeviationTestCase : MethodsPricesTestCase
     {
-        public StandardDeviationTestCase(Type indicatorType, string quotesPath, string answerPath, int period, int shift)
-            : base(indicatorType, quotesPath, answerPath, 4, 7, 8, period, shift)
+        public StandardDeviationTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
+            int period, int shift) : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 8, period, shift)
         {
         }
 
-        protected override void SetupWriter()
+        protected override void GetOutput()
         {
-            Writer.AddMapping("StdDev", AnswerBuffers[CurBufferIndex][0]);
+            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("StdDev"));
         }
     }
 }

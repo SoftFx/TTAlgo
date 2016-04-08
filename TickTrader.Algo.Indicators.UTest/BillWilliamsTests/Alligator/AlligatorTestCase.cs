@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 {
@@ -11,9 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
         public int LipsPeriod { get; protected set; }
         public int LipsShift { get; protected set; }
 
-        public AlligatorTestCase(Type indicatorType, string quotesPath, string answerPath, int jawsPeriod, int jawsShift,
-            int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
-            : base(indicatorType, quotesPath, answerPath, 4, 7, 24, 0, 0)
+        public AlligatorTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int jawsPeriod,
+            int jawsShift, int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
+            : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 24, 0, 0)
         {
             JawsPeriod = jawsPeriod;
             JawsShift = jawsShift;
@@ -23,30 +25,22 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
             LipsShift = lipsShift;
         }
 
-        protected override void SetupReader()
-        {
-            Reader.AddMapping("Bars", b => b);
-        }
-
-        protected override void SetupWriter()
-        {
-            Writer.AddMapping("Jaws", AnswerBuffers[CurBufferIndex][0]);
-            Writer.AddMapping("Teeth", AnswerBuffers[CurBufferIndex][1]);
-            Writer.AddMapping("Lips", AnswerBuffers[CurBufferIndex][2]);
-        }
-
         protected override void SetupBuilder()
         {
-            Builder.Reset();
-            Builder.SetParameter("TargetMethod", TargetMethod);
-            Builder.SetParameter("TargetPrice", TargetPrice);
-
+            base.SetupBuilder();
             Builder.SetParameter("JawsPeriod", JawsPeriod);
             Builder.SetParameter("JawsShift", JawsShift);
             Builder.SetParameter("TeethPeriod", TeethPeriod);
             Builder.SetParameter("TeethShift", TeethShift);
             Builder.SetParameter("LipsPeriod", LipsPeriod);
             Builder.SetParameter("LipsShift", LipsShift);
+        }
+
+        protected override void GetOutput()
+        {
+            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Jaws"));
+            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("Teeth"));
+            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("Lips"));
         }
     }
 }

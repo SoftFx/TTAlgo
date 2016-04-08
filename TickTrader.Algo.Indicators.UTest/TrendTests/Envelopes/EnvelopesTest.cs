@@ -1,17 +1,18 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.Envelopes
 {
     [TestClass]
-    public class EnvelopesTest
+    public class EnvelopesTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int period, int shift, double deviation)
         {
-            var dir = @"..\..\TestsData\TrendTests\Envelopes\";
-            var test = new EnvelopesTestCase(typeof(Trend.Envelopes.Envelopes),
-                $"{dir}bids_{symbol}_{timeframe}_{period}_{shift}_{deviation:F3}.bin", $"{dir}Envelopes_{symbol}_{timeframe}_{period}_{shift}_{deviation:F3}",
-                period, shift, deviation);
-            test.InvokeTest();
+            var dir = PathHelper.MeasuresDir("Trend", "Envelopes");
+            var test = new EnvelopesTestCase(typeof (Trend.Envelopes.Envelopes), symbol,
+                $"{dir}bids_{symbol}_{timeframe}_{period}_{shift}_{deviation:F3}.bin",
+                $"{dir}Envelopes_{symbol}_{timeframe}_{period}_{shift}_{deviation:F3}", period, shift, deviation);
+            LaunchTestCase(test);
         }
 
         [TestMethod]

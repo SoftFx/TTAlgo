@@ -1,19 +1,20 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 {
     [TestClass]
-    public class AlligatorTest
+    public class AlligatorTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int jawsPeriod, int jawsShift,
             int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
         {
-            var dir = @"..\..\TestsData\BillWilliamsTests\Alligator\";
-            var test = new AlligatorTestCase(typeof (BillWilliams.Alligator.Alligator),
+            var dir = PathHelper.MeasuresDir("Trend", "Alligator");
+            var test = new AlligatorTestCase(typeof (BillWilliams.Alligator.Alligator), symbol,
                 $"{dir}bids_{symbol}_{timeframe}_{jawsPeriod}_{jawsShift}_{teethPeriod}_{teethShift}_{lipsPeriod}_{lipsShift}.bin",
                 $"{dir}Alligator_{symbol}_{timeframe}_{jawsPeriod}_{jawsShift}_{teethPeriod}_{teethShift}_{lipsPeriod}_{lipsShift}",
                 jawsPeriod, jawsShift, teethPeriod, teethShift, lipsPeriod, lipsShift);
-            test.InvokeTest();
+            LaunchTestCase(test);
         }
 
         [TestMethod]

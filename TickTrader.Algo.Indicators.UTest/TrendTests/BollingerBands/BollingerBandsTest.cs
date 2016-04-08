@@ -1,17 +1,18 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
 {
     [TestClass]
-    public class BollingerBandsTest
+    public class BollingerBandsTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int period, int shift, double deviations)
         {
-            var dir = @"..\..\TestsData\TrendTests\BollingerBands\";
-            var test = new BollingerBandsTestCase(typeof(Trend.BollingerBands.BollingerBands),
-                $"{dir}bids_{symbol}_{timeframe}_{period}_{shift}_{deviations:F3}.bin", $"{dir}Bands_{symbol}_{timeframe}_{period}_{shift}_{deviations:F3}",
-                period, shift, deviations);
-            test.InvokeTest();
+            var dir = PathHelper.MeasuresDir("Trend", "BollingerBands");
+            var test = new BollingerBandsTestCase(typeof (Trend.BollingerBands.BollingerBands), symbol,
+                $"{dir}bids_{symbol}_{timeframe}_{period}_{shift}_{deviations:F3}.bin",
+                $"{dir}Bands_{symbol}_{timeframe}_{period}_{shift}_{deviations:F3}", period, shift, deviations);
+            LaunchTestCase(test);
         }
 
         [TestMethod]

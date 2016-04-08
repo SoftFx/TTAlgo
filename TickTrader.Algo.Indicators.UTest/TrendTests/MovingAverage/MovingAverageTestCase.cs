@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
 {
@@ -6,21 +8,22 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
     {
         public double SmoothFactor { get; protected set; }
 
-        public MovingAverageTestCase(Type indicatorType, string quotesPath, string answerPath, int period,
-            int shift, double smoothFactor = 0.0) : base(indicatorType, quotesPath, answerPath, 4, 7, 8, period, shift)
+        public MovingAverageTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period,
+            int shift, double smoothFactor = 0.0)
+            : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 8, period, shift)
         {
             SmoothFactor = smoothFactor;
-        }
-
-        protected override void SetupWriter()
-        {
-            Writer.AddMapping("MA", AnswerBuffers[CurBufferIndex][0]);
         }
 
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
             Builder.SetParameter("SmoothFactor", SmoothFactor);
+        }
+
+        protected override void GetOutput()
+        {
+            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Ma"));
         }
     }
 }

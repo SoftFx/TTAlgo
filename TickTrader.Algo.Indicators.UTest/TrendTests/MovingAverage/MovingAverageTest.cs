@@ -1,17 +1,18 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
 {
     [TestClass]
-    public class MovingAverageTest
+    public class MovingAverageTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int period, int shift, double smoothFactor = 0.0)
         {
-            var dir = @"..\..\TestsData\TrendTests\MovingAverage\";
-            var test = new MovingAverageTestCase(typeof (Trend.MovingAverage.MovingAverage),
+            var dir = PathHelper.MeasuresDir("Trend", "MovingAverage");
+            var test = new MovingAverageTestCase(typeof (Trend.MovingAverage.MovingAverage), symbol,
                 $"{dir}bids_{symbol}_{timeframe}_{period}_{shift}.bin", $"{dir}MA_{symbol}_{timeframe}_{period}_{shift}",
                 period, shift, smoothFactor);
-            test.InvokeTest();
+            LaunchTestCase(test);
         }
 
         [TestMethod]
