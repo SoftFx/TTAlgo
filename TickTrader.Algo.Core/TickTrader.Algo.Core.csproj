@@ -57,7 +57,7 @@
     <Compile Include="Entities\OrdersCollection.cs" />
     <Compile Include="IndicatorBuilder.cs" />
     <Compile Include="Metadata\EmptyValue.cs" />
-    <Compile Include="PluginContext.cs" />
+    <Compile Include="PluginAdapter.cs" />
     <Compile Include="PluginFactory.cs" />
     <Compile Include="PluginExecutor.cs" />
     <Compile Include="ExecutionContext.cs" />

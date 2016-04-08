@@ -27,8 +27,8 @@ namespace TickTrader.Algo.CoreUsageSample
 
             //builder.Account.Orders.Add(new OrderEntity(11) { Symbol = "EURUSD", TotalAmount = 6000, RemainingAmount = 6000 });
 
-            //builder.GetBarSeries("EURUSD").Last = new BarEntity() { High = 100 };
-            //builder.RebuildLast();
+            builder.GetBarSeries("EURUSD").Last = new BarEntity() { High = 100 };
+            builder.RebuildLast();
 
             var jaws = builder.GetOutput("Jaws");
             var teeth = builder.GetOutput("Teeth");

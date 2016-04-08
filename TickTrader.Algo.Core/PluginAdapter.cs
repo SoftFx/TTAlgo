@@ -10,15 +10,15 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    internal class PluginContext : NoTimeoutByRefObject, IPluginActivator
+    internal class PluginAdapter : NoTimeoutByRefObject, IPluginActivator
     {
         private AlgoPlugin plugin;
         private IPluginDataProvider provider;
-        private List<IndicatorContext> nestedIndacators = new List<IndicatorContext>();
+        private List<IndicatorAdapter> nestedIndacators = new List<IndicatorAdapter>();
         private Dictionary<string, IDataSeriesProxy> inputs = new Dictionary<string, IDataSeriesProxy>();
         private Dictionary<string, IDataSeriesProxy> outputs = new Dictionary<string, IDataSeriesProxy>();
 
-        internal PluginContext(AlgoPlugin plugnInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal PluginAdapter(AlgoPlugin plugnInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
         {
             this.provider = provider;
             this.plugin = plugnInstance;
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core
             Descriptor.Validate();
         }
 
-        internal PluginContext(Func<AlgoPlugin> pluginFactoy, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal PluginAdapter(Func<AlgoPlugin> pluginFactoy, IPluginDataProvider provider, BuffersCoordinator coordinator)
         {
             this.provider = provider;
             this.Coordinator = coordinator;
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core
 
         public BuffersCoordinator Coordinator { get; private set; }
         public AlgoPluginDescriptor Descriptor { get; private set; }
-        protected IReadOnlyList<IndicatorContext> NestedIndicators { get { return nestedIndacators; } }
+        protected IReadOnlyList<IndicatorAdapter> NestedIndicators { get { return nestedIndacators; } }
         protected AlgoPlugin PluginInstance { get { return plugin; } }
 
         public void SetParameter(string id, object val)
@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Core
 
             if (instance is Indicator)
             {
-                var context = new IndicatorContext(instance, this.provider, Coordinator);
+                var context = new IndicatorAdapter(instance, this.provider, Coordinator);
                 nestedIndacators.Add(context);
                 return provider;
             }
@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Core
         }
 
 
-        public static IndicatorContext CreateIndicator(string id, IPluginDataProvider dataProvider)
+        public static IndicatorAdapter CreateIndicator(string id, IPluginDataProvider dataProvider)
         {
             AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
 
@@ -176,13 +176,13 @@ namespace TickTrader.Algo.Core
 
             descriptor.Validate();
 
-            return new IndicatorContext(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+            return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
         }
     }
 
-    internal class IndicatorContext : PluginContext
+    internal class IndicatorAdapter : PluginAdapter
     {
-        internal IndicatorContext(AlgoPlugin pluginInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal IndicatorAdapter(AlgoPlugin pluginInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
             : base(pluginInstance, provider, coordinator)
         {
             InitParameters();
@@ -190,7 +190,7 @@ namespace TickTrader.Algo.Core
             BindUpOutputs();
         }
 
-        internal IndicatorContext(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
+        internal IndicatorAdapter(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
             : base(pluginFactory, provider, new BuffersCoordinator())
         {
             InitParameters();
@@ -198,22 +198,43 @@ namespace TickTrader.Algo.Core
             BindUpOutputs();
         }
 
-        private void InvokeCalculate()
+        private void InvokeCalculate(bool isUpdate)
         {
-            ((Indicator)PluginInstance).InvokeCalculate();
+            ((Indicator)PluginInstance).InvokeCalculate(isUpdate);
         }
 
-        public void Calculate()
+        public void Calculate(bool isUpdate)
         {
             for (int i = NestedIndicators.Count - 1; i >= 0; i--)
-                NestedIndicators[i].InvokeCalculate();
+                NestedIndicators[i].InvokeCalculate(isUpdate);
 
-            InvokeCalculate();
+            InvokeCalculate(isUpdate);
         }
 
         public override string ToString()
         {
             return "Indicator: " + Descriptor.DisplayName;
+        }
+    }
+
+    internal class BotAdapter : PluginAdapter
+    {
+        internal BotAdapter(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
+            : base(pluginFactory, provider, new BuffersCoordinator())
+        {
+            InitParameters();
+            BindUpInputs();
+            BindUpOutputs();
+        }
+
+        public void InvokeStart()
+        {
+            ((TradeBot)PluginInstance).InvokeStart();
+        }
+
+        public void InvokeStop()
+        {
+            ((TradeBot)PluginInstance).InvokeStop();
         }
     }
 }

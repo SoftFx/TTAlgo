@@ -10,20 +10,20 @@ namespace TickTrader.Algo.Api
     {
         public Indicator()
         {
-            //if (currentInstance != null)
-            //    currentInstance.nestedIndicators.Add(this);
         }
+
+        /// <summary>
+        /// True if Calculate() is called to recalculate last bar/quote. Inputs and outputs are not shifted in this case.
+        /// False if Calculate() is called on a new bar/quote. Inputs and outputs are shifted, fresh data is placed at zero index.
+        /// </summary>
+        protected bool IsUpdate { get; private set; }
 
         protected abstract void Calculate();
 
-        internal void InvokeCalculate()
+        internal void InvokeCalculate(bool isUpdate)
         {
+            IsUpdate = isUpdate;
             Calculate();
-
-            //foreach (Indicator i in nestedIndicators)
-            //    i.DoCalculate();
-
-            //Calculate();
         }
     }
 }

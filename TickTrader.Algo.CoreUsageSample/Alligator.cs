@@ -37,9 +37,9 @@ namespace TickTrader.Algo.CoreUsageSample
 
         protected override void Init()
         {
-            _jaws = new MovingAverage() { Input = Input.Median, Period = JawsPeriod };
-            _teeth = new MovingAverage() { Input = Input.Median, Period = TeethPeriod };
-            _lips = new MovingAverage() { Input = Input.Median, Period = LipsPeriod };
+            _jaws = new MovingAverage(Input.Mean, JawsPeriod);
+            _teeth = new MovingAverage(Input.Mean, TeethPeriod);
+            _lips = new MovingAverage(Input.Mean, LipsPeriod);
         }
 
         protected override void Calculate()
