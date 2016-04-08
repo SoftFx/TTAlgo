@@ -35,7 +35,7 @@
 
         protected override void SetCurrentResult()
         {
-            Result = _prev;
+            Average = _prev;
         }
     }
 }

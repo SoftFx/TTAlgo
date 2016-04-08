@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         {
             if (Accumulated < Period)
             {
-                Result = double.NaN;
+                Average = double.NaN;
             }
             else
             {
@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                     sum += value*index;
                     index++;
                 }
-                Result = sum/_indexSum;
+                Average = sum/_indexSum;
             }
         }
     }

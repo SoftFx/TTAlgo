@@ -33,7 +33,7 @@
         protected override void InvokeAdd(double value)
         {
             _innerSma.Add(value);
-            if (!double.IsNaN(_innerSma.Result))
+            if (!double.IsNaN(_innerSma.Average))
             {
                 _outerSma.Add(value);
             }
@@ -42,7 +42,7 @@
         protected override void InvokeUpdateLast(double value)
         {
             _innerSma.UpdateLast(value);
-            if (!double.IsNaN(_innerSma.Result))
+            if (!double.IsNaN(_innerSma.Average))
             {
                 _outerSma.UpdateLast(value);
             }
@@ -50,7 +50,7 @@
 
         protected override void SetCurrentResult()
         {
-            Result = _outerSma.Result;
+            Average = _outerSma.Average;
         }
     }
 }

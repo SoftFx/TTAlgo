@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         protected override void SetCurrentResult()
         {
-            Result = Accumulated < Period ? double.NaN : _sum/Period;
+            Average = Accumulated < Period ? double.NaN : _sum/Period;
         }
     }
 }

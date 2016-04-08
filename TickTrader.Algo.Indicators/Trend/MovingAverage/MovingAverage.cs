@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
+﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
@@ -36,28 +35,24 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         public DataSeries<Bar> Bars { get; set; }
 
         [Output]
-        public DataSeries MA { get; set; }
+        public DataSeries Average { get; set; }
 
         private IMA _maInstance;
-        private Queue<double> _maCache;
+        private IShift _shifter;
 
         protected override void Init()
         {
-            _maCache = new Queue<double>();
             _maInstance = MABase.CreateMaInstance(Period, _targetMethod, SmoothFactor);
             _maInstance.Init();
+            _shifter = new SimpleShifter(Shift);
+            _shifter.Init();
         }
 
         protected override void Calculate()
         {
-            // should be removed when Init problem will be solved
-            if (Bars.Count == 1)
-            {
-                //Init();
-            }
-            // ---------------------
             _maInstance.Add(AppliedPrice.Calculate(Bars[0], _targetPrice));
-            Utility.ApplyShiftedValue(MA, Shift, _maInstance.Result, _maCache, Bars.Count);
+            _shifter.Add(_maInstance.Average);
+            Average[_shifter.Position] = _shifter.Result;
         }
     }
 }

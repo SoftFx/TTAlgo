@@ -6,7 +6,7 @@
 
         int Accumulated { get; }
         double LastAdded { get; }
-        double Result { get; }
+        double Average { get; }
 
         void Init();
         void Reset();

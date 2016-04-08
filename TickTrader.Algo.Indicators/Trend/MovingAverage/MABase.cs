@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         public int Accumulated { get; protected set; }
         public double LastAdded { get; protected set; }
-        public double Result { get; protected set; }
+        public double Average { get; protected set; }
 
         internal MABase(int period)
         {
@@ -24,14 +24,14 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         {
             Accumulated = 0;
             LastAdded = double.NaN;
-            Result = double.NaN;
+            Average = double.NaN;
         }
 
         public virtual void Reset()
         {
             Accumulated = 0;
             LastAdded = double.NaN;
-            Result = double.NaN;
+            Average = double.NaN;
         }
 
         protected abstract void InvokeAdd(double value);

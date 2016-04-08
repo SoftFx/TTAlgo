@@ -70,7 +70,7 @@
 
         protected override void SetCurrentResult()
         {
-            Result = Accumulated < Period ? double.NaN : _prev;
+            Average = Accumulated < Period ? double.NaN : _prev;
         }
     }
 }

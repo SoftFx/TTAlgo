@@ -48,9 +48,8 @@
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
-    <Compile Include="Functions\AppliedPrice.cs" />
+    <Compile Include="Utility\AppliedPrice.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
-    <Compile Include="Functions\Utility.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Ichimoku\Ichimoku.cs" />
     <Compile Include="MACD\MACD.cs" />
@@ -69,6 +68,9 @@
     <Compile Include="Trend\MovingAverage\SMA.cs" />
     <Compile Include="Trend\MovingAverage\SMMA.cs" />
     <Compile Include="Trend\MovingAverage\TriMA.cs" />
+    <Compile Include="Utility\IShift.cs" />
+    <Compile Include="Utility\ShifterBase.cs" />
+    <Compile Include="Utility\SimpleShifter.cs" />
     <Compile Include="ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>

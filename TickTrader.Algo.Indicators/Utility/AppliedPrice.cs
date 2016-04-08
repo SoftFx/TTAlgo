@@ -1,6 +1,6 @@
 ﻿using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.Indicators.Functions
+namespace TickTrader.Algo.Indicators.Utility
 {
     public static class AppliedPrice
     {
