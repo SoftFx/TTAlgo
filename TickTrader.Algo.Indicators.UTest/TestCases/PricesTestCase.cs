@@ -63,10 +63,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected override void LaunchTest(Action runAction)
         {
-            Setup();
             for (var i = 0; i < PricesCount; i++)
             {
                 TargetPrice = i;
+                Setup();
                 InvokeLaunchTest(runAction);
             }
         }

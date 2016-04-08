@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
 
         public MovingAverageTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period,
             int shift, double smoothFactor = 0.0)
-            : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 8, period, shift)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, 4, 7, period, shift)
         {
             SmoothFactor = smoothFactor;
         }
@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Ma"));
+            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Average"));
         }
     }
 }

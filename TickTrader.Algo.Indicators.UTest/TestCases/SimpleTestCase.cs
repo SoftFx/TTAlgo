@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
 {
@@ -27,15 +25,12 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected override void Setup()
         {
-            ReadQuotes();
-            Builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(IndicatorType));
+            base.Setup();
             AnswerBuffer = CreateAnswerBuffer();
         }
 
         protected virtual void InvokeLaunchTest(Action runAction)
         {
-            SetupBuilder();
-            SetupInput();
             runAction();
             GetOutput();
             CheckAnswer();

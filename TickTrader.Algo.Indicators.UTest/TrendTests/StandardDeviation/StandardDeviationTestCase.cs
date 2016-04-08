@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.StandardDeviation
     public class StandardDeviationTestCase : MethodsPricesTestCase
     {
         public StandardDeviationTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int period, int shift) : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 8, period, shift)
+            int period, int shift) : base(indicatorType, symbol, quotesPath, answerPath, 8, 4, 7, period, shift)
         {
         }
 

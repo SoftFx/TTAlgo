@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.Envelopes
         public double Deviation { get; protected set; }
 
         public EnvelopesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period,
-            int shift, double deviation) : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 16, period, shift)
+            int shift, double deviation) : base(indicatorType, symbol, quotesPath, answerPath, 16, 4, 7, period, shift)
         {
             Deviation = deviation;
         }

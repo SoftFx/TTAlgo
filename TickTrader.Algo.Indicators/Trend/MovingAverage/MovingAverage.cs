@@ -50,8 +50,16 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         protected override void Calculate()
         {
-            _maInstance.Add(AppliedPrice.Calculate(Bars[0], _targetPrice));
-            _shifter.Add(_maInstance.Average);
+            if (IsUpdate)
+            {
+                _maInstance.UpdateLast(AppliedPrice.Calculate(Bars[0], _targetPrice));
+                _shifter.UpdateLast(_maInstance.Average);
+            }
+            else
+            {
+                _maInstance.Add(AppliedPrice.Calculate(Bars[0], _targetPrice));
+                _shifter.Add(_maInstance.Average);
+            }
             Average[_shifter.Position] = _shifter.Result;
         }
     }

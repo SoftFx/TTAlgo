@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
 
         public BollingerBandsTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
             int period, int shift, double deviations)
-            : base(indicatorType, symbol, quotesPath, answerPath, 7, 24, period, shift)
+            : base(indicatorType, symbol, quotesPath, answerPath, 24, 7, period, shift)
         {
             Deviations = deviations;
             Epsilon = 23e-10;

@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 
         public AlligatorTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int jawsPeriod,
             int jawsShift, int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
-            : base(indicatorType, symbol, quotesPath, answerPath, 4, 7, 24, 0, 0)
+            : base(indicatorType, symbol, quotesPath, answerPath, 24, 4, 7, 0, 0)
         {
             JawsPeriod = jawsPeriod;
             JawsShift = jawsShift;

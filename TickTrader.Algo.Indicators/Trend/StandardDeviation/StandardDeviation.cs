@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 {
@@ -18,12 +18,12 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        private MovingAverage.MovingAverage.Method _targetMethod;
+        private Method _targetMethod;
         [Parameter(DefaultValue = 0, DisplayName = "Method")]
         public int TargetMethod
         {
             get { return (int)_targetMethod; }
-            set { _targetMethod = (MovingAverage.MovingAverage.Method)value; }
+            set { _targetMethod = (Method)value; }
         }
 
         private AppliedPrice.Target _targetPrice;
@@ -45,11 +45,9 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
             _smaCache = new Queue<double>();
             _maCache = new Queue<double>();
             _p2SmaCache = new Queue<double>();
-            _sma = MovingAverage.MovingAverage.CreateMAInstance(Period, Shift, MovingAverage.MovingAverage.Method.Simple,
-                _targetPrice);
-            _ma = MovingAverage.MovingAverage.CreateMAInstance(Period, Shift, _targetMethod, _targetPrice);
-            _p2Sma = MovingAverage.MovingAverage.CreateMAInstance(Period, Shift,
-                MovingAverage.MovingAverage.Method.Simple, AppliedPrice.Target.Close);
+            _sma = MABase.CreateMaInstance(Period, Method.Simple);
+            _ma = MABase.CreateMaInstance(Period, _targetMethod);
+            _p2Sma = MABase.CreateMaInstance(Period, Method.Simple);
             _sma.Init();
             _ma.Init();
             _p2Sma.Init();
@@ -57,26 +55,26 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         protected override void Calculate()
         {
-            // ---------------------
-            if (Bars.Count == 1)
-            {
-                Init();
-            }
-            // ---------------------
-            var smaVal = Utility.GetShiftedValue(Shift, _sma.Calculate(Bars[0]), _smaCache, Bars.Count);
-            var maVal = Utility.GetShiftedValue(Shift, _ma.Calculate(Bars[0]), _maCache, Bars.Count);
-            var appliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
-            var p2SmaVal = Utility.GetShiftedValue(Shift, _p2Sma.Calculate(new Bar {Close = appliedPrice*appliedPrice}),
-                _p2SmaCache, Bars.Count);
-            var res = Math.Sqrt(p2SmaVal + maVal * maVal - 2 * maVal * smaVal);
-            if (Shift > 0)
-            {
-                StdDev[0] = res;
-            }
-            else if (Shift <= 0 && -Shift < Bars.Count)
-            {
-                StdDev[-Shift] = res;
-            }
+            //// ---------------------
+            //if (Bars.Count == 1)
+            //{
+            //    Init();
+            //}
+            //// ---------------------
+            //var smaVal = Utility.GetShiftedValue(Shift, _sma.Calculate(Bars[0]), _smaCache, Bars.Count);
+            //var maVal = Utility.GetShiftedValue(Shift, _ma.Calculate(Bars[0]), _maCache, Bars.Count);
+            //var appliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
+            //var p2SmaVal = Utility.GetShiftedValue(Shift, _p2Sma.Calculate(new Bar {Close = appliedPrice*appliedPrice}),
+            //    _p2SmaCache, Bars.Count);
+            //var res = Math.Sqrt(p2SmaVal + maVal * maVal - 2 * maVal * smaVal);
+            //if (Shift > 0)
+            //{
+            //    StdDev[0] = res;
+            //}
+            //else if (Shift <= 0 && -Shift < Bars.Count)
+            //{
+            //    StdDev[-Shift] = res;
+            //}
         }
     }
 }

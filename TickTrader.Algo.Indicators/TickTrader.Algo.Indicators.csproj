@@ -45,9 +45,13 @@
     <Compile Include="Awesome\Awesome.cs" />
     <Compile Include="Bands\Bands.cs" />
     <Compile Include="Bears\Bears.cs" />
+    <Compile Include="BillWilliams\Alligator\Alligator.cs" />
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
+    <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
+    <Compile Include="Trend\Envelopes\Envelopes.cs" />
+    <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
     <Compile Include="Utility\AppliedPrice.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
@@ -79,12 +83,7 @@
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BillWilliams\Alligator\" />
-    <Folder Include="Trend\BollingerBands\" />
-    <Folder Include="Trend\Envelopes\" />
-    <Folder Include="Trend\StandardDeviation\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
