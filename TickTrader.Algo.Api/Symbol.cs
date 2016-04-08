@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Api
         double LotSize { get; }
         double MaxAmount { get; }
         double MinAmount { get; }
+        bool IsNull { get; }
     }
 
     public interface SymbolProvider : IEnumerable<Symbol>

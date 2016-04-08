@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Core
     /// </summary>
     public class IndicatorBuilder : IPluginDataProvider
     {
-        private IndicatorContext pluginProxy;
+        private IndicatorAdapter pluginProxy;
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         //private Dictionary<string, IDataBuffer> outputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
@@ -26,14 +26,16 @@ namespace TickTrader.Algo.Core
         public IndicatorBuilder(AlgoPluginDescriptor descriptor)
         {
             Descriptor = descriptor;
-            pluginProxy = PluginContext.CreateIndicator(descriptor.Id, this);
+            pluginProxy = PluginAdapter.CreateIndicator(descriptor.Id, this);
             marketData = new MarketDataImpl(this);
             Account = new AccountEntity();
+            Symbols = new SymbolsCollection();
 
             //PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, this);
         }
 
         public string MainSymbol { get; set; }
+        public SymbolsCollection Symbols { get; private set; }
         public int DataSize { get { return pluginProxy.Coordinator.VirtualPos; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
         public AccountEntity Account { get; private set; }
@@ -111,14 +113,14 @@ namespace TickTrader.Algo.Core
                 if (cToken.IsCancellationRequested)
                     return;
                 pluginProxy.Coordinator.MoveNext();
-                pluginProxy.Calculate();
+                pluginProxy.Calculate(false);
             }
         }
 
         public void RebuildLast()
         {
             LazyInit();
-            pluginProxy.Calculate();
+            pluginProxy.Calculate(true);
         }
 
         public void Reset()
@@ -159,8 +161,9 @@ namespace TickTrader.Algo.Core
                 isSymbolsInitialized = true;
                 if (SymbolDataRequested != null)
                     SymbolDataRequested();
+                Symbols.MainSymbolCode = MainSymbol;
             }
-            throw new NotImplementedException(); 
+            return Symbols.SymbolProviderImpl;
         }
 
         private class MarketDataImpl : MarketDataProvider

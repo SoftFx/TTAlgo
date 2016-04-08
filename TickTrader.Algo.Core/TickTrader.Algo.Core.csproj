@@ -55,9 +55,11 @@
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
+    <Compile Include="Entities\SymbolEntity.cs" />
+    <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="IndicatorBuilder.cs" />
     <Compile Include="Metadata\EmptyValue.cs" />
-    <Compile Include="PluginContext.cs" />
+    <Compile Include="PluginAdapter.cs" />
     <Compile Include="PluginFactory.cs" />
     <Compile Include="PluginExecutor.cs" />
     <Compile Include="ExecutionContext.cs" />

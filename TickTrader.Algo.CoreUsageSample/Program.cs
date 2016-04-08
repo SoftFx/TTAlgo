@@ -17,7 +17,8 @@ namespace TickTrader.Algo.CoreUsageSample
 
             IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
 
-            //builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = 5000, RemainingAmount = 5000 });
+            builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
+            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = 5000, RemainingAmount = 5000 });
 
             builder.MainSymbol = "EURUSD";
             builder.GetBarSeries("EURUSD").Append(data);
@@ -27,8 +28,8 @@ namespace TickTrader.Algo.CoreUsageSample
 
             //builder.Account.Orders.Add(new OrderEntity(11) { Symbol = "EURUSD", TotalAmount = 6000, RemainingAmount = 6000 });
 
-            //builder.GetBarSeries("EURUSD").Last = new BarEntity() { High = 100 };
-            //builder.RebuildLast();
+            builder.GetBarSeries("EURUSD").Last = new BarEntity() { High = 100 };
+            builder.RebuildLast();
 
             var jaws = builder.GetOutput("Jaws");
             var teeth = builder.GetOutput("Teeth");

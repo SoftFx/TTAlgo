@@ -47,6 +47,7 @@
     <Compile Include="AlgoPlugin.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
+    <Compile Include="TradeBot.cs" />
     <Compile Include="Colors.cs" />
     <Compile Include="DataSeries.cs" />
     <Compile Include="Extensions.cs" />

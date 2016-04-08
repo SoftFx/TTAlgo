@@ -10,6 +10,14 @@ namespace TickTrader.Algo.CoreUsageSample
     [Indicator]
     public class MovingAverage : Indicator
     {
+        public MovingAverage() { }
+
+        public MovingAverage(DataSeries input, int period)
+        {
+            this.Input = input;
+            this.Period = period;
+        }
+
         [Input]
         public DataSeries Input { get; set; }
 

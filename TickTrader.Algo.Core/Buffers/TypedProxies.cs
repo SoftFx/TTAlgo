@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
             Close = new DataSeriesProxy() { Buffer = closeBuffer };
             High = new DataSeriesProxy() { Buffer = highBuffer };
             Low = new DataSeriesProxy() { Buffer = lowBuffer };
-            Median = new DataSeriesProxy() { Buffer = medianBuffer };
+            Mean = new DataSeriesProxy() { Buffer = medianBuffer };
             Volume = new DataSeriesProxy() { Buffer = volumeBuffer };
             OpenTime = new TimeSeriesProxy() { Buffer = openTimeBuffer };
             SymbolCode = string.Empty;
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core
         public Api.DataSeries Close { get; private set; }
         public Api.DataSeries High { get; private set; }
         public Api.DataSeries Low { get; private set; }
-        public Api.DataSeries Median { get; private set; }
+        public Api.DataSeries Mean { get; private set; }
         public Api.DataSeries Volume { get; private set; }
         public Api.TimeSeries OpenTime { get; private set; }
     }
