@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class BarEntity : Api.Bar
     {
-        public static readonly BarEntity Empty = new BarEntity() { IsEmpty = true, Open = double.NaN, Close = double.NaN, High = double.NaN , Low = double.NaN, Volume = double.NaN };
+        public static readonly BarEntity Empty = new BarEntity() { IsNull = true, Open = double.NaN, Close = double.NaN, High = double.NaN , Low = double.NaN, Volume = double.NaN };
 
         public double Open { get; set; }
         public double Close { get; set; }
@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
         public double Volume { get; set; }
         public DateTime OpenTime { get; set; }
         public DateTime CloseTime { get; set; }
-        public bool IsEmpty { get; set; }
+        public bool IsNull { get; set; }
     }
 
     [Serializable]
