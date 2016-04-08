@@ -32,9 +32,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual void InvokeLaunchTest(Action runAction)
         {
             runAction();
-            GetOutput();
             CheckAnswer();
-            Builder.Reset();
         }
 
         protected override void LaunchTest(Action runAction)
@@ -74,9 +72,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected virtual void InvokeCheckAnswer(string answerPath)
         {
+            var metaAnswer = ReadAnswer(answerPath);
             for (var k = 0; k < Quotes.Count; k++)
             {
-                CheckAnswerUnit(k, ReadAnswer(answerPath));
+                CheckAnswerUnit(k, metaAnswer);
             }
         }
 
