@@ -8,10 +8,11 @@
     <!-- Buttons Template -->
     <ControlTemplate x:Key="ArrowDownButton_Template" TargetType="{x:Type ButtonBase}">
         <Border IsHitTestVisible="True"
+                CornerRadius="3"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}">
-            <Canvas Height="5" Width="5">
+            <Canvas Height="5" Width="5" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Polygon x:Name="Arrow" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,0 2.5,5 5,0" />
             </Canvas>
         </Border>
@@ -24,10 +25,11 @@
 
     <ControlTemplate x:Key="ArrowUpButton_Template" TargetType="{x:Type ButtonBase}">
         <Border IsHitTestVisible="True"
+                CornerRadius="3"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}">
-            <Canvas Height="5" Width="5">
+            <Canvas Height="5" Width="5" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Polygon x:Name="Arrow" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,5 2.5,0 5,5" />
             </Canvas>
         </Border>
@@ -45,12 +47,14 @@
         <Setter Property="Focusable" Value="False" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Width" Value="12"></Setter>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
     </Style>
 
     <Style x:Key="DropDownButton_Style" TargetType="ButtonBase" BasedOn="{StaticResource ArrowButton_BaseStyle}">
         <Setter Property="Template" Value="{StaticResource ArrowDownButton_Template}" />
         <Setter Property="Width" Value="10"/>
-        <Setter Property="Margin" Value="0 0 2 0"/>
+        <Setter Property="Margin" Value="0 2 2 2"/>
     </Style>
 
     <Style x:Key="ArrowDownButton_Style" TargetType="ButtonBase" BasedOn="{StaticResource ArrowButton_BaseStyle}">
