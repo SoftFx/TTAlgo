@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.StandardDeviation
 
         public override void InvokeUpdateTest()
         {
-            Epsilon = 63e-9;
+            Epsilon = 3e-9;
             base.InvokeUpdateTest();
         }
 

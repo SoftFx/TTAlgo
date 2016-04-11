@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
 
         public override void InvokeUpdateTest()
         {
-            Epsilon = 14e-8;
+            Epsilon = 45e-10;
             base.InvokeUpdateTest();
         }
 

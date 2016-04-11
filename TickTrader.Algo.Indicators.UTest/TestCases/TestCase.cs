@@ -57,14 +57,15 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected virtual void RunUpdate()
         {
-            var firstQuote = Quotes[0];
+            var prevQuote = Quotes[0];
             var inputBuffer = Builder.GetBarSeries(Symbol);
             foreach (var quote in Quotes)
             {
-                inputBuffer.Append(firstQuote);
+                inputBuffer.Append(prevQuote);
                 Builder.BuildNext();
                 inputBuffer.Last = quote;
                 Builder.RebuildLast();
+                prevQuote = quote;
             }
             GetOutput();
         }
