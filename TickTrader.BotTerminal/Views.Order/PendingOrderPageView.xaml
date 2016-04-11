@@ -18,6 +18,10 @@
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
 
+        <Style BasedOn="{StaticResource {x:Type l:DateTimePicker}}" TargetType="l:DateTimePicker">
+            <Setter Property="Margin" Value="0 2 0 0" />
+        </Style>
+
         <Style BasedOn="{StaticResource {x:Type l:NumericUpDown}}" TargetType="l:NumericUpDown">
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
@@ -131,7 +135,7 @@
                     <ColumnDefinition Width="0.6*"></ColumnDefinition>
                     <ColumnDefinition Width="0.4*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <CheckBox Grid.Column="0" Content="Expiry"/>
+                <CheckBox x:Name="Expire" Grid.Column="0" Content="Expiry"/>
                 <TextBlock Grid.Column="1" Text="UTC+0" HorizontalAlignment="Right"/>
             </Grid>
             <Grid Grid.Row="8" Grid.Column="3">
@@ -139,8 +143,7 @@
                     <ColumnDefinition Width="0.6*"></ColumnDefinition>
                     <ColumnDefinition Width="0.4*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <DatePicker Grid.Column="0" />
-                <DatePicker Grid.Column="1" />
+                <l:DateTimePicker Grid.Column="0" Grid.ColumnSpan="2" IsEnabled="{Binding ElementName=Expire, Path=IsChecked}"/>
             </Grid>
             <StackPanel Grid.Row="9" Grid.Column="3" Orientation="Horizontal">
                 <TextBlock  Text="Duration:"/>
