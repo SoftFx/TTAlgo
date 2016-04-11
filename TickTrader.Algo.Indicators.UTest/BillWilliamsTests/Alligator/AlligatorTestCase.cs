@@ -27,7 +27,9 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 
         protected override void SetupBuilder()
         {
-            base.SetupBuilder();
+            Builder.MainSymbol = Symbol;
+            Builder.SetParameter("TargetMethod", TargetMethod);
+            Builder.SetParameter("TargetPrice", TargetPrice);
             Builder.SetParameter("JawsPeriod", JawsPeriod);
             Builder.SetParameter("JawsShift", JawsShift);
             Builder.SetParameter("TeethPeriod", TeethPeriod);

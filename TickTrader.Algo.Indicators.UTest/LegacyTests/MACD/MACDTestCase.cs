@@ -20,7 +20,6 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.MACD
 
         protected override void SetupInput()
         {
-            base.SetupInput();
             Builder.MapBarInput("Close", Symbol, entity => entity.Close);
         }
 

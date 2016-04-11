@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accumulation
         private void TestMeasures(string symbol, string dir)
         {
             var test = new AccumulationTestCase(typeof (Indicators.Accumulation.Accumulation), symbol,
-                PathHelper.QuotesPath(dir, symbol), PathHelper.AnswerPath(dir, symbol, "Accumulation"));
+                PathHelper.QuotesPath(dir, symbol), PathHelper.AnswerPath(dir, symbol, "Accumulator"));
             test.InvokeFullBuildTest();
             //LaunchTestCase(test);
         }

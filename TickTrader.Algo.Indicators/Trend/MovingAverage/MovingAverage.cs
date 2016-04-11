@@ -6,6 +6,9 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
     [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Trend/Moving Average")]
     public class MovingAverage : Indicator
     {
+        private IMA _maInstance;
+        private IShift _shifter;
+
         [Parameter(DefaultValue = 7, DisplayName = "Period")]
         public int Period { get; set; }
 
@@ -37,15 +40,34 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         [Output]
         public DataSeries Average { get; set; }
 
-        private IMA _maInstance;
-        private IShift _shifter;
+        public int LastPositionChanged { get { return _shifter.Position; } }
 
-        protected override void Init()
+        public MovingAverage() { }
+
+        public MovingAverage(DataSeries<Bar> bars, int period, int shift, Method targetMethod = Method.Simple,
+            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close, double smoothFactor = double.NaN)
+        {
+            Bars = bars;
+            Period = period;
+            Shift = shift;
+            _targetMethod = targetMethod;
+            _targetPrice = targetPrice;
+            SmoothFactor = double.IsNaN(smoothFactor) ? 2.0/(period + 1) : smoothFactor;
+
+            InitializeIndicator();
+        }
+
+        protected void InitializeIndicator()
         {
             _maInstance = MABase.CreateMaInstance(Period, _targetMethod, SmoothFactor);
             _maInstance.Init();
             _shifter = new SimpleShifter(Shift);
             _shifter.Init();
+        }
+
+        protected override void Init()
+        {
+            InitializeIndicator();
         }
 
         protected override void Calculate()

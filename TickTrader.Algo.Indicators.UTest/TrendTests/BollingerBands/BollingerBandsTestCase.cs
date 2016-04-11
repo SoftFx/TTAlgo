@@ -13,7 +13,18 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
             : base(indicatorType, symbol, quotesPath, answerPath, 24, 7, period, shift)
         {
             Deviations = deviations;
+        }
+
+        public override void InvokeFullBuildTest()
+        {
             Epsilon = 23e-10;
+            base.InvokeFullBuildTest();
+        }
+
+        public override void InvokeUpdateTest()
+        {
+            Epsilon = 14e-8;
+            base.InvokeUpdateTest();
         }
 
         protected override void SetupBuilder()

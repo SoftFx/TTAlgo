@@ -36,12 +36,12 @@ namespace TickTrader.Algo.Indicators.ZigZag
 
             ExtHighBuffer.Add(0.0);
             ExtLowBuffer.Add(0.0);
-            if (Bars.Count == 1430)
-            {
-                string[] a = Bars.Select(b => (b.High * 100 - 110).ToString()).ToArray();
-                a = a.Reverse().ToArray();
-                System.IO.File.WriteAllLines(@"D:\out1.txt", a);
-            }
+            //if (Bars.Count == 1430)
+            //{
+            //    string[] a = Bars.Select(b => (b.High * 100 - 110).ToString()).ToArray();
+            //    a = a.Reverse().ToArray();
+            //    System.IO.File.WriteAllLines(@"D:\out1.txt", a);
+            //}
             if (Bars.Count >= Math.Max(InpDepth, InpBackstep) + 1)
             {
                 //--- find lowest low in depth of bars

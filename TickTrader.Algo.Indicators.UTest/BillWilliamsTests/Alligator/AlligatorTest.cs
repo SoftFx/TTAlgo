@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
         private void TestMeasures(string symbol, string timeframe, int jawsPeriod, int jawsShift,
             int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
         {
-            var dir = PathHelper.MeasuresDir("Trend", "Alligator");
+            var dir = PathHelper.MeasuresDir("BillWilliams", "Alligator");
             var test = new AlligatorTestCase(typeof (BillWilliams.Alligator.Alligator), symbol,
                 $"{dir}bids_{symbol}_{timeframe}_{jawsPeriod}_{jawsShift}_{teethPeriod}_{teethShift}_{lipsPeriod}_{lipsShift}.bin",
                 $"{dir}Alligator_{symbol}_{timeframe}_{jawsPeriod}_{jawsShift}_{teethPeriod}_{teethShift}_{lipsPeriod}_{lipsShift}",

@@ -8,12 +8,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
     [Indicator(IsOverlay = true, Category = "Bill Williams", DisplayName = "Bill Williams/Alligator")]
     public class Alligator : Indicator
     {
-        private IMA _jaws;
-        private Queue<double> _jawsCache;
-        private IMA _teeth;
-        private Queue<double> _teethCache;
-        private IMA _lips;
-        private Queue<double> _lipsCache;
+        private MovingAverage _jaws, _teeth, _lips;
 
         [Parameter(DefaultValue = 13, DisplayName = "Jaws Period")]
         public int JawsPeriod { get; set; }
@@ -63,31 +58,45 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         [Output(DefaultColor = Colors.Green)]
         public DataSeries Lips { get; set; }
 
-        private void InitMaInstance(out IMA instance, out Queue<double> cache, int period)
+        public int LastPositionChanged { get { return _jaws.LastPositionChanged; } }
+
+        public Alligator() { }
+
+        public Alligator(DataSeries<Bar> bars, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
+            int lipsPeriod, int lipsShift, Method targetMethod = Method.Simple,
+            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
-            cache = new Queue<double>();
-            instance = MABase.CreateMaInstance(period, _targetMethod);
-            instance.Init();
+            Bars = bars;
+            JawsPeriod = jawsPeriod;
+            JawsShift = jawsShift;
+            TeethPeriod = teethPeriod;
+            TeethShift = teethShift;
+            LipsPeriod = lipsPeriod;
+            LipsShift = lipsShift;
+            _targetMethod = targetMethod;
+            _targetPrice = targetPrice;
+
+            InitializeIndicator();
+        }
+
+        private void InitializeIndicator()
+        {
+            _jaws = new MovingAverage(Bars, JawsPeriod, JawsShift, _targetMethod, _targetPrice);
+            _teeth = new MovingAverage(Bars, TeethPeriod, TeethShift, _targetMethod, _targetPrice);
+            _lips = new MovingAverage(Bars, LipsPeriod, LipsShift, _targetMethod, _targetPrice);
         }
 
         protected override void Init()
         {
-            InitMaInstance(out _jaws, out _jawsCache, JawsPeriod);
-            InitMaInstance(out _teeth, out _teethCache, TeethPeriod);
-            InitMaInstance(out _lips, out _lipsCache, LipsPeriod);
+            InitializeIndicator();
         }
 
         protected override void Calculate()
         {
-            //--------------------
-            if (Bars.Count == 1)
-            {
-                Init();
-            }
-            //--------------------
-            //Utility.ApplyShiftedValue(Jaws, _jaws.Shift, _jaws.Calculate(Bars[0]), _jawsCache, Bars.Count);
-            //Utility.ApplyShiftedValue(Teeth, _teeth.Shift, _teeth.Calculate(Bars[0]), _teethCache, Bars.Count);
-            //Utility.ApplyShiftedValue(Lips, _lips.Shift, _lips.Calculate(Bars[0]), _lipsCache, Bars.Count);
+            var pos = LastPositionChanged;
+            Jaws[pos] = _jaws.Average[pos];
+            Teeth[pos] = _teeth.Average[pos];
+            Lips[pos] = _lips.Average[pos];
         }
     }
 }

@@ -55,7 +55,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             var strSplit = str.Split('\t');
             for (var k = 0; k < AnswerUnitSize/8; k++)
             {
-                metaAnswer[k].Add(Convert.ToDouble(strSplit[k + 1]));
+                metaAnswer[k].Add(
+                    string.IsNullOrWhiteSpace(strSplit[k + 1])
+                        ? 0
+                        : Convert.ToDouble(strSplit[k + 1]));
             }
         }
 

@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.UTest
         protected void LaunchTestCase(TestCase test)
         {
             test.InvokeFullBuildTest();
-            //test.InvokeUpdateTest();
+            test.InvokeUpdateTest();
         }
     }
 }

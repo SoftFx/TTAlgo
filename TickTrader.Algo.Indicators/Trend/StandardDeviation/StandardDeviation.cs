@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
@@ -9,8 +8,9 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
     [Indicator(Category = "Trend", DisplayName = "Trend/Standard Deviation")]
     public class StandardDeviation : Indicator
     {
-        private IMA _sma, _ma, _p2Sma;
-        private Queue<double> _smaCache, _maCache, _p2SmaCache;
+        private MovingAverage.MovingAverage _sma, _ma;
+        private IMA _p2Sma;
+        private IShift _p2Shifter;
         
         [Parameter(DefaultValue = 20, DisplayName = "Period")]
         public int Period { get; set; }
@@ -40,41 +40,57 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         [Output(DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries StdDev { get; set; }
 
+        public int LastPositionChanged { get { return _p2Shifter.Position; } }
+
+        public double LastMaVal { get { return _ma.Average[LastPositionChanged]; } }
+
+        public StandardDeviation() { }
+
+        public StandardDeviation(DataSeries<Bar> bars, int period, int shift, Method targetMethod = Method.Simple,
+            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            Bars = bars;
+            Period = period;
+            Shift = shift;
+            _targetMethod = targetMethod;
+            _targetPrice = targetPrice;
+
+            InitializeIndicator();
+        }
+
+        protected void InitializeIndicator()
+        {
+            _sma = new MovingAverage.MovingAverage(Bars, Period, Shift, Method.Simple, _targetPrice);
+            _ma = new MovingAverage.MovingAverage(Bars, Period, Shift, _targetMethod, _targetPrice);
+            _p2Sma = MABase.CreateMaInstance(Period, Method.Simple);
+            _p2Sma.Init();
+            _p2Shifter = new SimpleShifter(Shift);
+            _p2Shifter.Init();
+        }
+
         protected override void Init()
         {
-            _smaCache = new Queue<double>();
-            _maCache = new Queue<double>();
-            _p2SmaCache = new Queue<double>();
-            _sma = MABase.CreateMaInstance(Period, Method.Simple);
-            _ma = MABase.CreateMaInstance(Period, _targetMethod);
-            _p2Sma = MABase.CreateMaInstance(Period, Method.Simple);
-            _sma.Init();
-            _ma.Init();
-            _p2Sma.Init();
+            InitializeIndicator();
         }
 
         protected override void Calculate()
         {
-            //// ---------------------
-            //if (Bars.Count == 1)
-            //{
-            //    Init();
-            //}
-            //// ---------------------
-            //var smaVal = Utility.GetShiftedValue(Shift, _sma.Calculate(Bars[0]), _smaCache, Bars.Count);
-            //var maVal = Utility.GetShiftedValue(Shift, _ma.Calculate(Bars[0]), _maCache, Bars.Count);
-            //var appliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
-            //var p2SmaVal = Utility.GetShiftedValue(Shift, _p2Sma.Calculate(new Bar {Close = appliedPrice*appliedPrice}),
-            //    _p2SmaCache, Bars.Count);
-            //var res = Math.Sqrt(p2SmaVal + maVal * maVal - 2 * maVal * smaVal);
-            //if (Shift > 0)
-            //{
-            //    StdDev[0] = res;
-            //}
-            //else if (Shift <= 0 && -Shift < Bars.Count)
-            //{
-            //    StdDev[-Shift] = res;
-            //}
+            var appliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
+            if (IsUpdate)
+            {
+                _p2Sma.UpdateLast(appliedPrice*appliedPrice);
+                _p2Shifter.UpdateLast(_p2Sma.Average);
+            }
+            else
+            {
+                _p2Sma.Add(appliedPrice*appliedPrice);
+                _p2Shifter.Add(_p2Sma.Average);
+            }
+            var maVal = _ma.Average[_ma.LastPositionChanged];
+            var smaVal = _sma.Average[_sma.LastPositionChanged];
+            var p2SmaVal = _p2Shifter.Result;
+            var res = Math.Sqrt(p2SmaVal + maVal*maVal - 2*maVal*smaVal);
+            StdDev[_p2Shifter.Position] = res;
         }
     }
 }

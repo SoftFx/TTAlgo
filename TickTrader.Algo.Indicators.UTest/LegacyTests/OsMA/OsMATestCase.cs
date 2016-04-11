@@ -20,7 +20,6 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.OsMA
 
         protected override void SetupInput()
         {
-            base.SetupInput();
             Builder.MapBarInput("Close", Symbol, entity => entity.Close);
         }
 

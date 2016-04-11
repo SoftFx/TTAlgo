@@ -10,26 +10,29 @@ namespace TickTrader.Algo.Indicators.Utility
 
         protected override void InvokeAdd(double value)
         {
-            ResultCache.AddLast(value);
+            if (Accumulated > Math.Abs(Shift) + 1)
+            {
+                ResultCache.RemoveFirst();
+                Accumulated--;
+            }
+            if (Shift >= 0 || (Shift < 0 && Accumulated > -Shift))
+            {
+                ResultCache.AddLast(value);
+            }
         }
 
         protected override void InvokeUpdateLast(double value)
         {
-            ResultCache.Last.Value = value;
+            if (Shift >= 0 || (Shift < 0 && Accumulated > -Shift))
+            {
+                ResultCache.Last.Value = value;
+            }
         }
 
         protected override void SetCurrentResult()
         {
             Position = Shift > 0 ? 0 : -Shift;
-            if (Accumulated > Math.Abs(Shift))
-            {
-                Result = ResultCache.First.Value;
-                ResultCache.RemoveFirst();
-            }
-            else
-            {
-                Result = double.NaN;
-            }
+            Result = Accumulated > Math.Abs(Shift) ? ResultCache.First.Value : double.NaN;
         }
     }
 }

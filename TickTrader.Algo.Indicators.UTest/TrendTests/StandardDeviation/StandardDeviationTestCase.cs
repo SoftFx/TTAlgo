@@ -11,6 +11,18 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.StandardDeviation
         {
         }
 
+        public override void InvokeFullBuildTest()
+        {
+            Epsilon = 1e-9;
+            base.InvokeFullBuildTest();
+        }
+
+        public override void InvokeUpdateTest()
+        {
+            Epsilon = 63e-9;
+            base.InvokeUpdateTest();
+        }
+
         protected override void GetOutput()
         {
             AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("StdDev"));

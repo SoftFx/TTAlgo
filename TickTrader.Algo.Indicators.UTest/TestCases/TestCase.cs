@@ -76,12 +76,12 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             CheckAnswer();
         }
 
-        public void InvokeFullBuildTest()
+        public virtual void InvokeFullBuildTest()
         {
             LaunchTest(RunFullBuild);
         }
 
-        public void InvokeUpdateTest()
+        public virtual void InvokeUpdateTest()
         {
             LaunchTest(RunUpdate);
         }
