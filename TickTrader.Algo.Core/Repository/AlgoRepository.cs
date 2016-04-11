@@ -1,4 +1,4 @@
-﻿using StateMachinarium;
+﻿using Machinarium.State;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

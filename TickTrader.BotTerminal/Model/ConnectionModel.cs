@@ -1,5 +1,5 @@
-﻿using SoftFX.Extended;
-using StateMachinarium;
+﻿using Machinarium.State;
+using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using TickTrader.Algo.Core;
-using StateMachinarium;
 using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.GuiModel;
 using SciChart.Charting.Visuals.RenderableSeries;
+using Machinarium.State;
 
 namespace TickTrader.BotTerminal
 {

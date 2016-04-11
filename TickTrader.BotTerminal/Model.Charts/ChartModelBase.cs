@@ -1,7 +1,7 @@
 ﻿using Caliburn.Micro;
+using Machinarium.State;
 using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.RenderableSeries;
-using StateMachinarium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
