@@ -49,6 +49,11 @@
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
+    <Compile Include="Oscillators\AverageTrueRange\AverageTrueRange.cs" />
+    <Compile Include="Oscillators\BearsPower\BearsPower.cs" />
+    <Compile Include="Oscillators\BullsPower\BullsPower.cs" />
+    <Compile Include="Oscillators\CommodityChannelIndex\CommodityChannelIndex.cs" />
+    <Compile Include="Oscillators\DeMarker\DeMarker.cs" />
     <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
     <Compile Include="Trend\Envelopes\Envelopes.cs" />
     <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
