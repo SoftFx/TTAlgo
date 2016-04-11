@@ -5,6 +5,7 @@
     <ResourceDictionary.MergedDictionaries>
 
         <ResourceDictionary Source="/TickTrader.BotTerminal;component/Resx/Styles/NumericUpDownStyle.xaml"/>
-    
+        <ResourceDictionary Source="/TickTrader.BotTerminal;component/Resx/Styles/DateTimePicker.xaml"/>
+        
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

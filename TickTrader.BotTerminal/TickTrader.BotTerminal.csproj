@@ -154,6 +154,7 @@
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
+    <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\ToggleFlatButton.cs" />
+    <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
@@ -390,6 +392,14 @@
     <Page Include="Resx\Images\Images.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\Calendar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles\DateTimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles\NumericUpDownStyle.xaml">
       <Generator>MSBuild:Compile</Generator>

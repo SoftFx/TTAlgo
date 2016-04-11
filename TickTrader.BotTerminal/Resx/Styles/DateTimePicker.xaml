@@ -1,0 +1,141 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:TickTrader.BotTerminal">
+
+    <BooleanToVisibilityConverter x:Key="boolToVisibile"/>
+
+    <!-- Buttons Template -->
+    <ControlTemplate x:Key="ArrowDownButton_Template" TargetType="{x:Type ButtonBase}">
+        <Border IsHitTestVisible="True"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}">
+            <Canvas Height="5" Width="5">
+                <Polygon x:Name="Arrow" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,0 2.5,5 5,0" />
+            </Canvas>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="ArrowUpButton_Template" TargetType="{x:Type ButtonBase}">
+        <Border IsHitTestVisible="True"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}">
+            <Canvas Height="5" Width="5">
+                <Polygon x:Name="Arrow" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,5 2.5,0 5,5" />
+            </Canvas>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    <!-- Toggle Style -->
+
+    <Style x:Key="ArrowButton_BaseStyle" TargetType="ButtonBase">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Width" Value="12"></Setter>
+    </Style>
+
+    <Style x:Key="DropDownButton_Style" TargetType="ButtonBase" BasedOn="{StaticResource ArrowButton_BaseStyle}">
+        <Setter Property="Template" Value="{StaticResource ArrowDownButton_Template}" />
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Margin" Value="0 0 2 0"/>
+    </Style>
+
+    <Style x:Key="ArrowDownButton_Style" TargetType="ButtonBase" BasedOn="{StaticResource ArrowButton_BaseStyle}">
+        <Setter Property="Template" Value="{StaticResource ArrowDownButton_Template}" />
+        <Setter Property="Margin" Value="0 0 0 2"/>
+    </Style>
+
+    <Style x:Key="ArrowUpButton_Style" TargetType="ButtonBase" BasedOn="{StaticResource ArrowButton_BaseStyle}">
+        <Setter Property="Template" Value="{StaticResource ArrowUpButton_Template}" />
+        <Setter Property="Margin" Value="0 2 0 0"/>
+    </Style>
+
+    <Style TargetType="local:DateTimePicker">
+        <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:DateTimePicker">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Popup x:Name="PART_Popup"
+                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                               Placement="Bottom"
+                               PopupAnimation="Slide"
+                               AllowsTransparency="True"
+                               Margin="0"
+                               StaysOpen="False">
+                            <Calendar x:Name="CalDisplay"
+                                      SelectedDate="{Binding SelectedDateTime, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      DisplayDateStart="{TemplateBinding Minimum}"
+                                      DisplayDateEnd="{TemplateBinding Maximum}" />
+                        </Popup>
+
+
+                        <DatePickerTextBox x:Name="PART_DateTimeTextBox" 
+                                           Grid.ColumnSpan="3"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalContentAlignment="Center" 
+                                           Padding="2 2 24 2" 
+                                           MinHeight="{Binding ElementName=CalendarButton, Path=ActualHeight}"
+                                           Text="{Binding DisplayedDateTime, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+
+                        <Grid Grid.Column="1" Focusable="False" Visibility="{TemplateBinding ShowUpDownButton, Converter={StaticResource boolToVisibile}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition></RowDefinition>
+                                <RowDefinition></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <RepeatButton Grid.Row="0"
+                                              x:Name="IncreaseBtn"
+                                              Style="{StaticResource ArrowUpButton_Style}"
+                                              Command="local:DateTimePicker.IncreaseDateTimeCommand"
+                                              IsEnabled="{TemplateBinding CanIncrease}"/>
+
+                            <RepeatButton Grid.Row="1"
+                                              x:Name="DecreaseBtn"
+                                              Style="{StaticResource ArrowDownButton_Style}"
+                                              Command="local:DateTimePicker.DecreaseDateTimeCommand"
+                                              IsEnabled="{TemplateBinding CanDecrease}"/>
+                        </Grid>
+
+                        <ToggleButton Grid.Column="2"
+                                      Name="CalendarButton"
+                                      Style="{StaticResource DropDownButton_Style}"
+                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=PART_Popup, Converter={local:BoolInverter}}"
+                                      Visibility="{TemplateBinding ShowDropDownButton, Converter={StaticResource boolToVisibile}}"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger SourceName="IncreaseBtn" Property="IsFocused" Value="True">
+                            <Setter TargetName="PART_DateTimeTextBox" Property="FocusManager.FocusedElement" Value="{Binding ElementName=PART_DateTimeTextBox}"></Setter>
+                        </Trigger>
+                        <Trigger SourceName="DecreaseBtn" Property="IsFocused" Value="True">
+                            <Setter TargetName="PART_DateTimeTextBox" Property="FocusManager.FocusedElement" Value="{Binding ElementName=PART_DateTimeTextBox}"></Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+</ResourceDictionary>
