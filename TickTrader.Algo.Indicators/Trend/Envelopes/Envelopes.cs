@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        [Parameter(DefaultValue = 0.25, DisplayName = "Deviation(%)")]
+        [Parameter(DefaultValue = 0.1, DisplayName = "Deviation(%)")]
         public double Deviation { get; set; }
 
         private Method _targetMethod;
