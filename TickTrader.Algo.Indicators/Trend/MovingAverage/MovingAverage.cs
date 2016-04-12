@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         private IMA _maInstance;
         private IShift _shifter;
 
-        [Parameter(DefaultValue = 7, DisplayName = "Period")]
+        [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             set { _targetPrice = (AppliedPrice.Target) value; }
         }
 
-        [Parameter(DefaultValue = 0.25, DisplayName = "Smooth Factor(CustomEMA)")]
+        [Parameter(DefaultValue = 0.0667, DisplayName = "Smooth Factor(CustomEMA)")]
         public double SmoothFactor { get; set; }
 
         [Input]

@@ -44,13 +44,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
 
         protected override void Calculate()
         {
-            if (Bars.Count < 2)
-            {
-                DeMark[LastPositionChanged] = double.NaN;
-                return;
-            }
-            var deMax = Bars[0].High > Bars[1].High ? Bars[0].High - Bars[1].High : 0.0;
-            var deMin = Bars[0].Low < Bars[1].Low ? Bars[1].Low - Bars[0].Low : 0.0;
+            var deMax = Bars.Count > 1 && Bars[0].High > Bars[1].High ? Bars[0].High - Bars[1].High : 0.0;
+            var deMin = Bars.Count > 1 && Bars[0].Low < Bars[1].Low ? Bars[1].Low - Bars[0].Low : 0.0;
             if (IsUpdate)
             {
                 _smaDeMax.UpdateLast(deMax);

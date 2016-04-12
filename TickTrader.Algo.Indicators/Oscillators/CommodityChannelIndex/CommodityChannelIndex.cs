@@ -9,7 +9,6 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
     public class CommodityChannelIndex : Indicator
     {
         private MovingAverage _sma;
-        private IMA _meanDeviation;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -44,8 +43,6 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         protected void InitializeIndicator()
         {
             _sma = new MovingAverage(Bars, Period, 0, Method.Simple, _targetPrice);
-            _meanDeviation = MABase.CreateMaInstance(Period, Method.Simple);
-            _meanDeviation.Init();
         }
 
         protected override void Init()
@@ -57,16 +54,21 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         {
             var pos = LastPositionChanged;
             var appliedPrice = AppliedPrice.Calculate(Bars[pos], _targetPrice);
-            var val = double.IsNaN(_sma.Average[pos]) ? appliedPrice : _sma.Average[pos] - appliedPrice;
-            if (IsUpdate)
+            var average = _sma.Average[pos];
+            var meanDeviation = 0.0;
+            if (double.IsNaN(average))
             {
-                _meanDeviation.UpdateLast(Math.Abs(val));
+                meanDeviation = double.NaN;
             }
             else
             {
-                _meanDeviation.Add(Math.Abs(val));
+                for (var i = pos; i < pos + Period; i++)
+                {
+                    meanDeviation += Math.Abs(average - AppliedPrice.Calculate(Bars[i], _targetPrice));
+                }
+                meanDeviation /= Period;
             }
-            Cci[pos] = (appliedPrice - _sma.Average[pos])/(0.015*_meanDeviation.Average);
+            Cci[pos] = (appliedPrice - average)/(0.015*meanDeviation);
         }
     }
 }

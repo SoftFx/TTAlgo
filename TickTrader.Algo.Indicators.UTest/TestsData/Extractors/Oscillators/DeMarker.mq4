@@ -82,7 +82,7 @@ int OnCalculate(const int rates_total,
       FileWriteLong(bids_file, tick_volume[i]);
       for (int j = 0; j < indicator_files_total; j++)
       {
-         double val = iATR(NULL, 0, indicator_params[j][0], i);
+         double val = iDeMarker(NULL, 0, indicator_params[j][0], i);
          FileWriteDouble(indicator_files[j], val);
       }
       //PrintFormat("proceeded %d", i);
