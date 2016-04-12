@@ -166,7 +166,6 @@ namespace TickTrader.Algo.Core
             return descriptor;
         }
 
-
         public static IndicatorAdapter CreateIndicator(string id, IPluginDataProvider dataProvider)
         {
             AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
@@ -178,63 +177,17 @@ namespace TickTrader.Algo.Core
 
             return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
         }
-    }
 
-    internal class IndicatorAdapter : PluginAdapter
-    {
-        internal IndicatorAdapter(AlgoPlugin pluginInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
-            : base(pluginInstance, provider, coordinator)
+        public static BotAdapter CreateBot(string id, IPluginDataProvider dataProvider)
         {
-            InitParameters();
-            BindUpInputs();
-            BindUpOutputs();
-        }
+            AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
 
-        internal IndicatorAdapter(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
-            : base(pluginFactory, provider, new BuffersCoordinator())
-        {
-            InitParameters();
-            BindUpInputs();
-            BindUpOutputs();
-        }
+            if (descriptor.AlgoLogicType != AlgoTypes.Robot)
+                throw new InvalidPluginType("CreateBot() can be called only for bot plugins!");
 
-        private void InvokeCalculate(bool isUpdate)
-        {
-            ((Indicator)PluginInstance).InvokeCalculate(isUpdate);
-        }
+            descriptor.Validate();
 
-        public void Calculate(bool isUpdate)
-        {
-            for (int i = NestedIndicators.Count - 1; i >= 0; i--)
-                NestedIndicators[i].InvokeCalculate(isUpdate);
-
-            InvokeCalculate(isUpdate);
-        }
-
-        public override string ToString()
-        {
-            return "Indicator: " + Descriptor.DisplayName;
-        }
-    }
-
-    internal class BotAdapter : PluginAdapter
-    {
-        internal BotAdapter(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
-            : base(pluginFactory, provider, new BuffersCoordinator())
-        {
-            InitParameters();
-            BindUpInputs();
-            BindUpOutputs();
-        }
-
-        public void InvokeStart()
-        {
-            ((TradeBot)PluginInstance).InvokeStart();
-        }
-
-        public void InvokeStop()
-        {
-            ((TradeBot)PluginInstance).InvokeStop();
+            return new BotAdapter(() => (TradeBot)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
         }
     }
 }

@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Adapters\BotAdapter.cs" />
+    <Compile Include="Adapters\IndicatorAdapter.cs" />
+    <Compile Include="Executors\BotExecutor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\BarEntity.cs" />
     <Compile Include="Buffers\BuffersCoordinator.cs" />
@@ -57,12 +60,11 @@
     <Compile Include="Entities\OrdersCollection.cs" />
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
-    <Compile Include="IndicatorBuilder.cs" />
+    <Compile Include="Executors\IndicatorBuilder.cs" />
     <Compile Include="Metadata\EmptyValue.cs" />
-    <Compile Include="PluginAdapter.cs" />
-    <Compile Include="PluginFactory.cs" />
-    <Compile Include="PluginExecutor.cs" />
-    <Compile Include="ExecutionContext.cs" />
+    <Compile Include="Adapters\PluginAdapter.cs" />
+    <Compile Include="Executors\PluginExecutor.cs" />
+    <Compile Include="Realtime\ExecutionContext.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Lib\Dataflow.cs" />
     <Compile Include="Metadata\AlgoPluginRef.cs" />
@@ -97,6 +99,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
