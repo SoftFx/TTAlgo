@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ATR
         public int InpAtrPeriod { get; set; }
 
         public AtrTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int inpAtrPeriod)
-            : base(indicatorType, symbol, quotesPath, answerPath, 8)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, 20)
         {
             InpAtrPeriod = inpAtrPeriod;
         }

@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.HeikenAshi
     public class HeikenAshiTestCase : LegacyTestCase
     {
         public HeikenAshiTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath)
-            : base(indicatorType, symbol, quotesPath, answerPath, 32)
+            : base(indicatorType, symbol, quotesPath, answerPath, 32, 35)
         {
         }
 

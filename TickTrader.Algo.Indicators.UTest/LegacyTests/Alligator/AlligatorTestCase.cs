@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Alligator
 
         public AlligatorTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
             int inpJawsPeriod, int inpJawsShift, int inpTeethPeriod, int inpTeethShift, int inpLipsPeriod,
-            int inpLipsShift) : base(indicatorType, symbol, quotesPath, answerPath, 24)
+            int inpLipsShift) : base(indicatorType, symbol, quotesPath, answerPath, 24, 200)
         {
             InpJawsPeriod = inpJawsPeriod;
             InpJawsShift = inpJawsShift;
@@ -34,6 +34,18 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Alligator
             Builder.SetParameter("InpTeethShift", InpTeethShift);
             Builder.SetParameter("InpLipsPeriod", InpLipsPeriod);
             Builder.SetParameter("InpLipsShift", InpLipsShift);
+        }
+
+        public override void InvokeFullBuildTest()
+        {
+            Epsilon = 53e-8;
+            base.InvokeFullBuildTest();
+        }
+
+        public override void InvokeUpdateTest()
+        {
+            Epsilon = 1e-9;
+            base.InvokeUpdateTest();
         }
 
         protected override void GetOutput()

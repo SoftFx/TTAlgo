@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bulls
         public int BullsPeriod { get; set; }
 
         public BullsTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int bullsPeriod)
-            : base(indicatorType, symbol, quotesPath, answerPath, 8)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, 150)
         {
             BullsPeriod = bullsPeriod;
         }
@@ -18,6 +18,18 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bulls
         {
             base.SetupBuilder();
             Builder.SetParameter("BullsPeriod", BullsPeriod);
+        }
+
+        public override void InvokeFullBuildTest()
+        {
+            Epsilon = 43e-10;
+            base.InvokeFullBuildTest();
+        }
+
+        public override void InvokeUpdateTest()
+        {
+            Epsilon = 1e-9;
+            base.InvokeUpdateTest();
         }
 
         protected override void GetOutput()

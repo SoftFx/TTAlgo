@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Awesome
         public int PeriodSlow { get; set; }
 
         public AwesomeTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int periodFast,
-            int periodSlow) : base(indicatorType, symbol, quotesPath, answerPath, 16)
+            int periodSlow) : base(indicatorType, symbol, quotesPath, answerPath, 16, 40)
         {
             PeriodFast = periodFast;
             PeriodSlow = periodSlow;

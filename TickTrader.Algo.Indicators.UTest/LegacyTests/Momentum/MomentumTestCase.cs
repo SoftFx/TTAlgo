@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Momentum
         public int Period { get; set; }
 
         public MomentumTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period)
-            : base(indicatorType, symbol, quotesPath, answerPath, 8)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, 20)
         {
             Period = period;
         }

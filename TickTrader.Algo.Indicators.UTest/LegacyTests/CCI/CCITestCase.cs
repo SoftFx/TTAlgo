@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.CCI
         public int CciPeriod { get; set; }
 
         public CciTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int cciPeriod)
-            : base(indicatorType, symbol, quotesPath, answerPath, 8)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, 40)
         {
             CciPeriod = cciPeriod;
         }

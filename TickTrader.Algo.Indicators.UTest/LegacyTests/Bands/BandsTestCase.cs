@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bands
         public double Deviations { get; set; }
 
         public BandsTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period,
-            double shift, double deviations) : base(indicatorType, symbol, quotesPath, answerPath, 24)
+            double shift, double deviations) : base(indicatorType, symbol, quotesPath, answerPath, 24, 20)
         {
             Period = period;
             Shift = shift;

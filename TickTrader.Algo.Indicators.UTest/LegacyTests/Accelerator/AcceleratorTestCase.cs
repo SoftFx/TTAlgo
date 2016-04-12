@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accelerator
         public int DataLimit { get; set; }
 
         public AcceleratorTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int periodFast, int periodSlow, int dataLimit) : base(indicatorType, symbol, quotesPath, answerPath, 24)
+            int periodFast, int periodSlow, int dataLimit) : base(indicatorType, symbol, quotesPath, answerPath, 24, 50)
         {
             PeriodFast = periodFast;
             PeriodSlow = periodSlow;

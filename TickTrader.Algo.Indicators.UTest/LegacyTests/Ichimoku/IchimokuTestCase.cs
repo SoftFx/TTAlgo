@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Ichimoku
         public int InpSenkou { get; set; }
 
         public IchimokuTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int inpTenkan,
-            int inpKijun, int inpSenkou) : base(indicatorType, symbol, quotesPath, answerPath, 56)
+            int inpKijun, int inpSenkou) : base(indicatorType, symbol, quotesPath, answerPath, 56, 77)
         {
             InpTenkan = inpTenkan;
             InpKijun = inpKijun;

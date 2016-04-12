@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Parabolic
         public double InpSarMaximum { get; set; }
 
         public ParabolicTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            double inpSarStep, double inpSarMaximum) : base(indicatorType, symbol, quotesPath, answerPath, 8)
+            double inpSarStep, double inpSarMaximum) : base(indicatorType, symbol, quotesPath, answerPath, 8, 50)
         {
             InpSarStep = inpSarStep;
             InpSarMaximum = inpSarMaximum;
