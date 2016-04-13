@@ -13,11 +13,12 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
         public int Period { get; set; }
 
         private AppliedPrice.Target _targetPrice;
+
         [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
         public int TargetPrice
         {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
+            get { return (int) _targetPrice; }
+            set { _targetPrice = (AppliedPrice.Target) value; }
         }
 
         [Input]
@@ -26,9 +27,14 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
         [Output(DisplayName = "RSI", DefaultColor = Colors.DodgerBlue)]
         public DataSeries Rsi { get; set; }
 
-        public int LastPositionChanged { get { return 0; } }
+        public int LastPositionChanged
+        {
+            get { return 0; }
+        }
 
-        public RelativeStrengthIndex() { }
+        public RelativeStrengthIndex()
+        {
+        }
 
         public RelativeStrengthIndex(DataSeries<Bar> bars, int period,
             AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
@@ -56,27 +62,29 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            var d = 0.0;
-            var u = 0.0;
             if (Bars.Count > 1)
             {
                 var curAppliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
                 var prevAppliedPrice = AppliedPrice.Calculate(Bars[1], _targetPrice);
-                d = curAppliedPrice > prevAppliedPrice ? curAppliedPrice - prevAppliedPrice : 0.0;
-                u = curAppliedPrice < prevAppliedPrice ? prevAppliedPrice - curAppliedPrice : 0.0;
-            }
-            if (IsUpdate)
-            {
-                _uMa.UpdateLast(u);
-                _dMa.UpdateLast(d);
+                var d = curAppliedPrice > prevAppliedPrice ? curAppliedPrice - prevAppliedPrice : 0.0;
+                var u = curAppliedPrice < prevAppliedPrice ? prevAppliedPrice - curAppliedPrice : 0.0;
+                if (IsUpdate)
+                {
+                    _uMa.UpdateLast(u);
+                    _dMa.UpdateLast(d);
+                }
+                else
+                {
+                    _uMa.Add(u);
+                    _dMa.Add(d);
+                }
+                var rs = _uMa.Average/_dMa.Average;
+                Rsi[pos] = 100.0 - 100.0/(1.0 + rs);
             }
             else
             {
-                _uMa.Add(u);
-                _dMa.Add(d);
+                Rsi[pos] = double.NaN;
             }
-            var rs = _uMa.Average/_dMa.Average;
-            Rsi[pos] = 100.0 - 100.0/(1.0 + rs);
         }
     }
 }

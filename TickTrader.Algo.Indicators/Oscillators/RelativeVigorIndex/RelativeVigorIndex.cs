@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         {
             var i = LastPositionChanged;
             var cnt = Bars.Count - 1;
-            if (Bars.Count > i + 3)
+            if (Bars.Count > i + Period - 1)
             {
                 Ma.Add((Bars[i].Close - Bars[i].Open) + 2*(Bars[i + 1].Close - Bars[i + 1].Open) +
                         2*(Bars[i + 2].Close - Bars[i + 2].Open) + (Bars[i + 3].Close - Bars[i + 3].Open));

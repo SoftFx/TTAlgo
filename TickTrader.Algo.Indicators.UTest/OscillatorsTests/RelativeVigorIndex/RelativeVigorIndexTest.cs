@@ -15,39 +15,39 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeVigorIndex
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_14()
+        public void TestMeasuresAUDJPY_M30_10()
         {
-            TestMeasures("AUDJPY", "M30", 14);
+            TestMeasures("AUDJPY", "M30", 10);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_20()
+        public void TestMeasuresAUDJPY_M30_15()
         {
-            TestMeasures("AUDJPY", "M30", 20);
+            TestMeasures("AUDJPY", "M30", 15);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_10()
+        public void TestMeasuresAUDNZD_M15_20()
         {
-            TestMeasures("AUDNZD", "M15", 10);
+            TestMeasures("AUDNZD", "M15", 20);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_25()
+        public void TestMeasuresAUDNZD_M15_40()
         {
-            TestMeasures("AUDNZD", "M15", 25);
+            TestMeasures("AUDNZD", "M15", 40);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_17()
+        public void TestMeasuresEURUSD_H1_30()
         {
-            TestMeasures("EURUSD", "H1", 17);
+            TestMeasures("EURUSD", "H1", 30);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_40()
+        public void TestMeasuresEURUSD_H1_5()
         {
-            TestMeasures("EURUSD", "H1", 40);
+            TestMeasures("EURUSD", "H1", 5);
         }
     }
 }

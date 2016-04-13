@@ -21,15 +21,15 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_20()
+        public void TestMeasuresAUDJPY_M30_30()
         {
-            TestMeasures("AUDJPY", "M30", 20);
+            TestMeasures("AUDJPY", "M30", 30);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_15()
+        public void TestMeasuresAUDNZD_M15_20()
         {
-            TestMeasures("AUDNZD", "M15", 15);
+            TestMeasures("AUDNZD", "M15", 20);
         }
 
         [TestMethod]

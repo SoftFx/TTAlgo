@@ -64,7 +64,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
             var pos = LastPositionChanged;
             if (Bars.Count > pos + 1)
             {
-                Force[pos] = Bars[pos].Volume*(_ma.Average[pos] - _ma.Average[pos + 1]);
+                Force[pos] = Bars[pos].Volume*
+                             (_ma.Average[pos] - (double.IsNaN(_ma.Average[pos + 1]) ? 0.0 : _ma.Average[pos + 1]));
             }
             else
             {

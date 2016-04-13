@@ -17,21 +17,21 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeStrengthInde
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_13()
+        public void TestMeasuresAUDJPY_M30_14()
         {
-            TestMeasures("AUDJPY", "M30", 13);
+            TestMeasures("AUDJPY", "M30", 14);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_20()
+        public void TestMeasuresAUDJPY_M30_25()
         {
-            TestMeasures("AUDJPY", "M30", 20);
+            TestMeasures("AUDJPY", "M30", 25);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_15()
+        public void TestMeasuresAUDNZD_M15_30()
         {
-            TestMeasures("AUDNZD", "M15", 15);
+            TestMeasures("AUDNZD", "M15", 30);
         }
 
         [TestMethod]
@@ -47,9 +47,9 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeStrengthInde
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_25()
+        public void TestMeasuresEURUSD_H1_20()
         {
-            TestMeasures("EURUSD", "H1", 25);
+            TestMeasures("EURUSD", "H1", 20);
         }
     }
 }

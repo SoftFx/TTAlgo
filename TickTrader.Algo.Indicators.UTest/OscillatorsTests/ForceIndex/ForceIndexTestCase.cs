@@ -11,6 +11,18 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
         {
         }
 
+        public override void InvokeFullBuildTest()
+        {
+            Epsilon = 11e-10;
+            base.InvokeFullBuildTest();
+        }
+
+        public override void InvokeUpdateTest()
+        {
+            Epsilon = 11e-10;
+            base.InvokeUpdateTest();
+        }
+
         protected override void GetOutput()
         {
             AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Force"));
