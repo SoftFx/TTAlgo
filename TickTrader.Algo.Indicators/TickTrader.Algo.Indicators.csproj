@@ -54,6 +54,12 @@
     <Compile Include="Oscillators\BullsPower\BullsPower.cs" />
     <Compile Include="Oscillators\CommodityChannelIndex\CommodityChannelIndex.cs" />
     <Compile Include="Oscillators\DeMarker\DeMarker.cs" />
+    <Compile Include="Oscillators\ForceIndex\ForceIndex.cs" />
+    <Compile Include="Oscillators\MACD\MACD.cs" />
+    <Compile Include="Oscillators\Momentum\Momentum.cs" />
+    <Compile Include="Oscillators\MovingAverageOscillator\MovingAverageOscillator.cs" />
+    <Compile Include="Oscillators\RelativeStrengthIndex\RelativeStrengthIndex.cs" />
+    <Compile Include="Oscillators\RelativeVigorIndex\RelativeVigorIndex.cs" />
     <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
     <Compile Include="Trend\Envelopes\Envelopes.cs" />
     <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
@@ -86,6 +92,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{8BAB901C-10BB-4EB7-B81E-716FA05B6957}</Project>
+      <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
