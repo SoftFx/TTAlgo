@@ -1,17 +1,18 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.StandardDeviation
 {
     [TestClass]
-    public class StandardDeviationTest
+    public class StandardDeviationTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int period, int shift)
         {
-            var dir = @"..\..\TestsData\TrendTests\StandardDeviation\";
-            var test = new StandardDeviationTestCase(typeof (Trend.StandardDeviation.StandardDeviation),
+            var dir = PathHelper.MeasuresDir("Trend", "StandardDeviation");
+            var test = new StandardDeviationTestCase(typeof (Trend.StandardDeviation.StandardDeviation), symbol,
                 $"{dir}bids_{symbol}_{timeframe}_{period}_{shift}.bin",
                 $"{dir}StdDev_{symbol}_{timeframe}_{period}_{shift}", period, shift);
-            test.InvokeTest();
+            LaunchTestCase(test);
         }
 
         [TestMethod]

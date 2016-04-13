@@ -45,12 +45,26 @@
     <Compile Include="Awesome\Awesome.cs" />
     <Compile Include="Bands\Bands.cs" />
     <Compile Include="Bears\Bears.cs" />
+    <Compile Include="BillWilliams\Alligator\Alligator.cs" />
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
-    <Compile Include="Functions\AppliedPrice.cs" />
+    <Compile Include="Oscillators\AverageTrueRange\AverageTrueRange.cs" />
+    <Compile Include="Oscillators\BearsPower\BearsPower.cs" />
+    <Compile Include="Oscillators\BullsPower\BullsPower.cs" />
+    <Compile Include="Oscillators\CommodityChannelIndex\CommodityChannelIndex.cs" />
+    <Compile Include="Oscillators\DeMarker\DeMarker.cs" />
+    <Compile Include="Oscillators\ForceIndex\ForceIndex.cs" />
+    <Compile Include="Oscillators\MACD\MACD.cs" />
+    <Compile Include="Oscillators\Momentum\Momentum.cs" />
+    <Compile Include="Oscillators\MovingAverageOscillator\MovingAverageOscillator.cs" />
+    <Compile Include="Oscillators\RelativeStrengthIndex\RelativeStrengthIndex.cs" />
+    <Compile Include="Oscillators\RelativeVigorIndex\RelativeVigorIndex.cs" />
+    <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
+    <Compile Include="Trend\Envelopes\Envelopes.cs" />
+    <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
+    <Compile Include="Utility\AppliedPrice.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
-    <Compile Include="Functions\Utility.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Ichimoku\Ichimoku.cs" />
     <Compile Include="MACD\MACD.cs" />
@@ -65,8 +79,13 @@
     <Compile Include="Trend\MovingAverage\IMA.cs" />
     <Compile Include="Trend\MovingAverage\LWMA.cs" />
     <Compile Include="Trend\MovingAverage\MABase.cs" />
+    <Compile Include="Trend\MovingAverage\MovingAverage.cs" />
     <Compile Include="Trend\MovingAverage\SMA.cs" />
     <Compile Include="Trend\MovingAverage\SMMA.cs" />
+    <Compile Include="Trend\MovingAverage\TriMA.cs" />
+    <Compile Include="Utility\IShift.cs" />
+    <Compile Include="Utility\ShifterBase.cs" />
+    <Compile Include="Utility\SimpleShifter.cs" />
     <Compile Include="ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -74,13 +93,12 @@
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{8BAB901C-10BB-4EB7-B81E-716FA05B6957}</Project>
+      <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BillWilliams\Alligator\" />
-    <Folder Include="Trend\BollingerBands\" />
-    <Folder Include="Trend\Envelopes\" />
-    <Folder Include="Trend\StandardDeviation\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

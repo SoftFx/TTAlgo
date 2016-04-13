@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
 {
@@ -6,25 +8,36 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
     {
         public double Deviations { get; protected set; }
 
-        public BollingerBandsTestCase(Type indicatorType, string quotesPath, string answerPath, int period, int shift,
-            double deviations) : base(indicatorType, quotesPath, answerPath, 7, 24, period, shift)
+        public BollingerBandsTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
+            int period, int shift, double deviations)
+            : base(indicatorType, symbol, quotesPath, answerPath, 24, 7, period, shift)
         {
             Deviations = deviations;
-            Epsilon = 23e-10;
         }
 
-
-        protected override void SetupWriter()
+        public override void InvokeFullBuildTest()
         {
-            Writer.AddMapping("MiddleLine", AnswerBuffers[CurBufferIndex][0]);
-            Writer.AddMapping("TopLine", AnswerBuffers[CurBufferIndex][1]);
-            Writer.AddMapping("BottomLine", AnswerBuffers[CurBufferIndex][2]);
+            Epsilon = 23e-10;
+            base.InvokeFullBuildTest();
+        }
+
+        public override void InvokeUpdateTest()
+        {
+            Epsilon = 45e-10;
+            base.InvokeUpdateTest();
         }
 
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
             Builder.SetParameter("Deviations", Deviations);
+        }
+
+        protected override void GetOutput()
+        {
+            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("MiddleLine"));
+            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("TopLine"));
+            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("BottomLine"));
         }
     }
 }

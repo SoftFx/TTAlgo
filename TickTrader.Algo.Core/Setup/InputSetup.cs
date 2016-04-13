@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Setup.Serialization;
 
 namespace TickTrader.Algo.Core.Setup
 {
-    public abstract class InputSetup : PropertySetupBase, InputMapping
+    public abstract class InputSetup : PropertySetupBase
     {
         public InputSetup(InputDescriptor descriptor)
         {

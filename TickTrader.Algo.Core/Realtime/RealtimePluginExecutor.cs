@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Setup;
 
 namespace TickTrader.Algo.Core.Realtime
 {
@@ -30,39 +31,13 @@ namespace TickTrader.Algo.Core.Realtime
         int Depth { get; }
     }
 
-
-    [Serializable]
-    public class RealtimePluginSetup
-    {
-        public RealtimePluginSetup()
-        {
-        }
-
-        public Dictionary<string, object> Parameters { get; private set; }
-        public Dictionary<string, InputMapping> Inputs { get; private set; }
-
-        
-    }
-
-    public interface InputMapping
-    {
-        string SymbolCode { get;}
-        void Apply(PluginExecutor executor);
-    }
-
-    [Serializable]
-    public class BarToDouble
-    {
-    }
-
-    [Serializable]
-    public class TickInputSetup
-    {
-    }
-
     public class RealtimePluginExecutor
     {
-        
+        private PluginSetup setup;
+
+        public RealtimePluginExecutor(PluginSetup setup)
+        {
+        }
 
         private class Agent : MarshalByRefObject
         {
