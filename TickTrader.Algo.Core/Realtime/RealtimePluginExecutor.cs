@@ -31,17 +31,57 @@ namespace TickTrader.Algo.Core.Realtime
         int Depth { get; }
     }
 
-    public class RealtimePluginExecutor
+    public class RealtimePluginHost
+    {
+        private List<RealtimePluginExecutor> plugins = new List<RealtimePluginExecutor>();
+
+        internal void Subscribe()
+        {
+        }
+    }
+
+    internal interface ISymbolFeedSubscriber
+    {
+        string Symbol { get; }
+        int RequiredDepth { get; }
+        void OnUpdate(QuoteEntity quote);
+    }
+
+    public class RealtimeFeedFixture
+    {
+        private Math.BarSampler sampler;
+        private LinkedList<object> updateQueue = new LinkedList<object>();
+
+        public RealtimeFeedFixture(Api.TimeFrames timeFrame)
+        {
+            this.sampler = Math.BarSampler.Get(timeFrame);
+        }
+
+        public void Update(QuoteEntity entity)
+        {
+            lock (updateQueue)
+            {
+                if (updateQueue.Count < 5)
+                    updateQueue.AddLast(entity);
+                else
+                {
+
+                }
+            }
+        }
+    }
+
+    public class RealtimePluginExecutor : MarshalByRefObject
     {
         private PluginSetup setup;
 
         public RealtimePluginExecutor(PluginSetup setup)
         {
+            this.setup = setup;
         }
 
-        private class Agent : MarshalByRefObject
+        public void Start()
         {
-            private ActorCore actor = new ActorCore();
         }
     }
 }

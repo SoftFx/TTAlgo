@@ -106,6 +106,7 @@ namespace TickTrader.Algo.Core.Repository
                             assemblyMetadata.Removed += m => Removed(m);
                             assemblyMetadata.Replaced += m => Replaced(m);
                             assemblies.Add(file, assemblyMetadata);
+                            assemblyMetadata.Start();
                         }
                         else
                             assemblyMetadata.CheckForChanges();
