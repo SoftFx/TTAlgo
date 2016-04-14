@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("Period", Period);
+            SetBuilderParameter("Period", Period);
         }
 
         protected override void CheckAnswer()
@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("Period", Period);
+            SetBuilderParameter("Period", Period);
         }
 
         protected override void CheckAnswer()

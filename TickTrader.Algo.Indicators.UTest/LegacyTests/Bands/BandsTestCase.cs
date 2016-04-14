@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bands
@@ -26,16 +25,16 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bands
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("Period", Period);
-            Builder.SetParameter("Shift", Shift);
-            Builder.SetParameter("Deviations", Deviations);
+            SetBuilderParameter("Period", Period);
+            SetBuilderParameter("Shift", Shift);
+            SetBuilderParameter("Deviations", Deviations);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtMovingBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtUpperBuffer"));
-            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("ExtLowerBuffer"));
+            PutOutputToBuffer("ExtMovingBuffer", 0);
+            PutOutputToBuffer("ExtUpperBuffer", 1);
+            PutOutputToBuffer("ExtLowerBuffer", 2);
         }
     }
 }

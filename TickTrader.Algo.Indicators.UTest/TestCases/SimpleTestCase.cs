@@ -92,6 +92,11 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         {
         }
 
+        protected virtual void PutOutputToBuffer(string outputName, int bufferIndex)
+        {
+            AnswerBuffer[bufferIndex] = new List<double>(Builder.GetOutput<double>(outputName));
+        }
+
         protected override List<double>[] CreateAnswerBuffer()
         {
             var res = new List<double>[AnswerUnitSize / 8];

@@ -12,6 +12,10 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         public CustomEMA(int period, double smoothFactor) : base(period)
         {
+            if (double.IsNaN(smoothFactor))
+            {
+                smoothFactor = 2.0/(period + 1);
+            }
             SmoothFactor = smoothFactor;
         }
 

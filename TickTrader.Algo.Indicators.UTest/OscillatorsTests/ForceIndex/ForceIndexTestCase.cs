@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
 {
-    public class ForceIndexTestCase : SimpleMethodsPricesTestCase
+    public class ForceIndexTestCase : PeriodMethodsPricesTestCase
     {
         public ForceIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period)
-            : base(indicatorType, symbol, quotesPath, answerPath, period, 8, 4, 7)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, period, 4, 7)
         {
         }
 
@@ -25,7 +24,7 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Force"));
+            PutOutputToBuffer("Force", 0);
         }
     }
 }

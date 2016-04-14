@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
 {
-    public abstract class MethodsPricesTestCase<TAns> : SimpleTestCase<TAns>
+    public abstract class PeriodShiftMethodsPricesTestCase<TAns> : PeriodShiftTestCase<TAns>
     {
         protected int MethodsCount;
         protected int PricesCount;
@@ -10,9 +10,9 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         public int TargetMethod { get; protected set; }
         public int TargetPrice { get; protected set; }
 
-        protected MethodsPricesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int answerUnitSize, int methodsCount, int pricesCount)
-            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize)
+        protected PeriodShiftMethodsPricesTestCase(Type indicatorType, string symbol, string quotesPath,
+            string answerPath, int answerUnitSize, int period, int shift, int methodsCount, int pricesCount)
+            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize, period, shift)
         {
             MethodsCount = methodsCount;
             PricesCount = pricesCount;
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             SetBuilderParameter("TargetMethod", TargetMethod);
             SetBuilderParameter("TargetPrice", TargetPrice);
         }
-        
+
         protected override void LaunchTest(Action runAction)
         {
             for (var i = 0; i < MethodsCount; i++)
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         }
     }
 
-    public abstract class MethodsPricesTestCase : SimpleTestCase
+    public abstract class PeriodShiftMethodsPricesTestCase : PeriodShiftTestCase
     {
         protected int MethodsCount;
         protected int PricesCount;
@@ -51,9 +51,9 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         public int TargetMethod { get; protected set; }
         public int TargetPrice { get; protected set; }
 
-        protected MethodsPricesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int answerUnitSize, int methodsCount, int pricesCount)
-            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize)
+        protected PeriodShiftMethodsPricesTestCase(Type indicatorType, string symbol, string quotesPath,
+            string answerPath, int answerUnitSize, int period, int shift, int methodsCount, int pricesCount)
+            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize, period, shift)
         {
             MethodsCount = methodsCount;
             PricesCount = pricesCount;

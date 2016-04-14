@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ATR
@@ -17,12 +16,12 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ATR
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("InpAtrPeriod", InpAtrPeriod);
+            SetBuilderParameter("InpAtrPeriod", InpAtrPeriod);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtATRBuffer"));
+            PutOutputToBuffer("ExtATRBuffer", 0);
         }
     }
 }

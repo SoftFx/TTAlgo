@@ -6,9 +6,13 @@
 
         public double SmoothFactor { get; private set; }
 
-        public EMA(int period) : base(period)
+        public EMA(int period, double smoothFactor) : base(period)
         {
-            SmoothFactor = 2.0/(period + 1.0);
+            if (double.IsNaN(smoothFactor))
+            {
+                smoothFactor = 2.0/(period + 1);
+            }
+            SmoothFactor = smoothFactor;
         }
 
         public override void Init()

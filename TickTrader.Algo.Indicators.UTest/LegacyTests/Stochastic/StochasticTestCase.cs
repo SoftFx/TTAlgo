@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Stochastic
@@ -22,15 +21,15 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Stochastic
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("InpKPeriod", InpKPeriod);
-            Builder.SetParameter("InpDPeriod", InpDPeriod);
-            Builder.SetParameter("InpSlowing", InpSlowing);
+            SetBuilderParameter("InpKPeriod", InpKPeriod);
+            SetBuilderParameter("InpDPeriod", InpDPeriod);
+            SetBuilderParameter("InpSlowing", InpSlowing);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtMainBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtSignalBuffer"));
+            PutOutputToBuffer("ExtMainBuffer", 0);
+            PutOutputToBuffer("ExtSignalBuffer", 1);
         }
     }
 }
