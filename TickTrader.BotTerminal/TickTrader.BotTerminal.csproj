@@ -156,6 +156,7 @@
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
+    <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls\MenuItemSelector.cs" />
@@ -165,12 +166,13 @@
     <Compile Include="Controls\BusyIndicator.xaml.cs">
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\RadioFlatButton.cs" />
+    <Compile Include="Controls\FlatRadioButton.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
-    <Compile Include="Controls\ToggleFlatButton.cs" />
+    <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
@@ -398,6 +400,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\Calendar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles\DateTimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\NumericUpDownStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -498,10 +508,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views.Auth\LoginPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -568,9 +574,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\StateMachinarium\StateMachinarium.csproj">
-      <Project>{9771258d-f820-482e-b945-310d5b4e182c}</Project>
-      <Name>StateMachinarium</Name>
+    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
+      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
+      <Name>Machinarium</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>

@@ -26,10 +26,10 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void Reset()
-        {
-            BuffersCleared();
-            VirtualPos = 0;
-        }
+        //public void Reset()
+        //{
+        //    BuffersCleared();
+        //    VirtualPos = 0;
+        //}
     }
 }

@@ -28,5 +28,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <Style TargetType="DatePickerTextBox" BasedOn="{StaticResource {x:Type TextBox}}"></Style>
     
 </ResourceDictionary>

@@ -7,14 +7,18 @@
              mc:Ignorable="d" 
              d:DesignHeight="480" d:DesignWidth="300">
     <UserControl.Resources>
-        <Style BasedOn="{StaticResource FlatButton_Style}" TargetType="l:FlatButton">
+        <Style BasedOn="{StaticResource FlatButtonMainStyle}" TargetType="l:FlatButton">
             <Setter Property="Background" Value="{DynamicResource Dialog_OkButtonBackground}"></Setter>
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_OkButtonHighlightBackground}"></Setter>
         </Style>
 
-        <Style BasedOn="{StaticResource RadioFlatButton_Style}" TargetType="l:RadioFlatButton"/>
+        <Style BasedOn="{StaticResource FlatRadioButtonMainStyle}" TargetType="l:FlatRadioButton"/>
         
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
+            <Setter Property="Margin" Value="0 2 0 0" />
+        </Style>
+
+        <Style BasedOn="{StaticResource {x:Type l:DateTimePicker}}" TargetType="l:DateTimePicker">
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
 
@@ -120,10 +124,10 @@
             </StackPanel>
 
             <UniformGrid Grid.Row="7" Grid.Column="0" Grid.RowSpan="3" Rows="2" Columns="2">
-                <l:RadioFlatButton GroupName="SellBuy" Content="Sell" Style="{StaticResource SellRadioFlatButton_Style}" Margin="0 0 2 2"/>
-                <l:RadioFlatButton GroupName="SellBuy" Content="Buy" Style="{StaticResource BuyRadioFlatButton_Style}" Margin="2 0 0 2"/>
-                <l:RadioFlatButton GroupName="StopLimit" Content="Stop" Margin="0 2 2 0"/>
-                <l:RadioFlatButton GroupName="StopLimit" Content="Limit" Margin="2 2 0 0"/>
+                <l:FlatRadioButton  GroupName="SellBuy" Content="Sell" Style="{StaticResource SellFlatRadioButtonStyle}" Margin="0 0 2 2"/>
+                <l:FlatRadioButton  GroupName="SellBuy" Content="Buy" Style="{StaticResource BuyFlatRadioButtonStyle}" Margin="2 0 0 2"/>
+                <l:FlatRadioButton  GroupName="StopLimit" Content="Stop" Margin="0 2 2 0"/>
+                <l:FlatRadioButton  GroupName="StopLimit" Content="Limit" Margin="2 2 0 0"/>
             </UniformGrid>
 
             <Grid Grid.Row="7" Grid.Column="3">
@@ -131,7 +135,7 @@
                     <ColumnDefinition Width="0.6*"></ColumnDefinition>
                     <ColumnDefinition Width="0.4*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <CheckBox Grid.Column="0" Content="Expiry"/>
+                <CheckBox x:Name="Expire" Grid.Column="0" Content="Expiry"/>
                 <TextBlock Grid.Column="1" Text="UTC+0" HorizontalAlignment="Right"/>
             </Grid>
             <Grid Grid.Row="8" Grid.Column="3">
@@ -139,8 +143,7 @@
                     <ColumnDefinition Width="0.6*"></ColumnDefinition>
                     <ColumnDefinition Width="0.4*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <DatePicker Grid.Column="0" />
-                <DatePicker Grid.Column="1" />
+                <l:DateTimePicker Grid.Column="0" Grid.ColumnSpan="2" IsEnabled="{Binding ElementName=Expire, Path=IsChecked}"/>
             </Grid>
             <StackPanel Grid.Row="9" Grid.Column="3" Orientation="Horizontal">
                 <TextBlock  Text="Duration:"/>

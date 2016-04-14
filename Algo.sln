@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Api", "TickTrader.Algo.Api\TickTrader.Algo.Api.csproj", "{8901C84D-FB62-433C-A25F-4D24255B9453}"
 EndProject
@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotTerminal", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Samples", "TickTrader.Algo.Samples\TickTrader.Algo.Samples.csproj", "{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMachinarium", "StateMachinarium\StateMachinarium.csproj", "{9771258D-F820-482E-B945-310D5B4E182C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.GuiModel", "TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj", "{C29222D6-E27C-4D1A-970F-A54851E0647E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CoreUsageSample", "TickTrader.Algo.CoreUsageSample\TickTrader.Algo.CoreUsageSample.csproj", "{5206F70A-4970-4488-982D-C81E42550B07}"
@@ -24,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Indicators"
 		{8BAB901C-10BB-4EB7-B81E-716FA05B6957} = {8BAB901C-10BB-4EB7-B81E-716FA05B6957}
 		{8901C84D-FB62-433C-A25F-4D24255B9453} = {8901C84D-FB62-433C-A25F-4D24255B9453}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machinarium", "Machinarium\Machinarium.csproj", "{DF05B4CC-200A-436B-91CC-BEBE7D89B8AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Indicators.UTest", "TickTrader.Algo.Indicators.UTest\TickTrader.Algo.Indicators.UTest.csproj", "{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}"
 EndProject
@@ -53,10 +53,6 @@ Global
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9771258D-F820-482E-B945-310D5B4E182C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9771258D-F820-482E-B945-310D5B4E182C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9771258D-F820-482E-B945-310D5B4E182C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9771258D-F820-482E-B945-310D5B4E182C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C29222D6-E27C-4D1A-970F-A54851E0647E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,6 +65,10 @@ Global
 		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{127406A9-5D62-4FE7-9680-1D2DEED7564F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF05B4CC-200A-436B-91CC-BEBE7D89B8AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF05B4CC-200A-436B-91CC-BEBE7D89B8AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF05B4CC-200A-436B-91CC-BEBE7D89B8AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF05B4CC-200A-436B-91CC-BEBE7D89B8AD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}.Release|Any CPU.ActiveCfg = Release|Any CPU

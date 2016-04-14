@@ -9,16 +9,25 @@ using System.Windows.Media;
 
 namespace TickTrader.BotTerminal
 {
-    public class ToggleFlatButton : ToggleButton
+    public class FlatToggleButton : ToggleButton
     {
+        public static readonly DependencyProperty CornerRadiusProperty =
+           DependencyProperty.Register(nameof(CornerRadius), typeof(CornerRadius), typeof(FlatToggleButton), new FrameworkPropertyMetadata(default(CornerRadius)));
+
         public static DependencyProperty HighlightBackgroundProperty =
-           DependencyProperty.Register("HighlightBackground", typeof(Brush), typeof(ToggleFlatButton));
+           DependencyProperty.Register("HighlightBackground", typeof(Brush), typeof(FlatToggleButton));
 
         public static DependencyProperty DisabledBackgroundProperty =
-            DependencyProperty.Register("DisabledBackground", typeof(Brush), typeof(ToggleFlatButton));
+            DependencyProperty.Register("DisabledBackground", typeof(Brush), typeof(FlatToggleButton));
 
         public static DependencyProperty CheckedBackgroundProperty =
-            DependencyProperty.Register("CheckedBackground", typeof(Brush), typeof(ToggleFlatButton));
+            DependencyProperty.Register("CheckedBackground", typeof(Brush), typeof(FlatToggleButton));
+
+        public CornerRadius CornerRadius
+        {
+            get { return (CornerRadius)GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
+        }
 
         public Brush HighlightBackground
         {

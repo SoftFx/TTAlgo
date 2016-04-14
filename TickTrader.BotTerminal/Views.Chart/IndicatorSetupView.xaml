@@ -9,7 +9,7 @@
         ResizeMode="NoResize">
     
     <Window.Resources>
-        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButton_Style}">
+        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
             <Setter Property="MinWidth" Value="75" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />

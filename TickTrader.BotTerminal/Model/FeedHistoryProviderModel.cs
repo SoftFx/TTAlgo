@@ -1,6 +1,6 @@
-﻿using SoftFX.Extended;
+﻿using Machinarium.State;
+using SoftFX.Extended;
 using SoftFX.Extended.Storage;
-using StateMachinarium;
 using System;
 using System.Collections.Generic;
 using System.Linq;

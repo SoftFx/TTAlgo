@@ -1,32 +1,26 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    /// <summary>
-    /// Note: This class is not thread safe and designed to be used from one single thread
-    /// </summary>
-    public class IndicatorBuilder : IPluginDataProvider
+    public abstract class PluginExecutor : IPluginDataProvider
     {
-        private IndicatorAdapter pluginProxy;
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
-        //private Dictionary<string, IDataBuffer> outputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
         private bool isInitialized;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
 
-        public IndicatorBuilder(AlgoPluginDescriptor descriptor)
+        public PluginExecutor(AlgoPluginDescriptor descriptor)
         {
             Descriptor = descriptor;
-            pluginProxy = PluginAdapter.CreateIndicator(descriptor.Id, this);
             marketData = new MarketDataImpl(this);
             Account = new AccountEntity();
             Symbols = new SymbolsCollection();
@@ -34,9 +28,11 @@ namespace TickTrader.Algo.Core
             //PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, this);
         }
 
+        internal abstract PluginAdapter PluginProxy { get; }
+
         public string MainSymbol { get; set; }
         public SymbolsCollection Symbols { get; private set; }
-        public int DataSize { get { return pluginProxy.Coordinator.VirtualPos; } }
+        public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
         public AccountEntity Account { get; private set; }
         public Action AccountDataRequested { get; set; }
@@ -47,14 +43,14 @@ namespace TickTrader.Algo.Core
             if (inputBuffers.ContainsKey(bufferId))
                 return (InputBuffer<T>)inputBuffers[bufferId];
 
-            InputBuffer<T> buffer = new InputBuffer<T>(pluginProxy.Coordinator);
+            InputBuffer<T> buffer = new InputBuffer<T>(PluginProxy.Coordinator);
             inputBuffers.Add(bufferId, buffer);
             return buffer;
         }
 
         public void SetParameter(string paramName, object value)
         {
-            pluginProxy.SetParameter(paramName, value);
+            PluginProxy.SetParameter(paramName, value);
         }
 
         public InputBuffer<BarEntity> GetBarSeries(string bufferId)
@@ -64,13 +60,13 @@ namespace TickTrader.Algo.Core
 
         public IReaonlyDataBuffer GetOutput(string outputName)
         {
-            var outputProxy = pluginProxy.GetOutput(outputName);
+            var outputProxy = PluginProxy.GetOutput(outputName);
             return (IReaonlyDataBuffer)outputProxy.Buffer;
         }
 
         public OutputBuffer<T> GetOutput<T>(string outputName)
         {
-            var outputProxy = pluginProxy.GetOutput(outputName);
+            var outputProxy = PluginProxy.GetOutput(outputName);
             return (OutputBuffer<T>)outputProxy.Buffer;
         }
 
@@ -87,7 +83,7 @@ namespace TickTrader.Algo.Core
         public void MapInput<TSrc, TVal>(string inputName, string bufferId, Func<TSrc, TVal> selector)
         {
             var buffer = GetBuffer<TSrc>(bufferId);
-            var input = pluginProxy.GetInput<TVal>(inputName);
+            var input = PluginProxy.GetInput<TVal>(inputName);
 
             input.Buffer = new ProxyBuffer<TSrc, TVal>(buffer, selector);
         }
@@ -95,45 +91,17 @@ namespace TickTrader.Algo.Core
         public void MapInput<T>(string inputName, string bufferId)
         {
             var buffer = GetBuffer<T>(bufferId);
-            var input = pluginProxy.GetInput<T>(inputName);
+            var input = PluginProxy.GetInput<T>(inputName);
 
             input.Buffer = buffer;
         }
 
-        public void BuildNext(int count = 1)
-        {
-            BuildNext(count, CancellationToken.None);
-        }
-
-        public void BuildNext(int count, CancellationToken cToken)
-        {
-            LazyInit();
-            for (int i = 0; i < count; i++)
-            {
-                if (cToken.IsCancellationRequested)
-                    return;
-                pluginProxy.Coordinator.MoveNext();
-                pluginProxy.Calculate(false);
-            }
-        }
-
-        public void RebuildLast()
-        {
-            LazyInit();
-            pluginProxy.Calculate(true);
-        }
-
-        public void Reset()
-        {
-            pluginProxy.Coordinator.Reset();
-        }
-
-        private void LazyInit()
+        protected void LazyInit()
         {
             if (isInitialized)
                 return;
 
-            pluginProxy.Init();
+            PluginProxy.Init();
 
             isInitialized = true;
         }
@@ -168,10 +136,10 @@ namespace TickTrader.Algo.Core
 
         private class MarketDataImpl : MarketDataProvider
         {
-            private IndicatorBuilder builder;
-            private BarSeriesProxy mainBars; 
+            private PluginExecutor builder;
+            private BarSeriesProxy mainBars;
 
-            public MarketDataImpl(IndicatorBuilder builder)
+            public MarketDataImpl(PluginExecutor builder)
             {
                 this.builder = builder;
             }
@@ -255,4 +223,6 @@ namespace TickTrader.Algo.Core
             }
         }
     }
+
+    
 }
