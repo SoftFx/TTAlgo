@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
                     instance = new SMA(period);
                     break;
                 case Method.Exponential:
-                    instance = new EMA(period);
+                    instance = new EMA(period, smoothFactor);
                     break;
                 case Method.Smoothed:
                     instance = new SMMA(period);
