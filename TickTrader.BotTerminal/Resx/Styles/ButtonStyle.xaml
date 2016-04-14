@@ -40,6 +40,32 @@
     </Style>
     <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}"/>
 
+
+    <!--Icon Button -->
+
+    <ControlTemplate x:Key="IconButton_Template" TargetType="Button">
+        <Border Name="Border" CornerRadius="2"
+                IsHitTestVisible="True"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter TargetName="Border" Property="Control.Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="IconButton_Style" TargetType="Button" >
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}" />
+        <Setter Property="Template" Value="{StaticResource IconButton_Template}" />
+        <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}" />
+    </Style>
+
     <!--FlatToggleButton-->
     <Style x:Key="FlatToggleButtonMainStyle" TargetType="l:FlatToggleButton" BasedOn="{StaticResource ButtonBaseStyle}">
         <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
@@ -108,5 +134,4 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
     </Style>
 
-    <!--{DynamicResource Shell_SecondaryForeground}-->
 </ResourceDictionary>

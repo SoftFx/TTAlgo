@@ -190,46 +190,88 @@ namespace TickTrader.BotTerminal
         //    }
     }
 
-    internal class XySeriesWriter : CollectionWriter<double, Api.Bar>
+    internal class XyOuputTransmitter
     {
-        private XyDataSeries<DateTime, double> chartData;
+        private InputBuffer<BarEntity> refBuffer;
 
-        public XySeriesWriter(XyDataSeries<DateTime, double> chartData)
+        public XyOuputTransmitter(OutputBuffer<double> buffer, InputBuffer<BarEntity> refBuffer)
         {
-            this.chartData = chartData;
+            this.refBuffer = refBuffer;
+            this.ChartData = new XyDataSeries<DateTime, double>();
+
+            buffer.Updated += Buffer_Updated;
+            buffer.Cleared += Buffer_Cleared;
         }
 
-        public void Append(Api.Bar row, double data)
+        public XyDataSeries<DateTime, double> ChartData { get; private set; }
+
+        private void Buffer_Cleared()
         {
-            Execute.OnUIThread(() => chartData.Append(row.OpenTime, data));
+            Execute.OnUIThread(() => ChartData.Clear());
         }
 
-        public void Reset()
+        private void Buffer_Updated(int index, double value)
         {
-            Execute.OnUIThread(() => chartData.Clear());
-        }
+            DateTime barTime = refBuffer[index].OpenTime;
 
-        public void WriteAt(int index, double data, Api.Bar row)
-        {
-            Execute.OnUIThread(() => Update(row.OpenTime, data));
-        }
-
-        private void Update(DateTime barTime, double data)
-        {
-            int index = chartData.FindIndex(barTime, SciChart.Charting.Common.Extensions.SearchMode.Nearest);
-            if (index < 0)
-                chartData.Append(barTime, data);
-            else
-            {
-                if (chartData.XValues[index] == barTime)
-                    chartData.YValues[index] = data;
-                else if (index == chartData.Count - 1)
-                    chartData.Append(barTime, data);
-                else
-                    throw new NotImplementedException();
-            }
+            Execute.OnUIThread(() =>
+                {
+                    int chartIndex = ChartData.FindIndex(barTime, SciChart.Charting.Common.Extensions.SearchMode.Nearest);
+                    if (chartIndex < 0)
+                        ChartData.Append(barTime, value);
+                    else
+                    {
+                        if (ChartData.XValues[chartIndex] == barTime)
+                            ChartData.YValues[chartIndex] = value;
+                        else if (chartIndex == ChartData.Count - 1)
+                            ChartData.Append(barTime, value);
+                        else
+                            throw new NotImplementedException("TO DO!");
+                    }
+                });
         }
     }
+
+    //internal class XySeriesWriter : CollectionWriter<double, Api.Bar>
+    //{
+    //    private XyDataSeries<DateTime, double> chartData = new XyDataSeries<DateTime, double>();
+
+    //    public XySeriesWriter(XyDataSeries<DateTime, double> chartData)
+    //    {
+    //        this.chartData = chartData;
+    //    }
+
+    //    public void Append(Api.Bar row, double data)
+    //    {
+    //        Execute.OnUIThread(() => chartData.Append(row.OpenTime, data));
+    //    }
+
+    //    public void Reset()
+    //    {
+    //        Execute.OnUIThread(() => chartData.Clear());
+    //    }
+
+    //    public void WriteAt(int index, double data, Api.Bar row)
+    //    {
+    //        Execute.OnUIThread(() => Update(row.OpenTime, data));
+    //    }
+
+    //    private void Update(DateTime barTime, double data)
+    //    {
+    //        int index = chartData.FindIndex(barTime, SciChart.Charting.Common.Extensions.SearchMode.Nearest);
+    //        if (index < 0)
+    //            chartData.Append(barTime, data);
+    //        else
+    //        {
+    //            if (chartData.XValues[index] == barTime)
+    //                chartData.YValues[index] = data;
+    //            else if (index == chartData.Count - 1)
+    //                chartData.Append(barTime, data);
+    //            else
+    //                throw new NotImplementedException();
+    //        }
+    //    }
+    //}
 
 //    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
 //    {

@@ -153,6 +153,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Controls\ColorPicker.cs" />
+    <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\FlatButton.cs" />
@@ -183,6 +185,7 @@
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Lib.Collections\Interfaces.cs" />
     <Compile Include="Lib.Collections\ObservableList.cs" />
+    <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
@@ -237,6 +240,10 @@
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
     <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Auth\AccountPaneView.xaml.cs">
+      <DependentUpon>AccountPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\AccountPaneViewModel.cs" />
     <Compile Include="Views.Auth\LoginPageView.xaml.cs">
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
@@ -497,6 +504,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Auth\AccountPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -567,9 +578,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\StateMachinarium\StateMachinarium.csproj">
-      <Project>{9771258d-f820-482e-b945-310d5b4e182c}</Project>
-      <Name>StateMachinarium</Name>
+    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
+      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
+      <Name>Machinarium</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>

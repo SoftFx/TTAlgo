@@ -16,7 +16,12 @@ namespace TickTrader.Algo.Core.Repository
         {
         }
 
-        public IEnumerable<AlgoDescriptor> LoadAndInspect(string filePath)
+        internal T Activate<T>() where T : MarshalByRefObject, new()
+        {
+            return new T();
+        }
+
+        public IEnumerable<AlgoPluginDescriptor> LoadAndInspect(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath);
             string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
@@ -32,7 +37,7 @@ namespace TickTrader.Algo.Core.Repository
             catch (FileNotFoundException) { }
 
             Assembly algoAssembly = Assembly.Load(assemblyBytes, symbolsBytes);
-            return AlgoDescriptor.InspectAssembly(algoAssembly);
+            return AlgoPluginDescriptor.InspectAssembly(algoAssembly);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core.Metadata
     {
         private ByRefAccessor propertyAccessor;
 
-        public AlgoPropertyDescriptor(AlgoDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
+        public AlgoPropertyDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
         {
             this.ClassMetadata = classMetadata;
             this.Error = error;
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core.Metadata
 
         public string Id { get; private set; }
         public string DisplayName { get; private set; }
-        public AlgoDescriptor ClassMetadata { get; private set; }
+        public AlgoPluginDescriptor ClassMetadata { get; private set; }
         public virtual AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Unknown; } }
         public AlgoPropertyErrors? Error { get; protected set; }
         public bool IsValid { get { return Error == null; } }

@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
+﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
 {
     [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Trend/Envelopes")]
     public class Envelopes : Indicator
     {
-        private IMA _middleLine;
-        private Queue<double> _cache;
+        private MovingAverage.MovingAverage _middleLine;
         
         [Parameter(DefaultValue = 7, DisplayName = "Period")]
         public int Period { get; set; }
@@ -17,15 +15,15 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        [Parameter(DefaultValue = 0.25, DisplayName = "Deviation(%)")]
+        [Parameter(DefaultValue = 0.1, DisplayName = "Deviation(%)")]
         public double Deviation { get; set; }
 
-        private MovingAverage.MovingAverage.Method _targetMethod;
+        private Method _targetMethod;
         [Parameter(DefaultValue = 0, DisplayName = "Method")]
         public int TargetMethod
         {
             get { return (int)_targetMethod; }
-            set { _targetMethod = (MovingAverage.MovingAverage.Method)value; }
+            set { _targetMethod = (Method)value; }
         }
 
         private AppliedPrice.Target _targetPrice;
@@ -45,32 +43,38 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Output(DefaultColor = Colors.Red)]
         public DataSeries BottomLine { get; set; }
 
+        public int LastPositionChanged { get { return _middleLine.LastPositionChanged; } }
+
+        public Envelopes() { }
+
+        public Envelopes(DataSeries<Bar> bars, int period, int shift, Method targetMethod = Method.Simple,
+            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            Bars = bars;
+            Period = period;
+            Shift = shift;
+            _targetMethod = targetMethod;
+            _targetPrice = targetPrice;
+
+            InitializeIndicator();
+        }
+
+        protected void InitializeIndicator()
+        {
+            _middleLine = new MovingAverage.MovingAverage(Bars, Period, Shift, _targetMethod, _targetPrice);
+        }
+
         protected override void Init()
         {
-            _cache = new Queue<double>();
-            _middleLine = MovingAverage.MovingAverage.CreateMAInstance(Period, Shift, _targetMethod, _targetPrice);
-            _middleLine.Init();
+            InitializeIndicator();
         }
 
         protected override void Calculate()
         {
-            // ---------------------
-            if (Bars.Count == 1)
-            {
-                Init();
-            }
-            // ---------------------
-            var val = Utility.GetShiftedValue(Shift, _middleLine.Calculate(Bars[0]), _cache, Bars.Count);
-            if (Shift > 0)
-            {
-                TopLine[0] = val*(1.0 + Deviation/100);
-                BottomLine[0] = val*(1.0 - Deviation/100);
-            }
-            else if (Shift <= 0 && -Shift < Bars.Count)
-            {
-                TopLine[-Shift] = val*(1.0 + Deviation/100);
-                BottomLine[-Shift] = val*(1.0 - Deviation/100);
-            }
+            var pos = LastPositionChanged;
+            var val = _middleLine.Average[pos];
+            TopLine[pos] = val*(1.0 + Deviation/100);
+            BottomLine[pos] = val*(1.0 - Deviation/100);
         }
     }
 }

@@ -12,9 +12,14 @@ namespace TickTrader.BotTerminal
 {
     public class IndicatorSetup_Bars : IndicatorSetupBase
     {
-        public IndicatorSetup_Bars(AlgoDescriptor descriptor)
+        private string mainSymbol;
+
+        public IndicatorSetup_Bars(AlgoPluginDescriptor descriptor, string mainSymbol)
             : base(descriptor)
         {
+            this.mainSymbol = mainSymbol;
+
+            Init();
         }
 
         protected override InputSetup CreateInput(InputDescriptor descriptor)
@@ -24,8 +29,8 @@ namespace TickTrader.BotTerminal
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarInputSetup.BarToDouble(descriptor);
-                case "TickTrader.Algo.Api.Bar": return new BarInputSetup.BarToBar(descriptor);
+                case "System.Double": return new BarInputSetup.BarToDouble(descriptor, mainSymbol);
+                case "TickTrader.Algo.Api.Bar": return new BarInputSetup.BarToBar(descriptor, mainSymbol);
                 default: return new BarInputSetup.Invalid(descriptor, "UnsupportedInputType");
             }
         }

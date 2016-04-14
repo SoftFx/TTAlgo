@@ -11,35 +11,44 @@ namespace TickTrader.Algo.Api
         [ThreadStatic]
         internal static IPluginActivator activator;
 
-        private IPluginContext context;
-        private OrderList orders;
-        private PositionList positions;
+        private IPluginDataProvider context;
+        private SymbolProvider symbolProvider;
+        private MarketDataProvider marketDataProvider;
+        private AccountDataProvider accountDataProvider;
 
         internal AlgoPlugin()
         {
-            if (activator == null)
-                throw new InvalidOperationException("Algo context is not initialized!");
-
-            this.context = activator.Activate(this);
+            if (activator != null)
+                this.context = activator.Activate(this);
         }
 
-        protected OrderList Orders
+        protected AccountDataProvider Account
         {
             get
             {
-                if (orders == null)
-                    orders = context.GetOrdersCollection();
-                return orders;
+                if (accountDataProvider == null)
+                    accountDataProvider = context.GetAccountDataProvider();
+                return accountDataProvider;
             }
         }
 
-        protected PositionList Positions
+        protected MarketDataProvider MarketSeries
         {
             get
             {
-                if (positions == null)
-                    positions =  context.GetPositionsCollection();
-                return positions;
+                if (marketDataProvider == null)
+                    marketDataProvider = context.GetMarketDataProvider();
+                return marketDataProvider;
+            }
+        }
+
+        protected SymbolProvider Symbols
+        {
+            get
+            {
+                if (symbolProvider == null)
+                    symbolProvider = context.GetSymbolProvider();
+                return symbolProvider;
             }
         }
 

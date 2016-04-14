@@ -74,7 +74,7 @@ namespace TickTrader.Algo.GuiModel
             IsEnabled = !HasError;
         }
 
-        public OutputDescriptor Descriptor { get { return descriptor; } }
+        public new OutputDescriptor Descriptor { get { return descriptor; } }
         public int[] AvailableThicknesses { get { return availableThicknesses; } }
         public LineStyles[] AvailableLineStyles { get { return availableLineStyles; } }
 

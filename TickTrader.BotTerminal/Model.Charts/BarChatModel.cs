@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     internal class BarChartModel : ChartModelBase
     {
         private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
-        private readonly List<Api.Bar> indicatorData = new List<Api.Bar>();
+        private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
 
         public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
             MainSeries.DataSeries = chartData;
         }
 
-        protected override bool IsIndicatorSupported(AlgoDescriptor descriptor)
+        protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
         {
             return true;
         }
@@ -105,10 +105,10 @@ namespace TickTrader.BotTerminal
             return new IndicatorConfig(repItem, this);
         }
 
-        private static void Convert(List<Bar> fdkData, List<Api.Bar> chartData)
+        private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
         {
             chartData.AddRange(
-            fdkData.Select(b => new Api.Bar()
+            fdkData.Select(b => new Algo.Core.BarEntity()
             {
                 Open = b.Open,
                 Close = b.Close,
@@ -130,40 +130,39 @@ namespace TickTrader.BotTerminal
                 this.chart = chart;
                 this.repItem = repItem;
                 this.InstanceId = chart.GetNextIndicatorId();
-                this.UiModel = new IndicatorSetup_Bars(repItem.Descriptor);
+                this.UiModel = new IndicatorSetup_Bars(repItem.Descriptor, chart.Symbol);
             }
 
             public long InstanceId { get; private set; }
-            public AlgoDescriptor Descriptor { get { return UiModel.Descriptor; } }
+            public AlgoPluginDescriptor Descriptor { get { return UiModel.Descriptor; } }
             public IndicatorSetupBase UiModel { get; private set; }
+            public int DataLen { get { return chart.indicatorData.Count; } }
 
             public IndicatorModel CreateIndicator()
             {
-                DirectReader<Api.Bar> reader = new DirectReader<Api.Bar>(chart.indicatorData);
+                //DirectReader<Algo.Core.BarEntity> reader = new DirectReader<Algo.Core.BarEntity>(chart.indicatorData);
+                IndicatorBuilder builder = new IndicatorBuilder(Descriptor);
+
+                var mainBuffer = builder.GetBuffer<BarEntity>(chart.Symbol);
+                mainBuffer.Append(chart.indicatorData);
 
                 foreach (var input in UiModel.Inputs)
-                    ((BarInputSetup)input).Configure(reader);
-
-                DirectWriter<Api.Bar> writer = new DirectWriter<Api.Bar>();
+                    ((BarInputSetup)input).Configure(builder);
 
                 var outputSeries = new Dictionary<ColoredLineOutputSetup, IDataSeries>();
-
                 foreach (var output in UiModel.Outputs)
                 {
                     if (output is ColoredLineOutputSetup)
                     {
-                        XyDataSeries<DateTime, double> series = new XyDataSeries<DateTime, double>();
-                        writer.AddMapping(output.Id, new XySeriesWriter(series));
-                        outputSeries[(ColoredLineOutputSetup)output] = series;
+                        var tx = new XyOuputTransmitter(builder.GetOutput<double>(output.Id), mainBuffer);
+                        outputSeries[(ColoredLineOutputSetup)output] = tx.ChartData;
                     }
                 }
 
-                IndicatorBuilder<Api.Bar> buidler = new IndicatorBuilder<Api.Bar>(repItem.Descriptor, reader, writer);
-
                 foreach (var parameter in UiModel.Parameters)
-                    buidler.SetParameter(parameter.Id, parameter.ValueObj);
+                    builder.SetParameter(parameter.Id, parameter.ValueObj);
 
-                IndicatorModel model = new IndicatorModel(this, buidler);
+                IndicatorModel model = new IndicatorModel(this, builder);
 
                 foreach (var output in outputSeries)
                     model.AddSeries(output.Key, output.Value);

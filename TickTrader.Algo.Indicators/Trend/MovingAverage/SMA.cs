@@ -1,15 +1,13 @@
 ﻿using System.Collections.Generic;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal class SMA : MABase
     {
         private double _sum;
-        private Queue<double> _cache;
+        private LinkedList<double> _valueCache;
 
-        public SMA(int period, int shift, AppliedPrice.Target targetPrice) : base(period, shift, targetPrice)
+        public SMA(int period) : base(period)
         {
         }
 
@@ -17,35 +15,37 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         {
             base.Init();
             _sum = 0;
-            _cache = new Queue<double>(Period + 1);
+            _valueCache = new LinkedList<double>();
         }
 
         public override void Reset()
         {
             base.Reset();
             _sum = 0;
-            _cache.Clear();
+            _valueCache.Clear();
         }
 
-        public override double Calculate(Bar bar)
+        protected override void InvokeAdd(double value)
         {
-            var appliedPrice = AppliedPrice.Calculate(bar, TargetPrice);
-            _sum += appliedPrice;
-            _cache.Enqueue(appliedPrice);
-            if (Accumulated < Period)
+            if (Accumulated > Period)
             {
-                Accumulated++;
-                if (Accumulated < Period)
-                {
-                    return double.NaN;
-                }
+                _sum -= _valueCache.First.Value;
+                _valueCache.RemoveFirst();
+                Accumulated--;
             }
-            else
-            {
-                _sum -= _cache.Dequeue();
-            }
-            return _sum / Period;
+            _valueCache.AddLast(value);
+            _sum += value;
+        }
 
+        protected override void InvokeUpdateLast(double value)
+        {
+            _sum += value - LastAdded;
+            _valueCache.Last.Value = value;
+        }
+
+        protected override void SetCurrentResult()
+        {
+            Average = Accumulated < Period ? double.NaN : _sum/Period;
         }
     }
 }

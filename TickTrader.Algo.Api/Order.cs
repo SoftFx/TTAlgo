@@ -17,8 +17,10 @@ namespace TickTrader.Algo.Api
 
     public enum OrderTypes { Market, Limit, Stop, Position }
 
-    public interface OrderList : IReadOnlyList<Position>
+    public interface OrderList : IEnumerable<Order>
     {
+        Order this[long id] { get; }
+
         event Action<OrderOpenedEventArgs> Opened;
         event Action<OrderClosedEventArgs> Closed;
         event Action<OrderModifiedEventArgs> Modified;

@@ -1,7 +1,4 @@
-﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
-
-namespace TickTrader.Algo.Indicators.Trend.MovingAverage
+﻿namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal class EMA : MABase
     {
@@ -9,7 +6,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         public double SmoothFactor { get; private set; }
 
-        public EMA(int period, int shift, AppliedPrice.Target targetPrice) : base(period, shift, targetPrice)
+        public EMA(int period) : base(period)
         {
             SmoothFactor = 2.0/(period + 1.0);
         }
@@ -26,13 +23,19 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             _prev = double.NaN;
         }
 
-        public override double Calculate(Bar bar)
+        protected override void InvokeAdd(double value)
         {
-            Accumulated++;
-            var appliedPrice = AppliedPrice.Calculate(bar, TargetPrice);
-            var res = double.IsNaN(_prev) ? appliedPrice : SmoothFactor*appliedPrice + (1 - SmoothFactor)*_prev;
-            _prev = res;
-            return res;
+            _prev = double.IsNaN(_prev) ? value : SmoothFactor*value + (1 - SmoothFactor)*_prev;
+        }
+
+        protected override void InvokeUpdateLast(double value)
+        {
+            _prev = (Accumulated == 1) ? value : _prev + SmoothFactor*value - SmoothFactor*LastAdded;
+        }
+
+        protected override void SetCurrentResult()
+        {
+            Average = _prev;
         }
     }
 }

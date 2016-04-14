@@ -1,46 +1,56 @@
-﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
-
-namespace TickTrader.Algo.Indicators.Trend.MovingAverage
+﻿namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal class TriMA : MABase
     {
-        private SMA innerSMA;
-        private SMA outerSMA;
+        private SMA _innerSma;
+        private SMA _outerSma;
 
-        public TriMA(int period, int shift, AppliedPrice.Target targetPrice) : base(period, shift, targetPrice)
+        public int SmaPeriod { get; private set; }
+
+        public TriMA(int period) : base(period)
         {
+            SmaPeriod = (Period + Period % 2) / 2;
         }
 
         public override void Init()
         {
             base.Init();
-            int SMAPeriod = (Period + Period%2)/2;
-            innerSMA = new SMA(SMAPeriod, 0, TargetPrice);
-            outerSMA = new SMA(SMAPeriod, 0, AppliedPrice.Target.Close);
-            innerSMA.Init();
-            outerSMA.Init();
+            _innerSma = new SMA(SmaPeriod);
+            _outerSma = new SMA(SmaPeriod);
+            _innerSma.Init();
+            _outerSma.Init();
         }
 
         public override void Reset()
         {
             base.Reset();
-            int SMAPeriod = (Period + Period%2)/2;
-            innerSMA = new SMA(SMAPeriod, 0, TargetPrice);
-            outerSMA = new SMA(SMAPeriod, 0, AppliedPrice.Target.Close);
-            innerSMA.Init();
-            outerSMA.Init();
+            _innerSma = new SMA(SmaPeriod);
+            _outerSma = new SMA(SmaPeriod);
+            _innerSma.Init();
+            _outerSma.Init();
         }
 
-        public override double Calculate(Bar bar)
+        protected override void InvokeAdd(double value)
         {
-            var innerRes = innerSMA.Calculate(bar);
-            if (double.IsNaN(innerRes))
+            _innerSma.Add(value);
+            if (!double.IsNaN(_innerSma.Average))
             {
-                return innerRes;
+                _outerSma.Add(value);
             }
-            var outerRes = outerSMA.Calculate(new Bar {Close = innerRes});
-            return outerRes;
+        }
+
+        protected override void InvokeUpdateLast(double value)
+        {
+            _innerSma.UpdateLast(value);
+            if (!double.IsNaN(_innerSma.Average))
+            {
+                _outerSma.UpdateLast(value);
+            }
+        }
+
+        protected override void SetCurrentResult()
+        {
+            Average = _outerSma.Average;
         }
     }
 }

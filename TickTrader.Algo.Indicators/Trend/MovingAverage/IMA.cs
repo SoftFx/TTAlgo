@@ -1,18 +1,16 @@
-﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
-
-namespace TickTrader.Algo.Indicators.Trend.MovingAverage
+﻿namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal interface IMA
     {
         int Period { get; }
-        int Shift { get; }
-        AppliedPrice.Target TargetPrice { get; }
 
         int Accumulated { get; }
+        double LastAdded { get; }
+        double Average { get; }
 
         void Init();
         void Reset();
-        double Calculate(Bar bar);
+        void Add(double value);
+        void UpdateLast(double value);
     }
 }
