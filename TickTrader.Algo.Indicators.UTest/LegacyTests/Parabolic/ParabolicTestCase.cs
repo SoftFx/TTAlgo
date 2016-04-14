@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Parabolic
@@ -19,13 +18,13 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Parabolic
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("InpSARStep", InpSarStep);
-            Builder.SetParameter("InpSARMaximum", InpSarMaximum);
+            SetBuilderParameter("InpSARStep", InpSarStep);
+            SetBuilderParameter("InpSARMaximum", InpSarMaximum);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtSARBuffer"));
+            PutOutputToBuffer("ExtSARBuffer", 0);
         }
     }
 }

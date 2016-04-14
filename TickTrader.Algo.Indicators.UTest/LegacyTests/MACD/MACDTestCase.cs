@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.MACD
@@ -26,9 +25,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.MACD
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("InpFastEMA", InpFastEma);
-            Builder.SetParameter("InpSlowEMA", InpSlowEma);
-            Builder.SetParameter("InpSignalSMA", InpSignalSma);
+            SetBuilderParameter("InpFastEMA", InpFastEma);
+            SetBuilderParameter("InpSlowEMA", InpSlowEma);
+            SetBuilderParameter("InpSignalSMA", InpSignalSma);
         }
 
         public override void InvokeFullBuildTest()
@@ -45,8 +44,8 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.MACD
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtMacdBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtSignalBuffer"));
+            PutOutputToBuffer("ExtMacdBuffer", 0);
+            PutOutputToBuffer("ExtSignalBuffer", 1);
         }
     }
 }

@@ -31,6 +31,11 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             Quotes = TTQuoteBinaryFileReader.ReadQuotes(QuotesPath);
         }
 
+        protected virtual void SetBuilderParameter(string paramName, object value)
+        {
+            Builder.SetParameter(paramName, value);
+        }
+
         protected virtual void SetupBuilder()
         {
             Builder.MainSymbol = Symbol;

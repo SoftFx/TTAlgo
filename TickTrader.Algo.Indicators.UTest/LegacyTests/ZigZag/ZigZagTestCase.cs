@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ZigZag
@@ -21,14 +20,14 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ZigZag
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("InpDepth", InpDepth);
-            Builder.SetParameter("InpDeviation", InpDeviation);
-            Builder.SetParameter("InpBackstep", InpBackstep);
+            SetBuilderParameter("InpDepth", InpDepth);
+            SetBuilderParameter("InpDeviation", InpDeviation);
+            SetBuilderParameter("InpBackstep", InpBackstep);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtZigzagBuffer"));
+            PutOutputToBuffer("ExtZigzagBuffer", 0);
         }
     }
 }

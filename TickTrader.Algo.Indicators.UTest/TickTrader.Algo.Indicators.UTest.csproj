@@ -111,9 +111,12 @@
     <Compile Include="OscillatorsTests\RelativeVigorIndex\RelativeVigorIndexTestCase.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="TestCases\LegacyTestCase.cs" />
+    <Compile Include="TestCases\PeriodMethodsPricesTestCase.cs" />
+    <Compile Include="TestCases\PeriodPricesTestCase.cs" />
+    <Compile Include="TestCases\PeriodShiftMethodsPricesTestCase.cs" />
+    <Compile Include="TestCases\PeriodShiftPricesTestCase.cs" />
+    <Compile Include="TestCases\PeriodShiftTestCase.cs" />
     <Compile Include="TestCases\PeriodTestCase.cs" />
-    <Compile Include="TestCases\SimpleMethodsPricesTestCase.cs" />
-    <Compile Include="TestCases\SimplePricesTestCase.cs" />
     <Compile Include="TestCases\SimpleTestCase.cs" />
     <Compile Include="Utility\AssertX.cs" />
     <Compile Include="BillWilliamsTests\Alligator\AlligatorTest.cs" />

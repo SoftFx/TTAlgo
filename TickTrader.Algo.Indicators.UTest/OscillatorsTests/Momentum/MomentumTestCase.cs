@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.Momentum
 {
-    public class MomentumTestCase : SimplePricesTestCase
+    public class MomentumTestCase : PeriodPricesTestCase
     {
         public MomentumTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period)
-            : base(indicatorType, symbol, quotesPath, answerPath, period, 8, 7)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, period, 7)
         {
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Moment"));
+            PutOutputToBuffer("Moment", 0);
         }
     }
 }

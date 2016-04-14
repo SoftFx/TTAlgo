@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bears
@@ -17,7 +16,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bears
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("BearsPeriod", BearsPeriod);
+            SetBuilderParameter("BearsPeriod", BearsPeriod);
         }
 
         public override void InvokeFullBuildTest()
@@ -34,7 +33,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bears
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtBearsBuffer"));
+            PutOutputToBuffer("ExtBearsBuffer", 0);
         }
     }
 }

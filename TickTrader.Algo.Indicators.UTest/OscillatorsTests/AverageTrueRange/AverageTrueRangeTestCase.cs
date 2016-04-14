@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.AverageTrueRange
@@ -13,7 +12,7 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.AverageTrueRange
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Atr"));
+            PutOutputToBuffer("Atr", 0);
         }
     }
 }

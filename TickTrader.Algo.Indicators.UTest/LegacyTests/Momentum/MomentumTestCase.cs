@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Momentum
@@ -22,12 +21,12 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Momentum
         protected override void SetupBuilder()
         {
             base.SetupBuilder();
-            Builder.SetParameter("Period", Period);
+            SetBuilderParameter("Period", Period);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtMomBuffer"));
+            PutOutputToBuffer("ExtMomBuffer", 0);
         }
     }
 }
