@@ -64,7 +64,7 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <Style x:Key="TrickyButton" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButton_Style}">
+        <Style x:Key="TrickyButton" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
             <Setter Property="Margin" Value="2.5,2.5,2.5,2.5" />
             <Setter Property="Height" Value="Auto" />
             <Setter Property="Padding" Value="5,0,5,0" />

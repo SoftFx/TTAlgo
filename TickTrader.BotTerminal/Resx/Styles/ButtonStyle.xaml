@@ -2,11 +2,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
+    <!--Base Button Template/Style-->
     <ControlTemplate x:Key="FlatButton_Template" TargetType="{x:Type ButtonBase}">
-        <Border Name="Border" CornerRadius="2"
-                IsHitTestVisible="True"
+        <Border Name="Border" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=CornerRadius}"
+                IsHitTestVisible="{TemplateBinding IsHitTestVisible}"
                 Background="{TemplateBinding Background}">
-                <ContentPresenter Margin="{TemplateBinding Padding}"
+            <ContentPresenter Margin="{TemplateBinding Padding}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                               RecognizesAccessKey="True"/>
@@ -21,45 +22,46 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-
-
-    <Style x:Key="ButtonBase_Style" TargetType="ButtonBase" >
+    <Style x:Key="ButtonBaseStyle" TargetType="ButtonBase" >
         <Setter Property="Template" Value="{StaticResource FlatButton_Template}"></Setter>
         <Setter Property="Padding" Value="2" />
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="IsHitTestVisible" Value="True" />
     </Style>
 
-    <Style x:Key="FlatButton_Style" TargetType="l:FlatButton" BasedOn="{StaticResource ButtonBase_Style}">
+    <!--FlatButton-->
+    <Style x:Key="FlatButtonMainStyle" TargetType="l:FlatButton" BasedOn="{StaticResource ButtonBaseStyle}">
         <Setter Property="HighlightBackground" Value="Red" />
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3"></Setter>
     </Style>
-    
-    <!--Toggle button-->
+    <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}"/>
 
-    <Style x:Key="ToggleFlatButton_Style"
-           TargetType="l:ToggleFlatButton"
-           BasedOn="{StaticResource ButtonBase_Style}">
+    <!--FlatToggleButton-->
+    <Style x:Key="FlatToggleButtonMainStyle" TargetType="l:FlatToggleButton" BasedOn="{StaticResource ButtonBaseStyle}">
         <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
         <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
         <Setter Property="CheckedBackground" Value="{DynamicResource Dialog_OkButtonBackground}"/>
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3"/>
         <Style.Triggers>
             <Trigger Property="IsChecked" Value="True">
                 <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=CheckedBackground}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
-    
-    <!--Radio button-->
+    <Style TargetType="l:FlatToggleButton" BasedOn="{StaticResource FlatToggleButtonMainStyle}"/>
 
-    <Style x:Key="RadioFlatButton_Style" TargetType="l:RadioFlatButton" BasedOn="{StaticResource ButtonBase_Style}">
+    <!--FlatRadioButton-->
+    <Style x:Key="FlatRadioButtonMainStyle" TargetType="l:FlatRadioButton" BasedOn="{StaticResource ButtonBaseStyle}">
         <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
         <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
         <Setter Property="CheckedBackground" Value="{DynamicResource Dialog_OkButtonBackground}"/>
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3"/>
         <Style.Triggers>
             <Trigger Property="IsChecked" Value="True">
                 <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=CheckedBackground}"/>
@@ -69,20 +71,18 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-               
-    <Style x:Key="BuyRadioFlatButton_Style" TargetType="l:RadioFlatButton" BasedOn="{StaticResource RadioFlatButton_Style}">
+    <Style TargetType="l:FlatRadioButton" BasedOn="{StaticResource FlatRadioButtonMainStyle}"></Style>
+    
+    <Style x:Key="BuyFlatRadioButtonStyle" TargetType="l:FlatRadioButton" BasedOn="{StaticResource FlatRadioButtonMainStyle}">
         <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
         <Setter Property="CheckedBackground" Value="{DynamicResource RateUpColor}"/>
     </Style>
-
-    <Style x:Key="SellRadioFlatButton_Style" TargetType="l:RadioFlatButton" BasedOn="{StaticResource RadioFlatButton_Style}">
+    <Style x:Key="SellFlatRadioButtonStyle" TargetType="l:FlatRadioButton" BasedOn="{StaticResource FlatRadioButtonMainStyle}">
         <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
         <Setter Property="CheckedBackground" Value="{DynamicResource RateDownColor}"/>
     </Style>
 
-
     <!-- Auto Color Flat Button -->
-
     <ControlTemplate x:Key="AutoColorFlatButton_Template" TargetType="Button">
         <Border Name="Border" CornerRadius="2"
                 Background="{TemplateBinding Background}">
@@ -101,7 +101,6 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-
     <Style x:Key="AutoColorFlatButton_Style" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource AutoColorFlatButton_Template}" />
         <Setter Property="Padding" Value="2" />
@@ -109,4 +108,5 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
     </Style>
 
+    <!--{DynamicResource Shell_SecondaryForeground}-->
 </ResourceDictionary>

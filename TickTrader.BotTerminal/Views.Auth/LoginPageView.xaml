@@ -12,7 +12,7 @@
 
     <UserControl.Resources>
         
-        <Style BasedOn="{StaticResource FlatButton_Style}" TargetType="l:FlatButton">
+        <Style BasedOn="{StaticResource FlatButtonMainStyle}" TargetType="l:FlatButton">
         </Style>
 
         <Style BasedOn="{StaticResource {x:Type CheckBox}}" TargetType="CheckBox" >

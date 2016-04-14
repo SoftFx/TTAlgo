@@ -2,56 +2,40 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:TickTrader.BotTerminal">
-    
-    <ControlTemplate x:Key="FlatRepeatUpBtn_Template" TargetType="{x:Type RepeatButton}">
-        <Border Name="Border" CornerRadius="0 3 0 0"
-                IsHitTestVisible="True"
+
+    <!-- Buttons Template/Style -->
+    <ControlTemplate x:Key="ArrowButton_Template" TargetType="{x:Type ButtonBase}">
+        <Border IsHitTestVisible="True"
+                CornerRadius="3"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                Background="{TemplateBinding Background}">
-            <Canvas Height="5" Width="5">
-                <Polygon x:Name="ArrowUp" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,5 2.5,0 5,5" />
-            </Canvas>
+                Background="{TemplateBinding Background}"
+                Padding="{TemplateBinding Padding}"
+                Margin="{TemplateBinding Margin}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="UIElement.IsMouseOver" Value="True">
-                <Setter TargetName="ArrowUp" Property="Fill" Value="{DynamicResource Shell_PrimaryForeground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-
-    <ControlTemplate x:Key="FlatRepeatDownBtn_Template" TargetType="{x:Type RepeatButton}">
-        <Border Name="Border" CornerRadius="0 0 3 0"
-                IsHitTestVisible="True"
-                Background="{TemplateBinding Background}">
-            <Canvas Height="5" Width="5">
-                <Polygon x:Name="ArrowDown" Fill="{DynamicResource Shell_SecondaryForeground}" Points="0,0 2.5,5 5,0" />
-            </Canvas>
-        </Border>
-        <ControlTemplate.Triggers>
-            <Trigger Property="UIElement.IsMouseOver" Value="True">
-                <Setter TargetName="ArrowDown" Property="Fill" Value="{DynamicResource Shell_PrimaryForeground}"/>
-            </Trigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>
-
-    <Style x:Key="RepeateBtnBase_Style" TargetType="RepeatButton">
-        <Setter Property="BorderBrush" Value="Transparent"/>
+    <Style x:Key="ArrowButton_BaseStyle" TargetType="ButtonBase">
+        <Setter Property="Template" Value="{StaticResource ArrowButton_Template}" />
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Width" Value="10"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Focusable" Value="True"/>
-        <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
     </Style>
-
-    <Style x:Key="RepeatUpBtn_Style" TargetType="RepeatButton" BasedOn="{StaticResource RepeateBtnBase_Style}">
-        <Setter Property="Template" Value="{StaticResource FlatRepeatUpBtn_Template}"/>
-        <Setter Property="Margin" Value="0 2 2 0"/>
-    </Style>
-
-    <Style x:Key="RepeatDownBtn_Style" TargetType="RepeatButton" BasedOn="{StaticResource RepeateBtnBase_Style}">
-        <Setter Property="Template" Value="{StaticResource FlatRepeatDownBtn_Template}"/>
-        <Setter Property="Margin" Value="0 0 2 2"/>
-    </Style>
+    <!-- Buttons Template/Style -->
 
     <Style TargetType="{x:Type local:NumericUpDown}">
         <Setter Property="Background" Value="{DynamicResource ShellPanel_BackgroundBrush}"/>
@@ -84,15 +68,21 @@
 
                                 <RepeatButton Grid.Row="0"
                                               x:Name="IncreaseBtn"
-                                              Style="{StaticResource RepeatUpBtn_Style}"
+                                              Style="{StaticResource ArrowButton_BaseStyle}"
                                               Command="local:NumericUpDown.IncreaseCommand"
-                                              IsEnabled="{TemplateBinding CanIncrease}"/>
+                                              IsEnabled="{TemplateBinding CanIncrease}"
+                                              Margin="0 1 1 0">
+                                      <Path Width="5" Height="5" Stretch="Fill" Data="{DynamicResource UpArrow}" Fill="{Binding RelativeSource={RelativeSource AncestorType=RepeatButton}, Path=Foreground}"/>
+                                </RepeatButton>
 
                                 <RepeatButton Grid.Row="1"
                                               x:Name="DecreaseBtn"
-                                              Style="{StaticResource RepeatDownBtn_Style}"
+                                              Style="{StaticResource ArrowButton_BaseStyle}"
                                               Command="local:NumericUpDown.DecreaseCommand"
-                                              IsEnabled="{TemplateBinding CanDecrease}"/>
+                                              IsEnabled="{TemplateBinding CanDecrease}"
+                                              Margin="0 0 1 1">
+                                     <Path Width="5" Height="5" Stretch="Fill" Data="{DynamicResource DownArrow}" Fill="{Binding RelativeSource={RelativeSource AncestorType=RepeatButton}, Path=Foreground}"/>
+                            </RepeatButton>
                             </Grid>
                     </Grid>
                     <ControlTemplate.Triggers>

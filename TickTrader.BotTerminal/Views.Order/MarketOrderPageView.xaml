@@ -7,8 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="480" d:DesignWidth="300">
     <UserControl.Resources>
-        <Style BasedOn="{StaticResource FlatButton_Style}" TargetType="l:FlatButton"/>
-
         <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
             <Setter Property="Margin" Value="0 2 0 0" />
         </Style>
