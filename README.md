@@ -32,7 +32,7 @@ In order to compile project it is required to add NuGet Package Sources for
  	- [x] [Momentum](https://intranet.fxopen.org/jira/browse/TTALGO-83) (extended version of Common/Momentum)
  	- [x] [Moving Average of Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-64)
  	- [x] [Relative Strength Index](https://intranet.fxopen.org/jira/browse/TTALGO-65)
- 	- [ ] [Relative Vigor Index](https://intranet.fxopen.org/jira/browse/TTALGO-66)
+ 	- [x] [Relative Vigor Index](https://intranet.fxopen.org/jira/browse/TTALGO-66)
  	- [ ] [Stochastic Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-84) (extended version of Common/Stochastic)
  	- [ ] [Williams' Percent Range](https://intranet.fxopen.org/jira/browse/TTALGO-67)
  - Volumes
@@ -45,7 +45,7 @@ In order to compile project it is required to add NuGet Package Sources for
  	- [x] [Alligator](https://intranet.fxopen.org/jira/browse/TTALGO-87) (extended version of Common/Alligator)
  	- [ ] [Awesome Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-88) (extended version of Common/Awesome)
  	- [ ] [Fractals](https://intranet.fxopen.org/jira/browse/TTALGO-71)
- 	- [ ] [Gator Oscillators](https://intranet.fxopen.org/jira/browse/TTALGO-72)
+ 	- [ ] [Gator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-72)
  	- [ ] [Market Facilitation Index](https://intranet.fxopen.org/jira/browse/TTALGO-73)
  - Common
 	 - [x] Accelerator

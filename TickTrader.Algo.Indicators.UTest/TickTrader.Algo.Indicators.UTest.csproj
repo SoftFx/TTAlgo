@@ -50,6 +50,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BillWilliamsTests\AcceleratorOscillator\AcceleratorOscillatorTest.cs" />
+    <Compile Include="BillWilliamsTests\AcceleratorOscillator\AcceleratorOscillatorTestCase.cs" />
+    <Compile Include="BillWilliamsTests\AwesomeOscillator\AwesomeOscillatorTest.cs" />
+    <Compile Include="BillWilliamsTests\AwesomeOscillator\AwesomeOscillatorTestCase.cs" />
+    <Compile Include="BillWilliamsTests\Fractals\FractalsTest.cs" />
+    <Compile Include="BillWilliamsTests\Fractals\FractalsTestCase.cs" />
+    <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTest.cs" />
+    <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTestCase.cs" />
     <Compile Include="LegacyTests\Accelerator\AcceleratorTest.cs" />
     <Compile Include="LegacyTests\Accelerator\AcceleratorTestCase.cs" />
     <Compile Include="LegacyTests\Accumulation\AccumulationTest.cs" />
@@ -141,7 +149,9 @@
   <ItemGroup>
     <Content Include=".gitignore" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="BillWilliamsTests\GatorOscillator\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
