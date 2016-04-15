@@ -37,7 +37,7 @@
             _innerSma.Add(value);
             if (!double.IsNaN(_innerSma.Average))
             {
-                _outerSma.Add(value);
+                _outerSma.Add(_innerSma.Average);
             }
         }
 
@@ -46,7 +46,7 @@
             _innerSma.UpdateLast(value);
             if (!double.IsNaN(_innerSma.Average))
             {
-                _outerSma.UpdateLast(value);
+                _outerSma.UpdateLast(_innerSma.Average);
             }
         }
 

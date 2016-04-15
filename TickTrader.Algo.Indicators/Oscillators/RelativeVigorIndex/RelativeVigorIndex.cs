@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -7,8 +8,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
     [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Relative Vigor Index")]
     public class RelativeVigorIndex : Indicator
     {
-        private MovingAverage _moveMa, _rangeMa;
-        private IMA _rviMa;
+        private MovingAverage _moveTriMa, _rangeTriMa;
+        private IMA _rviMa, _moveMa, _rangeMa;
 
         [Parameter(DefaultValue = 10, DisplayName = "Period")]
         public int Period { get; set; }
@@ -41,8 +42,12 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 
         protected void InitializeIndicator()
         {
-            _moveMa = new MovingAverage(Bars, 4, Period - 4, Method.Triangular, AppliedPrice.Target.Move);
-            _rangeMa = new MovingAverage(Bars, 4, Period - 4, Method.Triangular, AppliedPrice.Target.Range);
+            _moveTriMa = new MovingAverage(Bars, 4, 0, Method.Triangular, AppliedPrice.Target.Move);
+            _rangeTriMa = new MovingAverage(Bars, 4, 0, Method.Triangular, AppliedPrice.Target.Range);
+            _moveMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _moveMa.Init();
+            _rangeMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _rangeMa.Init();
             _rviMa = MABase.CreateMaInstance(4, Method.Triangular);
             _rviMa.Init();
         }
@@ -55,10 +60,27 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         protected override void Calculate()
         {
             var i = LastPositionChanged;
-            RviAverage[i] = ((_moveMa.Average[i] + _moveMa.Average[i + 1] + _moveMa.Average[i + 2] +
-                              _moveMa.Average[i + 3])/
-                             (_rangeMa.Average[i] + _rangeMa.Average[i + 1] + _rangeMa.Average[i + 2] +
-                              _rangeMa.Average[i + 3]));
+            if (!double.IsNaN(_moveTriMa.Average[i]))
+            {
+                if (IsUpdate)
+                {
+                    _moveMa.UpdateLast(_moveTriMa.Average[i]);
+                    _rangeMa.UpdateLast(_rangeTriMa.Average[i]);
+                }
+                else
+                {
+                    _moveMa.Add(_moveTriMa.Average[i]);
+                    _rangeMa.Add(_rangeTriMa.Average[i]);
+                }
+            }
+            if (!double.IsNaN(_rangeMa.Average) && Math.Abs(_rangeMa.Average) < 1e-12)
+            {
+                RviAverage[i] = _moveMa.Average*_moveMa.Period;
+            }
+            else
+            {
+                RviAverage[i] = _moveMa.Average/_rangeMa.Average;
+            }
             if (!double.IsNaN(RviAverage[i]))
             {
                 if (IsUpdate)
