@@ -20,11 +20,12 @@ namespace TickTrader.Algo.Core.Metadata
         InputIsOnlyForIndicators,
         InputIsNotDataSeries,
         OutputIsNotDataSeries,
-        DefaultValueTypeMismatch
+        DefaultValueTypeMismatch,
+        EmptyEnum
     }
 
     [Serializable]
-    public class AlgoPropertyDescriptor : NoTimeoutByRefObject
+    public class AlgoPropertyDescriptor
     {
         private ByRefAccessor propertyAccessor;
 

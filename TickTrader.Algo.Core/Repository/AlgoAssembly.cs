@@ -39,9 +39,7 @@ namespace TickTrader.Algo.Core.Repository
             stateControl.AddTransition(States.Closing, Events.DoneClosing, States.Closed);
 
             stateControl.OnEnter(States.Loading, () => scanTask = Task.Factory.StartNew(() => Load(FilePath)));
-            stateControl.AddScheduledEvent(States.WatingForRetry, Events.NextRetry, 100);
-
-            stateControl.PushEvent(Events.Start);
+            stateControl.AddScheduledEvent(States.WatingForRetry, Events.NextRetry, 100);            
         }
 
         public string FilePath { get; private set; }
@@ -51,6 +49,11 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoPluginRef> Added;
         public event Action<AlgoPluginRef> Removed;
         public event Action<AlgoPluginRef> Replaced;
+
+        public void Start()
+        {
+            stateControl.PushEvent(Events.Start);
+        }
 
         public void Dispose()
         {
