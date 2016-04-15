@@ -18,21 +18,11 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Parameter(DefaultValue = 0.1, DisplayName = "Deviation(%)")]
         public double Deviation { get; set; }
 
-        private Method _targetMethod;
-        [Parameter(DefaultValue = 0, DisplayName = "Method")]
-        public int TargetMethod
-        {
-            get { return (int)_targetMethod; }
-            set { _targetMethod = (Method)value; }
-        }
+        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
+        public Method TargetMethod { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -53,15 +43,15 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
             Bars = bars;
             Period = period;
             Shift = shift;
-            _targetMethod = targetMethod;
-            _targetPrice = targetPrice;
+            TargetMethod = targetMethod;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _middleLine = new MovingAverage.MovingAverage(Bars, Period, Shift, _targetMethod, _targetPrice);
+            _middleLine = new MovingAverage.MovingAverage(Bars, Period, Shift, TargetMethod, TargetPrice);
         }
 
         protected override void Init()

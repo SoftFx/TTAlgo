@@ -9,13 +9,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.Momentum
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -31,7 +26,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.Momentum
         {
             Bars = bars;
             Period = period;
-            _targetPrice = targetPrice;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
@@ -48,8 +43,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.Momentum
             var pos = LastPositionChanged;
             if (Bars.Count > pos + Period)
             {
-                Moment[pos] = AppliedPrice.Calculate(Bars[pos], _targetPrice)/
-                              AppliedPrice.Calculate(Bars[pos + Period], _targetPrice)*100;
+                Moment[pos] = AppliedPrice.Calculate(Bars[pos], TargetPrice)/
+                              AppliedPrice.Calculate(Bars[pos + Period], TargetPrice)*100;
             }
             else
             {

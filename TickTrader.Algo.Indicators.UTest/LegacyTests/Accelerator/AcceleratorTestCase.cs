@@ -17,12 +17,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accelerator
             DataLimit = dataLimit;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("PeriodFast", PeriodFast);
-            SetBuilderParameter("PeriodSlow", PeriodSlow);
-            SetBuilderParameter("DataLimit", DataLimit);
+            SetParameter("PeriodFast", PeriodFast);
+            SetParameter("PeriodSlow", PeriodSlow);
+            SetParameter("DataLimit", DataLimit);
         }
 
         protected override void GetOutput()

@@ -13,10 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.RSI
             InpRsiPeriod = inpRsiPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpRSIPeriod", InpRsiPeriod);
+            SetParameter("InpRSIPeriod", InpRsiPeriod);
         }
 
         public override void InvokeFullBuildTest()

@@ -24,15 +24,14 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Alligator
             InpLipsShift = inpLipsShift;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpJawsPeriod", InpJawsPeriod);
-            SetBuilderParameter("InpJawsShift", InpJawsShift);
-            SetBuilderParameter("InpTeethPeriod", InpTeethPeriod);
-            SetBuilderParameter("InpTeethShift", InpTeethShift);
-            SetBuilderParameter("InpLipsPeriod", InpLipsPeriod);
-            SetBuilderParameter("InpLipsShift", InpLipsShift);
+            SetParameter("InpJawsPeriod", InpJawsPeriod);
+            SetParameter("InpJawsShift", InpJawsShift);
+            SetParameter("InpTeethPeriod", InpTeethPeriod);
+            SetParameter("InpTeethShift", InpTeethShift);
+            SetParameter("InpLipsPeriod", InpLipsPeriod);
+            SetParameter("InpLipsShift", InpLipsShift);
         }
 
         public override void InvokeFullBuildTest()

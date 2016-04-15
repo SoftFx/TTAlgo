@@ -13,13 +13,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 5, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Typical, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -35,14 +30,14 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         {
             Bars = bars;
             Period = period;
-            _targetPrice = targetPrice;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage(Bars, Period, 0, Method.Simple, _targetPrice);
+            _sma = new MovingAverage(Bars, Period, 0, Method.Simple, TargetPrice);
         }
 
         protected override void Init()
@@ -53,7 +48,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            var appliedPrice = AppliedPrice.Calculate(Bars[pos], _targetPrice);
+            var appliedPrice = AppliedPrice.Calculate(Bars[pos], TargetPrice);
             var average = _sma.Average[pos];
             var meanDeviation = 0.0;
             if (double.IsNaN(average))
@@ -64,7 +59,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
             {
                 for (var i = pos; i < pos + Period; i++)
                 {
-                    meanDeviation += Math.Abs(average - AppliedPrice.Calculate(Bars[i], _targetPrice));
+                    meanDeviation += Math.Abs(average - AppliedPrice.Calculate(Bars[i], TargetPrice));
                 }
                 meanDeviation /= Period;
             }

@@ -18,11 +18,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             PricesCount = pricesCount;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("TargetMethod", TargetMethod);
-            SetBuilderParameter("TargetPrice", TargetPrice);
+            SetParameter("TargetMethod", TargetMethod);
+            SetParameter("TargetPrice", TargetPrice);
         }
         
         protected override void LaunchTest(Action runAction)
@@ -59,11 +58,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             PricesCount = pricesCount;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("TargetMethod", TargetMethod);
-            SetBuilderParameter("TargetPrice", TargetPrice);
+            SetParameter("TargetMethod", TargetMethod);
+            SetParameter("TargetPrice", TargetPrice);
         }
 
         protected override void LaunchTest(Action runAction)

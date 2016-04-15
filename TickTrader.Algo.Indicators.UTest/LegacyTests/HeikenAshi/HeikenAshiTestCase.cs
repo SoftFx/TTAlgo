@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.HeikenAshi
         {
         }
 
+        protected override void SetupParameters() { }
+
         protected override void GetOutput()
         {
             PutOutputToBuffer("ExtLowHighBuffer", 0);

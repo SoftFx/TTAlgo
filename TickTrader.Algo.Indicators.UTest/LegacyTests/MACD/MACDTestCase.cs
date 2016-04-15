@@ -22,12 +22,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.MACD
             Builder.MapBarInput("Close", Symbol, entity => entity.Close);
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpFastEMA", InpFastEma);
-            SetBuilderParameter("InpSlowEMA", InpSlowEma);
-            SetBuilderParameter("InpSignalSMA", InpSignalSma);
+            SetParameter("InpFastEMA", InpFastEma);
+            SetParameter("InpSlowEMA", InpSlowEma);
+            SetParameter("InpSignalSMA", InpSignalSma);
         }
 
         public override void InvokeFullBuildTest()

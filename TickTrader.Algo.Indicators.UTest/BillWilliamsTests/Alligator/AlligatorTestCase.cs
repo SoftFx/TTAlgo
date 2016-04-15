@@ -24,15 +24,15 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
             LipsShift = lipsShift;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("JawsPeriod", JawsPeriod);
-            SetBuilderParameter("JawsShift", JawsShift);
-            SetBuilderParameter("TeethPeriod", TeethPeriod);
-            SetBuilderParameter("TeethShift", TeethShift);
-            SetBuilderParameter("LipsPeriod", LipsPeriod);
-            SetBuilderParameter("LipsShift", LipsShift);
+            base.SetupParameters();
+            SetParameter("JawsPeriod", JawsPeriod);
+            SetParameter("JawsShift", JawsShift);
+            SetParameter("TeethPeriod", TeethPeriod);
+            SetParameter("TeethShift", TeethShift);
+            SetParameter("LipsPeriod", LipsPeriod);
+            SetParameter("LipsShift", LipsShift);
         }
 
         protected override void GetOutput()

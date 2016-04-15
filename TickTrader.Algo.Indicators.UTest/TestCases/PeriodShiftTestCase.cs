@@ -13,10 +13,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             Shift = shift;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Shift", Shift);
+            base.SetupParameters();
+            SetParameter("Shift", Shift);
         }
     }
 
@@ -31,10 +31,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             Shift = shift;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Shift", Shift);
+            base.SetupParameters();
+            SetParameter("Shift", Shift);
         }
     }
 }

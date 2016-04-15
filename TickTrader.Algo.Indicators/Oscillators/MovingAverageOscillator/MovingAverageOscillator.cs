@@ -18,13 +18,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
         [Parameter(DefaultValue = 9, DisplayName = "MACD SMA")]
         public int MacdSma { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -43,14 +38,14 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
             FastEma = fastEma;
             SlowEma = slowEma;
             MacdSma = macdSma;
-            _targetPrice = targetPrice;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _macd = new Macd(Bars, FastEma, SlowEma, MacdSma, _targetPrice);
+            _macd = new Macd(Bars, FastEma, SlowEma, MacdSma, TargetPrice);
         }
 
         protected override void Init()

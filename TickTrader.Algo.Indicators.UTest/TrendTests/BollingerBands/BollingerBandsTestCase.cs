@@ -26,10 +26,10 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.BollingerBands
             base.InvokeUpdateTest();
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Deviations", Deviations);
+            base.SetupParameters();
+            SetParameter("Deviations", Deviations);
         }
 
         protected override void GetOutput()

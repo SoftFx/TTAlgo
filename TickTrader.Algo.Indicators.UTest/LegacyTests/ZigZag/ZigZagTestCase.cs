@@ -17,12 +17,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ZigZag
             InpBackstep = inpBackstep;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpDepth", InpDepth);
-            SetBuilderParameter("InpDeviation", InpDeviation);
-            SetBuilderParameter("InpBackstep", InpBackstep);
+            SetParameter("InpDepth", InpDepth);
+            SetParameter("InpDeviation", InpDeviation);
+            SetParameter("InpBackstep", InpBackstep);
         }
 
         protected override void GetOutput()

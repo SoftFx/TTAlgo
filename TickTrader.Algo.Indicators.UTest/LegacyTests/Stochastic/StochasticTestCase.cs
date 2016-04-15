@@ -18,12 +18,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Stochastic
             InpSlowing = inpSlowing;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpKPeriod", InpKPeriod);
-            SetBuilderParameter("InpDPeriod", InpDPeriod);
-            SetBuilderParameter("InpSlowing", InpSlowing);
+            SetParameter("InpKPeriod", InpKPeriod);
+            SetParameter("InpDPeriod", InpDPeriod);
+            SetParameter("InpSlowing", InpSlowing);
         }
 
         protected override void GetOutput()

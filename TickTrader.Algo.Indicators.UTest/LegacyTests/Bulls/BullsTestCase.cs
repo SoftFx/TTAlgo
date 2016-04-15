@@ -13,10 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bulls
             BullsPeriod = bullsPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("BullsPeriod", BullsPeriod);
+            SetParameter("BullsPeriod", BullsPeriod);
         }
 
         public override void InvokeFullBuildTest()

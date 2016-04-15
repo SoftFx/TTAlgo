@@ -18,10 +18,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Momentum
             Builder.MapBarInput("Close", Symbol, entity => entity.Close);
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Period", Period);
+            SetParameter("Period", Period);
         }
 
         protected override void GetOutput()

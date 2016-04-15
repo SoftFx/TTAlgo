@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accumulation
         {
         }
 
+        protected override void SetupParameters() { }
+
         protected override void GetOutput()
         {
             PutOutputToBuffer("ExtADBuffer", 0);

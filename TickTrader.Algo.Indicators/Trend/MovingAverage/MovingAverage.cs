@@ -15,21 +15,11 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        private Method _targetMethod;
-        [Parameter(DefaultValue = 0, DisplayName = "Method")]
-        public int TargetMethod
-        {
-            get { return (int) _targetMethod; }
-            set { _targetMethod = (Method) value; }
-        }
+        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
+        public Method TargetMethod { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int) _targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target) value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Parameter(DefaultValue = 0.0667, DisplayName = "Smooth Factor(CustomEMA)")]
         public double SmoothFactor { get; set; }
@@ -50,8 +40,8 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             Bars = bars;
             Period = period;
             Shift = shift;
-            _targetMethod = targetMethod;
-            _targetPrice = targetPrice;
+            TargetMethod = targetMethod;
+            TargetPrice = targetPrice;
             SmoothFactor = double.IsNaN(smoothFactor) ? 2.0/(period + 1) : smoothFactor;
 
             InitializeIndicator();
@@ -59,7 +49,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         protected void InitializeIndicator()
         {
-            _maInstance = MABase.CreateMaInstance(Period, _targetMethod, SmoothFactor);
+            _maInstance = MABase.CreateMaInstance(Period, TargetMethod, SmoothFactor);
             _maInstance.Init();
             _shifter = new SimpleShifter(Shift);
             _shifter.Init();
@@ -74,12 +64,12 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         {
             if (IsUpdate)
             {
-                _maInstance.UpdateLast(AppliedPrice.Calculate(Bars[0], _targetPrice));
+                _maInstance.UpdateLast(AppliedPrice.Calculate(Bars[0], TargetPrice));
                 _shifter.UpdateLast(_maInstance.Average);
             }
             else
             {
-                _maInstance.Add(AppliedPrice.Calculate(Bars[0], _targetPrice));
+                _maInstance.Add(AppliedPrice.Calculate(Bars[0], TargetPrice));
                 _shifter.Add(_maInstance.Average);
             }
             Average[_shifter.Position] = _shifter.Result;

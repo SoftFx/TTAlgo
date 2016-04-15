@@ -13,10 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ATR
             InpAtrPeriod = inpAtrPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpAtrPeriod", InpAtrPeriod);
+            SetParameter("InpAtrPeriod", InpAtrPeriod);
         }
 
         protected override void GetOutput()

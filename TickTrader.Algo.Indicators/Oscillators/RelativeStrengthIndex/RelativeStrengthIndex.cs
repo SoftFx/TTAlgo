@@ -13,14 +13,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int) _targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target) value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -42,7 +36,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
         {
             Bars = bars;
             Period = period;
-            _targetPrice = targetPrice;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
@@ -69,8 +63,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
             {
                 for (var i = 0; i < Period; i++)
                 {
-                    var curAppliedPrice = AppliedPrice.Calculate(Bars[i], _targetPrice);
-                    var prevAppliedPrice = AppliedPrice.Calculate(Bars[i + 1], _targetPrice);
+                    var curAppliedPrice = AppliedPrice.Calculate(Bars[i], TargetPrice);
+                    var prevAppliedPrice = AppliedPrice.Calculate(Bars[i + 1], TargetPrice);
                     u += curAppliedPrice > prevAppliedPrice ? curAppliedPrice - prevAppliedPrice : 0.0;
                     d += curAppliedPrice < prevAppliedPrice ? prevAppliedPrice - curAppliedPrice : 0.0;
                 }
@@ -79,8 +73,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
             }
             if (Bars.Count > Period + 1)
             {
-                var curAppliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
-                var prevAppliedPrice = AppliedPrice.Calculate(Bars[1], _targetPrice);
+                var curAppliedPrice = AppliedPrice.Calculate(Bars[0], TargetPrice);
+                var prevAppliedPrice = AppliedPrice.Calculate(Bars[1], TargetPrice);
                 u = curAppliedPrice > prevAppliedPrice ? curAppliedPrice - prevAppliedPrice : 0.0;
                 d = curAppliedPrice < prevAppliedPrice ? prevAppliedPrice - curAppliedPrice : 0.0;
             }

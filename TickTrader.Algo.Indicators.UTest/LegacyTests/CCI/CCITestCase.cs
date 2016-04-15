@@ -13,10 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.CCI
             CciPeriod = cciPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("CCIPeriod", CciPeriod);
+            SetParameter("CCIPeriod", CciPeriod);
         }
 
         protected override void GetOutput()

@@ -13,10 +13,10 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.Envelopes
             Deviation = deviation;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Deviation", Deviation);
+            base.SetupParameters();
+            SetParameter("Deviation", Deviation);
         }
 
         protected override void GetOutput()

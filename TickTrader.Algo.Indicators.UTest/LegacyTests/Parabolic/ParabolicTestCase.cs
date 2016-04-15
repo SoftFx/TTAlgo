@@ -15,11 +15,10 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Parabolic
             InpSarMaximum = inpSarMaximum;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpSARStep", InpSarStep);
-            SetBuilderParameter("InpSARMaximum", InpSarMaximum);
+            SetParameter("InpSARStep", InpSarStep);
+            SetParameter("InpSARMaximum", InpSarMaximum);
         }
 
         protected override void GetOutput()

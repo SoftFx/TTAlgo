@@ -17,12 +17,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Ichimoku
             InpSenkou = inpSenkou;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("InpTenkan", InpTenkan);
-            SetBuilderParameter("InpKijun", InpKijun);
-            SetBuilderParameter("InpSenkou", InpSenkou);
+            SetParameter("InpTenkan", InpTenkan);
+            SetParameter("InpKijun", InpKijun);
+            SetParameter("InpSenkou", InpSenkou);
         }
 
         protected override void GetOutput()

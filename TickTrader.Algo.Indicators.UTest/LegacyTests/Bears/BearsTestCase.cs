@@ -13,10 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bears
             BearsPeriod = bearsPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("BearsPeriod", BearsPeriod);
+            SetParameter("BearsPeriod", BearsPeriod);
         }
 
         public override void InvokeFullBuildTest()

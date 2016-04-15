@@ -12,10 +12,9 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             Period = period;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Period", Period);
+            SetParameter("Period", Period);
         }
 
         protected override void CheckAnswer()
@@ -34,10 +33,9 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             Period = period;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Period", Period);
+            SetParameter("Period", Period);
         }
 
         protected override void CheckAnswer()

@@ -17,12 +17,12 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.MovingAverageOscilla
             MacdSma = macdSma;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("FastEma", FastEma);
-            SetBuilderParameter("SlowEma", SlowEma);
-            SetBuilderParameter("MacdSma", MacdSma);
+            base.SetupParameters();
+            SetParameter("FastEma", FastEma);
+            SetParameter("SlowEma", SlowEma);
+            SetParameter("MacdSma", MacdSma);
         }
 
         protected override void GetOutput()

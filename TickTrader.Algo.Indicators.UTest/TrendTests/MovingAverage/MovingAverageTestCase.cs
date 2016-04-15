@@ -14,10 +14,10 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
             SmoothFactor = smoothFactor;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("SmoothFactor", SmoothFactor);
+            base.SetupParameters();
+            SetParameter("SmoothFactor", SmoothFactor);
         }
 
         protected override void GetOutput()

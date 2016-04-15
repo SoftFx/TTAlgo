@@ -22,12 +22,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bands
             Builder.MapBarInput("Close", Symbol, entity => entity.Close);
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("Period", Period);
-            SetBuilderParameter("Shift", Shift);
-            SetBuilderParameter("Deviations", Deviations);
+            SetParameter("Period", Period);
+            SetParameter("Shift", Shift);
+            SetParameter("Deviations", Deviations);
         }
 
         protected override void GetOutput()

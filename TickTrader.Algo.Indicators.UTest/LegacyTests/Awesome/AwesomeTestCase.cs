@@ -15,11 +15,10 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Awesome
             PeriodSlow = periodSlow;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            SetBuilderParameter("PeriodFast", PeriodFast);
-            SetBuilderParameter("PeriodSlow", PeriodSlow);
+            SetParameter("PeriodFast", PeriodFast);
+            SetParameter("PeriodSlow", PeriodSlow);
         }
 
         protected override void GetOutput()
