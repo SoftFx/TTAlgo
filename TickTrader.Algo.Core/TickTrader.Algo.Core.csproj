@@ -80,6 +80,7 @@
     <Compile Include="Metadata\OutputDescriptor.cs" />
     <Compile Include="Metadata\ParameterDescriptor.cs" />
     <Compile Include="Realtime\RealtimePluginExecutor.cs" />
+    <Compile Include="Realtime\SubscriptionManager.cs" />
     <Compile Include="Repository\AlgoAssembly.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Repository\AlgoSandbox.cs" />
