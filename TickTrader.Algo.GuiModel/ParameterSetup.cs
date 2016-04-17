@@ -140,6 +140,7 @@ namespace TickTrader.Algo.GuiModel
             {
                 this.value = value;
                 NotifyPropertyChanged("Value");
+                this.Error = null;
 
                 if (Converter != null)
                 {
