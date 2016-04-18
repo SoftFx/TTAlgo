@@ -18,21 +18,11 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        private Method _targetMethod;
-        [Parameter(DefaultValue = 0, DisplayName = "Method")]
-        public int TargetMethod
-        {
-            get { return (int)_targetMethod; }
-            set { _targetMethod = (Method)value; }
-        }
+        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
+        public Method TargetMethod { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -52,16 +42,16 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
             Bars = bars;
             Period = period;
             Shift = shift;
-            _targetMethod = targetMethod;
-            _targetPrice = targetPrice;
+            TargetMethod = targetMethod;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage.MovingAverage(Bars, Period, Shift, Method.Simple, _targetPrice);
-            _ma = new MovingAverage.MovingAverage(Bars, Period, Shift, _targetMethod, _targetPrice);
+            _sma = new MovingAverage.MovingAverage(Bars, Period, Shift, Method.Simple, TargetPrice);
+            _ma = new MovingAverage.MovingAverage(Bars, Period, Shift, TargetMethod, TargetPrice);
             _p2Sma = MABase.CreateMaInstance(Period, Method.Simple);
             _p2Sma.Init();
             _p2Shifter = new SimpleShifter(Shift);
@@ -75,7 +65,7 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         protected override void Calculate()
         {
-            var appliedPrice = AppliedPrice.Calculate(Bars[0], _targetPrice);
+            var appliedPrice = AppliedPrice.Calculate(Bars[0], TargetPrice);
             if (IsUpdate)
             {
                 _p2Sma.UpdateLast(appliedPrice*appliedPrice);

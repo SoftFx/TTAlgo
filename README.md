@@ -15,24 +15,24 @@ In order to compile project it is required to add NuGet Package Sources for
 
  - Trend
   	- [ ] [Average Directional Movement Index](https://intranet.fxopen.org/jira/browse/TTALGO-57)
-  	- [ ] [Bollinger Bands](https://intranet.fxopen.org/jira/browse/TTALGO-76) (extended version of Common/Bands)
-  	- [ ] [Envelopes](https://intranet.fxopen.org/jira/browse/TTALGO-58)
+  	- [x] [Bollinger Bands](https://intranet.fxopen.org/jira/browse/TTALGO-76) (extended version of Common/Bands)
+  	- [x] [Envelopes](https://intranet.fxopen.org/jira/browse/TTALGO-58)
   	- [ ] [Ichimoku Kinko Hyo](https://intranet.fxopen.org/jira/browse/TTALGO-77) (extended version of Common/Ichimoku)
-  	- [ ] [Moving Average](https://intranet.fxopen.org/jira/browse/TTALGO-78) (extended version of Common/Custom Moving Averages)
+  	- [x] [Moving Average](https://intranet.fxopen.org/jira/browse/TTALGO-78) (extended version of Common/Custom Moving Averages)
   	- [ ] [Parabolic SAR](https://intranet.fxopen.org/jira/browse/TTALGO-79) (extended version of Common/Parabolic)
-  	- [ ] [Standard Deviation](https://intranet.fxopen.org/jira/browse/TTALGO-59)
+  	- [x] [Standard Deviation](https://intranet.fxopen.org/jira/browse/TTALGO-59)
  - Oscillators
- 	- [ ] [Average True Range](https://intranet.fxopen.org/jira/browse/TTALGO-60)
- 	- [ ] [Bears Power](https://intranet.fxopen.org/jira/browse/TTALGO-80) (extended version of Common/Bears)
- 	- [ ] [Bulls Power](https://intranet.fxopen.org/jira/browse/TTALGO-81) (extended version of Common/Bulls)
- 	- [ ] [Commodity Channel Index](https://intranet.fxopen.org/jira/browse/TTALGO-61)
- 	- [ ] [DeMarker](https://intranet.fxopen.org/jira/browse/TTALGO-62)
- 	- [ ] [Force Index](https://intranet.fxopen.org/jira/browse/TTALGO-63)
- 	- [ ] [MACD](https://intranet.fxopen.org/jira/browse/TTALGO-82) (extended version of Common/MACD)
- 	- [ ] [Momentum](https://intranet.fxopen.org/jira/browse/TTALGO-83) (extended version of Common/Momentum)
- 	- [ ] [Moving Average of Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-64)
- 	- [ ] [Relative Strength Index](https://intranet.fxopen.org/jira/browse/TTALGO-65)
- 	- [ ] [Relative Vigor Index](https://intranet.fxopen.org/jira/browse/TTALGO-66)
+ 	- [x] [Average True Range](https://intranet.fxopen.org/jira/browse/TTALGO-60)
+ 	- [x] [Bears Power](https://intranet.fxopen.org/jira/browse/TTALGO-80) (extended version of Common/Bears)
+ 	- [x] [Bulls Power](https://intranet.fxopen.org/jira/browse/TTALGO-81) (extended version of Common/Bulls)
+ 	- [x] [Commodity Channel Index](https://intranet.fxopen.org/jira/browse/TTALGO-61)
+ 	- [x] [DeMarker](https://intranet.fxopen.org/jira/browse/TTALGO-62)
+ 	- [x] [Force Index](https://intranet.fxopen.org/jira/browse/TTALGO-63)
+ 	- [x] [MACD](https://intranet.fxopen.org/jira/browse/TTALGO-82) (extended version of Common/MACD)
+ 	- [x] [Momentum](https://intranet.fxopen.org/jira/browse/TTALGO-83) (extended version of Common/Momentum)
+ 	- [x] [Moving Average of Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-64)
+ 	- [x] [Relative Strength Index](https://intranet.fxopen.org/jira/browse/TTALGO-65)
+ 	- [x] [Relative Vigor Index](https://intranet.fxopen.org/jira/browse/TTALGO-66)
  	- [ ] [Stochastic Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-84) (extended version of Common/Stochastic)
  	- [ ] [Williams' Percent Range](https://intranet.fxopen.org/jira/browse/TTALGO-67)
  - Volumes
@@ -42,10 +42,10 @@ In order to compile project it is required to add NuGet Package Sources for
  	- [ ] [Volumes](https://intranet.fxopen.org/jira/browse/TTALGO-70)
  - Bill Williams
  	- [ ] [Accelerator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-86) (extended version of Common/Accelerator)
- 	- [ ] [Alligator](https://intranet.fxopen.org/jira/browse/TTALGO-87) (extended version of Common/Alligator)
+ 	- [x] [Alligator](https://intranet.fxopen.org/jira/browse/TTALGO-87) (extended version of Common/Alligator)
  	- [ ] [Awesome Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-88) (extended version of Common/Awesome)
  	- [ ] [Fractals](https://intranet.fxopen.org/jira/browse/TTALGO-71)
- 	- [ ] [Gator Oscillators](https://intranet.fxopen.org/jira/browse/TTALGO-72)
+ 	- [ ] [Gator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-72)
  	- [ ] [Market Facilitation Index](https://intranet.fxopen.org/jira/browse/TTALGO-73)
  - Common
 	 - [x] Accelerator
@@ -77,6 +77,8 @@ In order to compile project it is required to add NuGet Package Sources for
  - Median = 4
  - Typical = 5
  - Weighted = 6
+ - Move = 7 (Close - Open)
+ - Range = 8 (High - Low)
 
 ## Moving Average methods
  - Simple = 0

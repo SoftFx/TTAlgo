@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.CCI
@@ -14,15 +13,14 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.CCI
             CciPeriod = cciPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("CCIPeriod", CciPeriod);
+            SetParameter("CCIPeriod", CciPeriod);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtCCIBuffer"));
+            PutOutputToBuffer("ExtCCIBuffer", 0);
         }
     }
 }

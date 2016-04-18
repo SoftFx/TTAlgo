@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
     [TestClass]
     public class MovingAverageTest : TestBase
     {
-        private void TestMeasures(string symbol, string timeframe, int period, int shift, double smoothFactor = 0.0)
+        private void TestMeasures(string symbol, string timeframe, int period, int shift, double smoothFactor = double.NaN)
         {
             var dir = PathHelper.MeasuresDir("Trend", "MovingAverage");
             var test = new MovingAverageTestCase(typeof (Trend.MovingAverage.MovingAverage), symbol,

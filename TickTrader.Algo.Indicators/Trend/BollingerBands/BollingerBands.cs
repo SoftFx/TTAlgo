@@ -18,13 +18,8 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
         [Parameter(DefaultValue = 2.0, DisplayName = "Deviations")]
         public double Deviations { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -48,14 +43,14 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
             Bars = bars;
             Period = period;
             Shift = shift;
-            _targetPrice = targetPrice;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _stdDev = new StandardDeviation.StandardDeviation(Bars, Period, Shift, Method.Simple, _targetPrice);
+            _stdDev = new StandardDeviation.StandardDeviation(Bars, Period, Shift, Method.Simple, TargetPrice);
         }
 
         protected override void Init()

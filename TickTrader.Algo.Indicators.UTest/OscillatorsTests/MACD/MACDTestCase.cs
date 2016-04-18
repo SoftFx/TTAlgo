@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.MACD
@@ -11,26 +10,25 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.MACD
         public int MacdSma { get; protected set; }
 
         public MacdTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int fastEma,
-            int slowEma, int macdSma) : base(indicatorType, symbol, quotesPath, answerPath, 16, 7, 0, 0)
+            int slowEma, int macdSma) : base(indicatorType, symbol, quotesPath, answerPath, 16, 7)
         {
             FastEma = fastEma;
             SlowEma = slowEma;
             MacdSma = macdSma;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            Builder.MainSymbol = Symbol;
-            Builder.SetParameter("TargetPrice", TargetPrice);
-            Builder.SetParameter("FastEma", FastEma);
-            Builder.SetParameter("SlowEma", SlowEma);
-            Builder.SetParameter("MacdSma", MacdSma);
+            base.SetupParameters();
+            SetParameter("FastEma", FastEma);
+            SetParameter("SlowEma", SlowEma);
+            SetParameter("MacdSma", MacdSma);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("MacdSeries"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("Signal"));
+            PutOutputToBuffer("MacdSeries", 0);
+            PutOutputToBuffer("Signal", 1);
         }
     }
 }

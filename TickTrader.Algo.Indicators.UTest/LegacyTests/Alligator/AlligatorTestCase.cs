@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Alligator
@@ -25,15 +24,14 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Alligator
             InpLipsShift = inpLipsShift;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("InpJawsPeriod", InpJawsPeriod);
-            Builder.SetParameter("InpJawsShift", InpJawsShift);
-            Builder.SetParameter("InpTeethPeriod", InpTeethPeriod);
-            Builder.SetParameter("InpTeethShift", InpTeethShift);
-            Builder.SetParameter("InpLipsPeriod", InpLipsPeriod);
-            Builder.SetParameter("InpLipsShift", InpLipsShift);
+            SetParameter("InpJawsPeriod", InpJawsPeriod);
+            SetParameter("InpJawsShift", InpJawsShift);
+            SetParameter("InpTeethPeriod", InpTeethPeriod);
+            SetParameter("InpTeethShift", InpTeethShift);
+            SetParameter("InpLipsPeriod", InpLipsPeriod);
+            SetParameter("InpLipsShift", InpLipsShift);
         }
 
         public override void InvokeFullBuildTest()
@@ -50,9 +48,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Alligator
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtBlueBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtRedBuffer"));
-            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("ExtLimeBuffer"));
+            PutOutputToBuffer("ExtBlueBuffer", 0);
+            PutOutputToBuffer("ExtRedBuffer", 1);
+            PutOutputToBuffer("ExtLimeBuffer", 2);
         }
     }
 }

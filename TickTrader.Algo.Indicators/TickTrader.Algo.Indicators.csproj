@@ -45,7 +45,12 @@
     <Compile Include="Awesome\Awesome.cs" />
     <Compile Include="Bands\Bands.cs" />
     <Compile Include="Bears\Bears.cs" />
+    <Compile Include="BillWilliams\AcceleratorOscillator\AcceleratorOscillator.cs" />
     <Compile Include="BillWilliams\Alligator\Alligator.cs" />
+    <Compile Include="BillWilliams\AwesomeOscillator\AwesomeOscillator.cs" />
+    <Compile Include="BillWilliams\Fractals\Fractals.cs" />
+    <Compile Include="BillWilliams\GatorOscillator\GatorOscillator.cs" />
+    <Compile Include="BillWilliams\MarketFacilitationIndex\MarketFacilitationIndex.cs" />
     <Compile Include="Bulls\Bulls.cs" />
     <Compile Include="CCI\CCI.cs" />
     <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />

@@ -12,9 +12,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accumulation
         {
         }
 
+        protected override void SetupParameters() { }
+
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtADBuffer"));
+            PutOutputToBuffer("ExtADBuffer", 0);
         }
 
         protected override void CheckAnswerUnit(int index, List<double>[] metaAnswer)

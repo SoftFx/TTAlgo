@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Ichimoku
@@ -18,23 +17,22 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Ichimoku
             InpSenkou = inpSenkou;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("InpTenkan", InpTenkan);
-            Builder.SetParameter("InpKijun", InpKijun);
-            Builder.SetParameter("InpSenkou", InpSenkou);
+            SetParameter("InpTenkan", InpTenkan);
+            SetParameter("InpKijun", InpKijun);
+            SetParameter("InpSenkou", InpSenkou);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtTenkanBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtKijunBuffer"));
-            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("ExtSpanA_Buffer"));
-            AnswerBuffer[3] = new List<double>(Builder.GetOutput<double>("ExtSpanB_Buffer"));
-            AnswerBuffer[4] = new List<double>(Builder.GetOutput<double>("ExtChikouBuffer"));
-            AnswerBuffer[5] = new List<double>(Builder.GetOutput<double>("ExtSpanA2_Buffer"));
-            AnswerBuffer[6] = new List<double>(Builder.GetOutput<double>("ExtSpanB2_Buffer"));
+            PutOutputToBuffer("ExtTenkanBuffer", 0);
+            PutOutputToBuffer("ExtKijunBuffer", 1);
+            PutOutputToBuffer("ExtSpanA_Buffer", 2);
+            PutOutputToBuffer("ExtSpanB_Buffer", 3);
+            PutOutputToBuffer("ExtChikouBuffer", 4);
+            PutOutputToBuffer("ExtSpanA2_Buffer", 5);
+            PutOutputToBuffer("ExtSpanB2_Buffer", 6);
         }
     }
 }

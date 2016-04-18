@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Core
         public AccountEntity Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
+        public IReadOnlyDictionary<string, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
         public InputBuffer<T> GetBuffer<T>(string bufferId)
         {

@@ -9,31 +9,35 @@ using System.Threading.Tasks.Dataflow;
 namespace Machinarium.ActorModel
 {
     public class ActorCore
-    {
-        private SynchronizationContext context;
+    {   
         private ActionBlock<Action> block;
 
         public ActorCore(ActorContextOptions contextOption = ActorContextOptions.OwnContext)
         {
             Action<Action> msgHandler = a =>
             {
-                SynchronizationContext.SetSynchronizationContext(context);
+                SynchronizationContext.SetSynchronizationContext(Context);
                 a();
+                AfterHandler();
             };
 
             if (contextOption == ActorContextOptions.OwnContext)
             {
                 block = new ActionBlock<Action>(msgHandler);
-                context = new ActorSynchronizationContext(block);
+                Context = new ActorSynchronizationContext(block);
             }
             else if (contextOption == ActorContextOptions.InheritContext)
             {
                 var options = new ExecutionDataflowBlockOptions() { TaskScheduler = TaskScheduler.FromCurrentSynchronizationContext() };
                 block = new ActionBlock<Action>(msgHandler, options);
 
-                this.context = SynchronizationContext.Current;
+                this.Context = SynchronizationContext.Current;
             }
         }
+
+        protected SynchronizationContext Context { get; private set; }
+
+        protected virtual void AfterHandler() { }
 
         public void Enqueue(Action actorAction)
         {

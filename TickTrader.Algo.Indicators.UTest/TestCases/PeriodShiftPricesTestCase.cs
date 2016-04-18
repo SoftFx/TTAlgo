@@ -2,30 +2,31 @@
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
 {
-    public abstract class SimplePricesTestCase<TAns> : SimpleTestCase<TAns>
+    public abstract class PeriodShiftPricesTestCase<TAns> : PeriodShiftTestCase<TAns>
     {
         protected int PricesCount;
 
         public int TargetPrice { get; protected set; }
 
-        protected SimplePricesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int answerUnitSize, int pricesCount) : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize)
+        protected PeriodShiftPricesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
+            int answerUnitSize, int period, int shift, int pricesCount)
+            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize, period, shift)
         {
             PricesCount = pricesCount;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("TargetPrice", TargetPrice);
+            base.SetupParameters();
+            SetParameter("TargetPrice", TargetPrice);
         }
 
         protected override void LaunchTest(Action runAction)
         {
-            Setup();
             for (var i = 0; i < PricesCount; i++)
             {
                 TargetPrice = i;
+                Setup();
                 InvokeLaunchTest(runAction);
             }
         }
@@ -36,26 +37,23 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         }
     }
 
-    public abstract class SimplePricesTestCase : SimpleTestCase
+    public abstract class PeriodShiftPricesTestCase : PeriodShiftTestCase
     {
         protected int PricesCount;
 
         public int TargetPrice { get; protected set; }
-        public int Period { get; protected set; }
 
-        protected SimplePricesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int period, int answerUnitSize, int pricesCount)
-            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize)
+        protected PeriodShiftPricesTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
+            int answerUnitSize, int period, int shift, int pricesCount)
+            : base(indicatorType, symbol, quotesPath, answerPath, answerUnitSize, period, shift)
         {
             PricesCount = pricesCount;
-            Period = period;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("TargetPrice", TargetPrice);
-            Builder.SetParameter("Period", Period);
+            base.SetupParameters();
+            SetParameter("TargetPrice", TargetPrice);
         }
 
         protected override void LaunchTest(Action runAction)

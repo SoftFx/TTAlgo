@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accelerator
@@ -18,19 +17,18 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Accelerator
             DataLimit = dataLimit;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("PeriodFast", PeriodFast);
-            Builder.SetParameter("PeriodSlow", PeriodSlow);
-            Builder.SetParameter("DataLimit", DataLimit);
+            SetParameter("PeriodFast", PeriodFast);
+            SetParameter("PeriodSlow", PeriodSlow);
+            SetParameter("DataLimit", DataLimit);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtACBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtUpBuffer"));
-            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("ExtDnBuffer"));
+            PutOutputToBuffer("ExtACBuffer", 0);
+            PutOutputToBuffer("ExtUpBuffer", 1);
+            PutOutputToBuffer("ExtDnBuffer", 2);
         }
     }
 }

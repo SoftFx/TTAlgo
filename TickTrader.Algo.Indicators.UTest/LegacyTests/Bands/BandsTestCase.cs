@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bands
@@ -23,19 +22,18 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bands
             Builder.MapBarInput("Close", Symbol, entity => entity.Close);
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("Period", Period);
-            Builder.SetParameter("Shift", Shift);
-            Builder.SetParameter("Deviations", Deviations);
+            SetParameter("Period", Period);
+            SetParameter("Shift", Shift);
+            SetParameter("Deviations", Deviations);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtMovingBuffer"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("ExtUpperBuffer"));
-            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("ExtLowerBuffer"));
+            PutOutputToBuffer("ExtMovingBuffer", 0);
+            PutOutputToBuffer("ExtUpperBuffer", 1);
+            PutOutputToBuffer("ExtLowerBuffer", 2);
         }
     }
 }

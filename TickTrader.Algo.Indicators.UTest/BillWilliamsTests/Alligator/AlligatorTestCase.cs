@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
@@ -15,7 +14,7 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
 
         public AlligatorTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int jawsPeriod,
             int jawsShift, int teethPeriod, int teethShift, int lipsPeriod, int lipsShift)
-            : base(indicatorType, symbol, quotesPath, answerPath, 24, 4, 7, 0, 0)
+            : base(indicatorType, symbol, quotesPath, answerPath, 24, 4, 7)
         {
             JawsPeriod = jawsPeriod;
             JawsShift = jawsShift;
@@ -25,24 +24,22 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Alligator
             LipsShift = lipsShift;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            Builder.MainSymbol = Symbol;
-            Builder.SetParameter("TargetMethod", TargetMethod);
-            Builder.SetParameter("TargetPrice", TargetPrice);
-            Builder.SetParameter("JawsPeriod", JawsPeriod);
-            Builder.SetParameter("JawsShift", JawsShift);
-            Builder.SetParameter("TeethPeriod", TeethPeriod);
-            Builder.SetParameter("TeethShift", TeethShift);
-            Builder.SetParameter("LipsPeriod", LipsPeriod);
-            Builder.SetParameter("LipsShift", LipsShift);
+            base.SetupParameters();
+            SetParameter("JawsPeriod", JawsPeriod);
+            SetParameter("JawsShift", JawsShift);
+            SetParameter("TeethPeriod", TeethPeriod);
+            SetParameter("TeethShift", TeethShift);
+            SetParameter("LipsPeriod", LipsPeriod);
+            SetParameter("LipsShift", LipsShift);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Jaws"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("Teeth"));
-            AnswerBuffer[2] = new List<double>(Builder.GetOutput<double>("Lips"));
+            PutOutputToBuffer("Jaws", 0);
+            PutOutputToBuffer("Teeth", 1);
+            PutOutputToBuffer("Lips", 2);
         }
     }
 }

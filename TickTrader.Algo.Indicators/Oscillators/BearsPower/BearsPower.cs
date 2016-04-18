@@ -12,13 +12,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
         [Parameter(DefaultValue = 13, DisplayName = "Period")]
         public int Period { get; set; }
 
-        private AppliedPrice.Target _targetPrice;
-        [Parameter(DefaultValue = 0, DisplayName = "Apply To")]
-        public int TargetPrice
-        {
-            get { return (int)_targetPrice; }
-            set { _targetPrice = (AppliedPrice.Target)value; }
-        }
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
         public DataSeries<Bar> Bars { get; set; }
@@ -34,14 +29,14 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
         {
             Bars = bars;
             Period = period;
-            _targetPrice = targetPrice;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _ema = new MovingAverage(Bars, Period, 0, Method.Exponential, _targetPrice);
+            _ema = new MovingAverage(Bars, Period, 0, Method.Exponential, TargetPrice);
         }
 
         protected override void Init()

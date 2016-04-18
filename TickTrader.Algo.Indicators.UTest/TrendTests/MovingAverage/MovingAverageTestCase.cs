@@ -1,29 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.TrendTests.MovingAverage
 {
-    public class MovingAverageTestCase : MethodsPricesTestCase
+    public class MovingAverageTestCase : PeriodShiftMethodsPricesTestCase
     {
         public double SmoothFactor { get; protected set; }
 
         public MovingAverageTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period,
-            int shift, double smoothFactor = 0.0)
-            : base(indicatorType, symbol, quotesPath, answerPath, 8, 4, 7, period, shift)
+            int shift, double smoothFactor = double.NaN)
+            : base(indicatorType, symbol, quotesPath, answerPath, 8, period, shift, 4, 7)
         {
             SmoothFactor = smoothFactor;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("SmoothFactor", SmoothFactor);
+            base.SetupParameters();
+            SetParameter("SmoothFactor", SmoothFactor);
         }
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Average"));
+            PutOutputToBuffer("Average", 0);
         }
     }
 }

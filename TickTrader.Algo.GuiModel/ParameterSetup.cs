@@ -15,6 +15,8 @@ namespace TickTrader.Algo.GuiModel
 
             if (descriptor.Error != null)
                 newParam = new AlgoInvalidParameter(new GuiModelMsg(descriptor.Error.Value));
+            else if (descriptor.IsEnum)
+                newParam = new EnumParamSetup();
             else
                 newParam = CreateByType(descriptor.DataType);
 
@@ -60,6 +62,57 @@ namespace TickTrader.Algo.GuiModel
         internal override UiConverter<string> Converter { get { return UiConverter.String; } }
     }
 
+    public class EnumParamSetup : ParameterSetup
+    {
+        private EnumValueDescriptor selected;
+
+        public EnumValueDescriptor SelectedValue
+        {
+            get { return selected; }
+            set
+            {
+                selected = value;
+                ValueObj = value.Value;
+                ValueStr = value.Name;
+
+                NotifyPropertyChanged("SelectedValue");
+                NotifyPropertyChanged("Value");
+            }
+        }
+
+        public List<EnumValueDescriptor> EnumValues { get; private set; }   
+        public EnumValueDescriptor DefaultValue { get; private set; }
+        public override object ValueObj { get; set; }
+        public override string ValueStr { get; set; }
+
+        public override void CopyFrom(PropertySetupBase srcProperty)
+        {
+            var typedSrcProperty = srcProperty as EnumParamSetup;
+            if (typedSrcProperty != null)
+            {
+                var upToDateValue = ((ParameterDescriptor)Descriptor).EnumValues.First(e => e.Value == typedSrcProperty.ValueObj);
+                if (upToDateValue != null)
+                    SelectedValue = upToDateValue;
+            }
+        }
+
+        internal override void SetMetadata(ParameterDescriptor descriptor)
+        {
+            base.SetMetadata(descriptor);
+
+            EnumValues = descriptor.EnumValues;
+            if (descriptor.DefaultValue != null)
+                DefaultValue = descriptor.EnumValues.FirstOrDefault(ev => ev.Name == descriptor.DefaultValue.ToString());
+            if (DefaultValue == null)
+                DefaultValue = descriptor.EnumValues.FirstOrDefault();
+        }
+
+        public override void Reset()
+        {
+            SelectedValue = DefaultValue;
+        }
+    }
+
     public class ParameterSetup<T> : ParameterSetup
     {
         private T value;
@@ -87,6 +140,7 @@ namespace TickTrader.Algo.GuiModel
             {
                 this.value = value;
                 NotifyPropertyChanged("Value");
+                this.Error = null;
 
                 if (Converter != null)
                 {

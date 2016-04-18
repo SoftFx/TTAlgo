@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bulls
@@ -14,10 +13,9 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bulls
             BullsPeriod = bullsPeriod;
         }
 
-        protected override void SetupBuilder()
+        protected override void SetupParameters()
         {
-            base.SetupBuilder();
-            Builder.SetParameter("BullsPeriod", BullsPeriod);
+            SetParameter("BullsPeriod", BullsPeriod);
         }
 
         public override void InvokeFullBuildTest()
@@ -34,7 +32,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Bulls
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("ExtBullsBuffer"));
+            PutOutputToBuffer("ExtBullsBuffer", 0);
         }
     }
 }

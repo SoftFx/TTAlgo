@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeVigorIndex
@@ -13,8 +12,8 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeVigorIndex
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("RviAverage"));
-            AnswerBuffer[1] = new List<double>(Builder.GetOutput<double>("Signal"));
+            PutOutputToBuffer("RviAverage", 0);
+            PutOutputToBuffer("Signal", 1);
         }
     }
 }

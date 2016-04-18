@@ -5,18 +5,20 @@
         private SMA _innerSma;
         private SMA _outerSma;
 
-        public int SmaPeriod { get; private set; }
+        public int InnerSmaPeriod { get; private set; }
+        public int OuterSmaPeriod { get; private set; }
 
         public TriMA(int period) : base(period)
         {
-            SmaPeriod = (Period + Period % 2) / 2;
+            InnerSmaPeriod = (Period + Period%2)/2 + 1 - Period%2;
+            OuterSmaPeriod = (Period + Period%2)/2;
         }
 
         public override void Init()
         {
             base.Init();
-            _innerSma = new SMA(SmaPeriod);
-            _outerSma = new SMA(SmaPeriod);
+            _innerSma = new SMA(InnerSmaPeriod);
+            _outerSma = new SMA(OuterSmaPeriod);
             _innerSma.Init();
             _outerSma.Init();
         }
@@ -24,8 +26,8 @@
         public override void Reset()
         {
             base.Reset();
-            _innerSma = new SMA(SmaPeriod);
-            _outerSma = new SMA(SmaPeriod);
+            _innerSma = new SMA(InnerSmaPeriod);
+            _outerSma = new SMA(OuterSmaPeriod);
             _innerSma.Init();
             _outerSma.Init();
         }
@@ -35,7 +37,7 @@
             _innerSma.Add(value);
             if (!double.IsNaN(_innerSma.Average))
             {
-                _outerSma.Add(value);
+                _outerSma.Add(_innerSma.Average);
             }
         }
 
@@ -44,7 +46,7 @@
             _innerSma.UpdateLast(value);
             if (!double.IsNaN(_innerSma.Average))
             {
-                _outerSma.UpdateLast(value);
+                _outerSma.UpdateLast(_innerSma.Average);
             }
         }
 

@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.CommodityChannelIndex
 {
-    public class CommodityChannelIndexTestCase : SimplePricesTestCase
+    public class CommodityChannelIndexTestCase : PeriodPricesTestCase
     {
         public CommodityChannelIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int period) : base(indicatorType, symbol, quotesPath, answerPath, period, 8, 7)
+            int period) : base(indicatorType, symbol, quotesPath, answerPath, 8, period, 7)
         {
 
         }
@@ -26,7 +25,7 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.CommodityChannelInde
 
         protected override void GetOutput()
         {
-            AnswerBuffer[0] = new List<double>(Builder.GetOutput<double>("Cci"));
+            PutOutputToBuffer("Cci", 0);
         }
     }
 }

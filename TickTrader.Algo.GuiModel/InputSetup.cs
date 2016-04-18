@@ -17,13 +17,29 @@ namespace TickTrader.Algo.GuiModel
 
     public abstract class BarInputSetup : InputSetup
     {
+        private string selectedSymbol;
+
         public BarInputSetup(InputDescriptor descriptor, string symbolCode)
         {
             SetMetadata(descriptor);
             SymbolCode = symbolCode;
+            AvailableSymbols = new string[] { symbolCode };
+            HasChoice = false;
         }
 
-        public string SymbolCode { get; private set; }
+        public string SymbolCode
+        {
+            get { return selectedSymbol; }
+            set
+            {
+                selectedSymbol = value;
+                NotifyPropertyChanged(nameof(SymbolCode));
+            }
+        }
+
+        public IEnumerable<string> AvailableSymbols { get; private set; }
+        public bool HasChoice { get; private set; }
+
         public abstract void Configure(IndicatorBuilder builder);
 
         public class Invalid : BarInputSetup
@@ -49,31 +65,68 @@ namespace TickTrader.Algo.GuiModel
             }
         }
 
-        public class BarToDouble : BarInputSetup
-        {
-            public BarToDouble(InputDescriptor descriptor, string symbolCode)
-                : base(descriptor, symbolCode)
-            {
-                SetMetadata(descriptor);
-            }
+        public enum BarToDoubleMappings { Open, Close, High, Low, Mean }
+    }
 
-            public override void Configure(IndicatorBuilder builder)
+    public class BarToBarInput : BarInputSetup
+    {
+        public BarToBarInput(InputDescriptor descriptor, string symbolCode)
+            : base(descriptor, symbolCode)
+        {
+            SetMetadata(descriptor);
+        }
+
+        public override void Configure(IndicatorBuilder builder)
+        {
+            builder.MapBarInput(Descriptor.Id, SymbolCode);
+        }
+    }
+
+    public class BarToDoubleInput : BarInputSetup
+    {
+        private BarToDoubleMappings mapping;
+
+        public BarToDoubleInput(InputDescriptor descriptor, string symbolCode)
+            : base(descriptor, symbolCode)
+        {
+            SetMetadata(descriptor);
+
+            this.AvailableMappings = Enum.GetValues(typeof(BarToDoubleMappings)).Cast<BarToDoubleMappings>();
+        }
+
+        public BarToDoubleMappings Mapping
+        {
+            get { return mapping; }
+            set
             {
-                builder.MapBarInput(Descriptor.Id, SymbolCode, b => b.High);
+                this.mapping = value;
+                NotifyPropertyChanged(nameof(Mapping));
             }
         }
 
-        public class BarToBar : BarInputSetup
-        {
-            public BarToBar(InputDescriptor descriptor, string symbolCode)
-                : base(descriptor, symbolCode)
-            {
-                SetMetadata(descriptor);
-            }
+        public IEnumerable<BarToDoubleMappings> AvailableMappings { get; private set; }
 
-            public override void Configure(IndicatorBuilder builder)
+        public override void Configure(IndicatorBuilder builder)
+        {
+            builder.MapBarInput(Descriptor.Id, SymbolCode, GetSelector());
+        }
+
+        public override void Reset()
+        {
+            this.Mapping = BarToDoubleMappings.High;
+        }
+
+        private Func<BarEntity, double> GetSelector()
+        {
+            switch (Mapping)
             {
-                builder.MapBarInput(Descriptor.Id, SymbolCode);
+                case BarToDoubleMappings.Open: return b => b.Open;
+                case BarToDoubleMappings.Close: return b => b.Close;
+                case BarToDoubleMappings.High: return b => b.High;
+                case BarToDoubleMappings.Low: return b => b.Low;
+                case BarToDoubleMappings.Mean: return b => (b.High + b.Low) / 2;
+
+                default: throw new Exception("Unknown mapping variant: " + Mapping);
             }
         }
     }

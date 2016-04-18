@@ -6,12 +6,12 @@ namespace TickTrader.Algo.Indicators.Utility
     {
         public enum Target
         {
-            Close, Open, High, Low, Median, Typical, Weighted
+            Close, Open, High, Low, Median, Typical, Weighted, Move, Range
         }
 
         public static double Calculate(Bar bar, Target target)
         {
-            double res = double.NaN;
+            var res = double.NaN;
 
             switch (target)
             {
@@ -35,6 +35,12 @@ namespace TickTrader.Algo.Indicators.Utility
                     break;
                 case Target.Weighted:
                     res = (bar.High + bar.Low + 2*bar.Close)/4;
+                    break;
+                case Target.Move:
+                    res = bar.Close - bar.Open;
+                    break;
+                case Target.Range:
+                    res = bar.High - bar.Low;
                     break;
             }
 
