@@ -65,7 +65,7 @@ namespace TickTrader.Algo.GuiModel
             }
         }
 
-        public enum BarToDoubleMappings { Open, Close, High, Low, Mean }
+        public enum BarToDoubleMappings { Open, Close, High, Low, Median, Typical, Weighted, Move, Range }
     }
 
     public class BarToBarInput : BarInputSetup
@@ -124,8 +124,11 @@ namespace TickTrader.Algo.GuiModel
                 case BarToDoubleMappings.Close: return b => b.Close;
                 case BarToDoubleMappings.High: return b => b.High;
                 case BarToDoubleMappings.Low: return b => b.Low;
-                case BarToDoubleMappings.Mean: return b => (b.High + b.Low) / 2;
-
+                case BarToDoubleMappings.Median: return b => (b.High + b.Low) / 2;
+                case BarToDoubleMappings.Typical: return b => (b.High + b.Low + b.Close) / 3;
+                case BarToDoubleMappings.Weighted: return b => (b.High + b.Low + b.Close * 2) / 4;
+                case BarToDoubleMappings.Move: return b => b.Close - b.Open;
+                case BarToDoubleMappings.Range: return b => b.High - b.Low;
                 default: throw new Exception("Unknown mapping variant: " + Mapping);
             }
         }

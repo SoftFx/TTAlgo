@@ -4,7 +4,7 @@
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         xmlns:am="clr-namespace:TickTrader.Algo.GuiModel;assembly=TickTrader.Algo.GuiModel"
         Title="IndicatorSetupView"
-        Height="300" Width="300"
+        Height="300" Width="340"
         Style="{StaticResource Dialog_Style}"
         ResizeMode="NoResize">
     
@@ -169,7 +169,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="55" />
+                    <ColumnDefinition Width="65" />
                 </Grid.ColumnDefinitions>
 
                 <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
