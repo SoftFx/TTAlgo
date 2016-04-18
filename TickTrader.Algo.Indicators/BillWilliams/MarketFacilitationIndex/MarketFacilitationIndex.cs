@@ -5,6 +5,11 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
     [Indicator(Category = "Bill Williams", DisplayName = "Bill Williams/Market Facilitation Index")]
     public class MarketFacilitationIndex : Indicator
     {
+        private bool _volumeUp, _mfiUp;
+
+        [Parameter(DisplayName = "Point Size", DefaultValue = 10e4)]
+        public double PointSize { get; set; }
+
         [Input]
         public DataSeries<Bar> Bars { get; set; }
 
@@ -24,16 +29,18 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
 
         public MarketFacilitationIndex() { }
 
-        public MarketFacilitationIndex(DataSeries<Bar> bars)
+        public MarketFacilitationIndex(DataSeries<Bar> bars, double pointSize)
         {
             Bars = bars;
+            PointSize = pointSize;
 
             InitializeIndicator();
         }
 
         private void InitializeIndicator()
         {
-
+            _mfiUp = true;
+            _volumeUp = true;
         }
 
         protected override void Init()
@@ -43,7 +50,36 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            var i = LastPositionChanged;
+            MfiUpVolumeUp[i] = double.NaN;
+            MfiDownVolumeDown[i] = double.NaN;
+            MfiUpVolumeDown[i] = double.NaN;
+            MfiDownVolumeUp[i] = double.NaN;
+            var val = (Bars[i].High - Bars[i].Low)/Bars[i].Volume;
+            if (Bars.Count > 1)
+            {
+                var prev = (Bars[i + 1].High - Bars[i + 1].Low)/Bars[i + 1].Volume;
+                if (val > prev) { _mfiUp = true; }
+                if (val < prev) { _mfiUp = false; }
+                if (Bars[i].Volume > Bars[i+1].Volume) { _volumeUp = true; }
+                if (Bars[i].Volume < Bars[i+1].Volume) { _volumeUp = false; }
+            }
+            if (_mfiUp && _volumeUp)
+            {
+                MfiUpVolumeUp[i] = val*PointSize;
+            }
+            if (!_mfiUp && !_volumeUp)
+            {
+                MfiDownVolumeDown[i] = val*PointSize;
+            }
+            if (_mfiUp && !_volumeUp)
+            {
+                MfiUpVolumeDown[i] = val*PointSize;
+            }
+            if (!_mfiUp && _volumeUp)
+            {
+                MfiDownVolumeUp[i] = val*PointSize;
+            }
         }
     }
 }
