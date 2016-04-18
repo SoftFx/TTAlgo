@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
 {
-    [Indicator(Category = "Bill Williams", DisplayName = "Bill Williams/Fractals")]
+    [Indicator(IsOverlay = true, Category = "Bill Williams", DisplayName = "Bill Williams/Fractals")]
     public class Fractals : Indicator
     {
         [Input]
