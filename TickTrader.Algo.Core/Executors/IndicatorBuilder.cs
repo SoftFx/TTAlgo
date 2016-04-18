@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Core
         public void BuildNext(int count, CancellationToken cToken)
         {
             LazyInit();
+            pluginProxy.Coordinator.FireBeginBatch();
             for (int i = 0; i < count; i++)
             {
                 if (cToken.IsCancellationRequested)
@@ -40,6 +41,7 @@ namespace TickTrader.Algo.Core
                 pluginProxy.Coordinator.MoveNext();
                 pluginProxy.Calculate(false);
             }
+            pluginProxy.Coordinator.FireEndBatch();
         }
 
         public void RebuildLast()

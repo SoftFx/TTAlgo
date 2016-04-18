@@ -11,6 +11,8 @@ namespace TickTrader.Algo.Core
         public event Action BuffersExtended = delegate { };
         public event Action BuffersShifted = delegate { };
         public event Action BuffersCleared = delegate { };
+        public event Action BeginBatch = delegate { };
+        public event Action EndBatch = delegate { };
 
         public int VirtualPos { get; private set; }
         public int MaxBufferSize { get; set; }
@@ -24,6 +26,16 @@ namespace TickTrader.Algo.Core
                 VirtualPos++;
                 BuffersExtended();
             }
+        }
+
+        public void FireBeginBatch()
+        {
+            BeginBatch();
+        }
+
+        public void FireEndBatch()
+        {
+            EndBatch();
         }
 
         //public void Reset()
