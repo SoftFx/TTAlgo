@@ -5,12 +5,18 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.MarketFacilitationI
 {
     public class MarketFacilitationIndexTestCase : SimpleTestCase
     {
-        public MarketFacilitationIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath)
-            : base(indicatorType, symbol, quotesPath, answerPath, 32)
+        public double PointSize { get; protected set; }
+
+        public MarketFacilitationIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
+            double pointSize) : base(indicatorType, symbol, quotesPath, answerPath, 32)
         {
+            PointSize = pointSize;
         }
 
-        protected override void SetupParameters() { }
+        protected override void SetupParameters()
+        {
+            SetParameter("PointSize", PointSize);
+        }
 
         protected override void GetOutput()
         {
@@ -18,6 +24,11 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.MarketFacilitationI
             PutOutputToBuffer("MfiDownVolumeDown", 1);
             PutOutputToBuffer("MfiUpVolumeDown", 2);
             PutOutputToBuffer("MfiDownVolumeUp", 3);
+        }
+
+        protected override void CheckAnswer()
+        {
+            InvokeCheckAnswer($"{AnswerPath}.bin");
         }
     }
 }

@@ -17,5 +17,10 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.Fractals
             PutOutputToBuffer("FractalsUp", 0);
             PutOutputToBuffer("FractalsDown", 1);
         }
+
+        protected override void CheckAnswer()
+        {
+            InvokeCheckAnswer($"{AnswerPath}.bin");
+        }
     }
 }

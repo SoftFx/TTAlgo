@@ -17,5 +17,10 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.AwesomeOscillator
             PutOutputToBuffer("ValueUp", 0);
             PutOutputToBuffer("ValueDown", 1);
         }
+
+        protected override void CheckAnswer()
+        {
+            InvokeCheckAnswer($"{AnswerPath}.bin");
+        }
     }
 }
