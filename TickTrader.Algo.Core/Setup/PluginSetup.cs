@@ -40,6 +40,7 @@ namespace TickTrader.Algo.Core.Setup
         }
 
         public AlgoPluginDescriptor Descriptor { get; private set; }
+        public abstract PluginFeedBase BaseEntity { get; }
 
         protected abstract InputSetup CreateInputSetup(InputDescriptor descriptor);
 
@@ -103,12 +104,16 @@ namespace TickTrader.Algo.Core.Setup
         }
     }
 
+    public enum PluginFeedBase { Bars, Quotes }
+
     public class BarBasedPluginSetup : PluginSetup
     {
         public BarBasedPluginSetup(AlgoPluginDescriptor descriptor, ISetupMetadata metadata)
             : base(descriptor, metadata)
         {
         }
+
+        public override PluginFeedBase BaseEntity { get { return PluginFeedBase.Bars; } }
 
         protected override InputSetup CreateInputSetup(InputDescriptor descriptor)
         {
@@ -127,6 +132,8 @@ namespace TickTrader.Algo.Core.Setup
             : base(descriptor, metadata)
         {
         }
+
+        public override PluginFeedBase BaseEntity { get { return PluginFeedBase.Quotes; } }
 
         protected override InputSetup CreateInputSetup(InputDescriptor descriptor)
         {

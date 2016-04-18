@@ -10,9 +10,9 @@
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
 
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
-  
+
   <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.exe" unless="${property::exists('WinScpPath')}" />
-  
+
   <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
 
@@ -46,13 +46,13 @@
     <property name="MSBuild.Configuration" value="${Configuration}" />
     <property name="MSBuild.Platform" value="Any CPU" />
 
-    <if test="${MSBuild.Target=='Publish' and property::exists('Publish.User') and  property::exists('Publish.Password')}">      
+    <if test="${MSBuild.Target=='Publish' and property::exists('Publish.User') and  property::exists('Publish.Password')}">
       <exec program="net">
         <arg value="use" />
         <arg value="${PublishFolder}" />
         <arg value="${Publish.Password}" />
         <arg value="/USER:${Publish.User}" />
-    </exec>
+      </exec>
     </if>
 
     <exec program="${MSBuildDir}msbuild.exe" >
@@ -70,7 +70,7 @@
       <arg value="/p:InstallUrl=${InstallUrl}" />
       <arg value="/p:ApplicationVersion=${Build}" />
     </exec>
-    
+
   </target>
 
   <target name="GenerateSetupHmtl">
@@ -94,20 +94,38 @@
         <include name="**/*" />
       </fileset>
     </delete>
-  </target>  
+  </target>
 
   <target name="CreateBinPackage">
-    
-    <property name="BinDir" value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}" />
-    <property name="DestArchive" value="${OutpuFolder}BotTerminal ${Build}.zip" />
-    
-    <zip zipfile="${DestArchive}">
-      <fileset basedir="${BinDir}">
+
+    <property name="BotTerminalBinDir" value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}" />
+    <property name="BotTerminalDestArchive" value="${OutpuFolder}BotTerminal ${Build}.zip" />
+    <property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
+    <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
+    <property name="IndicatorsBinDir" value="${SourcesDir}TickTrader.Algo.Indicators\bin\${Configuration}" />
+    <property name="IndicatorsDestArchive" value="${OutpuFolder}Indicators ${Build}.zip" />
+
+    <zip zipfile="${BotTerminalDestArchive}">
+      <fileset basedir="${BotTerminalBinDir}">
         <include name ="*.*" />
         <include name ="**/*" />
       </fileset>
     </zip>
-    
+
+    <zip zipfile="${CoreDestArchive}">
+      <fileset basedir="${CoreBinDir}">
+        <include name ="*.*" />
+        <include name ="**/*" />
+      </fileset>
+    </zip>
+
+    <zip zipfile="${IndicatorsDestArchive}">
+      <fileset basedir="${IndicatorsBinDir}">
+        <include name ="*.*" />
+        <include name ="**/*" />
+      </fileset>
+    </zip>
+
   </target>
 
   <target name="FtpPublish">
@@ -119,5 +137,5 @@
       <arg value='"exit"' />
     </exec>
   </target>
-  
+
 </project>
