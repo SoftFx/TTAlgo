@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Core
             PluginProxy.SetParameter(paramName, value);
         }
 
-        public InputBuffer<BarEntity> GetBarSeries(string bufferId)
+        public InputBuffer<BarEntity> GetBarBuffer(string bufferId)
         {
             return GetBuffer<BarEntity>(bufferId);
         }

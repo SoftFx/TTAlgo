@@ -37,13 +37,15 @@ namespace TickTrader.Algo.CoreUsageSample
 
         protected override void Init()
         {
-            _jaws = new MovingAverage(Input.Mean, JawsPeriod);
-            _teeth = new MovingAverage(Input.Mean, TeethPeriod);
-            _lips = new MovingAverage(Input.Mean, LipsPeriod);
+            _jaws = new MovingAverage(Input.Median, JawsPeriod);
+            _teeth = new MovingAverage(Input.Median, TeethPeriod);
+            _lips = new MovingAverage(Input.Median, LipsPeriod);
         }
 
         protected override void Calculate()
         {
+            var data = Input.Move[0];
+
             Jaws[0] = _jaws.Output[0];
             Teeth[0] = _teeth.Output[0];
             Lips[0] = _lips.Output[0];
