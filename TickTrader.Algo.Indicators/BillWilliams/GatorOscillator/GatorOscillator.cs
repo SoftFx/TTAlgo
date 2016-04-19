@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -7,7 +8,9 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
     [Indicator(Category = "Bill Williams", DisplayName = "Bill Williams/Gator Oscillator")]
     public class GatorOscillator : Indicator
     {
-        private Alligator.Alligator _alligator;
+        private MovingAverage _jaws, _lips, _teethLips, _jawsTeeth;
+        private IShift _teethLipsUpShifter, _teethLipsDownShifter, _jawsTeethUpShiter, _jawsTeethDownShiter;
+        private bool _lipsUp, _jawsUp;
 
         [Parameter(DefaultValue = 13, DisplayName = "Jaws Period")]
         public int JawsPeriod { get; set; }
@@ -36,13 +39,19 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         [Input]
         public DataSeries<Bar> Bars { get; set; }
 
-        [Output(DisplayName = "Gator Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
-        public DataSeries ValueUp { get; set; }
+        [Output(DisplayName = "Gator Teeth-Lips Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
+        public DataSeries TeethLipsUp { get; set; }
 
-        [Output(DisplayName = "Gator Down", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
-        public DataSeries ValueDown { get; set; }
+        [Output(DisplayName = "Gator Teeth-Lips Down", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
+        public DataSeries TeethLipsDown { get; set; }
 
-        public int LastPositionChanged { get { return _alligator.LastPositionChanged; } }
+        [Output(DisplayName = "Gator Jaws-Teeth Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
+        public DataSeries JawsTeethUp { get; set; }
+
+        [Output(DisplayName = "Gator Jaws-Teeth Down", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
+        public DataSeries JawsTeethDown { get; set; }
+
+        public int LastPositionChanged { get { return -1; } }
 
         public GatorOscillator() { }
 
@@ -65,8 +74,24 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
 
         private void InitializeIndicator()
         {
-            _alligator = new Alligator.Alligator(Bars, JawsPeriod, JawsShift, TeethPeriod, TeethShift, LipsPeriod,
-                LipsShift, TargetMethod, TargetPrice);
+            _jaws = new MovingAverage(Bars, JawsPeriod, JawsShift - TeethShift, TargetMethod, TargetPrice);
+            _jawsTeeth = new MovingAverage(Bars, TeethPeriod, 0, TargetMethod, TargetPrice);
+            _teethLips = new MovingAverage(Bars, TeethPeriod, TeethShift - LipsShift, TargetMethod, TargetPrice);
+            _lips = new MovingAverage(Bars, LipsPeriod, 0, TargetMethod, TargetPrice);
+            var jawsTeethPos = Math.Max(JawsPeriod + JawsShift, TeethPeriod + TeethShift);
+            var teethLipsPos = Math.Max(TeethPeriod + TeethShift, LipsPeriod + LipsShift);
+            var jawsTeethShift = Math.Max(JawsPeriod + JawsShift - TeethShift, TeethPeriod - JawsShift + TeethShift);
+            var teethLipsShift = Math.Max(TeethPeriod + TeethShift - LipsShift, LipsPeriod - TeethShift + LipsShift);
+            _jawsTeethUpShiter = new SimpleShifter(jawsTeethPos - jawsTeethShift);
+            _jawsTeethUpShiter.Init();
+            _jawsTeethDownShiter = new SimpleShifter(jawsTeethPos - jawsTeethShift);
+            _jawsTeethDownShiter.Init();
+            _teethLipsUpShifter = new SimpleShifter(teethLipsPos - teethLipsShift);
+            _teethLipsUpShifter.Init();
+            _teethLipsDownShifter = new SimpleShifter(teethLipsPos - teethLipsShift);
+            _teethLipsDownShifter.Init();
+            _lipsUp = true;
+            _jawsUp = true;
         }
 
         protected override void Init()
@@ -74,9 +99,83 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
             InitializeIndicator();
         }
 
+        private void ProcessShifterValue(IShift shifter, double val, DataSeries series)
+        {
+            if (IsUpdate)
+            {
+                shifter.UpdateLast(val);
+            }
+            else
+            {
+                shifter.Add(val);
+            }
+            series[shifter.Position] = shifter.Result;
+        }
+
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            var lipsPos = Math.Max(_teethLips.LastPositionChanged, _lips.LastPositionChanged);
+            var jawsPos = Math.Max(_jawsTeeth.LastPositionChanged, _jaws.LastPositionChanged);
+            var lipsVal = -Math.Abs(_teethLips.Average[lipsPos] - _lips.Average[lipsPos]);
+            var jawsVal = Math.Abs(_jaws.Average[jawsPos] - _jawsTeeth.Average[jawsPos]);
+            if (Bars.Count > 1)
+            {
+                var prevLipsVal = -Math.Abs(_teethLips.Average[lipsPos + 1] - _lips.Average[lipsPos + 1]);
+                if (!double.IsNaN(prevLipsVal))
+                {
+                    if (lipsVal < prevLipsVal)
+                    {
+                        _lipsUp = true;
+                    }
+                    if (lipsVal > prevLipsVal)
+                    {
+                        _lipsUp = false;
+                    }
+                }
+            }
+            if (Bars.Count > 1)
+            {
+                var prevJawsVal = Math.Abs(_jaws.Average[jawsPos + 1] - _jawsTeeth.Average[jawsPos + 1]);
+                if (!double.IsNaN(prevJawsVal))
+                {
+                    if (jawsVal > prevJawsVal)
+                    {
+                        _jawsUp = true;
+                    }
+                    if (jawsVal < prevJawsVal)
+                    {
+                        _jawsUp = false;
+                    }
+                }
+            }
+            if (_lipsUp)
+            {
+                ProcessShifterValue(_teethLipsUpShifter, lipsVal, TeethLipsUp);
+                ProcessShifterValue(_teethLipsDownShifter, double.NaN, TeethLipsDown);
+                //TeethLipsUp[pos] = lipsVal;
+                //TeethLipsDown[pos] = double.NaN;
+            }
+            if (!_lipsUp)
+            {
+                ProcessShifterValue(_teethLipsUpShifter, double.NaN, TeethLipsUp);
+                ProcessShifterValue(_teethLipsDownShifter, lipsVal, TeethLipsDown);
+                //TeethLipsUp[pos] = double.NaN;
+                //TeethLipsDown[pos] = lipsVal;
+            }
+            if (_jawsUp)
+            {
+                ProcessShifterValue(_jawsTeethUpShiter, jawsVal, JawsTeethUp);
+                ProcessShifterValue(_jawsTeethDownShiter, double.NaN, JawsTeethDown);
+                //JawsTeethUp[pos] = jawsVal;
+                //JawsTeethDown[pos] = double.NaN;
+            }
+            if (!_jawsUp)
+            {
+                ProcessShifterValue(_jawsTeethUpShiter, double.NaN, JawsTeethUp);
+                ProcessShifterValue(_jawsTeethDownShiter, jawsVal, JawsTeethDown);
+                //JawsTeethUp[pos] = double.NaN;
+                //JawsTeethDown[pos] = jawsVal;
+            }
         }
     }
 }

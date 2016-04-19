@@ -56,6 +56,8 @@
     <Compile Include="BillWilliamsTests\AwesomeOscillator\AwesomeOscillatorTestCase.cs" />
     <Compile Include="BillWilliamsTests\Fractals\FractalsTest.cs" />
     <Compile Include="BillWilliamsTests\Fractals\FractalsTestCase.cs" />
+    <Compile Include="BillWilliamsTests\GatorOscillator\GatorOscillatorTest.cs" />
+    <Compile Include="BillWilliamsTests\GatorOscillator\GatorOscillatorTestCase.cs" />
     <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTest.cs" />
     <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTestCase.cs" />
     <Compile Include="LegacyTests\Accelerator\AcceleratorTest.cs" />
@@ -149,9 +151,7 @@
   <ItemGroup>
     <Content Include=".gitignore" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BillWilliamsTests\GatorOscillator\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>

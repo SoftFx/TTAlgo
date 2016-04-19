@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
     {
         private bool _volumeUp, _mfiUp;
 
-        [Parameter(DisplayName = "Point Size", DefaultValue = 10e4)]
+        [Parameter(DisplayName = "Point Size", DefaultValue = 10000.0)]
         public double PointSize { get; set; }
 
         [Input]
