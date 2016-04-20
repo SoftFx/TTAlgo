@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Indicators.Awesome
 
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
 
         [Output]

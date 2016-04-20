@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Indicators.Parabolic
         public double InpSARMaximum { get; set; }
         
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output]
         public DataSeries ExtSARBuffer { get; set; }

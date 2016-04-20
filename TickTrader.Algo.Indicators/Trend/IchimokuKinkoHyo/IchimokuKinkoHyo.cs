@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
         public int SenkouSpanB { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Tenkan-sen", DefaultColor = Colors.Red)]
         public DataSeries Tenkan { get; set; }
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
 
         public IchimokuKinkoHyo() { }
 
-        public IchimokuKinkoHyo(DataSeries<Bar> bars, int tenkanSen, int kijunSen, int senkouSpanB)
+        public IchimokuKinkoHyo(BarSeries bars, int tenkanSen, int kijunSen, int senkouSpanB)
         {
             Bars = bars;
             TenkanSen = tenkanSen;

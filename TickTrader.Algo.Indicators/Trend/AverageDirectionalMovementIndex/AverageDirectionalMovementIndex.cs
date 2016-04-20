@@ -1,5 +1,4 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 {
@@ -9,11 +8,8 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DisplayName = "ADX", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Adx { get; set; }
@@ -28,12 +24,10 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         public AverageDirectionalMovementIndex() { }
 
-        public AverageDirectionalMovementIndex(DataSeries<Bar> bars, int period,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public AverageDirectionalMovementIndex(DataSeries price, int period)
         {
-            Bars = bars;
+            Price = price;
             Period = period;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }

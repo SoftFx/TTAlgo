@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         public Method TargetMethod { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Stoch", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Stoch { get; set; }
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 
         public StochasticOscillator() { }
 
-        public StochasticOscillator(DataSeries<Bar> bars, int kPeriod, int slowing, int dPeriod,
+        public StochasticOscillator(BarSeries bars, int kPeriod, int slowing, int dPeriod,
             Method targetMethod = Method.Simple)
         {
             Bars = bars;

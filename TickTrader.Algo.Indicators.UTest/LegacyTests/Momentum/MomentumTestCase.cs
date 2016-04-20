@@ -1,5 +1,7 @@
 ﻿using System;
+using TickTrader.Algo.Indicators.Utility;
 using TickTrader.Algo.Indicators.UTest.TestCases;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Momentum
 {
@@ -15,7 +17,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.Momentum
 
         protected override void SetupInput()
         {
-            Builder.MapBarInput("Close", Symbol, entity => entity.Close);
+            BarInputHelper.MapPrice(Builder, Symbol, AppliedPrice.Target.Close, "Close");
         }
 
         protected override void SetupParameters()

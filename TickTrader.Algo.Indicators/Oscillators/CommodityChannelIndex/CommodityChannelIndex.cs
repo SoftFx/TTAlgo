@@ -1,7 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 {
@@ -13,11 +12,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Typical, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DisplayName = "CCI", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Cci { get; set; }
@@ -26,18 +22,17 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 
         public CommodityChannelIndex() { }
 
-        public CommodityChannelIndex(DataSeries<Bar> bars, int period, AppliedPrice.Target targetPrice)
+        public CommodityChannelIndex(DataSeries price, int period)
         {
-            Bars = bars;
+            Price = price;
             Period = period;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage(Bars, Period, 0, Method.Simple, TargetPrice);
+            _sma = new MovingAverage(Price, Period, 0);
         }
 
         protected override void Init()
@@ -48,7 +43,6 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            var appliedPrice = AppliedPrice.Calculate(Bars[pos], TargetPrice);
             var average = _sma.Average[pos];
             var meanDeviation = 0.0;
             if (double.IsNaN(average))
@@ -59,11 +53,11 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
             {
                 for (var i = pos; i < pos + Period; i++)
                 {
-                    meanDeviation += Math.Abs(average - AppliedPrice.Calculate(Bars[i], TargetPrice));
+                    meanDeviation += Math.Abs(average - Price[i]);
                 }
                 meanDeviation /= Period;
             }
-            Cci[pos] = (appliedPrice - average)/(0.015*meanDeviation);
+            Cci[pos] = (Price[pos] - average)/(0.015*meanDeviation);
         }
     }
 }

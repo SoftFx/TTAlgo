@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Indicators.Stochastic
         public int InpSlowing { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
 
         [Output]

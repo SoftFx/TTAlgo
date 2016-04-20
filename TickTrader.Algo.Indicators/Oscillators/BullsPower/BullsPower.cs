@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
         public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Bulls", DefaultColor = Colors.Silver)]
         public DataSeries Bulls { get; set; }
@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
 
         public BullsPower() { }
 
-        public BullsPower(DataSeries<Bar> bars, int period, AppliedPrice.Target targetPrice)
+        public BullsPower(BarSeries bars, int period, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
             Bars = bars;
             Period = period;
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
 
         protected void InitializeIndicator()
         {
-            _ema = new MovingAverage(Bars, Period, 0, Method.Exponential, TargetPrice);
+            _ema = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, Method.Exponential);
         }
 
         protected override void Init()
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            Bulls[pos] = Bars[pos].High - _ema.Average[pos];
+            Bulls[pos] = Bars.High[pos] - _ema.Average[pos];
         }
     }
 }

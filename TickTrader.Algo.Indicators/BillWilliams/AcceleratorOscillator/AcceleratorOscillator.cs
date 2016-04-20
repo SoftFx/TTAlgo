@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
         private IMA _aoSma;
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Value Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries ValueUp { get; set; }
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
 
         public AcceleratorOscillator() { }
 
-        public AcceleratorOscillator(DataSeries<Bar> bars)
+        public AcceleratorOscillator(BarSeries bars)
         {
             Bars = bars;
 

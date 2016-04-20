@@ -18,14 +18,11 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
         public Method TargetMethod { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Parameter(DefaultValue = 0.0667, DisplayName = "Smooth Factor(CustomEMA)")]
         public double SmoothFactor { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output]
         public DataSeries Average { get; set; }
@@ -34,14 +31,13 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         public MovingAverage() { }
 
-        public MovingAverage(DataSeries<Bar> bars, int period, int shift, Method targetMethod = Method.Simple,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close, double smoothFactor = double.NaN)
+        public MovingAverage(DataSeries price, int period, int shift, Method targetMethod = Method.Simple,
+            double smoothFactor = double.NaN)
         {
-            Bars = bars;
+            Price = price;
             Period = period;
             Shift = shift;
             TargetMethod = targetMethod;
-            TargetPrice = targetPrice;
             SmoothFactor = double.IsNaN(smoothFactor) ? 2.0/(period + 1) : smoothFactor;
 
             InitializeIndicator();
@@ -64,12 +60,12 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         {
             if (IsUpdate)
             {
-                _maInstance.UpdateLast(AppliedPrice.Calculate(Bars[0], TargetPrice));
+                _maInstance.UpdateLast(Price[0]);
                 _shifter.UpdateLast(_maInstance.Average);
             }
             else
             {
-                _maInstance.Add(AppliedPrice.Calculate(Bars[0], TargetPrice));
+                _maInstance.Add(Price[0]);
                 _shifter.Add(_maInstance.Average);
             }
             Average[_shifter.Position] = _shifter.Result;

@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
         public int Period { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "DeMarker", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries DeMark { get; set; }
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
 
         public DeMarker() { }
 
-        public DeMarker(DataSeries<Bar> bars, int period)
+        public DeMarker(BarSeries bars, int period)
         {
             Bars = bars;
             Period = period;

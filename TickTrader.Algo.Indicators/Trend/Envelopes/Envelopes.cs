@@ -1,6 +1,5 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
 {
@@ -21,11 +20,8 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
         public Method TargetMethod { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DefaultColor = Colors.Blue)]
         public DataSeries TopLine { get; set; }
@@ -37,21 +33,19 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
 
         public Envelopes() { }
 
-        public Envelopes(DataSeries<Bar> bars, int period, int shift, Method targetMethod = Method.Simple,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public Envelopes(DataSeries price, int period, int shift, Method targetMethod = Method.Simple)
         {
-            Bars = bars;
+            Price = price;
             Period = period;
             Shift = shift;
             TargetMethod = targetMethod;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _middleLine = new MovingAverage.MovingAverage(Bars, Period, Shift, TargetMethod, TargetPrice);
+            _middleLine = new MovingAverage.MovingAverage(Price, Period, Shift, TargetMethod);
         }
 
         protected override void Init()

@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Indicators.UTest.TestCases;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
 {
@@ -8,6 +9,17 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
         public ForceIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int period)
             : base(indicatorType, symbol, quotesPath, answerPath, 8, period, 4, 7)
         {
+        }
+
+        protected override void SetupParameters()
+        {
+            base.SetupParameters();
+            SetParameter("TargetPrice", TargetPrice);
+        }
+
+        protected override void SetupInput()
+        {
+            BarInputHelper.MapBars(Builder, Symbol);
         }
 
         public override void InvokeFullBuildTest()

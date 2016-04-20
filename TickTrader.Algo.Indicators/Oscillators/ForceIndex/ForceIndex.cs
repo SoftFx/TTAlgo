@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
         public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Force", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Force { get; set; }
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
 
         public ForceIndex() { }
 
-        public ForceIndex(DataSeries<Bar> bars, int period, Method targetMethod = Method.Simple,
+        public ForceIndex(BarSeries bars, int period, Method targetMethod = Method.Simple,
             AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
             Bars = bars;
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
 
         protected void InitializeIndicator()
         {
-            _ma = new MovingAverage(Bars, Period, 0, TargetMethod, TargetPrice);
+            _ma = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, TargetMethod);
         }
 
         protected override void Init()
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
             var pos = LastPositionChanged;
             if (Bars.Count > pos + 1)
             {
-                Force[pos] = Bars[pos].Volume*
+                Force[pos] = Bars.Volume[pos]*
                              (_ma.Average[pos] - (double.IsNaN(_ma.Average[pos + 1]) ? 0.0 : _ma.Average[pos + 1]));
             }
             else

@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
     public class Fractals : Indicator
     {
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Fractals Up", DefaultColor = Colors.Gray, PlotType = PlotType.Points,
             DefaultThickness = 4)]
@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
         {
         }
 
-        public Fractals(DataSeries<Bar> bars)
+        public Fractals(BarSeries bars)
         {
             Bars = bars;
 

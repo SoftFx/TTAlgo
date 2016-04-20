@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.RSI
         public int InpRSIPeriod { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
 
         [Output]
