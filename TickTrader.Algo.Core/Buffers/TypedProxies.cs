@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -26,6 +27,10 @@ namespace TickTrader.Algo.Core
         private ProxyBuffer<Bar, double> medianBuffer = new ProxyBuffer<Bar, double>(b => (b.High + b.Low) / 2);
         private ProxyBuffer<Bar, double> volumeBuffer = new ProxyBuffer<Bar, double>(b => b.Volume);
         private ProxyBuffer<Bar, DateTime> openTimeBuffer = new ProxyBuffer<Bar, DateTime>(b => b.OpenTime);
+        private Lazy<DataSeriesProxy> typicalBufferLazy;
+        private Lazy<DataSeriesProxy> weightedBufferLazy;
+        private Lazy<DataSeriesProxy> moveBufferLazy;
+        private Lazy<DataSeriesProxy> rangeBufferLazy;
 
         public BarSeriesProxy()
         {
@@ -33,10 +38,26 @@ namespace TickTrader.Algo.Core
             Close = new DataSeriesProxy() { Buffer = closeBuffer };
             High = new DataSeriesProxy() { Buffer = highBuffer };
             Low = new DataSeriesProxy() { Buffer = lowBuffer };
-            Mean = new DataSeriesProxy() { Buffer = medianBuffer };
+            Median = new DataSeriesProxy() { Buffer = medianBuffer };
             Volume = new DataSeriesProxy() { Buffer = volumeBuffer };
             OpenTime = new TimeSeriesProxy() { Buffer = openTimeBuffer };
+
+            typicalBufferLazy = ConstructLazy<DataSeriesProxy, double>(b => (b.High + b.Low + b.Close) / 3);
+            weightedBufferLazy = ConstructLazy<DataSeriesProxy, double>(b => (b.High + b.Low + b.Close * 2) / 4);
+            moveBufferLazy = ConstructLazy<DataSeriesProxy, double>(b => b.Close - b.Open);
+            rangeBufferLazy = ConstructLazy<DataSeriesProxy, double>(b => b.High - b.Low);
+
             SymbolCode = string.Empty;
+        }
+
+        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Bar, TData> selector) where TProxy : DataSeriesProxy<TData>, new()
+        {
+            return new Lazy<TProxy>(() =>
+            {
+                var seriesProxy = new TProxy();
+                seriesProxy.Buffer = new ProxyBuffer<Bar, TData>(selector) { SrcBuffer = Buffer };
+                return seriesProxy;
+            }, LazyThreadSafetyMode.None);
         }
 
         public string SymbolCode { get; set; }
@@ -61,8 +82,13 @@ namespace TickTrader.Algo.Core
         public Api.DataSeries Close { get; private set; }
         public Api.DataSeries High { get; private set; }
         public Api.DataSeries Low { get; private set; }
-        public Api.DataSeries Mean { get; private set; }
+        public Api.DataSeries Median { get; private set; }
         public Api.DataSeries Volume { get; private set; }
         public Api.TimeSeries OpenTime { get; private set; }
+
+        public DataSeries Typical { get { return typicalBufferLazy.Value; } }
+        public DataSeries Weighted { get { return weightedBufferLazy.Value; } }
+        public DataSeries Move { get { return moveBufferLazy.Value; } }
+        public DataSeries Range { get { return rangeBufferLazy.Value; } }
     }
 }

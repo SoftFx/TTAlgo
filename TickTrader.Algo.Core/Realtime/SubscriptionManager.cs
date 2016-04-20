@@ -11,11 +11,12 @@ namespace TickTrader.Algo.Core.Realtime
     {
         private Dictionary<string, SymbolSubsciptionProxy> subscibers = new Dictionary<string, SymbolSubsciptionProxy>();
         private IRealtimeFeedProvider feed;
-        private ActionBlock<IRealtimeUpdate> updateQueue;
+        private ITargetBlock<IRealtimeUpdate> updateQueue;
 
-        public SubsciptionProxy(IRealtimeFeedProvider feed)
+        public SubsciptionProxy(IRealtimeFeedProvider feed, ITargetBlock<IRealtimeUpdate> updateQueue)
         {
             this.feed = feed;
+            this.updateQueue = updateQueue;
         }
 
         public void Add(IPluginSubscriber subscriber)
@@ -29,7 +30,6 @@ namespace TickTrader.Algo.Core.Realtime
             }
             else
                 proxy.Add(subscriber);
-
         }
 
         public void Remove(IPluginSubscriber subscriber)
@@ -47,10 +47,10 @@ namespace TickTrader.Algo.Core.Realtime
 
         private class SymbolSubsciptionProxy : ISymbolFeedSubscriber
         {
-            private ActionBlock<IRealtimeUpdate> updateQueue;
+            private ITargetBlock<IRealtimeUpdate> updateQueue;
             private IPluginSubscriber[] symbolSubscibers;
 
-            public SymbolSubsciptionProxy(ActionBlock<IRealtimeUpdate> updateQueue, IPluginSubscriber first)
+            public SymbolSubsciptionProxy(ITargetBlock<IRealtimeUpdate> updateQueue, IPluginSubscriber first)
             {
                 this.updateQueue = updateQueue;
                 this.symbolSubscibers = new IPluginSubscriber[] { first };

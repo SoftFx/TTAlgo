@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected virtual void RunFullBuild()
         {
-            Builder.GetBarSeries(Symbol).Append(Quotes);
+            Builder.GetBarBuffer(Symbol).Append(Quotes);
             Builder.BuildNext(Quotes.Count);
             GetOutput();
         }
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual void RunUpdate()
         {
             var prevQuote = Quotes[0];
-            var inputBuffer = Builder.GetBarSeries(Symbol);
+            var inputBuffer = Builder.GetBarBuffer(Symbol);
             foreach (var quote in Quotes)
             {
                 inputBuffer.Append(prevQuote);
