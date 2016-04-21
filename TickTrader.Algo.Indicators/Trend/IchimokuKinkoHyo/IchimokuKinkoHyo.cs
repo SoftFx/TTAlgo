@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }

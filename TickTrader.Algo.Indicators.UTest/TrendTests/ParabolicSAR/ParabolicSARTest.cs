@@ -16,39 +16,39 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.ParabolicSAR
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_002_02()
+        public void TestMeasuresAUDJPY_M30_0020_0200()
         {
             TestMeasures("AUDJPY", "M30", 0.02, 0.2);
         }
 
         [TestMethod]
-        public void TestMeasuresUSDCHF_M30_002_02()
+        public void TestMeasuresAUDJPY_M30_0300_2000()
         {
-            TestMeasures("USDCHF", "M30", 0.02, 0.2);
+            TestMeasures("AUDJPY", "M30", 0.3, 2.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_002_02()
+        public void TestMeasuresAUDNZD_M15_0200_4000()
         {
-            TestMeasures("AUDNZD", "M15", 0.02, 0.2);
+            TestMeasures("AUDNZD", "M15", 0.2, 4.0);
         }
 
         [TestMethod]
-        public void TestMeasuresEURNZD_M15_002_02()
+        public void TestMeasuresAUDNZD_M15_1500_0015()
         {
-            TestMeasures("EURNZD", "M15", 0.02, 0.2);
+            TestMeasures("AUDNZD", "M15", 1.5, 0.015);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_002_02()
+        public void TestMeasuresEURUSD_H1_0010_0400()
         {
-            TestMeasures("EURUSD", "H1", 0.02, 0.2);
+            TestMeasures("EURUSD", "H1", 0.01, 0.4);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDCAD_H1_002_02()
+        public void TestMeasuresEURUSD_H1_0800_5000()
         {
-            TestMeasures("AUDCAD", "H1", 0.02, 0.2);
+            TestMeasures("EURUSD", "H1", 0.8, 5.0);
         }
     }
 }

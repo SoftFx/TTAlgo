@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.StochasticOscillator
             var dir = PathHelper.MeasuresDir("Oscillators", "StochasticOscillator");
             var test = new StochasticOscillatorTestCase(typeof (Oscillators.StochasticOscillator.StochasticOscillator), symbol,
                 $"{dir}bids_{symbol}_{timeframe}_{kPeriod}_{slowing}_{dPeriod}.bin",
-                $"{dir}Stoch_{symbol}_{timeframe}_{kPeriod}_{slowing}_{dPeriod}", kPeriod, slowing, dPeriod);
+                $"{dir}Stochastic_{symbol}_{timeframe}_{kPeriod}_{slowing}_{dPeriod}", kPeriod, slowing, dPeriod);
             LaunchTestCase(test);
         }
 
@@ -22,33 +22,33 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.StochasticOscillator
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_20()
+        public void TestMeasuresAUDJPY_M30_10_1_20()
         {
-            TestMeasures("AUDJPY", "M30", 5, 3, 3);
+            TestMeasures("AUDJPY", "M30", 10, 1, 20);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_15()
+        public void TestMeasuresAUDNZD_M15_10_3_5()
         {
-            TestMeasures("AUDNZD", "M15", 5, 3, 3);
+            TestMeasures("AUDNZD", "M15", 10, 3, 5);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_40()
+        public void TestMeasuresAUDNZD_M15_20_1_10()
         {
-            TestMeasures("AUDNZD", "M15", 5, 3, 3);
+            TestMeasures("AUDNZD", "M15", 20, 1, 10);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_10()
+        public void TestMeasuresEURUSD_H1_15_3_15()
         {
-            TestMeasures("EURUSD", "H1", 5, 3, 3);
+            TestMeasures("EURUSD", "H1", 15, 3, 15);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_25()
+        public void TestMeasuresEURUSD_H1_20_5_15()
         {
-            TestMeasures("EURUSD", "H1", 5, 3, 3);
+            TestMeasures("EURUSD", "H1", 20, 5, 15);
         }
     }
 }

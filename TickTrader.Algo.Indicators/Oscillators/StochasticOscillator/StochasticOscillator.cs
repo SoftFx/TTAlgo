@@ -6,6 +6,11 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
     [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Stochastic Oscillator")]
     public class StochasticOscillator : Indicator
     {
+        public enum PriceField
+        {
+            LowHigh, CloseClose
+        }
+
         [Parameter(DefaultValue = 5, DisplayName = "%K Period")]
         public int KPeriod { get; set; }
 
@@ -17,6 +22,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 
         [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
         public Method TargetMethod { get; set; }
+
+        [Parameter(DefaultValue = PriceField.LowHigh, DisplayName = "Price Field")]
+        public PriceField TargetPrice { get; set; }
 
         [Input]
         public BarSeries Bars { get; set; }
@@ -32,13 +40,14 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         public StochasticOscillator() { }
 
         public StochasticOscillator(BarSeries bars, int kPeriod, int slowing, int dPeriod,
-            Method targetMethod = Method.Simple)
+            Method targetMethod = Method.Simple, PriceField targetPrice = PriceField.LowHigh)
         {
             Bars = bars;
             KPeriod = kPeriod;
             Slowing = slowing;
             DPeriod = dPeriod;
             TargetMethod = targetMethod;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
@@ -55,7 +64,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }

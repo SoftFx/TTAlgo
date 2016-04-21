@@ -17,9 +17,9 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.AverageDirectionalMovement
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_13()
+        public void TestMeasuresAUDJPY_M30_14()
         {
-            TestMeasures("AUDJPY", "M30", 13);
+            TestMeasures("AUDJPY", "M30", 14);
         }
 
         [TestMethod]
@@ -41,15 +41,15 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.AverageDirectionalMovement
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_10()
+        public void TestMeasuresEURUSD_H1_5()
         {
-            TestMeasures("EURUSD", "H1", 10);
+            TestMeasures("EURUSD", "H1", 5);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_25()
+        public void TestMeasuresEURUSD_H1_30()
         {
-            TestMeasures("EURUSD", "H1", 25);
+            TestMeasures("EURUSD", "H1", 30);
         }
     }
 }

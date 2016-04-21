@@ -23,33 +23,33 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.IchimokuKinkoHyo
         }
 
         [TestMethod]
-        public void TestMeasuresUSDCHF_M30_9_26_52()
+        public void TestMeasuresAUDJPY_M30_18_13_40()
         {
-            TestMeasures("USDCHF", "M30", 9, 26, 52);
+            TestMeasures("AUDJPY", "M30", 18, 13, 40);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_9_26_52()
+        public void TestMeasuresAUDNZD_M15_40_40_40()
         {
-            TestMeasures("AUDNZD", "M15", 9, 26, 52);
+            TestMeasures("AUDNZD", "M15", 40, 40, 40);
         }
 
         [TestMethod]
-        public void TestMeasuresEURNZD_M15_9_26_52()
+        public void TestMeasuresAUDNZD_M15_7_24_47()
         {
-            TestMeasures("EURNZD", "M15", 9, 26, 52);
+            TestMeasures("AUDNZD", "M15", 7, 24, 47);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_9_26_52()
+        public void TestMeasuresEURUSD_H1_45_57_110()
         {
-            TestMeasures("EURUSD", "H1", 9, 26, 52);
+            TestMeasures("EURUSD", "H1", 45, 57, 110);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDCAD_H1_9_26_52()
+        public void TestMeasuresEURUSD_H1_5_15_10()
         {
-            TestMeasures("AUDCAD", "H1", 9, 26, 52);
+            TestMeasures("EURUSD", "H1", 5, 15, 10);
         }
     }
 }

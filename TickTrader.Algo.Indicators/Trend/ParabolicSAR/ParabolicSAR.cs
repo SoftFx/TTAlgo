@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }

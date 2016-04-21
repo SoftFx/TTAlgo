@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }
