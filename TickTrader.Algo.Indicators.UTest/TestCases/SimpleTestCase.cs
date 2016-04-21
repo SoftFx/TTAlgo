@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
 {
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected override void SetupInput()
         {
-            Builder.MapBarInput("Bars", Symbol);
+            BarInputHelper.MapBars(Builder, Symbol);
         }
 
         protected override void Setup()

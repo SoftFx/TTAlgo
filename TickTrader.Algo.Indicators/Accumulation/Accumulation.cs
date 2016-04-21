@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.Accumulation
     public class Accumulation : Indicator
     {
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output]
         public DataSeries ExtADBuffer { get; set; }

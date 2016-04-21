@@ -21,11 +21,8 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
         public Method TargetMethod { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries StdDev { get; set; }
@@ -36,22 +33,20 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         public StandardDeviation() { }
 
-        public StandardDeviation(DataSeries<Bar> bars, int period, int shift, Method targetMethod = Method.Simple,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public StandardDeviation(DataSeries price, int period, int shift, Method targetMethod = Method.Simple)
         {
-            Bars = bars;
+            Price = price;
             Period = period;
             Shift = shift;
             TargetMethod = targetMethod;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage.MovingAverage(Bars, Period, Shift, Method.Simple, TargetPrice);
-            _ma = new MovingAverage.MovingAverage(Bars, Period, Shift, TargetMethod, TargetPrice);
+            _sma = new MovingAverage.MovingAverage(Price, Period, Shift);
+            _ma = new MovingAverage.MovingAverage(Price, Period, Shift, TargetMethod);
             _p2Sma = MABase.CreateMaInstance(Period, Method.Simple);
             _p2Sma.Init();
             _p2Shifter = new SimpleShifter(Shift);
@@ -65,15 +60,14 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         protected override void Calculate()
         {
-            var appliedPrice = AppliedPrice.Calculate(Bars[0], TargetPrice);
             if (IsUpdate)
             {
-                _p2Sma.UpdateLast(appliedPrice*appliedPrice);
+                _p2Sma.UpdateLast(Price[0]*Price[0]);
                 _p2Shifter.UpdateLast(_p2Sma.Average);
             }
             else
             {
-                _p2Sma.Add(appliedPrice*appliedPrice);
+                _p2Sma.Add(Price[0]*Price[0]);
                 _p2Shifter.Add(_p2Sma.Average);
             }
             var maVal = _ma.Average[_ma.LastPositionChanged];

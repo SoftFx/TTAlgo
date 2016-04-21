@@ -9,56 +9,30 @@ namespace TickTrader.Algo.Indicators.Utility
             Close, Open, High, Low, Median, Typical, Weighted, Move, Range
         }
 
-        public static double Calculate(Bar bar, Target target)
+        public static DataSeries GetDataSeries(BarSeries bars, Target target)
         {
-            var res = double.NaN;
-
             switch (target)
             {
                 case Target.Close:
-                    res = bar.Close;
-                    break;
+                    return bars.Close;
                 case Target.Open:
-                    res = bar.Open;
-                    break;
+                    return bars.Open;
                 case Target.High:
-                    res = bar.High;
-                    break;
+                    return bars.High;
                 case Target.Low:
-                    res = bar.Low;
-                    break;
+                    return bars.Low;
                 case Target.Median:
-                    res = (bar.High + bar.Low)/2;
-                    break;
+                    return bars.Median;
                 case Target.Typical:
-                    res = (bar.High + bar.Low + bar.Close)/3;
-                    break;
+                    return bars.Typical;
                 case Target.Weighted:
-                    res = (bar.High + bar.Low + 2*bar.Close)/4;
-                    break;
+                    return bars.Weighted;
                 case Target.Move:
-                    res = bar.Close - bar.Open;
-                    break;
+                    return bars.Move;
                 case Target.Range:
-                    res = bar.High - bar.Low;
-                    break;
-            }
-
-            return res;
-        }
-
-        public class AppliedPriceCalculator
-        {
-            public Target TargetPrice { get; private set; }
-
-            public AppliedPriceCalculator(Target targetPrice)
-            {
-                TargetPrice = targetPrice;
-            }
-
-            public double Calculate(Bar bar)
-            {
-                return AppliedPrice.Calculate(bar, TargetPrice);
+                    return bars.Range;
+                default:
+                    return null;
             }
         }
     }

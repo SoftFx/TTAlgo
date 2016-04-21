@@ -1,6 +1,5 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
 {
@@ -12,7 +11,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
         private MovingAverage _slowSma, _fastSma;
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Value Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries ValueUp { get; set; }
@@ -24,7 +23,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
 
         public AwesomeOscillator() { }
 
-        public AwesomeOscillator(DataSeries<Bar> bars)
+        public AwesomeOscillator(BarSeries bars)
         {
             Bars = bars;
 
@@ -33,8 +32,8 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
 
         private void InitializeIndicator()
         {
-            _fastSma = new MovingAverage(Bars, FastSmaPeriod, 0, Method.Simple, AppliedPrice.Target.Median);
-            _slowSma = new MovingAverage(Bars, SlowSmaPeriod, 0, Method.Simple, AppliedPrice.Target.Median);
+            _fastSma = new MovingAverage(Bars.Median, FastSmaPeriod, 0);
+            _slowSma = new MovingAverage(Bars.Median, SlowSmaPeriod, 0);
         }
 
         protected override void Init()

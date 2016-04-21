@@ -59,7 +59,6 @@ namespace TickTrader.Algo.Core.Realtime
     //    }
     //}
 
-
     public interface IRealtimeUpdate
     {
         void Apply();
@@ -72,55 +71,150 @@ namespace TickTrader.Algo.Core.Realtime
 
     public class BarBasedDataSource
     {
-
     }
 
-    public class RealtimePluginExecutor : MarshalByRefObject
+    [Serializable]
+    public struct TimePeriod
     {
-        private ActionBlock<IRealtimeUpdate> updateQueue;
+        public TimePeriod(DateTime start, DateTime end)
+            : this()
+        {
+            this.Start = start;
+            this.End = end;
+        }
+
+        public TimePeriod(DateTime start, TimeSpan duration)
+            : this()
+        {
+            this.Start = start;
+            this.End = start + duration;
+        }
+
+        public DateTime Start { get; private set; }
+        public TimeSpan Duration { get { return End - Start; } }
+        public DateTime End { get; private set; }
+    }
+
+    public abstract class RealtimePluginExecutor : MarshalByRefObject
+    {
+        internal object lockObj = new object();
+        private ActionBlock<IRealtimeUpdate> updateScheduler;
+        private BufferBlock<IRealtimeUpdate> updateQueue;
         //private PluginExecutor executor;
         private Dictionary<string, IFeedFixture> feedFixtures = new Dictionary<string, IFeedFixture>();
+        private Task initTask;
 
-        public RealtimePluginExecutor(PluginSetup setup)
+        public RealtimePluginExecutor(PluginSetup setup, TimePeriod basePeriod, Api.TimeFrames timeFrame)
         {
             this.Setup = setup;
-            this.updateQueue = new ActionBlock<IRealtimeUpdate>(a => a.Apply());
+            this.BasePeriod = BasePeriod;
+            this.updateQueue = new BufferBlock<IRealtimeUpdate>();
+            //this.updateQueue = new ActionBlock<IRealtimeUpdate>(a => a.Apply());
         }
 
-        protected PluginSetup Setup { get; private set; }
-        protected IRealtimeFeedProvider Feed { get; private set; }
-
-        protected interface IFeedFixture
-        {
-        }
-
-        protected class BarFixture
-        {
-            private RealtimePluginExecutor executor;
-
-            public BarFixture(RealtimePluginExecutor executor)
-            {
-                this.executor = executor;
-            }
-        }
-    }
-
-    public class IndicatorRealtimeBuilder : RealtimePluginExecutor
-    {
-        private IndicatorBuilder builder;
-
-        public IndicatorRealtimeBuilder(PluginSetup setup) : base(setup)
-        {
-        }
+        internal Api.TimeFrames Timeframe { get; private set; }
+        internal TimePeriod BasePeriod { get; private set; }
+        internal PluginSetup Setup { get; private set; }
+        internal IRealtimeFeedProvider Feed { get; private set; }
+        internal SubsciptionProxy FeedUpdateProxy { get; private set; }
+        internal abstract PluginExecutor Builder { get; }
 
         public void Start()
         {
-            builder = Setup.CreateIndicatorBuilder();
-
-            foreach (var buffer in builder.DataBuffers)
+            lock(lockObj)
             {
-                string symbolCode = buffer.Key;
+                if (initTask != null)
+                    throw new InvalidOperationException("Cannot start: Already started!");
+                initTask = Task.Factory.StartNew(Init);
+            }
+        }
+
+        public async Task StopAsync()
+        {
+            lock (lockObj)
+            {
+                if (initTask == null)
+                    throw new InvalidOperationException("Cannot stop: Executor is not started!");
+            }
+
+            await initTask;
+
+            updateQueue.Complete();
+            updateScheduler.Complete();
+            await updateQueue.Completion;
+            await updateScheduler.Completion;
+
+            lock (lockObj) initTask = null;
+        }
+
+        private void Init()
+        {
+            
+        }
+
+        internal interface IFeedFixture
+        {
+            string SymbolCode { get; }
+        }
+
+        internal class BarFixture : IPluginSubscriber, IFeedFixture
+        {
+            private RealtimePluginExecutor executor;
+
+            public BarFixture(string symbolCode, RealtimePluginExecutor executor)
+            {
+                this.SymbolCode = symbolCode;
+                this.executor = executor;
+            }
+
+            public int Depth { get { return 1; } }
+            public string SymbolCode { get; private set; }
+
+            public void Init()
+            {
+                lock (executor.Feed.SyncRoot)
+                {   
+                    var data = executor.Feed.QueryBars(SymbolCode, executor.BasePeriod.Start, executor.BasePeriod.End, executor.Timeframe);
+                    executor.Builder.GetBarBuffer(SymbolCode).Append(data);
+                    executor.FeedUpdateProxy.Add(this);
+                }
+
+                foreach (var buffer in executor.Builder.DataBuffers)
+                {
+                }
+            }
+
+            //private IFeedFixture GetFixture(string symbolCode)
+            //{
+
+            //}
+
+            public void Stop()
+            {
+            }
+
+            public void OnUpdate(QuoteEntity quote)
+            {
             }
         }
     }
+
+    //public class IndicatorRealtimeBuilder : RealtimePluginExecutor
+    //{
+    //    private IndicatorBuilder builder;
+
+    //    public IndicatorRealtimeBuilder(PluginSetup setup) : base(setup)
+    //    {
+    //    }
+
+    //    public void Start()
+    //    {
+    //        builder = Setup.CreateIndicatorBuilder();
+
+    //        foreach (var buffer in builder.DataBuffers)
+    //        {
+    //            string symbolCode = buffer.Key;
+    //        }
+    //    }
+    //}
 }

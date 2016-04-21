@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
         public int InpBackstep { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DefaultColor = Colors.Red)]
         public DataSeries ExtZigzagBuffer { get; set; }

@@ -1,6 +1,4 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 {
@@ -18,11 +16,8 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
         [Parameter(DefaultValue = 2.0, DisplayName = "Deviations")]
         public double Deviations { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries MiddleLine { get; set; }
@@ -37,20 +32,18 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 
         public BollingerBands() { }
 
-        public BollingerBands(DataSeries<Bar> bars, int period, int shift,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public BollingerBands(DataSeries price, int period, int shift)
         {
-            Bars = bars;
+            Price = price;
             Period = period;
             Shift = shift;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _stdDev = new StandardDeviation.StandardDeviation(Bars, Period, Shift, Method.Simple, TargetPrice);
+            _stdDev = new StandardDeviation.StandardDeviation(Price, Period, Shift);
         }
 
         protected override void Init()

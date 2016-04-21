@@ -39,7 +39,7 @@ namespace TickTrader.Algo.CoreUsageSample
 
             var builder = setup.CreateIndicatorBuilder();
 
-            builder.GetBarSeries("EURUSD").Append(data);
+            builder.GetBarBuffer("EURUSD").Append(data);
             builder.BuildNext(data.Count);
 
             var jaws = builder.GetOutput("Jaws");

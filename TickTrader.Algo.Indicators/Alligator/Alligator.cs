@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Indicators.Alligator
         public int InpLipsShift { get; set; }
         
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DefaultColor = Colors.BlueViolet)]
         public DataSeries ExtBlueBuffer { get; set; }

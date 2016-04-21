@@ -1,6 +1,5 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 {
@@ -30,11 +29,8 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         [Parameter(DefaultValue = Method.Smoothed, DisplayName = "Method")]
         public Method TargetMethod { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Median, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DefaultColor = Colors.Blue)]
         public DataSeries Jaws { get; set; }
@@ -49,11 +45,10 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 
         public Alligator() { }
 
-        public Alligator(DataSeries<Bar> bars, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
-            int lipsPeriod, int lipsShift, Method targetMethod = Method.Simple,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public Alligator(DataSeries price, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
+            int lipsPeriod, int lipsShift, Method targetMethod = Method.Simple)
         {
-            Bars = bars;
+            Price = price;
             JawsPeriod = jawsPeriod;
             JawsShift = jawsShift;
             TeethPeriod = teethPeriod;
@@ -61,16 +56,15 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
             LipsPeriod = lipsPeriod;
             LipsShift = lipsShift;
             TargetMethod = targetMethod;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         private void InitializeIndicator()
         {
-            _jaws = new MovingAverage(Bars, JawsPeriod, JawsShift, TargetMethod, TargetPrice);
-            _teeth = new MovingAverage(Bars, TeethPeriod, TeethShift, TargetMethod, TargetPrice);
-            _lips = new MovingAverage(Bars, LipsPeriod, LipsShift, TargetMethod, TargetPrice);
+            _jaws = new MovingAverage(Price, JawsPeriod, JawsShift, TargetMethod);
+            _teeth = new MovingAverage(Price, TeethPeriod, TeethShift, TargetMethod);
+            _lips = new MovingAverage(Price, LipsPeriod, LipsShift, TargetMethod);
         }
 
         protected override void Init()

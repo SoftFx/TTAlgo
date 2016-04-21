@@ -1,6 +1,5 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Oscillators.MACD;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 {
@@ -18,11 +17,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
         [Parameter(DefaultValue = 9, DisplayName = "MACD SMA")]
         public int MacdSma { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
-
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public DataSeries Price { get; set; }
 
         [Output(DisplayName = "OsMA", DefaultColor = Colors.Silver, PlotType = PlotType.Histogram)]
         public DataSeries OsMa { get; set; }
@@ -31,21 +27,19 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 
         public MovingAverageOscillator() { }
 
-        public MovingAverageOscillator(DataSeries<Bar> bars, int fastEma, int slowEma, int macdSma,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public MovingAverageOscillator(DataSeries price, int fastEma, int slowEma, int macdSma)
         {
-            Bars = bars;
+            Price = price;
             FastEma = fastEma;
             SlowEma = slowEma;
             MacdSma = macdSma;
-            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _macd = new Macd(Bars, FastEma, SlowEma, MacdSma, TargetPrice);
+            _macd = new Macd(Price, FastEma, SlowEma, MacdSma);
         }
 
         protected override void Init()

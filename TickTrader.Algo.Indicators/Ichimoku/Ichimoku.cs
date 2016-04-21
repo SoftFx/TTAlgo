@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Ichimoku
 
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
 
 

@@ -27,9 +27,13 @@ namespace TickTrader.Algo.Api
         DataSeries Close { get; }
         DataSeries High { get; }
         DataSeries Low { get; }
-        DataSeries Mean { get; }
+        DataSeries Median { get; }
         string SymbolCode { get; }
         DataSeries Volume { get; }
+        DataSeries Typical { get; }
+        DataSeries Weighted { get; }
+        DataSeries Move { get; }
+        DataSeries Range { get; }
         //TimeFrame TimeFrame { get; }
         //DataSeries Typical { get; }
         //DataSeries WeightedClose { get; }

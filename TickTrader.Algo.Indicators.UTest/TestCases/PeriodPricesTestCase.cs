@@ -1,4 +1,6 @@
 ﻿using System;
+using TickTrader.Algo.Indicators.Utility;
+using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
 {
@@ -18,7 +20,12 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected override void SetupParameters()
         {
             base.SetupParameters();
-            SetParameter("TargetPrice", TargetPrice);
+            //SetParameter("TargetPrice", TargetPrice);
+        }
+
+        protected override void SetupInput()
+        {
+            BarInputHelper.MapPrice(Builder, Symbol, (AppliedPrice.Target) TargetPrice);
         }
 
         protected override void LaunchTest(Action runAction)
@@ -53,7 +60,12 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected override void SetupParameters()
         {
             base.SetupParameters();
-            SetParameter("TargetPrice", TargetPrice);
+            //SetParameter("TargetPrice", TargetPrice);
+        }
+
+        protected override void SetupInput()
+        {
+            BarInputHelper.MapPrice(Builder, Symbol, (AppliedPrice.Target) TargetPrice);
         }
 
         protected override void LaunchTest(Action runAction)

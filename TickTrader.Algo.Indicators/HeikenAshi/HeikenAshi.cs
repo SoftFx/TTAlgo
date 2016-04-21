@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.HeikenAshi
     public class HeikenAshi : Indicator
     {
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output]
         public DataSeries ExtLowHighBuffer { get; set; }

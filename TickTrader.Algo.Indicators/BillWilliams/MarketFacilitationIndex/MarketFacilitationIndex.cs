@@ -7,11 +7,11 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
     {
         private bool _volumeUp, _mfiUp;
 
-        [Parameter(DisplayName = "Point Size", DefaultValue = 10e4)]
+        [Parameter(DisplayName = "Point Size", DefaultValue = 10000.0)]
         public double PointSize { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "MFI Up Volume Up", DefaultColor = Colors.Lime, PlotType = PlotType.Histogram)]
         public DataSeries MfiUpVolumeUp { get; set; }
@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
 
         public MarketFacilitationIndex() { }
 
-        public MarketFacilitationIndex(DataSeries<Bar> bars, double pointSize)
+        public MarketFacilitationIndex(BarSeries bars, double pointSize)
         {
             Bars = bars;
             PointSize = pointSize;

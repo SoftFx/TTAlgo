@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.CCI
 
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
 
         [Output]

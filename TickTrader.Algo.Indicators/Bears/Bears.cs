@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.Bears
 
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
 
         [Output]

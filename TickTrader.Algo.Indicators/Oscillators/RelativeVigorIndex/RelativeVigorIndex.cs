@@ -1,7 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 {
@@ -15,7 +14,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         public int Period { get; set; }
 
         [Input]
-        public DataSeries<Bar> Bars { get; set; }
+        public BarSeries Bars { get; set; }
 
         [Output(DisplayName = "RVI Average", DefaultColor = Colors.Green)]
         public DataSeries RviAverage { get; set; }
@@ -32,7 +31,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         {
         }
 
-        public RelativeVigorIndex(DataSeries<Bar> bars, int period)
+        public RelativeVigorIndex(BarSeries bars, int period)
         {
             Bars = bars;
             Period = period;
@@ -42,8 +41,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 
         protected void InitializeIndicator()
         {
-            _moveTriMa = new MovingAverage(Bars, 4, 0, Method.Triangular, AppliedPrice.Target.Move);
-            _rangeTriMa = new MovingAverage(Bars, 4, 0, Method.Triangular, AppliedPrice.Target.Range);
+            _moveTriMa = new MovingAverage(Bars.Move, 4, 0, Method.Triangular);
+            _rangeTriMa = new MovingAverage(Bars.Range, 4, 0, Method.Triangular);
             _moveMa = MABase.CreateMaInstance(Period, Method.Simple);
             _moveMa.Init();
             _rangeMa = MABase.CreateMaInstance(Period, Method.Simple);

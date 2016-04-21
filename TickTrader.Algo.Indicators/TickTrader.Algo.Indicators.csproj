@@ -65,8 +65,12 @@
     <Compile Include="Oscillators\MovingAverageOscillator\MovingAverageOscillator.cs" />
     <Compile Include="Oscillators\RelativeStrengthIndex\RelativeStrengthIndex.cs" />
     <Compile Include="Oscillators\RelativeVigorIndex\RelativeVigorIndex.cs" />
+    <Compile Include="Oscillators\StochasticOscillator\StochasticOscillator.cs" />
+    <Compile Include="Trend\AverageDirectionalMovementIndex\AverageDirectionalMovementIndex.cs" />
     <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
     <Compile Include="Trend\Envelopes\Envelopes.cs" />
+    <Compile Include="Trend\IchimokuKinkoHyo\IchimokuKinkoHyo.cs" />
+    <Compile Include="Trend\ParabolicSAR\ParabolicSAR.cs" />
     <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
     <Compile Include="Utility\AppliedPrice.cs" />
     <Compile Include="Functions\MovingAverages.cs" />
