@@ -152,7 +152,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ButtonBase}">
-                    <Border CornerRadius="4" Background="{TemplateBinding Background}" BorderThickness="1" Padding="2">
+                    <Border CornerRadius="3" Background="{TemplateBinding Background}" Padding="2">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
@@ -184,5 +184,15 @@
             </Trigger>
         </Style.Triggers> 
     </Style>
-    
+    <!--  RadioButton Style-->
+    <Style x:Key="{x:Static ToolBar.RadioButtonStyleKey}"
+       BasedOn="{StaticResource ToolBarButtonBaseStyle}"
+       TargetType="{x:Type RadioButton}">
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ToolBarItem_BackgroundBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>
