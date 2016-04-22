@@ -47,7 +47,7 @@
                       VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
                       SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
                       IsHitTestVisible="False" />
-            <Popup Name="Popup"
+            <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding IsDropDownOpen}"
                    Placement="Bottom"
                    PopupAnimation="Slide"
@@ -71,6 +71,13 @@
                 <Setter Property="Foreground" Value="{DynamicResource ToolBarItem_HighlightForegroundBrush}"/>
                 <Setter Property="IsDropDownOpen" Value="True"/>
             </Trigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Path=IsMouseDirectlyOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource Self}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="IsDropDownOpen" Value="False" />
+            </MultiDataTrigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Foreground" Value="{DynamicResource ToolBarItem_DisabledBrush}"/>
             </Trigger>
