@@ -34,10 +34,10 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         public AverageDirectionalMovementIndex() { }
 
-        public AverageDirectionalMovementIndex(DataSeries price, int period,
+        public AverageDirectionalMovementIndex(BarSeries bars, int period,
             AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
-            Price = price;
+            Bars = bars;
             Period = period;
             TargetPrice = targetPrice;
 

@@ -1,12 +1,19 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 {
     [Indicator(Category = "Volumes", DisplayName = "Volumes/On Balance Volume")]
     public class OnBalanceVolume : Indicator
     {
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
+
         [Input]
-        public DataSeries Price { get; set; }
+        public BarSeries Bars { get; set; }
+
+        public DataSeries Price { get; private set; }
 
         [Output(DisplayName = "OBV", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Obv { get; set; }
@@ -15,16 +22,17 @@ namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 
         public OnBalanceVolume() { }
 
-        public OnBalanceVolume(DataSeries price)
+        public OnBalanceVolume(BarSeries bars, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
-            Price = price;
+            Bars = bars;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-
+            Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
         }
 
         protected override void Init()
@@ -34,7 +42,27 @@ namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            if (Price.Count > 1)
+            {
+                //if (Math.Abs(Price[pos] - Price[pos + 1]) < 1e-20)
+                if (Math.Abs(Price[pos] - Price[pos+1]) < 1e-20)
+                {
+                    Obv[pos] = Obv[pos + 1];
+                }
+                else if (Price[pos] < Price[pos + 1])
+                {
+                    Obv[pos] = Obv[pos + 1] - Bars.Volume[pos];
+                }
+                else// if (Price[pos] < Price[pos + 1])
+                {
+                    Obv[pos] = Obv[pos + 1] + Bars.Volume[pos];
+                }
+            }
+            else
+            {
+                Obv[pos] = Bars.Volume[pos];
+            }
         }
     }
 }

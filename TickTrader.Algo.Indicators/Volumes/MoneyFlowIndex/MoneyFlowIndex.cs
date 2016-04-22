@@ -1,10 +1,14 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 {
     [Indicator(Category = "Volumes", DisplayName = "Volumes/Money Flow Index")]
     public class MoneyFlowIndex : Indicator
     {
+        private IMA _positiveMa, _negativeMa;
+
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
@@ -28,7 +32,10 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 
         protected void InitializeIndicator()
         {
-
+            _positiveMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _positiveMa.Init();
+            _negativeMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _negativeMa.Init();
         }
 
         protected override void Init()
@@ -38,7 +45,49 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            var positive = 0.0;
+            var negative = 0.0;
+            if (Bars.Count > 1)
+            {
+                if (Bars.Typical[pos] > Bars.Typical[pos + 1])
+                {
+                    positive = Bars.Volume[pos]*Bars.Typical[pos];
+                }
+                if (Bars.Typical[pos] < Bars.Typical[pos + 1])
+                {
+                    negative = Bars.Volume[pos]*Bars.Typical[pos];
+                }
+            }
+            else
+            {
+                positive = Bars.Volume[pos]*Bars.Typical[pos];
+            }
+            if (IsUpdate)
+            {
+                _positiveMa.UpdateLast(positive);
+                _negativeMa.UpdateLast(negative);
+            }
+            else
+            {
+                _positiveMa.Add(positive);
+                _negativeMa.Add(negative);
+            }
+            if (!double.IsNaN(_negativeMa.Average) && !double.IsNaN(_positiveMa.Average))
+            {
+                if (Math.Abs(_negativeMa.Average) > 1e-20)
+                {
+                    Mfi[pos] = 100.0 - 100.0/(1.0 + _positiveMa.Average/_negativeMa.Average);
+                }
+                else
+                {
+                    Mfi[pos] = 100.0;
+                }
+            }
+            else
+            {
+                Mfi[pos] = double.NaN;
+            }
         }
     }
 }

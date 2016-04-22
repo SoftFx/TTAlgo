@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.WilliamsPercentRange
 {
@@ -38,7 +39,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.WilliamsPercentRange
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            Wpr[pos] = (PeriodHelper.FindMax(Bars.High, Period) - Bars.Close[pos])/
+                       (PeriodHelper.FindMax(Bars.High, Period) - PeriodHelper.FindMin(Bars.Low, Period))*(-100.0);
         }
     }
 }

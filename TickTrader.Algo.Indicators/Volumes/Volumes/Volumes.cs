@@ -25,10 +25,7 @@ namespace TickTrader.Algo.Indicators.Volumes.Volumes
             InitializeIndicator();
         }
 
-        protected void InitializeIndicator()
-        {
-
-        }
+        protected void InitializeIndicator() { }
 
         protected override void Init()
         {
@@ -37,7 +34,25 @@ namespace TickTrader.Algo.Indicators.Volumes.Volumes
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            if (Bars.Count > 1)
+            {
+                if (Bars.Volume[pos] > Bars.Volume[pos + 1])
+                {
+                    ValueUp[pos] = Bars.Volume[pos];
+                    ValueDown[pos] = double.NaN;
+                }
+                else
+                {
+                    ValueUp[pos] = double.NaN;
+                    ValueDown[pos] = Bars.Volume[pos];
+                }
+            }
+            else
+            {
+                ValueUp[pos] = Bars.Volume[pos];
+                ValueDown[pos] = double.NaN;
+            }
         }
     }
 }

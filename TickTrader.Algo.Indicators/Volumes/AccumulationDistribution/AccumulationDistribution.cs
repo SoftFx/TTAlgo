@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Indicators.Volumes.AccumulationDistribution
 {
@@ -34,7 +35,25 @@ namespace TickTrader.Algo.Indicators.Volumes.AccumulationDistribution
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            Ad[pos] = (Bars.Close[pos] - Bars.Low[pos]) - (Bars.High[pos] - Bars.Close[pos]);
+            if (Math.Abs(Ad[pos]) > 1e-20)
+            {
+                var tmp = (Bars.High[pos] - Bars.Low[pos]);
+                if (Math.Abs(tmp) < 1e-20)
+                {
+                    Ad[pos] = 0.0;
+                }
+                else
+                {
+                    Ad[pos] /= tmp;
+                    Ad[pos] *= Bars.Volume[pos];
+                }
+            }
+            if (Bars.Count > 1)
+            {
+                Ad[pos] += Ad[pos + 1];
+            }
         }
     }
 }
