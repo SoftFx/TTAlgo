@@ -5,9 +5,9 @@ namespace TickTrader.Algo.Indicators.UTest.Utility
 {
     public static class BarInputHelper
     {
-        public static void MapBars(IndicatorBuilder builder, string symbol)
+        public static void MapBars(IndicatorBuilder builder, string symbol, string inputName = "Bars")
         {
-            builder.MapBarInput("Bars", symbol);
+            builder.MapBarInput(inputName, symbol);
         }
 
         public static void MapPrice(IndicatorBuilder builder, string symbol, AppliedPrice.Target targetPrice,

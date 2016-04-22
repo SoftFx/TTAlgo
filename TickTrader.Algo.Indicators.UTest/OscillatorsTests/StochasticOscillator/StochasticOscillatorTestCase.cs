@@ -18,6 +18,15 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.StochasticOscillator
             DPeriod = dPeriod;
         }
 
+        protected override void SetupParameters()
+        {
+            base.SetupParameters();
+            SetParameter("TargetPrice", TargetPrice);
+            SetParameter("KPeriod", KPeriod);
+            SetParameter("Slowing", Slowing);
+            SetParameter("DPeriod", DPeriod);
+        }
+
         protected override void SetupInput()
         {
             BarInputHelper.MapBars(Builder, Symbol);

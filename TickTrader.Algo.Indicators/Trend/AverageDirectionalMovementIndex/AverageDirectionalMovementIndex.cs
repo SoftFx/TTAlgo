@@ -1,15 +1,25 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 {
     [Indicator(Category = "Trend", DisplayName = "Trend/Average Directional Movement Index")]
     public class AverageDirectionalMovementIndex : Indicator
     {
+        private IMA _plusMa, _minusMa, _adxMa;
+
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
+        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
+        public AppliedPrice.Target TargetPrice { get; set; }
+
         [Input]
-        public DataSeries Price { get; set; }
+        public BarSeries Bars { get; set; }
+
+        public DataSeries Price { get; private set; }
 
         [Output(DisplayName = "ADX", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Adx { get; set; }
@@ -24,17 +34,25 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         public AverageDirectionalMovementIndex() { }
 
-        public AverageDirectionalMovementIndex(DataSeries price, int period)
+        public AverageDirectionalMovementIndex(DataSeries price, int period,
+            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
             Price = price;
             Period = period;
+            TargetPrice = targetPrice;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-
+            Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
+            _plusMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _plusMa.Init();
+            _minusMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _minusMa.Init();
+            _adxMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _adxMa.Init();
         }
 
         protected override void Init()
@@ -44,7 +62,68 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         protected override void Calculate()
         {
-            
+            var plusDmi = 0.0;
+            var minusDmi = 0.0;
+            var pos = LastPositionChanged;
+            if (Bars.Count > 1)
+            {
+                plusDmi = Bars.High[pos] - Bars.High[pos + 1];
+                minusDmi = Bars.Low[pos + 1] - Bars.Low[pos];
+                plusDmi = (plusDmi < 0) ? 0 : plusDmi;
+                minusDmi = (minusDmi < 0) ? 0 : minusDmi;
+                if (Math.Abs(plusDmi - minusDmi) < 1e-20)
+                {
+                    plusDmi = 0.0;
+                    minusDmi = 0.0;
+                }
+                else if (plusDmi < minusDmi)
+                {
+                    plusDmi = 0.0;
+                }
+                else if (minusDmi < plusDmi)
+                {
+                    minusDmi = 0.0;
+                }
+                var tr = Math.Abs(Bars.High[pos] - Bars.Low[pos]);
+                tr = Math.Max(tr, Math.Abs(Bars.High[pos] - Price[pos + 1]));
+                tr = Math.Max(tr, Math.Abs(Bars.Low[pos] - Price[pos + 1]));
+                if (Math.Abs(tr) < 1e-20)
+                {
+                    plusDmi = 0.0;
+                    minusDmi = 0.0;
+                }
+                else
+                {
+                    plusDmi = plusDmi/tr*100.0;
+                    minusDmi = minusDmi/tr*100.0;
+                }
+            }
+            if (IsUpdate)
+            {
+                _plusMa.UpdateLast(plusDmi);
+                _minusMa.UpdateLast(minusDmi);
+            }
+            else
+            {
+                _plusMa.Add(plusDmi);
+                _minusMa.Add(minusDmi);
+            }
+            PlusDmi[pos] = _plusMa.Average;
+            MinusDmi[pos] = _minusMa.Average;
+            var dx = Math.Abs((PlusDmi[pos] - MinusDmi[pos])/(PlusDmi[pos] + MinusDmi[pos]))*100.0;
+            if (double.IsNaN(dx))
+            {
+                dx = 0.0;
+            }
+            if (IsUpdate)
+            {
+                _adxMa.UpdateLast(dx);
+            }
+            else
+            {
+                _adxMa.Add(dx);
+            }
+            Adx[pos] = _adxMa.Average;
         }
     }
 }

@@ -93,6 +93,7 @@
     <Compile Include="Trend\MovingAverage\SMMA.cs" />
     <Compile Include="Trend\MovingAverage\TriMA.cs" />
     <Compile Include="Utility\IShift.cs" />
+    <Compile Include="Utility\PeriodHelper.cs" />
     <Compile Include="Utility\ShifterBase.cs" />
     <Compile Include="Utility\SimpleShifter.cs" />
     <Compile Include="ZigZag\ZigZag.cs" />
