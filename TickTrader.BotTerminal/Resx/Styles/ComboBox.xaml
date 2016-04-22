@@ -86,60 +86,7 @@
                               VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
                               SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
                               IsHitTestVisible="False" />
-        </Grid>
-        <ControlTemplate.Triggers>
-            <Trigger Property="IsFocused" Value="True">
-                <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{DynamicResource ControlFocusBorder}" />
-            </Trigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>
 
-    <!-- ComboBox Template (Editable Mode) -->
-
-    <ControlTemplate x:Key="Editable_ComboBox_Template" TargetType="ComboBox">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="14" />
-            </Grid.ColumnDefinitions>
-            <Popup Name="Popup"
-                   IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}"
-                   Placement="Bottom"
-                   PopupAnimation="Slide"
-                   AllowsTransparency="True"
-                   Margin="0"
-                   Grid.ColumnSpan="2">
-                <Border BorderThickness="1"
-                        CornerRadius="0,0,3,3"
-                        Margin="12,0,12,12"
-                        BorderBrush="{DynamicResource Menu_BorderBrush}"
-                        Background="{TemplateBinding Background}"
-                        MinWidth="{TemplateBinding FrameworkElement.ActualWidth}"
-                        MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}"
-                        Name="DropDownBorder">
-                    <ScrollViewer Name="DropDownScrollViewer" Template="{DynamicResource ScrollViewer_SimpleTemplate}"
-                                  Margin="2" VirtualizingPanel.ScrollUnit="Item">
-                        <Grid Name="grid" RenderOptions.ClearTypeHint="Enabled">
-                            <Canvas Name="canvas" Width="0" Height="0" HorizontalAlignment="Left" VerticalAlignment="Top">
-                                <Rectangle Fill="{x:Null}" Name="OpaqueRect" Width="Auto" Height="Auto" />
-                            </Canvas>
-                            <ItemsPresenter Name="ItemsPresenter"
-                                            SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
-                                            KeyboardNavigation.DirectionalNavigation="Contained" />
-                        </Grid>
-                    </ScrollViewer>
-                    <Border.Effect>
-                        <DropShadowEffect ShadowDepth="0" BlurRadius="12" Color="Black" Opacity="0.7"/>
-                    </Border.Effect>
-                </Border>
-            </Popup>
-            <ToggleButton Name="ToggleButton"
-                          IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                          Style="{StaticResource ComboBox_ToggleStyle}"
-                          Grid.ColumnSpan="2"
-                          BorderBrush="Transparent"
-                          Foreground="{TemplateBinding Foreground}"
-                          Background="{TemplateBinding Background}"/>
             <TextBox IsReadOnly="False" 
                      Name="PART_EditableTextBox"
                      HorizontalContentAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
@@ -170,8 +117,16 @@
             </TextBox>
         </Grid>
         <ControlTemplate.Triggers>
-            <Trigger SourceName="PART_EditableTextBox" Property="IsFocused" Value="True">
+            <Trigger Property="IsFocused" Value="True">
                 <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{DynamicResource ControlFocusBorder}" />
+            </Trigger>
+            <Trigger Property="IsEditable" Value="True">
+                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="contentPresenter" Property="Visibility" Value="Collapsed"/>
+            </Trigger>
+            <Trigger Property="IsEditable" Value="False">
+                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="contentPresenter" Property="Visibility" Value="Visible"/>
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -201,6 +156,7 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Padding" Value="2 3 3 3"/>
+        <Setter Property="Template" Value="{StaticResource ComboBox_Template}"></Setter>
         <Style.Resources>
             <Style TargetType="ComboBoxItem">
                 <Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -211,12 +167,6 @@
             </Style>
         </Style.Resources>
         <Style.Triggers>
-            <Trigger Property="ComboBox.IsEditable" Value="True">
-                <Setter Property="Template" Value="{StaticResource Editable_ComboBox_Template}"></Setter>
-            </Trigger>
-            <Trigger Property="ComboBox.IsEditable" Value="False">
-                <Setter Property="Template" Value="{StaticResource ComboBox_Template}"></Setter>
-            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Background" Value="{DynamicResource Dialog_ControlDisabledBackground}"/>
             </Trigger>
