@@ -3,6 +3,7 @@ using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.WilliamsPercentRange
 {
+    [TestClass]
     public class WilliamsPercentRangeTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int period)
@@ -21,15 +22,15 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.WilliamsPercentRange
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_20()
+        public void TestMeasuresAUDJPY_M30_30()
         {
-            TestMeasures("AUDJPY", "M30", 20);
+            TestMeasures("AUDJPY", "M30", 30);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_10()
+        public void TestMeasuresAUDNZD_M15_12()
         {
-            TestMeasures("AUDNZD", "M15", 10);
+            TestMeasures("AUDNZD", "M15", 12);
         }
 
         [TestMethod]
@@ -39,9 +40,9 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.WilliamsPercentRange
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_17()
+        public void TestMeasuresEURUSD_H1_10()
         {
-            TestMeasures("EURUSD", "H1", 17);
+            TestMeasures("EURUSD", "H1", 10);
         }
 
         [TestMethod]

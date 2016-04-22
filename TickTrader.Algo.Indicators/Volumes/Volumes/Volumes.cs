@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Indicators.Volumes.Volumes
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }

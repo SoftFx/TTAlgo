@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }

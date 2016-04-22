@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.WilliamsPercentRange
 
         protected override void Calculate()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }

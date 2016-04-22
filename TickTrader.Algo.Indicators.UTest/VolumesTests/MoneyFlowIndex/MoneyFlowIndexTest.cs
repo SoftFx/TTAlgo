@@ -21,33 +21,33 @@ namespace TickTrader.Algo.Indicators.UTest.VolumesTests.MoneyFlowIndex
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_20()
+        public void TestMeasuresAUDJPY_M30_25()
         {
-            TestMeasures("AUDJPY", "M30", 20);
+            TestMeasures("AUDJPY", "M30", 25);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_10()
+        public void TestMeasuresAUDNZD_M15_11()
         {
-            TestMeasures("AUDNZD", "M15", 10);
+            TestMeasures("AUDNZD", "M15", 11);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_25()
+        public void TestMeasuresAUDNZD_M15_30()
         {
-            TestMeasures("AUDNZD", "M15", 25);
+            TestMeasures("AUDNZD", "M15", 30);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_17()
+        public void TestMeasuresEURUSD_H1_7()
         {
-            TestMeasures("EURUSD", "H1", 17);
+            TestMeasures("EURUSD", "H1", 7);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_40()
+        public void TestMeasuresEURUSD_H1_36()
         {
-            TestMeasures("EURUSD", "H1", 40);
+            TestMeasures("EURUSD", "H1", 36);
         }
     }
 }
