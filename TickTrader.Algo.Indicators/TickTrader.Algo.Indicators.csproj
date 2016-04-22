@@ -66,6 +66,7 @@
     <Compile Include="Oscillators\RelativeStrengthIndex\RelativeStrengthIndex.cs" />
     <Compile Include="Oscillators\RelativeVigorIndex\RelativeVigorIndex.cs" />
     <Compile Include="Oscillators\StochasticOscillator\StochasticOscillator.cs" />
+    <Compile Include="Oscillators\WilliamsPercentRange\WilliamsPercentRange.cs" />
     <Compile Include="Trend\AverageDirectionalMovementIndex\AverageDirectionalMovementIndex.cs" />
     <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
     <Compile Include="Trend\Envelopes\Envelopes.cs" />
@@ -96,6 +97,10 @@
     <Compile Include="Utility\PeriodHelper.cs" />
     <Compile Include="Utility\ShifterBase.cs" />
     <Compile Include="Utility\SimpleShifter.cs" />
+    <Compile Include="Volumes\AccumulationDistribution\AccumulationDistribution.cs" />
+    <Compile Include="Volumes\MoneyFlowIndex\MoneyFlowIndex.cs" />
+    <Compile Include="Volumes\OnBalanceVolume\OnBalanceVolume.cs" />
+    <Compile Include="Volumes\Volumes\Volumes.cs" />
     <Compile Include="ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>
