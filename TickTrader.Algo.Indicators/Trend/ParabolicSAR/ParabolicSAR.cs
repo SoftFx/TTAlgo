@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
     {
         private double _acceleration, _lastLow, _lastHigh, _price;
         private double _prevAcceleration, _prevLastLow, _prevLastHigh, _prevPrice;
-        private bool? _positionLong;
+        private bool? _positionLong, _prevPositionLong;
 
         [Parameter(DefaultValue = 0.02, DisplayName = "Step")]
         public double Step { get; set; }
@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
             _prevLastHigh = double.NegativeInfinity;
             _prevPrice = double.NaN;
             _positionLong = null;
+            _prevPositionLong = null;
         }
 
         protected override void Init()
@@ -62,18 +63,16 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
                 _prevLastLow = _lastLow;
                 _prevLastHigh = _lastHigh;
                 _prevPrice = _price;
+                _prevPositionLong = _positionLong;
             }
             if (double.IsNaN(_prevAcceleration))
             {
                 _acceleration = Step;
             }
-            //else if (_prevAcceleration + Step < Maximum)
-            //{
-            //    _acceleration += _prevAcceleration + Step;
-            //}
-            _lastLow = Math.Min(_prevLastLow, Bars.Low[pos]);
-            _lastHigh = Math.Max(_prevLastHigh, Bars.High[pos]);
+            _lastLow = _prevLastLow;
+            _lastHigh = _prevLastHigh;
             _price = _prevPrice;
+            _positionLong = _prevPositionLong;
             if (_positionLong == null)
             {
                 Sar[pos] = double.NaN;
@@ -99,14 +98,16 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
                 {
                     _acceleration = double.NaN;
                     _positionLong = false;
+                    _price = Bars.Low[pos];
                     _lastLow = Bars.Low[pos];
                     Sar[pos] = _lastHigh;
                     return;
                 }
-                if (!_positionLong.Value && Bars.Low[pos] < Sar[pos + 1])
+                if (!_positionLong.Value && Bars.High[pos] > Sar[pos + 1])
                 {
                     _acceleration = double.NaN;
                     _positionLong = true;
+                    _price = Bars.High[pos];
                     _lastHigh = Bars.High[pos];
                     Sar[pos] = _lastLow;
                     return;
@@ -131,6 +132,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
                     {
                         _acceleration = double.NaN;
                         _positionLong = false;
+                        _price = Bars.Low[pos];
                         _lastLow = Bars.Low[pos];
                         Sar[pos] = _lastHigh;
                         return;
@@ -160,6 +162,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
                     {
                         _acceleration = double.NaN;
                         _positionLong = true;
+                        _price = Bars.High[pos];
                         _lastHigh = Bars.High[pos];
                         Sar[pos] = _lastLow;
                         return;
@@ -172,6 +175,8 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
                 }
                 Sar[pos] = sar;
             }
+            _lastLow = Math.Min(_prevLastLow, Bars.Low[pos]);
+            _lastHigh = Math.Max(_prevLastHigh, Bars.High[pos]);
         }
     }
 }
