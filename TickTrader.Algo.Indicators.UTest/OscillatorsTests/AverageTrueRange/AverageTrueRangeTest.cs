@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.AverageTrueRange
         {
             TestMeasures("EURUSD", "H1", 5);
         }
+
+        [TestMethod]
+        public void TestMeasuresAUDUSD_H4_14()
+        {
+            TestMeasures("AUDUSD", "H4", 14);
+        }
     }
 }

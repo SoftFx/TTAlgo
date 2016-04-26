@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.Momentum
         {
             TestMeasures("EURUSD", "H1", 5);
         }
+
+        [TestMethod]
+        public void TestMeasuresAUDNZD_H4_14()
+        {
+            TestMeasures("AUDNZD", "H4", 14);
+        }
     }
 }

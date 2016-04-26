@@ -51,5 +51,11 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.MarketFacilitationI
         {
             TestMeasures("AUDCAD", "H1", 10e4);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_H1()
+        {
+            TestMeasures("CADCHF", "H1", 10e4);
+        }
     }
 }

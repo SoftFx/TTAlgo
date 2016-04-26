@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.AcceleratorOscillat
         {
             TestMeasures("AUDCAD", "H1");
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_M15()
+        {
+            TestMeasures("CADCHF", "M15");
+        }
     }
 }

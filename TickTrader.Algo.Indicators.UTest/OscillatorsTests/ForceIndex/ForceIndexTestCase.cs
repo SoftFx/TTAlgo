@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 using TickTrader.Algo.Indicators.UTest.Utility;
 
@@ -37,6 +38,14 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.ForceIndex
         protected override void GetOutput()
         {
             PutOutputToBuffer("Force", 0);
+        }
+
+        protected override void CheckAnswerUnit(int index, List<double>[] metaAnswer)
+        {
+            if (!(index == Period - 1 && double.IsNaN(AnswerBuffer[0][index])))
+            {
+                base.CheckAnswerUnit(index, metaAnswer);
+            }
         }
     }
 }

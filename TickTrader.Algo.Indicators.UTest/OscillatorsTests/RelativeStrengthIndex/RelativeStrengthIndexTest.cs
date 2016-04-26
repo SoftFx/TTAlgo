@@ -51,5 +51,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeStrengthInde
         {
             TestMeasures("EURUSD", "H1", 20);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_H1_14()
+        {
+            TestMeasures("CADCHF", "H1", 14);
+        }
     }
 }

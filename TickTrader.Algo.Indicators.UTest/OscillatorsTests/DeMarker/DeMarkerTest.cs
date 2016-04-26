@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.DeMarker
         {
             TestMeasures("EURUSD", "H1", 40);
         }
+
+        [TestMethod]
+        public void TestMeasuresAUDCAD_M1_14()
+        {
+            TestMeasures("AUDCAD", "M1", 14);
+        }
     }
 }

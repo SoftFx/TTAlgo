@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.RelativeVigorIndex
         {
             TestMeasures("EURUSD", "H1", 5);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_H1_10()
+        {
+            TestMeasures("CADCHF", "H1", 10);
+        }
     }
 }
