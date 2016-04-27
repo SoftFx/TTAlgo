@@ -1,65 +1,78 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Indicators.HeikenAshi
 {
 
-    [Indicator]
+    [Indicator(DisplayName = "Heiken Ashi", IsOverlay = true)]
     public class HeikenAshi : Indicator
     {
         [Input]
         public BarSeries Bars { get; set; }
 
-        [Output]
-        public DataSeries ExtLowHighBuffer { get; set; }
-        [Output]
-        public DataSeries ExtHighLowBuffer { get; set; }
-        [Output]
-        public DataSeries ExtOpenBuffer { get; set; }
-        [Output]
-        public DataSeries ExtCloseBuffer { get; set; }
+        [Output(DisplayName = "Low/High", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
+        public DataSeries HaLowHigh { get; set; }
+        [Output(DisplayName = "High/Low", DefaultColor = Colors.White, PlotType = PlotType.Histogram)]
+        public DataSeries HaHighLow { get; set; }
+        [Output(DisplayName = "Open", DefaultColor = Colors.Red, PlotType = PlotType.Histogram, DefaultThickness = 3)]
+        public DataSeries HaOpen { get; set; }
+        [Output(DisplayName = "Close", DefaultColor = Colors.White, PlotType = PlotType.Histogram, DefaultThickness = 3)]
+        public DataSeries HaClose { get; set; }
+
+        public int LastPositionChanged { get { return 0; } }
+
+        public HeikenAshi() { }
+
+        public HeikenAshi(BarSeries bars)
+        {
+            Bars = bars;
+
+            InitializeIndicator();
+        }
+
+        protected void InitializeIndicator() { }
+
+        protected override void Init()
+        {
+            InitializeIndicator();
+        }
 
         protected override void Calculate()
         {
-            if (Bars.Count == 1)
-            {
-                if (Bars[0].Open < Bars[0].Close)
-                {
-                    ExtLowHighBuffer[0] = Bars[0].Low;
-                    ExtHighLowBuffer[0] = Bars[0].High;
-                }
-                else
-                {
-                    ExtLowHighBuffer[0] = Bars[0].High;
-                    ExtHighLowBuffer[0] = Bars[0].Low;
-                }
-                ExtOpenBuffer[0] = Bars[0].Open;
-                ExtCloseBuffer[0] = Bars[0].Close;
-            }
-
+            var pos = LastPositionChanged;
             if (Bars.Count > 1)
             {
-                double haOpen = (ExtOpenBuffer[1] + ExtCloseBuffer[1]) / 2;
-                double haClose = (Bars[0].Open + Bars[0].High + Bars[0].Low + Bars[0].Close) / 4;
-                double haHigh = Math.Max(Bars[0].High, Math.Max(haOpen, haClose));
-                double haLow = Math.Min(Bars[0].Low, Math.Min(haOpen, haClose));
+                var haOpen = (HaOpen[pos + 1] + HaClose[pos + 1])/2;
+                var haClose = (Bars.Open[pos] + Bars.High[pos] + Bars.Low[pos] + Bars.Close[pos])/4;
+                var haHigh = Math.Max(Bars.High[pos], Math.Max(haOpen, haClose));
+                var haLow = Math.Min(Bars.Low[pos], Math.Min(haOpen, haClose));
                 if (haOpen < haClose)
                 {
-                    ExtLowHighBuffer[0] = haLow;
-                    ExtHighLowBuffer[0] = haHigh;
+                    HaLowHigh[pos] = haLow;
+                    HaHighLow[pos] = haHigh;
                 }
                 else
                 {
-                    ExtLowHighBuffer[0] = haHigh;
-                    ExtHighLowBuffer[0] = haLow;
+                    HaLowHigh[pos] = haHigh;
+                    HaHighLow[pos] = haLow;
                 }
-                ExtOpenBuffer[0] = haOpen;
-                ExtCloseBuffer[0] = haClose;
+                HaOpen[pos] = haOpen;
+                HaClose[pos] = haClose;
             }
-
-
-
+            else
+            {
+                if (Bars.Open[pos] < Bars.Close[pos])
+                {
+                    HaLowHigh[pos] = Bars.Low[pos];
+                    HaHighLow[pos] = Bars.High[pos];
+                }
+                else
+                {
+                    HaLowHigh[pos] = Bars.High[pos];
+                    HaHighLow[pos] = Bars.Low[pos];
+                }
+                HaOpen[pos] = Bars.Open[pos];
+                HaClose[pos] = Bars.Close[pos];
+            }
         }
     }
 }

@@ -14,10 +14,10 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.HeikenAshi
 
         protected override void GetOutput()
         {
-            PutOutputToBuffer("ExtLowHighBuffer", 0);
-            PutOutputToBuffer("ExtHighLowBuffer", 1);
-            PutOutputToBuffer("ExtOpenBuffer", 2);
-            PutOutputToBuffer("ExtCloseBuffer", 3);
+            PutOutputToBuffer("HaLowHigh", 0);
+            PutOutputToBuffer("HaHighLow", 1);
+            PutOutputToBuffer("HaOpen", 2);
+            PutOutputToBuffer("HaClose", 3);
         }
     }
 }

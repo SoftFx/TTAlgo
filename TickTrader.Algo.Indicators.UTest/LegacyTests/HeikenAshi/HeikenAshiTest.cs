@@ -10,8 +10,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.HeikenAshi
         {
             var test = new HeikenAshiTestCase(typeof(Indicators.HeikenAshi.HeikenAshi), symbol,
                 PathHelper.QuotesPath(dir, symbol), PathHelper.AnswerPath(dir, symbol, "Heiken Ashi"));
-            test.InvokeFullBuildTest();
-            //LaunchTestCase(test);
+            LaunchTestCase(test);
         }
 
         [TestMethod]
