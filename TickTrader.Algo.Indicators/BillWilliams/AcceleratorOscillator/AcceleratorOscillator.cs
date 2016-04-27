@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
@@ -8,6 +9,15 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
     {
         private AwesomeOscillator.AwesomeOscillator _ao;
         private IMA _aoSma;
+
+        [Parameter(DisplayName = "Fast SMA Period", DefaultValue = 5)]
+        public int FastSmaPeriod { get; set; }
+
+        [Parameter(DisplayName = "Slow SMA Period", DefaultValue = 34)]
+        public int SlowSmaPeriod { get; set; }
+
+        [Parameter(DisplayName = "Data Limit", DefaultValue = 34)]
+        public int DataLimit { get; set; }
 
         [Input]
         public BarSeries Bars { get; set; }
@@ -22,17 +32,20 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
 
         public AcceleratorOscillator() { }
 
-        public AcceleratorOscillator(BarSeries bars)
+        public AcceleratorOscillator(BarSeries bars, int fastSmaPeriod, int slowSmaPeriod, int dataLimit)
         {
             Bars = bars;
+            FastSmaPeriod = fastSmaPeriod;
+            SlowSmaPeriod = slowSmaPeriod;
+            DataLimit = dataLimit;
 
             InitializeIndicator();
         }
 
         private void InitializeIndicator()
         {
-            _ao = new AwesomeOscillator.AwesomeOscillator(Bars);
-            _aoSma = MABase.CreateMaInstance(AwesomeOscillator.AwesomeOscillator.FastSmaPeriod, Method.Simple);
+            _ao = new AwesomeOscillator.AwesomeOscillator(Bars, FastSmaPeriod, SlowSmaPeriod, DataLimit);
+            _aoSma = MABase.CreateMaInstance(FastSmaPeriod, Method.Simple);
             _aoSma.Init();
         }
 
@@ -61,7 +74,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
                 ? (double.IsNaN(ValueUp[pos + 1]) ? ValueDown[pos + 1] : ValueUp[pos + 1])
                 : double.NaN;
             if (Bars.Count ==
-                AwesomeOscillator.AwesomeOscillator.FastSmaPeriod + AwesomeOscillator.AwesomeOscillator.SlowSmaPeriod)
+                FastSmaPeriod + SlowSmaPeriod + Math.Max(0, DataLimit - Math.Max(SlowSmaPeriod, FastSmaPeriod)))
             {
                 prev = 0.0;
             }

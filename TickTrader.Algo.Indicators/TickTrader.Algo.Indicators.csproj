@@ -38,22 +38,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Accelerator\Accelerator.cs" />
-    <Compile Include="Accumulation\Accumulation.cs" />
-    <Compile Include="Alligator\Alligator.cs" />
-    <Compile Include="ATR\ATR.cs" />
-    <Compile Include="Awesome\Awesome.cs" />
-    <Compile Include="Bands\Bands.cs" />
-    <Compile Include="Bears\Bears.cs" />
     <Compile Include="BillWilliams\AcceleratorOscillator\AcceleratorOscillator.cs" />
     <Compile Include="BillWilliams\Alligator\Alligator.cs" />
     <Compile Include="BillWilliams\AwesomeOscillator\AwesomeOscillator.cs" />
     <Compile Include="BillWilliams\Fractals\Fractals.cs" />
     <Compile Include="BillWilliams\GatorOscillator\GatorOscillator.cs" />
     <Compile Include="BillWilliams\MarketFacilitationIndex\MarketFacilitationIndex.cs" />
-    <Compile Include="Bulls\Bulls.cs" />
-    <Compile Include="CCI\CCI.cs" />
-    <Compile Include="CustomMovingAverages\CustomMovingAverages.cs" />
     <Compile Include="Oscillators\AverageTrueRange\AverageTrueRange.cs" />
     <Compile Include="Oscillators\BearsPower\BearsPower.cs" />
     <Compile Include="Oscillators\BullsPower\BullsPower.cs" />
@@ -74,16 +64,8 @@
     <Compile Include="Trend\ParabolicSAR\ParabolicSAR.cs" />
     <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
     <Compile Include="Utility\AppliedPrice.cs" />
-    <Compile Include="Functions\MovingAverages.cs" />
     <Compile Include="HeikenAshi\HeikenAshi.cs" />
-    <Compile Include="Ichimoku\Ichimoku.cs" />
-    <Compile Include="MACD\MACD.cs" />
-    <Compile Include="Momentum\Momentum.cs" />
-    <Compile Include="OsMA\OsMA.cs" />
-    <Compile Include="Parabolic\Parabolic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RSI\RSI.cs" />
-    <Compile Include="Stochastic\Stochastic.cs" />
     <Compile Include="Trend\MovingAverage\CustomEMA.cs" />
     <Compile Include="Trend\MovingAverage\EMA.cs" />
     <Compile Include="Trend\MovingAverage\IMA.cs" />

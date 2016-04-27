@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Functions;
 namespace TickTrader.Algo.Indicators.HeikenAshi
 {
 

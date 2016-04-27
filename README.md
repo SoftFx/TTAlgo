@@ -14,12 +14,12 @@ In order to compile project it is required to add NuGet Package Sources for
 ## MetaTrader Indicators List
 
  - Trend
-  	- [ ] [Average Directional Movement Index](https://intranet.fxopen.org/jira/browse/TTALGO-57)
+  	- [x] [Average Directional Movement Index](https://intranet.fxopen.org/jira/browse/TTALGO-57)
   	- [x] [Bollinger Bands](https://intranet.fxopen.org/jira/browse/TTALGO-76) (extended version of Common/Bands)
   	- [x] [Envelopes](https://intranet.fxopen.org/jira/browse/TTALGO-58)
-  	- [ ] [Ichimoku Kinko Hyo](https://intranet.fxopen.org/jira/browse/TTALGO-77) (extended version of Common/Ichimoku)
+  	- [x] [Ichimoku Kinko Hyo](https://intranet.fxopen.org/jira/browse/TTALGO-77) (extended version of Common/Ichimoku)
   	- [x] [Moving Average](https://intranet.fxopen.org/jira/browse/TTALGO-78) (extended version of Common/Custom Moving Averages)
-  	- [ ] [Parabolic SAR](https://intranet.fxopen.org/jira/browse/TTALGO-79) (extended version of Common/Parabolic)
+  	- [x] [Parabolic SAR](https://intranet.fxopen.org/jira/browse/TTALGO-79) (extended version of Common/Parabolic)
   	- [x] [Standard Deviation](https://intranet.fxopen.org/jira/browse/TTALGO-59)
  - Oscillators
  	- [x] [Average True Range](https://intranet.fxopen.org/jira/browse/TTALGO-60)
@@ -33,20 +33,20 @@ In order to compile project it is required to add NuGet Package Sources for
  	- [x] [Moving Average of Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-64)
  	- [x] [Relative Strength Index](https://intranet.fxopen.org/jira/browse/TTALGO-65)
  	- [x] [Relative Vigor Index](https://intranet.fxopen.org/jira/browse/TTALGO-66)
- 	- [ ] [Stochastic Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-84) (extended version of Common/Stochastic)
- 	- [ ] [Williams' Percent Range](https://intranet.fxopen.org/jira/browse/TTALGO-67)
+ 	- [x] [Stochastic Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-84) (extended version of Common/Stochastic)
+ 	- [x] [Williams' Percent Range](https://intranet.fxopen.org/jira/browse/TTALGO-67)
  - Volumes
- 	- [ ] [Accumulation/Distribution](https://intranet.fxopen.org/jira/browse/TTALGO-85) (extended version of Common/Accumulation)
- 	- [ ] [Money Flow Index](https://intranet.fxopen.org/jira/browse/TTALGO-68)
- 	- [ ] [On Balance Volume](https://intranet.fxopen.org/jira/browse/TTALGO-69)
- 	- [ ] [Volumes](https://intranet.fxopen.org/jira/browse/TTALGO-70)
+ 	- [x] [Accumulation/Distribution](https://intranet.fxopen.org/jira/browse/TTALGO-85) (extended version of Common/Accumulation)
+ 	- [x] [Money Flow Index](https://intranet.fxopen.org/jira/browse/TTALGO-68)
+ 	- [x] [On Balance Volume](https://intranet.fxopen.org/jira/browse/TTALGO-69)
+ 	- [x] [Volumes](https://intranet.fxopen.org/jira/browse/TTALGO-70)
  - Bill Williams
- 	- [ ] [Accelerator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-86) (extended version of Common/Accelerator)
+ 	- [x] [Accelerator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-86) (extended version of Common/Accelerator)
  	- [x] [Alligator](https://intranet.fxopen.org/jira/browse/TTALGO-87) (extended version of Common/Alligator)
- 	- [ ] [Awesome Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-88) (extended version of Common/Awesome)
- 	- [ ] [Fractals](https://intranet.fxopen.org/jira/browse/TTALGO-71)
- 	- [ ] [Gator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-72)
- 	- [ ] [Market Facilitation Index](https://intranet.fxopen.org/jira/browse/TTALGO-73)
+ 	- [x] [Awesome Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-88) (extended version of Common/Awesome)
+ 	- [x] [Fractals](https://intranet.fxopen.org/jira/browse/TTALGO-71)
+ 	- [x] [Gator Oscillator](https://intranet.fxopen.org/jira/browse/TTALGO-72)
+ 	- [x] [Market Facilitation Index](https://intranet.fxopen.org/jira/browse/TTALGO-73)
  - Common
 	 - [x] Accelerator
 	 - [x] Accumulation
