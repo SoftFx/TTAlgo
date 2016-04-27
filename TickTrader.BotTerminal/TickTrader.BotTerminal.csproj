@@ -153,6 +153,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Behaviors\DragDrop\DragAdorner.cs" />
+    <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
+    <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
@@ -624,6 +629,7 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
