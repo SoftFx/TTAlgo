@@ -19,43 +19,43 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.MarketFacilitationI
         [TestMethod]
         public void TestMeasuresAUDJPY_M30()
         {
-            TestMeasures("AUDJPY", "M30", 10e2);
+            TestMeasures("AUDJPY", "M30", 1e-3);
         }
 
         [TestMethod]
         public void TestMeasuresUSDCHF_M30()
         {
-            TestMeasures("USDCHF", "M30", 10e4);
+            TestMeasures("USDCHF", "M30", 1e-5);
         }
 
         [TestMethod]
         public void TestMeasuresAUDNZD_M15()
         {
-            TestMeasures("AUDNZD", "M15", 10e4);
+            TestMeasures("AUDNZD", "M15", 1e-5);
         }
 
         [TestMethod]
         public void TestMeasuresEURNZD_M15()
         {
-            TestMeasures("EURNZD", "M15", 10e4);
+            TestMeasures("EURNZD", "M15", 1e-5);
         }
 
         [TestMethod]
         public void TestMeasuresEURUSD_H1()
         {
-            TestMeasures("EURUSD", "H1", 10e4);
+            TestMeasures("EURUSD", "H1", 1e-5);
         }
 
         [TestMethod]
         public void TestMeasuresAUDCAD_H1()
         {
-            TestMeasures("AUDCAD", "H1", 10e4);
+            TestMeasures("AUDCAD", "H1", 1e-5);
         }
 
         [TestMethod]
         public void TestMeasuresCADCHF_H1()
         {
-            TestMeasures("CADCHF", "H1", 10e4);
+            TestMeasures("CADCHF", "H1", 1e-5);
         }
     }
 }

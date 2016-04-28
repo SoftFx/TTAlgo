@@ -19,14 +19,14 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ZigZag
 
         protected override void SetupParameters()
         {
-            SetParameter("InpDepth", InpDepth);
-            SetParameter("InpDeviation", InpDeviation);
-            SetParameter("InpBackstep", InpBackstep);
+            SetParameter("Depth", InpDepth);
+            SetParameter("Deviation", InpDeviation);
+            SetParameter("Backstep", InpBackstep);
         }
 
         protected override void GetOutput()
         {
-            PutOutputToBuffer("ExtZigzagBuffer", 0);
+            PutOutputToBuffer("Zigzag", 0);
         }
     }
 }
