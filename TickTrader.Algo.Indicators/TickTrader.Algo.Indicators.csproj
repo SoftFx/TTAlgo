@@ -77,6 +77,8 @@
     <Compile Include="Trend\MovingAverage\TriMA.cs" />
     <Compile Include="Utility\IShift.cs" />
     <Compile Include="Utility\PeriodHelper.cs" />
+    <Compile Include="Utility\RevertableDataSeries.cs" />
+    <Compile Include="Utility\RevertableList.cs" />
     <Compile Include="Utility\ShifterBase.cs" />
     <Compile Include="Utility\SimpleShifter.cs" />
     <Compile Include="Volumes\AccumulationDistribution\AccumulationDistribution.cs" />

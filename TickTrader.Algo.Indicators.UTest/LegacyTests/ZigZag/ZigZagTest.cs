@@ -10,8 +10,7 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ZigZag
         {
             var test = new ZigZagTestCase(typeof (Indicators.ZigZag.ZigZag), symbol, PathHelper.QuotesPath(dir, symbol),
                 PathHelper.AnswerPath(dir, symbol, "ZigZag"), inpDepth, inpDeviation, inpBackstep);
-            test.InvokeFullBuildTest();
-            //LaunchTestCase(test);
+            LaunchTestCase(test);
         }
 
         [TestMethod]

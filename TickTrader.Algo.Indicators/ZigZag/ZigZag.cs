@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -9,6 +8,13 @@ namespace TickTrader.Algo.Indicators.ZigZag
     [Indicator(IsOverlay = true, DisplayName = "Zigzag")]
     public class ZigZag : Indicator
     {
+        private bool? _peakNext, _prevPeakNext;
+        private double _lastLow, _lastHigh, _prevLastLow, _prevLastHigh;
+        private double _lastZzLow, _lastZzHigh, _prevLastZzLow, _prevLastZzHigh;
+        private int _lastLowPos, _lastHighPos, _prevLastLowPos, _prevLastHighPos;
+        private RevertableList<double> _low, _high;
+        private RevertableDataSeries<double> _zigzag;
+            
         [Parameter(DefaultValue = 12, DisplayName = "Depth")]
         public int Depth { get; set; }
 
@@ -27,7 +33,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
         [Output(DisplayName = "Zigzag", DefaultColor = Colors.Red)]
         public DataSeries Zigzag { get; set; }
 
-        public int LastPositionChanged { get { return 0; } }
+        public int LastPositionChanged { get { return Backstep; } }
 
         public ZigZag() { }
 
@@ -44,7 +50,16 @@ namespace TickTrader.Algo.Indicators.ZigZag
 
         private void InitializeIndicator()
         {
-            
+            _prevPeakNext = null;
+            _prevLastLow = double.NaN;
+            _prevLastHigh = double.NaN;
+            _prevLastZzLow = double.NaN;
+            _prevLastZzHigh = double.NaN;
+            _prevLastLowPos = 0;
+            _prevLastHighPos = 0;
+            _low = new RevertableList<double>();
+            _high = new RevertableList<double>();
+            _zigzag = new RevertableDataSeries<double>(Zigzag);
         }
 
         protected override void Init()
@@ -52,148 +67,156 @@ namespace TickTrader.Algo.Indicators.ZigZag
             InitializeIndicator();
         }
 
-        private double extremum;
-        double lastZZlow = 0.0, lastZZhigh = 0.0, lasthigh = 0.0, lastlow = 0.0;
-        private List<double> ExtLowBuffer = new List<double>();
-        private List<double> ExtHighBuffer = new List<double>();
-        int whatlookfor = 0;
-        int lasthighpos = 0, lastlowpos = 0;
         protected override void Calculate()
         {
-
-            ExtHighBuffer.Add(0.0);
-            ExtLowBuffer.Add(0.0);
-            //if (Bars.Count == 1430)
-            //{
-            //    string[] a = Bars.Select(b => (b.High * 100 - 110).ToString()).ToArray();
-            //    a = a.Reverse().ToArray();
-            //    System.IO.File.WriteAllLines(@"D:\out1.txt", a);
-            //}
-            if (Bars.Count >= Math.Max(Depth, Backstep) + 1)
+            var pos = 0;
+            Zigzag[pos] = double.NaN;
+            var n = Bars.Count - 1;
+            if (!IsUpdate)
             {
-                //--- find lowest low in depth of bars
-                extremum = PeriodHelper.FindMin(Bars.Low, Depth);
-                //--- this lowest has been found previously
-                if (extremum == lastlow)
-                    extremum = 0.0;
+                _prevPeakNext = _peakNext;
+                _prevLastLow = _lastLow;
+                _prevLastHigh = _lastHigh;
+                _prevLastZzLow = _lastZzLow;
+                _prevLastZzHigh = _lastZzHigh;
+                _prevLastLowPos = _lastLowPos;
+                _prevLastHighPos = _lastHighPos;
+                _low.SaveCacheChanges();
+                _high.SaveCacheChanges();
+                _zigzag.ClearCache();
+            }
+            _peakNext = _prevPeakNext;
+            _lastLow = _prevLastLow;
+            _lastHigh = _prevLastHigh;
+            _lastZzLow = _prevLastZzLow;
+            _lastZzHigh = _prevLastZzHigh;
+            _lastLowPos = _prevLastLowPos;
+            _lastHighPos = _prevLastHighPos;
+            _low.ClearCache();
+            _high.ClearCache();
+            _low.Add(double.NaN);
+            _high.Add(double.NaN);
+            _zigzag.RevertChanges();
+            if (Bars.Count > Math.Max(Depth, Backstep))
+            {
+                var extremum = PeriodHelper.FindMin(Bars.Low, Depth);
+                if (Math.Abs(extremum - _lastLow) < 1e-20)
+                {
+                    extremum = double.NaN;
+                }
                 else
                 {
-                    //--- new last low
-                    lastlow = extremum;
-
-                    //--- discard extremum if current low is too high
-                    if (Bars[0].Low - extremum > Deviation * PointSize)
-                        extremum = 0.0;
+                    _lastLow = extremum;
+                    if (Bars.Low[pos] - extremum > Deviation*PointSize)
+                    {
+                        extremum = double.NaN;
+                    }
                     else
                     {
-                        //--- clear previous extremums in backstep bars
-                        for (int back = 1; back <= Backstep; back++)
+                        for (var i = 1; i <= Backstep; i++)
                         {
-                            int pos = back;
-                            if (ExtLowBuffer[Bars.Count - 1 - pos] != 0 && ExtLowBuffer[Bars.Count - 1 - pos] > extremum)
-                                ExtLowBuffer[Bars.Count - 1 - pos] = 0.0;
+                            if (!double.IsNaN(_low[n - i]) && _low[n - i] > extremum)
+                            {
+                                _low[n - i] = double.NaN;
+                            }
                         }
                     }
                 }
-                //--- found extremum is current low
-                if (Bars[0].Low == extremum)
-                    ExtLowBuffer[Bars.Count - 1] = extremum;
+                if (!double.IsNaN(extremum) && Math.Abs(Bars.Low[pos] - extremum) < 1e-20)
+                {
+                    _low[n] = extremum;
+                }
                 else
-                    ExtLowBuffer[Bars.Count - 1] = 0.0;
-                //--- find highest high in depth of bars
+                {
+                    _low[n] = double.NaN;
+                }
+
                 extremum = PeriodHelper.FindMax(Bars.High, Depth);
-                //--- this highest has been found previously
-                if (extremum == lasthigh)
-                    extremum = 0.0;
+                if (Math.Abs(extremum - _lastHigh) < 1e-20)
+                {
+                    extremum = double.NaN;
+                }
                 else
                 {
-                    //--- new last high
-                    lasthigh = extremum;
-                    //--- discard extremum if current high is too low
-                    if (extremum - Bars[0].High > Deviation * PointSize)
-                        extremum = 0.0;
+                    _lastHigh = extremum;
+                    if (extremum - Bars.High[pos] > Deviation*PointSize)
+                    {
+                        extremum = double.NaN;
+                    }
                     else
                     {
-                        //--- clear previous extremums in backstep bars
-                        for (int back = 1; back <= Backstep; back++)
+                        for (var i = 1; i <= Backstep; i++)
                         {
-                            int pos = back;
-                            if (ExtHighBuffer[Bars.Count - 1 - pos] != 0 &&
-                                ExtHighBuffer[Bars.Count - 1 - pos] < extremum)
-                                ExtHighBuffer[Bars.Count - 1 - pos] = 0.0;
+                            if (!double.IsNaN(_high[n - i]) && _high[n - i] < extremum)
+                            {
+                                _high[n - i] = double.NaN;
+                            }
                         }
                     }
                 }
-                //--- found extremum is current high
-                if (Bars[0].High == extremum)
-                    ExtHighBuffer[Bars.Count - 1] = extremum;
-                else
-                    ExtHighBuffer[Bars.Count - 1] = 0.0;
-
-
-                if (whatlookfor == 0)
+                if (!double.IsNaN(extremum) && Math.Abs(Bars.High[pos] - extremum) < 1e-20)
                 {
-                    lastZZlow = 0.0;
-                    lastZZhigh = 0.0;
+                    _high[n] = extremum;
                 }
-                switch (whatlookfor)
+                else
                 {
-                    case 0: // look for peak or lawn 
-                        if (lastZZlow == 0.0 && lastZZhigh == 0.0)
-                        {
-                            if (ExtHighBuffer[Bars.Count - 1 - Backstep] != 0.0)
-                            {
-                                lastZZhigh = Bars[Backstep].High;
-                                lasthighpos = Bars.Count;
-                                whatlookfor = -1;
-                                Zigzag[Backstep] = lastZZhigh;
-                            }
-                            if (ExtLowBuffer[Bars.Count - 1 - Backstep] != 0.0)
-                            {
-                                lastZZlow = Bars[Backstep].Low;
-                                lastlowpos = Bars.Count;
-                                whatlookfor = 1;
-                                Zigzag[Backstep] = lastZZlow;
-                            }
-                        }
-                        break;
-                    case 1: // look for peak
-                        if (ExtLowBuffer[Bars.Count - 1 - Backstep] != 0.0 && ExtLowBuffer[Bars.Count - 1 - Backstep] < lastZZlow &&
-                            ExtHighBuffer[Bars.Count - 1 - Backstep] == 0.0)
-                        {
-                            Zigzag[Bars.Count - lastlowpos + Backstep] = Double.NaN;
-                            lastlowpos = Bars.Count;
-                            lastZZlow = ExtLowBuffer[Bars.Count - 1 - Backstep];
-                            Zigzag[Backstep] = lastZZlow;
-                        }
-                        if (ExtHighBuffer[Bars.Count - 1 - Backstep] != 0.0 && ExtLowBuffer[Bars.Count - 1 - Backstep] == 0.0)
-                        {
-                            lastZZhigh = ExtHighBuffer[Bars.Count - 1 - Backstep];
-                            lasthighpos = Bars.Count;
-                            Zigzag[Backstep] = lastZZhigh;
-                            whatlookfor = -1;
-                        }
-                        break;
-                    case -1: // look for lawn
-                        if (ExtHighBuffer[Bars.Count - 1 - Backstep] != 0.0 && ExtHighBuffer[Bars.Count - 1 - Backstep] > lastZZhigh &&
-                            ExtLowBuffer[Bars.Count - 1 - Backstep] == 0.0)
-                        {
-                            Zigzag[Bars.Count - lasthighpos + Backstep] = Double.NaN;
-                            lasthighpos = Bars.Count;
-                            lastZZhigh = ExtHighBuffer[Bars.Count - 1 - Backstep];
-                            Zigzag[Backstep] = lastZZhigh;
-                        }
-                        if (ExtLowBuffer[Bars.Count - 1 - Backstep] != 0.0 && ExtHighBuffer[Bars.Count - 1 - Backstep] == 0.0)
-                        {
-                            lastZZlow = ExtLowBuffer[Bars.Count - 1 - Backstep];
-                            lastlowpos = Bars.Count;
-                            Zigzag[Backstep] = lastZZlow;
-                            whatlookfor = 1;
-                        }
-                        break;
+                    _high[n] = double.NaN;
+                }
+
+                if (_peakNext == null)
+                {
+                    if (!double.IsNaN(_high[n - Backstep]))
+                    {
+                        _lastHighPos = n;
+                        _peakNext = false;
+                        _lastZzHigh = Bars.High[Backstep];
+                        _zigzag[Backstep] = _lastZzHigh;
+                    }
+                    if (!double.IsNaN(_low[n - Backstep]))
+                    {
+                        _lastLowPos = n;
+                        _peakNext = true;
+                        _lastZzLow = Bars.Low[Backstep];
+                        _zigzag[Backstep] = _lastZzLow;
+                    }
+                }
+                else if (_peakNext.Value)
+                {
+                    if (!double.IsNaN(_low[n - Backstep]) && _low[n - Backstep] < _lastZzLow &&
+                        double.IsNaN(_high[n - Backstep]))
+                    {
+                        _zigzag[n - _lastLowPos + Backstep] = double.NaN;
+                        _lastLowPos = n;
+                        _lastZzLow = _low[n - Backstep];
+                        _zigzag[Backstep] = _lastZzLow;
+                    }
+                    if (!double.IsNaN(_high[n - Backstep]) && double.IsNaN(_low[n - Backstep]))
+                    {
+                        _lastZzHigh = _high[n - Backstep];
+                        _lastHighPos = n;
+                        _zigzag[Backstep] = _lastZzHigh;
+                        _peakNext = false;
+                    }
+                }
+                else
+                {
+                    if (!double.IsNaN(_high[n - Backstep]) && _high[n - Backstep] > _lastZzHigh &&
+                        double.IsNaN(_low[n - Backstep]))
+                    {
+                        _zigzag[n - _lastHighPos + Backstep] = double.NaN;
+                        _lastHighPos = n;
+                        _lastZzHigh = _high[n - Backstep];
+                        _zigzag[Backstep] = _lastZzHigh;
+                    }
+                    if (!double.IsNaN(_low[n - Backstep]) && double.IsNaN(_high[n - Backstep]))
+                    {
+                        _lastZzLow = _low[n - Backstep];
+                        _lastLowPos = n;
+                        _zigzag[Backstep] = _lastZzLow;
+                        _peakNext = true;
+                    }
                 }
             }
-
         }
     }
 }
