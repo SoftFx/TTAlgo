@@ -2,10 +2,10 @@
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Utility;
 
-namespace TickTrader.Algo.Indicators.ZigZag
+namespace TickTrader.Algo.Indicators.Other.ZigZag
 {
 
-    [Indicator(IsOverlay = true, DisplayName = "Zigzag")]
+    [Indicator(IsOverlay = true, Category = "Other", DisplayName = "Other/ZigZag")]
     public class ZigZag : Indicator
     {
         private bool? _peakNext, _prevPeakNext;
@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.ZigZag
         private int _lastLowPos, _lastHighPos, _prevLastLowPos, _prevLastHighPos;
         private RevertableList<double> _low, _high;
         private RevertableDataSeries<double> _zigzag;
-            
+
         [Parameter(DefaultValue = 12, DisplayName = "Depth")]
         public int Depth { get; set; }
 
@@ -30,12 +30,17 @@ namespace TickTrader.Algo.Indicators.ZigZag
         [Input]
         public BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Zigzag", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "ZigZag", DefaultColor = Colors.Red)]
         public DataSeries Zigzag { get; set; }
 
-        public int LastPositionChanged { get { return Backstep; } }
+        public int LastPositionChanged
+        {
+            get { return Backstep; }
+        }
 
-        public ZigZag() { }
+        public ZigZag()
+        {
+        }
 
         public ZigZag(BarSeries bars, int depth, int deviation, int backstep, double pointSize)
         {
