@@ -8,9 +8,9 @@ using System.Windows.Interactivity;
 
 namespace TickTrader.BotTerminal
 {
-    public class DropBehavior : Behavior<FrameworkElement>
+    internal class DropBehavior : Behavior<FrameworkElement>
     {
-        private Type _droppedDataType;
+        private bool _canHandleDrop;
 
         protected override void OnAttached()
         {
@@ -18,21 +18,42 @@ namespace TickTrader.BotTerminal
 
             this.AssociatedObject.AllowDrop = true;
             this.AssociatedObject.Drop += new DragEventHandler(AssociatedObject_Drop);
+            this.AssociatedObject.DragEnter += AssociatedObject_DragEnter;
+            AssociatedObject.DragOver += AssociatedObject_DragOver;
         }
-        
-        private void AssociatedObject_Drop(object sender, DragEventArgs e)
-        {
-            var dropHandler = AssociatedObject.DataContext as IDropHandler;
-            if (CanHandleDrop(dropHandler, e.Data, out _droppedDataType))
-                dropHandler.Drop(e.Data.GetData(_droppedDataType));
 
+        protected override void OnDetaching()
+        {
+            base.OnDetaching();
+
+            this.AssociatedObject.AllowDrop = false;
+            this.AssociatedObject.Drop -= new DragEventHandler(AssociatedObject_Drop);
+            this.AssociatedObject.DragEnter -= AssociatedObject_DragEnter;
+            AssociatedObject.DragOver -= AssociatedObject_DragOver;
+        }
+
+        private void AssociatedObject_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = _canHandleDrop ? DragDropEffects.Move : DragDropEffects.None;
             e.Handled = true;
         }
 
-        private bool CanHandleDrop(IDropHandler dropHandler, IDataObject data, out Type droppedDataType)
+        private void AssociatedObject_DragEnter(object sender, DragEventArgs e)
         {
-            droppedDataType = dropHandler?.AcceptedTypes?.FirstOrDefault(t => data.GetDataPresent(t));
-            return droppedDataType != null;
+            _canHandleDrop = CanHandleDrop(e.Data);
+            e.Handled = true;
+        }
+
+        private void AssociatedObject_Drop(object sender, DragEventArgs e)
+        {
+            (AssociatedObject.DataContext as IDropHandler)?.Drop(e.Data.GetData(e.Data.GetFormats()[0]));
+            e.Handled = true;
+        }
+
+        private bool CanHandleDrop(IDataObject data)
+        {
+            var canHandle = (AssociatedObject.DataContext as IDropHandler)?.CanDrop(data.GetData(data.GetFormats()[0]));
+            return canHandle.HasValue && canHandle.Value;
         }
     }
 }

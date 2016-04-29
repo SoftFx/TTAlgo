@@ -10,32 +10,53 @@ using System.Windows.Media.Effects;
 
 namespace TickTrader.BotTerminal
 {
-    public class DragAdorner : Adorner, IDisposable
+    internal class DragAdorner : Adorner, IDragAdorner
     {
+        private VisualBrush _visualBrush;
         private AdornerLayer _adornerLayer;
         private UIElement _adornElement;
+        private Point _currentPosition;
+        private DropState _currentAdornerDropState;
 
-        public DragAdorner(UIElement ownerLayer, UIElement adornElement, double opacity = 1, bool dropShadow = true) : base(ownerLayer)
+        public DropState DropState
+        {
+            get { return _currentAdornerDropState; }
+            set
+            {
+                _currentAdornerDropState = value;
+                if (_currentAdornerDropState == DropState.CanDrop)
+                    Opacity = 1;
+                else
+                    Opacity = 0.8;
+                _adornerLayer.Update(AdornedElement);
+            }
+        }
+
+        public Point Position
+        {
+            get { return _currentPosition; }
+            set
+            {
+                _currentPosition = value;
+                _adornerLayer.Update(AdornedElement);
+            }
+        }
+
+        public DragAdorner(UIElement ownerLayer, UIElement adornElement) : base(ownerLayer)
         {
             _adornerLayer = AdornerLayer.GetAdornerLayer(this.AdornedElement);
             _adornerLayer.Add(this);
-            _adornElement = adornElement;
-            IsHitTestVisible = false;
-            Opacity = opacity;
-            if(dropShadow)
-                Effect = new DropShadowEffect();
-        }
 
-        public void Update()
-        {
-            _adornerLayer.Update(AdornedElement);
+            _adornElement = adornElement;
+            _visualBrush = new VisualBrush(adornElement as Visual);
+
+            IsHitTestVisible = false;
+            Effect = new DropShadowEffect();
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var pointFromScreen = AdornedElement.PointFromScreen(WinApiHelper.GetMousePosition());
-            var correctedPoint = new Point(pointFromScreen.X - _adornElement.DesiredSize.Width / 2, pointFromScreen.Y - _adornElement.DesiredSize.Height / 2);
-            drawingContext.DrawRectangle(new VisualBrush(_adornElement), null, new Rect(correctedPoint, _adornElement.DesiredSize));
+            drawingContext.DrawRectangle(_visualBrush, null, new Rect(_currentPosition, _adornElement.RenderSize));
         }
 
         public void Dispose()

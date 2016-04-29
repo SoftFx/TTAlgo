@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    public interface IDropHandler
+    internal interface IDropHandler
     {
         void Drop(object o);
-        Type[] AcceptedTypes { get; }
+        bool CanDrop(object o);
     }
 }

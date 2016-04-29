@@ -9,12 +9,15 @@ using System.Windows.Interactivity;
 
 namespace TickTrader.BotTerminal
 {
-    public class DragBehavior : Behavior<FrameworkElement>
+    internal class DragBehavior : Behavior<FrameworkElement>
     {
         private bool _isDragging;
         private FrameworkElement _dragScope;
-        private DragAdorner _dragAdorner;
+        private IDragAdorner _dragAdorner;
 
+        /// <summary>
+        /// Represents the data that will be dragged. Default is taken from AssociatedObject.DataContext
+        /// </summary>
         public object Data
         {
             get { return (object)GetValue(MyPropertyProperty); }
@@ -36,23 +39,30 @@ namespace TickTrader.BotTerminal
             AssociatedObject.QueryContinueDrag += AssociatedObject_QueryContinueDrag;
             AssociatedObject.GiveFeedback += AssociatedObject_GiveFeedback;
         }
-
         protected override void OnDetaching()
         {
             base.OnDetaching();
 
-            AssociatedObject.GiveFeedback -= AssociatedObject_GiveFeedback;
             AssociatedObject.QueryContinueDrag -= AssociatedObject_QueryContinueDrag;
             AssociatedObject.MouseLeave -= AssociatedObject_MouseLeave;
+            AssociatedObject.GiveFeedback -= AssociatedObject_GiveFeedback;
         }
+
         private void AssociatedObject_GiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
-            e.UseDefaultCursors = false;
+            e.UseDefaultCursors = true;
+
+            if (e.Effects == DragDropEffects.None)
+                _dragAdorner.DropState = DropState.CannotDrop;
+            else
+                _dragAdorner.DropState = DropState.CanDrop;
+
             e.Handled = true;
         }
+        
         private void AssociatedObject_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
         {
-            _dragAdorner.Update();
+            _dragAdorner.Position = _dragScope.PointFromScreen(WinApiHelper.GetMousePosition());
         }
 
         private void AssociatedObject_MouseLeave(object sender, MouseEventArgs e)
