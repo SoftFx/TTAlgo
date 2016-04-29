@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
                 if (_currentAdornerDropState == DropState.CanDrop)
                     Opacity = 1;
                 else
-                    Opacity = 0.8;
+                    Opacity = 0.5;
                 _adornerLayer.Update(AdornedElement);
             }
         }

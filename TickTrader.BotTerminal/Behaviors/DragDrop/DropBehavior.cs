@@ -34,14 +34,20 @@ namespace TickTrader.BotTerminal
 
         private void AssociatedObject_DragOver(object sender, DragEventArgs e)
         {
-            e.Effects = _canHandleDrop ? DragDropEffects.Move : DragDropEffects.None;
+            UpdateDragDropEffect(e);
             e.Handled = true;
         }
 
         private void AssociatedObject_DragEnter(object sender, DragEventArgs e)
         {
             _canHandleDrop = CanHandleDrop(e.Data);
+            UpdateDragDropEffect(e);
             e.Handled = true;
+        }
+
+        private void UpdateDragDropEffect(DragEventArgs e)
+        {
+            e.Effects = _canHandleDrop ? DragDropEffects.Move : DragDropEffects.None;
         }
 
         private void AssociatedObject_Drop(object sender, DragEventArgs e)
