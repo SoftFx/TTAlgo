@@ -37,15 +37,21 @@ namespace TickTrader.Algo.Indicators.Utility
         public new void Add(T item)
         {
             _addedInCache++;
-            _cache[Count + _addedInCache] = item;
+            _cache[Count - 1 + _addedInCache] = item;
         }
 
-        public void ClearCache()
+        protected void ClearCache()
         {
             _cache.Clear();
+            _addedInCache = 0;
         }
 
-        public void SaveCacheChanges()
+        public void RevertChanges()
+        {
+            ClearCache();
+        }
+
+        public void ApplyChanges()
         {
             var cnt = Count - 1;
             foreach (var pair in _cache)
