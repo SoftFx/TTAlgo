@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
     {
         private bool _volumeUp, _mfiUp;
 
-        [Parameter(DisplayName = "Point Size", DefaultValue = 10000.0)]
+        [Parameter(DisplayName = "Point Size", DefaultValue = 10e-5)]
         public double PointSize { get; set; }
 
         [Input]
@@ -55,10 +55,10 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
             MfiDownVolumeDown[i] = double.NaN;
             MfiUpVolumeDown[i] = double.NaN;
             MfiDownVolumeUp[i] = double.NaN;
-            var val = (Bars[i].High - Bars[i].Low)/Bars[i].Volume;
+            var val = (Bars[i].High - Bars[i].Low)/(Bars[i].Volume*PointSize);
             if (Bars.Count > 1)
             {
-                var prev = (Bars[i + 1].High - Bars[i + 1].Low)/Bars[i + 1].Volume;
+                var prev = (Bars[i + 1].High - Bars[i + 1].Low)/(Bars[i + 1].Volume*PointSize);
                 if (val > prev) { _mfiUp = true; }
                 if (val < prev) { _mfiUp = false; }
                 if (Bars[i].Volume > Bars[i+1].Volume) { _volumeUp = true; }
@@ -66,19 +66,19 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
             }
             if (_mfiUp && _volumeUp)
             {
-                MfiUpVolumeUp[i] = val*PointSize;
+                MfiUpVolumeUp[i] = val;
             }
             if (!_mfiUp && !_volumeUp)
             {
-                MfiDownVolumeDown[i] = val*PointSize;
+                MfiDownVolumeDown[i] = val;
             }
             if (_mfiUp && !_volumeUp)
             {
-                MfiUpVolumeDown[i] = val*PointSize;
+                MfiUpVolumeDown[i] = val;
             }
             if (!_mfiUp && _volumeUp)
             {
-                MfiDownVolumeUp[i] = val*PointSize;
+                MfiDownVolumeUp[i] = val;
             }
         }
     }

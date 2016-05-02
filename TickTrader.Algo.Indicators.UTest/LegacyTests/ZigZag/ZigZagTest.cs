@@ -6,12 +6,11 @@ namespace TickTrader.Algo.Indicators.UTest.LegacyTests.ZigZag
     [TestClass]
     public class ZigZagTest : TestBase
     {
-        private void TestMeasures(string symbol, string dir, int inpDepth, int inpDeviation, int inpBackstep)
+        private void TestMeasures(string symbol, string dir, int depth, int deviation, int backstep)
         {
-            var test = new ZigZagTestCase(typeof (Indicators.ZigZag.ZigZag), symbol, PathHelper.QuotesPath(dir, symbol),
-                PathHelper.AnswerPath(dir, symbol, "ZigZag"), inpDepth, inpDeviation, inpBackstep);
-            test.InvokeFullBuildTest();
-            //LaunchTestCase(test);
+            var test = new ZigZagTestCase(typeof (Other.ZigZag.ZigZag), symbol, PathHelper.QuotesPath(dir, symbol),
+                PathHelper.AnswerPath(dir, symbol, "ZigZag"), depth, deviation, backstep);
+            LaunchTestCase(test);
         }
 
         [TestMethod]

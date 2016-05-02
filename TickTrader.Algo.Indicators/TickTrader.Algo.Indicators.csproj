@@ -64,7 +64,7 @@
     <Compile Include="Trend\ParabolicSAR\ParabolicSAR.cs" />
     <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
     <Compile Include="Utility\AppliedPrice.cs" />
-    <Compile Include="HeikenAshi\HeikenAshi.cs" />
+    <Compile Include="Other\HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Trend\MovingAverage\CustomEMA.cs" />
     <Compile Include="Trend\MovingAverage\EMA.cs" />
@@ -77,13 +77,15 @@
     <Compile Include="Trend\MovingAverage\TriMA.cs" />
     <Compile Include="Utility\IShift.cs" />
     <Compile Include="Utility\PeriodHelper.cs" />
+    <Compile Include="Utility\RevertableDataSeries.cs" />
+    <Compile Include="Utility\RevertableList.cs" />
     <Compile Include="Utility\ShifterBase.cs" />
     <Compile Include="Utility\SimpleShifter.cs" />
     <Compile Include="Volumes\AccumulationDistribution\AccumulationDistribution.cs" />
     <Compile Include="Volumes\MoneyFlowIndex\MoneyFlowIndex.cs" />
     <Compile Include="Volumes\OnBalanceVolume\OnBalanceVolume.cs" />
     <Compile Include="Volumes\Volumes\Volumes.cs" />
-    <Compile Include="ZigZag\ZigZag.cs" />
+    <Compile Include="Other\ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
