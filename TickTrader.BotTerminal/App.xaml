@@ -39,6 +39,7 @@
                 <ResourceDictionary Source="Resx/Styles/VerticalScrollBar.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ShellPanel.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ShellTabControl.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/AlgoListBox.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/SymbolListBox.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/NumericUpDownStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/DateTimePicker.xaml"/>

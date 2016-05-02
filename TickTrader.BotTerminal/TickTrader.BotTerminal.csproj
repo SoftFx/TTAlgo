@@ -272,6 +272,10 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views\AlgoListView.xaml.cs">
+      <DependentUpon>AlgoListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AlgoListViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -492,6 +496,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\AlgoListBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\SymbolListBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -537,6 +545,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Order\OpenOrderDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AlgoListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

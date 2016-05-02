@@ -4,6 +4,7 @@
         xmlns:ad="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         xmlns:cal="http://www.caliburnproject.org"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Title="ShellView"
         Height="{l:Setting Window.Height, Default=700}"
         Width="{l:Setting Window.Width, Default=900}"
@@ -37,10 +38,16 @@
             <TabItem Header="{l:Resx Tab_Symbols}">
                 <ContentControl x:Name="SymbolList"/>
             </TabItem>
-            <TabItem Header="{l:Resx Tab_Algo}"/>
+            <TabItem Header="{l:Resx Tab_Algo}">
+                <ContentControl x:Name="AlgoList"/>
+            </TabItem>
         </l:TabControl>
 
-        <ContentControl Name="Charts" Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0"/>
+        <ContentControl Name="Charts" Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
+            <i:Interaction.Behaviors>
+                <l:DropBehavior/>
+            </i:Interaction.Behaviors>
+        </ContentControl>
 
         <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="4" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
 

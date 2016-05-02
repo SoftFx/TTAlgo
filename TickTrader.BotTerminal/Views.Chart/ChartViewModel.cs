@@ -10,13 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    class ChartViewModel : Conductor<Screen>
+    class ChartViewModel : Conductor<Screen>, IDropHandler
     {
         private readonly FeedModel feed;
         private AlgoCatalog catalog;
@@ -252,6 +253,18 @@ namespace TickTrader.BotTerminal
         {
             foreach (var output in indicator.SeriesCollection)
                 OverlaySeries.Remove(output);
+        }
+
+        public void Drop(object o)
+        {
+            var algo = o as FakeAlgo;
+            if (algo != null)
+                MessageBox.Show(string.Format("Algo name: {0} Group name: {1}", algo.Name, algo.Group), "Drop Handler");
+        }
+
+        public bool CanDrop(object o)
+        {
+            return o is FakeAlgo;
         }
     }
 }
