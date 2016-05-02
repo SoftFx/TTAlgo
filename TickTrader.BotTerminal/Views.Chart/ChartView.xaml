@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
+              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
@@ -147,5 +148,7 @@
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
     </ItemsControl>
-    
+    <i:Interaction.Behaviors>
+        <l:DropBehavior/>
+    </i:Interaction.Behaviors>
 </UserControl>

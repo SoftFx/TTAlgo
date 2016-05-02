@@ -31,6 +31,7 @@ namespace TickTrader.BotTerminal
             trade = new TraderModel(connection);
             feed = new FeedModel(connection);
 
+            AlgoList = new AlgoListViewModel();
             SymbolList = new SymbolListViewModel(feed.Symbols);
             PositionList = new PositionListViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
@@ -108,6 +109,7 @@ namespace TickTrader.BotTerminal
             
         }
 
+        public AlgoListViewModel AlgoList { get; set; }
         public SymbolListViewModel SymbolList { get; private set; }
         public PositionListViewModel PositionList { get; private set; }
         public OrderListViewModel OrderList { get; private set; }

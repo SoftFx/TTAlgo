@@ -153,6 +153,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Behaviors\DragDrop\DragAdorner.cs" />
+    <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DropState.cs" />
+    <Compile Include="Behaviors\DragDrop\IDragAdorner.cs" />
+    <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
+    <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
@@ -265,6 +272,10 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views\AlgoListView.xaml.cs">
+      <DependentUpon>AlgoListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AlgoListViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -485,6 +496,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\AlgoListBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\SymbolListBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -530,6 +545,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Order\OpenOrderDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AlgoListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -624,6 +643,7 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
