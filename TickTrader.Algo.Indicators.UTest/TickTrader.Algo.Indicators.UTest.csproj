@@ -60,11 +60,6 @@
     <Compile Include="BillWilliamsTests\GatorOscillator\GatorOscillatorTestCase.cs" />
     <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTest.cs" />
     <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTestCase.cs" />
-    <Compile Include="LegacyTests\HeikenAshi\HeikenAshiTest.cs" />
-    <Compile Include="LegacyTests\HeikenAshi\HeikenAshiTestCase.cs" />
-    <Compile Include="LegacyTests\Utility\PathHelper.cs" />
-    <Compile Include="LegacyTests\ZigZag\ZigZagTest.cs" />
-    <Compile Include="LegacyTests\ZigZag\ZigZagTestCase.cs" />
     <Compile Include="OscillatorsTests\AverageTrueRange\AverageTrueRangeTest.cs" />
     <Compile Include="OscillatorsTests\AverageTrueRange\AverageTrueRangeTestCase.cs" />
     <Compile Include="OscillatorsTests\BearsPower\BearsPowerTest.cs" />
