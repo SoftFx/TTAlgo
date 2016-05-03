@@ -159,11 +159,11 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 if (!IsUpdate)
                 {
                     RevertZigZagChanges();
-                    CalculateZigZag(Backstep);
+                    CalculateZigZag(Backstep + 1);
                     ApplyZigZagChanges();
                 }
                 RevertZigZagChanges(false);
-                for (var i = Backstep - 1; i >= 0; i--)
+                for (var i = Backstep; i >= 0; i--)
                 {
                     CalculateZigZag(i);
                 }
