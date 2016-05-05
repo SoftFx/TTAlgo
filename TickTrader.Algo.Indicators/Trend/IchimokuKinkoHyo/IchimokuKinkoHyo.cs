@@ -67,6 +67,7 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
             var pos = LastPositionChanged;
             Tenkan[pos] = (PeriodHelper.FindMax(Bars.High, TenkanSen) + PeriodHelper.FindMin(Bars.Low, TenkanSen))/2;
             Kijun[pos] = (PeriodHelper.FindMax(Bars.High, KijunSen) + PeriodHelper.FindMin(Bars.Low, KijunSen))/2;
+            Chikou[pos] = double.NaN;
             if (IsUpdate)
             {
                 _chikouShifter.UpdateLast(Bars[pos].Close);

@@ -51,5 +51,11 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.IchimokuKinkoHyo
         {
             TestMeasures("EURUSD", "H1", 5, 15, 10);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_D1_9_26_52()
+        {
+            TestMeasures("CADCHF", "D1", 9, 26, 52);
+        }
     }
 }
