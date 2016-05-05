@@ -161,6 +161,7 @@
     <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
     <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
+    <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
