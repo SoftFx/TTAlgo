@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Api", "TickTrader.Algo.Api\TickTrader.Algo.Api.csproj", "{8901C84D-FB62-433C-A25F-4D24255B9453}"
 EndProject
@@ -26,6 +26,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machinarium", "Machinarium\Machinarium.csproj", "{DF05B4CC-200A-436B-91CC-BEBE7D89B8AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Indicators.UTest", "TickTrader.Algo.Indicators.UTest\TickTrader.Algo.Indicators.UTest.csproj", "{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftFx.FxCalendar", "SoftFx.FxCalendar\SoftFx.FxCalendar.csproj", "{546B0A8D-6964-40DF-B539-C988F8241D56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +75,10 @@ Global
 		{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B5B02D8-8666-4AF6-90BA-D0B6A0E10E01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{546B0A8D-6964-40DF-B539-C988F8241D56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{546B0A8D-6964-40DF-B539-C988F8241D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

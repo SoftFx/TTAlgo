@@ -5,28 +5,24 @@ namespace TickTrader.Algo.Indicators.Utility
 {
     public static class PeriodHelper
     {
-        public static double FindMin(DataSeries series, int period)
+        public static double FindMin(DataSeries series, int period, bool fullPeriod = true)
         {
             var res = double.PositiveInfinity;
-            if (series.Count >= period)
+            var n = fullPeriod ? series.Count >= period ? period : 0 : Math.Min(series.Count, period);
+            for (var i = 0; i < n; i++)
             {
-                for (var i = 0; i < period; i++)
-                {
-                    res = Math.Min(res, series[i]);
-                }
+                res = Math.Min(res, series[i]);
             }
             return double.IsPositiveInfinity(res) ? double.NaN : res;
         }
 
-        public static double FindMax(DataSeries series, int period)
+        public static double FindMax(DataSeries series, int period, bool fullPeriod = true)
         {
             var res = double.NegativeInfinity;
-            if (series.Count >= period)
+            var n = fullPeriod ? series.Count >= period ? period : 0 : Math.Min(series.Count, period);
+            for (var i = 0; i < n; i++)
             {
-                for (var i = 0; i < period; i++)
-                {
-                    res = Math.Max(res, series[i]);
-                }
+                res = Math.Max(res, series[i]);
             }
             return double.IsNegativeInfinity(res) ? double.NaN : res;
         }

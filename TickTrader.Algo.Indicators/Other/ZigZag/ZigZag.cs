@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         [Parameter(DefaultValue = 3, DisplayName = "BackStep")]
         public int Backstep { get; set; }
 
-        [Parameter(DisplayName = "Point Size", DefaultValue = 10e-5)]
+        [Parameter(DisplayName = "Point Size", DefaultValue = 1e-5)]
         public double PointSize { get; set; }
 
         [Input]
@@ -32,6 +32,9 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
 
         [Output(DisplayName = "ZigZag", DefaultColor = Colors.Red)]
         public DataSeries Zigzag { get; set; }
+
+        [Output(DisplayName = "ZigZag Line", DefaultColor = Colors.Red)]
+        public DataSeries ZigzagLine { get; set; }
 
         public int LastPositionChanged
         {
@@ -65,6 +68,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
             _low = new RevertableList<double>();
             _high = new RevertableList<double>();
             _zigzag = new RevertableDataSeries<double>(Zigzag);
+            RevertZigZagChanges();
         }
 
         protected override void Init()
@@ -76,33 +80,22 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         {
             var pos = 0;
             Zigzag[pos] = double.NaN;
+            ZigzagLine[pos] = double.NaN;
             var n = Bars.Count - 1;
             if (!IsUpdate)
             {
-                _prevPeakNext = _peakNext;
                 _prevLastLow = _lastLow;
                 _prevLastHigh = _lastHigh;
-                _prevLastZzLow = _lastZzLow;
-                _prevLastZzHigh = _lastZzHigh;
-                _prevLastLowPos = _lastLowPos;
-                _prevLastHighPos = _lastHighPos;
-                _low.SaveCacheChanges();
-                _high.SaveCacheChanges();
-                _zigzag.ClearCache();
+                _low.ApplyChanges();
+                _high.ApplyChanges();
             }
-            _peakNext = _prevPeakNext;
             _lastLow = _prevLastLow;
             _lastHigh = _prevLastHigh;
-            _lastZzLow = _prevLastZzLow;
-            _lastZzHigh = _prevLastZzHigh;
-            _lastLowPos = _prevLastLowPos;
-            _lastHighPos = _prevLastHighPos;
-            _low.ClearCache();
-            _high.ClearCache();
+            _low.RevertChanges();
+            _high.RevertChanges();
             _low.Add(double.NaN);
             _high.Add(double.NaN);
-            _zigzag.RevertChanges();
-            if (Bars.Count > Math.Max(Depth, Backstep))
+            if (Bars.Count >= Math.Max(Depth, Backstep))
             {
                 var extremum = PeriodHelper.FindMin(Bars.Low, Depth);
                 if (Math.Abs(extremum - _lastLow) < 1e-20)
@@ -168,58 +161,114 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                     _high[n] = double.NaN;
                 }
 
-                if (_peakNext == null)
+                DrawZigZagSection(false);
+
+                if (!IsUpdate)
                 {
-                    if (!double.IsNaN(_high[n - Backstep]))
-                    {
-                        _lastHighPos = n;
-                        _peakNext = false;
-                        _lastZzHigh = Bars.High[Backstep];
-                        _zigzag[Backstep] = _lastZzHigh;
-                    }
-                    if (!double.IsNaN(_low[n - Backstep]))
-                    {
-                        _lastLowPos = n;
-                        _peakNext = true;
-                        _lastZzLow = Bars.Low[Backstep];
-                        _zigzag[Backstep] = _lastZzLow;
-                    }
+                    RevertZigZagChanges();
+                    CalculateZigZag(Backstep + 1);
+                    ApplyZigZagChanges();
+                    DrawZigZagSection();
                 }
-                else if (_peakNext.Value)
+                RevertZigZagChanges(false);
+                for (var i = Backstep; i >= 0; i--)
                 {
-                    if (!double.IsNaN(_low[n - Backstep]) && _low[n - Backstep] < _lastZzLow &&
-                        double.IsNaN(_high[n - Backstep]))
-                    {
-                        _zigzag[n - _lastLowPos + Backstep] = double.NaN;
-                        _lastLowPos = n;
-                        _lastZzLow = _low[n - Backstep];
-                        _zigzag[Backstep] = _lastZzLow;
-                    }
-                    if (!double.IsNaN(_high[n - Backstep]) && double.IsNaN(_low[n - Backstep]))
-                    {
-                        _lastZzHigh = _high[n - Backstep];
-                        _lastHighPos = n;
-                        _zigzag[Backstep] = _lastZzHigh;
-                        _peakNext = false;
-                    }
+                    CalculateZigZag(i);
                 }
-                else
+
+                DrawZigZagSection();
+            }
+        }
+
+        private void DrawZigZagSection(bool isVisible = true)
+        {
+            if (double.IsNaN(_lastZzLow) || double.IsNaN(_lastZzHigh))
+                return;
+            var n = Bars.Count - 1;
+            var start = Math.Min(_lastHighPos, _lastLowPos);
+            var end = Math.Max(_lastHighPos, _lastLowPos);
+            var step = isVisible ? (Zigzag[n - end] - Zigzag[n - start])/(end - start) : double.NaN;
+            ZigzagLine[n - start] = Zigzag[n - start] + 0*step;
+            for (var i = start; i < end; i++)
+            {
+                ZigzagLine[n - i - 1] = ZigzagLine[n - i] + step;
+            }
+        }
+
+        private void ApplyZigZagChanges()
+        {
+            _prevPeakNext = _peakNext;
+            _prevLastZzLow = _lastZzLow;
+            _prevLastZzHigh = _lastZzHigh;
+            _prevLastLowPos = _lastLowPos;
+            _prevLastHighPos = _lastHighPos;
+            _zigzag.ApplyChanges();
+        }
+
+        private void RevertZigZagChanges(bool isNextStep = true)
+        {
+            _peakNext = _prevPeakNext;
+            _lastZzLow = _prevLastZzLow;
+            _lastZzHigh = _prevLastZzHigh;
+            _lastLowPos = _prevLastLowPos;
+            _lastHighPos = _prevLastHighPos;
+            _zigzag.RevertChanges(isNextStep);
+        }
+
+        private void CalculateZigZag(int shift)
+        {
+            var n = Bars.Count - 1;
+            if (_peakNext == null)
+            {
+                if (!double.IsNaN(_high[n - shift]))
                 {
-                    if (!double.IsNaN(_high[n - Backstep]) && _high[n - Backstep] > _lastZzHigh &&
-                        double.IsNaN(_low[n - Backstep]))
-                    {
-                        _zigzag[n - _lastHighPos + Backstep] = double.NaN;
-                        _lastHighPos = n;
-                        _lastZzHigh = _high[n - Backstep];
-                        _zigzag[Backstep] = _lastZzHigh;
-                    }
-                    if (!double.IsNaN(_low[n - Backstep]) && double.IsNaN(_high[n - Backstep]))
-                    {
-                        _lastZzLow = _low[n - Backstep];
-                        _lastLowPos = n;
-                        _zigzag[Backstep] = _lastZzLow;
-                        _peakNext = true;
-                    }
+                    _lastHighPos = n - shift;
+                    _peakNext = false;
+                    _lastZzHigh = Bars.High[shift];
+                    _zigzag[shift] = _lastZzHigh;
+                }
+                if (!double.IsNaN(_low[n - shift]))
+                {
+                    _lastLowPos = n - shift;
+                    _peakNext = true;
+                    _lastZzLow = Bars.Low[shift];
+                    _zigzag[shift] = _lastZzLow;
+                }
+            }
+            else if (_peakNext.Value)
+            {
+                if (!double.IsNaN(_low[n - shift]) && _low[n - shift] < _lastZzLow &&
+                    double.IsNaN(_high[n - shift]))
+                {
+                    _zigzag[n - _lastLowPos] = double.NaN;
+                    _lastLowPos = n - shift;
+                    _lastZzLow = _low[n - shift];
+                    _zigzag[shift] = _lastZzLow;
+                }
+                if (!double.IsNaN(_high[n - shift]) && double.IsNaN(_low[n - shift]))
+                {
+                    _lastZzHigh = _high[n - shift];
+                    _lastHighPos = n - shift;
+                    _zigzag[shift] = _lastZzHigh;
+                    _peakNext = false;
+                }
+            }
+            else
+            {
+                if (!double.IsNaN(_high[n - shift]) && _high[n - shift] > _lastZzHigh &&
+                    double.IsNaN(_low[n - shift]))
+                {
+                    _zigzag[n - _lastHighPos] = double.NaN;
+                    _lastHighPos = n - shift;
+                    _lastZzHigh = _high[n - shift];
+                    _zigzag[shift] = _lastZzHigh;
+                }
+                if (!double.IsNaN(_low[n - shift]) && double.IsNaN(_high[n - shift]))
+                {
+                    _lastZzLow = _low[n - shift];
+                    _lastLowPos = n - shift;
+                    _zigzag[shift] = _lastZzLow;
+                    _peakNext = true;
                 }
             }
         }

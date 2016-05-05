@@ -57,6 +57,7 @@
     <Compile Include="Oscillators\RelativeVigorIndex\RelativeVigorIndex.cs" />
     <Compile Include="Oscillators\StochasticOscillator\StochasticOscillator.cs" />
     <Compile Include="Oscillators\WilliamsPercentRange\WilliamsPercentRange.cs" />
+    <Compile Include="Other\News\News.cs" />
     <Compile Include="Trend\AverageDirectionalMovementIndex\AverageDirectionalMovementIndex.cs" />
     <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
     <Compile Include="Trend\Envelopes\Envelopes.cs" />
@@ -88,6 +89,10 @@
     <Compile Include="Other\ZigZag\ZigZag.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SoftFx.FxCalendar\SoftFx.FxCalendar.csproj">
+      <Project>{546b0a8d-6964-40df-b539-c988f8241d56}</Project>
+      <Name>SoftFx.FxCalendar</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
