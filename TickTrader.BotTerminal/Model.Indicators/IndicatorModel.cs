@@ -9,6 +9,7 @@ using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.GuiModel;
 using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.State;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -99,6 +100,7 @@ namespace TickTrader.BotTerminal
                 FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
                 chartSeries.DataSeries = data;
                 chartSeries.Stroke = setup.LineColor;
+                chartSeries.StrokeDashArray = setup.LineStyle.ToStrokeDashArray();
                 chartSeries.StrokeThickness = setup.LineThickness;
                 seriesList.Add(chartSeries);
             }

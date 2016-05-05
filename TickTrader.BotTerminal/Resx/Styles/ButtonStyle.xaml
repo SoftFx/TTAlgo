@@ -54,7 +54,7 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="Control.IsMouseOver" Value="True">
-                <Setter TargetName="Border" Property="Control.Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+                <Setter Property="Control.Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>

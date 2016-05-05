@@ -11,9 +11,9 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    class ConnectionModel
+    internal class ConnectionModel
     {
-        public enum States { Offline, Initializing, WaitingLogon, Online, Deinitializing }
+        internal enum States { Offline, Initializing, WaitingLogon, Online, Deinitializing }
         public enum Events { Started, DoneInit, DoneDeinit, InitFailed, OnLogon, OnLogout, StopRequested }
 
         private DataFeed feedProxy;
