@@ -184,7 +184,9 @@
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Extensions\LineStyleExtension.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
     <Compile Include="Extensions\ResxExtension.cs" />
     <Compile Include="Extensions\ResxBindingExtension.cs" />
