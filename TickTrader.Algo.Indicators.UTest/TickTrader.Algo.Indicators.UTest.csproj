@@ -50,6 +50,26 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ATCFMethodTests\FastAdaptiveTrendLine\FastAdaptiveTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\FastAdaptiveTrendLine\FastAdaptiveTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\FastTrendLineMomentum\FastTrendLineMomentumTest.cs" />
+    <Compile Include="ATCFMethodTests\FastTrendLineMomentum\FastTrendLineMomentumTestCase.cs" />
+    <Compile Include="ATCFMethodTests\FATLSignal\FATLSignalTest.cs" />
+    <Compile Include="ATCFMethodTests\FATLSignal\FATLSignalTestCase.cs" />
+    <Compile Include="ATCFMethodTests\FTLMSTLM\FTLMSTLMTest.cs" />
+    <Compile Include="ATCFMethodTests\FTLMSTLM\FTLMSTLMTestCase.cs" />
+    <Compile Include="ATCFMethodTests\PerfectCommodityChannelIndex\PerfectCommodityChannelIndexTest.cs" />
+    <Compile Include="ATCFMethodTests\PerfectCommodityChannelIndex\PerfectCommodityChannelIndexTestCase.cs" />
+    <Compile Include="ATCFMethodTests\RangeBoundChannelIndex\RangeBoundChannelIndexTest.cs" />
+    <Compile Include="ATCFMethodTests\RangeBoundChannelIndex\RangeBoundChannelIndexTestCase.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceFastTrendLine\ReferenceFastTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceFastTrendLine\ReferenceFastTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceSlowTrendLine\ReferenceSlowTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceSlowTrendLine\ReferenceSlowTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\SlowAdaptiveTrendLine\SlowAdaptiveTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\SlowAdaptiveTrendLine\SlowAdaptiveTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\SlowTrendLineMomentum\SlowTrendLineMomentumTest.cs" />
+    <Compile Include="ATCFMethodTests\SlowTrendLineMomentum\SlowTrendLineMomentumTestCase.cs" />
     <Compile Include="BillWilliamsTests\AcceleratorOscillator\AcceleratorOscillatorTest.cs" />
     <Compile Include="BillWilliamsTests\AcceleratorOscillator\AcceleratorOscillatorTestCase.cs" />
     <Compile Include="BillWilliamsTests\AwesomeOscillator\AwesomeOscillatorTest.cs" />
