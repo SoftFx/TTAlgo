@@ -25,10 +25,5 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.ParabolicSAR
         {
             PutOutputToBuffer("Sar", 0);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 }

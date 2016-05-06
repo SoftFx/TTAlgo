@@ -31,10 +31,5 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
         {
             PutOutputToBuffer("Zigzag", 0);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 }

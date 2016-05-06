@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected override void CheckAnswer()
         {
-            InvokeCheckAnswer(AnswerPath);
+            InvokeCheckAnswer($"{AnswerPath}.bin");
         }
     }
 

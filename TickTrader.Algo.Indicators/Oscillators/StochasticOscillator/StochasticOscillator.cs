@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         [Output(DisplayName = "Stoch", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Stoch { get; set; }
 
-        [Output(DisplayName = "Signal", DefaultColor = Colors.Red, DefaultLineStyle = LineStyles.Lines)]
+        [Output(DisplayName = "Signal", DefaultColor = Colors.Red, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries Signal { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

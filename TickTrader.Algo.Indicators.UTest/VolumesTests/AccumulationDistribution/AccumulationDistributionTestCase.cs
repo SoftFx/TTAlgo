@@ -16,10 +16,5 @@ namespace TickTrader.Algo.Indicators.UTest.VolumesTests.AccumulationDistribution
         {
             PutOutputToBuffer("Ad", 0);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 }

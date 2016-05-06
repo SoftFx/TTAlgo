@@ -26,10 +26,10 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
         [Output(DisplayName = "Kijun-sen", DefaultColor = Colors.Blue)]
         public DataSeries Kijun { get; set; }
 
-        [Output(DisplayName = "Senkou Span A", DefaultColor = Colors.SandyBrown, DefaultLineStyle = LineStyles.Lines)]
+        [Output(DisplayName = "Senkou Span A", DefaultColor = Colors.SandyBrown, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries SenkouA { get; set; }
 
-        [Output(DisplayName = "Senkou Span B", DefaultColor = Colors.Thistle, DefaultLineStyle = LineStyles.Lines)]
+        [Output(DisplayName = "Senkou Span B", DefaultColor = Colors.Thistle, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries SenkouB { get; set; }
 
         [Output(DisplayName = "Chikou Span", DefaultColor = Colors.Lime)]

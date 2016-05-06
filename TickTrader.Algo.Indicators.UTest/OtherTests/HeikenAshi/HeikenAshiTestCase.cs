@@ -19,10 +19,5 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.HeikenAshi
             PutOutputToBuffer("HaOpen", 2);
             PutOutputToBuffer("HaClose", 3);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 }
