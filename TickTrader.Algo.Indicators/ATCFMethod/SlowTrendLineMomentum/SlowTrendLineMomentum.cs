@@ -5,13 +5,16 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
     [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Slow Trend Line Momentum")]
     public class SlowTrendLineMomentum : Indicator
     {
+        private SlowAdaptiveTrendLine.SlowAdaptiveTrendLine _satl;
+        private ReferenceSlowTrendLine.ReferenceSlowTrendLine _rstl;
+
         [Input]
         public DataSeries Price { get; set; }
 
         [Output(DisplayName = "STLM", DefaultColor = Colors.DarkSalmon)]
         public DataSeries Stlm { get; set; }
 
-        public int LastPositionChanged { get { return 0; } }
+        public int LastPositionChanged { get { return _satl.LastPositionChanged; } }
 
         public SlowTrendLineMomentum() { }
 
@@ -22,7 +25,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
             InitializeIndicator();
         }
 
-        private void InitializeIndicator() { }
+        private void InitializeIndicator()
+        {
+            _satl = new SlowAdaptiveTrendLine.SlowAdaptiveTrendLine(Price);
+            _rstl = new ReferenceSlowTrendLine.ReferenceSlowTrendLine(Price);
+        }
 
         protected override void Init()
         {
@@ -31,7 +38,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            Stlm[pos] = _satl.Satl[pos] - _rstl.Rstl[pos];
         }
     }
 }

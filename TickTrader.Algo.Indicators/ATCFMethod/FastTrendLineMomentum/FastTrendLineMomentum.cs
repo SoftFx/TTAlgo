@@ -5,13 +5,16 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
     [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Fast Trend Line Momentum")]
     public class FastTrendLineMomentum : Indicator
     {
+        private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
+        private ReferenceFastTrendLine.ReferenceFastTrendLine _rftl;
+
         [Input]
         public DataSeries Price { get; set; }
 
         [Output(DisplayName = "FTLM", DefaultColor = Colors.DarkKhaki)]
         public DataSeries Ftlm { get; set; }
 
-        public int LastPositionChanged { get { return 0; } }
+        public int LastPositionChanged { get { return _fatl.LastPositionChanged; } }
 
         public FastTrendLineMomentum() { }
 
@@ -22,7 +25,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
             InitializeIndicator();
         }
 
-        private void InitializeIndicator() { }
+        private void InitializeIndicator()
+        {
+            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price);
+            _rftl = new ReferenceFastTrendLine.ReferenceFastTrendLine(Price);
+        }
 
         protected override void Init()
         {
@@ -31,7 +38,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            Ftlm[pos] = _fatl.Fatl[pos] - _rftl.Rftl[pos];
         }
     }
 }
