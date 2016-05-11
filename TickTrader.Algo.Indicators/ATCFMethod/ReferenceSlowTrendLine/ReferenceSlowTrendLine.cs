@@ -5,6 +5,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceSlowTrendLine
     [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "AT&CF Method/Reference Slow Trend Line")]
     public class ReferenceSlowTrendLine : DigitalIndicatorBase
     {
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
+
         [Input]
         public DataSeries Price { get; set; }
 
@@ -33,6 +36,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceSlowTrendLine
         {
             var pos = LastPositionChanged;
             Rstl[pos] = CalculateDigitalIndicator(Price);
+            if (Price.Count > CountBars)
+            {
+                Rstl[CountBars] = double.NaN;
+            }
         }
 
         protected override void SetupCoefficients()

@@ -7,6 +7,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
 
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
+
         [Input]
         public DataSeries Price { get; set; }
 
@@ -38,6 +41,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
         {
             var pos = LastPositionChanged;
             Pcci[pos] = Price[pos] - _fatl.Fatl[pos];
+            if (Price.Count > CountBars)
+            {
+                Pcci[CountBars] = double.NaN;
+            }
         }
     }
 }

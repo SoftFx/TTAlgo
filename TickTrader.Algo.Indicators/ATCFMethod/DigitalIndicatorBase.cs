@@ -7,6 +7,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod
     {
         protected double[] Coefficients;
 
+        public int CoefficientsCount { get { return Coefficients.Length; } }
+
         protected DigitalIndicatorBase()
         {
             SetupIndicator();

@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.FATLSignal
         [TestMethod]
         public void TestMeasuresAUDNZD_M15()
         {
-            TestMeasures("AUDNZD", "M15", 1e-3);
+            TestMeasures("AUDNZD", "M15", 1e-5);
         }
 
         [TestMethod]

@@ -111,7 +111,7 @@
     <Compile Include="OtherTests\ZigZag\ZigZagTest.cs" />
     <Compile Include="OtherTests\ZigZag\ZigZagTestCase.cs" />
     <Compile Include="TestBase.cs" />
-    <Compile Include="TestCases\LegacyTestCase.cs" />
+    <Compile Include="TestCases\DigitalIndicatorTestCase.cs" />
     <Compile Include="TestCases\MethodsTestCase.cs" />
     <Compile Include="TestCases\PeriodMethodsPricesTestCase.cs" />
     <Compile Include="TestCases\PeriodPricesTestCase.cs" />

@@ -8,6 +8,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
         private ReferenceFastTrendLine.ReferenceFastTrendLine _rftl;
 
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
+
         [Input]
         public DataSeries Price { get; set; }
 
@@ -40,6 +43,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
         {
             var pos = LastPositionChanged;
             Ftlm[pos] = _fatl.Fatl[pos] - _rftl.Rftl[pos];
+            if (Price.Count > CountBars)
+            {
+                Ftlm[CountBars] = double.NaN;
+            }
         }
     }
 }

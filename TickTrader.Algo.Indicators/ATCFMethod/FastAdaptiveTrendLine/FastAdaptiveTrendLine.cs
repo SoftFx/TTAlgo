@@ -5,6 +5,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
     [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "AT&CF Method/Fast Adaptive Trend Line")]
     public class FastAdaptiveTrendLine : DigitalIndicatorBase
     {
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
+
         [Input]
         public DataSeries Price { get; set; }
 
@@ -33,6 +36,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
         {
             var pos = LastPositionChanged;
             Fatl[pos] = CalculateDigitalIndicator(Price);
+            if (Price.Count > CountBars)
+            {
+                Fatl[CountBars] = double.NaN;
+            }
         }
 
         protected override void SetupCoefficients()

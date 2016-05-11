@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelIndex
 {
-    public class RangeBoundChannelIndexTestCase : SimpleTestCase
+    public class RangeBoundChannelIndexTestCase : DigitalIndicatorTestCase
     {
         public int Std { get; protected set; }
 
@@ -15,7 +15,11 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
             Std = std;
         }
 
-        protected override void SetupParameters() { }
+        protected override void SetupParameters()
+        {
+            base.SetupParameters();
+            SetParameter("Std", Std);
+        }
 
         protected override void SetupInput()
         {

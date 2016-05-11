@@ -8,6 +8,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
         private FastTrendLineMomentum.FastTrendLineMomentum _ftlm;
         private SlowTrendLineMomentum.SlowTrendLineMomentum _stlm;
 
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
+
         [Input]
         public DataSeries Price { get; set; }
 
@@ -44,6 +47,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
             var pos = LastPositionChanged;
             Ftlm[pos] = _ftlm.Ftlm[pos];
             Stlm[pos] = _stlm.Stlm[pos];
+            if (Price.Count > CountBars)
+            {
+                Ftlm[CountBars] = double.NaN;
+                Stlm[CountBars] = double.NaN;
+            }
         }
     }
 }

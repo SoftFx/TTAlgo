@@ -3,10 +3,13 @@
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Range Bound Channel Index")]
-    public class RangeBoundChannelIndex : Indicator
+    public class RangeBoundChannelIndex : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 18, DisplayName = "STD")]
         public int Std { get; set; }
+
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -46,7 +49,17 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         protected override void Calculate()
         {
-            
+            var pos = LastPositionChanged;
+            Rbci[pos] = CalculateDigitalIndicator(Price);
+
+            if (Price.Count > CountBars)
+            {
+                Rbci[CountBars] = double.NaN;
+                UpperBound[CountBars] = double.NaN;
+                LowerBound[CountBars] = double.NaN;
+                UpperBound2[CountBars] = double.NaN;
+                LowerBound2[CountBars] = double.NaN;
+            }
         }
     }
 }

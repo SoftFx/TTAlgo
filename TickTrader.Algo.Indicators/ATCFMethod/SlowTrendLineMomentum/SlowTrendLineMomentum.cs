@@ -8,6 +8,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
         private SlowAdaptiveTrendLine.SlowAdaptiveTrendLine _satl;
         private ReferenceSlowTrendLine.ReferenceSlowTrendLine _rstl;
 
+        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
+        public int CountBars { get; set; }
+
         [Input]
         public DataSeries Price { get; set; }
 
@@ -40,6 +43,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
         {
             var pos = LastPositionChanged;
             Stlm[pos] = _satl.Satl[pos] - _rstl.Rstl[pos];
+            if (Price.Count > CountBars)
+            {
+                Stlm[CountBars] = double.NaN;
+            }
         }
     }
 }

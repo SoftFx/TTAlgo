@@ -5,14 +5,12 @@ using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.SlowAdaptiveTrendLine
 {
-    public class SlowAdaptiveTrendLineTestCase : SimpleTestCase
+    public class SlowAdaptiveTrendLineTestCase : DigitalIndicatorTestCase
     {
         public SlowAdaptiveTrendLineTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath)
             : base(indicatorType, symbol, quotesPath, answerPath, 8)
         {
         }
-
-        protected override void SetupParameters() { }
 
         protected override void SetupInput()
         {

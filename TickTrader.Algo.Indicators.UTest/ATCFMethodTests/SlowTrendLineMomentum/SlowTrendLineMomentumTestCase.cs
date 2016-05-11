@@ -5,14 +5,12 @@ using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.SlowTrendLineMomentum
 {
-    public class SlowTrendLineMomentumTestCase : SimpleTestCase
+    public class SlowTrendLineMomentumTestCase : DigitalIndicatorTestCase
     {
         public SlowTrendLineMomentumTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath)
             : base(indicatorType, symbol, quotesPath, answerPath, 8)
         {
         }
-
-        protected override void SetupParameters() { }
 
         protected override void SetupInput()
         {
