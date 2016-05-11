@@ -61,5 +61,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 LowerBound2[CountBars] = double.NaN;
             }
         }
+
+        protected override void SetupCoefficients()
+        {
+            Coefficients = new double[0];
+        }
     }
 }
