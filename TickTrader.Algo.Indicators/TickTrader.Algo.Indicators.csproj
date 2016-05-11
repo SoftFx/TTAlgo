@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ATCFMethod\DigitalIndicatorBase.cs" />
     <Compile Include="ATCFMethod\FastAdaptiveTrendLine\FastAdaptiveTrendLine.cs" />
     <Compile Include="ATCFMethod\FastTrendLineMomentum\FastTrendLineMomentum.cs" />
     <Compile Include="ATCFMethod\FATLSignal\FATLSignal.cs" />
