@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core.Executors
 {
-    class RealtimePluginSetup
+    public class PluginExecutorConfig
     {
     }
 }

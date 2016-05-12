@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Realtime;
 using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    public class IndicatorSetup_Bars : IndicatorSetupBase
+    public class IndicatorSetup_Bars : IndicatorSetupBase, IPluginSetup
     {
         private string mainSymbol;
 
@@ -20,6 +21,19 @@ namespace TickTrader.BotTerminal
             this.mainSymbol = mainSymbol;
 
             Init();
+        }
+
+        public PluginBuilder CreateBuilder()
+        {
+            var builder = new IndicatorBuilder(Descriptor);
+
+            foreach (var input in Inputs)
+                ((BarInputSetup)input).Configure(builder);
+
+            foreach (var parameter in Parameters)
+                builder.SetParameter(parameter.Id, parameter.ValueObj);
+
+            return builder;
         }
 
         protected override InputSetup CreateInput(InputDescriptor descriptor)

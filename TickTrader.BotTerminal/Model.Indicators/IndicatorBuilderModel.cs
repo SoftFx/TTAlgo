@@ -13,6 +13,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.BotTerminal.Lib;
 using Api = TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Realtime;
 
 namespace TickTrader.BotTerminal
 {
@@ -271,6 +272,43 @@ namespace TickTrader.BotTerminal
         //}
     }
 
+    internal class PluginFeedProvider : IPluginFeedProvider
+    {
+        public object SyncRoot { get; private set; }
+
+        public PluginFeedProvider()
+        {
+            SyncRoot = new object();
+        }
+
+        public event Action<FeedUpdate[]> FeedUpdated;
+
+        public IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Level2QuoteEntity> QueryLeve2(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Subscribe(string symbolCode, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Unsubscribe(string symbolCode)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     //internal class XySeriesWriter : CollectionWriter<double, Api.Bar>
     //{
     //    private XyDataSeries<DateTime, double> chartData = new XyDataSeries<DateTime, double>();
@@ -312,66 +350,66 @@ namespace TickTrader.BotTerminal
     //    }
     //}
 
-//    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
-//    {
-//        private int index;
-//        private Bar[] data;
-//        private Func<Bar, double> propSelector;
-//        private IndicatorBuilderModel indicator;
+    //    internal class BarDoubleReader : NoTimeoutByRefObject, DataSeriesReader<double>
+    //    {
+    //        private int index;
+    //        private Bar[] data;
+    //        private Func<Bar, double> propSelector;
+    //        private IndicatorBuilderModel indicator;
 
-//        public BarDoubleReader(Func<Bar, double> propSelector, IndicatorBuilderModel indicator)
-//        {
-//            this.data = indicator.Data;
-//            this.propSelector = propSelector;
-//            this.indicator = indicator;
-//        }
+    //        public BarDoubleReader(Func<Bar, double> propSelector, IndicatorBuilderModel indicator)
+    //        {
+    //            this.data = indicator.Data;
+    //            this.propSelector = propSelector;
+    //            this.indicator = indicator;
+    //        }
 
-//        public double ReadNext()
-//        {
-//            return propSelector(data[index++]);
-//        }
+    //        public double ReadNext()
+    //        {
+    //            return propSelector(data[index++]);
+    //        }
 
-//        public double ReRead()
-//        {
-//            return propSelector(data[index]);
-//        }
+    //        public double ReRead()
+    //        {
+    //            return propSelector(data[index]);
+    //        }
 
-//        public void Reset()
-//        {
-//            this.index = 0;
-//            this.data = indicator.Data;
-//        }
-//    }
+    //        public void Reset()
+    //        {
+    //            this.index = 0;
+    //            this.data = indicator.Data;
+    //        }
+    //    }
 
-//    internal class XySeriesWriter : NoTimeoutByRefObject, DataSeriesWriter<double>
-//    {
-//        private Bar[] inputColelction;
-//        private XyDataSeries<DateTime, double> outputCollection;
-//        private IndicatorBuilderModel indicator;
+    //    internal class XySeriesWriter : NoTimeoutByRefObject, DataSeriesWriter<double>
+    //    {
+    //        private Bar[] inputColelction;
+    //        private XyDataSeries<DateTime, double> outputCollection;
+    //        private IndicatorBuilderModel indicator;
 
-//        public XySeriesWriter(IndicatorBuilderModel indicator, XyDataSeries<DateTime, double> outputCollection)
-//        {
-//            this.inputColelction = indicator.Data;
-//            this.outputCollection = outputCollection;
-//            this.indicator = indicator;
-//        }
+    //        public XySeriesWriter(IndicatorBuilderModel indicator, XyDataSeries<DateTime, double> outputCollection)
+    //        {
+    //            this.inputColelction = indicator.Data;
+    //            this.outputCollection = outputCollection;
+    //            this.indicator = indicator;
+    //        }
 
-//        public void WriteAt(int index, double val)
-//        {
-//            DateTime barTime = inputColelction[index].From;
+    //        public void WriteAt(int index, double val)
+    //        {
+    //            DateTime barTime = inputColelction[index].From;
 
-//            if (outputCollection.Count == index)
-//                Execute.OnUIThread(() =>
-//                    {
-//                        if (!indicator.IsRestarting)
-//                            outputCollection.Append(barTime, val);
-//                    });
-//        }
+    //            if (outputCollection.Count == index)
+    //                Execute.OnUIThread(() =>
+    //                    {
+    //                        if (!indicator.IsRestarting)
+    //                            outputCollection.Append(barTime, val);
+    //                    });
+    //        }
 
-//        public void Reset()
-//        {
-//            outputCollection.Clear();
-//            this.inputColelction = indicator.Data;
-//        }
-//    }
+    //        public void Reset()
+    //        {
+    //            outputCollection.Clear();
+    //            this.inputColelction = indicator.Data;
+    //        }
+    //    }
 }

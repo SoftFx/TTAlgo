@@ -12,6 +12,21 @@ namespace TickTrader.Algo.Core
     {
         public static readonly BarEntity Empty = new BarEntity() { IsNull = true, Open = double.NaN, Close = double.NaN, High = double.NaN , Low = double.NaN, Volume = double.NaN };
 
+        public BarEntity()
+        {
+        }
+
+        public BarEntity(DateTime openTime, DateTime closeTime, QuoteEntity quote)
+        {
+            OpenTime = openTime;
+            CloseTime = closeTime;
+            Open = quote.Bid;
+            Close = quote.Bid;
+            High = quote.Bid;
+            Low = quote.Bid;
+            Volume = 1;
+        }
+
         public double Open { get; set; }
         public double Close { get; set; }
         public double High { get; set; }
@@ -20,6 +35,16 @@ namespace TickTrader.Algo.Core
         public DateTime OpenTime { get; set; }
         public DateTime CloseTime { get; set; }
         public bool IsNull { get; set; }
+
+        public void Append(double price)
+        {
+            Close = price;
+            if (price > High)
+                High = price;
+            if (price < Low)
+                Low = price;
+            Volume++;
+        }
     }
 
     [Serializable]

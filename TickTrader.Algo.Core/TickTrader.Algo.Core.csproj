@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="Adapters\BotAdapter.cs" />
     <Compile Include="Adapters\IndicatorAdapter.cs" />
-    <Compile Include="Executors\BotExecutor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\BarEntity.cs" />
     <Compile Include="Buffers\BuffersCoordinator.cs" />
@@ -56,16 +55,23 @@
     <Compile Include="Buffers\OutputBuffer.cs" />
     <Compile Include="Buffers\ProxyBuffer.cs" />
     <Compile Include="Entities\EventArgs.cs" />
+    <Compile Include="Entities\FeedUpdate.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
-    <Compile Include="Executors\IndicatorBuilder.cs" />
-    <Compile Include="Executors\RealtimePluginSetup.cs" />
+    <Compile Include="Builder\IndicatorBuilder.cs" />
+    <Compile Include="Executor\FeedFixture.cs" />
+    <Compile Include="Executor\FeedStrategy.cs" />
+    <Compile Include="Executor\Interfaces.cs" />
+    <Compile Include="Executor\InvokeStartegy.cs" />
+    <Compile Include="Executor\PluginExecutor.cs" />
+    <Compile Include="Realtime\RealtimePluginSetup.cs" />
     <Compile Include="Math\BarSampler.cs" />
     <Compile Include="Metadata\EmptyValue.cs" />
     <Compile Include="Adapters\PluginAdapter.cs" />
-    <Compile Include="Executors\PluginExecutor.cs" />
+    <Compile Include="Builder\PluginBuilder.cs" />
+    <Compile Include="Executor\BarSeriesFixture.cs" />
     <Compile Include="Realtime\ExecutionContext.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Lib\Dataflow.cs" />
@@ -79,8 +85,10 @@
     <Compile Include="Metadata\InputDescriptor.cs" />
     <Compile Include="Metadata\OutputDescriptor.cs" />
     <Compile Include="Metadata\ParameterDescriptor.cs" />
+    <Compile Include="Realtime\Interfaces.cs" />
+    <Compile Include="Realtime\NullProvider.cs" />
     <Compile Include="Realtime\RealtimePluginExecutor.cs" />
-    <Compile Include="Realtime\SubscriptionManager.cs" />
+    <Compile Include="Realtime\SubsciptionProxy.cs" />
     <Compile Include="Repository\AlgoAssembly.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Repository\AlgoSandbox.cs" />

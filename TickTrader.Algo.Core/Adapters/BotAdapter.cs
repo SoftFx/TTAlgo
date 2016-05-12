@@ -17,12 +17,17 @@ namespace TickTrader.Algo.Core
             BindUpOutputs();
         }
 
-        public void InvokeStart()
+        public override void InvokeCalculate(bool isUpdate)
+        {
+
+        }
+
+        public override void InvokeOnStart()
         {
             ((TradeBot)PluginInstance).InvokeStart();
         }
 
-        public void InvokeStop()
+        public override void InvokeOnStop()
         {
             ((TradeBot)PluginInstance).InvokeStop();
         }

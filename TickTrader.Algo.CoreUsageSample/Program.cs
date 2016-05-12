@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.DataflowConcept;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Setup;
 
@@ -15,7 +15,7 @@ namespace TickTrader.Algo.CoreUsageSample
     {
         static void Main(string[] args)
         {
-            var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
+            //var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
 
             //IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
 
@@ -33,23 +33,49 @@ namespace TickTrader.Algo.CoreUsageSample
             //builder.GetBarSeries("EURUSD").Last = new BarEntity() { High = 100 };
             //builder.RebuildLast();
 
+            //var descriptor = AlgoPluginDescriptor.Get(typeof(Alligator));
+            //var setup = new BarBasedPluginSetup(descriptor, new SetupMetadata());
+            //setup.SetParam("JawsPeriod", 14);
+
+            //var builder = setup.CreateIndicatorBuilder();
+
+            //builder.GetBarBuffer("EURUSD").Append(data);
+            //builder.BuildNext(data.Count);
+
+            //var jaws = builder.GetOutput("Jaws");
+            //var teeth = builder.GetOutput("Teeth");
+            //var lips = builder.GetOutput("Lips");
+
+            //for (int i = 0; i < builder.DataSize; i++)
+            //    Console.WriteLine(jaws[i] + " - " + teeth[i] + " - " + lips[i]);
+
+            //Serialize(setup.Serialize(), "Alligator.cfg");
+
+            var dataModel = new FeedModel(TimeFrames.M1);
+            dataModel.Fill("EURUSD", TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt"));
+
             var descriptor = AlgoPluginDescriptor.Get(typeof(Alligator));
-            var setup = new BarBasedPluginSetup(descriptor, new SetupMetadata());
-            setup.SetParam("JawsPeriod", 14);
+            var executor = new PluginExecutor(() => new IndicatorBuilder(descriptor));
+            executor.MainSymbolCode = "EURUSD";
+            executor.FeedProvider = dataModel;
+            executor.FeedStrategy = new BarStrategy();
+            executor.InvokeStrategy = new DataflowInvokeStartegy();
+            executor.TimeFrame = dataModel.TimeFrame;
+            executor.TimePeriodStart = DateTime.Parse("2015.11.02 00:25:00");
+            executor.TimePeriodEnd = DateTime.Parse("2015.11.03 3:00:00");
+            executor.MapBarInput("Input", "EURUSD");
 
-            var builder = setup.CreateIndicatorBuilder();
+            executor.Start();
 
-            builder.GetBarBuffer("EURUSD").Append(data);
-            builder.BuildNext(data.Count);
+            dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:24"), Ask = 1.10145, Bid = 1.10145 });
+            dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:28"), Ask = 1.10148, Bid = 1.10151 });
+            dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:31"), Ask = 1.10149, Bid = 1.10149 });
 
-            var jaws = builder.GetOutput("Jaws");
-            var teeth = builder.GetOutput("Teeth");
-            var lips = builder.GetOutput("Lips");
+            executor.Stop(false).Wait();
 
-            for (int i = 0; i < builder.DataSize; i++)
-                Console.WriteLine(jaws[i] + " - " + teeth[i] + " - " + lips[i]);
+            //executor.Reset();
 
-            Serialize(setup.Serialize(), "Alligator.cfg");
+            //executor.Start();
 
             Console.Write("Press any key to continue...");      
             Console.Read();

@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    internal class PluginAdapter : NoTimeoutByRefObject, IPluginActivator
+    internal abstract class PluginAdapter : NoTimeoutByRefObject, IPluginActivator
     {
         private AlgoPlugin plugin;
         private IPluginDataProvider provider;
@@ -75,21 +75,16 @@ namespace TickTrader.Algo.Core
             return outputs[id];
         }
 
-        private void InvokeInit()
-        {
-            plugin.InvokeInit();
-        }
-
-        public void Init()
+        public void InvokeInit()
         {
             try
             {
                 AlgoPlugin.activator = this;
 
                 for (int i = nestedIndacators.Count - 1; i >= 0; i--)
-                    nestedIndacators[i].InvokeInit();
+                    nestedIndacators[i].plugin.InvokeInit();
 
-                InvokeInit();
+                plugin.InvokeInit();
             }
             finally
             {
@@ -166,28 +161,48 @@ namespace TickTrader.Algo.Core
             return descriptor;
         }
 
-        public static IndicatorAdapter CreateIndicator(string id, IPluginDataProvider dataProvider)
+        public static PluginAdapter Create(AlgoPluginDescriptor descriptor, IPluginDataProvider dataProvider)
         {
-            AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-
-            if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
-                throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
-
-            descriptor.Validate();
-
-            return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+            if (descriptor.AlgoLogicType == AlgoTypes.Indicator)
+                return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+            else if (descriptor.AlgoLogicType == AlgoTypes.Robot)
+                return new BotAdapter(() => (TradeBot)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+            else
+                throw new InvalidPluginType("Unsupported plugin type: " + descriptor.AlgoLogicType);
         }
 
-        public static BotAdapter CreateBot(string id, IPluginDataProvider dataProvider)
+        public abstract void InvokeCalculate(bool isUpdate);
+        public abstract void InvokeOnStart();
+        public abstract void InvokeOnStop();
+
+        protected void InvokeCalculateForNestedIndicators(bool isUpdate)
         {
-            AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-
-            if (descriptor.AlgoLogicType != AlgoTypes.Robot)
-                throw new InvalidPluginType("CreateBot() can be called only for bot plugins!");
-
-            descriptor.Validate();
-
-            return new BotAdapter(() => (TradeBot)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+            for (int i = NestedIndicators.Count - 1; i >= 0; i--)
+                NestedIndicators[i].InvokeCalculate(isUpdate);
         }
+
+        //public static IndicatorAdapter CreateIndicator(string id, IPluginDataProvider dataProvider)
+        //{
+        //    AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
+
+        //    if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
+        //        throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
+
+        //    descriptor.Validate();
+
+        //    return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+        //}
+
+        //public static BotAdapter CreateBot(string id, IPluginDataProvider dataProvider)
+        //{
+        //    AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
+
+        //    if (descriptor.AlgoLogicType != AlgoTypes.Robot)
+        //        throw new InvalidPluginType("CreateBot() can be called only for bot plugins!");
+
+        //    descriptor.Validate();
+
+        //    return new BotAdapter(() => (TradeBot)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+        //}
     }
 }

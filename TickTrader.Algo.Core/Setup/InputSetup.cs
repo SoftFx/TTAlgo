@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core.Setup
 
         public BarToDoubleMappings MappingVariant { get; set; }
 
-        public override void Apply(PluginExecutor executor)
+        public override void Apply(PluginBuilder executor)
         {
             executor.MapBarInput<double>(Descriptor.Id, SymbolCode, GetSelector());
         }
@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Core.Setup
         {
         }
 
-        public override void Apply(PluginExecutor executor)
+        public override void Apply(PluginBuilder executor)
         {
             executor.MapBarInput(Descriptor.Id, SymbolCode);
         }

@@ -8,6 +8,7 @@ namespace TickTrader.Algo.Api
 {
     public enum TimeFrames
     {
+        MN,
         D,
         W,
         H4,

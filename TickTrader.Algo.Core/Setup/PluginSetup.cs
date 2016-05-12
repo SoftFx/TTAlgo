@@ -52,15 +52,15 @@ namespace TickTrader.Algo.Core.Setup
             return builder;
         }
 
-        public virtual BotExecutor CreateBotExecutor()
-        {
-            BotExecutor executor = new BotExecutor(Descriptor);
-            executor.MainSymbol = metadata.MainSymbol;
-            Apply(executor);
-            return executor;
-        }
+        //public virtual BotBuilder CreateBotExecutor()
+        //{
+        //    BotBuilder executor = new BotBuilder(Descriptor);
+        //    executor.MainSymbol = metadata.MainSymbol;
+        //    Apply(executor);
+        //    return executor;
+        //}
 
-        public virtual void Apply(PluginExecutor executor)
+        public virtual void Apply(PluginBuilder executor)
         {
             foreach (var prop in properteis.Values)
                 prop.Apply(executor);

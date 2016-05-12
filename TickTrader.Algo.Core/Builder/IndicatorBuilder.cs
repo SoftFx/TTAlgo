@@ -11,19 +11,16 @@ using TickTrader.Algo.Core.Metadata;
 namespace TickTrader.Algo.Core
 {
     /// <summary>
-    /// Note: This class is not thread safe and designed to be used from one single thread
+    /// Note: This is simplified method to build indicators. It does not support multithreading indicators.
     /// </summary>
-    public class IndicatorBuilder : PluginExecutor
+    public class IndicatorBuilder : PluginBuilder
     {
-        private IndicatorAdapter pluginProxy;
+        private bool isInitialized;
 
         public IndicatorBuilder(AlgoPluginDescriptor descriptor)
             : base(descriptor)
         {
-            pluginProxy = PluginAdapter.CreateIndicator(descriptor.Id, this);
         }
-
-        internal override PluginAdapter PluginProxy { get { return pluginProxy; } }
 
         public void BuildNext(int count = 1)
         {
@@ -33,21 +30,31 @@ namespace TickTrader.Algo.Core
         public void BuildNext(int count, CancellationToken cToken)
         {
             LazyInit();
-            pluginProxy.Coordinator.FireBeginBatch();
+            PluginProxy.Coordinator.FireBeginBatch();
             for (int i = 0; i < count; i++)
             {
                 if (cToken.IsCancellationRequested)
                     return;
-                pluginProxy.Coordinator.MoveNext();
-                pluginProxy.Calculate(false);
+                PluginProxy.Coordinator.MoveNext();
+                InvokeCalculate(false);
             }
-            pluginProxy.Coordinator.FireEndBatch();
+            PluginProxy.Coordinator.FireEndBatch();
         }
 
         public void RebuildLast()
         {
             LazyInit();
-            pluginProxy.Calculate(true);
+            InvokeCalculate(true);
+        }
+
+        private void LazyInit()
+        {
+            if (isInitialized)
+                return;
+
+            PluginProxy.InvokeInit();
+
+            isInitialized = true;
         }
     }
 }

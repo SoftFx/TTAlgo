@@ -25,17 +25,18 @@ namespace TickTrader.Algo.Core
             BindUpOutputs();
         }
 
-        private void InvokeCalculate(bool isUpdate)
+        public override void InvokeCalculate(bool isUpdate)
         {
+            InvokeCalculateForNestedIndicators(isUpdate);
             ((Indicator)PluginInstance).InvokeCalculate(isUpdate);
         }
 
-        public void Calculate(bool isUpdate)
+        public override void InvokeOnStart()
         {
-            for (int i = NestedIndicators.Count - 1; i >= 0; i--)
-                NestedIndicators[i].InvokeCalculate(isUpdate);
+        }
 
-            InvokeCalculate(isUpdate);
+        public override void InvokeOnStop()
+        {
         }
 
         public override string ToString()

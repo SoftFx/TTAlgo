@@ -10,25 +10,24 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class PluginExecutor : IPluginDataProvider
+    public class PluginBuilder : IPluginDataProvider, IPluginInvoker
     {
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
-        private bool isInitialized;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
 
-        public PluginExecutor(AlgoPluginDescriptor descriptor)
+        internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
             Descriptor = descriptor;
             marketData = new MarketDataImpl(this);
             Account = new AccountEntity();
             Symbols = new SymbolsCollection();
 
-            //PluginFactory2 factory = new PluginFactory2(descriptor.AlgoClassType, this);
+            PluginProxy = PluginAdapter.Create(descriptor, this);
         }
 
-        internal abstract PluginAdapter PluginProxy { get; }
+        internal PluginAdapter PluginProxy { get; private set; }
 
         public string MainSymbol { get; set; }
         public SymbolsCollection Symbols { get; private set; }
@@ -97,14 +96,9 @@ namespace TickTrader.Algo.Core
             input.Buffer = buffer;
         }
 
-        protected void LazyInit()
+        protected void InvokeCalculate(bool isUpdate)
         {
-            if (isInitialized)
-                return;
-
-            PluginProxy.Init();
-
-            isInitialized = true;
+            PluginProxy.InvokeCalculate(isUpdate);
         }
 
         MarketDataProvider IPluginDataProvider.GetMarketDataProvider()
@@ -135,12 +129,47 @@ namespace TickTrader.Algo.Core
             return Symbols.SymbolProviderImpl;
         }
 
+        void IPluginInvoker.InvokeCalculate(bool isUpdate)
+        {
+            InvokeCalculate(isUpdate);
+        }
+
+        void IPluginInvoker.InvokeOnStart()
+        {
+            PluginProxy.InvokeOnStart();
+        }
+
+        void IPluginInvoker.InvokeOnStop()
+        {
+            PluginProxy.InvokeOnStop();
+        }
+
+        void IPluginInvoker.StartBatch()
+        {
+            PluginProxy.Coordinator.FireBeginBatch();
+        }
+
+        void IPluginInvoker.StopBatch()
+        {
+            PluginProxy.Coordinator.FireEndBatch();
+        }
+
+        void IPluginInvoker.IncreaseVirtualPosition()
+        {
+            PluginProxy.Coordinator.MoveNext();
+        }
+
+        void IPluginInvoker.InvokeInit()
+        {
+            PluginProxy.InvokeInit();
+        }
+
         private class MarketDataImpl : MarketDataProvider
         {
-            private PluginExecutor builder;
+            private PluginBuilder builder;
             private BarSeriesProxy mainBars;
 
-            public MarketDataImpl(PluginExecutor builder)
+            public MarketDataImpl(PluginBuilder builder)
             {
                 this.builder = builder;
             }
@@ -224,6 +253,4 @@ namespace TickTrader.Algo.Core
             }
         }
     }
-
-    
 }

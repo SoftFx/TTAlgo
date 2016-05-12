@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Core.Math
 
         static BarSampler()
         {
+            cachedSamplers.Add(Api.TimeFrames.MN, new MonthSampler());
             cachedSamplers.Add(Api.TimeFrames.W, new WeekSampler());
             cachedSamplers.Add(Api.TimeFrames.D, new FormulaSampler(TimeSpan.FromDays(1)));
             cachedSamplers.Add(Api.TimeFrames.H4, new FormulaSampler(TimeSpan.FromHours(4)));
@@ -32,7 +33,19 @@ namespace TickTrader.Algo.Core.Math
         {
         }
 
-        public abstract DateTime GetBarOpenTime(DateTime timepoint);
+        public abstract BarBoundaries GetBar(DateTime timepoint);
+    }
+
+    public struct BarBoundaries
+    {
+        public BarBoundaries(DateTime start, DateTime end)
+        {
+            this.Open = start;
+            this.Close = end;
+        }
+
+        public DateTime Open { get; private set; }
+        public DateTime Close { get; private set; }
     }
 
     internal class FormulaSampler : BarSampler
@@ -44,10 +57,12 @@ namespace TickTrader.Algo.Core.Math
             spTicks = sampleSize.Ticks;
         }
 
-        public override DateTime GetBarOpenTime(DateTime timepoint)
+        public override BarBoundaries GetBar(DateTime timepoint)
         {
             var delta = (spTicks - (timepoint.Ticks % spTicks)) % spTicks;
-            return new DateTime(timepoint.Ticks + delta, timepoint.Kind);
+            var startTicks = timepoint.Ticks + delta;
+            var endTicks = startTicks + spTicks;
+            return new BarBoundaries(new DateTime(startTicks, timepoint.Kind), new DateTime(endTicks, timepoint.Kind));
         }
 
         public DateTime RoundUp(DateTime point)
@@ -59,12 +74,24 @@ namespace TickTrader.Algo.Core.Math
 
     internal class WeekSampler : BarSampler
     {
-        public override DateTime GetBarOpenTime(DateTime timepoint)
+        public override BarBoundaries GetBar(DateTime timepoint)
         {
             int diff = timepoint.DayOfWeek - DayOfWeek.Sunday;
             if (diff < 0)
                 diff += 7;
-            return timepoint.AddDays(-diff).Date;
+            var weekStart =  timepoint.AddDays(-diff).Date;
+            var weekEnd = weekStart.AddDays(7).Date;
+            return new BarBoundaries(weekStart, weekEnd);
+        }
+    }
+
+    internal class MonthSampler : BarSampler
+    {
+        public override BarBoundaries GetBar(DateTime timepoint)
+        {
+            var start = new DateTime(timepoint.Year, timepoint.Month, 1);
+            var end = start.AddMonths(1);
+            return new BarBoundaries(start, end);
         }
     }
 }

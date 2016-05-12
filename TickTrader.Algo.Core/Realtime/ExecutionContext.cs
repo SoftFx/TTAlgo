@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Core.DataflowConcept
+namespace TickTrader.Algo.Core.Realtime
 {
     public abstract class ExecutionContext
     {

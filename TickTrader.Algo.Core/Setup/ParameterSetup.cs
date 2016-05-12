@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core.Setup
             catch (InvalidCastException) { }
         }
 
-        public override void Apply(PluginExecutor executor)
+        public override void Apply(PluginBuilder executor)
         {
             executor.SetParameter(Name, Value);
         }

@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core.Setup
         public string Id { get { return GetDescriptor().Id; } }
         public ISetupMetadata Metadata { get; internal set; }
 
-        public abstract void Apply(PluginExecutor executor);
+        public abstract void Apply(PluginBuilder executor);
 
         public virtual void Init() { }
         protected abstract AlgoPropertyDescriptor GetDescriptor();
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core.Setup
             this.descriptor = descriptor;
         }
 
-        public override void Apply(PluginExecutor executor)
+        public override void Apply(PluginBuilder executor)
         {
         }
 
