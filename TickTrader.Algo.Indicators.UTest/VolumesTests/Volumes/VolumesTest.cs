@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.VolumesTests.Volumes
         {
             TestMeasures("AUDCAD", "H1");
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_D1()
+        {
+            TestMeasures("CADCHF", "D1");
+        }
     }
 }

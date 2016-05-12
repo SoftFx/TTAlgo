@@ -49,5 +49,11 @@ namespace TickTrader.Algo.Indicators.UTest.VolumesTests.MoneyFlowIndex
         {
             TestMeasures("EURUSD", "H1", 36);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_D1_14()
+        {
+            TestMeasures("CADCHF", "D1", 14);
+        }
     }
 }

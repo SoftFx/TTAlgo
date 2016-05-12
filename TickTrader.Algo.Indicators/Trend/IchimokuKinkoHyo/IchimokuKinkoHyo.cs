@@ -26,10 +26,10 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
         [Output(DisplayName = "Kijun-sen", DefaultColor = Colors.Blue)]
         public DataSeries Kijun { get; set; }
 
-        [Output(DisplayName = "Senkou Span A", DefaultColor = Colors.SandyBrown, DefaultLineStyle = LineStyles.Lines)]
+        [Output(DisplayName = "Senkou Span A", DefaultColor = Colors.SandyBrown, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries SenkouA { get; set; }
 
-        [Output(DisplayName = "Senkou Span B", DefaultColor = Colors.Thistle, DefaultLineStyle = LineStyles.Lines)]
+        [Output(DisplayName = "Senkou Span B", DefaultColor = Colors.Thistle, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries SenkouB { get; set; }
 
         [Output(DisplayName = "Chikou Span", DefaultColor = Colors.Lime)]
@@ -67,6 +67,7 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
             var pos = LastPositionChanged;
             Tenkan[pos] = (PeriodHelper.FindMax(Bars.High, TenkanSen) + PeriodHelper.FindMin(Bars.Low, TenkanSen))/2;
             Kijun[pos] = (PeriodHelper.FindMax(Bars.High, KijunSen) + PeriodHelper.FindMin(Bars.Low, KijunSen))/2;
+            Chikou[pos] = double.NaN;
             if (IsUpdate)
             {
                 _chikouShifter.UpdateLast(Bars[pos].Close);

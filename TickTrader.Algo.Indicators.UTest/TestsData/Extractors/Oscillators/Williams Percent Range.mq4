@@ -22,8 +22,6 @@ int indicator_files_total;
 int indicator_files[111];
 int indicator_params[111][1];
 input int period = 14;
-input string symbol = "AUDJPY";
-input string timeframe = "M30";
 input string prefix = "WPR";
 
 int open_csv_file(string filename)
@@ -31,11 +29,39 @@ int open_csv_file(string filename)
    return FileOpen(filename, FILE_WRITE | FILE_BIN);
 }
 
+string get_timeframe_name()
+{
+   int p = Period();
+   if (p < 60)
+   {
+      return "M"+IntegerToString(p);
+   }
+   if (p%60 == 0 && p/60 < 24)
+   {
+      return "H" + IntegerToString(p/60);
+   }
+   if (p%(60*24) == 0 && p/(60*24) < 7)
+   {
+      return "D" + IntegerToString(p/(60*24));
+   }
+   if (p%(60*24*7) == 0 && p/(60*24*7) < 4)
+   {
+      return "W" + IntegerToString(p/(60*24*7));
+   }
+   if (p%(60*24*30) == 0 && p/(60*24*30) < 12)
+   {
+      return "MN" + IntegerToString(p/(60*24*30));
+   }
+   return "Unknown";
+}
+
 //+------------------------------------------------------------------+
 //| Custom indicator initialization function                         |
 //+------------------------------------------------------------------+
 int OnInit()
   {
+   string symbol = Symbol();
+   string timeframe = get_timeframe_name();
 //--- indicator buffers mapping
    SetIndexBuffer(0,StateBuffer);
    //return(INIT_FAILED);

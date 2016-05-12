@@ -25,10 +25,5 @@ namespace TickTrader.Algo.Indicators.UTest.BillWilliamsTests.MarketFacilitationI
             PutOutputToBuffer("MfiUpVolumeDown", 2);
             PutOutputToBuffer("MfiDownVolumeUp", 3);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 }

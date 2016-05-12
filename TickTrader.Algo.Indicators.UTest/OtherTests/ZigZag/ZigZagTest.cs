@@ -51,5 +51,11 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
         {
             TestMeasures("EURUSD", "H1", 40, 12, 9, 1e-5);
         }
+
+        [TestMethod]
+        public void TestMeasuresAUDCAD_M5_12_5_3()
+        {
+            TestMeasures("AUDCAD", "M5", 12, 5, 3, 1e-5);
+        }
     }
 }

@@ -7,7 +7,7 @@
         Height="300" Width="340"
         Style="{StaticResource Dialog_Style}"
         ResizeMode="NoResize">
-    
+
     <Window.Resources>
         <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
             <Setter Property="MinWidth" Value="75" />
@@ -41,16 +41,33 @@
             <Setter Property="Stretch" Value="Fill"/>
             <Setter Property="X2" Value="1"/>
             <Setter Property="Stroke" Value="{DynamicResource Shell_PrimaryForeground}"/>
-            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="Margin" Value="5 0 0 0"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Width" Value="100"/>
         </Style>
+
+
+        <DataTemplate x:Key="LineStyleItem">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="" Grid.Column="0" />
+                <Line Grid.Column="1" 
+                      Style="{StaticResource LineSampleStyle}"
+                      StrokeDashArray="{Binding Converter={l:LineStyleToDashArrayConverter}}"
+                      StrokeThickness="1" />
+            </Grid>
+        </DataTemplate>
 
         <DataTemplate x:Key="LineThicknessItem">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
-                </Grid.ColumnDefinitions><TextBlock Text="{Binding}" Grid.Column="0" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding}" Grid.Column="0" />
                 <Line Grid.Column="1" Style="{StaticResource LineSampleStyle}" StrokeThickness="{Binding}"/>
             </Grid>
         </DataTemplate>
@@ -62,17 +79,19 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="60" />
-                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                
+
                 <Label Grid.Column="0" Content="{Binding DisplayName}"/>
                 <CheckBox Grid.Column="1" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding IsValid}" Margin="5,0,5,0"/>
                 <ComboBox Grid.Column="2" IsEditable="False" IsEnabled="{Binding IsEnabled}"
                           SelectedItem="{Binding LineThickness}" ItemsSource="{Binding AvailableThicknesses}"
                           ItemTemplate="{StaticResource LineThicknessItem}"/>
-                <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" />
+                <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" 
+                          SelectedItem="{Binding LineStyle}"  ItemsSource="{Binding AvailableLineStyles}"
+                          ItemTemplate="{StaticResource LineStyleItem}"/>
                 <Rectangle Grid.Column="4" Width="15" Height="15"
                            Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
                            Stroke="{DynamicResource Dialog_ControlBackground}"
@@ -192,14 +211,14 @@
         </CompositeCollection>
 
     </Window.Resources>
-    
+
     <Grid>
-        
+
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
+
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False"
                       Style="{StaticResource DialogScrollViewer_Style}">
@@ -215,12 +234,12 @@
                 </ItemsControl>
 
                 <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
-                
+
                 <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
-                
+
             </StackPanel>
         </ScrollViewer>
-        
+
         <Grid Name="ButtonsPanel" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>

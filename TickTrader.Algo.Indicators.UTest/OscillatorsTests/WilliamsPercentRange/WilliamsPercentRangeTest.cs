@@ -50,5 +50,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.WilliamsPercentRange
         {
             TestMeasures("EURUSD", "H1", 40);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_D1_14()
+        {
+            TestMeasures("CADCHF", "D1", 14);
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.MACD
         [Output(DisplayName = "MACD", DefaultColor = Colors.Silver, PlotType = PlotType.Histogram)]
         public DataSeries MacdSeries { get; set; }
 
-        [Output(DisplayName = "Signal", DefaultColor = Colors.Red, DefaultLineStyle = LineStyles.Lines)]
+        [Output(DisplayName = "Signal", DefaultColor = Colors.Red, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries Signal { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

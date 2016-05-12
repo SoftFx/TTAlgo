@@ -29,7 +29,14 @@ namespace TickTrader.Algo.CoreUsageSample
 
         protected override void Calculate()
         {
-            Output[0] = Input.Take(Period).Average();
+            if (Input.Count >= Period)
+            {
+                Output[0] = Input.Take(Period).Average();
+            }
+            else
+            {
+                Output[0] = double.NaN;
+            }
         }
     }
 }

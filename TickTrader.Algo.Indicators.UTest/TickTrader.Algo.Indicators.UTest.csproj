@@ -50,6 +50,26 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ATCFMethodTests\FastAdaptiveTrendLine\FastAdaptiveTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\FastAdaptiveTrendLine\FastAdaptiveTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\FastTrendLineMomentum\FastTrendLineMomentumTest.cs" />
+    <Compile Include="ATCFMethodTests\FastTrendLineMomentum\FastTrendLineMomentumTestCase.cs" />
+    <Compile Include="ATCFMethodTests\FATLSignal\FATLSignalTest.cs" />
+    <Compile Include="ATCFMethodTests\FATLSignal\FATLSignalTestCase.cs" />
+    <Compile Include="ATCFMethodTests\FTLMSTLM\FTLMSTLMTest.cs" />
+    <Compile Include="ATCFMethodTests\FTLMSTLM\FTLMSTLMTestCase.cs" />
+    <Compile Include="ATCFMethodTests\PerfectCommodityChannelIndex\PerfectCommodityChannelIndexTest.cs" />
+    <Compile Include="ATCFMethodTests\PerfectCommodityChannelIndex\PerfectCommodityChannelIndexTestCase.cs" />
+    <Compile Include="ATCFMethodTests\RangeBoundChannelIndex\RangeBoundChannelIndexTest.cs" />
+    <Compile Include="ATCFMethodTests\RangeBoundChannelIndex\RangeBoundChannelIndexTestCase.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceFastTrendLine\ReferenceFastTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceFastTrendLine\ReferenceFastTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceSlowTrendLine\ReferenceSlowTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\ReferenceSlowTrendLine\ReferenceSlowTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\SlowAdaptiveTrendLine\SlowAdaptiveTrendLineTest.cs" />
+    <Compile Include="ATCFMethodTests\SlowAdaptiveTrendLine\SlowAdaptiveTrendLineTestCase.cs" />
+    <Compile Include="ATCFMethodTests\SlowTrendLineMomentum\SlowTrendLineMomentumTest.cs" />
+    <Compile Include="ATCFMethodTests\SlowTrendLineMomentum\SlowTrendLineMomentumTestCase.cs" />
     <Compile Include="BillWilliamsTests\AcceleratorOscillator\AcceleratorOscillatorTest.cs" />
     <Compile Include="BillWilliamsTests\AcceleratorOscillator\AcceleratorOscillatorTestCase.cs" />
     <Compile Include="BillWilliamsTests\AwesomeOscillator\AwesomeOscillatorTest.cs" />
@@ -60,11 +80,6 @@
     <Compile Include="BillWilliamsTests\GatorOscillator\GatorOscillatorTestCase.cs" />
     <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTest.cs" />
     <Compile Include="BillWilliamsTests\MarketFacilitationIndex\MarketFacilitationIndexTestCase.cs" />
-    <Compile Include="LegacyTests\HeikenAshi\HeikenAshiTest.cs" />
-    <Compile Include="LegacyTests\HeikenAshi\HeikenAshiTestCase.cs" />
-    <Compile Include="LegacyTests\Utility\PathHelper.cs" />
-    <Compile Include="LegacyTests\ZigZag\ZigZagTest.cs" />
-    <Compile Include="LegacyTests\ZigZag\ZigZagTestCase.cs" />
     <Compile Include="OscillatorsTests\AverageTrueRange\AverageTrueRangeTest.cs" />
     <Compile Include="OscillatorsTests\AverageTrueRange\AverageTrueRangeTestCase.cs" />
     <Compile Include="OscillatorsTests\BearsPower\BearsPowerTest.cs" />
@@ -96,7 +111,7 @@
     <Compile Include="OtherTests\ZigZag\ZigZagTest.cs" />
     <Compile Include="OtherTests\ZigZag\ZigZagTestCase.cs" />
     <Compile Include="TestBase.cs" />
-    <Compile Include="TestCases\LegacyTestCase.cs" />
+    <Compile Include="TestCases\DigitalIndicatorTestCase.cs" />
     <Compile Include="TestCases\MethodsTestCase.cs" />
     <Compile Include="TestCases\PeriodMethodsPricesTestCase.cs" />
     <Compile Include="TestCases\PeriodPricesTestCase.cs" />

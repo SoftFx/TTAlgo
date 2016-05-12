@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
             PositionList = new PositionListViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
             Charts = new ChartCollectionViewModel(feed, catalog, wndManager);
-            AccountPane = new AccountPaneViewModel();
+            AccountPane = new AccountPaneViewModel(authModel, connection, wndManager);
             CanConnect = true;
 
             UpdateCommandStates(ConnectionModel.States.Offline, connection.State.Current);

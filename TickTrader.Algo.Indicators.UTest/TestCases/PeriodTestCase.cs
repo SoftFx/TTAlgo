@@ -16,11 +16,6 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         {
             SetParameter("Period", Period);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 
     public abstract class PeriodTestCase : SimpleTestCase
@@ -36,11 +31,6 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected override void SetupParameters()
         {
             SetParameter("Period", Period);
-        }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
         }
     }
 }

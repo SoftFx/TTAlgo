@@ -32,10 +32,5 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.IchimokuKinkoHyo
             PutOutputToBuffer("SenkouB", 3);
             PutOutputToBuffer("Chikou", 4);
         }
-
-        protected override void CheckAnswer()
-        {
-            InvokeCheckAnswer($"{AnswerPath}.bin");
-        }
     }
 }
