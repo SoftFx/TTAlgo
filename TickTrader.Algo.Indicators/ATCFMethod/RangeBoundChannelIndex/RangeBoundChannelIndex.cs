@@ -1,10 +1,28 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
+    internal class AnotherSma : SMA
+    {
+        public AnotherSma(int period) : base(period)
+        {
+        }
+
+        protected override void SetCurrentResult()
+        {
+            Average = _sum/Period;
+        }
+    }
+
     [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Range Bound Channel Index")]
     public class RangeBoundChannelIndex : DigitalIndicatorBase
     {
+        private IMA _ma;
+        private RevertableDataSeries<double> _rbci;
+
         [Parameter(DefaultValue = 18, DisplayName = "STD")]
         public int Std { get; set; }
 
@@ -40,7 +58,12 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             InitializeIndicator();
         }
 
-        private void InitializeIndicator() { }
+        private void InitializeIndicator()
+        {
+            _ma = new AnotherSma(CountBars);
+            _ma.Init();
+            _rbci = new RevertableDataSeries<double>(Rbci);
+        }
 
         protected override void Init()
         {
@@ -50,7 +73,48 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            Rbci[pos] = CalculateDigitalIndicator(Price);
+            _rbci.RevertChanges();
+            _rbci[pos] = CalculateDigitalIndicator(Price);
+            _rbci.ApplyChanges();
+
+            if (IsUpdate)
+            {
+                _ma.UpdateLast(Rbci[pos]);
+            }
+            else
+            {
+                _ma.Add(Rbci[pos]);
+            }
+
+            var average = _ma.Average;
+
+            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
+            {
+                _rbci[pos] = average - _rbci[pos];
+            }
+
+            var sum = 0.0;
+            for (var i = 0; i < Std; i++)
+            {
+                sum -= _rbci[pos + i];
+            }
+
+            var tmp = sum/Std;
+
+            sum = 0.0;
+            for (var i = 0; i < Std; i++)
+            {
+                sum += (_rbci[pos + i] + tmp)*(_rbci[pos + i] + tmp);
+            }
+
+            tmp = sum/(Std - 1);
+
+            var deviation = Math.Sqrt(tmp);
+
+            UpperBound[pos] = deviation;
+            LowerBound[pos] = -deviation;
+            UpperBound2[pos] = 2*deviation;
+            LowerBound2[pos] = -2*deviation;
 
             if (Price.Count > CountBars)
             {
@@ -64,7 +128,17 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         protected override void SetupCoefficients()
         {
-            Coefficients = new double[0];
+            Coefficients = new[]
+            {
+                -35.5241819400, -29.3339896500, -18.4277449600, -5.3418475670, 7.0231636950, 16.1762815600, 20.6566210400,
+                20.3266115800, 16.2702390600, 10.3524012700, 4.5964239920, 0.5817527531, -0.9559211961, -0.2191111431,
+                1.8617342810, 4.0433304300, 5.2342243280, 4.8510862920, 2.9604408870, 0.1815496232, -2.5919387010,
+                -4.5358834460, -5.1808556950, -4.5422535300, -3.0671459820, -1.4310126580, -0.2740437883, 0.0260722294,
+                -0.5359717954, -1.6274916400, -2.7322958560, -3.3589596820, -3.2216514550, -2.3326257940, -0.9760510577,
+                0.4132650195, 1.4202166770, 1.7969987350, 1.5412722800, 0.8771442423, 0.1561848839, -0.2797065802,
+                -0.2245901578, 0.3278853523, 1.1887841480, 2.0577410750, 2.6270409820, 2.6973742340, 2.2289941280,
+                1.3536792430, 0.3089253193, -0.6386689841, -1.2766707670, -1.5136918450, -1.3775160780, -1.6156173970
+            };
         }
     }
 }
