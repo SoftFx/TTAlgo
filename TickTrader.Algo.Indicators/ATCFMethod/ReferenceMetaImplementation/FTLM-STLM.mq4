@@ -11,7 +11,7 @@
 #property indicator_color1 DarkKhaki
 #property indicator_color2 DarkSalmon
 //---- input parameters
-extern int       CountBars=2500;
+extern int       CountBars=300;
 //---- buffers
 double ExtMapBuffer1[];
 double ExtMapBuffer2[];
@@ -26,6 +26,8 @@ int init()
    SetIndexStyle(1,DRAW_LINE);
    SetIndexBuffer(1,ExtMapBuffer2);
 //----
+   SetIndexEmptyValue(0, 0.0);
+   SetIndexEmptyValue(1, 0.0);
    return(0);
   }
 //+------------------------------------------------------------------+

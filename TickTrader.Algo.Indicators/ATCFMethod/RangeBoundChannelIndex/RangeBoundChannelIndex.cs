@@ -106,7 +106,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 for (var j = 0; j < Std; j++)
                 {
                     var rbci = pos + i + j < Price.Count ? Rbci[pos + i + j] : 0.0;
-                    rbci = double.IsNaN(rbci) ? int.MaxValue : rbci;
+                    rbci = double.IsNaN(rbci) ? 0.0 : rbci;
                     sum -= rbci;
                 }
 
@@ -116,7 +116,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 for (var j = 0; j < Std; j++)
                 {
                     var rbci = pos + i + j < Price.Count ? Rbci[pos + i + j] : 0.0;
-                    rbci = double.IsNaN(rbci) ? int.MaxValue : rbci;
+                    rbci = double.IsNaN(rbci) ? 0.0 : rbci;
                     sum += (rbci + tmp)*(rbci + tmp);
                 }
 

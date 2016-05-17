@@ -14,7 +14,7 @@
 #property indicator_color4 DarkOrange
 #property indicator_color5 DarkOrange
 //---- input parameters
-extern int       CountBars=2500;
+extern int       CountBars=300;
 extern int       STD=18;
 //---- buffers
 double ExtMapBuffer1[];
@@ -39,6 +39,11 @@ int init()
    SetIndexStyle(4,DRAW_LINE,STYLE_DOT,1);
    SetIndexBuffer(4,ExtMapBuffer5);
 //----
+   SetIndexEmptyValue(0, 0.0);
+   SetIndexEmptyValue(1, 0.0);
+   SetIndexEmptyValue(2, 0.0);
+   SetIndexEmptyValue(3, 0.0);
+   SetIndexEmptyValue(4, 0.0);
    return(0);
   }
 //+------------------------------------------------------------------+
