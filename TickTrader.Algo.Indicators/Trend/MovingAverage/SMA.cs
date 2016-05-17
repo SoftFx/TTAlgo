@@ -4,8 +4,8 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     internal class SMA : MABase
     {
-        private double _sum;
-        private LinkedList<double> _valueCache;
+        protected double _sum;
+        protected LinkedList<double> _valueCache;
 
         public SMA(int period) : base(period)
         {

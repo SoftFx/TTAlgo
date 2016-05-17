@@ -50,5 +50,11 @@ namespace TickTrader.Algo.Indicators.UTest.OscillatorsTests.StochasticOscillator
         {
             TestMeasures("EURUSD", "H1", 20, 5, 15);
         }
+
+        [TestMethod]
+        public void TestMeasuresAUDCHF_M30_5_3_3()
+        {
+            TestMeasures("AUDCHF", "M30", 5, 3, 3);
+        }
     }
 }

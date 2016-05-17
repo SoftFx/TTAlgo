@@ -51,5 +51,11 @@ namespace TickTrader.Algo.Indicators.UTest.TrendTests.AverageDirectionalMovement
         {
             TestMeasures("EURUSD", "H1", 30);
         }
+
+        [TestMethod]
+        public void TestMeasuresCADCHF_D1_14()
+        {
+            TestMeasures("CADCHF", "D1", 14);
+        }
     }
 }
