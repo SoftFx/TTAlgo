@@ -17,15 +17,6 @@ namespace TickTrader.BotTerminal
         public AuthStorageModel()
         {
             accounts = new ObservableList<AccountSorageEntry>();
-
-            accounts.Changed += (s, a) =>
-            {
-                if (a.HasNewItem)
-                    a.NewItem.Changed += Account_Changed;
-                if (a.HasOldItem)
-                    a.OldItem.Changed -= Account_Changed;
-                OnChanged();
-            };
         }
 
         public string LastLogin
@@ -42,12 +33,13 @@ namespace TickTrader.BotTerminal
 
         public void UpdateLast(string login, string server)
         {
-            if (lastLogin != login && lastServer != server)
-            {
-                lastLogin = login;
-                lastServer = server;
-                OnChanged();
-            }
+            lastLogin = login;
+            lastServer = server;
+        }
+
+        public void TriggerSave()
+        {
+            OnChanged();
         }
 
         public AuthStorageModel(AuthStorageModel src)
@@ -79,11 +71,6 @@ namespace TickTrader.BotTerminal
                 Changed();
         }
 
-        private void Account_Changed()
-        {
-            OnChanged();
-        }
-
         public AuthStorageModel GetCopyToSave()
         {
             return new AuthStorageModel(this);
@@ -91,7 +78,7 @@ namespace TickTrader.BotTerminal
     }
 
     [Serializable]
-    public class AccountSorageEntry : IChangableObject
+    public class AccountSorageEntry
     {
         private string password;
         private string login;
@@ -110,19 +97,9 @@ namespace TickTrader.BotTerminal
 
         public string Login { get { return login; } set { login = value; } }
         public string ServerAddress { get { return server; } set { server = value; } }
+        public bool HasPassword { get { return password != null; } }
  
-        public string Password
-        {
-            get { return password; }
-            set
-            {
-                password = value;
-                if (Changed != null)
-                    Changed();
-            }
-        }
-
-        public event Action Changed;
+        public string Password { get { return password; } set { password = value; } }
 
         public AccountSorageEntry Clone()
         {

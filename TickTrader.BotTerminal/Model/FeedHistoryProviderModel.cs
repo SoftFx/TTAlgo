@@ -90,6 +90,16 @@ namespace TickTrader.BotTerminal
             return Enqueue(() => fdkStorage.Online.GetQuotes(symbol, startTime, endTime, depth));
         }
 
+        public Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, DateTime endTime)
+        {
+            return Enqueue(() => fdkStorage.Online.GetBars(symbol, priceType, period, startTime, endTime));
+        }
+
+        public Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, int count)
+        {
+            return Enqueue(() => fdkStorage.Online.GetBars(symbol, priceType, period, startTime, count));
+        }
+
         private Task<TResult> Enqueue<TResult>(Func<TResult> handler)
         {
             Task<TResult> task = new Task<TResult>(handler);

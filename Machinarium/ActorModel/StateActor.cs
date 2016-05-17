@@ -17,7 +17,7 @@ namespace Machinarium.ActorModel
         private LinkedList<StateAwaiter> stateWaiters = new LinkedList<StateAwaiter>();
         private Dictionary<T, StateDescriptor<T>> descriptors = new Dictionary<T, StateDescriptor<T>>();
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public StateActor(T initialState = default(T))
         {
         }
@@ -26,7 +26,7 @@ namespace Machinarium.ActorModel
         public Action<T, T> StateChanged { get; set; }
         public Action<object> EventFired { get; set; }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddTransition(T state, object eventId, Action trAction)
         {
             if (trAction == null)
@@ -36,14 +36,14 @@ namespace Machinarium.ActorModel
             descriptor.AddTransition(new StateEventTransition<T>(state, state, eventId, trAction));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddTransition(T from, object eventId, T to, Action trAction = null)
         {
             StateDescriptor<T> descriptor = GetOrAddDescriptor(from);
             descriptor.AddTransition(new StateEventTransition<T>(from, to, eventId, trAction));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddTransition(T from, Func<bool> condition, T to, Action trAction = null)
         {
             if (condition == null)
@@ -53,7 +53,7 @@ namespace Machinarium.ActorModel
             descriptor.AddTransition(new StateConditionalTransition<T>(from, to, condition, trAction));
         }
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public void AddScheduledEvent(T state, object eventId, int timeInterval)
         //{
         //    _lock.Synchronized(() =>
@@ -63,7 +63,7 @@ namespace Machinarium.ActorModel
         //    });
         //}
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void OnEnter(T state, Action action)
         {
             if (action == null)
@@ -73,7 +73,7 @@ namespace Machinarium.ActorModel
             descriptor.AddEnterAction(action);
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void OnExit(T state, Action action)
         {
             if (action == null)
@@ -83,14 +83,14 @@ namespace Machinarium.ActorModel
             descriptor.AddExitAction(action);
         }
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public void ModifyConditions(Action modifyAction)
         //{
         //    modifyAction();
         //    CheckConditions();
         //}
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public Task ModifyConditionsAndWait(Action modifyAction, Predicate<T> stateCondition)
         //{
         //    Task waitTask = null;
@@ -103,13 +103,13 @@ namespace Machinarium.ActorModel
         //    return waitTask;
         //}
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public Task ModifyConditionsAndWait(Action modifyAction, T state)
         //{
         //    return ModifyConditionsAndWait(modifyAction, s => state.Equals(s));
         //}
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void PushEvent(object eventId)
         {
             EventFired(eventId);
@@ -123,13 +123,13 @@ namespace Machinarium.ActorModel
             }
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         protected override void AfterHandler()
         {
             CheckConditions();
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private StateDescriptor<T> GetOrAddDescriptor(T state)
         {
             StateDescriptor<T> descriptor;
@@ -141,7 +141,7 @@ namespace Machinarium.ActorModel
             return descriptor;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private StateDescriptor<T> FindDescriptor(T state)
         {
             StateDescriptor<T> currentDescriptor;
@@ -149,7 +149,7 @@ namespace Machinarium.ActorModel
             return currentDescriptor;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void CheckConditions()
         {
             StateDescriptor<T> currentDescriptor = FindDescriptor(State);
@@ -161,7 +161,7 @@ namespace Machinarium.ActorModel
             }
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void ChangeState(StateDescriptor<T> currentDescriptor, StateTransition<T> transition)
         {
             T oldState = State;
@@ -190,21 +190,21 @@ namespace Machinarium.ActorModel
             CheckConditions();
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task When(Predicate<T> condition)
         {
             AssertActor("AsyncWait");
             return AsyncWaitInternal(condition);
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task When(T stateToWait)
         {
             AssertActor("AsyncWait");
             return When(s => stateToWait.Equals(s));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private Task AsyncWaitInternal(Predicate<T> stateCondition)
         {
             if (stateCondition(State))
@@ -215,7 +215,7 @@ namespace Machinarium.ActorModel
             return waiter.Task;
         }
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public Task PushEventAndWait(object eventId, Predicate<T> stateCondition)
         //{
         //    Task waitTask = null;
@@ -227,19 +227,19 @@ namespace Machinarium.ActorModel
         //    return waitTask;
         //}
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public Task PushEventAndWait(object eventId, T stateToWait)
         //{
         //    return PushEventAndWait(eventId, s => stateToWait.Equals(s));
         //}
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //public void Wait(T stateToWait)
         //{
         //    AsyncWait(stateToWait).Wait();
         //}
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void ReleaseAwaiters()
         {
             var node = stateWaiters.First;
@@ -266,7 +266,7 @@ namespace Machinarium.ActorModel
 
         //private List<TimeEvent> scheduledEvents;
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //private void ScheduleEventsForState(StateDescriptor<T> newState)
         //{
         //    IEnumerable<TimeEventDescriptor> eventsToSchedule = newState.ListScheduledEvents();
@@ -281,7 +281,7 @@ namespace Machinarium.ActorModel
         //    }
         //}
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //private void CancelScheduledEvents()
         //{
         //    if (scheduledEvents != null)
@@ -293,7 +293,7 @@ namespace Machinarium.ActorModel
         //    }
         //}
 
-        //[System.Diagnostics.DebuggerStepThrough]
+        //[System.Diagnostics.DebuggerHidden]
         //private void OnEventElapsed(TimeEvent eventObj)
         //{
         //    _lock.Synchronized(() =>

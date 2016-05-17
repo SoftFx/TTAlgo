@@ -15,14 +15,16 @@ namespace Machinarium.State
     {
         private object lockObj = new object();
 
+        [System.Diagnostics.DebuggerHidden]
         public void Synchronized(Action syncAction)
         {
             lock (lockObj) syncAction();
         }
     }
 
-    public class NoStateMachineSync : IStateMachineSync
+    public class NullSync : IStateMachineSync
     {
+        [System.Diagnostics.DebuggerHidden]
         public void Synchronized(Action syncAction)
         {
             syncAction();

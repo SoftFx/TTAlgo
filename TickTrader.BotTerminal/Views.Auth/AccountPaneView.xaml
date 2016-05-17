@@ -36,26 +36,26 @@
                         <TextBlock x:Name="txtLogin" Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
                     </StackPanel>
                     <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionModel+States.Initializing}">
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="Connecting">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
                             <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionModel+States.WaitingLogon}">
+                        <!--<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Offline}">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Yellow"/>
                             <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionModel+States.Online}">
+                        </DataTrigger>-->
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="States.Online">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
                             <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionModel+States.Deinitializing}">
+                        <!--<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Deinitializing}">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
                             <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionModel+States.Offline}">
+                        </DataTrigger>-->
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="Offline">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
                             <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
@@ -81,7 +81,7 @@
                       Focusable="False" 
                       Margin="-1"
                       ItemsSource="{Binding Accounts}" 
-                      SelectedItem="{Binding SelectedAccount, NotifyOnTargetUpdated=True}"
+                      SelectedItem="{Binding SelectedAccount}"
                       ItemTemplateSelector="{StaticResource comboboxItemTemplateSelector}"/>
 
             <Button Grid.Column="1" 

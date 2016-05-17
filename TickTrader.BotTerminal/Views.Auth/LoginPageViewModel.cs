@@ -6,14 +6,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
     internal class LoginPageViewModel : Screen, ILoginDialogPage, IPasswordContainer
     {
-        private AuthManager authModel;
-        private ConnectionModel connection;
+        private ConnectionManager cManager;
         private string login;
         private string password;
         private string server;
@@ -23,20 +23,25 @@ namespace TickTrader.BotTerminal
         private bool saveAccount = true;
         private bool savePassword;
 
-        public LoginPageViewModel(AuthManager authModel, ConnectionModel connection)
+        public LoginPageViewModel(ConnectionManager cManager, AccountAuthEntry displayEntry = null)
         {
-            this.authModel = authModel;
-            this.connection = connection;
+            this.cManager = cManager;
 
             DisplayName = "Log In";
 
-            if (authModel.CurrentAccount != null)
-                ApplyAccount(authModel.CurrentAccount);
+            if (displayEntry != null)
+                ApplyAccount(displayEntry);
             else
             {
-                if (authModel.Servers.Count > 0)
-                    Server = authModel.Servers[0].Name;
+                var toApply = cManager.Creds;
+                if (toApply == null)
+                    toApply = cManager.GetLast();
+                if (toApply != null)
+                    ApplyAccount(toApply);
             }
+
+            if (server == null)
+                server = Servers.FirstOrDefault()?.Name;
 
             ValidateState();
         }
@@ -69,8 +74,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ObservableCollection<ServerAuthEntry> Servers { get { return authModel.Servers; } }
-        public ObservableCollection<AccountAuthEntry> Accounts { get { return authModel.Accounts; } }
+        public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
+        public ObservableCollection<AccountAuthEntry> Accounts { get { return cManager.Accounts; } }
 
         public bool SaveAccount
         {
@@ -167,18 +172,9 @@ namespace TickTrader.BotTerminal
             try
             {
                 string address = ResolveServerAddress();
-                Error = await connection.Connect(address, login, password);
-                if (connection.State.Current == ConnectionModel.States.Online)
-                {
-                    if (saveAccount)
-                    {
-                        if (savePassword)
-                            authModel.SaveLogin(login, password, address);
-                        else
-                            authModel.SaveLogin(login, address);
-                    }
+                Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
+                if (Error == ConnectionErrorCodes.None)
                     Done();
-                }
             }
             catch (Exception ex)
             {

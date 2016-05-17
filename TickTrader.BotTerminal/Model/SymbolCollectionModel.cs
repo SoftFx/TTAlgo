@@ -15,13 +15,14 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolCollectionModel : IEnumerable<SymbolModel>
     {
-        public enum States { Offline, Online,  UpdatingSubscription, Stopping }
-        public enum Events { Disconnected, SybmolsArrived, DoneUpdating, DoneStopping }
+        public enum States { Offline, WatingData, Canceled, Online, UpdatingSubscription, Stopping }
+        public enum Events { Disconnected, OnConnecting, SybmolsArrived, ConnectCanceled, DoneUpdating, DoneStopping }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
         private Dictionary<string, SymbolModel> symbols = new Dictionary<string, SymbolModel>();
         private ConnectionModel connection;
         private IEnumerable<SymbolInfo> snapshot;
+        private bool isSymbolsArrived;
         private bool pendingSubscribe;
         private TriggeredActivity updateSubscriptionActivity;
         private ActionBlock<Quote> rateUpdater;
@@ -32,7 +33,9 @@ namespace TickTrader.BotTerminal
 
             updateSubscriptionActivity = new TriggeredActivity(UpdateSubscription);
 
-            stateControl.AddTransition(States.Offline, Events.SybmolsArrived, States.UpdatingSubscription);
+            stateControl.AddTransition(States.Offline, Events.OnConnecting, States.WatingData);
+            stateControl.AddTransition(States.WatingData, () => isSymbolsArrived, States.UpdatingSubscription);
+            stateControl.AddTransition(States.WatingData, Events.ConnectCanceled, States.Canceled);
             stateControl.AddTransition(States.UpdatingSubscription, Events.Disconnected, States.Stopping);
             stateControl.AddTransition(States.UpdatingSubscription, Events.DoneUpdating, States.Online);
             stateControl.AddTransition(States.Online, () => pendingSubscribe, States.UpdatingSubscription);
@@ -42,34 +45,44 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.UpdatingSubscription, () => updateSubscriptionActivity.Trigger());
             stateControl.OnEnter(States.Stopping, Stop);
             stateControl.OnEnter(States.Offline, ResetSubscription);
-            stateControl.OnExit(States.Offline, () => Merge(snapshot));
+            stateControl.OnExit(States.WatingData, () => Merge(snapshot));
 
-            connection.Initialized += connection_Initialized;
-            connection.Deinitialized += connection_Deinitialized;
-            connection.Disconnected += s => stateControl.PushEventAndWait(Events.Disconnected, States.Offline);
+            connection.Connecting += () =>
+            {
+                connection.FeedProxy.SymbolInfo += FeedProxy_SymbolInfo;
+                connection.FeedProxy.Tick += FeedProxy_Tick;
+                isSymbolsArrived = false;
+                stateControl.PushEvent(Events.OnConnecting);
+            };
 
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("SymbolListModel STATE " + from + " => " + to);
+            connection.Disconnecting += () =>
+            {
+                connection.FeedProxy.SymbolInfo -= FeedProxy_SymbolInfo;
+                connection.FeedProxy.Tick -= FeedProxy_Tick;
+            };
+
+            //connection.Initalizing += (s, c) =>
+            //{
+            //    isSymbolsArrived = false;
+            //    c.Register(() => stateControl.PushEvent(Events.ConnectCanceled));
+            //    return stateControl.PushEventAndWait(Events.OnConnecting, state => state == States.Online || state == States.Canceled);
+            //};
+
+            connection.Deinitalizing += (s, c) => stateControl.PushEventAndWait(Events.Disconnected, States.Offline);
+
+            stateControl.StateChanged += (from, to) => Debug.WriteLine("SymbolCollectionModel STATE " + from + " => " + to);
+            stateControl.EventFired += e => Debug.WriteLine("SymbolCollectionModel EVENT " + e);
 
             rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
         }
+
+        public States State { get { return stateControl.Current; } }
 
         private void UpdateRate(Quote tick)
         {
             SymbolModel symbol;
             if (symbols.TryGetValue(tick.Symbol, out symbol))
                 symbol.CastNewTick(tick);
-        }
-
-        private void connection_Deinitialized()
-        {
-            connection.FeedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-            connection.FeedProxy.Tick += FeedProxy_Tick;
-        }
-
-        private void connection_Initialized()
-        {
-            connection.FeedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-            connection.FeedProxy.Tick += FeedProxy_Tick;
         }
 
         private async Task UpdateSubscription(CancellationToken cToken)
@@ -97,20 +110,22 @@ namespace TickTrader.BotTerminal
                 Debug.WriteLine("SubscribeToQuotes(" + toSubscribe.Count + ")");
                 await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
             }
-            catch (Exception ex) { Debug.WriteLine("SymbolListModel.UpdateSubscription() ERROR: " + ex.Message); }
+            catch (Exception ex) { Debug.WriteLine("SymbolCollectionModel.UpdateSubscription() ERROR: " + ex.Message); }
             stateControl.PushEvent(Events.DoneUpdating);
         }
 
         private async void Stop()
         {
-            await updateSubscriptionActivity.Stop();            
+            await updateSubscriptionActivity.Stop();          
             stateControl.PushEvent(Events.DoneStopping);
         }
 
         void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
         {
+            Debug.WriteLine("SymbolCollectionModel EVENT SymbolsArrived");
+
             snapshot = e.Information;
-            stateControl.PushEvent(Events.SybmolsArrived);
+            stateControl.ModifyConditions(() => isSymbolsArrived = true);
         }
 
         void FeedProxy_Tick(object sender, SoftFX.Extended.Events.TickEventArgs e)
@@ -144,9 +159,9 @@ namespace TickTrader.BotTerminal
                     toRemove.Add(symbolModel);
             }
 
-            foreach(var model in toRemove)
+            foreach (var model in toRemove)
             {
-                if(symbols.Remove(model.Name))
+                if (symbols.Remove(model.Name))
                     Removed(model);
             }
         }

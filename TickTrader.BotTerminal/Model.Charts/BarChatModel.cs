@@ -52,26 +52,37 @@ namespace TickTrader.BotTerminal
             chartData.Clear();
         }
 
-        protected async override Task LoadData(CancellationToken cToken)
+        protected async override Task<DataMetrics> LoadData(CancellationToken cToken)
         {
-            var periodCopy = this.period;
+            //var response = await Task.Factory.StartNew(
+            //    () => Connection.FeedProxy.Server.GetHistoryBars(
+            //        Symbol, DateTime.Now + TimeSpan.FromDays(1),
+            //        -10000, SoftFX.Extended.PriceType.Ask, periodCopy));
 
-            var response = await Task.Factory.StartNew(
-                () => Connection.FeedProxy.Server.GetHistoryBars(
-                    Symbol, DateTime.Now + TimeSpan.FromDays(1),
-                    -10000, SoftFX.Extended.PriceType.Ask, periodCopy));
+            var barArray = await Feed.History.GetBars(Symbol, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
+            var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
 
-            var rawData = response.Bars.Reverse().ToList();
+            //var rawData = response.Bars.Reverse().ToList();
 
             indicatorData.Clear();
-            Convert(rawData, indicatorData);
+            FdkAdapter.Convert(loadedData, indicatorData);
+            //Convert(rawData, indicatorData);
 
-            foreach (var bar in rawData)
+            foreach (var bar in loadedData)
                 chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
             MainSeries.DataSeries = chartData;
+
+            var metrics = new DataMetrics();
+            metrics.Count = loadedData.Length;
+            if (loadedData.Length > 0)
+            {
+                metrics.StartDate = loadedData.First().From;
+                metrics.EndDate = loadedData.Last().From;
+            }
+            return metrics;
         }
 
         protected override void UpdateSeriesStyle()

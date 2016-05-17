@@ -11,49 +11,47 @@ namespace TickTrader.BotTerminal
 {
     internal class AccountPaneViewModel : PropertyChangedBase
     {
-        private AuthManager authModel;
-        private ConnectionModel connection;
-        private IWindowManager wndManager;
+        private AccountAuthEntry selectedEntry;
+        private ConnectionManager cManager;
+        private IConnectionViewModel connectionModel;
 
-        public AccountPaneViewModel(AuthManager authModel, ConnectionModel connection, IWindowManager wndManager)
+        public AccountPaneViewModel(ConnectionManager cManager, IConnectionViewModel connectionModel)
         {
-            this.authModel = authModel;
-            this.connection = connection;
-            this.wndManager = wndManager;
-            this.connection.State.StateChanged += (s1,s2) => NotifyOfPropertyChange(nameof(ConnectionState));
+            this.cManager = cManager;
+            this.connectionModel = connectionModel;
+            this.cManager.StateChanged += s => NotifyOfPropertyChange(nameof(ConnectionState));
+            this.cManager.CredsChanged += () =>
+            {
+                selectedEntry = cManager.Creds;
+                NotifyOfPropertyChange(nameof(SelectedAccount));
+            };
         }
 
-        public ConnectionModel.States ConnectionState
+        public string ConnectionState
         {
-            get { return connection.State.Current; }
+            get { return cManager.State.ToString(); }
         }
-        public ObservableCollection<AccountAuthEntry> Accounts { get { return authModel.Accounts; } }
+
+        public ObservableCollection<AccountAuthEntry> Accounts { get { return cManager.Accounts; } }
+
         public AccountAuthEntry SelectedAccount
         {
-            get { return null; } // This is a magic trick to make ComboBox reselect already selected items. Do not remove this.
+            get { return selectedEntry; }
             set
             {
                 if (value != null)
                     Reconnect(value);
-                NotifyOfPropertyChange(nameof(SelectedAccount));
-            }
-        }
-        public void Connect()
-        {
-            try
-            {
-                LoginDialogViewModel model = new LoginDialogViewModel(authModel, connection);
-                wndManager.ShowDialog(model);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
 
-        private async void Reconnect(AccountAuthEntry account)
+        public void Connect()
         {
-            await connection.Connect(account.Server.Address, account.Login, account.Password);
+            connectionModel.Connect(null);
+        }
+
+        private void Reconnect(AccountAuthEntry account)
+        {
+            connectionModel.Connect(account);
         }
     }
 }

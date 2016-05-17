@@ -2,6 +2,7 @@
 using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,8 +14,8 @@ namespace TickTrader.BotTerminal
 {
     internal class ConnectionModel
     {
-        internal enum States { Offline, Initializing, WaitingLogon, Online, Deinitializing }
-        public enum Events { Started, DoneInit, DoneDeinit, InitFailed, OnLogon, OnLogout, StopRequested }
+        internal enum States { Offline, Connecting, WaitingLogon, Initializing, Online, Deinitializing, Disconnecting }
+        public enum Events { Started, DoneConnecting, FailedConnecting, DoneInit, DoneDeinit, DoneDisconnecting, OnLogon, OnLogout, StopRequested }
 
         private DataFeed feedProxy;
         private DataTrade tradeProxy;
@@ -22,9 +23,9 @@ namespace TickTrader.BotTerminal
         private string address;
         private string username;
         private string password;
-        private CancellationTokenSource stopSignal;
+        private CancellationTokenSource connectCancelSrc;
+        private Task startTask;
         private Task initTask;
-        //private bool shouldReconnect;
         private bool isFeedLoggedIn;
         private bool isTradeLoggedIn;
 
@@ -32,25 +33,31 @@ namespace TickTrader.BotTerminal
         {
             FeedCache = new FeedHistoryProviderModel();
 
-            stateControl.AddTransition(States.Offline, Events.Started, States.Initializing);
+            stateControl.AddTransition(States.Offline, Events.Started, States.Connecting);
             //stateControl.AddTransition(States.Offline, () => shouldReconnect, States.Initializing);
-            stateControl.AddTransition(States.Initializing, Events.DoneInit, States.WaitingLogon);
-            stateControl.AddTransition(States.Initializing, Events.InitFailed, States.Deinitializing);
+            stateControl.AddTransition(States.Connecting, Events.DoneConnecting, States.WaitingLogon);
+            stateControl.AddTransition(States.Connecting, Events.FailedConnecting, States.Disconnecting);
+            stateControl.AddTransition(States.Connecting, Events.OnLogout, States.Disconnecting);
+            stateControl.AddTransition(States.Connecting, Events.StopRequested, States.Disconnecting);
+            stateControl.AddTransition(States.WaitingLogon, () => isFeedLoggedIn && isTradeLoggedIn, States.Initializing);
+            stateControl.AddTransition(States.WaitingLogon, Events.OnLogout, States.Disconnecting);
+            stateControl.AddTransition(States.WaitingLogon, Events.StopRequested, States.Disconnecting);
+            stateControl.AddTransition(States.Initializing, Events.DoneInit, States.Online);
             stateControl.AddTransition(States.Initializing, Events.OnLogout, States.Deinitializing);
             stateControl.AddTransition(States.Initializing, Events.StopRequested, States.Deinitializing);
-            stateControl.AddTransition(States.WaitingLogon, () => isFeedLoggedIn && isTradeLoggedIn, States.Online);
-            stateControl.AddTransition(States.WaitingLogon, Events.OnLogout, States.Deinitializing);
-            stateControl.AddTransition(States.WaitingLogon, Events.StopRequested, States.Deinitializing);
             stateControl.AddTransition(States.Online, Events.OnLogout, States.Deinitializing);
             stateControl.AddTransition(States.Online, Events.StopRequested, States.Deinitializing);
-            stateControl.AddTransition(States.Deinitializing, Events.DoneDeinit, States.Offline);
+            stateControl.AddTransition(States.Deinitializing, Events.DoneDeinit, States.Disconnecting);
+            stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
 
+            stateControl.OnEnter(States.Connecting, () => startTask = StartConnecting());
             stateControl.OnEnter(States.Initializing, () => initTask = Init());
             stateControl.OnEnter(States.Deinitializing, () => Deinit());
-            stateControl.OnEnter(States.Online, () => { FeedCache.Start(feedProxy); Connected(); });
+            stateControl.OnEnter(States.Disconnecting, () => StartDisconnecting());
+            stateControl.OnEnter(States.Online, () => { Connected(); });
 
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionModel STATE " + to);
-            stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT " + e);
+            stateControl.StateChanged += (from, to) => Debug.WriteLine("ConnectionModel STATE " + to);
+            stateControl.EventFired += e => Debug.WriteLine("ConnectionModel EVENT " + e);
         }
 
         public DataFeed FeedProxy { get { return feedProxy; } }
@@ -60,119 +67,130 @@ namespace TickTrader.BotTerminal
 
         public IStateProvider<States> State { get { return stateControl; } }
 
-        public async Task<ConnectionErrorCodes> Connect(string address, string username, string password)
-        {
-            await DisconnectAsync();
-            this.address = address;
-            this.username = username;
-            this.password = password;
-            await stateControl.PushEventAndWait(Events.Started, s => s == States.Offline || s == States.Online);
-            if (State.Current != States.Online)
-                return LastError;
-            return ConnectionErrorCodes.None;
-        }
+        public event Action Connecting = delegate { }; // background thread event
+        public event Action Connected = delegate { }; // main thread event
+        public event Action Disconnecting = delegate { }; // background thread event
+        public event Action Disconnected = delegate { }; // main thread event
+        public event AsyncEventHandler Initalizing; // main thread event
+        public event AsyncEventHandler Deinitalizing; // background thread event
 
-        public void StartConnecting()
+        public async Task<ConnectionErrorCodes> Connect(string username, string password, string address, CancellationToken cToken)
         {
-            stateControl.PushEvent(Events.Started);
-        }
+            await stateControl.ModifyConditionsAndWait(() =>
+            {
+                if (stateControl.Current != States.Offline)
+                    throw new InvalidOperationException("Connect() canot be called when connection in state '" + stateControl.Current + "'!");
 
-        public void StartDisconnecting()
-        {
-            stateControl.PushEvent(Events.StopRequested);
-        }
+                this.address = address;
+                this.username = username;
+                this.password = password;
 
-        //public async Task<Exception> ConnectAsync(CancellationToken cToken)
-        //{
-        //    StartConnecting();
-        //    await connectTask;
-        //    return LastError;
-        //}
+                var cancelSrcCopy = new CancellationTokenSource();
+                connectCancelSrc = cancelSrcCopy;
+                cToken.Register(() => cancelSrcCopy.Cancel());
+
+                stateControl.PushEvent(Events.Started);
+            },
+            (s) => s == States.Offline || s == States.Online);
+
+            return LastError;
+        }
 
         public Task DisconnectAsync()
         {
             return stateControl.PushEventAndWait(Events.StopRequested, States.Offline);
         }
 
-        //public event AsyncEventHandler Connected;
-        public event Action Initialized = delegate { };
-        public event Action Deinitialized = delegate { };
-        public event Action Connected = delegate { };
-        public event AsyncEventHandler Disconnected;
-
-        private Task Init()
+        private Task StartConnecting()
         {
-            stopSignal = new CancellationTokenSource();
             LastError = ConnectionErrorCodes.None;
+            connectCancelSrc = new CancellationTokenSource();
 
             return Task.Factory.StartNew(() =>
+               {
+                   try
+                   {
+
+                       if (!Directory.Exists(LogPath))
+                           Directory.CreateDirectory(LogPath);
+
+                       isTradeLoggedIn = false;
+                       isFeedLoggedIn = false;
+
+                       feedProxy = new DataFeed();
+                       feedProxy.Logout += feedProxy_Logout;
+                       feedProxy.Logon += feedProxy_Logon;
+
+                       FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
+                       {
+                           TargetCompId = "EXECUTOR",
+                           ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
+                           SecureConnection = true,
+                           Port = 5003,
+                           DecodeLogFixMessages = true
+                       };
+
+                       feedCs.Address = address;
+                       feedCs.Username = username;
+                       feedCs.Password = password;
+                       feedCs.FixEventsFileName = "feed.events.log";
+                       feedCs.FixMessagesFileName = "feed.messages.log";
+                       feedCs.FixLogDirectory = LogPath;
+
+                       feedProxy.Initialize(feedCs.ToString());
+
+                       tradeProxy = new DataTrade();
+                       tradeProxy.Logout += tradeProxy_Logout;
+                       tradeProxy.Logon += tradeProxy_Logon;
+
+                       FixConnectionStringBuilder tradeCs = new FixConnectionStringBuilder()
+                       {
+                           TargetCompId = "EXECUTOR",
+                           ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
+                           SecureConnection = true,
+                           Port = 5004,
+                           DecodeLogFixMessages = true
+                       };
+
+                       tradeCs.Address = address;
+                       tradeCs.Username = username;
+                       tradeCs.Password = password;
+                       tradeCs.FixEventsFileName = "trade.events.log";
+                       tradeCs.FixMessagesFileName = "trade.messages.log";
+                       tradeCs.FixLogDirectory = LogPath;
+
+                       tradeProxy.Initialize(tradeCs.ToString());
+
+                       Connecting();
+
+                       feedProxy.Start();
+                       tradeProxy.Start();
+
+                       stateControl.PushEvent(Events.DoneConnecting);
+                   }
+                   catch (Exception ex)
+                   {
+                       System.Diagnostics.Debug.WriteLine("ConnectionModel.Init() failed: " + ex);
+                       LastError = ConnectionErrorCodes.Unknown;
+                       stateControl.PushEvent(Events.FailedConnecting);
+                   }
+               });
+        }
+
+        private async Task Init()
+        {
+            try
             {
-                try
-                {
-                    if (!Directory.Exists(LogPath))
-                        Directory.CreateDirectory(LogPath);
+                FeedCache.Start(feedProxy);
 
-                    isTradeLoggedIn = false;
-                    isFeedLoggedIn = false;
-
-                    feedProxy = new DataFeed();
-                    feedProxy.Logout += feedProxy_Logout;
-                    feedProxy.Logon += feedProxy_Logon;
-
-                    FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
-                    {
-                        TargetCompId = "EXECUTOR",
-                        ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
-                        SecureConnection = true,
-                        Port = 5003,
-                        DecodeLogFixMessages = true
-                    };
-
-                    feedCs.Address = address;
-                    feedCs.Username = username;
-                    feedCs.Password = password;
-                    feedCs.FixEventsFileName = "feed.events.log";
-                    feedCs.FixMessagesFileName = "feed.messages.log";
-                    feedCs.FixLogDirectory = LogPath;
-
-                    feedProxy.Initialize(feedCs.ToString());
-
-                    tradeProxy = new DataTrade();
-                    tradeProxy.Logout += tradeProxy_Logout;
-                    tradeProxy.Logon += tradeProxy_Logon;
-
-                    FixConnectionStringBuilder tradeCs = new FixConnectionStringBuilder()
-                    {
-                        TargetCompId = "EXECUTOR",
-                        ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
-                        SecureConnection = true,
-                        Port = 5004,
-                        DecodeLogFixMessages = true
-                    };
-
-                    tradeCs.Address = address;
-                    tradeCs.Username = username;
-                    tradeCs.Password = password;
-                    tradeCs.FixEventsFileName = "trade.events.log";
-                    tradeCs.FixMessagesFileName = "trade.messages.log";
-                    tradeCs.FixLogDirectory = LogPath;
-
-                    tradeProxy.Initialize(tradeCs.ToString());
-
-                    Initialized();
-
-                    feedProxy.Start();
-                    tradeProxy.Start();
-
-                    stateControl.PushEvent(Events.DoneInit);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine("ConnectionModel.Init() failed: " + ex);
-                    LastError = ConnectionErrorCodes.Unknown;
-                    stateControl.PushEvent(Events.InitFailed);
-                }
-            });
+                var cToken = connectCancelSrc.Token;
+                await Initalizing.InvokeAsync(this, cToken);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            stateControl.PushEvent(Events.DoneInit);
         }
 
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
@@ -208,7 +226,7 @@ namespace TickTrader.BotTerminal
 
         void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Feed.Logon");
+            Debug.WriteLine("ConnectionModel EVENT Feed.Logon");
             stateControl.ModifyConditions(() => isFeedLoggedIn = true);
         }
 
@@ -226,14 +244,39 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                stopSignal.Cancel();
+                connectCancelSrc.Cancel();
 
-                await initTask; // wait init task to stop
+                // wait init task to stop
+                await initTask;
 
-                Task fireEvent = Disconnected.InvokeAsync(this);
+                // fire events and wait all handlers
+                Debug.WriteLine("ConnectionModel.Deinit() Invoking Deinitalizing event...");
+                await Deinitalizing.InvokeAsync(this, CancellationToken.None);
 
+                // stop history DB
                 await FeedCache.Shutdown();
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            stateControl.PushEvent(Events.DoneDeinit);
+        }
 
+        private async void StartDisconnecting()
+        {
+            try
+            {
+                connectCancelSrc.Cancel();
+
+                // wait start task to stop
+                await startTask;
+
+                try
+                {
+                    // fire disconnecting event
+                    Disconnecting();
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+                // start stoping feed
                 Task stopFeed = Task.Factory.StartNew(
                     () =>
                     {
@@ -244,9 +287,10 @@ namespace TickTrader.BotTerminal
                             feedProxy.Stop();
                             feedProxy.Dispose();
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     });
 
+                // start stopping trade
                 Task stopTrade = Task.Factory.StartNew(
                     () =>
                     {
@@ -257,19 +301,18 @@ namespace TickTrader.BotTerminal
                             tradeProxy.Stop();
                             tradeProxy.Dispose();
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
-                        
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
                     });
 
-                await Task.WhenAll(stopFeed, stopTrade, fireEvent);
-
-                Deinitialized();
+                // wait Feed & Tarde stop
+                await Task.WhenAll(stopFeed, stopTrade);
 
                 feedProxy = null;
                 tradeProxy = null;
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
-            stateControl.PushEvent(Events.DoneDeinit);
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            stateControl.PushEvent(Events.DoneDisconnecting);
         }
 
         static string LogPath
@@ -290,6 +333,7 @@ namespace TickTrader.BotTerminal
         SlowConnection,
         ServerError,
         LoginDeleted,
-        ServerLogout
+        ServerLogout,
+        Canceled
     }
 }

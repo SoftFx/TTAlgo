@@ -29,7 +29,8 @@
     
     <Grid>
         <s:SciChartSurface RenderableSeries="{Binding Series}"
-                           XAxis="{Binding TimeAxis}">
+                           XAxis="{Binding TimeAxis}"
+                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">
             <s:SciChartSurface.YAxis>
                 <s:NumericAxis GrowBy="0.0001, 0.00001" AutoRange="Always"/>
             </s:SciChartSurface.YAxis>

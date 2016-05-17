@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
             BidSeries.DataSeries = null;
         }
 
-        protected override async Task LoadData(CancellationToken cToken)
+        protected override async Task<DataMetrics> LoadData(CancellationToken cToken)
         {
             //var periodCopy = this.period;
 
@@ -82,6 +82,8 @@ namespace TickTrader.BotTerminal
                     //this.VisibleRange.Min = Math.Max(0, tickArray.Length - 101);
                 }
             }
+
+            return new DataMetrics();
 
             //foreach (var indicator in this.Indicators)
             //    indicator.SetData(rawData);

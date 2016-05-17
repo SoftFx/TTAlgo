@@ -9,6 +9,7 @@ namespace Machinarium.State
     {
         private Action transitionAction;
 
+        [System.Diagnostics.DebuggerHidden]
         public StateTransition(T from, T to, Action action)
         {
             this.FromState = from;
@@ -19,6 +20,7 @@ namespace Machinarium.State
         public T FromState { get; private set; }
         public T ToState { get; private set; }
 
+        [System.Diagnostics.DebuggerHidden]
         public void FireAction()
         {
             if (transitionAction != null)
@@ -30,6 +32,7 @@ namespace Machinarium.State
     {
         private object eventId;
 
+        [System.Diagnostics.DebuggerHidden]
         public StateEventTransition(T from, T to, object eventId, Action action)
             : base(from, to, action)
         {
@@ -43,12 +46,14 @@ namespace Machinarium.State
     {
         private Func<bool> condition;
 
+        [System.Diagnostics.DebuggerHidden]
         public StateConditionalTransition(T from, T to, Func<bool> condition, Action action)
             : base(from, to, action)
         {
             this.condition = condition;
         }
 
+        [System.Diagnostics.DebuggerHidden]
         public bool CheckCondition()
         {
             return condition();

@@ -18,10 +18,11 @@ namespace TickTrader.BotTerminal
         private ChartModelBase chart;
         private ObservableCollection<IRenderableSeries> series = new ObservableCollection<IRenderableSeries>();
 
-        public IndicatorPaneViewModel(IndicatorModel indicator, ChartModelBase chartModel)
+        public IndicatorPaneViewModel(IndicatorModel indicator, ChartModelBase chartModel, string windowId)
         {
             this.chart = chartModel;
             this.indicator = indicator;
+            this.ChartWindowId = windowId;
 
             foreach (var output in indicator.SeriesCollection)
                 Series.Add(output);
@@ -44,6 +45,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange("TimeAxis");
         }
 
+        public string ChartWindowId { get; private set; }
         public AxisBase TimeAxis { get; private set; }
         public long IndicatorId { get { return indicator.Id; } }
         public ChartModelBase Chart { get { return chart; } }

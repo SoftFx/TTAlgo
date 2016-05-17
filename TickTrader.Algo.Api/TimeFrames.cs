@@ -14,7 +14,10 @@ namespace TickTrader.Algo.Api
         H4,
         H1,
         M30,
+        M15,
         M1,
-        Ticks
+        S10,
+        S1,
+        Ticks,
     }
 }

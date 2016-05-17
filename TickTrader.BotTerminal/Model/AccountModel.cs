@@ -13,8 +13,8 @@ namespace TickTrader.BotTerminal
 {
     internal class AccountModel
     {
-        public enum States { Offline, WaitingData, Online, Deinitializing}
-        public enum Events { Connected, CacheInitialized, Diconnected, DoneInit, DoneDeinit }
+        public enum States { Offline, WaitingData, Canceled, Online, Deinitializing}
+        public enum Events { Connected, ConnectionCanceled, CacheInitialized, Diconnected, DoneInit, DoneDeinit }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
         private ObservableDictionary<string, PositionModel> positions = new ObservableDictionary<string, PositionModel>();
@@ -40,7 +40,7 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Online, UpdateSnapshots);
             stateControl.OnEnter(States.Deinitializing, Deinit);
 
-            connection.Initialized += () =>
+            connection.Connecting += () =>
                 {
                     connection.TradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
                     connection.TradeProxy.AccountInfo += TradeProxy_AccountInfo;
@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
                     connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
                 };
 
-            connection.Deinitialized += () =>
+            connection.Disconnecting += () =>
             {
                 connection.TradeProxy.CacheInitialized -= TradeProxy_CacheInitialized;
                 connection.TradeProxy.AccountInfo -= TradeProxy_AccountInfo;
@@ -57,7 +57,14 @@ namespace TickTrader.BotTerminal
             };
 
             connection.Connected += () => stateControl.PushEvent(Events.Connected);
-            connection.Disconnected += s => stateControl.PushEventAndWait(Events.Diconnected, States.Offline);
+
+            //connection.Initalizing += (s, c) =>
+            //{
+            //    c.Register(() => stateControl.PushEvent(Events.ConnectionCanceled));
+            //    return stateControl.PushEventAndWait(Events.Connected, state => state == States.Online || state == States.Canceled);
+            //};
+
+            connection.Deinitalizing += (s, c) => stateControl.PushEventAndWait(Events.Diconnected, States.Offline);
 
             stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("AccountModel STATE " + from + " => " + to);
             stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("AccountModel EVENT " + e);

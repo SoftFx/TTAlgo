@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using SciChart.Charting.ViewportManagers;
 using SciChart.Charting.Visuals.RenderableSeries;
 using SoftFX.Extended;
 using System;
@@ -14,11 +15,16 @@ using System.Windows;
 using System.Windows.Data;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.BotTerminal.Lib;
+using SciChart.Charting.Visuals.Axes;
+using SciChart.Data.Model;
+using SciChart.Charting.Services;
 
 namespace TickTrader.BotTerminal
 {
     class ChartViewModel : Conductor<Screen>, IDropHandler
     {
+        private static int idSeed;
+
         private readonly FeedModel feed;
         private AlgoCatalog catalog;
         private IWindowManager wndManager;
@@ -33,6 +39,8 @@ namespace TickTrader.BotTerminal
             this.feed = feed;
             this.catalog = catalog;
             this.wndManager = wndManager;
+
+            ChartWindowId = "Chart" + ++idSeed;
 
             SymbolModel smb = feed.Symbols[symbol];
 
@@ -67,12 +75,16 @@ namespace TickTrader.BotTerminal
             //IndicatorPanes.Add(new IndicatorPaneViewModel());
             //IndicatorPanes.Add(new IndicatorPaneViewModel());
             //IndicatorPanes.Add(new IndicatorPaneViewModel());
+
+            ViewPort = new CustomViewPortManager();
         }
 
         #region Bindable Properties
 
         private readonly Dictionary<string, System.Action> periodActivatos = new Dictionary<string, System.Action>();
         private KeyValuePair<string, System.Action> selectedPeriod;
+
+        public string ChartWindowId { get; private set; }
 
         public Dictionary<string, System.Action> AvailablePeriods { get { return periodActivatos; } }
 
@@ -98,6 +110,8 @@ namespace TickTrader.BotTerminal
                 selectedPeriod.Value();
             }
         }
+
+        public IViewportManager ViewPort { get; private set; }
 
         public ObservableComposer<IRenderableSeries> Series { get; private set; }
         public ObservableCollection<IRenderableSeries> OverlaySeries { get; private set; }
@@ -208,7 +222,7 @@ namespace TickTrader.BotTerminal
             if (i.IsOverlay)
                 AddOutputs(i);
             else
-                Panes.Add(new IndicatorPaneViewModel(i, Chart));
+                Panes.Add(new IndicatorPaneViewModel(i, Chart, ChartWindowId));
         }
 
         private void RemoveIndicator(IndicatorModel i)
@@ -234,7 +248,7 @@ namespace TickTrader.BotTerminal
             if (Panes.Any(p => p.IndicatorId == i.Id) && !i.IsOverlay)
             {
                 int paneIndex = Panes.IndexOf(p => p.IndicatorId == i.Id);
-                Panes[paneIndex] = new IndicatorPaneViewModel(i, this.Chart);
+                Panes[paneIndex] = new IndicatorPaneViewModel(i, this.Chart, ChartWindowId);
             }
             else
             {
@@ -265,6 +279,19 @@ namespace TickTrader.BotTerminal
         public bool CanDrop(object o)
         {
             return o is FakeAlgo;
+        }
+
+        public class CustomViewPortManager : DefaultViewportManager
+        {
+            protected override IRange OnCalculateNewXRange(IAxis xAxis)
+            {
+                return base.OnCalculateNewXRange(xAxis);
+            }
+
+            protected override IRange OnCalculateNewYRange(IAxis yAxis, RenderPassInfo renderPassInfo)
+            {
+                return base.OnCalculateNewYRange(yAxis, renderPassInfo);
+            }
         }
     }
 }

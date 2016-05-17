@@ -199,10 +199,14 @@
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
+    <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
-    <Compile Include="Model.Auth\AuthManager.cs" />
+    <Compile Include="Model\ConnectionManager.cs" />
+    <Compile Include="Model.Auth\AuthEntry.cs" />
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
+    <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
+    <Compile Include="Model\FdkAdapter.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
@@ -229,7 +233,6 @@
     <Compile Include="Lib\ObservableSrotedList.cs" />
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
-    <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
     <Compile Include="Model.Indicators\IndicatorSetup_Bars.cs" />
     <Compile Include="Model.Indicators\IndicatorModel.cs" />

@@ -16,12 +16,12 @@ namespace Machinarium.State
         private LinkedList<StateAwaiter> stateWaiters = new LinkedList<StateAwaiter>();
         private Dictionary<T, StateDescriptor<T>> descriptors = new Dictionary<T, StateDescriptor<T>>();
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public StateMachine(T initialState = default(T)) : this(null, initialState)
         {
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public StateMachine(IStateMachineSync syncContext, T initialState = default(T))
         {
             Current = initialState;
@@ -37,7 +37,7 @@ namespace Machinarium.State
         public event Action<object> EventFired = delegate { };
         public IStateMachineSync SyncContext { get { return _lock; } }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddTransition(T state, object eventId, Action trAction)
         {
             _lock.Synchronized(() =>
@@ -50,7 +50,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddTransition(T from, object eventId, T to, Action trAction = null)
         {
             _lock.Synchronized(() =>
@@ -60,7 +60,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddTransition(T from, Func<bool> condition, T to, Action trAction = null)
         {
             if (condition == null)
@@ -73,7 +73,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void AddScheduledEvent(T state, object eventId, int timeInterval)
         {
             _lock.Synchronized(() =>
@@ -83,7 +83,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void OnEnter(T state, Action action)
         {
             if (action == null)
@@ -96,7 +96,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void OnExit(T state, Action action)
         {
             if (action == null)
@@ -109,7 +109,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void ModifyConditions(Action modifyAction)
         {
             _lock.Synchronized(() =>
@@ -119,7 +119,7 @@ namespace Machinarium.State
             });
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task ModifyConditionsAndWait(Action modifyAction, Predicate<T> stateCondition)
         {
             Task waitTask = null;
@@ -132,19 +132,19 @@ namespace Machinarium.State
             return waitTask;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task ModifyConditionsAndWait(Action modifyAction, T state)
         {
             return ModifyConditionsAndWait(modifyAction, s => state.Equals(s));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void PushEvent(object eventId)
         {
             _lock.Synchronized(() => PushEventInternal(eventId));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void PushEventInternal(object eventId)
         {
             EventFired(eventId);
@@ -158,7 +158,7 @@ namespace Machinarium.State
             }
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private StateDescriptor<T> GetOrAddDescriptor(T state)
         {
             StateDescriptor<T> descriptor;
@@ -170,7 +170,7 @@ namespace Machinarium.State
             return descriptor;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private StateDescriptor<T> FindDescriptor(T state)
         {
             StateDescriptor<T> currentDescriptor;
@@ -178,7 +178,7 @@ namespace Machinarium.State
             return currentDescriptor;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void CheckConditions()
         {
             StateDescriptor<T> currentDescriptor = FindDescriptor(Current);
@@ -190,7 +190,7 @@ namespace Machinarium.State
             }
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void ChangeState(StateDescriptor<T> currentDescriptor, StateTransition<T> transition)
         {
             T oldState = Current;
@@ -219,7 +219,7 @@ namespace Machinarium.State
             CheckConditions();
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task AsyncWait(Predicate<T> condition)
         {
             Task waitTask = null;
@@ -227,13 +227,13 @@ namespace Machinarium.State
             return waitTask;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task AsyncWait(T stateToWait)
         {
             return AsyncWait(s => stateToWait.Equals(s));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private Task AsyncWaitInternal(Predicate<T> stateCondition)
         {
             if(stateCondition(Current))
@@ -244,7 +244,7 @@ namespace Machinarium.State
             return waiter.Task;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task PushEventAndWait(object eventId, Predicate<T> stateCondition)
         {
             Task waitTask = null;
@@ -256,19 +256,19 @@ namespace Machinarium.State
             return waitTask;
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public Task PushEventAndWait(object eventId, T stateToWait)
         {
             return PushEventAndWait(eventId, s => stateToWait.Equals(s));
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         public void Wait(T stateToWait)
         {
             AsyncWait(stateToWait).Wait();
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void ReleaseAwaiters()
         {
             var node = stateWaiters.First;
@@ -289,7 +289,7 @@ namespace Machinarium.State
 
         private List<TimeEvent> scheduledEvents;
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void ScheduleEventsForState(StateDescriptor<T> newState)
         {
             IEnumerable<TimeEventDescriptor> eventsToSchedule = newState.ListScheduledEvents();
@@ -304,7 +304,7 @@ namespace Machinarium.State
             }
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void CancelScheduledEvents()
         {
             if (scheduledEvents != null)
@@ -316,7 +316,7 @@ namespace Machinarium.State
             }
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
+        [System.Diagnostics.DebuggerHidden]
         private void OnEventElapsed(TimeEvent eventObj)
         {
             _lock.Synchronized(() =>

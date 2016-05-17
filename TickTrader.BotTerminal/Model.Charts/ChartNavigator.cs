@@ -38,26 +38,38 @@ namespace TickTrader.BotTerminal
             return axis;
         }
 
+        public abstract void Update(int itemsCount, DateTime firstItemX, DateTime lastItemX);
+
         protected abstract AxisBase CreateAxisInternal();
     }
 
     internal class UniformChartNavigator : ChartNavigator
     {
-        private IndexRange visibleRange = new IndexRange();
-
         protected override AxisBase CreateAxisInternal()
         {
-            return new  CategoryDateTimeAxis();
+            return new CategoryDateTimeAxis();
+        }
+
+        public override void Update(int itemsCount, DateTime firstItemX, DateTime lastItemX)
+        {
+            int pageStart = itemsCount - 100;
+
+            if (pageStart < 0)
+                pageStart = 0;
+
+            this.VisibleRange = new IndexRange(pageStart, itemsCount);
         }
     }
 
     internal class NonUniformChartNavigator : ChartNavigator
     {
-        private DateRange visibleRange = new DateRange();
-
         protected override AxisBase CreateAxisInternal()
         {
-            return new DateTimeAxis() { VisibleRange = visibleRange };
+            return new DateTimeAxis();
+        }
+
+        public override void Update(int itemsCount, DateTime firstItemX, DateTime lastItemX)
+        {
         }
     }
 }

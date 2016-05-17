@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
             this.isOnline = feed.Connection.State.Current == ConnectionModel.States.Online;
             feed.Connection.Connected += Connection_Connected;
-            feed.Connection.Disconnected += Connection_Disconnected;
+            feed.Connection.Disconnected += Connection_Disconnected1;
 
             foreach (var indicator in catalog.Indicators)
             {
@@ -203,7 +203,7 @@ namespace TickTrader.BotTerminal
         }
 
         protected abstract void ClearData();
-        protected abstract Task LoadData(CancellationToken cToken);
+        protected abstract Task<DataMetrics> LoadData(CancellationToken cToken);
         protected abstract void UpdateSeriesStyle();
         protected abstract bool IsIndicatorSupported(AlgoPluginDescriptor descriptor);
         protected abstract IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem);
@@ -222,12 +222,13 @@ namespace TickTrader.BotTerminal
                 isUpdateRequired = false;
                 ClearData();
                 await indicators.Stop();
-                await LoadData(cToken);
+                var metrics = await LoadData(cToken);
+                Navigator.Update(metrics.Count, metrics.StartDate, metrics.EndDate);
                 indicators.Start();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("ChartModelBase.Update() ERROR " + ex.ToString());
+                System.Diagnostics.Debug.WriteLine("ChartModelBase.Update() ERROR " + ex);
             }
 
             stateController.PushEvent(Events.DoneUpdating);
@@ -262,10 +263,9 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        private Task Connection_Disconnected(object sender)
+        private void Connection_Disconnected1()
         {
             stateController.ModifyConditions(() => isOnline = false);
-            return Task.FromResult(new object());
         }
 
         private void Connection_Connected()
@@ -278,6 +278,13 @@ namespace TickTrader.BotTerminal
             catalog.Added -= Repository_Added;
             catalog.Removed -= Repository_Removed;
             catalog.Replaced -= Repository_Replaced;
+        }
+
+        protected struct DataMetrics
+        {
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public int Count { get; set; }
         }
     }
 }
