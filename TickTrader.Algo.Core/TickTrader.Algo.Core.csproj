@@ -85,10 +85,8 @@
     <Compile Include="Metadata\InputDescriptor.cs" />
     <Compile Include="Metadata\OutputDescriptor.cs" />
     <Compile Include="Metadata\ParameterDescriptor.cs" />
-    <Compile Include="Realtime\Interfaces.cs" />
     <Compile Include="Realtime\NullProvider.cs" />
     <Compile Include="Realtime\RealtimePluginExecutor.cs" />
-    <Compile Include="Realtime\SubsciptionProxy.cs" />
     <Compile Include="Repository\AlgoAssembly.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Repository\AlgoSandbox.cs" />

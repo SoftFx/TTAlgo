@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 {
     internal class ConnectionManager
     {
-        public enum States { Offline, Connecting, Online, Disconnecting }
+        internal enum States { Offline, Connecting, Online, Disconnecting }
 
         private enum InStates { Offline, Connecting, Online, Disconnecting }
         private enum InEvents { LostConnection, Connected, FailedToConnect, DoneDisconnecting, DisconnectRequest }
@@ -116,7 +116,7 @@ namespace TickTrader.BotTerminal
                 return;
 
             CancelRequest();
-            UpdateState(States.Offline);
+            UpdateState(States.Disconnecting);
             internalStateControl.PushEvent(InEvents.DisconnectRequest);
         }
 

@@ -30,34 +30,36 @@
                     <StackPanel Orientation="Horizontal" Margin="2">
                         <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="10 0 5 0"/>
                         <TextBlock x:Name="txtReconnect" Text="{Binding Login, StringFormat=Reconnecting to a/c {0}}"/>
+                        <TextBlock x:Name="txtDisconnect" Text="{Binding Login, StringFormat=Disconnecting from a/c {0}}"/>
                         <Border x:Name="serverShortName" Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
                         </Border>
                         <TextBlock x:Name="txtLogin" Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
                     </StackPanel>
                     <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="Connecting">
-                            <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
-                            <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                        <!--<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Offline}">
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Connecting}">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Yellow"/>
                             <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="txtReconnect" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>-->
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="States.Online">
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Online}">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
                             <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
-                        <!--<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Deinitializing}">
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Disconnecting}">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
                             <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="txtDisconnect" Property="Visibility" Value="Visible"/>
                             <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>-->
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="Offline">
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Offline}">
                             <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
                             <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
                     </DataTemplate.Triggers>
                 </DataTemplate>

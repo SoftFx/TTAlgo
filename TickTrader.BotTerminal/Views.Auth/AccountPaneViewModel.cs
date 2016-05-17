@@ -27,9 +27,9 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        public string ConnectionState
+        public ConnectionManager.States ConnectionState
         {
-            get { return cManager.State.ToString(); }
+            get { return cManager.State; }
         }
 
         public ObservableCollection<AccountAuthEntry> Accounts { get { return cManager.Accounts; } }
