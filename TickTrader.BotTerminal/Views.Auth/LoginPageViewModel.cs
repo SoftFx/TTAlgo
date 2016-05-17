@@ -20,7 +20,6 @@ namespace TickTrader.BotTerminal
         private ConnectionErrorCodes error;
         private bool isConnecting;
         private bool isValid;
-        private bool saveAccount = true;
         private bool savePassword;
 
         public LoginPageViewModel(ConnectionManager cManager, AccountAuthEntry displayEntry = null)
@@ -76,21 +75,6 @@ namespace TickTrader.BotTerminal
 
         public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
         public ObservableCollection<AccountAuthEntry> Accounts { get { return cManager.Accounts; } }
-
-        public bool SaveAccount
-        {
-            get { return saveAccount; }
-            set
-            {
-                saveAccount = value;
-                if (!saveAccount)
-                    SavePassword = false;
-                NotifyOfPropertyChange(nameof(SaveAccount));
-                NotifyOfPropertyChange(nameof(SavePasswordEnabled));
-            }
-        }
-
-        public bool SavePasswordEnabled { get { return SaveAccount; } }
 
         public bool SavePassword
         {
@@ -199,9 +183,7 @@ namespace TickTrader.BotTerminal
             Login = acc.Login;
             Password = acc.Password;
             Server = acc.Server.Name;
-            if (acc.Password != null)
-                SavePassword = true;
-            SaveAccount = true;
+            SavePassword = acc.Password != null;
         }
 
         private string ResolveServerAddress()

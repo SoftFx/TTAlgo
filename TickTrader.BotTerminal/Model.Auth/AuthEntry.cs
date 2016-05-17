@@ -66,5 +66,23 @@ namespace TickTrader.BotTerminal
             get { return storageRecord.Password; }
             set { storageRecord.Password = value; }
         }
+
+        public override bool Equals(object obj)
+        {
+            var entry = obj as AccountAuthEntry;
+            return entry != null && entry.Login == Login && entry.Server.Address == Server.Address;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = (int)2166136261;
+                // Suitable nullity checks etc, of course :)
+                hash = (hash * 16777619) ^ Login.GetHashCode();
+                hash = (hash * 16777619) ^ Server.Address.GetHashCode();
+                return hash;
+            }
+        }
     }
 }

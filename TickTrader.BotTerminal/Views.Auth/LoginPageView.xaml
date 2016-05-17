@@ -52,7 +52,7 @@
 
     </UserControl.Resources>
 
-    <Grid Margin="5" IsEnabled="{Binding IsEditable}">
+    <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>   <!-- 0 Title  -->
             <RowDefinition Height="Auto"/> <!-- 1 Account label -->
@@ -76,14 +76,14 @@
         <ComboBox Grid.Row="2" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
                   ItemTemplate="{StaticResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
-                  IsEditable="True"/>
+                  IsEditable="True"
+                  IsEnabled="{Binding IsEditable}"/>
         <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Account password"/>
-        <PasswordBox Grid.Row="4" Grid.ColumnSpan="2" Name="PasswordInput" />
+        <PasswordBox Grid.Row="4" Grid.ColumnSpan="2" Name="PasswordInput" IsEnabled="{Binding IsEditable}" />
         <Label Grid.Row="5" Grid.ColumnSpan="2" Content="Server"/>
         <ComboBox Grid.Row="6" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
                   IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding IsEditable}"/>
-        <!--<CheckBox Grid.Row="8" Grid.ColumnSpan="2" Name="SaveAccount" Content="Remember Account" />-->
-        <CheckBox Grid.Row="9" Grid.ColumnSpan="2" Name="SavePassword" Content="Remember Password" IsEnabled="{Binding SavePasswordEnabled}"/>
+        <CheckBox Grid.Row="9" Grid.ColumnSpan="2" Name="SavePassword" Content="Remember Password"/>
         <TextBlock Grid.Row="10" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{l:ResxBinding Error, Prefix=ConnectionErrorCode_}"
                    TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
