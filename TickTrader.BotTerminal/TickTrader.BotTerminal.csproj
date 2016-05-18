@@ -194,8 +194,9 @@
     <Compile Include="Extensions\SettingExtension.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
+    <Compile Include="Lib.Collections\DLinq.cs" />
     <Compile Include="Lib.Collections\Interfaces.cs" />
-    <Compile Include="Lib.Collections\ObservableList.cs" />
+    <Compile Include="Lib.Collections\DynamicList.cs" />
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />

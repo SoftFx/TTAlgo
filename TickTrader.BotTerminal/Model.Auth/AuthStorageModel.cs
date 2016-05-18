@@ -10,13 +10,13 @@ namespace TickTrader.BotTerminal
     [Serializable]
     public class AuthStorageModel : IChangableObject, IPersistableObject<AuthStorageModel>
     {
-        private ObservableList<AccountSorageEntry> accounts;
+        private DynamicList<AccountSorageEntry> accounts;
         private string lastLogin;
         private string lastServer;
 
         public AuthStorageModel()
         {
-            accounts = new ObservableList<AccountSorageEntry>();
+            accounts = new DynamicList<AccountSorageEntry>();
         }
 
         public string LastLogin
@@ -44,12 +44,12 @@ namespace TickTrader.BotTerminal
 
         public AuthStorageModel(AuthStorageModel src)
         {
-            accounts = new ObservableList<AccountSorageEntry>(src.accounts.Select(a => a.Clone()));
+            accounts = new DynamicList<AccountSorageEntry>(src.accounts.Select(a => a.Clone()));
             lastLogin = src.lastLogin;
             lastServer = src.lastServer;
         }
 
-        public ObservableList<AccountSorageEntry> Accounts { get { return accounts; } }
+        public DynamicList<AccountSorageEntry> Accounts { get { return accounts; } }
 
         public void Update(AccountSorageEntry account)
         {

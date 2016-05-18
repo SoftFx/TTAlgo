@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         public ConnectionManager(PersistModel appStorage)
         {
             this.authStorage = appStorage.AuthSettingsStorage;
-            this.authStorage.Accounts.Changed += Storage_Changed;
+            this.authStorage.Accounts.Updated += Storage_Changed;
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -148,16 +148,16 @@ namespace TickTrader.BotTerminal
             authStorage.TriggerSave();
         }
 
-        private void Storage_Changed(object sender, ListChangedEventArgs<AccountSorageEntry> e)
+        private void Storage_Changed(ListUpdateArgs<AccountSorageEntry> e)
         {
-            if (e.Action == CollectionChangeActions.Added)
+            if (e.Action == DLinqUpdateType.Insert)
                 Accounts.Add(CreateEntry(e.NewItem));
-            else if (e.Action == CollectionChangeActions.Removed)
+            else if (e.Action == DLinqUpdateType.Remove)
             {
                 var index = Accounts.IndexOf(a => a.Matches(e.OldItem));
                 Accounts.RemoveAt(index);
             }
-            else if (e.Action == CollectionChangeActions.Replaced)
+            else if (e.Action == DLinqUpdateType.Replace)
             {
                 var index = Accounts.IndexOf(a => a.Matches(e.OldItem));
                 Accounts[index] = CreateEntry(e.NewItem);

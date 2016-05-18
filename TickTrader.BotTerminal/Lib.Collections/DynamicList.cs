@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 namespace TickTrader.BotTerminal
 {
     [Serializable]
-    public class ObservableList<T> : IList<T>, IObservableList<T>, IReadonlyObservableList<T>, IReadOnlyList<T>
+    public class DynamicList<T> : IList<T>, IDynamicList<T>, IReadOnlyList<T>
     {
         private List<T> innerList;
 
-        public ObservableList()
+        public DynamicList()
         {
             innerList = new List<T>();
         }
 
-        public ObservableList(IEnumerable<T> initialData)
+        public DynamicList(IEnumerable<T> initialData)
         {
             innerList = new List<T>(initialData);
         }
@@ -29,39 +29,26 @@ namespace TickTrader.BotTerminal
             {
                 T oldItem = innerList[index];
                 innerList[index] = value;
-
-                if (Changed != null)
-                    Changed(this, new ListChangedEventArgs<T>(CollectionChangeActions.Replaced, value, oldItem, index));
+                OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Replace, index, value, oldItem));
             }
         }
 
         public int Count { get { return innerList.Count; } }
-
         public bool IsReadOnly { get { return false; } }
 
-        public event EventHandler<ListChangedEventArgs<T>> Changed;
+        public event ListUpdateHandler<T> Updated;
 
         public void Add(T item)
         {
             innerList.Add(item);
             int index = innerList.Count - 1;
-            if (Changed != null)
-                Changed(this, new ListChangedEventArgs<T>(CollectionChangeActions.Added, item, default(T), index));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Insert, index, item));
         }
 
         public void Clear()
         {
-            var oldItems = innerList;
-            innerList = new List<T>();
-
-            if (Changed != null)
-            {
-                for (int i = 0; i < oldItems.Count; i++)
-                {
-                    var item = oldItems[i];
-                    Changed(this, new ListChangedEventArgs<T>(CollectionChangeActions.Removed, default(T), item, i));
-                }
-            }
+            innerList.Clear();
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.RemoveAll));
         }
 
         public bool Contains(T item)
@@ -87,8 +74,7 @@ namespace TickTrader.BotTerminal
         public void Insert(int index, T item)
         {
             innerList.Insert(index, item);
-            if (Changed != null)
-                Changed(this, new ListChangedEventArgs<T>(CollectionChangeActions.Added, item, default(T), index));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Insert, index, item));
         }
 
         public bool Remove(T item)
@@ -99,9 +85,7 @@ namespace TickTrader.BotTerminal
                 return false;
 
             T removedItem = innerList[index];
-
-            if (Changed != null)
-                Changed(this, new ListChangedEventArgs<T>(CollectionChangeActions.Removed, default(T), removedItem, index));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Remove, index, default(T), removedItem));
 
             return true;
         }
@@ -110,8 +94,18 @@ namespace TickTrader.BotTerminal
         {
             var removedItem = innerList[index];
             innerList.RemoveAt(index);
-            if (Changed != null)
-                Changed(this, new ListChangedEventArgs<T>(CollectionChangeActions.Removed, default(T), removedItem, index));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Remove, index, default(T), removedItem));
+        }
+
+        public void Dispose()
+        {
+            // do nothing
+        }
+
+        private void OnUpdate(ListUpdateArgs<T> args)
+        {
+            if (Updated != null)
+                Updated(args);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
