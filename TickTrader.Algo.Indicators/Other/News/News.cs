@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SoftFx.FxCalendar.Providers;
-using SoftFx.FxCalendare.Data;
+using SoftFx.FxCalendar.Common;
+using SoftFx.FxCalendar.Entities;
+using SoftFx.FxCalendar.Sources.FxStreet;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -11,8 +12,9 @@ namespace TickTrader.Algo.Indicators.Other.News
     [Indicator(Category = "Other", DisplayName = "Other/News")]
     public class News : Indicator
     {
-        private IEnumerable<FxNews> _news;
-        private IShift _shifter;
+        private IEnumerable<FxStreetNews> _news;
+        private IShift _firstShifter, _secondShifter;
+        private string _firstCurrency, _secondCurrency;
 
         [Parameter(DefaultValue = ImpactLevel.None, DisplayName = "Minimum Volatility")]
         public ImpactLevel MinVolatility { get; set; }
@@ -23,13 +25,19 @@ namespace TickTrader.Algo.Indicators.Other.News
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
+        [Parameter(DefaultValue = "EURUSD", DisplayName = "Symbol Code")]
+        public string SymbolCode { get; set; }
+
         [Input]
         public BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Volatility Level", DefaultColor = Colors.SteelBlue)]
-        public DataSeries VolatilityLevel { get; set; }
+        [Output(DisplayName = "First Currency Impact", DefaultColor = Colors.Green)]
+        public DataSeries FirstCurrencyImpact { get; set; }
 
-        public int LastPositionChanged { get { return _shifter.Position; } }
+        [Output(DisplayName = "Second Currency Impact", DefaultColor = Colors.Red)]
+        public DataSeries SecondCurrencyImpact { get; set; }
+
+        public int LastPositionChanged { get { return _firstShifter.Position; } }
 
         public News() { }
 
@@ -45,8 +53,12 @@ namespace TickTrader.Algo.Indicators.Other.News
 
         private void InitializeIndicator()
         {
-            _shifter = new SimpleShifter(Shift);
-            _shifter.Init();
+            _firstShifter = new SimpleShifter(Shift);
+            _firstShifter.Init();
+            _secondShifter = new SimpleShifter(Shift);
+            _secondShifter.Init();
+            _firstCurrency = SymbolCode.Substring(0, 3);
+            _secondCurrency = SymbolCode.Substring(3, 3);
         }
 
         protected override void Init()
@@ -61,40 +73,56 @@ namespace TickTrader.Algo.Indicators.Other.News
                 LoadNews();
             }
             var pos = 0;
-            var level = 0;
-            foreach (var n in _news.Where(n => n.DateUtc >= Bars[pos].OpenTime && n.DateUtc < Bars[pos].CloseTime))
+            var firstLevel = 0;
+            foreach (var n in _news.Where(n => n.DateUtc >= Bars[pos].OpenTime && n.DateUtc < Bars[pos].CloseTime && n.CurrencyCode == _firstCurrency))
             {
                 if (n.Impact >= MinVolatility && n.Impact <= MaxVolatility)
                 {
-                    level += (int) n.Impact;
+                    firstLevel += (int) n.Impact;
                 }
             }
+
+            var secondLevel = 0;
+            foreach (var n in _news.Where(n => n.DateUtc >= Bars[pos].OpenTime && n.DateUtc < Bars[pos].CloseTime && n.CurrencyCode == _secondCurrency))
+            {
+                if (n.Impact >= MinVolatility && n.Impact <= MaxVolatility)
+                {
+                    secondLevel += (int)n.Impact;
+                }
+            }
+
             if (IsUpdate)
             {
-                _shifter.UpdateLast(level);
+                _firstShifter.UpdateLast(firstLevel);
+                _secondShifter.UpdateLast(secondLevel);
             }
             else
             {
-                _shifter.Add(level);
+                _firstShifter.Add(firstLevel);
+                _secondShifter.Add(secondLevel);
             }
-            VolatilityLevel[_shifter.Position] = _shifter.Result;
+            FirstCurrencyImpact[_firstShifter.Position] = _firstShifter.Result;
+            SecondCurrencyImpact[_secondShifter.Position] = -_secondShifter.Result;
 
         }
 
         private void LoadNews()
         {
-            var streetNewsProvider = new FxStreetCalendar();
-            streetNewsProvider.Filter.StartDate = Bars[0].OpenTime.Date;
-            streetNewsProvider.Filter.EndDate = DateTime.Today;
-            streetNewsProvider.Filter.IsoCurrencyCodes = new[]
-            //{Bars.SymbolCode.Substring(0, 3), Bars.SymbolCode.Substring(3)};
-            {"EUR", "USD"};
+            var streetNewsProvider = new FxStreetCalendar
+            {
+                Filter =
+                {
+                    StartDate = Bars[0].OpenTime.Date,
+                    EndDate = DateTime.Today,
+                    CurrencyCodes = new[] {_firstCurrency, _secondCurrency}
+                }
+            };
 
             var task = streetNewsProvider.DownloadTaskAsync();
 
             task.Wait();
 
-            _news = streetNewsProvider.FxNews ?? Enumerable.Empty<FxNews>();
+            _news = streetNewsProvider.FxNews ?? Enumerable.Empty<FxStreetNews>();
         }
     }
 }

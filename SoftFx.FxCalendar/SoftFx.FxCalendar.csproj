@@ -31,12 +31,27 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\lib\EntityFramework\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\lib\EntityFramework\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlAgilityPack">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\lib\SQLite\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6">
+      <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>..\lib\SQLite\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -46,16 +61,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\FxNews.cs" />
-    <Compile Include="Data\IFxNews.cs" />
-    <Compile Include="Data\ImapctLevel.cs" />
+    <Compile Include="Common\BaseCalendar.cs" />
+    <Compile Include="Common\ICalendar.cs" />
+    <Compile Include="Common\ImpactLevel.cs" />
+    <Compile Include="Common\INews.cs" />
+    <Compile Include="Database\DbConnector.cs" />
+    <Compile Include="Database\DbContextBase.cs" />
+    <Compile Include="Database\NewsContext.cs" />
+    <Compile Include="Entities\FxStreetNews.cs" />
+    <Compile Include="Entities\News.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\BaseFxCalendar.cs" />
-    <Compile Include="Providers\Filter.cs" />
-    <Compile Include="Providers\FxStreetRss.cs" />
-    <Compile Include="Providers\FxStreetCalendar.cs" />
-    <Compile Include="Providers\IFxCalendar.cs" />
-    <Compile Include="RegionInfoUtility.cs" />
+    <Compile Include="Sources\FxStreet\FxStreetCalendar.cs" />
+    <Compile Include="Sources\FxStreet\FxStreetRss.cs" />
+    <Compile Include="Sources\FxStreet\IFxStreetNews.cs" />
+    <Compile Include="Storage\BaseStorage.cs" />
+    <Compile Include="Storage\IStorage.cs" />
+    <Compile Include="Storage\NewsStorage.cs" />
+    <Compile Include="Utility\Filter.cs" />
+    <Compile Include="Utility\RegionInfoUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Providers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
