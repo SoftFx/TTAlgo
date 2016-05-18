@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,6 +26,8 @@ namespace TickTrader.BotTerminal
                 selectedEntry = cManager.Creds;
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             };
+
+           selectedEntry = cManager.GetLast();
         }
 
         public ConnectionManager.States ConnectionState

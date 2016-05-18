@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             else
             {
                 if (accounts[index].Password != account.Password)
-                    accounts[index] = account;
+                    accounts[index].Password = account.Password;
             }
         }
 

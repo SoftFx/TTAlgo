@@ -153,6 +153,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
