@@ -9,16 +9,29 @@ namespace TickTrader.BotTerminal
 {
     public class OverlayControl : DependencyObject
     {
-        public static DependencyProperty ContentAttachedProperty = DependencyProperty.RegisterAttached("Content", typeof(UIElement), typeof(OverlayControl));
+        public static DependencyProperty ContentAttachedProperty = DependencyProperty.RegisterAttached("Content", typeof(object), typeof(OverlayControl));
 
-        public static void SetContent(UIElement element, UIElement value)
+        public static void SetContent(UIElement element, object value)
         {
             element.SetValue(ContentAttachedProperty, value);
         }
 
-        public static UIElement GetContent(UIElement element)
+        public static object GetContent(UIElement element)
         {
-            return (UIElement)element.GetValue(ContentAttachedProperty);
+            return element.GetValue(ContentAttachedProperty);
         }
+
+        public static DependencyProperty ContentTemplateAttachedProperty = DependencyProperty.RegisterAttached("ContentTemplate", typeof(DataTemplate), typeof(OverlayControl));
+
+        public static void SetContentTemplate(UIElement element, DataTemplate value)
+        {
+            element.SetValue(ContentAttachedProperty, value);
+        }
+
+        public static DataTemplate GetContentTemplate(UIElement element)
+        {
+            return (DataTemplate)element.GetValue(ContentAttachedProperty);
+        }
+
     }
 }
