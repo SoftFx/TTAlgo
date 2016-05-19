@@ -60,6 +60,12 @@ namespace TickTrader.BotTerminal
             internalStateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("ConnectionManager EVENT " + e);
         }
 
+        internal void RemoveAccount(AccountAuthEntry entry)
+        {
+            authStorage.Remove(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
+            authStorage.TriggerSave();
+        }
+
         private bool HasRequest { get { return currentConnectionRequest != null; } }
 
         public States State { get; private set; }

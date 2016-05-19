@@ -47,6 +47,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void RemoveAccount(AccountAuthEntry account)
+        {
+            if(!account.Equals(SelectedAccount))
+                cManager.RemoveAccount(account);
+        }
+
         public void Connect()
         {
             connectionModel.Connect(null);

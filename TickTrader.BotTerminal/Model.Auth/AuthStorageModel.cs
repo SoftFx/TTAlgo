@@ -51,6 +51,13 @@ namespace TickTrader.BotTerminal
 
         public ObservableList<AccountSorageEntry> Accounts { get { return accounts; } }
 
+        public void Remove(AccountSorageEntry account)
+        {
+            var index = accounts.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
+            if (index != -1)
+                accounts.RemoveAt(index);
+        }
+
         public void Update(AccountSorageEntry account)
         {
             int index = accounts.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
@@ -75,6 +82,8 @@ namespace TickTrader.BotTerminal
         {
             return new AuthStorageModel(this);
         }
+
+        
     }
 
     [Serializable]
