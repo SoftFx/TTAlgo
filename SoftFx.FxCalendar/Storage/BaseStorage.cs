@@ -82,5 +82,10 @@ namespace SoftFx.FxCalendar.Storage
             }
             DbContext.SaveChanges();
         }
+
+        public void ReloadNews()
+        {
+            LoadNewsFromDb();
+        }
     }
 }
