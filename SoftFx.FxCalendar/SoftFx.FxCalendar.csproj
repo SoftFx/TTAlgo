@@ -78,6 +78,7 @@
     <Compile Include="Calendar\FxStreet\IFxStreetFilter.cs" />
     <Compile Include="Calendar\ICalendar.cs" />
     <Compile Include="Calendar\FxStreet\ImpactLevel.cs" />
+    <Compile Include="Database\SqLiteInitializer.cs" />
     <Compile Include="Database\FxStreetContext.cs" />
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\NewsFilter.cs" />

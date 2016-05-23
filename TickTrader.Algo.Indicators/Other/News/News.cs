@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Indicators.Other.News
         {
             _firstCurrency = SymbolCode.Substring(0, 3);
             _secondCurrency = SymbolCode.Substring(3, 3);
-            _additionalCurrency = AdditionalCurrency.Substring(0, 3);
+            _additionalCurrency = null;
 
             _providers = new List<FxStreetProvider>();
             _providerOutputs = new List<DataSeries>();
@@ -56,12 +56,17 @@ namespace TickTrader.Algo.Indicators.Other.News
                 new FxStreetStorage("NewsCache", _firstCurrency), ImpactLevel.None));
             _providers.Add(new FxStreetProvider(new FxStreetCalendar(new FxStreetFilter()),
                 new FxStreetStorage("NewsCache", _secondCurrency), ImpactLevel.None));
-            _providers.Add(new FxStreetProvider(new FxStreetCalendar(new FxStreetFilter()),
-                new FxStreetStorage("NewsCache", _additionalCurrency), ImpactLevel.None));
 
             _providerOutputs.Add(FirstCurrencyImpact);
             _providerOutputs.Add(SecondCurrencyImpact);
-            _providerOutputs.Add(AdditionalCurrencyImpact);
+
+            if (AdditionalCurrency.Length == 3)
+            {
+                _additionalCurrency = AdditionalCurrency.Substring(0, 3);
+                _providers.Add(new FxStreetProvider(new FxStreetCalendar(new FxStreetFilter()),
+                new FxStreetStorage("NewsCache", _additionalCurrency), ImpactLevel.None));
+                _providerOutputs.Add(AdditionalCurrencyImpact);
+            }
         }
 
         protected override void Init()

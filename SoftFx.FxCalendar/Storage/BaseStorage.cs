@@ -64,8 +64,8 @@ namespace SoftFx.FxCalendar.Storage
         protected void UpdateDatesRange(TModel model)
         {
             EarliestDate = model.DateUtc.Date < EarliestDate ? model.DateUtc.Date : EarliestDate;
-            LatestDate = model.DateUtc.Date > LatestDate
-                ? model.DateUtc.Date + TimeSpan.FromDays(1) - TimeSpan.FromSeconds(1)
+            LatestDate = model.DateUtc.Date >= LatestDate
+                ? model.DateUtc.Date + TimeSpan.FromDays(1)
                 : LatestDate;
         }
 

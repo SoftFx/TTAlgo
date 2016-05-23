@@ -1,17 +1,18 @@
 ﻿using System.Data.Entity;
-using System.Data.SQLite;
 using SoftFx.FxCalendar.Models;
 using SQLite.CodeFirst;
 
 namespace SoftFx.FxCalendar.Database
 {
-    public abstract class DbContextBase<T> : DbContext where T : class, INews
+    public abstract class DbContextBase<TEntity> : DbContext where TEntity : class, INews
     {
-        public string Location { get; private set; }
-        public string CalendarName { get; private set; }
-        public string CurrencyCode { get; private set; }
+        private static SqLiteInitializer<TEntity> _initializer;
 
-        public DbSet<T> News { get; set; }
+        public string Location { get; protected set; }
+        public string CalendarName { get; protected set; }
+        public string CurrencyCode { get; protected set; }
+
+        public DbSet<TEntity> News { get; set; }
 
         protected DbContextBase(string location, string calendarName, string currencyCode)
             : base(SqLiteConnector.GetSqLiteConnection(location, calendarName, currencyCode), true)
@@ -19,28 +20,16 @@ namespace SoftFx.FxCalendar.Database
             Location = location;
             CalendarName = calendarName;
             CurrencyCode = currencyCode;
+            _initializer?.InitializeDatabase(this);
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             var model = modelBuilder.Build(Database.Connection);
             ISqlGenerator sqlGenerator = new SqliteSqlGenerator();
-            string sql = sqlGenerator.Generate(model.StoreModel);
-            Database.Connection.Open();
-            var command = Database.Connection.CreateCommand();
-            command.CommandText = sql;
-            try
-            {
-                command.ExecuteNonQuery();
-            }
-            catch (SQLiteException e)
-            {
-                if (!(e.Message.Contains("table") && e.Message.Contains("already exists")))
-                {
-                    throw;
-                }
-            }
-            Database.Connection.Close();
+            var createSql = sqlGenerator.Generate(model.StoreModel);
+            _initializer = new SqLiteInitializer<TEntity>(createSql);
+            _initializer.InitializeDatabase(this);
         }
     }
 }
