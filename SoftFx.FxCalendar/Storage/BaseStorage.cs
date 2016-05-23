@@ -10,6 +10,10 @@ namespace SoftFx.FxCalendar.Storage
     public abstract class BaseStorage<TModel, TEntity> : IStorage<TModel, TEntity>
         where TModel : INews, IModel<TEntity> where TEntity : class, INews
     {
+        private static Dictionary<string, int> _storageAccessCnt = new Dictionary<string, int>();
+        private string _storagePath;
+        private int _storageVersion;
+
         public string Location { get; protected set; }
         public string CurrencyCode { get; protected set; }
         public DbContextBase<TEntity> DbContext { get; protected set; }
@@ -35,12 +39,18 @@ namespace SoftFx.FxCalendar.Storage
 
             DbContext = CreateDbContext();
 
+            _storagePath = DbHelper.GetDbFilePath(DbContext.Location, DbContext.CalendarName, DbContext.CurrencyCode);
+            if (!_storageAccessCnt.ContainsKey(_storagePath))
+                _storageAccessCnt[_storagePath] = 1;
+
             LoadNewsFromDb();
         }
 
         protected void LoadNewsFromDb()
         {
             News = new List<TModel>();
+            _storageVersion = _storageAccessCnt[_storagePath];
+
             if (!DbContext.News.Any())
             {
                 EarliestDate = DateTime.Now.ToUniversalTime();
@@ -74,6 +84,8 @@ namespace SoftFx.FxCalendar.Storage
 
         public void AddNews(IEnumerable<TModel> news)
         {
+            ReloadNewsIfNeeded();
+
             foreach (var model in news)
             {
                 News.Add(model);
@@ -81,11 +93,25 @@ namespace SoftFx.FxCalendar.Storage
                 UpdateDatesRange(model);
             }
             DbContext.SaveChanges();
+
+            _storageAccessCnt[_storagePath]++;
+            _storageVersion = _storageAccessCnt[_storagePath];
         }
 
-        public void ReloadNews()
+        public void ReloadNewsIfNeeded()
         {
-            LoadNewsFromDb();
+            if (_storageVersion != _storageAccessCnt[_storagePath])
+            {
+                LoadNewsFromDb();
+            }
+        }
+
+        public void UpdateDatesRange(DateTime start, DateTime end)
+        {
+            EarliestDate = start.Date < EarliestDate ? start.Date : EarliestDate;
+            LatestDate = end.Date >= LatestDate
+                ? end.Date + TimeSpan.FromDays(1)
+                : LatestDate;
         }
     }
 }

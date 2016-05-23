@@ -15,6 +15,7 @@ namespace SoftFx.FxCalendar.Storage
         DateTime LatestDate { get; }
 
         void AddNews(IEnumerable<TModel> news);
-        void ReloadNews();
+        void ReloadNewsIfNeeded();
+        void UpdateDatesRange(DateTime start, DateTime end);
     }
 }
