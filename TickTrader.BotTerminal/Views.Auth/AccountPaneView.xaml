@@ -14,12 +14,12 @@
         <DataTemplate x:Key="AccountAuthEntryTemplate" DataType="{x:Type l:AccountAuthEntry}">
             <StackPanel Orientation="Horizontal" Margin="2">
                 <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="10 0 5 0"/>
-                <TextBlock x:Name="txtReconnect" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedAccount.Login, StringFormat=Reconnecting to a/c {0}}"/>
-                <TextBlock x:Name="txtDisconnect" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedAccount.Login, StringFormat=Disconnecting from a/c {0}}"/>
-                <Border x:Name="serverShortName" Background="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedAccount.Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedAccount.Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
+                <TextBlock x:Name="txtReconnect" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login, StringFormat=Reconnecting to a/c {0}}"/>
+                <TextBlock x:Name="txtDisconnect" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login, StringFormat=Disconnecting from a/c {0}}"/>
+                <Border x:Name="serverShortName" Background="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
                 </Border>
-                <TextBlock x:Name="txtLogin" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedAccount.Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="txtLogin" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
             </StackPanel>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Connecting}">
@@ -57,19 +57,27 @@
             <l:ComboBoxItemTemplateSelector.ItemTemplate>
                 <DataTemplate DataType="{x:Type l:AccountAuthEntry}">
                     <Grid Tag="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2" x:Name="accountInfoPanel">
-                            <Border x:Name="serverShortName" Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
+                        <DockPanel Grid.Column="0" LastChildFill="False" Margin="2" x:Name="accountInfoPanel">
+                            <Border x:Name="serverShortName" DockPanel.Dock="Left" Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
                             </Border>
-                            <TextBlock x:Name="txtLogin" Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
-                        </StackPanel>
-
-                        <!--<DockPanel Grid.Column="0" LastChildFill="False" Margin="2" Visibility="Collapsed" x:Name="AcceptPanel">
+                            <TextBlock x:Name="txtLogin" DockPanel.Dock="Left" Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
+                            <Button x:Name="removeButton" 
+                                    DockPanel.Dock="Right"
+                                    Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" 
+                                    Grid.Column="1" Margin="2" 
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    Visibility="Collapsed"
+                                    cal:Action.TargetWithoutContext="{Binding Tag, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}}" >
+                                <!--cal:Message.Attach="RemoveAccount($dataContext)"-->
+                                <Path Width="7" Height="7" Stretch="Fill" 
+                                  StrokeThickness="1.2"
+                                  Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                  Data="{DynamicResource Cross}"/>
+                            </Button>
+                        </DockPanel>
+                        <DockPanel Grid.Column="0" LastChildFill="False" Margin="2" Visibility="Collapsed" x:Name="removeConfirmationPanel">
                             <TextBlock DockPanel.Dock="Left" Text="{Binding Login, StringFormat=Удалить {0}?}" Margin="6,0,3,0" VerticalAlignment="Center" />
                             <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="cancelButton" Content="Нет"  Width="40"
                                           Background="{DynamicResource RateDownColor}" 
@@ -79,36 +87,19 @@
                                           HighlightBackground="{DynamicResource RateUpHighlightColor}"
                                           cal:Action.TargetWithoutContext="{Binding Tag, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}}"
                                           cal:Message.Attach="RemoveAccount($dataContext)"/>
-                        </DockPanel>-->
-
-                        <Button x:Name="removeButton" 
-                                Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" 
-                                Grid.Column="1" Margin="2" 
-                                VerticalContentAlignment="Center"
-                                HorizontalContentAlignment="Center"
-                                Visibility="Collapsed"
-                                cal:Action.TargetWithoutContext="{Binding Tag, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}}"
-                                cal:Message.Attach="RemoveAccount($dataContext)">
-                            <Path Width="7" Height="7" Stretch="Fill" 
-                                  StrokeThickness="1.2"
-                                  Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                  Data="{DynamicResource Cross}"/>
-                        </Button>
+                        </DockPanel>
                     </Grid>
                     <DataTemplate.Triggers>
                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ComboBoxItem}}, Path=IsSelected}" Value="False">
                             <Setter TargetName="removeButton" Property="Visibility" Value="Visible"></Setter>
                         </DataTrigger>
-                        <!--<EventTrigger RoutedEvent="Button.Click" SourceName="removeButton">
+                        <EventTrigger RoutedEvent="Button.Click" SourceName="removeButton">
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="AcceptPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
+                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="removeConfirmationPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
                                         <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
                                     </ObjectAnimationUsingKeyFrames>
                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="accountInfoPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
-                                    </ObjectAnimationUsingKeyFrames>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="removeButton" Storyboard.TargetProperty="(UIElement.Visibility)">
                                         <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
                                     </ObjectAnimationUsingKeyFrames>
                                 </Storyboard>
@@ -117,18 +108,15 @@
                         <EventTrigger RoutedEvent="Button.Click" SourceName="cancelButton">
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="AcceptPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
+                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="removeConfirmationPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
                                         <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
                                     </ObjectAnimationUsingKeyFrames>
                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="accountInfoPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
                                         <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
                                     </ObjectAnimationUsingKeyFrames>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="removeButton" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
-                                    </ObjectAnimationUsingKeyFrames>
                                 </Storyboard>
                             </BeginStoryboard>
-                        </EventTrigger>-->
+                        </EventTrigger>
                     </DataTemplate.Triggers>
                 </DataTemplate>
             </l:ComboBoxItemTemplateSelector.ItemTemplate>
@@ -159,7 +147,7 @@
                       ItemsSource="{Binding Accounts}"
                       SelectedItem="{Binding SelectedAccount}"
                       ItemTemplateSelector="{StaticResource comboboxItemTemplateSelector}"
-                      l:OverlayControl.Content="{Binding SelectedAccount}"
+                      l:OverlayControl.Content="{Binding DisplayedAccount}"
                       l:OverlayControl.ContentTemplate="{StaticResource AccountAuthEntryTemplate}">
             </ComboBox>
 

@@ -12,7 +12,6 @@ namespace TickTrader.BotTerminal
 {
     internal class AccountPaneViewModel : PropertyChangedBase
     {
-        private AccountAuthEntry selectedEntry;
         private ConnectionManager cManager;
         private IConnectionViewModel connectionModel;
 
@@ -21,13 +20,16 @@ namespace TickTrader.BotTerminal
             this.cManager = cManager;
             this.connectionModel = connectionModel;
             this.cManager.StateChanged += s => NotifyOfPropertyChange(nameof(ConnectionState));
+            this.cManager.Accounts.CollectionChanged += (s,o) => NotifyOfPropertyChange(nameof(SelectedAccount));
             this.cManager.CredsChanged += () =>
             {
-                selectedEntry = cManager.Creds;
+                DisplayedAccount = cManager.Creds;
+
+                NotifyOfPropertyChange(nameof(DisplayedAccount));
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             };
 
-           selectedEntry = cManager.GetLast();
+            DisplayedAccount = cManager.GetLast();
         }
 
         public ConnectionManager.States ConnectionState
@@ -39,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         public AccountAuthEntry SelectedAccount
         {
-            get { return selectedEntry; }
+            get { return Accounts.FirstOrDefault(a => a.Equals(DisplayedAccount)); }
             set
             {
                 if (value != null)
@@ -47,9 +49,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public AccountAuthEntry DisplayedAccount { get; set; }
+
         public void RemoveAccount(AccountAuthEntry account)
         {
-            if(!account.Equals(SelectedAccount))
+            if (!account.Equals(SelectedAccount))
                 cManager.RemoveAccount(account);
         }
 
