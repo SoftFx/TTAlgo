@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SoftFx.FxCalendar.Calendar;
-using SoftFx.FxCalendar.Database;
 using SoftFx.FxCalendar.Filters;
 using SoftFx.FxCalendar.Models;
 using SoftFx.FxCalendar.Storage;
 
 namespace SoftFx.FxCalendar.Providers
 {
-    public abstract class BaseProvider<TModel, TEntity, TFilter> : IProvider<TModel, TEntity, TFilter>, IDisposable
+    public abstract class BaseProvider<TModel, TEntity, TFilter> : IProvider<TModel, TEntity, TFilter>
         where TModel : INews, IModel<TEntity> where TEntity : class, INews where TFilter : IFilter
     {
-        private static Dictionary<string, int> _storageAccessCnt = new Dictionary<string, int>();
-        private string _storagePath;
-        private bool _disposed;
+        
 
         public const int DaysStep = 7;
 
@@ -26,33 +23,6 @@ namespace SoftFx.FxCalendar.Providers
         {
             Calendar = calendar;
             Storage = storage;
-
-            _disposed = false;
-            _storagePath = DbHelper.GetDbFilePath(Storage.DbContext.Location, Storage.DbContext.CalendarName, Storage.DbContext.CurrencyCode);
-            if (_storageAccessCnt.ContainsKey(_storagePath))
-                _storageAccessCnt[_storagePath] += 1;
-            else _storageAccessCnt[_storagePath] = 1;
-        }
-
-        ~BaseProvider()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            Dispose(true);
-        }
-
-        protected void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                _storageAccessCnt[_storagePath] -= 1;
-
-                _disposed = true;
-            }
         }
 
         public IEnumerable<TModel> GetNews(DateTime start, DateTime end)
@@ -62,10 +32,7 @@ namespace SoftFx.FxCalendar.Providers
                 return Enumerable.Empty<TModel>();
             }
 
-            if (_storageAccessCnt[_storagePath] > 1)
-            {
-                Storage.ReloadNews();
-            }
+            Storage.ReloadNewsIfNeeded();
 
             if (end - Storage.LatestDate > TimeSpan.FromSeconds(1))
             {
@@ -99,6 +66,8 @@ namespace SoftFx.FxCalendar.Providers
             }
 
             _downloadNews(start, end);
+
+            Storage.UpdateDatesRange(start, end);
         }
 
         private void _downloadNews(DateTime start, DateTime end)

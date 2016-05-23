@@ -82,6 +82,11 @@ namespace TickTrader.Algo.Indicators.Other.News
             {
                 _providerOutputs[i][pos] = GetImpact(pos, _providers[i]);
             }
+
+            if (_additionalCurrency == null)
+            {
+                AdditionalCurrencyImpact[pos] = double.NaN;
+            }
         }
 
         private double GetImpact(int pos, FxStreetProvider provider)
@@ -90,7 +95,12 @@ namespace TickTrader.Algo.Indicators.Other.News
 
             foreach (var newsModel in provider.GetNews(Bars[pos].OpenTime, Bars[pos].CloseTime))
             {
-                res = res > (int) newsModel.Impact ? res : (int) newsModel.Impact;
+                res = res > (int) newsModel.Impact + 1 ? res : (int) newsModel.Impact + 1;
+            }
+
+            if (provider.Storage.CurrencyCode == _secondCurrency)
+            {
+                res = -res;
             }
 
             return res;
