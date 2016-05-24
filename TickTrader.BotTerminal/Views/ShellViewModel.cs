@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
         private WindowManager wndManager;
         private AlgoCatalog catalog = new AlgoCatalog();
         private PersistModel storage;
-        private EventJournal tradeJournal;
+        private EventJournal eventJournal;
         private bool isClosed;
 
         public ShellViewModel()
@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
             cManager = new ConnectionManager(storage);
             trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
-            tradeJournal = new EventJournal();
+            eventJournal = new EventJournal();
 
             AlgoList = new AlgoListViewModel();
             SymbolList = new SymbolListViewModel(feed.Symbols);
@@ -40,7 +40,7 @@ namespace TickTrader.BotTerminal
             OrderList = new OrderListViewModel(trade.Account);
             Charts = new ChartCollectionViewModel(feed, catalog, wndManager);
             AccountPane = new AccountPaneViewModel(cManager, this);
-            Journal = new JournalViewModel(tradeJournal);
+            Journal = new JournalViewModel(eventJournal);
             CanConnect = true;
 
             UpdateCommandStates(cManager.State);

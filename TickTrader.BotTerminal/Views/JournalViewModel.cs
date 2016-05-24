@@ -18,14 +18,14 @@ namespace TickTrader.BotTerminal
     class JournalViewModel : PropertyChangedBase
     {
         private DispatcherTimer removeMeAfterUse;
-        private EventJournal tradeJournal;
+        private EventJournal eventJournal;
         private string filterString;
         private Logger logger;
 
         public JournalViewModel(EventJournal journal)
         {
-            tradeJournal = journal;
-            Journal = CollectionViewSource.GetDefaultView(tradeJournal.Events);
+            eventJournal = journal;
+            Journal = CollectionViewSource.GetDefaultView(eventJournal.Events);
             Journal.Filter = new Predicate<object>(Filter);
             logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         public void Clear()
         {
-            tradeJournal.Clear();
+            eventJournal.Clear();
         }
 
         private bool Filter(object obj)
@@ -99,11 +99,11 @@ namespace TickTrader.BotTerminal
             var volume = r.Next(1, 1000);
 
             if (r.Next(1, 31) % 2 == 0)
-                tradeJournal.Add(templateRequestSell, volume, oid);
+                eventJournal.Add(templateRequestSell, volume, oid);
             else
-                tradeJournal.Add(templateRequestBuy, volume, oid);
+                eventJournal.Add(templateRequestBuy, volume, oid);
 
-            tradeJournal.Add(templateOrder, oid, price, pid);
+            eventJournal.Add(templateOrder, oid, price, pid);
         }
     }
 }
