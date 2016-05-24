@@ -224,7 +224,7 @@
     <Compile Include="Model\AlgoRepositoryModel.cs" />
     <Compile Include="Model\FdkAdapter.cs" />
     <Compile Include="Model\PersistModel.cs" />
-    <Compile Include="Model\TradeJournal.cs" />
+    <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
