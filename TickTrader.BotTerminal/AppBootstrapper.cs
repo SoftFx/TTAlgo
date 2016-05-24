@@ -68,7 +68,7 @@ namespace TickTrader.BotTerminal
                 Layout = "${longdate} | ${message}"
             };
 
-            var rule1 = new LoggingRule("*TradeJournal", LogLevel.Trace, journalTarget) { Final = true };
+            var rule1 = new LoggingRule(string.Concat("*",nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
             var rule2 = new LoggingRule("*", LogLevel.Debug, logTarget);
 
             var config = new LoggingConfiguration();
