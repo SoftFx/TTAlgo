@@ -1,6 +1,11 @@
 ﻿using Caliburn.Micro;
+using NLog;
+using NLog.Common;
+using NLog.Config;
+using NLog.Targets;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +18,8 @@ namespace TickTrader.BotTerminal
         public AppBootstrapper()
         {
             Initialize();
+
+            ConfigurateLogger();
 
             MessageBinder.SpecialValues.Add("$password", context =>
             {
@@ -41,6 +48,36 @@ namespace TickTrader.BotTerminal
 
                 return fe.DataContext;
             });
+        }
+
+        private void ConfigurateLogger()
+        {
+            var logTarget = new FileTarget()
+            {
+                FileName = Path.Combine(EnvService.Instance.LogFolder, "Log-${shortdate}.txt"),
+                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "Log-${shortdate}.txt"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                ArchiveDateFormat = "yyyy-MM-dd",
+                MaxArchiveFiles = 30
+            };
+
+            var journalTarget = new FileTarget()
+            {
+                FileName = Path.Combine(EnvService.Instance.JournalFolder, "Journal-${shortdate}.txt"),
+                Layout = "${longdate} | ${message}"
+            };
+
+            var rule1 = new LoggingRule("*TradeJournal", LogLevel.Trace, journalTarget) { Final = true };
+            var rule2 = new LoggingRule("*", LogLevel.Debug, logTarget);
+
+            var config = new LoggingConfiguration();
+            config.AddTarget(nameof(logTarget), logTarget);
+            config.AddTarget(nameof(journalTarget), journalTarget);
+            config.LoggingRules.Add(rule1);
+            config.LoggingRules.Add(rule2);
+
+            NLog.LogManager.Configuration = config;
         }
 
         protected override void OnStartup(object sender, System.Windows.StartupEventArgs e)
