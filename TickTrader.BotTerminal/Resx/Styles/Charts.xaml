@@ -14,8 +14,8 @@
             <Style x:Key="ToolTipTextStyle_Value" BasedOn="{StaticResource ToolTipTextStyle}" TargetType="{x:Type TextBlock}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
-        </ControlTemplate.Resources>
-        <Border Background="{DynamicResource Shell_BackgroundBrush}" Opacity="0.8" CornerRadius="4" Grid.IsSharedSizeScope="True">
+        </ControlTemplate.Resources><Border Background="{DynamicResource Shell_BackgroundBrush}" Opacity="0.8" CornerRadius="4" Grid.IsSharedSizeScope="True">
+        
             <StackPanel>
                 <TextBlock Text="{Binding DataContext.XAxisInfo.CursorFormattedDataValue, RelativeSource={RelativeSource TemplatedParent}}"
                            Style="{StaticResource ToolTipTextStyle}"/>

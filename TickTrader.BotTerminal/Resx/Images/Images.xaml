@@ -13,4 +13,12 @@
     <Geometry x:Key="Plus">M0,0.5 H1 M0.5,0 V1</Geometry>
     <Geometry x:Key="User">F1 M 19,0C 24.5417,0 26.9167,3.1667 26.1174,9.8134C 26.8315,10.2229 27.3125,10.9928 27.3125,11.875C 27.3125,12.9545 26.5923,13.8658 25.6061,14.1546C 25.1941,15.623 24.5543,16.9229 23.75,17.9628L 23.75,22.9583C 26.3889,23.4861 28.5,23.75 31.6667,25.3333C 34.8333,26.9167 35.8889,28.3681 38,30.4792L 38,38L 0,38L 0,30.4792C 2.1111,28.3681 3.1667,26.9167 6.3333,25.3333C 9.5,23.75 11.6111,23.4861 14.25,22.9583L 14.25,17.9628C 13.4457,16.9229 12.8059,15.623 12.3939,14.1546C 11.4077,13.8658 10.6875,12.9545 10.6875,11.875C 10.6875,10.9928 11.1685,10.2229 11.8826,9.8134C 11.0833,3.1667 13.4583,0 19,0 Z</Geometry>
 
+    <Geometry x:Key="MarkerUpArrowIcon">m 4 14 4 0 0 -8 3 0 -5 -5 -5 5 3 0 z</Geometry>
+    <Geometry x:Key="MarkerDownArrowIcon">m 3.5 0.5 4 0 0 8 3 0 -5 5 -5 -5 3 0 z</Geometry>
+    <Geometry x:Key="MarkerCircleIcon">M -1,0 A 1,1 0 1 1 1,0 M -1,0 A 1,1 0 1 0 1,0</Geometry>
+    <Geometry x:Key="MarkerSquareIcon">M 0,0 H1 V1 H0 Z</Geometry>
+    <Geometry x:Key="MarkerUpTriangleIcon">m 4 14 4 0 0 -8 3 0 -5 -5 -5 5 3 0 z</Geometry>
+    <Geometry x:Key="MarkerDownTriangleIcon">m 4 14 4 0 0 -8 3 0 -5 -5 -5 5 3 0 z</Geometry>
+    <Geometry x:Key="MarkerDimondIcon">m 4 14 4 0 0 -8 3 0 -5 -5 -5 5 3 0 z</Geometry>
+
 </ResourceDictionary>

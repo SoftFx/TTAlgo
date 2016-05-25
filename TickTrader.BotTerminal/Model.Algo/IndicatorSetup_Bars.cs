@@ -51,8 +51,12 @@ namespace TickTrader.BotTerminal
 
         protected override OutputSetup CreateOuput(OutputDescriptor descriptor)
         {
+            if (!descriptor.IsValid)
+                return new ErrorOutputSetup(descriptor);
             if (descriptor.DataSeriesBaseTypeFullName == "System.Double")
                 return new ColoredLineOutputSetup(descriptor);
+            else if (descriptor.DataSeriesBaseTypeFullName == "TickTrader.Algo.Api.Marker")
+                return new MarkerSeriesOutputSetup(descriptor);
             else
                 return new ColoredLineOutputSetup(descriptor, Algo.GuiModel.MsgCodes.UnsupportedPropertyType);
         }

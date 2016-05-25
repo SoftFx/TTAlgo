@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
@@ -11,17 +12,28 @@ namespace TickTrader.Algo.Core
     {
         private List<T> data = new List<T>();
         private BuffersCoordinator coordinator;
+        private ValueFactory<T> valueFactory;
 
-        internal OutputBuffer(BuffersCoordinator coordinator)
+        internal static OutputBuffer<T> Create(BuffersCoordinator coordinator, bool isHiddenEntity)
+        {
+            if (isHiddenEntity)
+                return new EntityOutputBuffer(coordinator);
+            return new OutputBuffer<T>(coordinator);
+        }
+
+        private OutputBuffer(BuffersCoordinator coordinator)
         {
             this.coordinator = coordinator;
+            this.valueFactory = ValueFactory.Get<T>();
 
             //coordinator.BuffersCleared += Coordinator_BuffersCleared;
             coordinator.BuffersExtended += () =>
             {
-                data.Add(default(T));
+                var index = data.Count;
+                var initialValue = InitValue(index);
+                data.Add(initialValue);
                 if (Appended != null)
-                    Appended(data.Count - 1, default(T));
+                    Appended(index, initialValue);
             };
 
             coordinator.BeginBatch += () =>
@@ -37,14 +49,24 @@ namespace TickTrader.Algo.Core
             };
         }
 
-        public T this[int index]
+        protected virtual T InitValue(int index)
+        {
+            return valueFactory.GetNewValue();
+        }
+
+        protected void OnUpdated(int index, T val)
+        {
+            if (Updated != null)
+                Updated(index, val);
+        }
+
+        public virtual T this[int index]
         {
             get { return data[index]; }
             set
             {
                 data[index] = value;
-                if (Updated != null)
-                    Updated(index, value);
+                OnUpdated(index, value);
             }
         }
 
@@ -74,5 +96,29 @@ namespace TickTrader.Algo.Core
         //    if (Cleared != null)
         //        Cleared();
         //}
+
+        internal class EntityOutputBuffer : OutputBuffer<T>
+        {
+            public EntityOutputBuffer(BuffersCoordinator coordinator)
+                : base(coordinator)
+            {
+            }
+
+            protected override T InitValue(int index)
+            {
+                var newVal = base.InitValue(index);
+                ((IFixedEntry<T>)newVal).Changed = v => OnUpdated(index, v);
+                return newVal;
+            }
+
+            public override T this[int index]
+            {
+                get { return base[index]; }
+                set
+                {
+                    ((IFixedEntry<T>)base[index]).CopyFrom(value);
+                }
+            }
+        }
     }
 }

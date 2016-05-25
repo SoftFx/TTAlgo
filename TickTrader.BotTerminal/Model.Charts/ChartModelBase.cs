@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.State;
+using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.RenderableSeries;
 using System;
@@ -26,7 +27,7 @@ namespace TickTrader.BotTerminal
         private enum Events { DoneUpdating }
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
-        private BindableCollection<IRenderableSeries> series = new BindableCollection<IRenderableSeries>();
+        private List<IDataSeries> seriesCollection = new List<IDataSeries>();
         private IndicatorsCollection indicators;
         private AlgoCatalog catalog;
         private SelectableChartTypes chartType;
@@ -80,7 +81,7 @@ namespace TickTrader.BotTerminal
         protected FeedModel Feed { get; private set; }
         protected ConnectionModel Connection { get { return Feed.Connection; } }
 
-        public ObservableCollection<IRenderableSeries> Series { get { return series; } }
+        public IEnumerable<IDataSeries> DataSeriesCollection { get { return seriesCollection; } }
         public BindableCollection<AlgoCatalogItem> AvailableIndicators { get; private set; }
         public IndicatorsCollection Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
@@ -92,10 +93,9 @@ namespace TickTrader.BotTerminal
             stateController.ModifyConditions(() => isUpdateRequired = true);
         }
 
-        protected void ReserveTopSeries(int count)
+        protected void AddSeries(IDataSeries series)
         {
-            for (int i = 0; i < count; i++)
-                Series.Add(null);
+            seriesCollection.Add(series);
         }
 
         public void Deactivate()
@@ -160,8 +160,8 @@ namespace TickTrader.BotTerminal
             set
             {
                 chartType = value;
-                NotifyOfPropertyChange("SelectedChartType");
-                UpdateSeriesStyle();
+                ChartTypeChanged();
+                NotifyOfPropertyChange(nameof(SelectedChartType));
             }
         }
 
@@ -186,6 +186,7 @@ namespace TickTrader.BotTerminal
         }
 
         public event System.Action NavigatorChanged;
+        public event System.Action ChartTypeChanged = delegate { };
 
         public IIndicatorSetup CreateIndicatorConfig(AlgoCatalogItem item)
         {
@@ -204,7 +205,6 @@ namespace TickTrader.BotTerminal
 
         protected abstract void ClearData();
         protected abstract Task<DataMetrics> LoadData(CancellationToken cToken);
-        protected abstract void UpdateSeriesStyle();
         protected abstract bool IsIndicatorSupported(AlgoPluginDescriptor descriptor);
         protected abstract IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem);
 

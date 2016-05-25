@@ -122,6 +122,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -160,6 +161,7 @@
     <Compile Include="Behaviors\DragDrop\IDragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
     <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
+    <Compile Include="Controls\AlgoPointMarker.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
@@ -168,6 +170,9 @@
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
+    <Compile Include="Controls\MarkerAnnotation.xaml.cs">
+      <DependentUpon>MarkerAnnotation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\MenuItemSelector.cs" />
     <Compile Include="Controls\NoParentPanel.cs" />
     <Compile Include="Controls\NumericUpDown.cs" />
@@ -201,6 +206,7 @@
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
+    <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model.Auth\AuthEntry.cs" />
@@ -235,16 +241,16 @@
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
-    <Compile Include="Model.Indicators\IndicatorSetup_Bars.cs" />
-    <Compile Include="Model.Indicators\IndicatorModel.cs" />
-    <Compile Include="Model.Indicators\IndicatorsCollection.cs" />
+    <Compile Include="Model.Algo\IndicatorSetup_Bars.cs" />
+    <Compile Include="Model.Algo\IndicatorModel.cs" />
+    <Compile Include="Model.Algo\IndicatorsCollection.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />
     <Compile Include="Model.Charts\TimelineModel.cs" />
-    <Compile Include="Model.Indicators\Interfaces.cs" />
+    <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AlgoCatalog.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
-    <Compile Include="Model.Indicators\IndicatorBuilderModel.cs" />
+    <Compile Include="Model.Algo\IndicatorBuilderModel.cs" />
     <Compile Include="Model\FeedHistoryProviderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\OrderModel.cs" />
@@ -267,6 +273,8 @@
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Chart\IndicatorPaneViewModel.cs" />
+    <Compile Include="Views.Chart\IndicatorViewModel.cs" />
+    <Compile Include="Views.Chart\SeriesViewModel.cs" />
     <Compile Include="Views.Order\PendingOrderPageView.xaml.cs">
       <DependentUpon>PendingOrderPageView.xaml</DependentUpon>
     </Compile>
@@ -411,6 +419,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Include="Controls\MarkerAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Converters.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -540,6 +552,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Chart\IndicatorPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\SeriesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

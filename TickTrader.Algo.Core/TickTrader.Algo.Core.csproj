@@ -56,6 +56,7 @@
     <Compile Include="Buffers\ProxyBuffer.cs" />
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FeedUpdate.cs" />
+    <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
     <Compile Include="Entities\SymbolEntity.cs" />
@@ -68,7 +69,7 @@
     <Compile Include="Executor\PluginExecutor.cs" />
     <Compile Include="Realtime\RealtimePluginSetup.cs" />
     <Compile Include="Math\BarSampler.cs" />
-    <Compile Include="Metadata\EmptyValue.cs" />
+    <Compile Include="Metadata\ValueFactory.cs" />
     <Compile Include="Adapters\PluginAdapter.cs" />
     <Compile Include="Builder\PluginBuilder.cs" />
     <Compile Include="Executor\BarSeriesFixture.cs" />

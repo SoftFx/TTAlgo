@@ -2,53 +2,51 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    [Serializable]
-    public class DynamicList<T> : IList<T>, IDynamicList<T>, IReadOnlyList<T>
+    [DataContract(Namespace = "")]
+    public class DynamicList<T> : IDynamicListSource<T>
     {
+        private SnapshotAccessor accessor;
+        [DataMember(Name = "Elements")]
         private List<T> innerList;
 
         public DynamicList()
         {
             innerList = new List<T>();
+            Init(new StreamingContext());
         }
 
         public DynamicList(IEnumerable<T> initialData)
         {
             innerList = new List<T>(initialData);
+            Init(new StreamingContext());
         }
 
-        public T this[int index]
+        [OnDeserialized]
+        private void Init(StreamingContext context)
         {
-            get { return innerList[index]; }
-            set
-            {
-                T oldItem = innerList[index];
-                innerList[index] = value;
-                OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Replace, index, value, oldItem));
-            }
+            accessor = new SnapshotAccessor(this);
         }
 
         public int Count { get { return innerList.Count; } }
-        public bool IsReadOnly { get { return false; } }
-
-        public event ListUpdateHandler<T> Updated;
+        public IList<T> Values { get { return accessor; } }
 
         public void Add(T item)
         {
             innerList.Add(item);
             int index = innerList.Count - 1;
-            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Insert, index, item));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqAction.Insert, index, item));
         }
 
         public void Clear()
         {
-            innerList.Clear();
-            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.RemoveAll));
+            for (int i = Count - 1; i >= 0; i--)
+                RemoveAt(i);
         }
 
         public bool Contains(T item)
@@ -61,11 +59,6 @@ namespace TickTrader.BotTerminal
             innerList.CopyTo(array, arrayIndex);
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return innerList.GetEnumerator();
-        }
-
         public int IndexOf(T item)
         {
             return innerList.IndexOf(item);
@@ -74,7 +67,7 @@ namespace TickTrader.BotTerminal
         public void Insert(int index, T item)
         {
             innerList.Insert(index, item);
-            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Insert, index, item));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqAction.Insert, index, item));
         }
 
         public bool Remove(T item)
@@ -85,7 +78,8 @@ namespace TickTrader.BotTerminal
                 return false;
 
             T removedItem = innerList[index];
-            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Remove, index, default(T), removedItem));
+            innerList.RemoveAt(index);
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqAction.Remove, index, default(T), removedItem));
 
             return true;
         }
@@ -94,8 +88,21 @@ namespace TickTrader.BotTerminal
         {
             var removedItem = innerList[index];
             innerList.RemoveAt(index);
-            OnUpdate(new ListUpdateArgs<T>(this, DLinqUpdateType.Remove, index, default(T), removedItem));
+            OnUpdate(new ListUpdateArgs<T>(this, DLinqAction.Remove, index, default(T), removedItem));
         }
+
+        public T this[int index]
+        {
+            get { return innerList[index]; }
+            set
+            {
+                T oldItem = innerList[index];
+                innerList[index] = value;
+                OnUpdate(new ListUpdateArgs<T>(this, DLinqAction.Replace, index, value, oldItem));
+            }
+        }
+
+        public event ListUpdateHandler<T> Updated;
 
         public void Dispose()
         {
@@ -108,9 +115,75 @@ namespace TickTrader.BotTerminal
                 Updated(args);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        IReadOnlyList<T> IDynamicListSource<T>.Snapshot { get { return accessor; } }
+
+        public class SnapshotAccessor : IList<T>, IReadOnlyList<T>
         {
-            return innerList.GetEnumerator();
+            private DynamicList<T> parent;
+
+            internal SnapshotAccessor(DynamicList<T> list)
+            {
+                this.parent = list;
+            }
+
+            public T this[int index]
+            {
+                get { return parent[index]; }
+                set { parent[index] = value; }
+            }
+
+            public int Count { get { return parent.innerList.Count; } }
+            public bool IsReadOnly { get { return false; } }
+
+            public void Add(T item)
+            {
+                parent.Add(item);
+            }
+
+            public void Clear()
+            {
+                parent.Clear();
+            }
+
+            public bool Contains(T item)
+            {
+                return parent.Contains(item);
+            }
+
+            public void CopyTo(T[] array, int arrayIndex)
+            {
+                parent.CopyTo(array, arrayIndex);
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return parent.innerList.GetEnumerator();
+            }
+
+            public int IndexOf(T item)
+            {
+                return parent.innerList.IndexOf(item);
+            }
+
+            public void Insert(int index, T item)
+            {
+                parent.Insert(index, item);
+            }
+
+            public bool Remove(T item)
+            {
+                return parent.Remove(item);
+            }
+
+            public void RemoveAt(int index)
+            {
+                parent.RemoveAt(index);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return parent.innerList.GetEnumerator();
+            }
         }
     }
 }

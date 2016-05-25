@@ -1,5 +1,8 @@
 ﻿using Caliburn.Micro;
+using SciChart.Charting.Model.ChartData;
+using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;
+using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.RenderableSeries;
 using System;
@@ -14,21 +17,24 @@ namespace TickTrader.BotTerminal
 {
     class IndicatorPaneViewModel : PropertyChangedBase
     {
-        private IndicatorModel indicator;
+        private IndicatorViewModel indicator;
         private ChartModelBase chart;
-        private ObservableCollection<IRenderableSeries> series = new ObservableCollection<IRenderableSeries>();
 
-        public IndicatorPaneViewModel(IndicatorModel indicator, ChartModelBase chartModel, string windowId)
+        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, string windowId)
         {
             this.chart = chartModel;
             this.indicator = indicator;
             this.ChartWindowId = windowId;
 
-            foreach (var output in indicator.SeriesCollection)
-                Series.Add(output);
+            Series = indicator.Series.AsObservable();
 
             UpdateAxis();
             chart.NavigatorChanged += UpdateAxis;
+
+            //Annotations = new AnnotationCollection();
+
+            //var markers = indicator.Annotations.SelectMany(mSeries => mSeries);
+            //markers.ConnectTo(Annotations);
         }
 
         public string Header { get; private set; }
@@ -47,8 +53,9 @@ namespace TickTrader.BotTerminal
 
         public string ChartWindowId { get; private set; }
         public AxisBase TimeAxis { get; private set; }
-        public long IndicatorId { get { return indicator.Id; } }
+        public long IndicatorId { get { return indicator.Model.Id; } }
         public ChartModelBase Chart { get { return chart; } }
-        public ObservableCollection<IRenderableSeries> Series { get { return series; } }
+        public IObservableListSource<IRenderableSeriesViewModel> Series { get; private set; }
+        //public AnnotationCollection Annotations { get; private set; }
     }
 }

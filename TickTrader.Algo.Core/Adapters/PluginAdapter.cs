@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Core
         protected void BindUpOutputs()
         {
             foreach (var outputProperty in Descriptor.Outputs)
-                ReflectGenericMethod(outputProperty.DatdaSeriesBaseType, "BindOutput", outputProperty);
+                ReflectGenericMethod(outputProperty.DataSeriesBaseType, "BindOutput", outputProperty);
         }
 
         public void BindInput<T>(InputDescriptor d)
@@ -139,7 +139,7 @@ namespace TickTrader.Algo.Core
         public void BindOutput<T>(OutputDescriptor d)
         {
             var output = d.CreateOutput2<T>();
-            output.Buffer = new OutputBuffer<T>(Coordinator);
+            output.Buffer = OutputBuffer<T>.Create(Coordinator, d.IsHiddenEntity);
             d.Set(plugin, output);
             outputs.Add(d.Id, output);
         }

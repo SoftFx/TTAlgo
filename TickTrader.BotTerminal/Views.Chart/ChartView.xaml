@@ -129,7 +129,7 @@
         <ItemsControl.ItemsSource>
             <CompositeCollection>
                 <Grid>
-                    <s:SciChartSurface RenderableSeries="{Binding Series}"
+                    <s:SciChartSurface RenderableSeries="{s:SeriesBinding Series}"
                                        Style="{StaticResource MainChartStyle}"
                                        XAxis="{Binding Chart.TimeAxis}"
                                        ContextMenu="{StaticResource MainChartPanelContextMenu}"

@@ -63,7 +63,6 @@ namespace SoftFx.FxCalendar.Providers
             await Task.Run(() => Download());
         }
 
-
         private FxNews[] Parse(string data, int year)
         {
             var doc = new HtmlDocument();

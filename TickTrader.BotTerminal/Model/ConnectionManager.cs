@@ -137,7 +137,7 @@ namespace TickTrader.BotTerminal
             foreach (ServerElement predefinedServer in cfgSection.Servers)
                 Servers.Add(new ServerAuthEntry(predefinedServer));
 
-            foreach (var acc in authStorage.Accounts)
+            foreach (var acc in authStorage.Accounts.Values)
                 Accounts.Add(CreateEntry(acc));
         }
 
@@ -150,14 +150,14 @@ namespace TickTrader.BotTerminal
 
         private void Storage_Changed(ListUpdateArgs<AccountSorageEntry> e)
         {
-            if (e.Action == DLinqUpdateType.Insert)
+            if (e.Action == DLinqAction.Insert)
                 Accounts.Add(CreateEntry(e.NewItem));
-            else if (e.Action == DLinqUpdateType.Remove)
+            else if (e.Action == DLinqAction.Remove)
             {
                 var index = Accounts.IndexOf(a => a.Matches(e.OldItem));
                 Accounts.RemoveAt(index);
             }
-            else if (e.Action == DLinqUpdateType.Replace)
+            else if (e.Action == DLinqAction.Replace)
             {
                 var index = Accounts.IndexOf(a => a.Matches(e.OldItem));
                 Accounts[index] = CreateEntry(e.NewItem);

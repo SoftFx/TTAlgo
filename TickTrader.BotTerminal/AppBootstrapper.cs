@@ -12,6 +12,9 @@ namespace TickTrader.BotTerminal
     {
         public AppBootstrapper()
         {
+#if DEBUG
+            DLinq.Test();
+#endif
             Initialize();
 
             MessageBinder.SpecialValues.Add("$password", context =>

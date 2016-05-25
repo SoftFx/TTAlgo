@@ -9,6 +9,7 @@
         ResizeMode="NoResize">
 
     <Window.Resources>
+
         <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
             <Setter Property="MinWidth" Value="75" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -46,7 +47,6 @@
             <Setter Property="Width" Value="100"/>
         </Style>
 
-
         <DataTemplate x:Key="LineStyleItem">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -72,7 +72,7 @@
             </Grid>
         </DataTemplate>
 
-        <!--  Output Setup Template  -->
+        <!-- Double Output Template  -->
 
         <DataTemplate DataType="{x:Type am:ColoredLineOutputSetup}">
             <Grid Margin="3">
@@ -92,6 +92,32 @@
                 <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" 
                           SelectedItem="{Binding LineStyle}"  ItemsSource="{Binding AvailableLineStyles}"
                           ItemTemplate="{StaticResource LineStyleItem}"/>
+                <Rectangle Grid.Column="4" Width="15" Height="15"
+                           Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
+                           Stroke="{DynamicResource Dialog_ControlBackground}"
+                           Margin="5,0,5,0" StrokeThickness="1" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- Marker Output Template  -->
+
+        <DataTemplate DataType="{x:Type am:MarkerSeriesOutputSetup}">
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" Content="{Binding DisplayName}"/>
+                <CheckBox Grid.Column="1" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding IsValid}" Margin="5,0,5,0"/>
+                <ComboBox Grid.Column="2" IsEditable="False" IsEnabled="{Binding IsEnabled}"
+                          SelectedItem="{Binding LineThickness}" ItemsSource="{Binding AvailableThicknesses}"
+                          ItemTemplate="{StaticResource LineThicknessItem}"/>
+                <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" 
+                          SelectedItem="{Binding MarkerSize}"  ItemsSource="{Binding AvailableSizes}"/>
                 <Rectangle Grid.Column="4" Width="15" Height="15"
                            Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
                            Stroke="{DynamicResource Dialog_ControlBackground}"

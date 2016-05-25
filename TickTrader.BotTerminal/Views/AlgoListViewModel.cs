@@ -10,42 +10,45 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoListViewModel : PropertyChangedBase
     {
-        private DynamicList<FakeAlgo> fakeList = new DynamicList<FakeAlgo>();
+        private DynamicList<int> fakeList = new DynamicList<int>();
 
-        public IObservableList<FakeAlgo> Algos { get; private set; }
+        public IObservableListSource<FakeAlgo> Algos { get; private set; }
+
         public AlgoListViewModel()
         {
-            Algos = fakeList.DynamicWhere(f => f.Group != "Group 3").ToObservableList();
+            Algos = fakeList.Select(GenerateFake).Where(f => f.Group != "Group 3").ToList().AsObservable();
 
-            UpdateLoop();
+            //UpdateLoop();
+        }
+
+        private FakeAlgo GenerateFake(int i)
+        {
+            if (i % 3 == 0)
+                return new FakeAlgo("FakeAlgo " + i, "Group 3");
+            else if (i % 2 == 0)
+                return new FakeAlgo("FakeAlgo " + i, "Group 2");
+            else
+                return new FakeAlgo("FakeAlgo " + i, "Group 1");
         }
 
         private async void UpdateLoop()
         {
-            for (int i = 0; i < 23; i++)
+            for (int i = 0; i < 25; i++)
             {
                 await Task.Delay(1000);
 
-                if (i % 3 == 0)
-                    fakeList.Add(new FakeAlgo("FakeAlgo " + i, "Group 3"));
-                else if (i % 2 == 0)
-                    fakeList.Add(new FakeAlgo("FakeAlgo " + i, "Group 2"));
-                else
-                    fakeList.Add(new FakeAlgo("FakeAlgo " + i, "Group 1"));
+                fakeList.Values.Add(i);
             }
 
-            fakeList.Clear();
+            await Task.Delay(1000);
 
-            for (int i = 0; i < 23; i++)
+            fakeList.Values.Clear();
+
+            for (int i = 0; i < 25; i++)
             {
                 await Task.Delay(1000);
 
-                if (i % 3 == 0)
-                    fakeList.Add(new FakeAlgo("FakeAlgo " + i, "Group 3"));
-                else if (i % 2 == 0)
-                    fakeList.Add(new FakeAlgo("FakeAlgo " + i, "Group 2"));
-                else
-                    fakeList.Add(new FakeAlgo("FakeAlgo " + i, "Group 1"));
+                fakeList.Values.Add(i);
             }
         }
     }

@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace TickTrader.BotTerminal
 {
-    [Serializable]
+    [DataContract(Namespace = "")]
     public class AuthStorageModel : IChangableObject, IPersistableObject<AuthStorageModel>
     {
+        [DataMember(Name = "Accounts")]
         private DynamicList<AccountSorageEntry> accounts;
         private string lastLogin;
         private string lastServer;
@@ -19,12 +21,14 @@ namespace TickTrader.BotTerminal
             accounts = new DynamicList<AccountSorageEntry>();
         }
 
+        [DataMember]
         public string LastLogin
         {
             get { return lastLogin; }
             set { lastLogin = value; }
         }
 
+        [DataMember]
         public string LastServer
         {
             get { return lastServer; }
@@ -44,7 +48,7 @@ namespace TickTrader.BotTerminal
 
         public AuthStorageModel(AuthStorageModel src)
         {
-            accounts = new DynamicList<AccountSorageEntry>(src.accounts.Select(a => a.Clone()));
+            accounts = new DynamicList<AccountSorageEntry>(src.accounts.Values.Select(a => a.Clone()));
             lastLogin = src.lastLogin;
             lastServer = src.lastServer;
         }
@@ -53,13 +57,13 @@ namespace TickTrader.BotTerminal
 
         public void Update(AccountSorageEntry account)
         {
-            int index = accounts.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
+            int index = accounts.Values.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
             if (index < 0)
-                accounts.Add(account);
+                accounts.Values.Add(account);
             else
             {
-                if (accounts[index].Password != account.Password)
-                    accounts[index] = account;
+                if (accounts.Values[index].Password != account.Password)
+                    accounts.Values[index] = account;
             }
         }
 
@@ -77,7 +81,7 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    [Serializable]
+    [DataContract(Namespace = "")]
     public class AccountSorageEntry
     {
         private string password;
@@ -95,10 +99,15 @@ namespace TickTrader.BotTerminal
             this.server = server;
         }
 
+        [DataMember]
         public string Login { get { return login; } set { login = value; } }
+
+        [DataMember]
         public string ServerAddress { get { return server; } set { server = value; } }
+
         public bool HasPassword { get { return password != null; } }
- 
+
+        [DataMember]
         public string Password { get { return password; } set { password = value; } }
 
         public AccountSorageEntry Clone()
