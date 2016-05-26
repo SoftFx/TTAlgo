@@ -26,6 +26,7 @@ namespace TickTrader.BotTerminal
         private bool pendingSubscribe;
         private TriggeredActivity updateSubscriptionActivity;
         private ActionBlock<Quote> rateUpdater;
+        private List<Algo.Core.SymbolEntity> algoSymbolCache = new List<Algo.Core.SymbolEntity>();
 
         public SymbolCollectionModel(ConnectionModel connection)
         {
@@ -77,6 +78,7 @@ namespace TickTrader.BotTerminal
         }
 
         public States State { get { return stateControl.Current; } }
+        public IEnumerable<Algo.Core.SymbolEntity> AlgoSymbolCache { get { return algoSymbolCache; } }
 
         private void UpdateRate(Quote tick)
         {
@@ -125,6 +127,8 @@ namespace TickTrader.BotTerminal
             Debug.WriteLine("SymbolCollectionModel EVENT SymbolsArrived");
 
             snapshot = e.Information;
+            algoSymbolCache.Clear();
+            algoSymbolCache = snapshot.Select(AlgoConverter.Convert).ToList();
             stateControl.ModifyConditions(() => isSymbolsArrived = true);
         }
 

@@ -133,13 +133,15 @@ namespace TickTrader.BotTerminal
                 var mainBuffer = builder.GetBuffer<BarEntity>(chart.Symbol);
                 mainBuffer.Append(chart.indicatorData);
 
+                builder.MainSymbol = chart.Symbol;
+
                 foreach (var input in UiModel.Inputs)
                     ((BarInputSetup)input).Configure(builder);
 
                 foreach (var parameter in UiModel.Parameters)
                     builder.SetParameter(parameter.Id, parameter.ValueObj);
 
-                IndicatorModel model = new IndicatorModel(this, builder, i => mainBuffer[i].OpenTime);
+                IndicatorModel model = new IndicatorModel(this, builder, chart.Feed, i => mainBuffer[i].OpenTime);
 
                 //foreach (var outputSetup in UiModel.Outputs)
                 //{

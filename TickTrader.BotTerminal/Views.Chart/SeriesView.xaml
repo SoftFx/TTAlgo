@@ -29,4 +29,12 @@
         <Setter Property="s:TooltipModifier.TooltipContainerStyle" Value="{StaticResource MarkerTooltipPanelStyle}"/>
     </Style>
 
+    <Style x:Key="BarChart_OhlcStyle" TargetType="s:FastOhlcRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+    </Style>
+
+    <Style x:Key="BarChart_CandlestickStyle" TargetType="s:FastCandlestickRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+    </Style>
+
 </ResourceDictionary>

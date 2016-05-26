@@ -21,13 +21,14 @@ namespace TickTrader.BotTerminal
 
         private StateMachine<States> stateController = new StateMachine<States>();
         private IIndicatorSetup setup;
+        private FeedModel feed;
         private List<IRenderableSeries> seriesList = new List<IRenderableSeries>();
         private List<IDynamicListSource<IAnnotation>> annotations = new List<IDynamicListSource<IAnnotation>>();
         private CancellationTokenSource stopSrc;
         private IndicatorBuilder builder;
         private Func<int, DateTime> indexToTimeFunc;
 
-        public IndicatorModel(IIndicatorSetup setup, IndicatorBuilder builder, Func<int, DateTime> indexToTimeFunc)
+        public IndicatorModel(IIndicatorSetup setup, IndicatorBuilder builder,  FeedModel feed, Func<int, DateTime> indexToTimeFunc)
         {
             if (setup == null)
                 throw new ArgumentNullException("config");
@@ -37,6 +38,7 @@ namespace TickTrader.BotTerminal
 
             this.setup = setup;
             this.builder = builder;
+            this.feed = feed;
             this.indexToTimeFunc = indexToTimeFunc;
 
             stateController.AddTransition(States.Idle, Events.Start, States.Building);
@@ -87,6 +89,10 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+
+                foreach (var symbol in feed.Symbols.AlgoSymbolCache)
+                    builder.Symbols.Add(symbol);
+
                 await Task.Factory.StartNew(() => builder.BuildNext(size, cToken));
             }
             catch (Exception ex)

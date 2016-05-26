@@ -222,6 +222,7 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Model.Algo\Adapters.cs" />
+    <Compile Include="Model.Algo\AlgoConverter.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model.Auth\AuthEntry.cs" />
