@@ -1,124 +1,153 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using SoftFx.FxCalendar.Calendar.FxStreet;
+using SoftFx.FxCalendar.Filters;
 using SoftFx.FxCalendar.Providers;
-using SoftFx.FxCalendare.Data;
+using SoftFx.FxCalendar.Storage;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Utility;
+using SoftFx.FxCalendar.Models;
 using System.Text;
+using System.Linq;
 
 namespace TickTrader.Algo.Indicators.Other.News
 {
     [Indicator(Category = "Other", DisplayName = "Other/News")]
     public class News : Indicator
     {
-        private IEnumerable<FxNews> _news;
-        private IShift _shifter;
-        private bool isInitialized;
+        private string _firstCurrency, _secondCurrency, _additionalCurrency;
+        private List<FxStreetProvider> _providers;
+        private List<DataSeries> _providerOutputs;
+        private StringBuilder markerTextBuilder = new StringBuilder();
+        private List<FxStreetNewsModel> markerNewsList = new List<FxStreetNewsModel>();
 
-        [Parameter(DefaultValue = ImpactLevel.None, DisplayName = "Minimum Volatility")]
-        public ImpactLevel MinVolatility { get; set; }
+        [Parameter(DefaultValue = "EURUSD", DisplayName = "Symbol")]
+        public string SymbolCode { get; set; }
 
-        [Parameter(DefaultValue = ImpactLevel.High, DisplayName = "Maximum Volatility")]
-        public ImpactLevel MaxVolatility { get; set; }
-
-        [Parameter(DefaultValue = 0, DisplayName = "Shift")]
-        public int Shift { get; set; }
-
-        [Parameter(DefaultValue = "EUR, USD")]
-        public string Currencies { get; set; }
+        [Parameter(DefaultValue = "", DisplayName = "Additional Currency")]
+        public string AdditionalCurrency { get; set; }
 
         [Input]
         public BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Volatility Level", DefaultColor = Colors.SteelBlue)]
-        public DataSeries VolatilityLevel { get; set; }
+        [Output(DisplayName = "First Currency Impact", DefaultColor = Colors.Green)]
+        public DataSeries FirstCurrencyImpact { get; set; }
 
-        [Output(DisplayName = "News Markers", DefaultColor = Colors.SteelBlue)]
-        public DataSeries<Marker> Markers { get; set; }
+        [Output(DisplayName = "Second Currency Impact", DefaultColor = Colors.Red)]
+        public DataSeries SecondCurrencyImpact { get; set; }
 
-        public int LastPositionChanged { get { return _shifter.Position; } }
+        [Output(DisplayName = "Additional Currency Impact", DefaultColor = Colors.SteelBlue)]
+        public DataSeries AdditionalCurrencyImpact { get; set; }
+
+        [Output(DisplayName = "News Markers", DefaultColor = Colors.Gray)]
+        public DataSeries<Marker> Markers{ get; set; }
+
+        public int LastPositionChanged { get { return 0; } }
 
         public News() { }
 
-        public News(BarSeries bars, ImpactLevel minVolatility, ImpactLevel maxVolatility, int shift)
+        public News(BarSeries bars)
         {
             Bars = bars;
-            MinVolatility = minVolatility;
-            MaxVolatility = maxVolatility;
-            Shift = shift;
+
+            InitializeIndicator();
+        }
+
+        private void InitializeIndicator()
+        {
+            _firstCurrency = SymbolCode.Substring(0, 3);
+            _secondCurrency = SymbolCode.Substring(3, 3);
+            _additionalCurrency = null;
+
+            _providers = new List<FxStreetProvider>();
+            _providerOutputs = new List<DataSeries>();
+
+            _providers.Add(new FxStreetProvider(new FxStreetCalendar(new FxStreetFilter()),
+                new FxStreetStorage("NewsCache", _firstCurrency), ImpactLevel.None));
+            _providers.Add(new FxStreetProvider(new FxStreetCalendar(new FxStreetFilter()),
+                new FxStreetStorage("NewsCache", _secondCurrency), ImpactLevel.None));
+
+            _providerOutputs.Add(FirstCurrencyImpact);
+            _providerOutputs.Add(SecondCurrencyImpact);
+
+            if (AdditionalCurrency.Length == 3)
+            {
+                _additionalCurrency = AdditionalCurrency.Substring(0, 3);
+                _providers.Add(new FxStreetProvider(new FxStreetCalendar(new FxStreetFilter()),
+                new FxStreetStorage("NewsCache", _additionalCurrency), ImpactLevel.None));
+                _providerOutputs.Add(AdditionalCurrencyImpact);
+            }
         }
 
         protected override void Init()
         {
-            _shifter = new SimpleShifter(Shift);
-            _shifter.Init();
+            InitializeIndicator();
         }
 
         protected override void Calculate()
         {
-            if (!isInitialized)
+            for (var i = 0; i < _providers.Count; i++)
             {
-                var currencies = Currencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s));
-                LoadNews(currencies.ToArray());
-                isInitialized = true;
+                _providerOutputs[i][0] = GetImpact(0, _providers[i]);
             }
 
-            var pos = 0;
-            var level = 0;
-            foreach (var n in _news.Where(n => n.DateUtc >= Bars[pos].OpenTime && n.DateUtc < Bars[pos].CloseTime))
+            if (_additionalCurrency == null)
             {
-                if (n.Impact >= MinVolatility && n.Impact <= MaxVolatility)
-                {
-                    level += (int) n.Impact;
-                }
+                AdditionalCurrencyImpact[0] = double.NaN;
             }
-            if (IsUpdate)
+
+            var averageImpact = _providerOutputs.Average(o => o[0]);
+
+            DrawNewsMarker(averageImpact);
+        }
+
+        private IEnumerable<FxStreetNewsModel> GetCurrentNews(FxStreetProvider provider)
+        {
+            var from = Bars.Count > 1 ? Bars[1].CloseTime : Bars[0].OpenTime;
+            var to = Bars[0].CloseTime;
+
+            return provider.GetNews(from, to);
+        }
+
+        private void DrawNewsMarker(double level)
+        {
+            markerTextBuilder.Clear();
+            markerNewsList.Clear();
+
+            foreach (var provider in _providers)
+                markerNewsList.AddRange(GetCurrentNews(provider));
+
+            if (markerNewsList.Count > 0)
             {
-                _shifter.UpdateLast(level);
-            }
-            else
-            {
-                _shifter.Add(level);
-            }
-            VolatilityLevel[_shifter.Position] = _shifter.Result;
+                foreach (var n in markerNewsList)
+                    markerTextBuilder.Append(n.Impact).Append("  ").Append(n.Event).Append(" ").Append(n.Actual).AppendLine();
 
-            var thisBarNews = SelectCurrent().ToList();
+                var maxImpact = markerNewsList.Max(n => n.Impact);
 
-            if (thisBarNews.Count > 0)
-            {
-                var builder = new StringBuilder();
-
-                foreach (var n in thisBarNews)
-                    builder.Append(n.Impact).Append("  ").Append(n.Event).Append(" ").Append(n.Actual).AppendLine();
-
-                var maxImpact = thisBarNews.Max(n => n.Impact);
-
-                Markers[0].Y = 0.5;
+                Markers[0].Y = level;
                 Markers[0].Icon = MarkerIcons.Diamond;
-                Markers[0].DisplayText = builder.ToString();
+                Markers[0].DisplayText = markerTextBuilder.ToString();
 
                 if (maxImpact == ImpactLevel.High)
                     Markers[0].Color = Colors.OrangeRed;
+                else if (maxImpact == ImpactLevel.Medium)
+                    Markers[0].Color = Colors.LightGreen;
             }
         }
 
-        private IEnumerable<FxNews> SelectCurrent()
+        private double GetImpact(int pos, FxStreetProvider provider)
         {
-            return _news.Where(n => n.DateUtc >= Bars[1].CloseTime && n.DateUtc < Bars[0].CloseTime
-                && n.Impact >= MinVolatility && n.Impact <= MaxVolatility);
-        }
+            var res = 0.0;
 
-        private void LoadNews(string[] currencies)
-        {
-            var streetNewsProvider = new FxStreetCalendar();
-            streetNewsProvider.Filter.StartDate = Bars[0].OpenTime.Date;
-            streetNewsProvider.Filter.EndDate = DateTime.Today;
-            streetNewsProvider.Filter.IsoCurrencyCodes = currencies;
+            foreach (var newsModel in provider.GetNews(Bars[pos].OpenTime, Bars[pos].CloseTime))
+            {
+                res = res > (int)newsModel.Impact + 1 ? res : (int)newsModel.Impact + 1;
+            }
 
-            streetNewsProvider.DownloadTaskAsync().Wait();
+            if (provider.Storage.CurrencyCode == _secondCurrency)
+            {
+                res = -res;
+            }
 
-            _news = streetNewsProvider.FxNews ?? Enumerable.Empty<FxNews>();
+            return res;
         }
     }
 }

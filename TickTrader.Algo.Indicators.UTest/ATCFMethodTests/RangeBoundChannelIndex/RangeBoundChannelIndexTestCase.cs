@@ -8,16 +8,18 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
     public class RangeBoundChannelIndexTestCase : DigitalIndicatorTestCase
     {
         public int Std { get; protected set; }
+        public int CountBars { get; protected set; }
 
         public RangeBoundChannelIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int std) : base(indicatorType, symbol, quotesPath, answerPath, 40)
+            int std, int countBars) : base(indicatorType, symbol, quotesPath, answerPath, 40)
         {
             Std = std;
+            CountBars = countBars;
         }
 
         protected override void SetupParameters()
         {
-            base.SetupParameters();
+            SetParameter("CountBars", CountBars);
             SetParameter("Std", Std);
         }
 

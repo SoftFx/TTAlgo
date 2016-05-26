@@ -10,7 +10,7 @@
 #property indicator_buffers 1
 #property indicator_color1 Red
 //---- input parameters
-extern int       CountBars=2500;
+extern int       CountBars=300;
 //---- buffers
 double ExtMapBuffer1[];
 //+------------------------------------------------------------------+
@@ -22,6 +22,7 @@ int init()
    SetIndexStyle(0,DRAW_LINE);
    SetIndexBuffer(0,ExtMapBuffer1);
 //----
+   SetIndexEmptyValue(0, 0.0);
    return(0);
   }
 //+------------------------------------------------------------------+

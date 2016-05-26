@@ -55,6 +55,13 @@ namespace TickTrader.BotTerminal
 
         public DynamicList<AccountSorageEntry> Accounts { get { return accounts; } }
 
+        public void Remove(AccountSorageEntry account)
+        {
+            var index = accounts.Values.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
+            if (index != -1)
+                accounts.RemoveAt(index);
+        }
+
         public void Update(AccountSorageEntry account)
         {
             int index = accounts.Values.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
@@ -63,7 +70,7 @@ namespace TickTrader.BotTerminal
             else
             {
                 if (accounts.Values[index].Password != account.Password)
-                    accounts.Values[index] = account;
+                    accounts.Values[index].Password = account.Password;
             }
         }
 
@@ -79,6 +86,8 @@ namespace TickTrader.BotTerminal
         {
             return new AuthStorageModel(this);
         }
+
+        
     }
 
     [DataContract(Namespace = "")]

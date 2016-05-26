@@ -9,7 +9,7 @@
 #property indicator_color1 Blue
 #property indicator_color2 Red
 
-extern int CountBars=2500;
+extern int CountBars=300;
 //---- buffers
 double UPBuffer[];
 double DownBuffer[];
@@ -28,6 +28,8 @@ int init()
    SetIndexArrow(1,242);
    SetIndexBuffer(1,DownBuffer);
 //----
+   SetIndexEmptyValue(0, 0.0);
+   SetIndexEmptyValue(1, 0.0);
    return(0);
   }
 //+------------------------------------------------------------------+

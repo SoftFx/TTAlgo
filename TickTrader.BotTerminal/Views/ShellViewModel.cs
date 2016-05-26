@@ -18,6 +18,7 @@ namespace TickTrader.BotTerminal
         private WindowManager wndManager;
         private AlgoCatalog catalog = new AlgoCatalog();
         private PersistModel storage;
+        private EventJournal eventJournal;
         private bool isClosed;
 
         public ShellViewModel()
@@ -31,6 +32,7 @@ namespace TickTrader.BotTerminal
             cManager = new ConnectionManager(storage);
             trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
+            eventJournal = new EventJournal();
 
             AlgoList = new AlgoListViewModel();
             SymbolList = new SymbolListViewModel(feed.Symbols);
@@ -38,6 +40,7 @@ namespace TickTrader.BotTerminal
             OrderList = new OrderListViewModel(trade.Account);
             Charts = new ChartCollectionViewModel(feed, catalog, wndManager);
             AccountPane = new AccountPaneViewModel(cManager, this);
+            Journal = new JournalViewModel(eventJournal);
             CanConnect = true;
 
             UpdateCommandStates(cManager.State);
@@ -127,6 +130,7 @@ namespace TickTrader.BotTerminal
         public OrderListViewModel OrderList { get; private set; }
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
+        public JournalViewModel Journal { get; set; }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {

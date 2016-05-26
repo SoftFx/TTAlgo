@@ -67,14 +67,14 @@ int OnInit()
    SetIndexBuffer(0,StateBuffer);
    //return(INIT_FAILED);
    string indicator_base = prefix + "_" + symbol + "_" + timeframe;
-   bids_file = open_csv_file(StringFormat("bids_%s_%s_%d.bin", symbol, timeframe, STD));
+   bids_file = open_csv_file(StringFormat("bids_%s_%s_%d_%d.bin", symbol, timeframe, STD, CountBars));
    indicator_files_total = 1*1;
    for (int i = 0; i < 1; i++)
       for (int j = 0; j < 1; j++)
       {
          int ind = 1*i+j;
          indicator_params[ind][0] = STD;
-         indicator_files[ind] = open_csv_file(StringFormat("%s_%d.bin", indicator_base, STD));
+         indicator_files[ind] = open_csv_file(StringFormat("%s_%d_%d.bin", indicator_base, STD, CountBars));
          if (indicator_files[ind] == INVALID_HANDLE)
          {
             PrintFormat("cannot open file #%d, error = %d", ind, GetLastError());

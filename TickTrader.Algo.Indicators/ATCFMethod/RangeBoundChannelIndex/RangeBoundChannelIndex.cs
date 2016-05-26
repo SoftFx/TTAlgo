@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
     public class RangeBoundChannelIndex : DigitalIndicatorBase
     {
         private IMA _ma;
-        private RevertableDataSeries<double> _rbci;
+        private List<double> _calcCache;
 
         [Parameter(DefaultValue = 18, DisplayName = "STD")]
         public int Std { get; set; }
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         {
             _ma = new AnotherSma(CountBars);
             _ma.Init();
-            _rbci = new RevertableDataSeries<double>(Rbci);
+            _calcCache = new List<double>();
         }
 
         protected override void Init()
@@ -73,48 +73,18 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            _rbci.RevertChanges();
-            _rbci[pos] = CalculateDigitalIndicator(Price);
-            _rbci.ApplyChanges();
+            var val = CalculateDigitalIndicator(Price);
 
             if (IsUpdate)
             {
-                _ma.UpdateLast(Rbci[pos]);
+                _ma.UpdateLast(val);
+                _calcCache[Price.Count - 1] = val;
             }
             else
             {
-                _ma.Add(Rbci[pos]);
+                _ma.Add(val);
+                _calcCache.Add(val);
             }
-
-            var average = _ma.Average;
-
-            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
-            {
-                _rbci[pos] = average - _rbci[pos];
-            }
-
-            var sum = 0.0;
-            for (var i = 0; i < Std; i++)
-            {
-                sum -= _rbci[pos + i];
-            }
-
-            var tmp = sum/Std;
-
-            sum = 0.0;
-            for (var i = 0; i < Std; i++)
-            {
-                sum += (_rbci[pos + i] + tmp)*(_rbci[pos + i] + tmp);
-            }
-
-            tmp = sum/(Std - 1);
-
-            var deviation = Math.Sqrt(tmp);
-
-            UpperBound[pos] = deviation;
-            LowerBound[pos] = -deviation;
-            UpperBound2[pos] = 2*deviation;
-            LowerBound2[pos] = -2*deviation;
 
             if (Price.Count > CountBars)
             {
@@ -123,6 +93,41 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 LowerBound[CountBars] = double.NaN;
                 UpperBound2[CountBars] = double.NaN;
                 LowerBound2[CountBars] = double.NaN;
+            }
+
+            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
+            {
+                Rbci[pos + i] = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
+            }
+
+            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
+            {
+                var sum = 0.0;
+                for (var j = 0; j < Std; j++)
+                {
+                    var rbci = pos + i + j < Price.Count ? Rbci[pos + i + j] : 0.0;
+                    rbci = double.IsNaN(rbci) ? 0.0 : rbci;
+                    sum -= rbci;
+                }
+
+                var tmp = sum/Std;
+
+                sum = 0.0;
+                for (var j = 0; j < Std; j++)
+                {
+                    var rbci = pos + i + j < Price.Count ? Rbci[pos + i + j] : 0.0;
+                    rbci = double.IsNaN(rbci) ? 0.0 : rbci;
+                    sum += (rbci + tmp)*(rbci + tmp);
+                }
+
+                tmp = sum/(Std - 1);
+
+                var deviation = Math.Sqrt(tmp);
+
+                UpperBound[pos + i] = deviation;
+                LowerBound[pos + i] = -deviation;
+                UpperBound2[pos + i] = 2*deviation;
+                LowerBound2[pos + i] = -2*deviation;
             }
         }
 

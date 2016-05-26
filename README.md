@@ -88,3 +88,22 @@ In order to compile project it is required to add NuGet Package Sources for
  - Custom Exponential = 4 (Smooth Factor can be specified. Found [here](https://intranet.fxopen.org/wiki/display/TIC/Moving+Average))
  - Triangular = 5 (Found [here](https://intranet.fxopen.org/wiki/display/TIC/Moving+Average))
 
+## Digital Indicators List ([task](https://intranet.fxopen.org/jira/browse/TTALGO-105))
+ - [x] Fast Adaptive Trend Line
+ - [x] Slow Adaptive Trend Line
+ - [x] Reference Fast Trend Line
+ - [x] Reference Slow Trend Line
+ - [x] Fast Trend Line Momentum
+ - [x] Slow Trend Line Momentum
+ - [x] FTLM-STLM
+ - [x] Perfect Commodity Channel Index
+ - [x] FATL Signal
+ - [x] Range Channel Bound Index
+
+## News Indicator ([task](https://intranet.fxopen.org/jira/browse/TTALGO-1))
+
+News Source: [FxStreet](http://www.fxstreet.com/economic-calendar/)
+
+Cache can be found in {APP_DIR}\NewsCache\ direcroty.
+
+Db filename is formed like "{SourceName}-{CurrencyCode}.db". In this case our source is FxStreet.
