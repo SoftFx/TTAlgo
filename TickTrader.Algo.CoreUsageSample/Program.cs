@@ -15,18 +15,18 @@ namespace TickTrader.Algo.CoreUsageSample
     {
         static void Main(string[] args)
         {
-            //var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
+            var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
 
-            //IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
+            IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
 
-            //builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
-            //builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = 5000, RemainingAmount = 5000 });
+            builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
+            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = 5000, RemainingAmount = 5000 });
 
-            //builder.MainSymbol = "EURUSD";
-            //builder.GetBarSeries("EURUSD").Append(data);
-            //builder.MapBarInput("Input", "EURUSD");
+            builder.MainSymbol = "EURUSD";
+            builder.GetBarBuffer("EURUSD").Append(data);
+            builder.MapBarInput("Input", "EURUSD");
 
-            //builder.BuildNext(data.Count);
+            builder.BuildNext(data.Count);
 
             ////builder.Account.Orders.Add(new OrderEntity(11) { Symbol = "EURUSD", TotalAmount = 6000, RemainingAmount = 6000 });
 

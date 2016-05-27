@@ -71,7 +71,6 @@ namespace SoftFx.FxCalendar.Calendar.FxStreet
             await Task.Run(() => Download());
         }
 
-
         private IEnumerable<FxStreetNewsModel> Parse(string data, int year)
         {
             var doc = new HtmlDocument();

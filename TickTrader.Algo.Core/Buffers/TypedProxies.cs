@@ -10,12 +10,14 @@ namespace TickTrader.Algo.Core
 {
     internal class DataSeriesProxy : DataSeriesProxy<double>, Api.DataSeries
     {
-        public override double DefaultValue { get { return double.NaN; } }
     }
 
     internal class TimeSeriesProxy : DataSeriesProxy<DateTime>, Api.TimeSeries
     {
-        public override DateTime DefaultValue { get { return DateTime.MinValue; } }
+    }
+
+    internal class MarkerSeriesProxy : DataSeriesProxy<Marker>, Api.MarkerSeries
+    {
     }
 
     internal class BarSeriesProxy : DataSeriesProxy<Bar>, Api.BarSeries

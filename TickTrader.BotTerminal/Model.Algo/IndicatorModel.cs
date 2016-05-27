@@ -10,21 +10,25 @@ using TickTrader.Algo.GuiModel;
 using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.State;
 using TickTrader.Algo.Api;
+using SciChart.Charting.Visuals.Annotations;
 
 namespace TickTrader.BotTerminal
 {
-    internal class IndicatorModel
+    internal class IndicatorModel : IIndicatorAdapterContext
     {
         private enum States { Idle, Building, Stopping }
         private enum Events { Start, StopRequest, DoneBuildig }
 
         private StateMachine<States> stateController = new StateMachine<States>();
         private IIndicatorSetup setup;
+        private FeedModel feed;
         private List<IRenderableSeries> seriesList = new List<IRenderableSeries>();
+        private List<IDynamicListSource<IAnnotation>> annotations = new List<IDynamicListSource<IAnnotation>>();
         private CancellationTokenSource stopSrc;
         private IndicatorBuilder builder;
+        private Func<int, DateTime> indexToTimeFunc;
 
-        public IndicatorModel(IIndicatorSetup setup, IndicatorBuilder builder)
+        public IndicatorModel(IIndicatorSetup setup, IndicatorBuilder builder,  FeedModel feed, Func<int, DateTime> indexToTimeFunc)
         {
             if (setup == null)
                 throw new ArgumentNullException("config");
@@ -34,6 +38,8 @@ namespace TickTrader.BotTerminal
 
             this.setup = setup;
             this.builder = builder;
+            this.feed = feed;
+            this.indexToTimeFunc = indexToTimeFunc;
 
             stateController.AddTransition(States.Idle, Events.Start, States.Building);
             stateController.AddTransition(States.Building, Events.StopRequest, States.Stopping);
@@ -47,8 +53,9 @@ namespace TickTrader.BotTerminal
         }
 
         public long Id { get { return setup.InstanceId; } }
-        public string DisplayName { get { return "[" + Id + "] " + setup.Descriptor.DisplayName; } }
-        public IEnumerable<IRenderableSeries> SeriesCollection { get { return seriesList; } }
+        public string DisplayName { get { return setup.Descriptor.DisplayName; } }
+        public IReadOnlyList<IRenderableSeries> SeriesCollection { get { return seriesList; } }
+        public IReadOnlyList<IDynamicListSource<IAnnotation>> Annotations { get { return annotations; } }
         public bool IsOverlay { get { return setup.Descriptor.IsOverlay; } }
         public IndicatorSetupBase Setup { get { return setup.UiModel; } }
 
@@ -82,6 +89,10 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+
+                foreach (var symbol in feed.Symbols.AlgoSymbolCache)
+                    builder.Symbols.Add(symbol);
+
                 await Task.Factory.StartNew(() => builder.BuildNext(size, cToken));
             }
             catch (Exception ex)
@@ -92,18 +103,24 @@ namespace TickTrader.BotTerminal
             stateController.PushEvent(Events.DoneBuildig);
         }
 
-        public void AddSeries(ColoredLineOutputSetup setup, IDataSeries data)
+        OutputBuffer<T> IIndicatorAdapterContext.GetOutput<T>(string name)
         {
-            if (setup.IsEnabled)
-            {
-                data.SeriesName = setup.Descriptor.Id;
-                FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-                chartSeries.DataSeries = data;
-                chartSeries.Stroke = setup.LineColor;
-                chartSeries.StrokeDashArray = setup.LineStyle.ToStrokeDashArray();
-                chartSeries.StrokeThickness = setup.LineThickness;
-                seriesList.Add(chartSeries);
-            }
+            return builder.GetOutput<T>(name);
+        }
+
+        DateTime IIndicatorAdapterContext.GetTimeCoordinate(int index)
+        {
+            return indexToTimeFunc(index);
+        }
+
+        void IIndicatorAdapterContext.AddSeries(IRenderableSeries series)
+        {
+            this.seriesList.Add(series);
+        }
+
+        void IIndicatorAdapterContext.AddSeries(DynamicList<MarkerAnnotation> series)
+        {
+            this.annotations.Add(series.Select<MarkerAnnotation, IAnnotation>(m => m));
         }
     }
 }

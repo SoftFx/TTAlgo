@@ -18,6 +18,8 @@ using TickTrader.BotTerminal.Lib;
 using SciChart.Charting.Visuals.Axes;
 using SciChart.Data.Model;
 using SciChart.Charting.Services;
+using SciChart.Charting.Model.ChartSeries;
+using SciChart.Charting.Model.DataSeries;
 
 namespace TickTrader.BotTerminal
 {
@@ -31,6 +33,8 @@ namespace TickTrader.BotTerminal
         private ChartModelBase activeChart;
         private BarChartModel barChart;
         private TickChartModel tickChart;
+        private DynamicList<IndicatorModel> indicators = new DynamicList<IndicatorModel>();
+        private DynamicList<IRenderableSeriesViewModel> mainSeries = new DynamicList<IRenderableSeriesViewModel>();
 
         public ChartViewModel(string symbol, FeedModel feed, AlgoCatalog catalog, IWindowManager wndManager)
         {
@@ -47,12 +51,27 @@ namespace TickTrader.BotTerminal
             this.barChart = new BarChartModel(smb, catalog, feed);
             this.tickChart = new TickChartModel(smb, catalog, feed);
 
-            Panes = new ObservableCollection<IndicatorPaneViewModel>();
-            Series = new ObservableComposer<IRenderableSeries>();
-            OverlaySeries = new ObservableCollection<IRenderableSeries>();
-            Indicators = new ObservableCollection<IndicatorModel>();
+            //OverlaySeries = new DynamicList<IRenderableSeriesViewModel>();
 
-            Indicators.CollectionChanged += (s, a) => NotifyOfPropertyChange("HasIndicators");
+            var indicatorViewModels = indicators.Select(i => new IndicatorViewModel(i));
+            var overlayIndicators = indicatorViewModels.Where(i => i.Model.IsOverlay);
+            var paneIndicator = indicatorViewModels.Where(i => !i.Model.IsOverlay);
+            var panes = paneIndicator.Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
+            var overlaySeries = overlayIndicators.SelectMany(i => i.Series);
+            var allSeries = DLinq.Combine(mainSeries, overlaySeries);
+
+            Indicators = indicatorViewModels.AsObservable();
+            Panes = panes.AsObservable();
+
+            // SciChart does not support anything except ObservableCollection. Booo!
+            Series = new ObservableCollection<IRenderableSeriesViewModel>();
+            allSeries.ConnectTo(Series); // Do not use ConnectTo method except a case of ugly hacks
+
+            ///Series = mainSeries new ObservableComposer<IRenderableSeriesViewModel>();
+
+            //Indicators = new ObservableCollection<IndicatorModel>();
+
+            indicators.Updated += (a) => NotifyOfPropertyChange("HasIndicators");
 
             //repository.Removed += repository_Removed;
             //repository.Replaced += repository_Replaced;
@@ -70,7 +89,7 @@ namespace TickTrader.BotTerminal
             periodActivatos.Add("S1", () => ActivateBarChart(BarPeriod.S1, "d MMMM yyyy HH:mm:ss"));
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
-            SelectedPeriod = periodActivatos.ElementAt(5);
+            SelectedPeriod = periodActivatos.ElementAt(8);
 
             //IndicatorPanes.Add(new IndicatorPaneViewModel());
             //IndicatorPanes.Add(new IndicatorPaneViewModel());
@@ -93,7 +112,8 @@ namespace TickTrader.BotTerminal
             get { return activeChart; }
             private set
             {
-                DisposeChart();
+                if (activeChart != null)
+                    DisposeChart();
                 activeChart = value;
                 NotifyOfPropertyChange();
                 InitChart();
@@ -113,10 +133,9 @@ namespace TickTrader.BotTerminal
 
         public IViewportManager ViewPort { get; private set; }
 
-        public ObservableComposer<IRenderableSeries> Series { get; private set; }
-        public ObservableCollection<IRenderableSeries> OverlaySeries { get; private set; }
-        public ObservableCollection<IndicatorPaneViewModel> Panes { get; private set; }
-        public ObservableCollection<IndicatorModel> Indicators { get; private set; }
+        public ObservableCollection<IRenderableSeriesViewModel> Series { get; private set; }
+        public IObservableListSource<IndicatorPaneViewModel> Panes { get; private set; }
+        public IObservableListSource<IndicatorViewModel> Indicators { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
 
@@ -183,90 +202,50 @@ namespace TickTrader.BotTerminal
 
         private void InitChart()
         {
-            Series.SourceCollections.Add(Chart.Series);
+            RefreshMainSeries();
 
             foreach (var i in barChart.Indicators.Values)
                 AddIndicator(i);
 
-            Series.SourceCollections.Add(OverlaySeries);
+            Chart.ChartTypeChanged += RefreshMainSeries;
+            Chart.Indicators.Added += AddIndicator;
+            Chart.Indicators.Removed += RemoveIndicator;
+            //barChart.Indicators.Replaced += ReplaceIndicator;
+        }
 
-            barChart.Indicators.Added += AddIndicator;
-            barChart.Indicators.Removed += RemoveIndicator;
-            barChart.Indicators.Replaced += ReplaceIndicator;
+        private void RefreshMainSeries()
+        {
+            mainSeries.Clear();
+            foreach (var series in Chart.DataSeriesCollection)
+            {
+                var viewModel = SeriesViewModel.Create(Chart, series);
+                if (viewModel != null)
+                    mainSeries.Add(viewModel);
+            }
         }
 
         private void DisposeChart()
         {
-            Series.SourceCollections.Clear();
-            Panes.Clear();
-            OverlaySeries.Clear();
+            indicators.Values.Clear();
+            mainSeries.Values.Clear();
 
             if (barChart != null)
             {
-                barChart.Indicators.Added -= AddIndicator;
-                barChart.Indicators.Removed -= RemoveIndicator;
-                barChart.Indicators.Replaced -= ReplaceIndicator;
+                Chart.ChartTypeChanged -= RefreshMainSeries;
+                Chart.Indicators.Added -= AddIndicator;
+                Chart.Indicators.Removed -= RemoveIndicator;
+                //barChart.Indicators.Replaced -= ReplaceIndicator;
             }
-        }
-
-        private void AddSeriesRange(IEnumerable<IRenderableSeries> range)
-        {
-            foreach (var s in range)
-                Series.Add(s);
         }
 
         private void AddIndicator(IndicatorModel i)
         {
-            Indicators.Add(i);
-
-            if (i.IsOverlay)
-                AddOutputs(i);
-            else
-                Panes.Add(new IndicatorPaneViewModel(i, Chart, ChartWindowId));
+            indicators.Values.Add(i);
         }
 
         private void RemoveIndicator(IndicatorModel i)
         {
-            Indicators.Remove(i);
-
-            int paneIndex = Panes.IndexOf(p => p.IndicatorId == i.Id);
-            if (paneIndex >= 0)
-            {
-                Panes[paneIndex].Close();
-                Panes.RemoveAt(paneIndex);
-            }
-
-            RemoveOutputs(i);
-        }
-
-        private void ReplaceIndicator(IndicatorModel i)
-        {
-            var indIndex =  Indicators.IndexOf(i);
-            if (indIndex >= 0)
-                Indicators[indIndex] = i;
-
-            if (Panes.Any(p => p.IndicatorId == i.Id) && !i.IsOverlay)
-            {
-                int paneIndex = Panes.IndexOf(p => p.IndicatorId == i.Id);
-                Panes[paneIndex] = new IndicatorPaneViewModel(i, this.Chart, ChartWindowId);
-            }
-            else
-            {
-                RemoveIndicator(i);
-                AddIndicator(i);
-            }
-        }
-
-        private void AddOutputs(IndicatorModel indicator)
-        {
-            foreach (var output in indicator.SeriesCollection)
-                OverlaySeries.Add(output);
-        }
-
-        private void RemoveOutputs(IndicatorModel indicator)
-        {
-            foreach (var output in indicator.SeriesCollection)
-                OverlaySeries.Remove(output);
+            indicators.Values.Remove(i);
         }
 
         public void Drop(object o)

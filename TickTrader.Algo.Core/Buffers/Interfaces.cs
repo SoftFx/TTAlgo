@@ -40,4 +40,10 @@ namespace TickTrader.Algo.Core
     {
         T this[int index] { get; }
     }
+
+    public interface IFixedEntry<T>
+    {
+        Action<T> Changed { set; }
+        void CopyFrom(T val);
+    }
 }

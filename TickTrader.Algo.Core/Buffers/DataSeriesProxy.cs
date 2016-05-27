@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
@@ -11,11 +12,11 @@ namespace TickTrader.Algo.Core
     {
         public DataSeriesProxy()
         {
-            DefaultValue = Metadata.EmptyValue.Get<T>();
+            ValueFactory = Metadata.ValueFactory.Get<T>();
         }
-
+            
         public virtual IPluginDataBuffer<T> Buffer { get; set; }
-        public virtual T DefaultValue { get; set; }
+        public virtual ValueFactory<T> ValueFactory { get; set; }
         public bool Readonly { get; set; }
 
         public int Count { get { return Buffer.VirtualPos; } }
@@ -29,7 +30,7 @@ namespace TickTrader.Algo.Core
                 int readlIndex = GetRealIndex(index);
 
                 if (IsOutOfBoundaries(readlIndex))
-                    return DefaultValue;
+                    return ValueFactory.GetNullValue();
 
                 return Buffer[readlIndex];
             }
@@ -62,7 +63,7 @@ namespace TickTrader.Algo.Core
                 if (i < Buffer.Count)
                     yield return Buffer[i];
                 else
-                    yield return DefaultValue;
+                    yield return ValueFactory.GetNullValue();
             }
         }
 

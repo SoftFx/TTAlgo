@@ -4,6 +4,9 @@ using SoftFx.FxCalendar.Filters;
 using SoftFx.FxCalendar.Providers;
 using SoftFx.FxCalendar.Storage;
 using TickTrader.Algo.Api;
+using SoftFx.FxCalendar.Models;
+using System.Text;
+using System.Linq;
 
 namespace TickTrader.Algo.Indicators.Other.News
 {
@@ -13,6 +16,8 @@ namespace TickTrader.Algo.Indicators.Other.News
         private string _firstCurrency, _secondCurrency, _additionalCurrency;
         private List<FxStreetProvider> _providers;
         private List<DataSeries> _providerOutputs;
+        private StringBuilder markerTextBuilder = new StringBuilder();
+        private List<FxStreetNewsModel> markerNewsList = new List<FxStreetNewsModel>();
 
         [Parameter(DefaultValue = "EURUSD", DisplayName = "Symbol")]
         public string SymbolCode { get; set; }
@@ -31,6 +36,9 @@ namespace TickTrader.Algo.Indicators.Other.News
 
         [Output(DisplayName = "Additional Currency Impact", DefaultColor = Colors.SteelBlue)]
         public DataSeries AdditionalCurrencyImpact { get; set; }
+
+        [Output(DisplayName = "News Markers", DefaultColor = Colors.Gray)]
+        public DataSeries<Marker> Markers{ get; set; }
 
         public int LastPositionChanged { get { return 0; } }
 
@@ -76,16 +84,52 @@ namespace TickTrader.Algo.Indicators.Other.News
 
         protected override void Calculate()
         {
-            var pos = 0;
-
             for (var i = 0; i < _providers.Count; i++)
             {
-                _providerOutputs[i][pos] = GetImpact(pos, _providers[i]);
+                _providerOutputs[i][0] = GetImpact(0, _providers[i]);
             }
 
             if (_additionalCurrency == null)
             {
-                AdditionalCurrencyImpact[pos] = double.NaN;
+                AdditionalCurrencyImpact[0] = double.NaN;
+            }
+
+            var averageImpact = _providerOutputs.Average(o => o[0]);
+
+            DrawNewsMarker(averageImpact);
+        }
+
+        private IEnumerable<FxStreetNewsModel> GetCurrentNews(FxStreetProvider provider)
+        {
+            var from = Bars.Count > 1 ? Bars[1].CloseTime : Bars[0].OpenTime;
+            var to = Bars[0].CloseTime;
+
+            return provider.GetNews(from, to);
+        }
+
+        private void DrawNewsMarker(double level)
+        {
+            markerTextBuilder.Clear();
+            markerNewsList.Clear();
+
+            foreach (var provider in _providers)
+                markerNewsList.AddRange(GetCurrentNews(provider));
+
+            if (markerNewsList.Count > 0)
+            {
+                foreach (var n in markerNewsList)
+                    markerTextBuilder.Append(n.Impact).Append("  ").Append(n.Event).Append(" ").Append(n.Actual).AppendLine();
+
+                var maxImpact = markerNewsList.Max(n => n.Impact);
+
+                Markers[0].Y = level;
+                Markers[0].Icon = MarkerIcons.Diamond;
+                Markers[0].DisplayText = markerTextBuilder.ToString();
+
+                if (maxImpact == ImpactLevel.High)
+                    Markers[0].Color = Colors.OrangeRed;
+                else if (maxImpact == ImpactLevel.Medium)
+                    Markers[0].Color = Colors.LightGreen;
             }
         }
 
@@ -95,7 +139,7 @@ namespace TickTrader.Algo.Indicators.Other.News
 
             foreach (var newsModel in provider.GetNews(Bars[pos].OpenTime, Bars[pos].CloseTime))
             {
-                res = res > (int) newsModel.Impact + 1 ? res : (int) newsModel.Impact + 1;
+                res = res > (int)newsModel.Impact + 1 ? res : (int)newsModel.Impact + 1;
             }
 
             if (provider.Storage.CurrencyCode == _secondCurrency)

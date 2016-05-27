@@ -38,19 +38,40 @@ namespace TestAlgoProject
         }
     }
 
-    //[Indicator]
-    //public class SlowSimpleMovingAverage : Indicator
-    //{
-    //    [Input]
-    //    public DataSeries Input { get; set; }
+    [Indicator(DisplayName = "Custom Indicators / Merker Test", IsOverlay = false)]
+    public class MarkerTesetIndicator : Indicator
+    {
+        [Input]
+        public DataSeries Input { get; set; }
 
-    //    [Output]
-    //    public DataSeries Output { get; set; }
+        [Output]
+        public DataSeries Level { get; set; }
 
-    //    protected override void Calculate()
-    //    {
-    //        Output[0] = Input.Take(10).Average() + 0.01;
-    //        System.Threading.Thread.Sleep(100);
-    //    }
-    //}
+        [Output(DefaultColor = Colors.MediumVioletRed)]
+        public MarkerSeries Markers { get; set; }
+
+        private Random rnd = new Random();
+
+        protected override void Calculate()
+        {
+            var next = rnd.NextDouble();
+
+            if (next < 0.03)
+            {
+                Markers[0].Icon = MarkerIcons.UpArrow;
+                Markers[0].Color = Colors.MediumVioletRed;
+                Markers[0].Y = Input[0];
+                Markers[0].DisplayText = "UP! " + next;
+            }
+            else if (next >= 0.03 && next < 0.08)
+            {
+                Markers[0].Icon = MarkerIcons.DownArrow;
+                Markers[0].Color = Colors.MediumVioletRed;
+                Markers[0].Y = Input[0];
+                Markers[0].DisplayText = "DOWN! " + next;
+            }
+
+            Level[0] = Input[0];
+        }
+    }
 }

@@ -24,20 +24,14 @@ namespace TickTrader.BotTerminal
         public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
             : base(symbol, catalog, feed)
         {
-            ReserveTopSeries(1);
-
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
 
             SelectedChartType = SelectableChartTypes.Candle;
-        }
 
-        protected IRenderableSeries MainSeries
-        {
-            get { return Series[0]; }
-            set { Series[0] = value; }
+            AddSeries(chartData);
         }
 
         public void Activate(BarPeriod period)
@@ -48,7 +42,6 @@ namespace TickTrader.BotTerminal
 
         protected override void ClearData()
         {
-            MainSeries.DataSeries = null;
             chartData.Clear();
         }
 
@@ -70,10 +63,15 @@ namespace TickTrader.BotTerminal
             FdkAdapter.Convert(loadedData, indicatorData);
             //Convert(rawData, indicatorData);
 
-            foreach (var bar in loadedData)
-                chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
+            //foreach (var bar in loadedData)
+            //    chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
-            MainSeries.DataSeries = chartData;
+            chartData.Append(
+                loadedData.Select(b => b.From),
+                loadedData.Select(b => b.Open),
+                loadedData.Select(b => b.High),
+                loadedData.Select(b => b.Low),
+                loadedData.Select(b => b.Close));
 
             var metrics = new DataMetrics();
             metrics.Count = loadedData.Length;
@@ -83,27 +81,6 @@ namespace TickTrader.BotTerminal
                 metrics.EndDate = loadedData.Last().From;
             }
             return metrics;
-        }
-
-        protected override void UpdateSeriesStyle()
-        {
-            switch (SelectedChartType)
-            {
-                case SelectableChartTypes.Candle:
-                    MainSeries = new FastCandlestickRenderableSeries();
-                    break;
-                case SelectableChartTypes.Line:
-                    MainSeries = new FastLineRenderableSeries();
-                    break;
-                case SelectableChartTypes.OHLC:
-                    MainSeries = new FastOhlcRenderableSeries();
-                    break;
-                case SelectableChartTypes.Mountain:
-                    MainSeries = new FastMountainRenderableSeries();
-                    break;
-            }
-
-            MainSeries.DataSeries = chartData;
         }
 
         protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
@@ -151,32 +128,28 @@ namespace TickTrader.BotTerminal
 
             public IndicatorModel CreateIndicator()
             {
-                //DirectReader<Algo.Core.BarEntity> reader = new DirectReader<Algo.Core.BarEntity>(chart.indicatorData);
                 IndicatorBuilder builder = new IndicatorBuilder(Descriptor);
 
                 var mainBuffer = builder.GetBuffer<BarEntity>(chart.Symbol);
                 mainBuffer.Append(chart.indicatorData);
 
+                builder.MainSymbol = chart.Symbol;
+
                 foreach (var input in UiModel.Inputs)
                     ((BarInputSetup)input).Configure(builder);
-
-                var outputSeries = new Dictionary<ColoredLineOutputSetup, IDataSeries>();
-                foreach (var output in UiModel.Outputs)
-                {
-                    if (output is ColoredLineOutputSetup)
-                    {
-                        var tx = new XyOuputTransmitter(builder.GetOutput<double>(output.Id), mainBuffer);
-                        outputSeries[(ColoredLineOutputSetup)output] = tx.ChartData;
-                    }
-                }
 
                 foreach (var parameter in UiModel.Parameters)
                     builder.SetParameter(parameter.Id, parameter.ValueObj);
 
-                IndicatorModel model = new IndicatorModel(this, builder);
+                IndicatorModel model = new IndicatorModel(this, builder, chart.Feed, i => mainBuffer[i].OpenTime);
 
-                foreach (var output in outputSeries)
-                    model.AddSeries(output.Key, output.Value);
+                //foreach (var outputSetup in UiModel.Outputs)
+                //{
+                //    if (outputSetup is ColoredLineOutputSetup)
+                //        new DoubleSeriesAdapter(model, (ColoredLineOutputSetup)outputSetup);
+                //    else if (outputSetup is MarkerSeriesOutputSetup)
+                //        new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
+                //}
 
                 return model;
             }

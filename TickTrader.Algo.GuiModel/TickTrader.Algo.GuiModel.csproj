@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Convert.cs" />
     <Compile Include="InputSetup.cs" />
     <Compile Include="OutputSetup.cs" />
     <Compile Include="ParameterSetup.cs" />

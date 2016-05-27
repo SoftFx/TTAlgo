@@ -14,6 +14,8 @@ namespace TickTrader.Algo.Api
         double MaxAmount { get; }
         double MinAmount { get; }
         bool IsNull { get; }
+        string BaseCurrencyCode { get; }
+        string CounterCurrencyCode { get; }
     }
 
     public interface SymbolProvider : IEnumerable<Symbol>

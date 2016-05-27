@@ -75,9 +75,9 @@ namespace TickTrader.BotTerminal
         private void OnAdd(IndicatorModel indicator)
         {
             indicator.Closed += Indicator_Closed;
+            Added(indicator);
             if (isStarted)
                 indicator.Start();
-            Added(indicator);
         }
 
         private void Indicator_Closed(IndicatorModel indicator)

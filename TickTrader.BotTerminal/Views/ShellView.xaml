@@ -87,7 +87,9 @@
                 <ContentControl x:Name="OrderList"/>
             </TabItem>
             <TabItem Header="{l:Resx Tab_History}"/>
-            <TabItem Header="{l:Resx Tab_Journal}"/>
+            <TabItem Header="{l:Resx Tab_Journal}">
+                <ContentControl x:Name="Journal"/>
+            </TabItem>
         </l:TabControl>
 
     </Grid>

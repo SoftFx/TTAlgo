@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         public ConnectionManager(PersistModel appStorage)
         {
             this.authStorage = appStorage.AuthSettingsStorage;
-            this.authStorage.Accounts.Changed += Storage_Changed;
+            this.authStorage.Accounts.Updated += Storage_Changed;
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -143,7 +143,7 @@ namespace TickTrader.BotTerminal
             foreach (ServerElement predefinedServer in cfgSection.Servers)
                 Servers.Add(new ServerAuthEntry(predefinedServer));
 
-            foreach (var acc in authStorage.Accounts)
+            foreach (var acc in authStorage.Accounts.Values)
                 Accounts.Add(CreateEntry(acc));
         }
 
@@ -154,16 +154,16 @@ namespace TickTrader.BotTerminal
             authStorage.TriggerSave();
         }
 
-        private void Storage_Changed(object sender, ListChangedEventArgs<AccountSorageEntry> e)
+        private void Storage_Changed(ListUpdateArgs<AccountSorageEntry> e)
         {
-            if (e.Action == CollectionChangeActions.Added)
+            if (e.Action == DLinqAction.Insert)
                 Accounts.Add(CreateEntry(e.NewItem));
-            else if (e.Action == CollectionChangeActions.Removed)
+            else if (e.Action == DLinqAction.Remove)
             {
                 var index = Accounts.IndexOf(a => a.Matches(e.OldItem));
                 Accounts.RemoveAt(index);
             }
-            else if (e.Action == CollectionChangeActions.Replaced)
+            else if (e.Action == DLinqAction.Replace)
             {
                 var index = Accounts.IndexOf(a => a.Matches(e.OldItem));
                 Accounts[index] = CreateEntry(e.NewItem);

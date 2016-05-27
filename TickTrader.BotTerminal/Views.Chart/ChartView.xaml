@@ -89,6 +89,7 @@
                         <s:XAxisDragModifier/>
                         <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
                         <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
+                        <s:TooltipModifier ShowTooltipOn="Always"/>
                         <s:CursorModifier ShowTooltipOn="Always"
                                           ShowTooltip="True"
                                           TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
@@ -129,7 +130,7 @@
         <ItemsControl.ItemsSource>
             <CompositeCollection>
                 <Grid>
-                    <s:SciChartSurface RenderableSeries="{Binding Series}"
+                    <s:SciChartSurface RenderableSeries="{s:SeriesBinding Series}"
                                        Style="{StaticResource MainChartStyle}"
                                        XAxis="{Binding Chart.TimeAxis}"
                                        ContextMenu="{StaticResource MainChartPanelContextMenu}"
@@ -138,6 +139,9 @@
                         <s:SciChartSurface.YAxis>
                             <s:NumericAxis GrowBy="0.1, 0.1" AutoRange="Always"/>
                         </s:SciChartSurface.YAxis>
+                        <s:SciChartSurface.Resources>
+                            <ResourceDictionary Source="SeriesView.xaml"/>
+                        </s:SciChartSurface.Resources>
                     </s:SciChartSurface>
                     <l:BusyIndicator Visibility="{Binding Path=Chart.IsLoading, Converter={StaticResource boolToVisibilityConverter}}"/>
                 </Grid>

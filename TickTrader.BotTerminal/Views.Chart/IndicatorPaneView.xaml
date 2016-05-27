@@ -21,19 +21,25 @@
                                           IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
                         <s:MouseWheelZoomModifier/>
                         <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
+                        <s:TooltipModifier ShowTooltipOn="Always"/>
                     </s:ModifierGroup>
                 </Setter.Value>
             </Setter>
         </Style>
+
     </UserControl.Resources>
     
     <Grid>
-        <s:SciChartSurface RenderableSeries="{Binding Series}"
+        <s:SciChartSurface RenderableSeries="{s:SeriesBinding Series}"
                            XAxis="{Binding TimeAxis}"
+                           Annotations="{Binding Annotations}"
                            s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">
             <s:SciChartSurface.YAxis>
                 <s:NumericAxis GrowBy="0.0001, 0.00001" AutoRange="Always"/>
             </s:SciChartSurface.YAxis>
+            <s:SciChartSurface.Resources>
+                <ResourceDictionary Source="SeriesView.xaml"/>
+            </s:SciChartSurface.Resources>
         </s:SciChartSurface>
     </Grid>
 </UserControl>

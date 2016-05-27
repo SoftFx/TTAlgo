@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,8 +35,8 @@ namespace TickTrader.BotTerminal
         {
             using (var stream = binaryStorage.LoadData(fileName))
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(T));
-                return (T)serializer.Deserialize(stream);
+                DataContractSerializer serializer = new DataContractSerializer(typeof(T));
+                return (T)serializer.ReadObject(stream);
             }
         }
 
@@ -43,8 +44,8 @@ namespace TickTrader.BotTerminal
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(T));
-                serializer.Serialize(stream, obj);
+                DataContractSerializer serializer = new DataContractSerializer(typeof(T));
+                serializer.WriteObject(stream, obj);
                 binaryStorage.Save(fileName, stream);
             }
         }
@@ -69,7 +70,7 @@ namespace TickTrader.BotTerminal
         public void Save(string fileName, MemoryStream binData)
         {
             string filePath = Path.Combine(folder, fileName);
-            using (var file = File.OpenWrite(filePath))
+            using (var file = File.Open(filePath, FileMode.Create))
                 binData.WriteTo(file);
         }
     }

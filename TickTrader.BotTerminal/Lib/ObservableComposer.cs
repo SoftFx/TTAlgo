@@ -137,6 +137,9 @@ namespace TickTrader.BotTerminal.Lib
                 parent.CollectionInserted(item, innerList.Count - 1);
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public void Clear()
             {
                 parent.CollectionsCleared(this.innerList);
