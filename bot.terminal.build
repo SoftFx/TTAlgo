@@ -11,7 +11,7 @@
 
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
 
-  <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.exe" unless="${property::exists('WinScpPath')}" />
+  <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
 
   <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
