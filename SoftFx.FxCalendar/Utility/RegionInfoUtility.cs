@@ -10,6 +10,7 @@ namespace SoftFx.FxCalendar.Utility
         static RegionInfoUtility()
         {
             CurrencyToCountries = GetCurrenciesToCountries();
+            CurrencyToCountries["EUR"].Add("EMU");
         }
 
         private static Dictionary<string, HashSet<string>> GetCurrenciesToCountries()
