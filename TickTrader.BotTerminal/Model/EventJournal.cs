@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,13 +13,13 @@ namespace TickTrader.BotTerminal
     {
         private readonly int firstItem = 0;
         private int journalSize;
-        private ObservableCollection<JournalItem> items;
+        private BindableCollection<JournalItem> items;
         private Logger logger;
 
         public EventJournal(int journalSize = 200)
         {
             this.journalSize = journalSize;
-            this.items = new ObservableCollection<JournalItem>();
+            this.items = new BindableCollection<JournalItem>();
             this.Events = new ReadOnlyObservableCollection<JournalItem>(items);
             this.logger = NLog.LogManager.GetCurrentClassLogger();
         }
