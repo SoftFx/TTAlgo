@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoRepositoryModel
     {
+        private Logger logger;
         private List<AlgoRepository> repositories = new List<AlgoRepository>();
         private SortedDictionary<string, AlgoCatalogItem> itemsById = new SortedDictionary<string, AlgoCatalogItem>();
 
@@ -27,6 +29,7 @@ namespace TickTrader.BotTerminal
 
         public void AddFolder(string path)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             AlgoRepository rep = new AlgoRepository(path);
             repositories.Add(rep);
 
@@ -85,7 +88,7 @@ namespace TickTrader.BotTerminal
             itemsById[repItem.Id] = new AlgoDynamicItem(repItem);
             Replaced(item);
 
-            System.Diagnostics.Debug.WriteLine("AlgoRepositoryModel.Replaced " + repItem.Descriptor.Parameters.Count() +  " params");
+            logger.Debug("Replaced {0} params", repItem.Descriptor.Parameters.Count());
         }
     }
 

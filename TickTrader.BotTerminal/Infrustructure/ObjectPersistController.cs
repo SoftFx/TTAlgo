@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +22,13 @@ namespace TickTrader.BotTerminal
         private Task backgroundTask;
         private IObjectStorage storage;
         private string fileName;
+        private Logger logger;
 
         public T Value { get; private set; }
 
         public ObjectPersistController(string fileName, IObjectStorage storage)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.storage = storage;
             this.fileName = fileName;
             Load();
@@ -57,7 +60,7 @@ namespace TickTrader.BotTerminal
             catch (System.IO.FileNotFoundException) { /* normal case */ }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("ObjectPersistController.Load() FAILED " + ex);
+                logger.Error("ObjectPersistController.Load() FAILED " + ex);
             }
 
             if (Value == null)
@@ -94,7 +97,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine("ObjectPersistController.Save() FAILED " + ex.Message);
+                    logger.Error("ObjectPersistController.Save() FAILED " + ex.Message);
                 }
 
                 if (SaveDelay != TimeSpan.Zero)

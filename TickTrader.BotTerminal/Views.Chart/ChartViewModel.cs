@@ -20,13 +20,14 @@ using SciChart.Data.Model;
 using SciChart.Charting.Services;
 using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;
+using NLog;
 
 namespace TickTrader.BotTerminal
 {
     class ChartViewModel : Conductor<Screen>, IDropHandler
     {
         private static int idSeed;
-
+        private Logger logger;
         private readonly FeedModel feed;
         private AlgoCatalog catalog;
         private IWindowManager wndManager;
@@ -38,6 +39,7 @@ namespace TickTrader.BotTerminal
 
         public ChartViewModel(string symbol, FeedModel feed, AlgoCatalog catalog, IWindowManager wndManager)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.feed = feed;
@@ -160,7 +162,7 @@ namespace TickTrader.BotTerminal
             }
             catch(Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
         }
 
@@ -176,7 +178,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
         }
 

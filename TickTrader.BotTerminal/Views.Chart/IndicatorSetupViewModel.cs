@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorSetupViewModel : Screen
     {
+        private Logger logger;
         private IIndicatorSetup cfg;
         private IIndicatorHost host;
         private bool dlgResult;
@@ -19,6 +21,7 @@ namespace TickTrader.BotTerminal
 
         public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoCatalogItem item, IIndicatorHost host)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.DisplayName = "Add Indicator";
             this.RepItem = item;
             this.host = host;
@@ -52,7 +55,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
 
             TryClose();
@@ -76,7 +79,7 @@ namespace TickTrader.BotTerminal
             cfg.UiModel.ValidityChanged += Validate;
             Validate();
 
-            System.Diagnostics.Debug.WriteLine("IndicatorSetupViewModel.Init() "
+           logger.Debug("Init "
                 + cfg.UiModel.Parameters.Count() + " params "
                 + cfg.UiModel.Inputs.Count() + " inputs "
                 + cfg.UiModel.Outputs.Count() + " outputs ");

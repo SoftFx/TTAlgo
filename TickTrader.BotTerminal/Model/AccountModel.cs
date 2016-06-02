@@ -1,4 +1,5 @@
 ﻿using Machinarium.State;
+using NLog;
 using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace TickTrader.BotTerminal
 {
     internal class AccountModel
     {
+        private Logger logger;
         public enum States { Offline, WaitingData, Canceled, Online, Deinitializing}
         public enum Events { Connected, ConnectionCanceled, CacheInitialized, Diconnected, DoneInit, DoneDeinit }
 
@@ -25,6 +27,7 @@ namespace TickTrader.BotTerminal
 
         public AccountModel(ConnectionModel connection)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.connection = connection;
             this.Positions = positions.AsReadonly();
             this.Orders = orders.AsReadonly();
@@ -66,8 +69,8 @@ namespace TickTrader.BotTerminal
 
             connection.Deinitalizing += (s, c) => stateControl.PushEventAndWait(Events.Diconnected, States.Offline);
 
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("AccountModel STATE " + from + " => " + to);
-            stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("AccountModel EVENT " + e);
+            stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
+            stateControl.EventFired += e => logger.Debug("EVENT " + e);
         }
 
         public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }

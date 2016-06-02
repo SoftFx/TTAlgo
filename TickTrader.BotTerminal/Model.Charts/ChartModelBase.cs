@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.State;
+using NLog;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.RenderableSeries;
@@ -23,6 +24,7 @@ namespace TickTrader.BotTerminal
 
     internal abstract class ChartModelBase : PropertyChangedBase, IIndicatorHost, IDisposable
     {
+        private Logger logger;
         private enum States { Idle, UpdatingData, Closed }
         private enum Events { DoneUpdating }
 
@@ -45,6 +47,7 @@ namespace TickTrader.BotTerminal
 
         public ChartModelBase(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.Feed = feed;
             this.Model = symbol;
             this.catalog = catalog;
@@ -74,7 +77,7 @@ namespace TickTrader.BotTerminal
 
             stateController.OnEnter(States.UpdatingData, ()=> Update(CancellationToken.None));
 
-            stateController.StateChanged += (o, n) => System.Diagnostics.Debug.WriteLine("Chart [" + Model.Name + "] " + o + " => " + n);
+            stateController.StateChanged += (o, n) => logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
         protected SymbolModel Model { get; private set; }
@@ -228,7 +231,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("ChartModelBase.Update() ERROR " + ex);
+                logger.Error("Update ERROR " + ex);
             }
 
             stateController.PushEvent(Events.DoneUpdating);

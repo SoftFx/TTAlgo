@@ -1,4 +1,5 @@
 ﻿using Machinarium.State;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +14,7 @@ namespace TickTrader.BotTerminal
 {
     internal class ConnectionManager
     {
+        private Logger logger;
         internal enum States { Offline, Connecting, Online, Disconnecting }
 
         private enum InStates { Offline, Connecting, Online, Disconnecting }
@@ -25,6 +27,7 @@ namespace TickTrader.BotTerminal
 
         public ConnectionManager(PersistModel appStorage)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
 
@@ -56,8 +59,8 @@ namespace TickTrader.BotTerminal
             Connection = new ConnectionModel();
             Connection.Disconnected += () => internalStateControl.PushEvent(InEvents.LostConnection);
 
-            internalStateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("ConnectionManager INTERNAL STATE " + to);
-            internalStateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("ConnectionManager EVENT " + e);
+            internalStateControl.StateChanged += (from, to) =>logger.Debug("INTERNAL STATE {0}", to);
+            internalStateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
         internal void RemoveAccount(AccountAuthEntry entry)
@@ -95,7 +98,7 @@ namespace TickTrader.BotTerminal
 
         public async Task<ConnectionErrorCodes> Connect(string login, string password, string server, bool savePwd, CancellationToken cToken)
         {
-            Debug.WriteLine("ConnectionManager.Connect(" + login + ", " + server + ")");
+            logger.Debug("Connect to {0}, {1}", login , server);
 
             string entryPassword = savePwd ? password : null;
             var newCreds = CreateEntry(login, entryPassword, server);
@@ -194,7 +197,7 @@ namespace TickTrader.BotTerminal
         {
             if (State != newState)
             {
-                System.Diagnostics.Debug.WriteLine("ConnectionManager PUBLIC STATE " + newState);
+                logger.Debug("PUBLIC STATE {0}", newState);
 
                 State = newState;
                 StateChanged(newState);

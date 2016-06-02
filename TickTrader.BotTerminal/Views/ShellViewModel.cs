@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,12 +20,13 @@ namespace TickTrader.BotTerminal
         private AlgoCatalog catalog = new AlgoCatalog();
         private PersistModel storage;
         private EventJournal eventJournal;
+        private Logger logger;
         private bool isClosed;
 
         public ShellViewModel()
         {
             DisplayName = "Bot Trader";
-
+            logger = NLog.LogManager.GetCurrentClassLogger();
             storage = new PersistModel();
 
             wndManager = new MdiWindowManager(this);
@@ -33,6 +35,7 @@ namespace TickTrader.BotTerminal
             trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
             eventJournal = new EventJournal();
+
 
             AlgoList = new AlgoListViewModel();
             SymbolList = new SymbolListViewModel(feed.Symbols);
@@ -79,7 +82,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
             //SetBusyConnecting(false);
         }
@@ -92,7 +95,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
         }
 
@@ -103,7 +106,7 @@ namespace TickTrader.BotTerminal
         }
 
         public void ManageAccounts()
-        {   
+        {
         }
 
         public void Connect(AccountAuthEntry creds = null)
@@ -120,7 +123,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
         }
 
