@@ -18,6 +18,7 @@ namespace TickTrader.BotTerminal
         public AppBootstrapper()
         {
 #if DEBUG
+            Machinarium.Qnil.UnitTests.Launch();
             DLinq.Test();
 #endif
             Initialize();
