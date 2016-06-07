@@ -25,14 +25,14 @@ namespace TickTrader.Toaster
             }
         }
 
-        internal static Storyboard GetFadeOutAnimation(TimeSpan duration, ref Grid toasterPlace)
+        internal static Storyboard GetFadeOutAnimation(double duration, ref Grid toasterPlace)
         {
-            var animationDelay = duration.TotalSeconds * 0.3;
-            var animationDuration = duration.TotalSeconds - animationDelay;
+            var animationDelay = duration * 0.3;
+            var animationDuration = duration - animationDelay;
 
-            DoubleAnimation fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(animationDuration))
+            DoubleAnimation fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(animationDuration))
             {
-                BeginTime = TimeSpan.FromSeconds(animationDelay)
+                BeginTime = TimeSpan.FromMilliseconds(animationDelay)
             };
 
             Storyboard.SetTargetProperty(fadeOut, new PropertyPath(Grid.OpacityProperty));
@@ -62,7 +62,6 @@ namespace TickTrader.Toaster
 
         public void SetPosition(IToast toast, int positionNumber, bool animate)
         {
-            
             var toastPosition = new Point(StartPosition.X, StartPosition.Y - toast.ActualHeight * (positionNumber));
             toast.Move(toastPosition, animate);
         }

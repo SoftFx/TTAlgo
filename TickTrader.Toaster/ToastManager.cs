@@ -56,17 +56,12 @@ namespace TickTrader.Toaster
             }
         }
 
-        public void Pop(object message)
-        {
-            Pop(message, TimeSpan.FromSeconds(8));
-        }
-
-        public void Pop(object message, TimeSpan lifeTime)
+        public void Pop(object message, double duration = 8000)
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                     new Action(() =>
                     {
-                        IToast toast = new ToastWindow(message, lifeTime, lookingForOrder.StartPosition);
+                        IToast toast = new ToastWindow(message, duration);
                         toast.AfterClose(RemoveToast);
                         toasts.Add(toast);
                     }));

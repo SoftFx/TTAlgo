@@ -65,6 +65,7 @@
     <Compile Include="Messages\SuccessMessage.cs" />
     <Compile Include="Messages\InfoMessage.cs" />
     <Compile Include="Messages\BaseMessage.cs" />
+    <Compile Include="MoveAnimation.cs" />
     <Compile Include="ToastManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
