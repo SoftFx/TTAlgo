@@ -548,6 +548,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resx\Styles\ToastStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\ToolBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -665,6 +669,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
+      <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>
+      <Name>TickTrader.Toaster</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
