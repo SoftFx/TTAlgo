@@ -15,13 +15,14 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.BotTerminal.Lib;
+using SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
     public enum SelectableChartTypes { Candle, OHLC, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
     public enum TimelineTypes { Real, Uniform }
 
-    internal abstract class ChartModelBase : PropertyChangedBase, IIndicatorHost, IDisposable
+    internal abstract class ChartModelBase : PropertyChangedBase, IIndicatorHost, IDisposable, IRateUpdatesListener
     {
         private enum States { Idle, UpdatingData, Closed }
         private enum Events { DoneUpdating }
@@ -64,6 +65,11 @@ namespace TickTrader.BotTerminal
                     AvailableIndicators.Add(indicator);
             }
 
+            symbol.Subscribe(this);
+
+            CurrentAsk = symbol.LastQuote?.Ask;
+            CurrentBid = symbol.LastQuote?.Bid;
+
             catalog.Added += Repository_Added;
             catalog.Removed += Repository_Removed;
             catalog.Replaced += Repository_Replaced;
@@ -87,6 +93,8 @@ namespace TickTrader.BotTerminal
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public IEnumerable<TimelineTypes> AvailableTimelines { get { return new TimelineTypes[] { TimelineTypes.Uniform, TimelineTypes.Real }; } }
         public string Symbol { get { return Model.Name; } }
+        public double? CurrentAsk { get; private set; }
+        public double? CurrentBid { get; private set; }
 
         protected void Activate()
         {
@@ -110,10 +118,13 @@ namespace TickTrader.BotTerminal
                 if (this.isLoading != value)
                 {
                     this.isLoading = value;
-                    NotifyOfPropertyChange("IsLoading");
+                    NotifyOfPropertyChange(nameof(IsLoading));
+                    NotifyOfPropertyChange(nameof(IsReady));
                 }
             }
         }
+
+        public bool IsReady { get { return !IsLoading; } }
 
         public TimelineTypes TimelineType
         {
@@ -185,8 +196,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public event System.Action NavigatorChanged;
+        public int Depth { get { return 0; } }
+
+        public event System.Action NavigatorChanged = delegate { };
         public event System.Action ChartTypeChanged = delegate { };
+        public event System.Action DepthChanged = delegate { };
 
         public IIndicatorSetup CreateIndicatorConfig(AlgoCatalogItem item)
         {
@@ -278,6 +292,16 @@ namespace TickTrader.BotTerminal
             catalog.Added -= Repository_Added;
             catalog.Removed -= Repository_Removed;
             catalog.Replaced -= Repository_Replaced;
+
+            Model.Unsubscribe(this);
+        }
+
+        public virtual void OnRateUpdate(Quote tick)
+        {
+            this.CurrentAsk = tick.Ask;
+            this.CurrentBid = tick.Bid;
+            NotifyOfPropertyChange(nameof(CurrentAsk));
+            NotifyOfPropertyChange(nameof(CurrentBid));
         }
 
         protected struct DataMetrics

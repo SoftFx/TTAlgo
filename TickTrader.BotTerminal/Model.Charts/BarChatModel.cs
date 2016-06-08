@@ -17,9 +17,11 @@ namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
+        //private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
         private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
+        private List<QuoteEntity> updateQueue;
+        private BarVector barCollection = new BarVector();
 
         public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
             : base(symbol, catalog, feed)
@@ -30,6 +32,24 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.Mountain);
 
             SelectedChartType = SelectableChartTypes.Candle;
+
+            var chartData = new OhlcDataSeries<DateTime, double>();
+
+            barCollection.Updated += a =>
+            {
+                if (a.Action == DLinqAction.Insert)
+                {
+                    var bar = a.NewItem;
+                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                }
+                else if (a.Action == DLinqAction.Replace)
+                {
+                    var bar = a.NewItem;
+                    chartData.Update(a.Index, bar.Open, bar.High, bar.Low, bar.Close);
+                }
+                else if (a.Action == DLinqAction.Remove)
+                    chartData.RemoveAt(a.Index);
+            };
 
             AddSeries(chartData);
         }
@@ -42,7 +62,7 @@ namespace TickTrader.BotTerminal
 
         protected override void ClearData()
         {
-            chartData.Clear();
+            barCollection.Clear();
         }
 
         protected async override Task<DataMetrics> LoadData(CancellationToken cToken)
@@ -66,12 +86,10 @@ namespace TickTrader.BotTerminal
             //foreach (var bar in loadedData)
             //    chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
-            chartData.Append(
-                loadedData.Select(b => b.From),
-                loadedData.Select(b => b.Open),
-                loadedData.Select(b => b.High),
-                loadedData.Select(b => b.Low),
-                loadedData.Select(b => b.Close));
+            //if (indicatorData.Count > 0)
+                //barCollection.SetBoundaries(indicatorData[0].OpenTime);
+
+            barCollection.Update(indicatorData);
 
             var metrics = new DataMetrics();
             metrics.Count = loadedData.Length;

@@ -31,6 +31,16 @@ namespace TickTrader.BotTerminal
             };
         }
 
+        public static QuoteEntity Convert(Quote fdkTick)
+        {
+            return new QuoteEntity()
+            {
+                Ask = fdkTick.Ask,
+                Bid = fdkTick.Bid,
+                Time = fdkTick.CreatingTime
+            };
+        }
+
         public static BarPeriod Convert(Api.TimeFrames timeframe)
         {
             switch (timeframe)

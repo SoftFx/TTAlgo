@@ -27,6 +27,16 @@ namespace TickTrader.Algo.Core
             Volume = 1;
         }
 
+        public BarEntity(BarEntity original)
+        {
+            OpenTime = original.OpenTime;
+            CloseTime = original.CloseTime;
+            Open = original.Open;
+            Close = original.Close;
+            High = original.High;
+            Low = original.Low;
+        }
+
         public double Open { get; set; }
         public double Close { get; set; }
         public double High { get; set; }
@@ -36,6 +46,11 @@ namespace TickTrader.Algo.Core
         public DateTime CloseTime { get; set; }
         public bool IsNull { get; set; }
 
+        public BarEntity Clone()
+        {
+            return new BarEntity(this);
+        }
+
         public void Append(double price)
         {
             Close = price;
@@ -44,6 +59,13 @@ namespace TickTrader.Algo.Core
             if (price < Low)
                 Low = price;
             Volume++;
+        }
+
+        public BarEntity CopyAndAppend(double price)
+        {
+            var clone = Clone();
+            clone.Append(price);
+            return clone;
         }
     }
 

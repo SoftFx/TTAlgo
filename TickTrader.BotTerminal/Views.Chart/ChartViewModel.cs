@@ -48,6 +48,8 @@ namespace TickTrader.BotTerminal
 
             SymbolModel smb = feed.Symbols[symbol];
 
+            UpdateLabelFormat(smb);
+
             this.barChart = new BarChartModel(smb, catalog, feed);
             this.tickChart = new TickChartModel(smb, catalog, feed);
 
@@ -138,6 +140,8 @@ namespace TickTrader.BotTerminal
         public IObservableListSource<IndicatorViewModel> Indicators { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
+
+        public string YAxisLabelFormat { get; private set; }
 
         #endregion
 
@@ -271,6 +275,20 @@ namespace TickTrader.BotTerminal
             {
                 return base.OnCalculateNewYRange(yAxis, renderPassInfo);
             }
+        }
+
+        private void UpdateLabelFormat(SymbolModel smb)
+        {
+            var digits = smb.Descriptor.Precision;
+
+            StringBuilder formatBuilder = new StringBuilder();
+            formatBuilder.Append("0.");
+
+            for (int i = 0; i < digits; i++)
+                formatBuilder.Append("0");
+
+            YAxisLabelFormat = formatBuilder.ToString();
+            NotifyOfPropertyChange(nameof(YAxisLabelFormat));
         }
     }
 }

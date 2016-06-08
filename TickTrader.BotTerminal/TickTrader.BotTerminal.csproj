@@ -176,7 +176,8 @@
     <Compile Include="Behaviors\DragDrop\IDragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
     <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
-    <Compile Include="Controls\AlgoPointMarker.cs" />
+    <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
+    <Compile Include="Controls.Chart\StockChartDeltaCalculator.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
@@ -185,7 +186,7 @@
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
-    <Compile Include="Controls\MarkerAnnotation.xaml.cs">
+    <Compile Include="Controls.Chart\MarkerAnnotation.xaml.cs">
       <DependentUpon>MarkerAnnotation.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\MenuItemSelector.cs" />
@@ -224,6 +225,7 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\AlgoConverter.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
+    <Compile Include="Model.Charts\BarVector.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model.Auth\AuthEntry.cs" />
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
@@ -440,7 +442,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
-    <Page Include="Controls\MarkerAnnotation.xaml">
+    <Page Include="Controls.Chart\MarkerAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
