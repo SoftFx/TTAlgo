@@ -13,12 +13,12 @@ namespace TickTrader.Toaster
         BottomLeft
     }
 
-    public class Toaster
+    public class Toast
     {
         private static IToastSorter lookingForOrder;
         private static Action<IToast> adjustWindowsAction;
 
-        static Toaster()
+        static Toast()
         {
             lookingForOrder = ToastHelper.GetSorter(ToastPosition.TopRight);
             adjustWindowsAction = new Action<IToast>(x => AdjustWindows(true));
