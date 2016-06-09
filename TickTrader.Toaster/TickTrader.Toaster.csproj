@@ -54,7 +54,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Toast.xaml">
+    <Page Include="ToastWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -66,7 +66,7 @@
     <Compile Include="Messages\InfoMessage.cs" />
     <Compile Include="Messages\BaseMessage.cs" />
     <Compile Include="MoveAnimation.cs" />
-    <Compile Include="ToastManager.cs" />
+    <Compile Include="Toaster.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -81,8 +81,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="ToastHelper.cs" />
-    <Compile Include="Toast.xaml.cs">
-      <DependentUpon>Toast.xaml</DependentUpon>
+    <Compile Include="ToastWindow.xaml.cs">
+      <DependentUpon>ToastWindow.xaml</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
