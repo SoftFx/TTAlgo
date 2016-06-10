@@ -125,6 +125,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Data.SQLite.EF6">
       <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
@@ -134,6 +135,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\System.Threading.Tasks.Dataflow.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.0.0-beta1\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -168,6 +170,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
@@ -196,6 +199,7 @@
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\FlatRadioButton.cs" />
+    <Compile Include="Controls\PopupButton.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
@@ -204,6 +208,7 @@
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
@@ -452,11 +457,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\SeparatorStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\Calendar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resx\Styles\ColorPickerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\CoordinatePickerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\DateTimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles\PopupButtonStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

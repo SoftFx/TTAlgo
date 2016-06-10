@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -202,6 +203,26 @@ namespace TickTrader.BotTerminal
                 colorsList.Add(new HsvColor(0, 1, 1).ToRgb());
 
                 return colorsList;
+            }
+        }
+
+        public static IEnumerable<Color> GetSystemColors
+        {
+            get
+            {
+                for (byte i = 1; i <= 5; i++)
+                {
+                    yield return new HsvColor(0, 0, 1 - i * 0.2).ToRgb();
+                    yield return new HsvColor(36, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(72, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(108, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(144, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(180, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(216, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(252, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(288, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(360, i * 0.2, 1).ToRgb();
+                }
             }
         }
 

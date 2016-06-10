@@ -48,7 +48,6 @@
                 <l:DropBehavior/>
             </i:Interaction.Behaviors>
         </ContentControl>
-
         <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="4" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
 
         <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Margin="3">

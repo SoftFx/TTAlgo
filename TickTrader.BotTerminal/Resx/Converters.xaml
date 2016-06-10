@@ -5,5 +5,7 @@
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
     <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
-    
+    <l:ColorToHexConverter x:Key="ColorToHexConverter" />
+    <l:BoolInverter x:Key="BoolInverter" />
+
 </ResourceDictionary>

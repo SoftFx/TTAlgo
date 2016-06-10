@@ -3,8 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <BooleanToVisibilityConverter x:Key="boolToVisibile"/>
-
     <!-- Buttons Template/Style -->
     <ControlTemplate x:Key="ArrowButton_Template" TargetType="{x:Type ButtonBase}">
         <Border IsHitTestVisible="True"
@@ -72,7 +70,7 @@
                                            MinHeight="{Binding ElementName=CalendarButton, Path=ActualHeight}"
                                            Text="{Binding DisplayedDateTime, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
 
-                        <Grid Grid.Column="1" Focusable="False" Visibility="{TemplateBinding ShowUpDownButton, Converter={StaticResource boolToVisibile}}">
+                        <Grid Grid.Column="1" Focusable="False" Visibility="{TemplateBinding ShowUpDownButton, Converter={StaticResource BoolToVis}}">
                             <Grid.RowDefinitions>
                                 <RowDefinition></RowDefinition>
                                 <RowDefinition></RowDefinition>
@@ -102,8 +100,8 @@
                                             Style="{StaticResource ArrowButton_BaseStyle}"
                                             Margin="0 1 1 1"
                                             IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                            IsHitTestVisible="{Binding IsOpen, ElementName=PART_Popup, Converter={l:BoolInverter}}"
-                                            Visibility="{TemplateBinding ShowDropDownButton, Converter={StaticResource boolToVisibile}}">
+                                            IsHitTestVisible="{Binding IsOpen, ElementName=PART_Popup, Converter={StaticResource  BoolInverter}}"
+                                            Visibility="{TemplateBinding ShowDropDownButton, Converter={StaticResource BoolToVis}}">
                             <Path Height="5" Width="5" Stretch="Fill" Data="{DynamicResource DownArrow}" Fill="{Binding RelativeSource={RelativeSource AncestorType=ToggleButton}, Path=Foreground}"/>
                         </ToggleButton>
                     </Grid>
