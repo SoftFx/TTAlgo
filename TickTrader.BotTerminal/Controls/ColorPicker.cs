@@ -22,11 +22,6 @@ namespace TickTrader.BotTerminal
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ColorPicker), new FrameworkPropertyMetadata(typeof(ColorPicker)));
         }
 
-        public ColorPicker()
-        {
-            SelectedColor = Colors.Blue;
-        }
-
         #endregion
 
         #region DependenciesProperty
@@ -39,11 +34,11 @@ namespace TickTrader.BotTerminal
 
         public static readonly DependencyProperty SelectedColorProperty =
             DependencyProperty.Register(nameof(SelectedColor), typeof(Color), typeof(ColorPicker),
-                new UIPropertyMetadata((d, e) => ((ColorPicker)d).updateHsv()));
+                new UIPropertyMetadata(Colors.Purple, (d, e) => ((ColorPicker)d).updateHsv()));
 
         public static readonly DependencyProperty HueProperty =
             DependencyProperty.Register(nameof(Hue), typeof(double), typeof(ColorPicker),
-                new UIPropertyMetadata(hueChanged));
+                new UIPropertyMetadata((double)360, hueChanged));
 
         public static readonly DependencyProperty SaturationProperty =
             DependencyProperty.Register(nameof(Saturation), typeof(double), typeof(ColorPicker),

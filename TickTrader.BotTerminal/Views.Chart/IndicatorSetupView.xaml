@@ -92,10 +92,20 @@
                 <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" 
                           SelectedItem="{Binding LineStyle}"  ItemsSource="{Binding AvailableLineStyles}"
                           ItemTemplate="{StaticResource LineStyleItem}"/>
-                <Rectangle Grid.Column="4" Width="15" Height="15"
+
+                <l:PopupButton  Grid.Column="4" Background="Transparent">
+                    <l:PopupButton.Content>
+                        <Rectangle Width="15" Height="15"
                            Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
                            Stroke="{DynamicResource Dialog_ControlBackground}"
                            Margin="5,0,5,0" StrokeThickness="1" />
+                    </l:PopupButton.Content>
+                    <l:PopupButton.PopupContent>
+                        <l:ColorPicker x:Name="colorPicker" Background="{DynamicResource ShellPanel_BackgroundBrush}" 
+                                       InsideBorderBrush="{DynamicResource Menu_BorderBrush}" InsideBorderThickness="1"
+                                       SelectedColor="{Binding Path=LineColor, Mode=TwoWay}"></l:ColorPicker>
+                    </l:PopupButton.PopupContent>
+                </l:PopupButton>
             </Grid>
         </DataTemplate>
 
