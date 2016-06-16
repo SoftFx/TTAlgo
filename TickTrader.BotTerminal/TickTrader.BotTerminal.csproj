@@ -283,6 +283,10 @@
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
     <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Auth\AccountView.xaml.cs">
+      <DependentUpon>AccountView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\AccountViewModel.cs" />
     <Compile Include="Views.Auth\AccountPaneView.xaml.cs">
       <DependentUpon>AccountPaneView.xaml</DependentUpon>
     </Compile>
@@ -590,6 +594,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Auth\AccountPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Auth\AccountView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

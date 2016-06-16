@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,49 +13,65 @@ namespace TickTrader.BotTerminal
 {
     internal class AccountPaneViewModel : PropertyChangedBase
     {
+        private bool isDropDownOpen;
         private ConnectionManager cManager;
         private IConnectionViewModel connectionModel;
+        private ObservableCollection<AccountViewModel> accounts;
 
         public AccountPaneViewModel(ConnectionManager cManager, IConnectionViewModel connectionModel)
         {
             this.cManager = cManager;
             this.connectionModel = connectionModel;
-            this.cManager.StateChanged += s => NotifyOfPropertyChange(nameof(ConnectionState));
-            this.cManager.Accounts.CollectionChanged += (s,o) => NotifyOfPropertyChange(nameof(SelectedAccount));
-            this.cManager.CredsChanged += () =>
-            {
-                DisplayedAccount = cManager.Creds;
+            accounts = new ObservableCollection<AccountViewModel>();
+            foreach (var acc in cManager.Accounts)
+                Accounts.Add(CreateAccountViewModel(acc, connectionModel, cManager));
 
-                NotifyOfPropertyChange(nameof(DisplayedAccount));
-                NotifyOfPropertyChange(nameof(SelectedAccount));
+            cManager.Accounts.CollectionChanged += (s, e) =>
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        Accounts.Add(CreateAccountViewModel((AccountAuthEntry)e.NewItems[0], connectionModel, cManager));
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        {
+                            var accForRemove = Accounts.FirstOrDefault(a => a.Account.Equals((AccountAuthEntry)e.OldItems[0]));
+                            if (accForRemove != null)
+                            {
+                                accForRemove.StateChanged -= AccountViewModelStateChanged;
+                                Accounts.Remove(accForRemove);
+                            }
+                        }
+                        break;
+                }
             };
 
-            DisplayedAccount = cManager.GetLast();
+            this.cManager.StateChanged += s => NotifyOfPropertyChange(nameof(ConnectionState));
+            this.cManager.CredsChanged += () =>
+            {
+                IsDropDownOpen = false;
+                DisplayedAccount = cManager.Creds;
+                NotifyOfPropertyChange(nameof(DisplayedAccount));
+            };
         }
 
-        public ConnectionManager.States ConnectionState
+        public ConnectionManager.States ConnectionState { get { return cManager.State; } }
+        public AccountAuthEntry DisplayedAccount { get; set; }
+        public ObservableCollection<AccountViewModel> Accounts { get { return accounts; } }
+        public bool IsDropDownOpen
         {
-            get { return cManager.State; }
-        }
-
-        public ObservableCollection<AccountAuthEntry> Accounts { get { return cManager.Accounts; } }
-
-        public AccountAuthEntry SelectedAccount
-        {
-            get { return Accounts.FirstOrDefault(a => a.Equals(DisplayedAccount)); }
+            get { return isDropDownOpen; }
             set
             {
-                if (value != null)
-                    Reconnect(value);
+                if (isDropDownOpen != value)
+                {
+                    isDropDownOpen = value;
+                    NotifyOfPropertyChange(nameof(IsDropDownOpen));
+
+                    if (!isDropDownOpen)
+                        ResetAccountDisplayMode(null);
+                }
             }
-        }
-
-        public AccountAuthEntry DisplayedAccount { get; set; }
-
-        public void RemoveAccount(AccountAuthEntry account)
-        {
-            if (!account.Equals(SelectedAccount))
-                cManager.RemoveAccount(account);
         }
 
         public void Connect()
@@ -62,9 +79,26 @@ namespace TickTrader.BotTerminal
             connectionModel.Connect(null);
         }
 
-        private void Reconnect(AccountAuthEntry account)
+        #region Private methods
+        private AccountViewModel CreateAccountViewModel(AccountAuthEntry acc, IConnectionViewModel connVM, ConnectionManager cManager)
         {
-            connectionModel.Connect(account);
+            var vm = new AccountViewModel(acc, connectionModel, cManager);
+            vm.StateChanged += AccountViewModelStateChanged;
+            return vm;
         }
+        private void AccountViewModelStateChanged(AccountViewModel accountVM)
+        {
+            if (accountVM.State == AccountDisplatMode.Removed)
+                cManager.RemoveAccount(accountVM.Account);
+            else if (accountVM.State == AccountDisplatMode.ConfirmRemove)
+                ResetAccountDisplayMode(accountVM);
+        }
+        private void ResetAccountDisplayMode(AccountViewModel excludeAcc)
+        {
+            foreach (var account in Accounts)
+                if (!account.Equals(excludeAcc))
+                    account.ResetState();
+        }
+        #endregion
     }
 }
