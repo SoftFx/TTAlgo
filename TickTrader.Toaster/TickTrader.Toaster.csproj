@@ -54,19 +54,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="ToastWindow.xaml">
+    <Page Include="Toast.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Animation\DirectMovementAnimation.cs" />
+    <Compile Include="Animation\FadeOutAnimation.cs" />
+    <Compile Include="Animation\IAnimation.cs" />
+    <Compile Include="Animation\ICloseAnimation.cs" />
+    <Compile Include="Animation\IMoveAnimation.cs" />
     <Compile Include="Messages\WarningMessage.cs" />
     <Compile Include="Messages\ErrorMessage.cs" />
     <Compile Include="Messages\SuccessMessage.cs" />
     <Compile Include="Messages\InfoMessage.cs" />
     <Compile Include="Messages\BaseMessage.cs" />
-    <Compile Include="MoveAnimation.cs" />
-    <Compile Include="Toast.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -80,9 +83,14 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="ToastHelper.cs" />
-    <Compile Include="ToastWindow.xaml.cs">
-      <DependentUpon>ToastWindow.xaml</DependentUpon>
+    <Compile Include="Sorters\BottomLeftSorter.cs" />
+    <Compile Include="Sorters\BottomRightSorter.cs" />
+    <Compile Include="Sorters\IToastSorter.cs" />
+    <Compile Include="Sorters\TopLeftSorter.cs" />
+    <Compile Include="Sorters\TopRightSorter.cs" />
+    <Compile Include="ToastSorter.cs" />
+    <Compile Include="Toast.xaml.cs">
+      <DependentUpon>Toast.xaml</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

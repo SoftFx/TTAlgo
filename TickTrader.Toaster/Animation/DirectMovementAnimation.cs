@@ -2,21 +2,20 @@
 using System.Windows;
 using System.Windows.Media.Animation;
 
-namespace TickTrader.Toaster
+
+namespace TickTrader.Toaster.Animation
 {
-    internal class MoveAnimation
+    class DirectMovementAnimation: IMoveAnimation
     {
         private Storyboard storyboard;
         private DoubleAnimation animationX;
         private DoubleAnimation animationY;
         private FrameworkElement element;
 
-        public MoveAnimation(FrameworkElement element)
-        {
-            if (element == null)
-                throw new ArgumentNullException(nameof(element));
+        public event Action Completed = delegate { };
 
-            this.element = element;
+        public DirectMovementAnimation()
+        {
             storyboard = new Storyboard();
             animationX = new DoubleAnimation();
             animationY = new DoubleAnimation();
@@ -30,9 +29,12 @@ namespace TickTrader.Toaster
         public Point From { get; set; }
         public Point To { get; set; }
 
-        public void Start()
+        public void Start(FrameworkElement element)
         {
-            storyboard.Stop(element);
+            if (element == null)
+                throw new ArgumentNullException(nameof(element));
+
+            this.element = element;
 
             animationX.From = this.From.X;
             animationX.To = this.To.X;
@@ -41,12 +43,18 @@ namespace TickTrader.Toaster
             animationY.To = this.To.Y;
             animationY.Duration = this.Duration;
 
-            storyboard.Begin(element, true);
+            storyboard.Begin(this.element, true);
         }
 
         public void Stop()
         {
-            storyboard.Stop(element);
+            if (element != null)
+                storyboard.Stop(element);
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }
