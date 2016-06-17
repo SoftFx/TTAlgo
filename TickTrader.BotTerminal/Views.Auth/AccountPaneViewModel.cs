@@ -88,9 +88,7 @@ namespace TickTrader.BotTerminal
         }
         private void AccountViewModelStateChanged(AccountViewModel accountVM)
         {
-            if (accountVM.State == AccountDisplatMode.Removed)
-                cManager.RemoveAccount(accountVM.Account);
-            else if (accountVM.State == AccountDisplatMode.ConfirmRemove)
+            if (accountVM.State == AccountDisplatMode.ConfirmRemove)
                 ResetAccountDisplayMode(accountVM);
         }
         private void ResetAccountDisplayMode(AccountViewModel excludeAcc)

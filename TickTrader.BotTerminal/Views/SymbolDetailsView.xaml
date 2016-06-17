@@ -117,10 +117,10 @@
             <RowDefinition Height="32" />
         </Grid.RowDefinitions>
         <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource SellButtonStyle}" >
-            <TextBlock Text="{Binding Sell.Rate}"  HorizontalAlignment="Right" FontSize="18" />
+            <TextBlock Text="{Binding Sell.RateString}"  HorizontalAlignment="Right" FontSize="18" />
         </l:FlatButton>
         <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource BuyButtonStyle}" >
-            <TextBlock Text="{Binding Buy.Rate}" HorizontalAlignment="Left" FontSize="18" />
+            <TextBlock Text="{Binding Buy.RateString}" HorizontalAlignment="Left" FontSize="18" />
         </l:FlatButton>
         <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Margin="4,1,4,6" Focusable="False"
                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectedIndex="1">

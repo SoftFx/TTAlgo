@@ -21,14 +21,24 @@ namespace TickTrader.BotTerminal
         {
             this.model = model;
             this.model.Subscribe(this);
-
+            this.model.InfoUpdated += ModelInfoUpdated;
+            
             this.Bid = new RateDirectionTracker();
             this.Ask = new RateDirectionTracker();
 
-            this.DetailsPanel = new SymbolDetailsViewModel(Bid, Ask);
+            Bid.Precision = model.Descriptor.Precision;
+            Ask.Precision = model.Descriptor.Precision;
+
+            this.DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
             this.Level2Panel = new SymbolLevel2ViewModel();
             if (model.Descriptor.Features.IsColorSupported)
                 Color = model.Descriptor.Color;
+        }
+
+        private void ModelInfoUpdated(SymbolInfo obj)
+        {
+            Bid.Precision = obj.Precision;
+            Ask.Precision = obj.Precision;
         }
 
         public string SymbolName { get { return model.Name; } }
@@ -111,6 +121,7 @@ namespace TickTrader.BotTerminal
         public void Close()
         {
             this.model.Unsubscribe(this);
+            this.model.InfoUpdated -= ModelInfoUpdated;
         }
     }
 }

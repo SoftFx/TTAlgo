@@ -85,8 +85,9 @@ namespace TickTrader.BotTerminal
             }
             else if (State == AccountDisplatMode.ConfirmRemove)
             {
-                cManager.CredsChanged -= CredsChanged;
                 State = AccountDisplatMode.Removed;
+                cManager.CredsChanged -= CredsChanged;
+                cManager.RemoveAccount(Account);
             }
         }
 

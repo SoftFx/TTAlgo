@@ -76,8 +76,8 @@
                        TextTrimming="CharacterEllipsis"
                        Margin="3, 0, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" />
 
-            <TextBlock Text="{Binding Bid.Rate}" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
-            <TextBlock Text="{Binding Ask.Rate}" Grid.Column="4" Style="{StaticResource AskTextStyle}"/>
+            <TextBlock Text="{Binding Bid.RateString}" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
+            <TextBlock Text="{Binding Ask.RateString}" Grid.Column="4" Style="{StaticResource AskTextStyle}"/>
         </Grid>
         
 
