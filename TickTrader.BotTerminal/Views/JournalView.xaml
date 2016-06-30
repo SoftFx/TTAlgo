@@ -22,7 +22,7 @@
 
         <DockPanel Grid.Row="0" Margin="5 8 5 0" LastChildFill="False">
             <TextBox DockPanel.Dock="Left" Text="{Binding FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}"
-                     Width="200"/>
+                     Width="200" Style="{StaticResource SearchTextBox_Style}"/>
             <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
                           Background="{DynamicResource ToolBarItem_DisabledBrush}"
                           HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
@@ -39,7 +39,7 @@
                   CanUserDeleteRows="False" 
                   SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Date" Width="Auto" Binding="{Binding Date, StringFormat={}{0:u}}" />
+                <DataGridTextColumn Header="Date" Width="Auto" Binding="{Binding Date, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Message" Width="*" Binding="{Binding Message}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
             </DataGrid.Columns>
         </DataGrid>

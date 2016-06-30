@@ -23,13 +23,15 @@ namespace TickTrader.BotTerminal
         private StateMachine<InStates> internalStateControl = new StateMachine<InStates>(new NullSync());
         private ConnectionRequest currentConnectionRequest;
         private AuthStorageModel authStorage;
+        private EventJournal journal;
         private Task connectTask;
 
-        public ConnectionManager(PersistModel appStorage)
+        public ConnectionManager(PersistModel appStorage, EventJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
+            this.journal = journal;
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -53,13 +55,25 @@ namespace TickTrader.BotTerminal
             });
 
             internalStateControl.OnEnter(InStates.Connecting, () => connectTask = DoConnect());
-            internalStateControl.OnEnter(InStates.Online, ()=> UpdateState(States.Online));
+            internalStateControl.OnEnter(InStates.Online, () => UpdateState(States.Online));
             internalStateControl.OnEnter(InStates.Disconnecting, DoDisconnect);
 
             Connection = new ConnectionModel();
-            Connection.Disconnected += () => internalStateControl.PushEvent(InEvents.LostConnection);
+            Connection.Disconnected += () =>
+            {
+                internalStateControl.PushEvent(InEvents.LostConnection);
+            };
 
-            internalStateControl.StateChanged += (from, to) =>logger.Debug("INTERNAL STATE {0}", to);
+
+            internalStateControl.StateChanged += (from, to) =>
+            {
+                if (to == InStates.Online)
+                    journal.Add("{0} connected to {1}, {2}", EnvService.Instance.ApplicationName, Creds.Login, Creds.Server.Name);
+                else if(to == InStates.Offline && from == InStates.Disconnecting)
+                    journal.Add("{0} disconnected from {1}, {2}", EnvService.Instance.ApplicationName, GetLast().Login, GetLast().Server.Name);
+
+                logger.Debug("INTERNAL STATE {0}", to);
+            };
             internalStateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
@@ -98,7 +112,7 @@ namespace TickTrader.BotTerminal
 
         public async Task<ConnectionErrorCodes> Connect(string login, string password, string server, bool savePwd, CancellationToken cToken)
         {
-            logger.Debug("Connect to {0}, {1}", login , server);
+            logger.Debug("Connect to {0}, {1}", login, server);
 
             string entryPassword = savePwd ? password : null;
             var newCreds = CreateEntry(login, entryPassword, server);
@@ -222,6 +236,7 @@ namespace TickTrader.BotTerminal
             await Connection.DisconnectAsync();
 
             internalStateControl.PushEvent(InEvents.DoneDisconnecting);
+
         }
 
         private void CancelRequest()

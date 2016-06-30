@@ -35,13 +35,13 @@
                 </DockPanel>
 
                 <DockPanel Grid.Column="0" LastChildFill="False" Margin="2" Visibility="Collapsed" x:Name="RemoveConfirmationPanel">
-                    <TextBlock DockPanel.Dock="Left" Text="{Binding Account.Login, StringFormat=Удалить {0}?}" Margin="6,0,3,0" VerticalAlignment="Center"  IsHitTestVisible="False" />
-                    <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="cancelButton" Content="Нет"  Width="40"
+                    <TextBlock DockPanel.Dock="Left" Text="{Binding Account.Login, StringFormat=Remove {0}?}" Margin="6,0,3,0" VerticalAlignment="Center"  IsHitTestVisible="False" />
+                    <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="cancelButton" Content="No"  Width="40"
                                           Background="{DynamicResource RateDownColor}"
                                           cal:Message.Attach="Cancel"
                                           IsHitTestVisible="True"
                                           HighlightBackground="{DynamicResource RateDownHighlightColor}"/>
-                    <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="okButton" Content="Да" Width="40"
+                    <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="okButton" Content="Yes" Width="40"
                                           Background="{DynamicResource RateUpColor}"
                                           HighlightBackground="{DynamicResource RateUpHighlightColor}"
                                           IsHitTestVisible="True"

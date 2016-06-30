@@ -26,16 +26,16 @@ namespace TickTrader.BotTerminal
         public ShellViewModel()
         {
             DisplayName = "Bot Trader";
+            
             logger = NLog.LogManager.GetCurrentClassLogger();
+            eventJournal = new EventJournal();
             storage = new PersistModel();
 
             wndManager = new MdiWindowManager(this);
 
-            cManager = new ConnectionManager(storage);
+            cManager = new ConnectionManager(storage, eventJournal);
             trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
-            eventJournal = new EventJournal();
-
 
             AlgoList = new AlgoListViewModel();
             SymbolList = new SymbolListViewModel(feed.Symbols);
@@ -143,6 +143,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnViewLoaded(object view)
         {
+            eventJournal.Add("BotTrader started");
             ConnectLast();
         }
 
@@ -167,7 +168,7 @@ namespace TickTrader.BotTerminal
                 LogState(builder, "Feed.Symbols", feed.Symbols.State.ToString());
                 LogState(builder, "Trade.Account", trade.Account.State.Current.ToString());
 
-                Console.WriteLine(builder.ToString());
+                logger.Debug(builder.ToString());
 
                 await Task.Delay(TimeSpan.FromSeconds(10));
             }
