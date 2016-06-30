@@ -172,13 +172,16 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
-    <Compile Include="Behaviors\DragDrop\DragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DropState.cs" />
     <Compile Include="Behaviors\DragDrop\IDragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
-    <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
+    <Compile Include="Behaviors\DragDrop\PlatformProxy.cs" />
+    <Compile Include="Behaviors\DragDrop\TransparentContainer.xaml.cs">
+      <DependentUpon>TransparentContainer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\AlgoPointMarker.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
@@ -409,6 +412,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Behaviors\DragDrop\TransparentContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\BusyIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -460,6 +467,10 @@
     <Page Include="Resx\Images\Images.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\DragDropStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles\SeparatorStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
