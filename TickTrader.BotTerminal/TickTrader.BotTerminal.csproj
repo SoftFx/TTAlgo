@@ -159,6 +159,13 @@
     <Content Include="..\lib\SQLite\x86\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\Woosh.wav" />
+    <None Include="Resources\SharpEcho.wav" />
+    <None Include="Resources\Save.wav" />
+    <None Include="Resources\Positive.wav" />
+    <None Include="Resources\Negative.wav" />
+    <None Include="Resources\Blop.wav" />
+    <None Include="Resources\Clinking.wav" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -225,6 +232,7 @@
     <Compile Include="Lib.Collections\DLinq.cs" />
     <Compile Include="Lib.Collections\Interfaces.cs" />
     <Compile Include="Lib.Collections\DynamicList.cs" />
+    <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
@@ -285,6 +293,11 @@
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
+    <Compile Include="Resx\Sounds.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Sounds.resx</DependentUpon>
+    </Compile>
     <Compile Include="Services\EnvService.cs" />
     <Compile Include="Views.Auth\AccountView.xaml.cs">
       <DependentUpon>AccountView.xaml</DependentUpon>
@@ -398,6 +411,10 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Sounds.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Sounds.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />

@@ -68,8 +68,11 @@ namespace TickTrader.BotTerminal
             internalStateControl.StateChanged += (from, to) =>
             {
                 if (to == InStates.Online)
+                {
+                    AppSounds.Clinking.Play();
                     journal.Add("{0} connected to {1}, {2}", EnvService.Instance.ApplicationName, Creds.Login, Creds.Server.Name);
-                else if(to == InStates.Offline && from == InStates.Disconnecting)
+                }
+                else if (to == InStates.Offline && from == InStates.Disconnecting)
                     journal.Add("{0} disconnected from {1}, {2}", EnvService.Instance.ApplicationName, GetLast().Login, GetLast().Server.Name);
 
                 logger.Debug("INTERNAL STATE {0}", to);
