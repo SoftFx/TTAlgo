@@ -33,10 +33,17 @@ namespace TickTrader.Algo.Core
 
         public override void InvokeOnStart()
         {
+            // Do nothing. Indicators does not have OnStart() method
         }
 
         public override void InvokeOnStop()
         {
+            // Do nothing. Indicators does not have OnStop() method
+        }
+
+        public override void InvokeOnQuote(Quote quote)
+        {
+            // Do nothing. Indicators does not have OnQuote() method
         }
 
         public override string ToString()

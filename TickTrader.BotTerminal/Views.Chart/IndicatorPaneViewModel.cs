@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartData;
 using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;

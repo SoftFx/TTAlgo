@@ -98,7 +98,8 @@
 
             <Label Grid.Row="0" Grid.ColumnSpan="3" Content="Symbol" HorizontalAlignment="Left"></Label>
 
-            <ComboBox Grid.Row="1" Grid.ColumnSpan="3" IsEditable="False"/>
+            <ComboBox Grid.Row="1" Grid.ColumnSpan="3" IsEditable="False"
+                      ItemsSource="{Binding Order.Symbols}" SelectedItem="{Binding Order.SelectedSymbol}" DisplayMemberPath="Name"/>
 
             <Label Grid.Row="3" Grid.Column="0" Content="Price" HorizontalAlignment="Left"/>
             <Label Grid.Row="3" Grid.Column="2" Content="Volume" HorizontalAlignment="Left"/>

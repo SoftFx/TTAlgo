@@ -8,6 +8,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class InvokeStartegy
     {
         internal InvokeStartegy()
@@ -20,6 +21,7 @@ namespace TickTrader.Algo.Core
         public abstract void InvokeOnPluginThread(Action a);
     }
 
+    [Serializable]
     public class DataflowInvokeStartegy : InvokeStartegy
     {
         private IInvokeStrategyContext context;
@@ -35,16 +37,16 @@ namespace TickTrader.Algo.Core
             return taskQueue.SendAsync(updates);
         }
 
-        public override void Start(IInvokeStrategyContext context, int loadedPositions)
+        public override void Start(IInvokeStrategyContext context, int loadedPoints)
         {
             this.context = context;
             this.cancelSrc = new CancellationTokenSource();
             var options = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1, CancellationToken = cancelSrc.Token };
             taskQueue = new ActionBlock<object>((Action<object>)Process, options);
-            Enqueue(() => context.Builder.InvokeOnStart());
             Enqueue(() => context.Builder.InvokeInit());
             // TO DO : split into reasonably sized chunks
-            Enqueue(() => BatchBuild(loadedPositions));
+            Enqueue(() => BatchBuild(loadedPoints));
+            Enqueue(() => context.Builder.InvokeOnStart());
         }
 
         private void Enqueue(Action a)
@@ -77,6 +79,8 @@ namespace TickTrader.Algo.Core
                 context.Builder.InvokeCalculate(true);
                 context.InvokeFeedEvents(update);
             }
+
+            context.Builder.InvokeOnQuote(update.Quote);
         }
 
         private void BatchBuild(int x)
@@ -103,6 +107,8 @@ namespace TickTrader.Algo.Core
                 await taskQueue.Completion;
             }
             catch (OperationCanceledException) { }
+
+            await Task.Factory.StartNew(() => context.Builder.InvokeOnStop());
         }
     }
 }

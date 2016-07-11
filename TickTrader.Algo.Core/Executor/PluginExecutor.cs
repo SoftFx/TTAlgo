@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Core
         private object _sync = new object();
         private bool isInitialized;
         private bool isStarted;
-        private Func<PluginBuilder> builderFactory;
+        //private Func<PluginBuilder> builderFactory;
         private IPluginFeedProvider feed;
         //private SubscriptionManager subscriptionManager;
         private FeedStrategy fStrategy;
@@ -26,13 +26,15 @@ namespace TickTrader.Algo.Core
         private DateTime periodEnd;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
+        private AlgoPluginDescriptor descriptor;
 
-        public PluginExecutor(Func<PluginBuilder> builderFactory)
+        public PluginExecutor(string pluginId)
         {
-            if (builderFactory == null)
-                throw new ArgumentNullException("builderFactory");
+            this.descriptor = AlgoPluginDescriptor.Get(pluginId);
+            //if (builderFactory == null)
+            //    throw new ArgumentNullException("builderFactory");
 
-            this.builderFactory = builderFactory;
+            //this.builderFactory = builderFactory;
         }
 
         #region Properties
@@ -157,25 +159,26 @@ namespace TickTrader.Algo.Core
 
                 feed.FeedUpdated += Feed_FeedUpdated;
                 //subscriptionManager = new SubscriptionManager(feed);
-                builder = builderFactory();
+                builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
+                builder.Symbols.Init(feed.GetSymbolMetadata());
                 fStrategy.Start(this);
                 setupActions.ForEach(a => a());
                 iStrategy.Start(this, fStrategy.BufferSize);
             }
         }
 
-        public Task Stop(bool cancelPendingUpdates = true)
+        public void Stop(bool cancelPendingUpdates = true)
         {
             lock (_sync)
             {
                 if (!isStarted)
-                    return Task.FromResult(0);
+                    return;
 
                 isStarted = false;
                 fStrategy.Stop();
                 feed.FeedUpdated -= Feed_FeedUpdated;
-                return iStrategy.Stop(cancelPendingUpdates);
+                iStrategy.Stop(cancelPendingUpdates).Wait();
             }
         }
 

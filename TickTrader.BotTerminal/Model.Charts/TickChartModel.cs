@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
@@ -19,7 +20,7 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
 
-        public TickChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
+        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed)
             : base(symbol, catalog, feed)
         {
             Support(SelectableChartTypes.Line);
@@ -32,6 +33,8 @@ namespace TickTrader.BotTerminal
 
             SelectedChartType = SelectableChartTypes.Line;
         }
+
+        public override TimeFrames TimeFrame { get { return TimeFrames.Ticks; } }
 
         public new void Activate()
         {
@@ -69,12 +72,7 @@ namespace TickTrader.BotTerminal
             return new DataMetrics();
         }
 
-        protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
-        {
-            return true;
-        }
-
-        protected override IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem)
+        protected override IIndicatorSetup CreateInidactorConfig(AlgoPluginRef repItem)
         {
             throw new NotImplementedException();
         }

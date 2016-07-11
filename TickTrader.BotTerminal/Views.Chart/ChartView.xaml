@@ -25,22 +25,22 @@
             <Setter Property="Margin" Value="5,0,0,0"/>
             <Setter Property="Padding" Value="3,2,3,2"/>
         </Style>
-        
+
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
 
         <ContextMenu x:Key="MainChartPanelContextMenu" Style="{StaticResource ContextMenu_Style}">
 
             <MenuItem Header="{l:Resx ContextMenu_OpenOrder}" cal:Message.Attach="OpenOrder"></MenuItem>
-            
+
             <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}"
                                 ItemsSource="{Binding AvailablePeriods}"
                                 SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
                                 DisplayMemberPath="Key"/>
-            
+
             <Separator/>
 
             <MenuItem Header="Crosshair" IsCheckable="True" IsChecked="{Binding Chart.IsCrosshairEnabled}"/>
-            
+
             <Separator/>
 
             <l:MenuItemSelector Header="{l:Resx ContextMenu_ChartType}"
@@ -63,10 +63,10 @@
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>
             <Separator/>
-            
+
             <MenuItem Header="Add Indicator" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
                               cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
-            
+
             <MenuItem Header="Indicators" ItemsSource="{Binding Indicators}"
                       Visibility="{Binding Converter={StaticResource BoolToVisConverter}, Path=HasIndicators}">
                 <MenuItem.ItemTemplate>
@@ -78,7 +78,7 @@
                     </DataTemplate>
                 </MenuItem.ItemTemplate>
             </MenuItem>
-            
+
         </ContextMenu>
 
         <Style x:Key="MainChartStyle" TargetType="s:SciChartSurface">
@@ -97,12 +97,21 @@
                     </s:ModifierGroup>
                 </Setter.Value>
             </Setter>
-            <Setter Property="Padding" Value="0" />
-            <!--<Setter Property="YAxis">
-                <Setter.Value>
-                    <s:NumericAxis GrowBy="0.1, 0.1" AutoAlignVisibleRange="True" AutoRange="Always"/>
-                </Setter.Value>
-            </Setter-->
+            <Setter Property="Padding" Value="0,0,5,0" />
+        </Style>
+
+        <Style x:Key="AskBidLineStyle" TargetType="s:HorizontalLineAnnotation">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="ShowLabel" Value="False"/>
+            <Setter Property="StrokeThickness" Value="0.6"/>
+            <Setter Property="LabelPlacement" Value="Axis"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style x:Key="AskBidAxisMarkerStyle" TargetType="s:AxisMarkerAnnotation">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="Black"/>
         </Style>
 
         <DataTemplate DataType="{x:Type UIElement}">
@@ -113,48 +122,82 @@
             <ContentControl cal:View.Model="{Binding}" />
         </DataTemplate>
 
+        <Style x:Key="BotPanelStyle" TargetType="ItemsControl">
+            <Setter Property="Margin" Value="5 5 5 25"/>
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <ContentControl cal:View.Model="{Binding}" Margin="0 2 0 0" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </UserControl.Resources>
 
-    <!--<s:SciChartSurface RenderableSeries="{Binding Chart.Series}"
-                               XAxis="{Binding Chart.Navigator.TimeAxis}"
-                               ContextMenu="{StaticResource MainChartPanelContextMenu}">
-        <s:SciChartSurface.YAxis>
-            <s:NumericAxis GrowBy="0.1, 0.1" AutoAlignVisibleRange="True" AutoRange="Always"/>
-        </s:SciChartSurface.YAxis>
-    </s:SciChartSurface>-->
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ItemsControl Visibility="{Binding Chart.IsReady, Converter={StaticResource boolToVisibilityConverter}}">
+            <ItemsControl.Resources>
+                <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding Panes}"/>
+            </ItemsControl.Resources>
+            <ItemsControl.ItemsSource>
+                <CompositeCollection>
+                    <Grid>
+                        <s:SciChartSurface x:Name="MainChartControl"
+                                           RenderableSeries="{s:SeriesBinding Series}"
+                                           Style="{StaticResource MainChartStyle}"
+                                           XAxis="{Binding Chart.TimeAxis}"
+                                           ContextMenu="{StaticResource MainChartPanelContextMenu}"
+                                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}"
+                                           ViewportManager="{Binding ViewPort}">
+                            <s:SciChartSurface.YAxis>
+                                <s:NumericAxis GrowBy="0.1, 0.1" MaxAutoTicks="25"
+                                                   FontSize="11"
+                                                   DrawMinorGridLines="False"
+                                                   TextFormatting="{Binding YAxisLabelFormat}"
+                                                   CursorTextFormatting="{Binding YAxisLabelFormat}"
+                                                   AutoRange="Always"/>
+                            </s:SciChartSurface.YAxis>
+                            <s:SciChartSurface.Annotations>
+                                <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                            Stroke="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
+                                <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                            Stroke="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
+                                <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                        Background="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
+                                <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                        Background="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
+                            </s:SciChartSurface.Annotations>
+                            <s:SciChartSurface.Resources>
+                                <ResourceDictionary Source="SeriesView.xaml"/>
+                            </s:SciChartSurface.Resources>
+                        </s:SciChartSurface>
+                        <ItemsControl ItemsSource="{Binding Bots}" Style="{StaticResource BotPanelStyle}"/>
+                    </Grid>
+                    <CollectionContainer Collection="{Binding Source={StaticResource indicatorPanesViewSrc}}"/>
+                </CompositeCollection>
+            </ItemsControl.ItemsSource>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <l:SplitterPanel NewElementSizeRatio="0.2" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <Border Visibility="{Binding Path=Chart.IsLoading, Converter={StaticResource boolToVisibilityConverter}}"
+                Background="Black">
+            <l:BusyIndicator/>
+        </Border>
+        <!--<ScrollBar Grid.Row="1" Orientation="Horizontal" Minimum="{Binding ElementName=MainChartControl, Path=}" />-->
+    </Grid>
 
-    <ItemsControl>
-        <ItemsControl.Resources>
-            <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding Panes}"/>
-        </ItemsControl.Resources>
-        <ItemsControl.ItemsSource>
-            <CompositeCollection>
-                <Grid>
-                    <s:SciChartSurface RenderableSeries="{s:SeriesBinding Series}"
-                                       Style="{StaticResource MainChartStyle}"
-                                       XAxis="{Binding Chart.TimeAxis}"
-                                       ContextMenu="{StaticResource MainChartPanelContextMenu}"
-                                       s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}"
-                                       ViewportManager="{Binding ViewPort}">
-                        <s:SciChartSurface.YAxis>
-                            <s:NumericAxis GrowBy="0.1, 0.1" AutoRange="Always"/>
-                        </s:SciChartSurface.YAxis>
-                        <s:SciChartSurface.Resources>
-                            <ResourceDictionary Source="SeriesView.xaml"/>
-                        </s:SciChartSurface.Resources>
-                    </s:SciChartSurface>
-                    <l:BusyIndicator Visibility="{Binding Path=Chart.IsLoading, Converter={StaticResource boolToVisibilityConverter}}"/>
-                </Grid>
-                <CollectionContainer Collection="{Binding Source={StaticResource indicatorPanesViewSrc}}"/>
-            </CompositeCollection>
-        </ItemsControl.ItemsSource>
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <l:SplitterPanel Margin="4" NewElementSizeRatio="0.2" />
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-    </ItemsControl>
     <i:Interaction.Behaviors>
         <l:DropBehavior/>
     </i:Interaction.Behaviors>
+    
 </UserControl>

@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core.Metadata
 
         public static IEnumerable<AlgoPluginDescriptor> InspectAssembly(Assembly targetAssembly)
         {
-            lock(cacheByAssembly)
+            lock (cacheByAssembly)
             {
                 if (cacheByAssembly.ContainsKey(targetAssembly))
                     return cacheByAssembly[targetAssembly];
@@ -88,6 +88,11 @@ namespace TickTrader.Algo.Core.Metadata
             {
                 AlgoLogicType = AlgoTypes.Indicator;
                 InspectIndicatorAttr();
+            }
+            else if (typeof(TradeBot).IsAssignableFrom(algoCustomType))
+            {
+                AlgoLogicType = AlgoTypes.Robot;
+                InspectBotAttr();
             }
             else
             {

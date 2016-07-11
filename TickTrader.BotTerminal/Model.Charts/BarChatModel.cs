@@ -12,16 +12,20 @@ using TickTrader.Algo.Core;
 using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
+        //private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
         private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
+        private Api.TimeFrames timeframe;
+        //private List<QuoteEntity> updateQueue;
+        private BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
+        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed)
             : base(symbol, catalog, feed)
         {
             Support(SelectableChartTypes.OHLC);
@@ -31,18 +35,39 @@ namespace TickTrader.BotTerminal
 
             SelectedChartType = SelectableChartTypes.Candle;
 
+            var chartData = new OhlcDataSeries<DateTime, double>();
+
+            barCollection.Updated += a =>
+            {
+                if (a.Action == DLinqAction.Insert)
+                {
+                    var bar = a.NewItem;
+                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                }
+                else if (a.Action == DLinqAction.Replace)
+                {
+                    var bar = a.NewItem;
+                    chartData.Update(a.Index, bar.Open, bar.High, bar.Low, bar.Close);
+                }
+                else if (a.Action == DLinqAction.Remove)
+                    chartData.RemoveAt(a.Index);
+            };
+
             AddSeries(chartData);
         }
 
-        public void Activate(BarPeriod period)
+        public void Activate(Api.TimeFrames timeframe)
         {
-            this.period = period;
+            this.timeframe = timeframe;
+            this.period = FdkAdapter.ToBarPeriod(timeframe);
             base.Activate();
         }
 
+        public override Api.TimeFrames TimeFrame { get { return timeframe; } }
+
         protected override void ClearData()
         {
-            chartData.Clear();
+            barCollection.Clear();
         }
 
         protected async override Task<DataMetrics> LoadData(CancellationToken cToken)
@@ -66,12 +91,10 @@ namespace TickTrader.BotTerminal
             //foreach (var bar in loadedData)
             //    chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
 
-            chartData.Append(
-                loadedData.Select(b => b.From),
-                loadedData.Select(b => b.Open),
-                loadedData.Select(b => b.High),
-                loadedData.Select(b => b.Low),
-                loadedData.Select(b => b.Close));
+            //if (indicatorData.Count > 0)
+                //barCollection.SetBoundaries(indicatorData[0].OpenTime);
+
+            barCollection.Update(indicatorData);
 
             var metrics = new DataMetrics();
             metrics.Count = loadedData.Length;
@@ -83,12 +106,7 @@ namespace TickTrader.BotTerminal
             return metrics;
         }
 
-        protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
-        {
-            return true;
-        }
-
-        protected override IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem)
+        protected override IIndicatorSetup CreateInidactorConfig(AlgoPluginRef repItem)
         {
             return new IndicatorConfig(repItem, this);
         }
@@ -111,9 +129,9 @@ namespace TickTrader.BotTerminal
         private class IndicatorConfig : IIndicatorSetup
         {
             private BarChartModel chart;
-            private AlgoCatalogItem repItem;
+            private AlgoPluginRef repItem;
 
-            public IndicatorConfig(AlgoCatalogItem repItem, BarChartModel chart, IndicatorSetup_Bars srcSetup = null)
+            public IndicatorConfig(AlgoPluginRef repItem, BarChartModel chart, IndicatorSetup_Bars srcSetup = null)
             {
                 this.chart = chart;
                 this.repItem = repItem;

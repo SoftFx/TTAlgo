@@ -1,4 +1,5 @@
-﻿using SciChart.Charting.Model.DataSeries;
+﻿using Machinarium.Qnil;
+using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace TickTrader.BotTerminal
 
     internal interface IIndicatorHost
     {
-        IIndicatorSetup CreateIndicatorConfig(AlgoCatalogItem catalogItem);
+        IIndicatorSetup CreateIndicatorConfig(AlgoPluginRef catalogItem);
         void AddOrUpdateIndicator(IIndicatorSetup cfg);
     }
 

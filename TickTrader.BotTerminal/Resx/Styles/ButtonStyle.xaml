@@ -22,6 +22,7 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+    
     <Style x:Key="ButtonBaseStyle" TargetType="ButtonBase" >
         <Setter Property="Template" Value="{StaticResource FlatButton_Template}"></Setter>
         <Setter Property="Padding" Value="2" />
@@ -33,13 +34,14 @@
     </Style>
 
     <!--FlatButton-->
+    
     <Style x:Key="FlatButtonMainStyle" TargetType="l:FlatButton" BasedOn="{StaticResource ButtonBaseStyle}">
         <Setter Property="HighlightBackground" Value="Red" />
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
         <Setter Property="CornerRadius" Value="3"></Setter>
     </Style>
+    
     <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}"/>
-
 
     <!--Icon Button -->
 
@@ -123,15 +125,18 @@
                               RecognizesAccessKey="True" />
         </Border>
         <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="False">
+                <Setter Property="Opacity" Value="0.75" />
+            </Trigger>
             <Trigger Property="Control.IsMouseOver" Value="True">
-                <Setter Property="Opacity" Value=".75" />
+                <Setter Property="Opacity" Value="1" />
             </Trigger>
             <Trigger Property="Control.IsEnabled" Value="False">
-
                 <Setter Property="Opacity" Value="0.3"/>
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+    
     <Style x:Key="AutoColorFlatButton_Style" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource AutoColorFlatButton_Template}" />
         <Setter Property="Padding" Value="2" />

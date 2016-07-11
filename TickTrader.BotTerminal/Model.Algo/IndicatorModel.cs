@@ -12,6 +12,7 @@ using Machinarium.State;
 using TickTrader.Algo.Api;
 using SciChart.Charting.Visuals.Annotations;
 using NLog;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {

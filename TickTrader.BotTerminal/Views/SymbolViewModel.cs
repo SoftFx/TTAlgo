@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         private bool isSelected;
         private States currentState;
 
-        public SymbolViewModel(SymbolModel model)
+        public SymbolViewModel(SymbolModel model, OrderUi orderUi)
         {
             this.model = model;
             this.model.Subscribe(this);
@@ -33,6 +33,9 @@ namespace TickTrader.BotTerminal
             this.Level2Panel = new SymbolLevel2ViewModel();
             if (model.Descriptor.Features.IsColorSupported)
                 Color = model.Descriptor.Color;
+
+            this.DetailsPanel.OnBuyClick = ()=> orderUi.OpenMarkerOrder(model.Name);
+            this.DetailsPanel.OnSellClick = () => orderUi.OpenMarkerOrder(model.Name);
         }
 
         private void ModelInfoUpdated(SymbolInfo obj)

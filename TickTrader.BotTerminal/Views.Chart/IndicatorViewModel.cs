@@ -1,4 +1,5 @@
-﻿using SciChart.Charting.Model.ChartSeries;
+﻿using Machinarium.Qnil;
+using SciChart.Charting.Model.ChartSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;

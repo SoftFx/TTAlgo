@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Toaster.Messages
+namespace TickTrader.Toaster
 {
     public class InfoMessage: BaseMessage
     {

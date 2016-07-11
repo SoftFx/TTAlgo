@@ -17,6 +17,8 @@ namespace TickTrader.BotTerminal
         {
             this.container = container;
             this.Descriptor = info;
+            this.Amounts = new OrderAmountModel(info);
+            this.PredefinedAmounts = Amounts.GetPredefined();
         }
 
         public string Name { get { return Descriptor.Name; } }
@@ -24,6 +26,8 @@ namespace TickTrader.BotTerminal
         public SubscriptionInfo CurrentSubscription { get; set; }
         public SubscriptionInfo RequestedSubscription { get; private set; }
         public Quote LastQuote { get; private set; }
+        public OrderAmountModel Amounts { get; private set; }
+        public List<decimal> PredefinedAmounts { get; private set; }
 
         public event Action<SymbolInfo> InfoUpdated = delegate { };
 
@@ -51,6 +55,12 @@ namespace TickTrader.BotTerminal
             this.listeners.Remove(listener);
             listener.DepthChanged -= listener_DepthChanged;
             UpdateRequestedSubscription();
+        }
+
+        public bool ValidateAmmount(decimal amount, decimal minVolume, decimal maxVolume, decimal step)
+        {
+            return amount <= maxVolume && amount >= minVolume
+                && (amount / step) % 1 == 0;
         }
 
         private void UpdateRequestedSubscription()

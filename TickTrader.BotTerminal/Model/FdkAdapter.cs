@@ -17,6 +17,16 @@ namespace TickTrader.BotTerminal
                 dstBars.Add(Convert(bar));
         }
 
+        public static IEnumerable<BarEntity> Convert(IEnumerable<Bar> fdkBarCollection)
+        {
+            return fdkBarCollection.Select(Convert);
+        }
+
+        public static IEnumerable<QuoteEntity> Convert(IEnumerable<Quote> fdkBarCollection)
+        {
+            return fdkBarCollection.Select(Convert);
+        }
+
         public static BarEntity Convert(Bar fdkBar)
         {
             return new BarEntity()
@@ -31,7 +41,31 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        public static BarPeriod Convert(Api.TimeFrames timeframe)
+        public static QuoteEntity Convert(Quote fdkTick)
+        {
+            return new QuoteEntity()
+            {
+                SymbolCode = fdkTick.Symbol,
+                Ask = fdkTick.Ask,
+                Bid = fdkTick.Bid,
+                Time = fdkTick.CreatingTime
+            };
+        }
+
+        public static SymbolEntity Convert(SymbolInfo info)
+        {
+            return new SymbolEntity(info.Name)
+            {
+                Digits = info.Precision,
+                LotSize = info.RoundLot,
+                MinAmount = info.MinTradeVolume,
+                MaxAmount = info.MaxTradeVolume,
+                BaseCurrencyCode = info.Currency,
+                CounterCurrencyCode = info.SettlementCurrency,
+            };
+        }
+
+        public static BarPeriod ToBarPeriod(Api.TimeFrames timeframe)
         {
             switch (timeframe)
             {
@@ -42,11 +76,12 @@ namespace TickTrader.BotTerminal
                 case Api.TimeFrames.H1: return BarPeriod.H1;
                 case Api.TimeFrames.M30: return BarPeriod.M30;
                 case Api.TimeFrames.M15: return BarPeriod.M15;
+                case Api.TimeFrames.M5: return BarPeriod.M5;
                 case Api.TimeFrames.M1: return BarPeriod.M1;
                 case Api.TimeFrames.S10: return BarPeriod.S10;
                 case Api.TimeFrames.S1: return BarPeriod.S1;
                 
-                default: throw new ArgumentException("Cannot convert to BarPeriod: " + timeframe);
+                default: throw new ArgumentException("Unsupported time frame: " + timeframe);
             }
         }
     }

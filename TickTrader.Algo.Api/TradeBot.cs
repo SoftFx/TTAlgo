@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Api
     {
         protected virtual void OnStart() { }
         protected virtual void OnStop() { }
+        protected virtual void OnQuote(Quote quote) { }
 
         internal void InvokeStart()
         {
@@ -19,6 +20,11 @@ namespace TickTrader.Algo.Api
         internal void InvokeStop()
         {
             OnStop();
+        }
+
+        internal void InvokeOnQuote(Quote quote)
+        {
+            OnQuote(quote);
         }
     }
 }

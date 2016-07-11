@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class FeedStrategy
     {
         internal FeedStrategy()
@@ -20,6 +21,7 @@ namespace TickTrader.Algo.Core
         internal abstract void Stop();
     }
 
+    [Serializable]
     public sealed class BarStrategy : FeedStrategy
     {
         private IFeedStrategyContext context;

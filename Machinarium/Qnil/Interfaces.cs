@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.BotTerminal
+namespace Machinarium.Qnil
 {
     public interface IDynamicSetSource<T> : IDisposable
     {
@@ -24,6 +24,11 @@ namespace TickTrader.BotTerminal
     {
         IReadOnlyDictionary<TKey, TValue> Snapshot { get; }
         event DictionaryUpdateHandler<TKey, TValue> Updated;
+    }
+
+    public interface IDynamicDictionaryGrouping<TKey, TValue, TGroup> : IDynamicDictionarySource<TKey, TValue>
+    {
+        TGroup GroupKey { get; }
     }
 
     public interface IObservableListSource<T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged, IDisposable
@@ -94,25 +99,6 @@ namespace TickTrader.BotTerminal
         public TValue NewItem { get; private set; }
         public TValue OldItem { get; private set; }
     }
-
-    //public struct PropertyUpdateArgs<T>
-    //{
-    //    public PropertyUpdateArgs(IDynamicDictionarySource<TKey, TValue> sender, DLinqAction action,
-    //        TKey key = default(TKey), TValue newItem = default(TValue), TValue oldItem = default(TValue)) : this()
-    //    {
-    //        this.Sender = sender;
-    //        this.Action = action;
-    //        this.Key = key;
-    //        this.NewItem = newItem;
-    //        this.OldItem = oldItem;
-    //    }
-
-    //    public IDynamicDictionarySource<TKey, TValue> Sender { get; private set; }
-    //    public DLinqAction Action { get; private set; }
-    //    public TKey Key { get; private set; }
-    //    public TValue NewItem { get; private set; }
-    //    public TValue OldItem { get; private set; }
-    //}
 
     public enum DLinqAction { Insert, Remove, Replace, Dispose };
     public enum DPropertyAction { Update, Dispose }

@@ -4,9 +4,13 @@ namespace TickTrader.BotTerminal
 {
     internal class PendingOrderPageViewModel : Screen, IOpenOrderDialogPage
     {
-        public PendingOrderPageViewModel()
+        public PendingOrderPageViewModel(OpenOrderDialogViewModel openOrderViewModel)
         {
+            this.Order = openOrderViewModel;
+
             DisplayName = "Pending order";
         }
+
+        public OpenOrderDialogViewModel Order { get; private set; }
     }
 }

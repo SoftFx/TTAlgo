@@ -1,4 +1,4 @@
-﻿namespace TickTrader.Toaster.Messages
+﻿namespace TickTrader.Toaster
 {
     public abstract class BaseMessage
     {

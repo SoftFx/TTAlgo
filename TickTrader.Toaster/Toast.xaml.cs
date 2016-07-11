@@ -1,103 +1,105 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using TickTrader.Toaster.Animation;
+using System.Windows.Media.Animation;
 
 namespace TickTrader.Toaster
 {
-    public interface IToastSize
+    internal interface IToast
     {
+        void Show();
+        void Move(Point position, bool animate);
+        void AfterClose(Action<IToast> func);
         double ActualHeight { get; }
         double ActualWidth { get; }
     }
-    public interface IToast : IToastSize
+
+    internal partial class ToastWindow : Window, IToast
     {
-        IMoveAnimation MoveAnimation { get; }
-        ICloseAnimation CloseAnimation { get; }
-        void Show();
-        void Move(Point position, bool animate);
-    }
-
-
-    public sealed partial class Toast : Window, IToast
-    {
-        public IMoveAnimation MoveAnimation { get; private set; }
-        public ICloseAnimation CloseAnimation { get; private set; }
-        public object Message
-        {
-            get { return (object)GetValue(MessageProperty); }
-            set { SetValue(MessageProperty, value); }
-        }
-
-        public static readonly DependencyProperty MessageProperty =
-            DependencyProperty.Register(nameof(Message), typeof(object), typeof(Toast));
-
-        internal Toast(object message, double duration, DirectMovementAnimation directMovementAnimation, FadeOutAnimation fadeOutAnimation)
+        Storyboard fadeOutAnimation;
+        MoveAnimation moveAnimation;
+        Action<IToast> afterCloseAction;
+        internal ToastWindow(object message, double duration)
         {
             InitializeComponent();
-
+            Topmost = true;
+            ShowInTaskbar = false;
+            ShowActivated = false;
             Owner = Application.Current.MainWindow;
-            Closed += ToastClosed;
-            MouseLeftButtonDown += (s, e) => Close();
 
-            MoveAnimation = directMovementAnimation;
-            CloseAnimation = fadeOutAnimation;
-            CloseAnimation.Completed += () => Close();
-           
-            Loaded += (s, e) => CloseAnimation.Start(ToasterInstance);
+            Loaded += ToastWindowLoaded;
+            Closed += ToastWindowClosed;
+            MouseLeftButtonDown += ToastWindowMouseLeftButtonDown;
 
-            Message = message;
+            moveAnimation = new MoveAnimation(this);
+            fadeOutAnimation = ToastHelper.GetFadeOutAnimation(duration, ref ToasterInstance);
+            fadeOutAnimation.Completed += AnimationCompleted;
+
+            ContentHolder.Content = message;
         }
 
-        public new void Show()
+        private void ToastWindowMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            base.Show();
-            var position = ToastSorter.Sorter.GetPosition(this, 0);
-            Left = position.X;
-            Top = position.Y;
+            CloseWindow();
         }
+
+        private void AnimationCompleted(object sender, EventArgs e)
+        {
+            CloseWindow();
+        }
+
+        private void ToastWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            fadeOutAnimation.Begin(this);
+        }
+
+        private void ToastWindowClosed(object sender, EventArgs e)
+        {
+            try
+            {
+                afterCloseAction(this);
+                afterCloseAction = null;
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void CloseWindow()
+        {
+            Close();
+
+            fadeOutAnimation.Completed -= AnimationCompleted;
+            Loaded -= ToastWindowLoaded;
+            Closed -= ToastWindowClosed;
+            MouseLeftButtonDown -= ToastWindowMouseLeftButtonDown;
+        }
+
 
         void IToast.Move(Point position, bool animate)
         {
-            MoveAnimation?.Stop();
+            moveAnimation.Stop();
 
-            if (MoveAnimation == null || !animate)
+            if (animate)
+            {
+                moveAnimation.Duration = animate ? TimeSpan.FromMilliseconds(200) : TimeSpan.FromSeconds(0);
+                moveAnimation.From = new Point(Left, Top);
+                moveAnimation.To = position;
+                moveAnimation.Start();
+            }
+            else
             {
                 Left = position.X;
                 Top = position.Y;
             }
-            else
-            {
-                MoveAnimation.From = new Point(Left, Top);
-                MoveAnimation.To = position;
-                MoveAnimation.Start(this);
-            }
         }
 
-        private void ToastMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        void IToast.AfterClose(Action<IToast> func)
         {
-            Close();
-        }
-
-        private void ToastClosed(object sender, EventArgs e)
-        {
-            ToastSorter.AdjustWindows(true);
-            MoveAnimation.Dispose();
-            CloseAnimation.Dispose();
-        }
-
-
-        public static void Pop(object message, double duration = 10000)
-        {
-            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal,
-                    new Action(() =>
-                    {
-                        IToast toast = new Toast(message, duration,
-                            new DirectMovementAnimation() { Duration = TimeSpan.FromMilliseconds(200) },
-                            new FadeOutAnimation() { Duration = TimeSpan.FromMilliseconds(duration) });
-                        toast.Show();
-                        ToastSorter.AdjustWindows(true);
-                    }));
+            afterCloseAction = func;
         }
     }
+
+
 }

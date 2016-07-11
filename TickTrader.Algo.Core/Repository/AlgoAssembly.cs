@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Core.Repository
         public AlgoAssembly(string filePath)
         {
             this.FilePath = filePath;
+            this.FileName = Path.GetFileName(filePath);
 
             stateControl.AddTransition(States.Created, Events.Start, States.Loading);
             stateControl.AddTransition(States.Loading, Events.Loaded, States.Ready);
@@ -45,10 +46,11 @@ namespace TickTrader.Algo.Core.Repository
         public string FilePath { get; private set; }
         public ScanStatuses ScanStatus { get; private set; }
         public FileInfo FileInfo { get; private set; }
+        public string FileName { get; private set; }
 
-        public event Action<AlgoPluginRef> Added;
-        public event Action<AlgoPluginRef> Removed;
-        public event Action<AlgoPluginRef> Replaced;
+        public event Action<AlgoAssembly, AlgoPluginRef> Added;
+        public event Action<AlgoAssembly, AlgoPluginRef> Removed;
+        public event Action<AlgoAssembly, AlgoPluginRef> Replaced;
 
         public void Start()
         {
@@ -135,12 +137,12 @@ namespace TickTrader.Algo.Core.Repository
                 if (!items.ContainsKey(newInfo.Id))
                 {
                     items.Add(newInfo.Id, newItem);
-                    Added(newItem);
+                    Added(this, newItem);
                 }
                 else
                 {
                     items[newInfo.Id] = newItem;
-                    Replaced(newItem);
+                    Replaced(this, newItem);
                 }
             }
 
@@ -152,7 +154,7 @@ namespace TickTrader.Algo.Core.Repository
                 if (!newMetadataLookup.ContainsKey(item.Descriptor.Id))
                 {
                     items.Remove(item.Descriptor.Id);
-                    Removed(item);
+                    Removed(this, item);
                 }
             }
         }

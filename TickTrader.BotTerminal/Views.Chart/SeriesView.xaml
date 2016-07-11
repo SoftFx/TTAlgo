@@ -31,10 +31,17 @@
 
     <Style x:Key="BarChart_OhlcStyle" TargetType="s:FastOhlcRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="StrokeUp" Value="#009344"/>
+        <Setter Property="StrokeDown" Value="#F15923"/>
     </Style>
 
     <Style x:Key="BarChart_CandlestickStyle" TargetType="s:FastCandlestickRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="DataPointWidth" Value="0.6"/>
+        <Setter Property="StrokeUp" Value="#009344"/>
+        <Setter Property="FillUp" Value="#009344"/>
+        <Setter Property="StrokeDown" Value="#F15923"/>
+        <Setter Property="FillDown" Value="#F15923"/>
     </Style>
 
 </ResourceDictionary>

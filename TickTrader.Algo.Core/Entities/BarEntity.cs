@@ -27,6 +27,16 @@ namespace TickTrader.Algo.Core
             Volume = 1;
         }
 
+        public BarEntity(BarEntity original)
+        {
+            OpenTime = original.OpenTime;
+            CloseTime = original.CloseTime;
+            Open = original.Open;
+            Close = original.Close;
+            High = original.High;
+            Low = original.Low;
+        }
+
         public double Open { get; set; }
         public double Close { get; set; }
         public double High { get; set; }
@@ -35,6 +45,11 @@ namespace TickTrader.Algo.Core
         public DateTime OpenTime { get; set; }
         public DateTime CloseTime { get; set; }
         public bool IsNull { get; set; }
+
+        public BarEntity Clone()
+        {
+            return new BarEntity(this);
+        }
 
         public void Append(double price)
         {
@@ -45,24 +60,38 @@ namespace TickTrader.Algo.Core
                 Low = price;
             Volume++;
         }
+
+        public BarEntity CopyAndAppend(double price)
+        {
+            var clone = Clone();
+            clone.Append(price);
+            return clone;
+        }
     }
 
     [Serializable]
     public class QuoteEntity : Api.Quote
     {
+        private static readonly IReadOnlyList<BookEntry> emptyBook = new List<BookEntry>().AsReadOnly();
+
+        public string SymbolCode { get; set; }
         public DateTime Time { get; set; }
         public double Ask { get; set; }
         public double Bid { get; set; }
+
+        public virtual IReadOnlyList<BookEntry> BidBook { get { return emptyBook; } }
+        public virtual IReadOnlyList<BookEntry> AskBook { get { return emptyBook; } }
+
     }
 
     [Serializable]
-    public class Level2QuoteEntity : QuoteEntity, Api.Level2Quote
+    public class Level2QuoteEntity : QuoteEntity, Api.Quote
     {
-        public List<BookEntryEntity> AskBook { get; set; }
-        public List<BookEntryEntity> BidBook { get; set; }
+        public List<BookEntryEntity> BidList { get; set; }
+        public List<BookEntryEntity> AskList { get; set; }
 
-        IReadOnlyList<BookEntry> Level2Quote.AskBook { get { return AskBook; } }
-        IReadOnlyList<BookEntry> Level2Quote.BidBook { get { return BidBook; } }
+        public override IReadOnlyList<BookEntry> BidBook { get { return BidList; } }
+        public override IReadOnlyList<BookEntry> AskBook { get { return AskList; } }
     }
 
     [Serializable]
