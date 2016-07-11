@@ -57,7 +57,8 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Initializing, () => initTask = Init());
             stateControl.OnEnter(States.Deinitializing, () => Deinit());
             stateControl.OnEnter(States.Disconnecting, () => StartDisconnecting());
-            stateControl.OnEnter(States.Online, () => { Connected(); });
+            stateControl.OnEnter(States.Online, () => Connected());
+            stateControl.OnEnter(States.Offline, () => Disconnected());
 
             stateControl.StateChanged += (from, to) => logger.Debug("STATE {0}", to);
             stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
@@ -67,6 +68,7 @@ namespace TickTrader.BotTerminal
         public DataTrade TradeProxy { get { return tradeProxy; } }
         public FeedHistoryProviderModel FeedCache { get; private set; }
         public ConnectionErrorCodes LastError { get; private set; }
+        public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
 
         public IStateProvider<States> State { get { return stateControl; } }
 
