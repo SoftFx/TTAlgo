@@ -10,65 +10,62 @@ using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
-    internal class EventJournal
+    internal class EventJournal : Journal<EventMessage>
     {
-        private readonly int firstItem = 0;
-        private int journalSize;
-        private ObservableCollection<JournalItem> items;
         private Logger logger;
-        private object syncObj = new object();
 
-        public EventJournal(int journalSize = 200)
+        public EventJournal() : this(500) { }
+        public EventJournal(int journalSize) : base(journalSize)
         {
-            this.journalSize = journalSize;
-            this.items = new ObservableCollection<JournalItem>();
-            this.Events = new ReadOnlyObservableCollection<JournalItem>(items);
             this.logger = NLog.LogManager.GetCurrentClassLogger();
-            BindingOperations.EnableCollectionSynchronization(Events, syncObj);
         }
 
-        private bool IsJournalFull { get { return items.Count >= journalSize; } }
-        public ReadOnlyObservableCollection<JournalItem> Events { get; private set; }
-
-        public void Add(string message)
+        public void Info(string message)
         {
-            Add(message, new object[0]);
+            Info(message, new object[0]);
+        }
+        public void Info(string message, params object[] args)
+        {
+            Add(new EventMessage(string.Format(message, args), JournalMessageType.Info));
         }
 
-        public void Add(string message, params object[] args)
+        public void Trading(string message)
         {
-            lock (syncObj)
-            {
-                if (IsJournalFull)
-                    items.RemoveAt(firstItem);
-
-                items.Add(new JournalItem(string.Format(message, args)));
-            }
-            logger.Info(message, args);
+            Trading(message, new object[0]);
+        }
+        public void Trading(string message, params object[] args)
+        {
+            Add(new EventMessage(string.Format(message, args), JournalMessageType.Trading));
         }
 
-        public void Clear()
+        public void Error(string message)
         {
-            lock (syncObj)
-            {
-                items.Clear();
-            }
+            Error(message, new object[0]);
+        }
+        public void Error(string message, params object[] args)
+        {
+            Add(new EventMessage(string.Format(message, args), JournalMessageType.Error));
+        }
+
+        public override void Add(EventMessage item)
+        {
+            base.Add(item);
+            logger.Info(item.ToString());
         }
     }
 
-    internal class JournalItem
+    internal class EventMessage : BaseJournalMessage
     {
-        public JournalItem()
-        {
-            Date = DateTime.Now;
-        }
-
-        public JournalItem(string message) : this()
+        public EventMessage(string message)
         {
             Message = message;
         }
 
-        public DateTime Date { get; set; }
-        public string Message { get; set; }
+        public EventMessage(string message, JournalMessageType type) : this(message)
+        {
+            Type = type;
+        }
     }
+
+    
 }

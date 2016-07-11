@@ -53,8 +53,11 @@ namespace TickTrader.BotTerminal
                 DisplayedAccount = cManager.Creds;
                 NotifyOfPropertyChange(nameof(DisplayedAccount));
             };
+
+            UI.Instance.StateChanged += () => NotifyOfPropertyChange(nameof(Enabled));
         }
 
+        public bool Enabled { get { return !UI.Instance.Locked; } }
         public ConnectionManager.States ConnectionState { get { return cManager.State; } }
         public AccountAuthEntry DisplayedAccount { get; set; }
         public ObservableCollection<AccountViewModel> Accounts { get { return accounts; } }

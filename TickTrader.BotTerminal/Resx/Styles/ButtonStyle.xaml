@@ -64,6 +64,11 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}" />
         <Setter Property="Template" Value="{StaticResource IconButton_Template}" />
         <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=DisabledBackground}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!--FlatToggleButton-->

@@ -126,6 +126,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Data.SQLite.EF6">
       <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
@@ -215,12 +216,14 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
     <Compile Include="Extensions\ResxExtension.cs" />
@@ -236,6 +239,7 @@
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
+    <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\AlgoConverter.cs" />
@@ -245,9 +249,12 @@
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model\AlgoRepositoryModel.cs" />
+    <Compile Include="Model\BotJournal.cs" />
     <Compile Include="Model\FdkAdapter.cs" />
+    <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
+    <Compile Include="Model\UIManager.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -349,10 +356,17 @@
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
+    <Compile Include="Views\BotJournalView.xaml.cs">
+      <DependentUpon>BotJournalView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\JournalView.xaml.cs">
       <DependentUpon>JournalView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\BotJournalViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
+    <Compile Include="Views\ExitDialogView.xaml.cs">
+      <DependentUpon>ExitDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
@@ -380,6 +394,7 @@
     <Compile Include="Views\SymbolView.xaml.cs">
       <DependentUpon>SymbolView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ExitDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -673,9 +688,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\BotJournalView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\JournalView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExitDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\OrderListView.xaml">
       <SubType>Designer</SubType>

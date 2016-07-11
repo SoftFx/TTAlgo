@@ -89,6 +89,9 @@
             <TabItem Header="{l:Resx Tab_Journal}">
                 <ContentControl x:Name="Journal"/>
             </TabItem>
+            <TabItem Header="{l:Resx Tab_BotJournal}">
+                <ContentControl x:Name="BotJournal"/>
+            </TabItem>
         </l:TabControl>
 
     </Grid>

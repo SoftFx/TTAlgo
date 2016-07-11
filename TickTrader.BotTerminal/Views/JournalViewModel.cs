@@ -67,11 +67,11 @@ namespace TickTrader.BotTerminal
 
         private bool Filter(object obj)
         {
-            var data = obj as JournalItem;
+            var data = obj as EventMessage;
             if (data != null)
             {
                 if (!string.IsNullOrEmpty(filterString))
-                    return data.Date.ToString("u").IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
+                    return data.Time.ToString("dd/MM/yyyy HH:mm:ss.fff").IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
                         || data.Message.IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0;
                 return true;
             }
