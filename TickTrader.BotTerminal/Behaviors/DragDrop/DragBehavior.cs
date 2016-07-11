@@ -12,8 +12,9 @@ namespace TickTrader.BotTerminal
     internal class DragBehavior : Behavior<FrameworkElement>
     {
         private bool _isDragging;
-        private FrameworkElement _dragScope;
-        private IDragAdorner _dragAdorner;
+        private Window _dragWindow;
+        private Point _startMousePosition;
+        private DragSource _dragSource;
 
         /// <summary>
         /// Represents the data that will be dragged. Default is taken from AssociatedObject.DataContext
@@ -26,49 +27,56 @@ namespace TickTrader.BotTerminal
         public static readonly DependencyProperty MyPropertyProperty =
             DependencyProperty.Register(nameof(Data), typeof(object), typeof(DragBehavior), new UIPropertyMetadata(null));
 
-        public DragBehavior()
-        {
-            _dragScope = Application.Current.MainWindow.Content as FrameworkElement;
-        }
-
         protected override void OnAttached()
         {
             base.OnAttached();
 
-            AssociatedObject.MouseLeave += AssociatedObject_MouseLeave;
-            AssociatedObject.QueryContinueDrag += AssociatedObject_QueryContinueDrag;
-            AssociatedObject.GiveFeedback += AssociatedObject_GiveFeedback;
+            AssociatedObject.MouseLeftButtonDown += AssociatedObjectMouseLeftButtonDown;
+            AssociatedObject.MouseMove += AssociatedObjectMouseMove;
+            AssociatedObject.QueryContinueDrag += AssociatedObjectQueryContinueDrag;
+            AssociatedObject.GiveFeedback += AssociatedObjectGiveFeedback;
         }
+
         protected override void OnDetaching()
         {
             base.OnDetaching();
 
-            AssociatedObject.QueryContinueDrag -= AssociatedObject_QueryContinueDrag;
-            AssociatedObject.MouseLeave -= AssociatedObject_MouseLeave;
-            AssociatedObject.GiveFeedback -= AssociatedObject_GiveFeedback;
+            AssociatedObject.MouseLeftButtonDown -= AssociatedObjectMouseLeftButtonDown;
+            AssociatedObject.MouseMove -= AssociatedObjectMouseMove;
+            AssociatedObject.QueryContinueDrag -= AssociatedObjectQueryContinueDrag;
+            AssociatedObject.GiveFeedback -= AssociatedObjectGiveFeedback;
         }
 
-        private void AssociatedObject_GiveFeedback(object sender, GiveFeedbackEventArgs e)
-        {
-            e.UseDefaultCursors = true;
-
-            if (e.Effects == DragDropEffects.None)
-                _dragAdorner.DropState = DropState.CannotDrop;
-            else
-                _dragAdorner.DropState = DropState.CanDrop;
-
-            e.Handled = true;
-        }
-        
-        private void AssociatedObject_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
-        {
-            _dragAdorner.Position = _dragScope.PointFromScreen(WinApiHelper.GetMousePosition());
-        }
-
-        private void AssociatedObject_MouseLeave(object sender, MouseEventArgs e)
+        private void AssociatedObjectMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed && !_isDragging)
                 StarDrag(e);
+        }
+
+        private void AssociatedObjectMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _startMousePosition = e.GetPosition(AssociatedObject);
+        }
+
+        private void AssociatedObjectGiveFeedback(object sender, GiveFeedbackEventArgs e)
+        {
+            if (e.Effects == DragDropEffects.None)
+            {
+                Mouse.OverrideCursor = Cursors.No;
+                _dragSource.DropState = DropState.CannotDrop;
+            }
+            else
+            {
+                Mouse.OverrideCursor = Cursors.Arrow;
+                _dragSource.DropState = DropState.CanDrop;
+            }
+
+            e.Handled = true;
+        }
+
+        private void AssociatedObjectQueryContinueDrag(object sender, QueryContinueDragEventArgs e)
+        {
+            SetDragWindowPosition(PlatformProxy.GetMousePosition());
         }
 
         private void StarDrag(MouseEventArgs e)
@@ -78,14 +86,32 @@ namespace TickTrader.BotTerminal
             object data;
             if ((data = Data ?? AssociatedObject.DataContext) != null)
             {
-                using (_dragAdorner = new DragAdorner(_dragScope, e.OriginalSource as FrameworkElement))
-                {
-                    var result = DragDrop.DoDragDrop(AssociatedObject, AssociatedObject.DataContext, DragDropEffects.Move);
-                }
-                _dragAdorner = null;
+                _dragSource = new DragSource(AssociatedObject, data);
+
+                ShowDragDrop();
+
+                var result = DragDrop.DoDragDrop(AssociatedObject, data, DragDropEffects.Move);
+
+                Mouse.OverrideCursor = null;
+                _dragSource = null;
+                _dragWindow.Close();
+                _dragWindow = null;
             }
 
             _isDragging = false;
+        }
+
+        private void ShowDragDrop()
+        {
+            _dragWindow = new TransparentContainer(_dragSource);
+            SetDragWindowPosition(PlatformProxy.GetMousePosition());
+            _dragWindow.Show();
+        }
+
+        private void SetDragWindowPosition(Point point)
+        {
+            _dragWindow.Left = point.X - _startMousePosition.X;
+            _dragWindow.Top = point.Y - _startMousePosition.Y;
         }
     }
 }

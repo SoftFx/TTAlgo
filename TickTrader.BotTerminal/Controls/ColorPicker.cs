@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,11 +22,6 @@ namespace TickTrader.BotTerminal
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ColorPicker), new FrameworkPropertyMetadata(typeof(ColorPicker)));
         }
 
-        public ColorPicker()
-        {
-            SelectedColor = Colors.Blue;
-        }
-
         #endregion
 
         #region DependenciesProperty
@@ -38,11 +34,11 @@ namespace TickTrader.BotTerminal
 
         public static readonly DependencyProperty SelectedColorProperty =
             DependencyProperty.Register(nameof(SelectedColor), typeof(Color), typeof(ColorPicker),
-                new UIPropertyMetadata((d, e) => ((ColorPicker)d).updateHsv()));
+                new UIPropertyMetadata(Colors.Purple, (d, e) => ((ColorPicker)d).updateHsv()));
 
         public static readonly DependencyProperty HueProperty =
             DependencyProperty.Register(nameof(Hue), typeof(double), typeof(ColorPicker),
-                new UIPropertyMetadata(hueChanged));
+                new UIPropertyMetadata((double)360, hueChanged));
 
         public static readonly DependencyProperty SaturationProperty =
             DependencyProperty.Register(nameof(Saturation), typeof(double), typeof(ColorPicker),
@@ -202,6 +198,26 @@ namespace TickTrader.BotTerminal
                 colorsList.Add(new HsvColor(0, 1, 1).ToRgb());
 
                 return colorsList;
+            }
+        }
+
+        public static IEnumerable<Color> GetSystemColors
+        {
+            get
+            {
+                for (byte i = 1; i <= 5; i++)
+                {
+                    yield return new HsvColor(0, 0, 1 - i * 0.2).ToRgb();
+                    yield return new HsvColor(36, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(72, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(108, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(144, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(180, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(216, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(252, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(288, i * 0.2, 1).ToRgb();
+                    yield return new HsvColor(360, i * 0.2, 1).ToRgb();
+                }
             }
         }
 

@@ -259,6 +259,24 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to #JournalMessage#.
+        /// </summary>
+        internal static string Journal_Message {
+            get {
+                return ResourceManager.GetString("Journal_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #JournalTime#.
+        /// </summary>
+        internal static string Journal_Time {
+            get {
+                return ResourceManager.GetString("Journal_Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##BotTrader##.
         /// </summary>
         internal static string Menu_BotTrader {
@@ -462,6 +480,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         internal static string Tab_Algo {
             get {
                 return ResourceManager.GetString("Tab_Algo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##BotLog##.
+        /// </summary>
+        internal static string Tab_BotJournal {
+            get {
+                return ResourceManager.GetString("Tab_BotJournal", resourceCulture);
             }
         }
         

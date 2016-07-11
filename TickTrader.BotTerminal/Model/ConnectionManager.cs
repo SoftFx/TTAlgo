@@ -19,18 +19,24 @@ namespace TickTrader.BotTerminal
         internal enum States { Offline, Connecting, Online, Disconnecting }
 
         private enum InStates { Offline, Connecting, Online, Disconnecting }
-        private enum InEvents { LostConnection, Connected, FailedToConnect, DoneDisconnecting, DisconnectRequest }
+        private enum InEvents { LostConnection, Connected, FailedToConnect, DoneDisconnecting, DisconnectRequest, RecconectTimer }
 
         private StateMachine<InStates> internalStateControl = new StateMachine<InStates>(new NullSync());
         private ConnectionRequest currentConnectionRequest;
         private AuthStorageModel authStorage;
+        private EventJournal journal;
         private Task connectTask;
+        private IDelayCounter connectionDelay;
+        private CancellationTokenSource recconectTokenSource;
 
-        public ConnectionManager(PersistModel appStorage)
+        public ConnectionManager(PersistModel appStorage, EventJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
+            this.journal = journal;
+            this.connectionDelay = new ConnectionDelayCounter(TimeSpan.FromSeconds(2), TimeSpan.FromMinutes(1));
+
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -54,14 +60,74 @@ namespace TickTrader.BotTerminal
             });
 
             internalStateControl.OnEnter(InStates.Connecting, () => connectTask = DoConnect());
-            internalStateControl.OnEnter(InStates.Online, ()=> UpdateState(States.Online));
+            internalStateControl.OnEnter(InStates.Online, () => UpdateState(States.Online));
             internalStateControl.OnEnter(InStates.Disconnecting, DoDisconnect);
 
             Connection = new ConnectionModel();
-            Connection.Disconnected += () => internalStateControl.PushEvent(InEvents.LostConnection);
+            Connection.Connecting += () => { recconectTokenSource?.Cancel(); recconectTokenSource = null; };
+            Connection.Connected += () => { connectionDelay.Reset(); };
+            Connection.Disconnected += () =>
+            {
+                internalStateControl.PushEvent(InEvents.LostConnection);
+                if (NeedReconnect)
+                {
+                    recconectTokenSource = new CancellationTokenSource();
+                    RecconectAfter(recconectTokenSource.Token, connectionDelay.Next()).Forget();
+                }
+            };
 
-            internalStateControl.StateChanged += (from, to) =>logger.Debug("INTERNAL STATE {0}", to);
+            internalStateControl.StateChanged += (from, to) =>
+            {
+                if (IsConnected(from, to))
+                {
+                    AppSounds.Clinking.Play();
+                    journal.Info("{0}: login on {1}", Creds.Login, Creds.Server.Name);
+                }
+                else if (IsUsualDisconnect(from, to))
+                    journal.Info("{0}: logout from {1}", GetLast().Login, GetLast().Server.Name);
+                else if (IsFailedConnection(from, to))
+                    journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastError);
+                else if (IsUnexpectedDisconnect(from, to))
+                    journal.Error("{0}: connection to {1} lost [{2}]",  GetLast().Login, GetLast().Server.Name, Connection.LastError);
+
+                logger.Debug("INTERNAL STATE {0}", to);
+            };
             internalStateControl.EventFired += e => logger.Debug("EVENT {0}", e);
+        }
+
+        private async Task RecconectAfter(CancellationToken token, TimeSpan delay)
+        {
+            await Task.Delay(delay, token);
+            token.ThrowIfCancellationRequested();
+            TriggerConnect(Creds);
+        }
+
+        private bool NeedReconnect
+        {
+            get
+            {
+                return !HasRequest
+                  && Connection.HasError
+                  && Connection.LastError != ConnectionErrorCodes.BlockedAccount
+                  && Connection.LastError != ConnectionErrorCodes.InvalidCredentials;
+            }
+        }
+
+        private bool IsConnected(InStates from, InStates to)
+        {
+            return to == InStates.Online;
+        }
+        private bool IsUnexpectedDisconnect(InStates from, InStates to)
+        {
+            return from == InStates.Online && to == InStates.Offline;
+        }
+        private bool IsFailedConnection(InStates from, InStates to)
+        {
+            return from == InStates.Connecting && to == InStates.Offline && Connection.HasError;
+        }
+        private bool IsUsualDisconnect(InStates from, InStates to)
+        {
+            return from == InStates.Disconnecting && to == InStates.Offline;
         }
 
         internal void RemoveAccount(AccountAuthEntry entry)
@@ -99,7 +165,7 @@ namespace TickTrader.BotTerminal
 
         public async Task<ConnectionErrorCodes> Connect(string login, string password, string server, bool savePwd, CancellationToken cToken)
         {
-            logger.Debug("Connect to {0}, {1}", login , server);
+            logger.Debug("Connect to {0}, {1}", login, server);
 
             string entryPassword = savePwd ? password : null;
             var newCreds = CreateEntry(login, entryPassword, server);
@@ -223,6 +289,7 @@ namespace TickTrader.BotTerminal
             await Connection.DisconnectAsync();
 
             internalStateControl.PushEvent(InEvents.DoneDisconnecting);
+
         }
 
         private void CancelRequest()
@@ -263,5 +330,67 @@ namespace TickTrader.BotTerminal
                 connectionWaitEvent.TrySetResult(code);
             }
         }
+    }
+
+    internal class ConnectionDelayCounter : IDelayCounter
+    {
+        private TimeSpan _minDelay;
+        private TimeSpan _maxDelay;
+        private TimeSpan? _currentDelay;
+        private object _syncOnj = new object();
+
+        public ConnectionDelayCounter(TimeSpan minDelay, TimeSpan maxDelay)
+        {
+            if (minDelay > maxDelay)
+                throw new ArgumentException("maxDelay should be more then minDelay");
+
+            _maxDelay = maxDelay;
+            _minDelay = minDelay;
+            _currentDelay = null;
+        }
+
+        public TimeSpan Value
+        {
+            get
+            {
+                lock (_syncOnj)
+                    return _currentDelay ?? _minDelay;
+            }
+        }
+
+        public TimeSpan Next()
+        {
+            lock (_syncOnj)
+            {
+                if (!_currentDelay.HasValue)
+                    _currentDelay = _minDelay;
+                else if (_currentDelay.Value == _maxDelay)
+                    _currentDelay = _maxDelay;
+                else
+                {
+                    var nextDelay = TimeSpan.FromMilliseconds(_currentDelay.Value.TotalMilliseconds * 2);
+
+                    if (_maxDelay <= nextDelay)
+                        _currentDelay = _maxDelay;
+                    else
+                        _currentDelay = nextDelay;
+                }
+
+                return _currentDelay.Value;
+            }
+        }
+
+        public void Reset()
+        {
+            lock (_syncOnj)
+                _currentDelay = null;
+        }
+    }
+
+    internal interface IDelayCounter
+    {
+        TimeSpan Value { get; }
+        TimeSpan Next();
+        void Reset();
     }
 }

@@ -183,6 +183,12 @@
   <data name="ContextMenu_Timeline" xml:space="preserve">
     <value>Timeline</value>
   </data>
+  <data name="Journal_Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Journal_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
   <data name="Menu_BotTrader" xml:space="preserve">
     <value>BotTrader</value>
   </data>
@@ -251,6 +257,9 @@
   </data>
   <data name="Tab_Algo" xml:space="preserve">
     <value>Algo</value>
+  </data>
+  <data name="Tab_BotJournal" xml:space="preserve">
+    <value>Bot Log</value>
   </data>
   <data name="Tab_History" xml:space="preserve">
     <value>History</value>

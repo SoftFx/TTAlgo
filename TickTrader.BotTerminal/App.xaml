@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="Resx/Images/Images.xaml"/>
 
                 <!-- Control Styles -->
+                <ResourceDictionary Source="Resx/Styles/DragDropStyle.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/Charts.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/Calendar.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/DialogPageControl.xaml"/>
@@ -45,6 +46,10 @@
                 <ResourceDictionary Source="Resx/Styles/DateTimePicker.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/HoverComboBox.xaml"/>
                 <ResourceDictionary Source="Resx/Styles/ToastStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/CoordinatePickerStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ColorPickerStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/PopupButtonStyle.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/SeparatorStyle.xaml"/>
                 <!-- Themes -->
                 <l:ThemeSelector>
                     <l:Theme Name="Dark">

@@ -14,6 +14,9 @@ namespace TickTrader.BotTerminal
 {
     internal class ShellViewModel : Screen, IConnectionViewModel, OrderUi
     {
+        private bool canConnect;
+        private bool canDisconnect;
+
         private ConnectionManager cManager;
         private TraderModel trade;
         private FeedModel feed;
@@ -21,21 +24,24 @@ namespace TickTrader.BotTerminal
         private PluginCatalog catalog = new PluginCatalog();
         private PersistModel storage;
         private EventJournal eventJournal;
+        private BotJournal botJournal;
         private Logger logger;
         private bool isClosed;
 
         public ShellViewModel()
         {
             DisplayName = "Bot Trader";
+
             logger = NLog.LogManager.GetCurrentClassLogger();
+            eventJournal = new EventJournal(1000);
+            botJournal = new BotJournal(1000);
             storage = new PersistModel();
 
             wndManager = new MdiWindowManager(this);
 
-            cManager = new ConnectionManager(storage);
+            cManager = new ConnectionManager(storage, eventJournal);
             trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
-            eventJournal = new EventJournal();
 
             AlgoList = new AlgoListViewModel(catalog);
             SymbolList = new SymbolListViewModel(feed.Symbols, this);
@@ -44,12 +50,18 @@ namespace TickTrader.BotTerminal
             Charts = new ChartCollectionViewModel(feed, catalog, wndManager, this);
             AccountPane = new AccountPaneViewModel(cManager, this);
             Journal = new JournalViewModel(eventJournal);
+            BotJournal = new BotJournalViewModel(botJournal);
             CanConnect = true;
 
             UpdateCommandStates(cManager.State);
             cManager.StateChanged += UpdateCommandStates;
 
             SymbolList.NewChartRequested += s => Charts.Open(s);
+            UI.Instance.StateChanged += () =>
+            {
+                NotifyOfPropertyChange(nameof(CanConnect));
+                NotifyOfPropertyChange(nameof(CanDisconnect));
+            };
 
             catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
             catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
@@ -62,13 +74,13 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
             CanDisconnect = state == ConnectionManager.States.Online;
             CanCancel = state == ConnectionManager.States.Connecting;
-            NotifyOfPropertyChange("CanConnect");
-            NotifyOfPropertyChange("CanDisconnect");
-            NotifyOfPropertyChange("CanCancel");
+            NotifyOfPropertyChange(nameof(CanConnect));
+            NotifyOfPropertyChange(nameof(CanDisconnect));
+            NotifyOfPropertyChange(nameof(CanCancel));
         }
 
-        public bool CanConnect { get; private set; }
-        public bool CanDisconnect { get; private set; }
+        public bool CanConnect { get { return canConnect && !UI.Instance.Locked; } private set { canConnect = value; } }
+        public bool CanDisconnect { get { return canDisconnect && !UI.Instance.Locked; } private set { canDisconnect = value; } }
         public bool CanCancel { get; private set; }
 
         public void Connect()
@@ -107,7 +119,12 @@ namespace TickTrader.BotTerminal
             if (close)
                 cManager.TriggerDisconnect();
         }
-
+        public override void CanClose(Action<bool> callback)
+        {
+            var exit = new ExitDialogViewModel();
+            wndManager.ShowDialog(exit);
+            callback(exit.IsConfirmed);
+        }
         public void ManageAccounts()
         {
         }
@@ -137,6 +154,7 @@ namespace TickTrader.BotTerminal
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
+        public BotJournalViewModel BotJournal { get; set; }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
@@ -146,7 +164,23 @@ namespace TickTrader.BotTerminal
 
         protected override void OnViewLoaded(object view)
         {
+            eventJournal.Info("BotTrader started");
+            PrintSystemInfo();
             ConnectLast();
+        }
+
+        private void PrintSystemInfo()
+        {
+            var os = ComputerInfo.OperatingSystem;
+            var cpu = ComputerInfo.Processor;
+            var sign = TimeZoneInfo.Local.BaseUtcOffset < TimeSpan.Zero ? "-" : "+";
+            eventJournal.Info("{0} ({1}), {2}, RAM: {3} / {4} Mb, UTC{5}{6:hh\\:mm}",
+                os.Name, os.Architecture,
+                cpu.Name,
+                os.FreePhysicalMemory / 1024,
+                os.TotalVisibleMemorySize / 1024,
+                sign,
+                TimeZoneInfo.Local.BaseUtcOffset);
         }
 
         private void ConnectLast()
@@ -170,7 +204,7 @@ namespace TickTrader.BotTerminal
                 LogState(builder, "Feed.Symbols", feed.Symbols.State.ToString());
                 LogState(builder, "Trade.Account", trade.Account.State.Current.ToString());
 
-                Console.WriteLine(builder.ToString());
+                logger.Debug(builder.ToString());
 
                 await Task.Delay(TimeSpan.FromSeconds(10));
             }

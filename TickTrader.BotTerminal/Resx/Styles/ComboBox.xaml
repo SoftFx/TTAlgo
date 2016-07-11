@@ -163,7 +163,7 @@
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="Padding" Value="2 3 3 3"/>
+        <Setter Property="Padding" Value="4 1 4 1"/>
         <Setter Property="Template" Value="{StaticResource ComboBox_Template}"></Setter>
         <Style.Resources>
             <Style TargetType="ComboBoxItem">

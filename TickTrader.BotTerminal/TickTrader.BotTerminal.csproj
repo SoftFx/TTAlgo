@@ -125,6 +125,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Data.SQLite.EF6">
       <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
@@ -134,6 +136,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\System.Threading.Tasks.Dataflow.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.0.0-beta1\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -157,6 +160,13 @@
     <Content Include="..\lib\SQLite\x86\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\Woosh.wav" />
+    <None Include="Resources\SharpEcho.wav" />
+    <None Include="Resources\Save.wav" />
+    <None Include="Resources\Positive.wav" />
+    <None Include="Resources\Negative.wav" />
+    <None Include="Resources\Blop.wav" />
+    <None Include="Resources\Clinking.wav" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -168,14 +178,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
-    <Compile Include="Behaviors\DragDrop\DragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DropState.cs" />
     <Compile Include="Behaviors\DragDrop\IDragAdorner.cs" />
     <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
-    <Compile Include="Behaviors\DragDrop\WinApiHelper.cs" />
+    <Compile Include="Behaviors\DragDrop\PlatformProxy.cs" />
+    <Compile Include="Behaviors\DragDrop\TransparentContainer.xaml.cs">
+      <DependentUpon>TransparentContainer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\StockChartDeltaCalculator.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
@@ -197,16 +211,20 @@
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\FlatRadioButton.cs" />
+    <Compile Include="Controls\PopupButton.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
     <Compile Include="Extensions\ResxExtension.cs" />
@@ -217,9 +235,11 @@
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\ValidationGroup.cs" />
+    <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
+    <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
@@ -230,12 +250,15 @@
     <Compile Include="Model.Auth\AuthEntry.cs" />
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model.Charts\ChartModelBase.cs" />
+    <Compile Include="Model\BotJournal.cs" />
     <Compile Include="Model\FdkAdapter.cs" />
+    <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model\PluginCatalog.cs" />
     <Compile Include="Model\PluginCatalogItem.cs" />
     <Compile Include="Model\PluginCatalogKey.cs" />
+    <Compile Include="Model\UIManager.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -279,7 +302,16 @@
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
+    <Compile Include="Resx\Sounds.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Sounds.resx</DependentUpon>
+    </Compile>
     <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Auth\AccountView.xaml.cs">
+      <DependentUpon>AccountView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\AccountViewModel.cs" />
     <Compile Include="Views.Auth\AccountPaneView.xaml.cs">
       <DependentUpon>AccountPaneView.xaml</DependentUpon>
     </Compile>
@@ -330,10 +362,17 @@
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
+    <Compile Include="Views\BotJournalView.xaml.cs">
+      <DependentUpon>BotJournalView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\JournalView.xaml.cs">
       <DependentUpon>JournalView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\BotJournalViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
+    <Compile Include="Views\ExitDialogView.xaml.cs">
+      <DependentUpon>ExitDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
@@ -361,6 +400,7 @@
     <Compile Include="Views\SymbolView.xaml.cs">
       <DependentUpon>SymbolView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ExitDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -393,6 +433,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Sounds.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Sounds.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
@@ -406,6 +450,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Behaviors\DragDrop\TransparentContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\BusyIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -458,11 +506,31 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles\DragDropStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles\SeparatorStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resx\Styles\Calendar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resx\Styles\ColorPickerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\CoordinatePickerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles\DateTimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles\PopupButtonStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -578,6 +646,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Auth\AccountView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Auth\LoginPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -626,9 +698,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\BotJournalView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\JournalView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExitDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\OrderListView.xaml">
       <SubType>Designer</SubType>

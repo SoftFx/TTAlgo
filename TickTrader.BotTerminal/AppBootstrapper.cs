@@ -59,11 +59,11 @@ namespace TickTrader.BotTerminal
 
             var logTarget = new FileTarget()
             {
-                FileName = Path.Combine(EnvService.Instance.LogFolder, "Log-${shortdate}.txt"),
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "Log-${shortdate}.txt"),
+                FileName = Path.Combine(EnvService.Instance.LogFolder, "Log.txt"),
+                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "Archive-{#}.txt"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
-                ArchiveDateFormat = "yyyy-MM-dd",
+                ArchiveOldFileOnStartup = true,
                 MaxArchiveFiles = 30
             };
 

@@ -55,81 +55,20 @@
 
         <l:ComboBoxItemTemplateSelector x:Key="comboboxItemTemplateSelector">
             <l:ComboBoxItemTemplateSelector.ItemTemplate>
-                <DataTemplate DataType="{x:Type l:AccountAuthEntry}">
-                    <Grid Tag="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
-                        <DockPanel Grid.Column="0" LastChildFill="False" Margin="2" x:Name="accountInfoPanel">
-                            <Border x:Name="serverShortName" DockPanel.Dock="Left" Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
-                            </Border>
-                            <TextBlock x:Name="txtLogin" DockPanel.Dock="Left" Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
-                            <Button x:Name="removeButton" 
-                                    DockPanel.Dock="Right"
-                                    Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" 
-                                    Grid.Column="1" Margin="2" 
-                                    VerticalContentAlignment="Center"
-                                    HorizontalContentAlignment="Center"
-                                    Visibility="Collapsed"
-                                    cal:Action.TargetWithoutContext="{Binding Tag, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}}" >
-                                <!--cal:Message.Attach="RemoveAccount($dataContext)"-->
-                                <Path Width="7" Height="7" Stretch="Fill" 
-                                  StrokeThickness="1.2"
-                                  Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                  Data="{DynamicResource Cross}"/>
-                            </Button>
-                        </DockPanel>
-                        <DockPanel Grid.Column="0" LastChildFill="False" Margin="2" Visibility="Collapsed" x:Name="removeConfirmationPanel">
-                            <TextBlock DockPanel.Dock="Left" Text="{Binding Login, StringFormat=Удалить {0}?}" Margin="6,0,3,0" VerticalAlignment="Center" />
-                            <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="cancelButton" Content="Нет"  Width="40"
-                                          Background="{DynamicResource RateDownColor}" 
-                                          HighlightBackground="{DynamicResource RateDownHighlightColor}"/>
-                            <l:FlatButton DockPanel.Dock="Right" Margin="2 0" x:Name="okButton" Content="Да" Width="40"
-                                          Background="{DynamicResource RateUpColor}"
-                                          HighlightBackground="{DynamicResource RateUpHighlightColor}"
-                                          cal:Action.TargetWithoutContext="{Binding Tag, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}}"
-                                          cal:Message.Attach="RemoveAccount($dataContext)"/>
-                        </DockPanel>
-                    </Grid>
-                    <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ComboBoxItem}}, Path=IsSelected}" Value="False">
-                            <Setter TargetName="removeButton" Property="Visibility" Value="Visible"></Setter>
-                        </DataTrigger>
-                        <EventTrigger RoutedEvent="Button.Click" SourceName="removeButton">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="removeConfirmationPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
-                                    </ObjectAnimationUsingKeyFrames>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="accountInfoPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
-                                    </ObjectAnimationUsingKeyFrames>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Button.Click" SourceName="cancelButton">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="removeConfirmationPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
-                                    </ObjectAnimationUsingKeyFrames>
-                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="accountInfoPanel" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
-                                    </ObjectAnimationUsingKeyFrames>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </DataTemplate.Triggers>
+                <DataTemplate>
+                    <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
                 </DataTemplate>
             </l:ComboBoxItemTemplateSelector.ItemTemplate>
 
             <l:ComboBoxItemTemplateSelector.SelectedItemTemplate>
-                <DataTemplate DataType="{x:Type l:AccountAuthEntry}">
+                <DataTemplate>
                 </DataTemplate>
             </l:ComboBoxItemTemplateSelector.SelectedItemTemplate>
         </l:ComboBoxItemTemplateSelector>
     </UserControl.Resources>
 
 
-    <Border Grid.Row="1" CornerRadius="4" Background="{DynamicResource ShellPanel_BorderBrush}" Padding="5">
+    <Border Grid.Row="1" CornerRadius="4" Background="{DynamicResource ShellPanel_BorderBrush}" Padding="5" IsEnabled="{Binding Enabled}">
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -142,11 +81,11 @@
                       VerticalAlignment="Center" 
                       HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Stretch"
-                      Focusable="False" 
                       Margin="-1"
+                      Focusable="False"
                       ItemsSource="{Binding Accounts}"
-                      SelectedItem="{Binding SelectedAccount}"
                       ItemTemplateSelector="{StaticResource comboboxItemTemplateSelector}"
+                      IsDropDownOpen="{Binding IsDropDownOpen, Mode=TwoWay}"
                       l:OverlayControl.Content="{Binding DisplayedAccount}"
                       l:OverlayControl.ContentTemplate="{StaticResource AccountAuthEntryTemplate}">
             </ComboBox>

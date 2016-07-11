@@ -1,6 +1,6 @@
 ﻿namespace TickTrader.BotTerminal
 {
-    internal enum DropState
+    public enum DropState
     {
         CanDrop = 1,
         CannotDrop = 2

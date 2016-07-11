@@ -13,6 +13,8 @@
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Margin" Value="8 0 0 0"/>
         </Style>
+
+        <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"></l:MessageTypeToBrushConverter>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -22,7 +24,7 @@
 
         <DockPanel Grid.Row="0" Margin="5 8 5 0" LastChildFill="False">
             <TextBox DockPanel.Dock="Left" Text="{Binding FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}"
-                     Width="200"/>
+                     Width="200" Style="{StaticResource SearchTextBox_Style}"/>
             <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
                           Background="{DynamicResource ToolBarItem_DisabledBrush}"
                           HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
@@ -37,10 +39,33 @@
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 
-                  SelectionMode="Single">
+                  SelectionMode="Single"
+                  RowHeaderWidth="100">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Date" Width="Auto" Binding="{Binding Date, StringFormat={}{0:u}}" />
-                <DataGridTextColumn Header="Message" Width="*" Binding="{Binding Message}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
+                <DataGridTemplateColumn SortMemberPath="Time" SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"></ColumnDefinition>
+                                    <ColumnDefinition></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10" Background="{Binding Type, Converter={StaticResource MsgTypeToBrush}}" BorderBrush="Black" BorderThickness="1">
+                                    <Border CornerRadius="5">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0.5,0.5" EndPoint="0,0">
+                                                <GradientStop Color="#00FFFFFF" Offset="0.0" />
+                                                <GradientStop Color="#AAFFFFFF" Offset="0.5" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                </Border>
+                                <TextBlock Grid.Column="1" Text="{Binding Time, StringFormat=dd/MM/yyyy HH:mm:ss.fff}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="{l:Resx Journal_Message}" Width="*" Binding="{Binding Message}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
