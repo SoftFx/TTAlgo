@@ -78,11 +78,11 @@
         <Style x:Key="SellButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
             <Setter Property="Template" Value="{StaticResource SellButtonTemplate}"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Sell.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
+                <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
                     <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
                     <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Sell.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
+                <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
                     <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
                     <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
                 </DataTrigger>
@@ -92,11 +92,11 @@
         <Style x:Key="BuyButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
             <Setter Property="Template" Value="{StaticResource BuyButtonTemplate}"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Buy.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
+                <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
                     <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
                     <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Buy.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
+                <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
                     <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
                     <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
                 </DataTrigger>
@@ -116,11 +116,13 @@
             <RowDefinition Height="30" />
             <RowDefinition Height="32" />
         </Grid.RowDefinitions>
-        <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource SellButtonStyle}" >
-            <TextBlock Text="{Binding Sell.Rate}"  HorizontalAlignment="Right" FontSize="18" />
+        <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource SellButtonStyle}"
+                      cal:Message.Attach="Sell">
+            <TextBlock Text="{Binding SellTracker.Rate}"  HorizontalAlignment="Right" FontSize="18" />
         </l:FlatButton>
-        <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource BuyButtonStyle}" >
-            <TextBlock Text="{Binding Buy.Rate}" HorizontalAlignment="Left" FontSize="18" />
+        <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource BuyButtonStyle}"
+                      cal:Message.Attach="Buy">
+            <TextBlock Text="{Binding BuyTracker.Rate}" HorizontalAlignment="Left" FontSize="18" />
         </l:FlatButton>
         <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Margin="4,1,4,6" Focusable="False"
                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectedIndex="1">

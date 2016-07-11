@@ -59,6 +59,7 @@
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
+    <Compile Include="Entities\SymbolAccessor.cs" />
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Executor\Interfaces.cs" />
     <Compile Include="Executor\InvokeStartegy.cs" />
     <Compile Include="Executor\PluginExecutor.cs" />
+    <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Realtime\RealtimePluginSetup.cs" />
     <Compile Include="Math\BarSampler.cs" />
     <Compile Include="Metadata\ValueFactory.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Buffers\DataSeriesProxy.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
+    <Compile Include="Repository\RepositoryKey.cs" />
     <Compile Include="Setup\InputSetup.cs" />
     <Compile Include="Setup\Interfaces.cs" />
     <Compile Include="Setup\ParameterSetup.cs" />

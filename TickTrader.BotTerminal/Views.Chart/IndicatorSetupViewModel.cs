@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -17,24 +18,23 @@ namespace TickTrader.BotTerminal
         private IIndicatorSetup cfg;
         private IIndicatorHost host;
         private bool dlgResult;
-        private AlgoRepositoryModel repModel;
+        private PluginCatalog catalog;
 
-        public IndicatorSetupViewModel(AlgoRepositoryModel repModel, AlgoCatalogItem item, IIndicatorHost host)
+        public IndicatorSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IIndicatorHost host)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.DisplayName = "Add Indicator";
-            this.RepItem = item;
+            this.PluginItem = item;
             this.host = host;
-            this.repModel = repModel;
+            this.catalog = catalog;
 
-            repModel.Removed += repModel_Removed;
-            repModel.Replaced += repModel_Replaced;
+            catalog.AllPlugins.Updated += AllPlugins_Updated;
 
             Init();
         }
 
         public IndicatorSetupBase Setup { get { return cfg.UiModel; } }
-        public AlgoCatalogItem RepItem { get; private set; }
+        public PluginCatalogItem PluginItem { get; private set; }
 
         public void Reset()
         {
@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
             if (cfg != null)
                 cfg.UiModel.ValidityChanged -= Validate;
 
-            cfg = host.CreateIndicatorConfig(RepItem);
+            cfg = host.CreateIndicatorConfig(PluginItem.Ref);
             cfg.UiModel.ValidityChanged += Validate;
             Validate();
 
@@ -93,25 +93,26 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange("CanOk");
         }
 
-        void repModel_Replaced(AlgoCatalogItem newItem)
+        private void AllPlugins_Updated(Machinarium.Qnil.DictionaryUpdateArgs<PluginCatalogKey, PluginCatalogItem> args)
         {
-            if (newItem.Id == RepItem.Id)
+            if (args.Action == DLinqAction.Replace)
             {
-                RepItem = newItem;
-                Init();
+                if (args.Key == PluginItem.Key)
+                {
+                    PluginItem = args.NewItem;
+                    Init();
+                }
             }
-        }
-
-        void repModel_Removed(AlgoCatalogItem removedItem)
-        {
-            if (removedItem.Id == RepItem.Id)
-                TryClose();
+            else if (args.Action == DLinqAction.Remove)
+            {
+                if (args.Key == PluginItem.Key)
+                    TryClose();
+            }
         }
 
         private void Dispose()
         {
-            repModel.Removed -= repModel_Removed;
-            repModel.Replaced -= repModel_Replaced;
+            catalog.AllPlugins.Updated -= AllPlugins_Updated;
         }
     }
 }

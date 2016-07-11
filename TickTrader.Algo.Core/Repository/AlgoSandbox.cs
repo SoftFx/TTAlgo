@@ -21,6 +21,11 @@ namespace TickTrader.Algo.Core.Repository
             return new T();
         }
 
+        public PluginExecutor CreateExecutor(string pluginId)
+        {
+            return new PluginExecutor(pluginId);
+        }
+
         public IEnumerable<AlgoPluginDescriptor> LoadAndInspect(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath);

@@ -174,6 +174,7 @@ namespace TickTrader.Algo.Core
         public abstract void InvokeCalculate(bool isUpdate);
         public abstract void InvokeOnStart();
         public abstract void InvokeOnStop();
+        public abstract void InvokeOnQuote(Quote quote);
 
         protected void InvokeCalculateForNestedIndicators(bool isUpdate)
         {

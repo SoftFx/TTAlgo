@@ -168,7 +168,7 @@ namespace Machinarium.Qnil
                 {
                     var removedItem = Collection.Snapshot[i];
                     parent.Count--;
-                    parent.OnUpdated(new ListUpdateArgs<TResult>(parent, DLinqAction.Remove, position + i, default(TResult), removedItem));
+                    parent.OnUpdated(new ListUpdateArgs<TResult>(parent, DLinqAction.Remove, position, default(TResult), removedItem));
                 }
             }
 

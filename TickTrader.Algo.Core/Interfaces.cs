@@ -40,14 +40,18 @@ namespace TickTrader.Algo.Core
     {
     }
 
-    
-
     public interface IAccountDataProvider
     {
         IEnumerable<Position> Positions { get; }
         event EntityHandler<Position> PositionsChanged;
         IEnumerable<Order> Orders { get; }
         event EntityHandler<Order> OrdersChanged;
+    }
+
+    public interface IPluginSubscriptionHandler
+    {
+        void Subscribe(string smbCode, int depth);
+        void Unsubscribe(string smbCode);
     }
 
     public enum EntityUpdateActions { Added, Removed, Updated }

@@ -72,19 +72,26 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class QuoteEntity : Api.Quote
     {
+        private static readonly IReadOnlyList<BookEntry> emptyBook = new List<BookEntry>().AsReadOnly();
+
+        public string SymbolCode { get; set; }
         public DateTime Time { get; set; }
         public double Ask { get; set; }
         public double Bid { get; set; }
+
+        public virtual IReadOnlyList<BookEntry> BidBook { get { return emptyBook; } }
+        public virtual IReadOnlyList<BookEntry> AskBook { get { return emptyBook; } }
+
     }
 
     [Serializable]
-    public class Level2QuoteEntity : QuoteEntity, Api.Level2Quote
+    public class Level2QuoteEntity : QuoteEntity, Api.Quote
     {
-        public List<BookEntryEntity> AskBook { get; set; }
-        public List<BookEntryEntity> BidBook { get; set; }
+        public List<BookEntryEntity> BidList { get; set; }
+        public List<BookEntryEntity> AskList { get; set; }
 
-        IReadOnlyList<BookEntry> Level2Quote.AskBook { get { return AskBook; } }
-        IReadOnlyList<BookEntry> Level2Quote.BidBook { get { return BidBook; } }
+        public override IReadOnlyList<BookEntry> BidBook { get { return BidList; } }
+        public override IReadOnlyList<BookEntry> AskBook { get { return AskList; } }
     }
 
     [Serializable]

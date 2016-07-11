@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginBuilder : IPluginDataProvider, IPluginInvoker
+    public class PluginBuilder : IPluginDataProvider, IPluginInvoker, IPluginSubscriptionHandler
     {
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
             Descriptor = descriptor;
             marketData = new MarketDataImpl(this);
             Account = new AccountEntity();
-            Symbols = new SymbolsCollection();
+            Symbols = new SymbolsCollection(this);
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
         }
@@ -36,6 +36,9 @@ namespace TickTrader.Algo.Core
         public AccountEntity Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
+        public Action<string, int> OnSubscribe { get; set; }
+        public Action<string> OnUnsubscribe { get; set; }
+
         public IReadOnlyDictionary<string, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
         public InputBuffer<T> GetBuffer<T>(string bufferId)
@@ -164,6 +167,23 @@ namespace TickTrader.Algo.Core
             PluginProxy.InvokeInit();
         }
 
+        void IPluginInvoker.InvokeOnQuote(QuoteEntity quote)
+        {
+            PluginProxy.InvokeOnQuote(quote);
+        }
+
+        void IPluginSubscriptionHandler.Subscribe(string smbCode, int depth)
+        {
+            if (OnSubscribe != null)
+                OnSubscribe(smbCode, depth);
+        }
+
+        void IPluginSubscriptionHandler.Unsubscribe(string smbCode)
+        {
+            if (OnUnsubscribe != null)
+                OnUnsubscribe(smbCode);
+        }
+
         private class MarketDataImpl : MarketDataProvider
         {
             private PluginBuilder builder;
@@ -201,7 +221,7 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            public Leve2Series Level2
+            public QuoteSeries Level2
             {
                 get
                 {
@@ -232,12 +252,12 @@ namespace TickTrader.Algo.Core
                 throw new NotImplementedException();
             }
 
-            public Leve2Series GetLevel2(string symbolCode)
+            public QuoteSeries GetLevel2(string symbolCode)
             {
                 throw new NotImplementedException();
             }
 
-            public Leve2Series GetLevel2(string symbolCode, DateTime from, DateTime to)
+            public QuoteSeries GetLevel2(string symbolCode, DateTime from, DateTime to)
             {
                 throw new NotImplementedException();
             }

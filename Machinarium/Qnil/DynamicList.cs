@@ -11,7 +11,7 @@ namespace Machinarium.Qnil
     [DataContract(Namespace = "")]
     public class DynamicList<T> : IDynamicListSource<T>
     {
-        private SnapshotAccessor accessor;
+        private ValuesCollection accessor;
         [DataMember(Name = "Elements")]
         private List<T> innerList;
 
@@ -30,11 +30,11 @@ namespace Machinarium.Qnil
         [OnDeserialized]
         private void Init(StreamingContext context)
         {
-            accessor = new SnapshotAccessor(this);
+            accessor = new ValuesCollection(this);
         }
 
         public int Count { get { return innerList.Count; } }
-        public IList<T> Values { get { return accessor; } }
+        public ValuesCollection Values { get { return accessor; } }
 
         public void Add(T item)
         {
@@ -117,11 +117,11 @@ namespace Machinarium.Qnil
 
         IReadOnlyList<T> IDynamicListSource<T>.Snapshot { get { return accessor; } }
 
-        public class SnapshotAccessor : IList<T>, IReadOnlyList<T>
+        public class ValuesCollection : IList<T>, IReadOnlyList<T>
         {
             private DynamicList<T> parent;
 
-            internal SnapshotAccessor(DynamicList<T> list)
+            internal ValuesCollection(DynamicList<T> list)
             {
                 this.parent = list;
             }

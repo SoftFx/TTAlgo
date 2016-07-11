@@ -19,6 +19,11 @@ namespace TickTrader.Algo.Core.Metadata
         public string DisplayName { get { return Descriptor.DisplayName; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
 
+        public virtual PluginExecutor CreateExecutor()
+        {
+            return new PluginExecutor(Id);
+        }
+
         internal virtual ExecutionContext CreateContext()
         {
             return new MsgQueueContext();
@@ -33,6 +38,11 @@ namespace TickTrader.Algo.Core.Metadata
             : base(descriptor)
         {
             this.sandbox = sandbox;
+        }
+
+        public override PluginExecutor CreateExecutor()
+        {
+            return sandbox.CreateExecutor(Id);
         }
 
         internal override ExecutionContext CreateContext()

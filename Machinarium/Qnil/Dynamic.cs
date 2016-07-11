@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -158,6 +159,20 @@ namespace Machinarium.Qnil
             Func<TKey, TValue, TGrouping> groupingKeySelector)
         {
             return new DictionaryGrouping<TKey, TValue, TGrouping>(src, groupingKeySelector);
+        }
+
+        // <summary>
+        /// Note: Supplied collection must be empty!
+        /// Note: You should not update supplied collection in any other way or from any other source!
+        /// </summary>
+        public static IDisposable ConnectTo<T>(this IDynamicListSource<T> src, IList target)
+        {
+            var chain = src as ListChainToken<T>;
+
+            if (chain != null)
+                return new ListConnector<T>(chain.Src, target) { PropogateDispose = true };
+
+            return new ListConnector<T>(src, target);
         }
     }
 }

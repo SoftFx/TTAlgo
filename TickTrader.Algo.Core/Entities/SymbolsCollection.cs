@@ -12,8 +12,14 @@ namespace TickTrader.Algo.Core
     {
         private SymbolFixture fixture = new SymbolFixture();
         private string mainSymbolCode;
+        private IPluginSubscriptionHandler subscriptionHandler;
 
         internal SymbolProvider SymbolProviderImpl { get { return fixture; } }
+
+        public SymbolsCollection(IPluginSubscriptionHandler subscriptionHandler)
+        {
+            this.subscriptionHandler = subscriptionHandler;
+        }
 
         public string MainSymbolCode
         {
@@ -32,7 +38,7 @@ namespace TickTrader.Algo.Core
 
         public void Add(SymbolEntity symbol)
         {
-            fixture.InnerCollection.Add(symbol.Code, symbol);
+            fixture.InnerCollection.Add(symbol.Code, new SymbolAccessor(symbol, subscriptionHandler));
 
             if (symbol.Code == mainSymbolCode)
                 InitCurrentSymbol();
@@ -42,15 +48,18 @@ namespace TickTrader.Algo.Core
         {
             fixture.InnerCollection.Clear();
 
-            foreach (var smb in symbols)
-                fixture.InnerCollection.Add(smb.Code, smb);
+            if (symbols != null)
+            {
+                foreach (var smb in symbols)
+                    fixture.InnerCollection.Add(smb.Code, new SymbolAccessor(smb, subscriptionHandler));
 
-            InitCurrentSymbol();
+                InitCurrentSymbol();
+            }
         }
 
         private class SymbolFixture : Api.SymbolProvider
         {
-            private Dictionary<string, SymbolEntity> symbols = new Dictionary<string, SymbolEntity>();
+            private Dictionary<string, Api.Symbol> symbols = new Dictionary<string, Api.Symbol>();
 
             public Symbol this[string symbolCode]
             {
@@ -59,15 +68,15 @@ namespace TickTrader.Algo.Core
                     if (string.IsNullOrEmpty(symbolCode))
                         return new NullSymbol("");
 
-                    SymbolEntity entity;
-                    if (!symbols.TryGetValue(symbolCode, out entity))
+                    Api.Symbol smb;
+                    if (!symbols.TryGetValue(symbolCode, out smb))
                         return new NullSymbol(symbolCode);
-                    return entity;
+                    return smb;
                 }
             }
 
             public Symbol Current { get; set; }
-            public Dictionary<string, SymbolEntity> InnerCollection { get { return symbols; } }
+            public Dictionary<string, Api.Symbol> InnerCollection { get { return symbols; } }
 
             public IEnumerator<Symbol> GetEnumerator()
             {

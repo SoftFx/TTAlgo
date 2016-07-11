@@ -62,6 +62,7 @@
     <Compile Include="Qnil\Dynamic.cs" />
     <Compile Include="Qnil\ListComposition.cs" />
     <Compile Include="Qnil\Interfaces.cs" />
+    <Compile Include="Qnil\ListConnector.cs" />
     <Compile Include="Qnil\ListFilter.cs" />
     <Compile Include="Qnil\ListSelector.cs" />
     <Compile Include="Qnil\ObservableWrapper.cs" />

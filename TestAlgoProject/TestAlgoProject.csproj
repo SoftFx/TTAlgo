@@ -49,6 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloseAllBot.cs" />
     <Compile Include="FxCalendarIndicator.cs" />
     <Compile Include="FxCalendar\FxNews.cs" />
     <Compile Include="FxCalendar\ImpactLevel.cs" />
@@ -63,10 +64,21 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\algo.metadata" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy  /Y $(TargetDir)*.*  ..\..\..\TickTrader.BotTerminal\bin\Debug\AlgoRepository\
 copy  /Y $(TargetDir)*.*  ..\..\..\TickTrader.BotTerminal\bin\Release\AlgoRepository\</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>( 
+echo algo.metadata v1
+echo SolutionPath "$(SolutionPath)"
+echo ProjectPath "$(ProjectPath)"
+echo DevEnvDir "$(DevEnvDir)"
+) &gt; $(ProjectDir)Properties\algo.metadata</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.State;
+using Machinarium.Qnil;
 using NLog;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
@@ -17,6 +18,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.BotTerminal.Lib;
 using SoftFX.Extended;
+using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -32,7 +34,7 @@ namespace TickTrader.BotTerminal
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private List<IDataSeries> seriesCollection = new List<IDataSeries>();
         private IndicatorsCollection indicators;
-        private AlgoCatalog catalog;
+        private PluginCatalog catalog;
         private SelectableChartTypes chartType;
         private bool isLoading;
         private bool isUpdateRequired;
@@ -46,7 +48,7 @@ namespace TickTrader.BotTerminal
         private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
 
-        public ChartModelBase(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
+        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.Feed = feed;
@@ -56,26 +58,16 @@ namespace TickTrader.BotTerminal
 
             TimelineType = TimelineTypes.Uniform;
 
-            this.AvailableIndicators = new BindableCollection<AlgoCatalogItem>();
+            this.AvailableIndicators = catalog.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
             this.isOnline = feed.Connection.State.Current == ConnectionModel.States.Online;
             feed.Connection.Connected += Connection_Connected;
             feed.Connection.Disconnected += Connection_Disconnected1;
 
-            foreach (var indicator in catalog.Indicators)
-            {
-                if (IsIndicatorSupported(indicator.Descriptor))
-                    AvailableIndicators.Add(indicator);
-            }
-
             symbol.Subscribe(this);
 
             CurrentAsk = symbol.LastQuote?.Ask;
             CurrentBid = symbol.LastQuote?.Bid;
-
-            catalog.Added += Repository_Added;
-            catalog.Removed += Repository_Removed;
-            catalog.Replaced += Repository_Replaced;
 
             stateController.AddTransition(States.Idle, () => isUpdateRequired && isOnline, States.UpdatingData);
             stateController.AddTransition(States.Idle, () => isCloseRequested, States.Closed);
@@ -90,8 +82,9 @@ namespace TickTrader.BotTerminal
         protected FeedModel Feed { get; private set; }
         protected ConnectionModel Connection { get { return Feed.Connection; } }
 
+        public abstract Api.TimeFrames TimeFrame { get; }
         public IEnumerable<IDataSeries> DataSeriesCollection { get { return seriesCollection; } }
-        public BindableCollection<AlgoCatalogItem> AvailableIndicators { get; private set; }
+        public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
         public IndicatorsCollection Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public IEnumerable<TimelineTypes> AvailableTimelines { get { return new TimelineTypes[] { TimelineTypes.Uniform, TimelineTypes.Real }; } }
@@ -200,12 +193,14 @@ namespace TickTrader.BotTerminal
         }
 
         public int Depth { get { return 0; } }
+        public DateTime TimelineStart { get; private set; }
+        public DateTime TimelineEnd { get; private set; }
 
         public event System.Action NavigatorChanged = delegate { };
         public event System.Action ChartTypeChanged = delegate { };
         public event System.Action DepthChanged = delegate { };
 
-        public IIndicatorSetup CreateIndicatorConfig(AlgoCatalogItem item)
+        public IIndicatorSetup CreateIndicatorConfig(AlgoPluginRef item)
         {
             return CreateInidactorConfig(item);
         }
@@ -222,8 +217,7 @@ namespace TickTrader.BotTerminal
 
         protected abstract void ClearData();
         protected abstract Task<DataMetrics> LoadData(CancellationToken cToken);
-        protected abstract bool IsIndicatorSupported(AlgoPluginDescriptor descriptor);
-        protected abstract IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem);
+        protected abstract IIndicatorSetup CreateInidactorConfig(AlgoPluginRef repItem);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -240,6 +234,8 @@ namespace TickTrader.BotTerminal
                 ClearData();
                 await indicators.Stop();
                 var metrics = await LoadData(cToken);
+                TimelineStart = metrics.StartDate;
+                TimelineEnd = metrics.EndDate;
                 Navigator.Update(metrics.Count, metrics.StartDate, metrics.EndDate);
                 indicators.Start();
             }
@@ -268,18 +264,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Repository_Replaced(AlgoCatalogItem obj)
-        {
-        }
-
-        private void Repository_Removed(AlgoCatalogItem obj)
-        {
-        }
-
-        private void Repository_Added(AlgoCatalogItem obj)
-        {
-        }
-
         private void Connection_Disconnected1()
         {
             stateController.ModifyConditions(() => isOnline = false);
@@ -292,9 +276,7 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            catalog.Added -= Repository_Added;
-            catalog.Removed -= Repository_Removed;
-            catalog.Replaced -= Repository_Replaced;
+            AvailableIndicators.Dispose();
 
             Model.Unsubscribe(this);
         }

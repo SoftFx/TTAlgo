@@ -1,4 +1,5 @@
-﻿using Machinarium.State;
+﻿using Machinarium.Qnil;
+using Machinarium.State;
 using NLog;
 using SoftFX.Extended;
 using System;
@@ -14,14 +15,14 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolCollectionModel : IEnumerable<SymbolModel>
+    internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>
     {
         private Logger logger;
         public enum States { Offline, WatingData, Canceled, Online, UpdatingSubscription, Stopping }
         public enum Events { Disconnected, OnConnecting, SybmolsArrived, ConnectCanceled, DoneUpdating, DoneStopping }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
-        private Dictionary<string, SymbolModel> symbols = new Dictionary<string, SymbolModel>();
+        private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
         private ConnectionModel connection;
         private IEnumerable<SymbolInfo> snapshot;
         private bool isSymbolsArrived;
@@ -29,6 +30,8 @@ namespace TickTrader.BotTerminal
         private TriggeredActivity updateSubscriptionActivity;
         private ActionBlock<Quote> rateUpdater;
         private List<Algo.Core.SymbolEntity> algoSymbolCache = new List<Algo.Core.SymbolEntity>();
+
+        public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
         public SymbolCollectionModel(ConnectionModel connection)
         {
@@ -83,6 +86,8 @@ namespace TickTrader.BotTerminal
         public States State { get { return stateControl.Current; } }
         public IEnumerable<Algo.Core.SymbolEntity> AlgoSymbolCache { get { return algoSymbolCache; } }
 
+        public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
+
         private void UpdateRate(Quote tick)
         {
             SymbolModel symbol;
@@ -121,7 +126,7 @@ namespace TickTrader.BotTerminal
 
         private async void Stop()
         {
-            await updateSubscriptionActivity.Stop();          
+            await updateSubscriptionActivity.Stop();
             stateControl.PushEvent(Events.DoneStopping);
         }
 
@@ -130,8 +135,8 @@ namespace TickTrader.BotTerminal
             logger.Debug("EVENT SymbolsArrived");
 
             snapshot = e.Information;
-            algoSymbolCache.Clear();
-            algoSymbolCache = snapshot.Select(AlgoConverter.Convert).ToList();
+            //algoSymbolCache.Clear();
+            algoSymbolCache = snapshot.Select(FdkAdapter.Convert).ToList();
             stateControl.ModifyConditions(() => isSymbolsArrived = true);
         }
 
@@ -154,7 +159,6 @@ namespace TickTrader.BotTerminal
                 {
                     model = new SymbolModel(this, info);
                     symbols.Add(info.Name, model);
-                    Added(model);
                 }
             }
 
@@ -167,10 +171,7 @@ namespace TickTrader.BotTerminal
             }
 
             foreach (var model in toRemove)
-            {
-                if (symbols.Remove(model.Name))
-                    Removed(model);
-            }
+                symbols.Remove(model.Name);
         }
 
         private void ResetSubscription()
@@ -178,8 +179,19 @@ namespace TickTrader.BotTerminal
             foreach (var smb in symbols.Values) smb.CurrentSubscription = new SubscriptionInfo();
         }
 
-        public event Action<SymbolModel> Added = delegate { };
-        public event Action<SymbolModel> Removed = delegate { };
+        public void Dispose()
+        {
+        }
+
+        //        public event Action<SymbolModel> Added = delegate { };
+        //      public event Action<SymbolModel> Removed = delegate { };
+
+        public SymbolModel GetOrDefault(string key)
+        {
+            SymbolModel result;
+            this.symbols.TryGetValue(key, out result);
+            return result;
+        }
 
         public SymbolModel this[string key]
         {
@@ -190,16 +202,6 @@ namespace TickTrader.BotTerminal
                     throw new ArgumentException("Symbol Not Found: " + key);
                 return result;
             }
-        }
-
-        public IEnumerator<SymbolModel> GetEnumerator()
-        {
-            return symbols.Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return symbols.Values.GetEnumerator();
         }
     }
 }

@@ -16,6 +16,9 @@ namespace TickTrader.Algo.Api
         bool IsNull { get; }
         string BaseCurrencyCode { get; }
         string CounterCurrencyCode { get; }
+
+        void Subscribe(int depth = 1);
+        void Unsubscribe();
     }
 
     public interface SymbolProvider : IEnumerable<Symbol>

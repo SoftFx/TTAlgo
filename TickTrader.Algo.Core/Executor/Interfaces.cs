@@ -10,9 +10,9 @@ namespace TickTrader.Algo.Core
 
     public interface IPluginFeedProvider
     {
+        IEnumerable<SymbolEntity> GetSymbolMetadata();
         IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<Level2QuoteEntity> QueryLeve2(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
         void Subscribe(string symbolCode, int depth);
         void Unsubscribe(string symbolCode);
         event Action<FeedUpdate[]> FeedUpdated;
@@ -38,6 +38,7 @@ namespace TickTrader.Algo.Core
         void InvokeOnStart();
         void InvokeOnStop();
         void InvokeCalculate(bool isUpdate);
+        void InvokeOnQuote(QuoteEntity quote);
     }
 
     public interface IInvokeStrategyContext

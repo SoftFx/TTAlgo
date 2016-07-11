@@ -122,6 +122,19 @@
             <ContentControl cal:View.Model="{Binding}" />
         </DataTemplate>
 
+        <Style x:Key="BotPanelStyle" TargetType="ItemsControl">
+            <Setter Property="Margin" Value="5 5 5 25"/>
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <ContentControl cal:View.Model="{Binding}" Margin="0 2 0 0" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Margin="4">
@@ -135,35 +148,38 @@
             </ItemsControl.Resources>
             <ItemsControl.ItemsSource>
                 <CompositeCollection>
-                    <s:SciChartSurface x:Name="MainChartControl"
-                                       RenderableSeries="{s:SeriesBinding Series}"
-                                       Style="{StaticResource MainChartStyle}"
-                                       XAxis="{Binding Chart.TimeAxis}"
-                                       ContextMenu="{StaticResource MainChartPanelContextMenu}"
-                                       s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}"
-                                       ViewportManager="{Binding ViewPort}">
-                        <s:SciChartSurface.YAxis>
-                            <s:NumericAxis GrowBy="0.1, 0.1" MaxAutoTicks="25"
-                                               FontSize="11"
-                                               DrawMinorGridLines="False"
-                                               TextFormatting="{Binding YAxisLabelFormat}"
-                                               CursorTextFormatting="{Binding YAxisLabelFormat}"
-                                               AutoRange="Always"/>
-                        </s:SciChartSurface.YAxis>
-                        <s:SciChartSurface.Annotations>
-                            <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
-                                                        Stroke="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
-                            <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
-                                                        Stroke="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
-                            <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
-                                                    Background="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
-                            <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
-                                                    Background="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
-                        </s:SciChartSurface.Annotations>
-                        <s:SciChartSurface.Resources>
-                            <ResourceDictionary Source="SeriesView.xaml"/>
-                        </s:SciChartSurface.Resources>
-                    </s:SciChartSurface>
+                    <Grid>
+                        <s:SciChartSurface x:Name="MainChartControl"
+                                           RenderableSeries="{s:SeriesBinding Series}"
+                                           Style="{StaticResource MainChartStyle}"
+                                           XAxis="{Binding Chart.TimeAxis}"
+                                           ContextMenu="{StaticResource MainChartPanelContextMenu}"
+                                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}"
+                                           ViewportManager="{Binding ViewPort}">
+                            <s:SciChartSurface.YAxis>
+                                <s:NumericAxis GrowBy="0.1, 0.1" MaxAutoTicks="25"
+                                                   FontSize="11"
+                                                   DrawMinorGridLines="False"
+                                                   TextFormatting="{Binding YAxisLabelFormat}"
+                                                   CursorTextFormatting="{Binding YAxisLabelFormat}"
+                                                   AutoRange="Always"/>
+                            </s:SciChartSurface.YAxis>
+                            <s:SciChartSurface.Annotations>
+                                <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                            Stroke="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
+                                <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                            Stroke="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
+                                <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                        Background="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
+                                <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                        Background="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
+                            </s:SciChartSurface.Annotations>
+                            <s:SciChartSurface.Resources>
+                                <ResourceDictionary Source="SeriesView.xaml"/>
+                            </s:SciChartSurface.Resources>
+                        </s:SciChartSurface>
+                        <ItemsControl ItemsSource="{Binding Bots}" Style="{StaticResource BotPanelStyle}"/>
+                    </Grid>
                     <CollectionContainer Collection="{Binding Source={StaticResource indicatorPanesViewSrc}}"/>
                 </CompositeCollection>
             </ItemsControl.ItemsSource>

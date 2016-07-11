@@ -12,6 +12,7 @@ using TickTrader.Algo.Core;
 using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,10 +21,11 @@ namespace TickTrader.BotTerminal
         //private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
         private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
-        private List<QuoteEntity> updateQueue;
+        private Api.TimeFrames timeframe;
+        //private List<QuoteEntity> updateQueue;
         private BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, AlgoCatalog catalog, FeedModel feed)
+        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed)
             : base(symbol, catalog, feed)
         {
             Support(SelectableChartTypes.OHLC);
@@ -54,11 +56,14 @@ namespace TickTrader.BotTerminal
             AddSeries(chartData);
         }
 
-        public void Activate(BarPeriod period)
+        public void Activate(Api.TimeFrames timeframe)
         {
-            this.period = period;
+            this.timeframe = timeframe;
+            this.period = FdkAdapter.ToBarPeriod(timeframe);
             base.Activate();
         }
+
+        public override Api.TimeFrames TimeFrame { get { return timeframe; } }
 
         protected override void ClearData()
         {
@@ -101,12 +106,7 @@ namespace TickTrader.BotTerminal
             return metrics;
         }
 
-        protected override bool IsIndicatorSupported(AlgoPluginDescriptor descriptor)
-        {
-            return true;
-        }
-
-        protected override IIndicatorSetup CreateInidactorConfig(AlgoCatalogItem repItem)
+        protected override IIndicatorSetup CreateInidactorConfig(AlgoPluginRef repItem)
         {
             return new IndicatorConfig(repItem, this);
         }
@@ -129,9 +129,9 @@ namespace TickTrader.BotTerminal
         private class IndicatorConfig : IIndicatorSetup
         {
             private BarChartModel chart;
-            private AlgoCatalogItem repItem;
+            private AlgoPluginRef repItem;
 
-            public IndicatorConfig(AlgoCatalogItem repItem, BarChartModel chart, IndicatorSetup_Bars srcSetup = null)
+            public IndicatorConfig(AlgoPluginRef repItem, BarChartModel chart, IndicatorSetup_Bars srcSetup = null)
             {
                 this.chart = chart;
                 this.repItem = repItem;

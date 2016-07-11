@@ -5,19 +5,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel
+    internal class ShellViewModel : Screen, IConnectionViewModel, OrderUi
     {
         private ConnectionManager cManager;
         private TraderModel trade;
         private FeedModel feed;
         private WindowManager wndManager;
-        private AlgoCatalog catalog = new AlgoCatalog();
+        private PluginCatalog catalog = new PluginCatalog();
         private PersistModel storage;
         private EventJournal eventJournal;
         private Logger logger;
@@ -36,12 +37,11 @@ namespace TickTrader.BotTerminal
             feed = new FeedModel(cManager.Connection);
             eventJournal = new EventJournal();
 
-
-            AlgoList = new AlgoListViewModel();
-            SymbolList = new SymbolListViewModel(feed.Symbols);
+            AlgoList = new AlgoListViewModel(catalog);
+            SymbolList = new SymbolListViewModel(feed.Symbols, this);
             PositionList = new PositionListViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
-            Charts = new ChartCollectionViewModel(feed, catalog, wndManager);
+            Charts = new ChartCollectionViewModel(feed, catalog, wndManager, this);
             AccountPane = new AccountPaneViewModel(cManager, this);
             Journal = new JournalViewModel(eventJournal);
             CanConnect = true;
@@ -50,6 +50,9 @@ namespace TickTrader.BotTerminal
             cManager.StateChanged += UpdateCommandStates;
 
             SymbolList.NewChartRequested += s => Charts.Open(s);
+
+            catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
+            catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
 
             LogStateLoop();
         }
@@ -177,6 +180,27 @@ namespace TickTrader.BotTerminal
         {
             builder.Append(name).Append(':').Append(state).Append(" ");
         }
+
+        #region OrderUi
+
+        public void OpenMarkerOrder(string symbol)
+        {
+            try
+            {
+                using (var openOrderModel = new OpenOrderDialogViewModel(trade, feed, symbol))
+                    wndManager.ShowWindow(openOrderModel);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        public void OpenMarkerOrder(string symbol, decimal volume, OrderSides side)
+        {
+        }
+
+        #endregion
     }
 
     internal interface IConnectionViewModel

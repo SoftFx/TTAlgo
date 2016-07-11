@@ -19,12 +19,6 @@ namespace TestAlgoProject
         [Parameter(DefaultValue = 0.0)]
         public double Shift { get; set; }
 
-        [Parameter(DefaultValue = CustomEnum.ValVal)]
-        public CustomEnum Choice1 { get; set; }
-
-        [Parameter(DefaultValue = CustomEnum.ValVal)]
-        public EmptyEnum Choice2 { get; set; }
-
         [Input]
         public DataSeries Input { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using Machinarium.State;
+using Machinarium.Qnil;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -48,9 +49,9 @@ namespace TickTrader.Algo.Core.Repository
             stateControl.OnEnter(States.Scanning, () => scanTask = Task.Factory.StartNew(Scan));
         }
 
-        public event Action<AlgoPluginRef> Added = delegate { };
-        public event Action<AlgoPluginRef> Removed = delegate { };
-        public event Action<AlgoPluginRef> Replaced = delegate { };
+        public event Action<AlgoRepositoryEventArgs> Added = delegate { };
+        public event Action<AlgoRepositoryEventArgs> Removed = delegate { };
+        public event Action<AlgoRepositoryEventArgs> Replaced = delegate { };
 
         public void Start()
         {
@@ -102,9 +103,9 @@ namespace TickTrader.Algo.Core.Repository
                         if (!assemblies.TryGetValue(file, out assemblyMetadata))
                         {
                             assemblyMetadata = new AlgoAssembly(file);
-                            assemblyMetadata.Added += m => Added(m);
-                            assemblyMetadata.Removed += m => Removed(m);
-                            assemblyMetadata.Replaced += m => Replaced(m);
+                            assemblyMetadata.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName));
+                            assemblyMetadata.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName));
+                            assemblyMetadata.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName));
                             assemblies.Add(file, assemblyMetadata);
                             assemblyMetadata.Start();
                         }
@@ -172,5 +173,19 @@ namespace TickTrader.Algo.Core.Repository
         public void Dispose()
         {
         }
+    }
+
+    public class AlgoRepositoryEventArgs
+    {
+        public AlgoRepositoryEventArgs(AlgoRepository rep, AlgoPluginRef pRef, string fileName)
+        {
+            Repository = rep;
+            FileName = fileName;
+            PluginRef = pRef;
+        }
+
+        public AlgoPluginRef PluginRef { get; private set; }
+        public string FileName { get; private set; }
+        public AlgoRepository Repository { get; private set; }
     }
 }

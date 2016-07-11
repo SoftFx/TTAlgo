@@ -11,18 +11,20 @@ namespace TickTrader.BotTerminal
     {
         private IWindowManager wndManager;
         private FeedModel feed;
-        private AlgoCatalog catalog;
+        private PluginCatalog catalog;
+        private OrderUi orderUi;
 
-        public ChartCollectionViewModel(FeedModel feedProvider, AlgoCatalog catalog, IWindowManager wndManager)
+        public ChartCollectionViewModel(FeedModel feedProvider, PluginCatalog catalog, IWindowManager wndManager, OrderUi orderUi)
         {
             this.feed = feedProvider;
             this.catalog = catalog;
             this.wndManager = wndManager;
+            this.orderUi = orderUi;
         }
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, feed, catalog, wndManager));
+            ActivateItem(new ChartViewModel(symbol, feed, catalog, wndManager, orderUi));
         }
 
         public void CloseItem(IScreen chart)

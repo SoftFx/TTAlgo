@@ -25,7 +25,7 @@
             </Style.Triggers>
         </Style>
 
-        <CollectionViewSource x:Key="AlgoGroupViewSrc" Source="{Binding Algos}">
+        <CollectionViewSource x:Key="AlgoGroupViewSrc" Source="{Binding Plugins}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Group" />
                 <scm:SortDescription PropertyName="Name" />

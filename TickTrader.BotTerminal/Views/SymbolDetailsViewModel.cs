@@ -11,11 +11,24 @@ namespace TickTrader.BotTerminal
     {
         public SymbolDetailsViewModel(RateDirectionTracker buyRateTracker, RateDirectionTracker sellRateTracker)
         {
-            Sell = sellRateTracker;
-            Buy = buyRateTracker;
+            SellTracker = sellRateTracker;
+            BuyTracker = buyRateTracker;
         }
 
-        public RateDirectionTracker Sell { get; private set; }
-        public RateDirectionTracker Buy { get; private set; }
+        public RateDirectionTracker SellTracker { get; private set; }
+        public RateDirectionTracker BuyTracker { get; private set; }
+
+        public System.Action OnSellClick { get; set; }
+        public System.Action OnBuyClick { get; set; }
+
+        public void Sell()
+        {
+            OnSellClick();
+        }
+
+        public void Buy()
+        {
+            OnBuyClick();
+        }
     }
 }

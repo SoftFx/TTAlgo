@@ -84,7 +84,8 @@
 
             <Label Grid.Row="0" Grid.ColumnSpan="3" Content="Symbol" HorizontalAlignment="Left"></Label>
 
-            <ComboBox Grid.Row="1" Grid.ColumnSpan="3" IsEditable="False"/>
+            <ComboBox Grid.Row="1" Grid.ColumnSpan="3" IsEditable="False"
+                      ItemsSource="{Binding Order.Symbols}" SelectedItem="{Binding Order.SelectedSymbol}" DisplayMemberPath="Name"/>
 
             <l:FlatButton Grid.Row="3" Grid.Column="0"
                           Background="{DynamicResource RateDownColor}"
@@ -134,7 +135,7 @@
                     <ColumnDefinition Width="0.2*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <ComboBox Grid.Column="0"></ComboBox>
+                <ComboBox Grid.Column="0" IsEditable="True" ItemsSource="{Binding Order.PredefinedAmounts}" />
                 <Label Grid.Column="1" Content="$" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="3 0 0 0"></Label>
             </Grid>
             <Grid Grid.Row="1" Grid.Column="2">

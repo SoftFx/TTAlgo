@@ -11,6 +11,11 @@
     <SolidColorBrush x:Key="ShellPanel_ItemHoverBackgroundBrush" Color="#525252"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarBrush" Color="#808080"/>
     <SolidColorBrush x:Key="ShellPanel_ScrollBarHoverBrush" Color="#CCCCCC"/>
+
+    <SolidColorBrush x:Key="Chart_BotControl_Background" Color="#3B3B3B" />
+    <SolidColorBrush x:Key="Chart_BotControl_HighlightBackground" Color="#292929" />
+    <SolidColorBrush x:Key="Chart_BotControl_StartBackground" Color="#29ABE2" />
+    <SolidColorBrush x:Key="Chart_BotControl_StopBackground" Color="Red" />
     
     <SolidColorBrush x:Key="Menu_BackgroundBrush" Color="#292929"/>
     <SolidColorBrush x:Key="Menu_HighlightBackgroundBrush" Color="#3B3B3B"/>
@@ -49,7 +54,6 @@
     <SolidColorBrush x:Key="RateUnknownColor" Color="#808080"/>
     <SolidColorBrush x:Key="RateUnknownHighlightColor" Color="#6E6E6E"/>
     
-
     <SolidColorBrush x:Key="SellColor" Color="#009344"/>
     <SolidColorBrush x:Key="BuyColor" Color="#F15923"/>
     

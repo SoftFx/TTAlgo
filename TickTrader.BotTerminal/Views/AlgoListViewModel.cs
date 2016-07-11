@@ -1,66 +1,46 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     internal class AlgoListViewModel : PropertyChangedBase
     {
-        private DynamicList<int> fakeList = new DynamicList<int>();
+        public IObservableListSource<AlgoItemViewModel> Plugins { get; private set; }
 
-        public IObservableListSource<FakeAlgo> Algos { get; private set; }
-
-        public AlgoListViewModel()
+        public AlgoListViewModel(PluginCatalog catalog)
         {
-            Algos = fakeList.Select(GenerateFake).Where(f => f.Group != "Group 3").ToList().AsObservable();
-
-            //UpdateLoop();
-        }
-
-        private FakeAlgo GenerateFake(int i)
-        {
-            if (i % 3 == 0)
-                return new FakeAlgo("FakeAlgo " + i, "Group 3");
-            else if (i % 2 == 0)
-                return new FakeAlgo("FakeAlgo " + i, "Group 2");
-            else
-                return new FakeAlgo("FakeAlgo " + i, "Group 1");
-        }
-
-        private async void UpdateLoop()
-        {
-            for (int i = 0; i < 25; i++)
-            {
-                await Task.Delay(1000);
-
-                fakeList.Values.Add(i);
-            }
-
-            await Task.Delay(1000);
-
-            fakeList.Values.Clear();
-
-            for (int i = 0; i < 25; i++)
-            {
-                await Task.Delay(1000);
-
-                fakeList.Values.Add(i);
-            }
+            Plugins = catalog.AllPlugins
+                .Where((k, p) => !string.IsNullOrEmpty(k.FileName))
+                .Select((k, p) => new AlgoItemViewModel(p))
+                .OrderBy((k, p) => p.Name)
+                .AsObservable();
         }
     }
 
-    public class FakeAlgo
+    public class AlgoItemViewModel
     {
-        public FakeAlgo(string name, string group)
+        public AlgoItemViewModel(PluginCatalogItem item)
         {
-            Name = name;
-            Group = group;
+            PluginItem = item;
+            Name = item.DisplayName;
+            var type = item.Ref.Descriptor.AlgoLogicType;
+            if (type == Algo.Core.Metadata.AlgoTypes.Indicator)
+                Group = "Indicators";
+            else if (type == Algo.Core.Metadata.AlgoTypes.Robot)
+                Group = "Bot Traders";
+            else
+                Group = "Unknown type";
         }
-        public string Name { get; set; }
-        public string Group { get; set; }
+
+        public PluginCatalogItem PluginItem { get; private set; }
+        public string Name { get; private set; }
+        public string Group { get; private set; }
     }
 }
