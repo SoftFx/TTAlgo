@@ -11,11 +11,13 @@ using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.State;
 using TickTrader.Algo.Api;
 using SciChart.Charting.Visuals.Annotations;
+using NLog;
 
 namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel : IIndicatorAdapterContext
     {
+        private Logger logger;
         private enum States { Idle, Building, Stopping }
         private enum Events { Start, StopRequest, DoneBuildig }
 
@@ -36,6 +38,7 @@ namespace TickTrader.BotTerminal
             if (builder == null)
                 throw new ArgumentNullException("builder");
 
+            logger = LogManager.GetCurrentClassLogger();
             this.setup = setup;
             this.builder = builder;
             this.feed = feed;
@@ -49,7 +52,7 @@ namespace TickTrader.BotTerminal
             stateController.OnEnter(States.Building, () => BuildIndicator(stopSrc.Token, setup.DataLen));
             stateController.OnEnter(States.Stopping, () => stopSrc.Cancel());
 
-            stateController.StateChanged += (o, n) => System.Diagnostics.Debug.WriteLine("Indicator [" + Id + "] " + o + " => " + n);
+            stateController.StateChanged += (o, n) => logger.Debug("Indicator [" + Id + "] " + o + " => " + n);
         }
 
         public long Id { get { return setup.InstanceId; } }
@@ -97,7 +100,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                logger.Error(ex);
             }
 
             stateController.PushEvent(Events.DoneBuildig);

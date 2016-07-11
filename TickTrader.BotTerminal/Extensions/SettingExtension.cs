@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -15,12 +16,14 @@ namespace TickTrader.BotTerminal
     public class SettingExtension : MarkupExtension, IValueConverter
     {
         private string settingName;
+        private Logger logger;
 
         public SettingExtension(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Name parameter must not be empty.");
 
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.settingName = name;
             this.Default = DependencyProperty.UnsetValue;
         }
@@ -38,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value;   
+            return value;
         }
 
         private bool TryConvert(object value, Type targetType, out object result)
@@ -71,14 +74,14 @@ namespace TickTrader.BotTerminal
             ISettings provider = null;
 
             if (containerObject == null)
-                System.Diagnostics.Debug.WriteLine("Settings binding '" + settingName + "' is invalid: Settings extention only works for Dependency Properties.");
+                logger.Debug("Settings binding '{0}' is invalid: Settings extention only works for Dependency Properties.", settingName);
             else
             {
                 provider = Settings.GetProvider(containerObject);
                 if (provider == null)
-                    System.Diagnostics.Debug.WriteLine("Settings provider is not configured for property with key '" + settingName + "'. Fill attached property 'Settings.Provider' to specify a provider.");
+                    logger.Debug("Settings provider is not configured for property with key '{0}'. Fill attached property 'Settings.Provider' to specify a provider.", settingName);
             }
-                
+
             var resxBinding = new Binding("Value");
             resxBinding.FallbackValue = Default;
             if (provider != null)

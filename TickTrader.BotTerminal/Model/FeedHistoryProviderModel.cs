@@ -1,4 +1,5 @@
 ﻿using Machinarium.State;
+using NLog;
 using SoftFX.Extended;
 using SoftFX.Extended.Storage;
 using System;
@@ -14,6 +15,7 @@ namespace TickTrader.BotTerminal
 {
     internal class FeedHistoryProviderModel
     {
+        private Logger logger;
         private enum States { Starting, Online, Stopping, Offline }
         private enum Events { Start, Initialized, InitFailed, Stopped }
 
@@ -27,6 +29,7 @@ namespace TickTrader.BotTerminal
 
         public FeedHistoryProviderModel()
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             stateControl.AddTransition(States.Offline, Events.Start, States.Starting);
             stateControl.AddTransition(States.Starting, Events.Initialized, States.Online);
             stateControl.AddTransition(States.Starting, Events.InitFailed, States.Stopping);
@@ -37,7 +40,7 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Stopping, Stop);
             stateControl.OnEnter(States.Offline, Reset);
 
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("FeedHistoryProviderModel STATE " + from + " => " + to);
+            stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
 
             requestProcessor = new ActionBlock<Task>(t => t.RunSynchronously(), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 });
         }
@@ -59,7 +62,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("FeedHistoryProviderModel.Init() ERROR " + ex.ToString());
+                logger.Error("Init ERROR " + ex.ToString());
                 stateControl.PushEvent(Events.InitFailed);
             }
         }
@@ -74,7 +77,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("FeedHistoryProviderModel.Init() ERROR " + ex.ToString());
+                logger.Error("Init ERROR " + ex.ToString());
             }
 
             stateControl.PushEvent(Events.Stopped);

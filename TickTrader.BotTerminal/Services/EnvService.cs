@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,8 +10,10 @@ namespace TickTrader.BotTerminal
 {
     internal class EnvService
     {
+        private Logger logger;
         private EnvService()
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             ApplicationName = "BotTrader";
             var myDocumentsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),ApplicationName);
             LogFolder = Path.Combine(myDocumentsFolder, "Logs");
@@ -51,7 +54,7 @@ namespace TickTrader.BotTerminal
             }
             catch (IOException ex)
             {
-                System.Diagnostics.Debug.WriteLine("Cannot create directory " + folderPath + ": " + ex.Message);
+                logger.Error("Cannot create directory {0}: {1}", folderPath, ex.Message);
             }
         }
     }

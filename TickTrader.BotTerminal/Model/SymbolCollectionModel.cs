@@ -1,4 +1,5 @@
 ﻿using Machinarium.State;
+using NLog;
 using SoftFX.Extended;
 using System;
 using System.Collections;
@@ -15,6 +16,7 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolCollectionModel : IEnumerable<SymbolModel>
     {
+        private Logger logger;
         public enum States { Offline, WatingData, Canceled, Online, UpdatingSubscription, Stopping }
         public enum Events { Disconnected, OnConnecting, SybmolsArrived, ConnectCanceled, DoneUpdating, DoneStopping }
 
@@ -30,6 +32,7 @@ namespace TickTrader.BotTerminal
 
         public SymbolCollectionModel(ConnectionModel connection)
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             this.connection = connection;
 
             updateSubscriptionActivity = new TriggeredActivity(UpdateSubscription);
@@ -71,8 +74,8 @@ namespace TickTrader.BotTerminal
 
             connection.Deinitalizing += (s, c) => stateControl.PushEventAndWait(Events.Disconnected, States.Offline);
 
-            stateControl.StateChanged += (from, to) => Debug.WriteLine("SymbolCollectionModel STATE " + from + " => " + to);
-            stateControl.EventFired += e => Debug.WriteLine("SymbolCollectionModel EVENT " + e);
+            stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
+            stateControl.EventFired += e => logger.Debug("EVENT " + e);
 
             rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
         }
@@ -109,10 +112,10 @@ namespace TickTrader.BotTerminal
                 }
 
                 //await Task.Delay(1000);
-                Debug.WriteLine("SubscribeToQuotes(" + toSubscribe.Count + ")");
+                logger.Debug("SubscribeToQuotes(" + toSubscribe.Count + ")");
                 await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
             }
-            catch (Exception ex) { Debug.WriteLine("SymbolCollectionModel.UpdateSubscription() ERROR: " + ex.Message); }
+            catch (Exception ex) { logger.Error("UpdateSubscription ERROR: " + ex.Message); }
             stateControl.PushEvent(Events.DoneUpdating);
         }
 
@@ -124,7 +127,7 @@ namespace TickTrader.BotTerminal
 
         void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
         {
-            Debug.WriteLine("SymbolCollectionModel EVENT SymbolsArrived");
+            logger.Debug("EVENT SymbolsArrived");
 
             snapshot = e.Information;
             algoSymbolCache.Clear();

@@ -1,4 +1,5 @@
 ﻿using Machinarium.State;
+using NLog;
 using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace TickTrader.BotTerminal
 {
     internal class ConnectionModel
     {
+        private Logger logger;
         internal enum States { Offline, Connecting, WaitingLogon, Initializing, Online, Deinitializing, Disconnecting }
         public enum Events { Started, DoneConnecting, FailedConnecting, DoneInit, DoneDeinit, DoneDisconnecting, OnLogon, OnLogout, StopRequested }
 
@@ -31,6 +33,7 @@ namespace TickTrader.BotTerminal
 
         public ConnectionModel()
         {
+            logger = NLog.LogManager.GetCurrentClassLogger();
             FeedCache = new FeedHistoryProviderModel();
 
             stateControl.AddTransition(States.Offline, Events.Started, States.Connecting);
@@ -56,8 +59,8 @@ namespace TickTrader.BotTerminal
             stateControl.OnEnter(States.Disconnecting, () => StartDisconnecting());
             stateControl.OnEnter(States.Online, () => { Connected(); });
 
-            stateControl.StateChanged += (from, to) => Debug.WriteLine("ConnectionModel STATE " + to);
-            stateControl.EventFired += e => Debug.WriteLine("ConnectionModel EVENT " + e);
+            stateControl.StateChanged += (from, to) => logger.Debug("STATE {0}", to);
+            stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
         public DataFeed FeedProxy { get { return feedProxy; } }
@@ -170,7 +173,7 @@ namespace TickTrader.BotTerminal
                    }
                    catch (Exception ex)
                    {
-                       System.Diagnostics.Debug.WriteLine("ConnectionModel.Init() failed: " + ex);
+                       logger.Error("ConnectionModel.Init() failed: {0}" + ex);
                        LastError = ConnectionErrorCodes.Unknown;
                        stateControl.PushEvent(Events.FailedConnecting);
                    }
@@ -188,14 +191,14 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                logger.Error(ex);
             }
             stateControl.PushEvent(Events.DoneInit);
         }
 
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("ConnectionModel EVENT Trade.Logon");
+            logger.Debug("EVENT Trade.Logon");
             stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
@@ -226,7 +229,7 @@ namespace TickTrader.BotTerminal
 
         void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
-            Debug.WriteLine("ConnectionModel EVENT Feed.Logon");
+            logger.Debug("EVENT Feed.Logon");
             stateControl.ModifyConditions(() => isFeedLoggedIn = true);
         }
 
@@ -250,13 +253,13 @@ namespace TickTrader.BotTerminal
                 await initTask;
 
                 // fire events and wait all handlers
-                Debug.WriteLine("ConnectionModel.Deinit() Invoking Deinitalizing event...");
+                logger.Debug("Deinit. Invoking Deinitalizing event...");
                 await Deinitalizing.InvokeAsync(this, CancellationToken.None);
 
                 // stop history DB
                 await FeedCache.Shutdown();
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            catch (Exception ex) { logger.Error(ex); }
             stateControl.PushEvent(Events.DoneDeinit);
         }
 
@@ -274,7 +277,7 @@ namespace TickTrader.BotTerminal
                     // fire disconnecting event
                     Disconnecting();
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                catch (Exception ex) { logger.Error(ex); }
 
                 // start stoping feed
                 Task stopFeed = Task.Factory.StartNew(
@@ -287,7 +290,7 @@ namespace TickTrader.BotTerminal
                             feedProxy.Stop();
                             feedProxy.Dispose();
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                        catch (Exception ex) { logger.Error(ex); }
                     });
 
                 // start stopping trade
@@ -301,7 +304,7 @@ namespace TickTrader.BotTerminal
                             tradeProxy.Stop();
                             tradeProxy.Dispose();
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                        catch (Exception ex) { logger.Error(ex); }
 
                     });
 
@@ -311,7 +314,7 @@ namespace TickTrader.BotTerminal
                 feedProxy = null;
                 tradeProxy = null;
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            catch (Exception ex) { logger.Error(ex); }
             stateControl.PushEvent(Events.DoneDisconnecting);
         }
 

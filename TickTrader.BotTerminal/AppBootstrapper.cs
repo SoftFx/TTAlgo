@@ -56,6 +56,8 @@ namespace TickTrader.BotTerminal
 
         private void ConfigurateLogger()
         {
+            var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message}" };
+
             var logTarget = new FileTarget()
             {
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "Log-${shortdate}.txt"),
@@ -72,14 +74,17 @@ namespace TickTrader.BotTerminal
                 Layout = "${longdate} | ${message}"
             };
 
-            var rule1 = new LoggingRule(string.Concat("*",nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
-            var rule2 = new LoggingRule("*", LogLevel.Debug, logTarget);
+            var ruleForJournalTarget = new LoggingRule(string.Concat("*",nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
+            var ruleForLogTarget = new LoggingRule("*", LogLevel.Debug, logTarget);
+            var ruleForDebuggerTarget = new LoggingRule("*", LogLevel.Debug, debuggerTarget);
 
             var config = new LoggingConfiguration();
             config.AddTarget(nameof(logTarget), logTarget);
             config.AddTarget(nameof(journalTarget), journalTarget);
-            config.LoggingRules.Add(rule1);
-            config.LoggingRules.Add(rule2);
+            config.AddTarget(nameof(debuggerTarget), debuggerTarget);
+            config.LoggingRules.Add(ruleForJournalTarget);
+            config.LoggingRules.Add(ruleForLogTarget);
+            config.LoggingRules.Add(ruleForDebuggerTarget);
 
             NLog.LogManager.Configuration = config;
         }

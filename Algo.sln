@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Indicators.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftFx.FxCalendar", "SoftFx.FxCalendar\SoftFx.FxCalendar.csproj", "{546B0A8D-6964-40DF-B539-C988F8241D56}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Toaster", "TickTrader.Toaster\TickTrader.Toaster.csproj", "{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{546B0A8D-6964-40DF-B539-C988F8241D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{546B0A8D-6964-40DF-B539-C988F8241D56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E54FEE6-D903-4E11-A003-CD2AF022EDD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +14,7 @@ namespace TickTrader.BotTerminal
 {
     internal class LoginPageViewModel : Screen, ILoginDialogPage, IPasswordContainer
     {
+        private Logger logger;
         private ConnectionManager cManager;
         private string login;
         private string password;
@@ -26,6 +28,7 @@ namespace TickTrader.BotTerminal
         {
             this.cManager = cManager;
 
+            logger = NLog.LogManager.GetCurrentClassLogger();
             DisplayName = "Log In";
 
             if (displayEntry != null)
@@ -162,7 +165,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("LoginPageViewModel.Connect() failed: " + ex);
+                logger.Error(ex, "Connect Failed.");
                 Error = ConnectionErrorCodes.Unknown;
             }
 
