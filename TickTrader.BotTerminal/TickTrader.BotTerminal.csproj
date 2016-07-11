@@ -160,13 +160,13 @@
     <Content Include="..\lib\SQLite\x86\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="Resources\Woosh.wav" />
-    <None Include="Resources\SharpEcho.wav" />
-    <None Include="Resources\Save.wav" />
-    <None Include="Resources\Positive.wav" />
-    <None Include="Resources\Negative.wav" />
-    <None Include="Resources\Blop.wav" />
-    <None Include="Resources\Clinking.wav" />
+    <None Include="Resx\Sounds\Woosh.wav" />
+    <None Include="Resx\Sounds\SharpEcho.wav" />
+    <None Include="Resx\Sounds\Save.wav" />
+    <None Include="Resx\Sounds\Positive.wav" />
+    <None Include="Resx\Sounds\Negative.wav" />
+    <None Include="Resx\Sounds\Blop.wav" />
+    <None Include="Resx\Sounds\Clinking.wav" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -300,7 +300,7 @@
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderModel.cs" />
-    <Compile Include="Resx\Sounds.Designer.cs">
+    <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Sounds.resx</DependentUpon>
@@ -427,7 +427,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resx\Sounds.resx">
+    <EmbeddedResource Include="Resx\Sounds\Sounds.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Sounds.Designer.cs</LastGenOutput>
     </EmbeddedResource>

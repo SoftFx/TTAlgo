@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TickTrader.BotTerminal.Resx {
+namespace TickTrader.BotTerminal.Resx.Sounds {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal.Resx {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TickTrader.BotTerminal.Resx.Sounds", typeof(Sounds).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TickTrader.BotTerminal.Resx.Sounds.Sounds", typeof(Sounds).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
