@@ -1,0 +1,76 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <Style x:Key="PopupButtonStyle" TargetType="ToggleButton">
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Grid>
+                        <Border x:Name="PopupButtonBorder" CornerRadius="3" Background="{TemplateBinding Background}" >
+                            <ContentPresenter IsHitTestVisible="{TemplateBinding IsHitTestVisible}"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="PopupButtonBorder" Property="Background" Value="{DynamicResource ToolBarItem_BackgroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="PopupButtonTemplate" TargetType="l:PopupButton">
+        <Grid>
+            <ToggleButton Name="PART_PopupButton"
+                          Style="{StaticResource PopupButtonStyle}"
+                          Background="{TemplateBinding Background}"
+                          Foreground="{TemplateBinding Foreground}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"
+                          Margin="{TemplateBinding Margin}">
+            </ToggleButton>
+            <Popup Name="PART_Popup"
+                   IsOpen="{Binding ElementName=PART_PopupButton, Path=IsChecked, Mode=TwoWay}"
+                   Placement="Bottom"
+                   PopupAnimation="Slide"
+                   AllowsTransparency="True"
+                   StaysOpen="False"
+                   PlacementTarget="{Binding ElementName=PART_PopupButton}">
+                <Border BorderThickness="1"
+                        Padding="3"
+                        CornerRadius="3"
+                        BorderBrush="{DynamicResource Menu_BorderBrush}"
+                        Background="{DynamicResource ShellPanel_BackgroundBrush}"
+                        Name="DropDownBorder">
+                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" 
+                                    KeyboardNavigation.DirectionalNavigation="Contained"
+                                    Content="{TemplateBinding PopupContent}"/>
+                </Border>
+            </Popup>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ElementName=PART_Popup, Path=IsOpen}" Value="True">
+                <Setter TargetName="PART_PopupButton" Property="IsHitTestVisible" Value="False"/>
+            </DataTrigger>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter TargetName="PART_PopupButton" Property="BorderBrush" Value="{DynamicResource ControlFocusBorder}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource ToolBarItem_DisabledBrush}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    <Style TargetType="l:PopupButton">
+        <Setter Property="Foreground" Value="{DynamicResource ToolBarItem_ForegroundBrush}"/>
+        <Setter Property="Template" Value="{StaticResource PopupButtonTemplate}"/>
+        <Setter Property="Background" Value="{DynamicResource ShellPanel_BorderBrush}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="MinWidth" Value="19"></Setter>
+    </Style>
+
+</ResourceDictionary>

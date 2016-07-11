@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.BotJournalView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             xmlns:cal="http://www.caliburnproject.org"
+             mc:Ignorable="d" 
+             d:DesignHeight="300">
+    <UserControl.Resources>
+        <Style TargetType="DataGridCell" x:Key="DataGridCellStyle_RightAligned">
+            <Setter Property="Template" Value="{StaticResource DataGrid_CellTemplate}"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="8 0 0 0"/>
+        </Style>
+        <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"></l:MessageTypeToBrushConverter>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="5 8 5 0" LastChildFill="False">
+            <TextBox DockPanel.Dock="Left" Text="{Binding TextFilter, Delay=500, UpdateSourceTrigger=PropertyChanged}"
+                     Width="200" Style="{StaticResource SearchTextBox_Style}"/>
+            <ComboBox Width="200" Margin="5 0 0 0"></ComboBox>
+            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TypeFilter}" ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False"></ComboBox>
+            <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0"
+                          Background="{DynamicResource ToolBarItem_DisabledBrush}"
+                          HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+                          cal:Message.Attach="Clear"/>
+        </DockPanel>
+
+        <DataGrid Name="Orders" Grid.Row="1" Style="{StaticResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
+                  AutoGenerateColumns="False" 
+                  CanUserAddRows="False" 
+                  CanUserDeleteRows="False" 
+                  SelectionMode="Single"
+                  RowHeaderWidth="100">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn SortMemberPath="Time" SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"></ColumnDefinition>
+                                    <ColumnDefinition></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10" Background="{Binding Type, Converter={StaticResource MsgTypeToBrush}}" BorderBrush="Black" BorderThickness="1">
+                                    <Border CornerRadius="5">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0.5,0.5" EndPoint="0,0">
+                                                <GradientStop Color="#00FFFFFF" Offset="0.0" />
+                                                <GradientStop Color="#AAFFFFFF" Offset="0.5" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                </Border>
+                                <TextBlock Grid.Column="1" Text="{Binding Time, StringFormat=dd/MM/yyyy HH:mm:ss.fff}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding Bot}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
+                <DataGridTextColumn Header="{l:Resx Journal_Message}" Width="*" Binding="{Binding Message}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
