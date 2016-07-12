@@ -1,4 +1,4 @@
-﻿namespace TickTrader.Toaster
+﻿namespace TickTrader.Toaster.Messages
 {
     public class SuccessMessage : BaseMessage
     {
