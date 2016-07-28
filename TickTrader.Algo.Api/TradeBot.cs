@@ -12,6 +12,11 @@ namespace TickTrader.Algo.Api
         protected virtual void OnStop() { }
         protected virtual void OnQuote(Quote quote) { }
 
+        protected void Exit()
+        {
+            Context.OnExit();
+        }
+
         internal void InvokeStart()
         {
             OnStart();
@@ -26,5 +31,68 @@ namespace TickTrader.Algo.Api
         {
             OnQuote(quote);
         }
+
+        #region Logger
+
+        protected void Print(string msg, params object[] parameters)
+        {
+            GetLogger().WriteLog(msg, parameters);
+        }
+
+        protected void UpdateStatus(string status)
+        {
+            GetLogger().UpdateStatus(status);
+        }
+
+        #endregion
+
+        #region Order Commands
+
+        public OrderCmdResult MarketBuy(string symbolCode, double price, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        {
+            return GetTradeApi().OpenOrder(
+                new OpenOrdeRequest()
+                {
+                    Type = OrderTypes.Market,
+                    Side = OrderSides.Buy,
+                    Price = price,
+                    Volume = volume,
+                    StopLoss = stopLoss,
+                    TaskProfit = takeProfit,
+                    Comment = comment
+                });
+        }
+
+        public OrderCmdResult MarketSell(string symbolCode, double price, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        {
+            return GetTradeApi().OpenOrder(
+                new OpenOrdeRequest()
+                {
+                    Type = OrderTypes.Market,
+                    Side = OrderSides.Sell,
+                    Price = price,
+                    Volume = volume,
+                    StopLoss = stopLoss,
+                    TaskProfit = takeProfit,
+                    Comment = comment
+                });
+        }
+
+        public OrderCmdResult OpenMarketOrder(string symbolCode, OrderSides side, double price, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        {
+            return GetTradeApi().OpenOrder(
+                new OpenOrdeRequest()
+                {
+                    Type = OrderTypes.Market,
+                    Side = side,
+                    Price = price,
+                    Volume = volume,
+                    StopLoss = stopLoss,
+                    TaskProfit = takeProfit,
+                    Comment = comment
+                });
+        }
+
+        #endregion
     }
 }

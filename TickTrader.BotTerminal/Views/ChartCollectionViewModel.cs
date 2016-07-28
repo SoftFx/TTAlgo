@@ -7,27 +7,27 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ChartCollectionViewModel : Conductor<IScreen>.Collection.OneActive
+    internal class ChartCollectionViewModel : Conductor<ChartViewModel>.Collection.OneActive
     {
-        private IWindowManager wndManager;
         private FeedModel feed;
         private PluginCatalog catalog;
-        private OrderUi orderUi;
+        private IShell shell;
+        private BotJournal pluginJournal;
 
-        public ChartCollectionViewModel(FeedModel feedProvider, PluginCatalog catalog, IWindowManager wndManager, OrderUi orderUi)
+        public ChartCollectionViewModel(FeedModel feedProvider, PluginCatalog catalog, IShell shell, BotJournal pluginJournal)
         {
             this.feed = feedProvider;
             this.catalog = catalog;
-            this.wndManager = wndManager;
-            this.orderUi = orderUi;
+            this.shell = shell;
+            this.pluginJournal = pluginJournal;
         }
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, feed, catalog, wndManager, orderUi));
+            ActivateItem(new ChartViewModel(symbol, shell, feed, catalog, pluginJournal));
         }
 
-        public void CloseItem(IScreen chart)
+        public void CloseItem(ChartViewModel chart)
         {
             chart.TryClose();
         }

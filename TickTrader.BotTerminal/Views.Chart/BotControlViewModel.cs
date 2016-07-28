@@ -12,73 +12,57 @@ namespace TickTrader.BotTerminal
 {
     internal class BotControlViewModel : PropertyChangedBase
     {
-        private bool isStarted = false;
-        private bool isEnabled = true;
-        private PluginExecutor executor;
+        private ToolWindowsManager wndManager;
 
-        public BotControlViewModel(AlgoPluginRef pRef, FeedModel feed)
+        public BotControlViewModel(TradeBotModel2 model, ToolWindowsManager wndManager)
         {
-            BotName = pRef.DisplayName;
-            executor = pRef.CreateExecutor();
-            executor.FeedProvider = new PluginFeedProvider(feed.Symbols, feed.History);
-            executor.FeedStrategy = new BarStrategy();
-            executor.InvokeStrategy = new DataflowInvokeStartegy();
-        }
+            this.Model = model;
+            this.wndManager = wndManager;
 
-        public TimeFrames TimeFrame { get { return executor.TimeFrame; } set { executor.TimeFrame = value; } }
-        public string MainSymbol { get { return executor.MainSymbolCode; } set { executor.MainSymbolCode = value; } }
-        public DateTime TimelineStart { get { return executor.TimePeriodStart; } set { executor.TimePeriodStart = value; } }
-        public DateTime TimelineEnd { get { return executor.TimePeriodEnd; } set { executor.TimePeriodEnd = value; } }
+            model.StateChanged += Model_StateChanged;
+        }
 
         public async void StartStop()
         {
-            if (IsStarted)
-            {
-                IsEnabled = false;
-                await Task.Factory.StartNew(() => executor.Stop());
-                IsEnabled = true;
-                IsStarted = false;
-            }
-            else
-            {
-                IsEnabled = false;
-                await Task.Factory.StartNew(() => executor.Start());
-                IsEnabled = true;
-                IsStarted = true;
-            }
+            if (Model.State == BotModelStates.Running)
+                await Model.Stop();
+            else if (Model.State == BotModelStates.Stopped)
+                await Model.Start();
         }
+
+        public TradeBotModel2 Model { get; private set; }
 
         public void Close()
         {
+            Model.Remove();
             Closed(this);
         }
 
         public event Action<BotControlViewModel> Closed = delegate { };
 
-        public string BotName { get; private set; }
+        public bool IsStarted { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopping; } }
+        public bool CanBeClosed { get { return Model.State == BotModelStates.Stopped; } }
+        public bool CanStartStop { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped; } }
 
-        public bool CanBeClosed { get { return IsEnabled && !IsStarted; } }
-
-        public bool IsStarted
+        public void OpenState()
         {
-            get { return isStarted; }
-            set
-            {
-                isStarted = value;
-                NotifyOfPropertyChange(nameof(IsStarted));
-                NotifyOfPropertyChange(nameof(CanBeClosed));
-            }
+            var wnd = wndManager.GetWindow(Model);
+            if (wnd != null)
+                wnd.Activate();
+            else
+                wndManager.OpenWindow(Model, new BotStateViewModel(Model));
         }
 
-        public bool IsEnabled
+        private void Model_StateChanged(TradeBotModel2 model)
         {
-            get { return isEnabled; }
-            set
-            {
-                isEnabled = value;
-                NotifyOfPropertyChange(nameof(IsEnabled));
-                NotifyOfPropertyChange(nameof(CanBeClosed));
-            }
+            NotifyOfPropertyChange(nameof(CanBeClosed));
+            NotifyOfPropertyChange(nameof(CanStartStop));
+            NotifyOfPropertyChange(nameof(IsStarted));
+        }
+
+        public void Dispose()
+        {
+            Model.StateChanged -= Model_StateChanged;
         }
     }
 }

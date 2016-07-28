@@ -16,7 +16,8 @@ namespace TickTrader.Algo.Core
         }
 
         public abstract void Start(IInvokeStrategyContext context, int loadedPositions);
-        public abstract Task Stop(bool cancelPendingUpdates);
+        public abstract Task Stop();
+        public abstract void Abort();
         public abstract Task OnUpdate(FeedUpdate[] updates);
         public abstract void InvokeOnPluginThread(Action a);
     }
@@ -96,19 +97,21 @@ namespace TickTrader.Algo.Core
             context.Builder.StopBatch();
         }
 
-        public async override Task Stop(bool cancelPendingUpdates)
+        public async override Task Stop()
         {
             try
             {
-                if (cancelPendingUpdates)
-                    cancelSrc.Cancel();
-                else
-                    taskQueue.Complete();
+                taskQueue.Complete();
                 await taskQueue.Completion;
             }
             catch (OperationCanceledException) { }
 
             await Task.Factory.StartNew(() => context.Builder.InvokeOnStop());
+        }
+
+        public override void Abort()
+        {
+            cancelSrc.Cancel();
         }
     }
 }

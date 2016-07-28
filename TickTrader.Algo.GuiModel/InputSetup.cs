@@ -59,6 +59,11 @@ namespace TickTrader.Algo.GuiModel
                 this.Error = error;
             }
 
+            public override void Apply(IPluginSetupTarget target)
+            {
+                throw new Exception("Cannot configure invalid input!");
+            }
+
             public override void Configure(IndicatorBuilder builder)
             {
                 throw new Exception("Cannot configure invalid input!");
@@ -74,6 +79,11 @@ namespace TickTrader.Algo.GuiModel
             : base(descriptor, symbolCode)
         {
             SetMetadata(descriptor);
+        }
+
+        public override void Apply(IPluginSetupTarget target)
+        {
+            target.MapBarInput(Descriptor.Id, SymbolCode);
         }
 
         public override void Configure(IndicatorBuilder builder)
@@ -105,6 +115,11 @@ namespace TickTrader.Algo.GuiModel
         }
 
         public IEnumerable<BarToDoubleMappings> AvailableMappings { get; private set; }
+
+        public override void Apply(IPluginSetupTarget target)
+        {
+            target.MapBarInput(Descriptor.Id, SymbolCode, GetSelector());
+        }
 
         public override void Configure(IndicatorBuilder builder)
         {

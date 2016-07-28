@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
 {
     internal class IndicatorAdapter : PluginAdapter
     {
-        internal IndicatorAdapter(AlgoPlugin pluginInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal IndicatorAdapter(AlgoPlugin pluginInstance, IPluginContext provider, BuffersCoordinator coordinator)
             : base(pluginInstance, provider, coordinator)
         {
             InitParameters();
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
             BindUpOutputs();
         }
 
-        internal IndicatorAdapter(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
+        internal IndicatorAdapter(Func<AlgoPlugin> pluginFactory, IPluginContext provider)
             : base(pluginFactory, provider, new BuffersCoordinator())
         {
             InitParameters();

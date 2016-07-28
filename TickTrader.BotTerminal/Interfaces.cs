@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,20 @@ namespace TickTrader.BotTerminal
     {
         void OpenMarkerOrder(string symbol);
         void OpenMarkerOrder(string symbol, decimal volume, OrderSides side);
+    }
+
+    internal interface ToolWindowsManager
+    {
+        IScreen GetWindow(object key);
+        void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false);
+        void CloseWindow(object wndKey);
+    }
+
+    internal interface IShell
+    {
+        OrderUi OrderCommands { get; }
+        UiLock ConnectionLock { get; }
+        ToolWindowsManager ToolWndManager { get; }
     }
 
     internal enum OrderSides { Buy, Sell }

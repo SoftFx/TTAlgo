@@ -10,14 +10,14 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginExecutor : NoTimeoutByRefObject, IFeedStrategyContext, IInvokeStrategyContext
+    public class PluginExecutor : NoTimeoutByRefObject, IFeedStrategyContext, IInvokeStrategyContext, IPluginSetupTarget
     {
+        public enum States { Idle, Running }
+
         private object _sync = new object();
-        private bool isInitialized;
-        private bool isStarted;
-        //private Func<PluginBuilder> builderFactory;
         private IPluginFeedProvider feed;
-        //private SubscriptionManager subscriptionManager;
+        private IPluginLogger logger;
+        private SubscriptionManager subscriptionManager;
         private FeedStrategy fStrategy;
         private InvokeStartegy iStrategy;
         private string mainSymbol;
@@ -27,6 +27,9 @@ namespace TickTrader.Algo.Core
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
+        private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
+        private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
+        private Task stopTask;
 
         public PluginExecutor(string pluginId)
         {
@@ -39,6 +42,8 @@ namespace TickTrader.Algo.Core
 
         #region Properties
 
+        public bool IsRunning { get; private set; }
+
         public IPluginFeedProvider FeedProvider
         {
             get { return feed; }
@@ -46,7 +51,7 @@ namespace TickTrader.Algo.Core
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
 
                     if (value == null)
                         throw new InvalidOperationException("FeedProvider cannot be null!");
@@ -56,19 +61,19 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public FeedStrategy FeedStrategy
+        public IPluginLogger Logger
         {
-            get { return fStrategy; }
+            get { return logger; }
             set
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
 
                     if (value == null)
-                        throw new InvalidOperationException("FeedStrategy cannot be null!");
+                        throw new InvalidOperationException("Logger cannot be null!");
 
-                    fStrategy = value;
+                    logger = value;
                 }
             }
         }
@@ -80,12 +85,29 @@ namespace TickTrader.Algo.Core
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
 
                     if (value == null)
                         throw new InvalidOperationException("InvokeStrategy cannot be null!");
 
                     iStrategy = value;
+                }
+            }
+        }
+
+        public FeedStrategy FeedStrategy
+        {
+            get { return fStrategy; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    if (value == null)
+                        throw new InvalidOperationException("FeedStrategy cannot be null!");
+
+                    fStrategy = value;
                 }
             }
         }
@@ -97,7 +119,7 @@ namespace TickTrader.Algo.Core
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
 
                     if (string.IsNullOrEmpty(value))
                         throw new InvalidOperationException("MainSymbolCode cannot be null or empty string!");
@@ -114,7 +136,7 @@ namespace TickTrader.Algo.Core
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
                     periodStart = value;
                 }
             }
@@ -127,7 +149,7 @@ namespace TickTrader.Algo.Core
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
                     periodEnd = value;
                 }
             }
@@ -140,11 +162,13 @@ namespace TickTrader.Algo.Core
             {
                 lock (_sync)
                 {
-                    ThrowIfInitialized();
+                    ThrowIfRunning();
                     timeframe = value;
                 }
             }
         }
+
+        public event Action<PluginExecutor> IsRunningChanged = delegate { };
 
         #endregion
 
@@ -152,37 +176,82 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
+                if (IsRunning)
+                    throw new InvalidOperationException("Executor has been already started!");
+
                 Validate();
 
-                isInitialized = true;
-                isStarted = true;
+                //isInitialized = true;
+
+                stopTask = null;
 
                 feed.FeedUpdated += Feed_FeedUpdated;
-                //subscriptionManager = new SubscriptionManager(feed);
+                subscriptionManager = new SubscriptionManager(feed);
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
                 builder.Symbols.Init(feed.GetSymbolMetadata());
+                builder.Logger = logger;
+                builder.OnSubscribe = OnUserSubscribe;
+                //builder.OnException = OnException;
+                builder.OnExit = Abort;
                 fStrategy.Start(this);
                 setupActions.ForEach(a => a());
+                BindAllOutputs();
                 iStrategy.Start(this, fStrategy.BufferSize);
+
+                IsRunning = true;
+                IsRunningChanged(this);
             }
         }
 
-        public void Stop(bool cancelPendingUpdates = true)
+        public void Stop()
+        {
+            Task taskToWait = null;
+
+            lock (_sync)
+            {
+                if (!IsRunning)
+                    return;
+
+                if (stopTask == null)
+                    stopTask = DoStop();
+
+                taskToWait = stopTask;
+            }
+
+            taskToWait.Wait();
+        }
+
+        private async Task DoStop()
+        {
+            fStrategy.Stop();
+            feed.FeedUpdated -= Feed_FeedUpdated;
+            await iStrategy.Stop();
+
+            lock (_sync)
+            {
+                IsRunning = false;
+                stopTask = null;
+                IsRunningChanged(this);
+            }
+        }
+
+        private void Abort()
         {
             lock (_sync)
             {
-                if (!isStarted)
-                    return;
-
-                isStarted = false;
-                fStrategy.Stop();
-                feed.FeedUpdated -= Feed_FeedUpdated;
-                iStrategy.Stop(cancelPendingUpdates).Wait();
+                iStrategy.Abort();
+                if (stopTask == null)
+                    stopTask = DoStop();
             }
         }
 
         #region Setup Methods
+
+        public void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector)
+        {
+            MapBarInput<double>(id, symbolCode, selector);
+        }
 
         public void MapBarInput<TVal>(string inputName, string symbolCode, Func<BarEntity, TVal> selector)
         {
@@ -199,11 +268,22 @@ namespace TickTrader.Algo.Core
             setupActions.Add(() => builder.SetParameter(name, value));
         }
 
+        public OutputFixture<T> GetOutput<T>(string id)
+        {
+            OutputFixture fixture;
+            if (!outputFixtures.TryGetValue(id, out fixture))
+            {
+                fixture = new OutputFixture<T>();
+                outputFixtures.Add(id, fixture);
+            }
+            return (OutputFixture<T>)fixture;
+        }
+
         #endregion
 
         private void Validate()
         {
-            if (isStarted)
+            if (IsRunning)
                 throw new InvalidOperationException("Executor has been already started!");
 
             if (feed == null)
@@ -219,15 +299,40 @@ namespace TickTrader.Algo.Core
                 throw new InvalidOperationException("Main symbol is not specified!");
         }
 
-        private void ThrowIfInitialized()
+        private void ThrowIfRunning()
         {
-            if (isInitialized)
+            if (IsRunning)
                 throw new InvalidOperationException("Executor parameters cannot be changed after start!");
         }
 
         private void Feed_FeedUpdated(FeedUpdate[] updates)
         {
             iStrategy.OnUpdate(updates).Wait();
+        }
+
+        private void OnUserSubscribe(string symbolCode, int depth)
+        {
+            SubscriptionFixture fixture;
+            if (userSubscriptions.TryGetValue(symbolCode, out fixture))
+                subscriptionManager.Remove(fixture);
+            fixture = new SubscriptionFixture(this, symbolCode, depth);
+            userSubscriptions[symbolCode] = fixture;
+            subscriptionManager.Add(fixture);
+        }
+
+        private void OnException(Exception pluginError)
+        {
+            Abort();
+        }
+
+        private void BindAllOutputs()
+        {
+            foreach (var fixtureEntry in outputFixtures)
+            {
+                var outputBuffer = builder.GetOutput(fixtureEntry.Key);
+                if (outputBuffer != null)
+                    fixtureEntry.Value.BindTo(outputBuffer, FeedStrategy.TimeRef);
+            }
         }
 
         #region IFeedStrategyContext
@@ -239,14 +344,19 @@ namespace TickTrader.Algo.Core
             return feed.QueryBars(symbolCode, from, to, timeFrame);
         }
 
-        void IFeedStrategyContext.Subscribe(string symbolCode, int depth)
+        void IFeedStrategyContext.Add(IFeedFixture subscriber)
         {
-            feed.Subscribe(symbolCode, depth);
+            subscriptionManager.Add(subscriber);
         }
 
-        void IFeedStrategyContext.Unsubscribe(string symbolCode)
+        void IFeedStrategyContext.Remove(IFeedFixture subscriber)
         {
-            feed.Unsubscribe(symbolCode);
+            subscriptionManager.Remove(subscriber);
+        }
+
+        void IFeedStrategyContext.InvokeUpdateOnCustomSubscription(QuoteEntity update)
+        {
+            builder.InvokeUpdateNotification(update);
         }
 
         #endregion
@@ -255,6 +365,16 @@ namespace TickTrader.Algo.Core
 
         IPluginInvoker IInvokeStrategyContext.Builder { get { return builder; } }
 
+        IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<L2QuoteEntity> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
         BufferUpdateResults IInvokeStrategyContext.UpdateBuffers(FeedUpdate update)
         {
             return fStrategy.UpdateBuffers(update);
@@ -262,6 +382,7 @@ namespace TickTrader.Algo.Core
 
         void IInvokeStrategyContext.InvokeFeedEvents(FeedUpdate update)
         {
+            subscriptionManager.OnUpdateEvent(update.Quote);
         }
 
         #endregion

@@ -45,7 +45,7 @@
     <Compile Include="OutputSetup.cs" />
     <Compile Include="ParameterSetup.cs" />
     <Compile Include="PropertySetupBase.cs" />
-    <Compile Include="IndicatorSetupBase.cs" />
+    <Compile Include="PluginSetup.cs" />
     <Compile Include="GuiModelMsg.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

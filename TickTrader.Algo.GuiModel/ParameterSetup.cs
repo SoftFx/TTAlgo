@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.GuiModel
@@ -45,6 +46,11 @@ namespace TickTrader.Algo.GuiModel
         public virtual bool IsReadonly { get { return false; } }
         public abstract object ValueObj { get; set; }
         public abstract string ValueStr { get; set; }
+
+        public override void Apply(IPluginSetupTarget target)
+        {
+            target.SetParameter(Id, ValueObj);
+        }
     }
 
     public class IntParamSetup : ParameterSetup<int>

@@ -16,115 +16,81 @@ using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class IndicatorModel : IIndicatorAdapterContext
+    internal class IndicatorModel2 : PluginModel
     {
-        private Logger logger;
-        private enum States { Idle, Building, Stopping }
-        private enum Events { Start, StopRequest, DoneBuildig }
+        private Task startTask;
+        private Dictionary<string, IXyDataSeries> series = new Dictionary<string, IXyDataSeries>();
 
-        private StateMachine<States> stateController = new StateMachine<States>();
-        private IIndicatorSetup setup;
-        private FeedModel feed;
-        private List<IRenderableSeries> seriesList = new List<IRenderableSeries>();
-        private List<IDynamicListSource<IAnnotation>> annotations = new List<IDynamicListSource<IAnnotation>>();
-        private CancellationTokenSource stopSrc;
-        private IndicatorBuilder builder;
-        private Func<int, DateTime> indexToTimeFunc;
-
-        public IndicatorModel(IIndicatorSetup setup, IndicatorBuilder builder,  FeedModel feed, Func<int, DateTime> indexToTimeFunc)
+        public IndicatorModel2(PluginSetup pSetup, IAlgoPluginHost host)
+            : base(pSetup, host)
         {
-            if (setup == null)
-                throw new ArgumentNullException("config");
+            host.StartEvent += Host_StartEvent;
+            host.StopEvent += Host_StopEvent;
 
-            if (builder == null)
-                throw new ArgumentNullException("builder");
-
-            logger = LogManager.GetCurrentClassLogger();
-            this.setup = setup;
-            this.builder = builder;
-            this.feed = feed;
-            this.indexToTimeFunc = indexToTimeFunc;
-
-            stateController.AddTransition(States.Idle, Events.Start, States.Building);
-            stateController.AddTransition(States.Building, Events.StopRequest, States.Stopping);
-            stateController.AddTransition(States.Building, Events.DoneBuildig, States.Idle);
-            stateController.AddTransition(States.Stopping, Events.DoneBuildig, States.Idle);
-
-            stateController.OnEnter(States.Building, () => BuildIndicator(stopSrc.Token, setup.DataLen));
-            stateController.OnEnter(States.Stopping, () => stopSrc.Cancel());
-
-            stateController.StateChanged += (o, n) => logger.Debug("Indicator [" + Id + "] " + o + " => " + n);
+            if (host.IsStarted)
+                StartIndicator();
         }
 
-        public long Id { get { return setup.InstanceId; } }
-        public string DisplayName { get { return setup.Descriptor.DisplayName; } }
-        public IReadOnlyList<IRenderableSeries> SeriesCollection { get { return seriesList; } }
-        public IReadOnlyList<IDynamicListSource<IAnnotation>> Annotations { get { return annotations; } }
-        public bool IsOverlay { get { return setup.Descriptor.IsOverlay; } }
-        public IndicatorSetupBase Setup { get { return setup.UiModel; } }
+        public bool IsOverlay { get { return Setup.Descriptor.IsOverlay; } }
 
-        public event Action<IndicatorModel> Closed;
-
-        public void Start()
+        public IXyDataSeries GetOutputSeries(string id)
         {
-            stopSrc = new CancellationTokenSource();
-            stateController.PushEvent(Events.Start);
+            return series[id];
         }
 
-        public Task Stop()
+        private void Host_StartEvent()
         {
-            return stateController.PushEventAndWait(Events.StopRequest, States.Idle);
+            StartIndicator();
         }
 
-        public IIndicatorSetup CreateSetupClone()
+        protected override PluginExecutor CreateExecutor()
         {
-            return setup.CreateCopy();
-        }
+            var executor = base.CreateExecutor();
 
-        public void Close()
-        {
-            Stop();
-
-            if (Closed != null)
-                Closed(this);
-        }
-
-        private async void BuildIndicator(CancellationToken cToken, int size)
-        {
-            try
+            foreach (var outputSetup in Setup.Outputs)
             {
-
-                foreach (var symbol in feed.Symbols.AlgoSymbolCache)
-                    builder.Symbols.Add(symbol);
-
-                await Task.Factory.StartNew(() => builder.BuildNext(size, cToken));
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
+                if (outputSetup is ColoredLineOutputSetup)
+                {
+                    var buffer = executor.GetOutput<double>(outputSetup.Id);
+                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetup)outputSetup);
+                    series.Add(outputSetup.Id, adapter.SeriesData);
+                }
+                //else if (outputSetup is MarkerSeriesOutputSetup)
+                //    new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
             }
 
-            stateController.PushEvent(Events.DoneBuildig);
+            return executor;
         }
 
-        OutputBuffer<T> IIndicatorAdapterContext.GetOutput<T>(string name)
+        private bool IsRunning { get { return startTask != null; } }
+
+        private void StartIndicator()
         {
-            return builder.GetOutput<T>(name);
+            if (!IsRunning)
+                startTask = StartExcecutor();
         }
 
-        DateTime IIndicatorAdapterContext.GetTimeCoordinate(int index)
+        private async Task StopIndicator()
         {
-            return indexToTimeFunc(index);
+            if (IsRunning)
+            {
+                await startTask;
+                await StartExcecutor();
+                startTask = null;
+            }
         }
 
-        void IIndicatorAdapterContext.AddSeries(IRenderableSeries series)
+        public void Dispose()
         {
-            this.seriesList.Add(series);
+            Host.StartEvent -= Host_StartEvent;
+            Host.StopEvent -= Host_StopEvent;
+            if (IsRunning)
+                StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
 
-        void IIndicatorAdapterContext.AddSeries(DynamicList<MarkerAnnotation> series)
+        private Task Host_StopEvent(object sender, CancellationToken cToken)
         {
-            this.annotations.Add(series.Select<MarkerAnnotation, IAnnotation>(m => m));
+            return StopIndicator();
         }
     }
 }

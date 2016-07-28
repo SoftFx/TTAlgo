@@ -55,12 +55,8 @@ namespace TickTrader.Algo.CoreUsageSample
             return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame);
         }
 
-        IEnumerable<Level2QuoteEntity> IPluginFeedProvider.QueryLeve2(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
-        {
-            return null;
-        }
 
-        IEnumerable<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        IEnumerable<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             return null;
         }
@@ -71,6 +67,11 @@ namespace TickTrader.Algo.CoreUsageSample
 
         void IPluginFeedProvider.Unsubscribe(string symbolCode)
         {
+        }
+
+        public IEnumerable<SymbolEntity> GetSymbolMetadata()
+        {
+            return null;
         }
 
         private class SymbolDataModel

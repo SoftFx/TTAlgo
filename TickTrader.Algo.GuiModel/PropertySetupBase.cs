@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.GuiModel
@@ -26,6 +27,8 @@ namespace TickTrader.Algo.GuiModel
 
         public abstract void CopyFrom(PropertySetupBase srcProperty);
         public abstract void Reset();
+
+        public virtual void Apply(IPluginSetupTarget target) { }
 
         public GuiModelMsg Error
         {

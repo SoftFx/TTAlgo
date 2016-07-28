@@ -22,5 +22,7 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
         <Setter Property="FontSize" Value="11"/>
     </Style>
-    
+
+    <Style TargetType="ContextMenu" BasedOn="{StaticResource ContextMenu_Style}" />
+
 </ResourceDictionary>

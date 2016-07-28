@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
-              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
@@ -35,7 +35,8 @@
             <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}"
                                 ItemsSource="{Binding AvailablePeriods}"
                                 SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
-                                DisplayMemberPath="Key"/>
+                                DisplayMemberPath="Key"
+                                IsEnabled="{Binding UiLock.IsNotLocked}"/>
 
             <Separator/>
 

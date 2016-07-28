@@ -50,6 +50,13 @@
     <Compile Include="ActorModel\LameActor.cs" />
     <Compile Include="ActorModel\StateActor.cs" />
     <Compile Include="Collections\SortedList.cs" />
+    <Compile Include="EntityModel\Field.cs" />
+    <Compile Include="EntityModel\FieldExt.cs" />
+    <Compile Include="EntityModel\FieldGroup.cs" />
+    <Compile Include="EntityModel\FieldProxy.cs" />
+    <Compile Include="EntityModel\ValidationRule.cs" />
+    <Compile Include="EntityModel\ObservableObject.cs" />
+    <Compile Include="EntityModel\PropertyConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Qnil\DictionaryComposition.cs" />
     <Compile Include="Qnil\DictionaryGrouping.cs" />

@@ -55,6 +55,7 @@ namespace TickTrader.BotTerminal
             return Message;
         }
     }
+
     internal enum JournalMessageType
     {
         Info,

@@ -11,12 +11,12 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    public class IndicatorSetup_Bars : IndicatorSetupBase, IPluginSetup
+    public class BarBasedPluginSetup : PluginSetup, IPluginSetup
     {
         private string mainSymbol;
 
-        public IndicatorSetup_Bars(AlgoPluginDescriptor descriptor, string mainSymbol)
-            : base(descriptor)
+        public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol)
+            : base(pRef)
         {
             this.mainSymbol = mainSymbol;
 

@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
         private IConnectionViewModel connectionModel;
         private ObservableCollection<AccountViewModel> accounts;
 
-        public AccountPaneViewModel(ConnectionManager cManager, IConnectionViewModel connectionModel)
+        public AccountPaneViewModel(ConnectionManager cManager, IShell shell, IConnectionViewModel connectionModel)
         {
             this.cManager = cManager;
             this.connectionModel = connectionModel;
@@ -54,10 +54,10 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(DisplayedAccount));
             };
 
-            UI.Instance.StateChanged += () => NotifyOfPropertyChange(nameof(Enabled));
+            ConnectionLock = shell.ConnectionLock;
         }
 
-        public bool Enabled { get { return !UI.Instance.Locked; } }
+        public UiLock ConnectionLock { get; private set; }
         public ConnectionManager.States ConnectionState { get { return cManager.State; } }
         public AccountAuthEntry DisplayedAccount { get; set; }
         public ObservableCollection<AccountViewModel> Accounts { get { return accounts; } }

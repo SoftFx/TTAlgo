@@ -1,4 +1,9 @@
 algo.metadata v1
+<<<<<<< HEAD
 SolutionPath "C:\Work\Git\Projects\tt-algo-project\TestAlgoProject\TestAlgoProject.sln"
 ProjectPath "C:\Work\Git\Projects\tt-algo-project\TestAlgoProject\TestAlgoProject.csproj"
+=======
+SolutionPath "C:\platform.algo.2\TestAlgoProject\TestAlgoProject.sln"
+ProjectPath "C:\platform.algo.2\TestAlgoProject\TestAlgoProject.csproj"
+>>>>>>> a8d3a458340c2ad3a6913f6891cede6e61314c81
 DevEnvDir "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\"

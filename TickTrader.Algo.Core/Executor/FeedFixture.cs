@@ -13,45 +13,31 @@ namespace TickTrader.Algo.Core
             this.SymbolCode = symbolCode;
             this.Context = context;
 
-            context.Subscribe(symbolCode, 1);
+            context.Add(this);
         }
 
         protected IFeedStrategyContext Context { get; private set; }
-        protected string SymbolCode { get; private set; }
-
-        public void Add(IInternalFeedConsumer consumer)
-        {
-        }
-
-        public void Remove(IInternalFeedConsumer consumer)
-        {
-        }
+        public string SymbolCode { get; private set; }
+        public int Depth { get { return 1; } }
 
         public abstract BufferUpdateResults Update(QuoteEntity quote);
 
-        private void UpdateOverallSbscription(string symbol, List<IInternalFeedConsumer> subscribers)
-        {
-            Context.Subscribe(symbol, GetMaxDepth(subscribers));
-        }
-
-        private int GetMaxDepth(List<IInternalFeedConsumer> subscribers)
-        {
-            int max = 1;
-
-            foreach (var s in subscribers)
-            {
-                if (s.Depth == 0)
-                    return 0;
-                if (s.Depth > max)
-                    max = s.Depth;
-            }
-
-            return max;
-        }
+        //private void UpdateOverallSbscription(string symbol, List<IFeedConsumer> subscribers)
+        //{
+        //    Context.Subscribe(symbol, GetMaxDepth(subscribers));
+        //}
 
         public void Dispose()
         {
-            Context.Unsubscribe(SymbolCode);
+            Context.Remove(this);
+        }
+
+        public void OnBufferUpdated(QuoteEntity quote)
+        {
+        }
+
+        public void OnUpdateEvent(QuoteEntity quote)
+        {
         }
     }
 }

@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginBuilder : IPluginDataProvider, IPluginInvoker, IPluginSubscriptionHandler
+    public class PluginBuilder : IPluginContext, IPluginInvoker, IPluginSubscriptionHandler
     {
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
@@ -25,6 +25,8 @@ namespace TickTrader.Algo.Core
             Symbols = new SymbolsCollection(this);
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
+
+            OnException = ex => Logger.WriteError("Exception: " + ex.Message, ex.ToString());
         }
 
         internal PluginAdapter PluginProxy { get; private set; }
@@ -36,8 +38,12 @@ namespace TickTrader.Algo.Core
         public AccountEntity Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
+        public ITradeApi TradeApi { get; set; }
+        public IPluginLogger Logger { get; set; }
         public Action<string, int> OnSubscribe { get; set; }
         public Action<string> OnUnsubscribe { get; set; }
+        public Action<Exception> OnException { get; set; }
+        public Action OnExit { get; set; }
 
         public IReadOnlyDictionary<string, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
@@ -99,37 +105,73 @@ namespace TickTrader.Algo.Core
             input.Buffer = buffer;
         }
 
-        protected void InvokeCalculate(bool isUpdate)
+        internal void InvokeUpdateNotification(Quote quote)
         {
-            PluginProxy.InvokeCalculate(isUpdate);
+            try
+            {
+                PluginProxy.InvokeOnQuote(quote);
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
         }
 
-        MarketDataProvider IPluginDataProvider.GetMarketDataProvider()
+        protected void InvokeCalculate(bool isUpdate)
+        {
+            try
+            {
+                PluginProxy.InvokeCalculate(isUpdate);
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
+        }
+
+        private void OnPluginException(Exception ex)
+        {
+            OnException?.Invoke(ex);
+        }
+
+        MarketDataProvider IPluginContext.GetMarketDataProvider()
         {
             return marketData;
         }
 
-        AccountDataProvider IPluginDataProvider.GetAccountDataProvider()
+        AccountDataProvider IPluginContext.GetAccountDataProvider()
         {
             if (!isAccountInitialized)
             {
                 isAccountInitialized = true;
-                if (AccountDataRequested != null)
-                    AccountDataRequested();
+                AccountDataRequested?.Invoke();
             }
             return Account;
         }
 
-        SymbolProvider IPluginDataProvider.GetSymbolProvider()
+        SymbolProvider IPluginContext.GetSymbolProvider()
         {
             if (!isSymbolsInitialized)
             {
                 isSymbolsInitialized = true;
-                if (SymbolDataRequested != null)
-                    SymbolDataRequested();
+                SymbolDataRequested?.Invoke();
                 Symbols.MainSymbolCode = MainSymbol;
             }
             return Symbols.SymbolProviderImpl;
+        }
+
+        IPluginMonitor IPluginContext.GetPluginLogger()
+        {
+            if (Logger == null)
+                return new NullLogger();
+            return new PluginLoggerAdapter(Logger);
+        }
+
+        ITradeCommands IPluginContext.GetTradeApi()
+        {
+            if (TradeApi == null)
+                return new NullTradeApi();
+            return new TradeApiAdapter(TradeApi);
         }
 
         void IPluginInvoker.InvokeCalculate(bool isUpdate)
@@ -139,12 +181,28 @@ namespace TickTrader.Algo.Core
 
         void IPluginInvoker.InvokeOnStart()
         {
-            PluginProxy.InvokeOnStart();
+            try
+            {
+                PluginProxy.InvokeOnStart();
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
+            Logger.WriteLog("Bot started");
         }
 
         void IPluginInvoker.InvokeOnStop()
         {
-            PluginProxy.InvokeOnStop();
+            try
+            {
+                PluginProxy.InvokeOnStop();
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
+            Logger.WriteLog("Bot stopped");
         }
 
         void IPluginInvoker.StartBatch()
@@ -164,7 +222,15 @@ namespace TickTrader.Algo.Core
 
         void IPluginInvoker.InvokeInit()
         {
-            PluginProxy.InvokeInit();
+            try
+            {
+                PluginProxy.InvokeInit();
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
+            Logger.WriteLog("Bot initialized");
         }
 
         void IPluginInvoker.InvokeOnQuote(QuoteEntity quote)
@@ -182,6 +248,12 @@ namespace TickTrader.Algo.Core
         {
             if (OnUnsubscribe != null)
                 OnUnsubscribe(smbCode);
+        }
+
+        void IPluginContext.OnExit()
+        {
+            Logger.WriteLog("Bot exited");
+            OnExit?.Invoke();
         }
 
         private class MarketDataImpl : MarketDataProvider
@@ -221,21 +293,21 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            public QuoteSeries Level2
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            //public QuoteSeries Level2
+            //{
+            //    get
+            //    {
+            //        throw new NotImplementedException();
+            //    }
+            //}
 
-            public QuoteSeries Quotes
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            //public QuoteSeries Quotes
+            //{
+            //    get
+            //    {
+            //        throw new NotImplementedException();
+            //    }
+            //}
 
             public BarSeries GetBars(string symbolCode)
             {

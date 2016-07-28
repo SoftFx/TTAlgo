@@ -13,17 +13,18 @@ namespace TickTrader.Algo.Core.Setup
 
         private Dictionary<string, PropertySetupBase> properteis = new Dictionary<string, PropertySetupBase>();
 
-        public PluginSetup(AlgoPluginDescriptor descriptor, ISetupMetadata metadata)
+        public PluginSetup(AlgoPluginRef pRef, ISetupMetadata metadata)
         {
-            this.Descriptor = descriptor;
+            this.PRef = pRef;
+            this.Descriptor = pRef.Descriptor;
             this.metadata = metadata;
 
             properteis = new Dictionary<string, PropertySetupBase>();
 
-            foreach (var paramDescriptor in descriptor.Parameters)
+            foreach (var paramDescriptor in Descriptor.Parameters)
                 properteis[paramDescriptor.Id] = new ParameterSetup(paramDescriptor);
 
-            foreach (var inputDescriptor in descriptor.Inputs)
+            foreach (var inputDescriptor in Descriptor.Inputs)
             {
                 var inputSetup = CreateInputSetup(inputDescriptor);
                 if (inputSetup != null)
@@ -39,6 +40,7 @@ namespace TickTrader.Algo.Core.Setup
             }
         }
 
+        public AlgoPluginRef PRef { get; private set; }
         public AlgoPluginDescriptor Descriptor { get; private set; }
         public abstract PluginFeedBase BaseEntity { get; }
 
@@ -108,8 +110,8 @@ namespace TickTrader.Algo.Core.Setup
 
     public class BarBasedPluginSetup : PluginSetup
     {
-        public BarBasedPluginSetup(AlgoPluginDescriptor descriptor, ISetupMetadata metadata)
-            : base(descriptor, metadata)
+        public BarBasedPluginSetup(AlgoPluginRef pRef, ISetupMetadata metadata)
+            : base(pRef, metadata)
         {
         }
 
@@ -128,8 +130,8 @@ namespace TickTrader.Algo.Core.Setup
 
     public class QuoteBasedPluginSetup : PluginSetup
     {
-        public QuoteBasedPluginSetup(AlgoPluginDescriptor descriptor, ISetupMetadata metadata)
-            : base(descriptor, metadata)
+        public QuoteBasedPluginSetup(AlgoPluginRef pRef, ISetupMetadata metadata)
+            : base(pRef, metadata)
         {
         }
 

@@ -244,9 +244,12 @@
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
+    <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
     <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\OrderAmountModel.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model.Auth\AuthEntry.cs" />
@@ -254,13 +257,12 @@
     <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model\BotJournal.cs" />
     <Compile Include="Model\FdkAdapter.cs" />
-    <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model\PluginCatalog.cs" />
     <Compile Include="Model\PluginCatalogItem.cs" />
     <Compile Include="Model\PluginCatalogKey.cs" />
-    <Compile Include="Model\UIManager.cs" />
+    <Compile Include="Model\UiLock.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -326,6 +328,10 @@
       <DependentUpon>BotControlView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Chart\BotControlViewModel.cs" />
+    <Compile Include="Views.Chart\BotStateView.xaml.cs">
+      <DependentUpon>BotStateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Chart\BotStateViewModel.cs" />
     <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
     </Compile>
@@ -360,10 +366,10 @@
       <DependentUpon>ChartView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Chart\ChartViewModel.cs" />
-    <Compile Include="Views.Chart\IndicatorSetupView.xaml.cs">
-      <DependentUpon>IndicatorSetupView.xaml</DependentUpon>
+    <Compile Include="Views.Chart\PluginSetupView.xaml.cs">
+      <DependentUpon>PluginSetupView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views.Chart\IndicatorSetupViewModel.cs" />
+    <Compile Include="Views.Chart\PluginSetupViewModel.cs" />
     <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
@@ -668,6 +674,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Chart\BotStateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Chart\IndicatorPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -704,7 +714,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\IndicatorSetupView.xaml">
+    <Page Include="Views.Chart\PluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

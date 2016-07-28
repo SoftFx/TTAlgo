@@ -4,11 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             xmlns:cal="http://www.caliburnproject.org"
              Height="24"
              Foreground="{DynamicResource Shell_PrimaryForeground}"
              mc:Ignorable="d">
 
     <UserControl.Resources>
+
+        <ContextMenu x:Key="ContextMenu">
+            <MenuItem Header="View state" cal:Message.Attach="OpenState" />
+        </ContextMenu>
 
         <Style x:Key="CloseButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
             <Setter Property="Width" Value="15"/>
@@ -61,12 +66,14 @@
 
     </UserControl.Resources>
 
-    <Border CornerRadius="3" Background="{DynamicResource Chart_BotControl_Background}">
+    <Border CornerRadius="3" Background="{DynamicResource Chart_BotControl_Background}"
+            ContextMenu="{StaticResource ContextMenu}">
         <StackPanel Orientation="Horizontal">
             <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>
-            <TextBlock Text="{Binding BotName}" Width="180"/>
-            <l:FlatButton x:Name="StartStop" Style="{StaticResource StartStopButtonStyle}" IsEnabled="{Binding IsEnabled}"/>
+            <TextBlock Text="{Binding Model.Name}" Width="180"/>
+            <l:FlatButton x:Name="StartStop" Style="{StaticResource StartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
             <l:FlatButton x:Name="Close" Style="{StaticResource CloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
         </StackPanel>
     </Border>
+    
 </UserControl>
