@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,35 +15,28 @@ namespace TickTrader.BotTerminal
     {
         private readonly int firstItem = 0;
         private int journalSize;
-        private ObservableCollection<T> items;
-        private object syncObj = new object();
+        private DynamicList<T> items = new DynamicList<T>();
 
         public Journal(int journalSize)
         {
             this.journalSize = journalSize;
-            this.items = new ObservableCollection<T>();
-            this.Events = new ReadOnlyObservableCollection<T>(items);
-            BindingOperations.EnableCollectionSynchronization(Events, syncObj);
         }
         public bool IsJournalFull { get { return items.Count >= journalSize; } }
-        public ReadOnlyObservableCollection<T> Events { get; private set; }
+        public IDynamicListSource<T> Records { get { return items; } }
 
         public virtual void Add(T item)
         {
-            lock (syncObj)
+            Execute.OnUIThread(() =>
             {
                 if (IsJournalFull)
                     items.RemoveAt(firstItem);
 
                 items.Add(item);
-            }
+            });
         }
         public void Clear()
         {
-            lock (syncObj)
-            {
-                items.Clear();
-            }
+            Execute.OnUIThread(() => items.Clear());
         }
     }
 

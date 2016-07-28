@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Threading;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,7 +25,7 @@ namespace TickTrader.BotTerminal
         public JournalViewModel(EventJournal journal)
         {
             eventJournal = journal;
-            Journal = CollectionViewSource.GetDefaultView(eventJournal.Events);
+            Journal = CollectionViewSource.GetDefaultView(eventJournal.Records.AsObservable());
             Journal.Filter = new Predicate<object>(Filter);
             logger = NLog.LogManager.GetCurrentClassLogger();
         }
