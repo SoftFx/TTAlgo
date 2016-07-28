@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.NetPositionListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    
+    <UserControl.Resources>
+        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                    <Setter Property="l:OverlayControl.Content">
+                        <Setter.Value>
+                            <l:BusyIndicator/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid>
+        <DataGrid Name="Positions">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Side}" />
+                <DataGridTextColumn Header="Price" Width="*" Binding="{Binding Price}" />
+                <DataGridTextColumn Header="{l:Resx Position_Amount}" Width="*" Binding="{Binding Amount}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

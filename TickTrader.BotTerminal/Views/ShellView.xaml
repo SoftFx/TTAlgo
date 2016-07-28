@@ -17,13 +17,13 @@
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display">
     <Grid>
-        
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" MinWidth="250" MaxWidth="400"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -79,13 +79,20 @@
         <GridSplitter Grid.Column="2" Grid.Row="3" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
 
         <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="4" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5">
-            <TabItem Header="{l:Resx Tab_Positions}">
-                <ContentControl x:Name="PositionList"/>
-            </TabItem>
             <TabItem Header="{l:Resx Tab_Orders}">
                 <ContentControl x:Name="OrderList"/>
             </TabItem>
-            <TabItem Header="{l:Resx Tab_History}"/>
+            <TabItem Header="{l:Resx Tab_Assets}" Visibility="{Binding Assets.IsEnabled, Converter={StaticResource BoolToVis}}">
+                <ContentControl x:Name="Assets"/>
+            </TabItem>
+            <TabItem Header="{l:Resx Tab_Positions}" Visibility="{Binding Assets.IsEnabled, Converter={StaticResource BoolToVis}, ConverterParameter=Inverted}">
+                <Grid>
+                    <ContentControl x:Name="GrossPositionList" Visibility="{Binding NetPositionList.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+                    <ContentControl x:Name="NetPositionList" Visibility="{Binding GrossPositionList.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="{l:Resx Tab_History}" Visibility="Collapsed"/>
             <TabItem Header="{l:Resx Tab_Journal}">
                 <ContentControl x:Name="Journal"/>
             </TabItem>
