@@ -68,7 +68,7 @@
     </UserControl.Resources>
 
 
-    <Border Grid.Row="1" CornerRadius="4" Background="{DynamicResource ShellPanel_BorderBrush}" Padding="5" IsEnabled="{Binding Enabled}">
+    <Border Grid.Row="1" CornerRadius="4" Background="{DynamicResource ShellPanel_BorderBrush}" Padding="5" IsEnabled="{Binding ConnectionLock.IsNotLocked}">
 
         <Grid>
             <Grid.ColumnDefinitions>

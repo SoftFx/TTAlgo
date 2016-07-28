@@ -9,8 +9,8 @@ namespace TickTrader.Algo.Api
     public interface MarketDataProvider
     {
         BarSeries Bars { get; }
-        QuoteSeries Quotes { get; }
-        QuoteSeries Level2 { get; }
+        //QuoteSeries Quotes { get; }
+        //QuoteSeries Level2 { get; }
         BarSeries GetBars(string symbolCode);
         BarSeries GetBars(string symbolCode, TimeFrames timeFrame);
         BarSeries GetBars(string symbolCode, TimeFrames timeFrame, DateTime from, DateTime to);

@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Core
     }
 
     [Serializable]
-    public class Level2QuoteEntity : QuoteEntity, Api.Quote
+    public class L2QuoteEntity : QuoteEntity, Api.Quote
     {
         public List<BookEntryEntity> BidList { get; set; }
         public List<BookEntryEntity> AskList { get; set; }

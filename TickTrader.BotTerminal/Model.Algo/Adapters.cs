@@ -15,77 +15,48 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    //internal class DoubleSeriesAdapter
-    //{
-    //    private IIndicatorAdapterContext context;
-    //    private OutputBuffer<double> buffer;
-        
-    //    private bool isBatchBuild;
+    internal class DoubleSeriesAdapter
+    {
+        private OutputFixture<double> buffer;
 
-    //    public DoubleSeriesAdapter(IIndicatorAdapterContext context, ColoredLineOutputSetup setup)
-    //    {
-    //        this.context = context;
-    //        this.buffer = context.GetOutput<double>(setup.Descriptor.Id);
-    //        this.SeriesData = new XyDataSeries<DateTime, double>();
+        public DoubleSeriesAdapter(OutputFixture<double> buffer, ColoredLineOutputSetup setup)
+        {
+            this.buffer = buffer;
+            this.SeriesData = new XyDataSeries<DateTime, double>();
 
-    //        if (setup.IsEnabled)
-    //        {
-    //            buffer.Updated = Update;
-    //            buffer.Appended = Append;
+            if (setup.IsEnabled)
+            {
+                buffer.Updated += Update;
+                buffer.Appended += Append;
+                buffer.AllUpdated += CopyAll;
 
-    //            buffer.BeginBatchBuild = () => isBatchBuild = true;
+                SeriesData.SeriesName = setup.Descriptor.Id;
+            }
+        }
 
-    //            buffer.EndBatchBuild = () =>
-    //            {
-    //                isBatchBuild = false;
-    //                CopyAll();
-    //            };
+        public XyDataSeries<DateTime, double> SeriesData { get; private set; }
 
-    //            SeriesData.SeriesName = setup.Descriptor.Id;
-    //            FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-    //            chartSeries.DataSeries = SeriesData;
-    //            chartSeries.Stroke = setup.LineColor;
-    //            chartSeries.StrokeDashArray = setup.LineStyle.ToStrokeDashArray();
-    //            chartSeries.StrokeThickness = setup.LineThickness;
-    //            context.AddSeries(chartSeries);
-    //        }
-    //    }
+        private void Append(OutputFixture<double>.Point point)
+        {
+            if (point.TimeCoordinate != null)
+                Execute.OnUIThread(() => SeriesData.Append(point.TimeCoordinate.Value, point.Value));
+        }
 
-    //    public XyDataSeries<DateTime, double> SeriesData { get; private set; }
+        private void Update(OutputFixture<double>.Point point)
+        {
+            if (point.TimeCoordinate != null)
+                Execute.OnUIThread(() => SeriesData.YValues[point.Index] = point.Value);
+        }
 
-    //    private void Append(int index, double data)
-    //    {
-    //        if (!isBatchBuild)
-    //        {
-    //            DateTime x = context.GetTimeCoordinate(index);
-    //            Execute.OnUIThread(() => SeriesData.Append(x, data));
-    //        }
-    //    }
-
-    //    private void Update(int index, double data)
-    //    {
-    //        if (!isBatchBuild)
-    //        {
-    //            DateTime x = context.GetTimeCoordinate(index);
-    //            Execute.OnUIThread(() => SeriesData.YValues[index] = data);
-    //        }
-    //    }
-
-    //    private void CopyAll()
-    //    {
-    //        Execute.OnUIThread(() =>
-    //        {
-    //            SeriesData.Clear();
-    //            SeriesData.Append(EnumerateDateTimeCoordinate(), buffer);
-    //        });
-    //    }
-
-    //    private IEnumerable<DateTime> EnumerateDateTimeCoordinate()
-    //    {
-    //        for (int i = 0; i < buffer.Count; i++)
-    //            yield return context.GetTimeCoordinate(i);
-    //    }
-    //}
+        private void CopyAll(OutputFixture<double>.Point[] points)
+        {
+            Execute.OnUIThread(() =>
+            {
+                SeriesData.Clear();
+                SeriesData.Append(points.Select(p => p.TimeCoordinate.Value), points.Select(p => p.Value));
+            });
+        }
+    }
 
     //internal class MarkerSeriesAdapter
     //{

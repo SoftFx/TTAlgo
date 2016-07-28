@@ -15,9 +15,21 @@ namespace TickTrader.Algo.Core
         }
 
         public long Id { get; private set; }
-        public decimal RemainingAmount { get; set; }
+        public OrderVolume TotalAmount { get; set; }
+        public OrderVolume RemainingAmount { get; set; }
         public string Symbol { get; set; }
-        public decimal TotalAmount { get; set; }
         public OrderTypes Type { get; set; }
+
+        public static Order Null { get; private set; }
+        static OrderEntity() { Null = new NullOrder(); }
+    }
+
+    public class NullOrder : Order
+    {
+        public long Id { get { return -1; } }
+        public OrderVolume TotalAmount { get { return new OrderVolume(double.NaN, VolumeUnits.CurrencyUnits); } }
+        public OrderVolume RemainingAmount { get { return new OrderVolume(double.NaN, VolumeUnits.CurrencyUnits); } }
+        public string Symbol { get { return ""; } }
+        public OrderTypes Type { get { return OrderTypes.Market; } }
     }
 }

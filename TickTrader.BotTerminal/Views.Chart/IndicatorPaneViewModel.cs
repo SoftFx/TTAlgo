@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         public string ChartWindowId { get; private set; }
         public AxisBase TimeAxis { get; private set; }
-        public long IndicatorId { get { return indicator.Model.Id; } }
+        //public long IndicatorId { get { return indicator.Model.Id; } }
         public ChartModelBase Chart { get { return chart; } }
         public IObservableListSource<IRenderableSeriesViewModel> Series { get; private set; }
         //public AnnotationCollection Annotations { get; private set; }

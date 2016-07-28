@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
         }
 
         public ICollectionView Journal { get; private set; }
+
         public MessageTypeFilter TypeFilter
         {
             get { return typeFilter; }
@@ -43,6 +44,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public string TextFilter
         {
             get { return textFilter; }
@@ -62,7 +64,6 @@ namespace TickTrader.BotTerminal
             if (this.Journal != null)
                 Journal.Refresh();
         }
-
 
         public void Clear()
         {

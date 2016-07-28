@@ -25,8 +25,13 @@ namespace TickTrader.Algo.Core
         DateTime TimePeriodStart { get; }
         DateTime TimePeriodEnd { get; }
         IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        void Subscribe(string symbolCode, int depth);
-        void Unsubscribe(string symbolCode);
+        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        IEnumerable<L2QuoteEntity> QueryTicksL2(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        void Add(IFeedFixture subscriber);
+        void Remove(IFeedFixture subscriber);
+        //void Subscribe(string symbolCode, int depth);
+        //void Unsubscribe(string symbolCode);
+        void InvokeUpdateOnCustomSubscription(QuoteEntity update);
     }
 
     public interface IPluginInvoker
@@ -48,14 +53,7 @@ namespace TickTrader.Algo.Core
         void InvokeFeedEvents(FeedUpdate update);
     }
 
-    internal interface IFeedFixture : IDisposable
-    {
-        BufferUpdateResults Update(QuoteEntity quote);
-        void Add(IInternalFeedConsumer consumer);
-        void Remove(IInternalFeedConsumer consumer);
-    }
-
-    internal interface IInternalFeedConsumer
+    internal interface IFeedFixture 
     {
         string SymbolCode { get; }
         int Depth { get; }

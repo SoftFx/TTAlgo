@@ -20,7 +20,7 @@ namespace TickTrader.Algo.CoreUsageSample
             IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
 
             builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
-            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = 5000, RemainingAmount = 5000 });
+            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = new OrderVolume(), RemainingAmount = new OrderVolume() });
 
             builder.MainSymbol = "EURUSD";
             builder.GetBarBuffer("EURUSD").Append(data);
@@ -55,7 +55,7 @@ namespace TickTrader.Algo.CoreUsageSample
             dataModel.Fill("EURUSD", TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt"));
 
             var descriptor = AlgoPluginDescriptor.Get(typeof(Alligator));
-            var executor = new PluginExecutor(() => new IndicatorBuilder(descriptor));
+            var executor = new PluginExecutor(descriptor.Id);
             executor.MainSymbolCode = "EURUSD";
             executor.FeedProvider = dataModel;
             executor.FeedStrategy = new BarStrategy();
@@ -71,7 +71,7 @@ namespace TickTrader.Algo.CoreUsageSample
             dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:28"), Ask = 1.10148, Bid = 1.10151 });
             dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:31"), Ask = 1.10149, Bid = 1.10149 });
 
-            executor.Stop(false).Wait();
+            executor.Stop();
 
             //executor.Reset();
 

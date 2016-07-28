@@ -13,12 +13,12 @@ namespace TickTrader.Algo.Core
     internal abstract class PluginAdapter : NoTimeoutByRefObject, IPluginActivator
     {
         private AlgoPlugin plugin;
-        private IPluginDataProvider provider;
+        private IPluginContext provider;
         private List<IndicatorAdapter> nestedIndacators = new List<IndicatorAdapter>();
         private Dictionary<string, IDataSeriesProxy> inputs = new Dictionary<string, IDataSeriesProxy>();
         private Dictionary<string, IDataSeriesProxy> outputs = new Dictionary<string, IDataSeriesProxy>();
 
-        internal PluginAdapter(AlgoPlugin plugnInstance, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal PluginAdapter(AlgoPlugin plugnInstance, IPluginContext provider, BuffersCoordinator coordinator)
         {
             this.provider = provider;
             this.plugin = plugnInstance;
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core
             Descriptor.Validate();
         }
 
-        internal PluginAdapter(Func<AlgoPlugin> pluginFactoy, IPluginDataProvider provider, BuffersCoordinator coordinator)
+        internal PluginAdapter(Func<AlgoPlugin> pluginFactoy, IPluginContext provider, BuffersCoordinator coordinator)
         {
             this.provider = provider;
             this.Coordinator = coordinator;
@@ -72,7 +72,10 @@ namespace TickTrader.Algo.Core
 
         public IDataSeriesProxy GetOutput(string id)
         {
-            return outputs[id];
+            IDataSeriesProxy proxy;
+            if (!outputs.TryGetValue(id, out proxy))
+                throw new Exception("Output Not Found: " + id);
+            return proxy;
         }
 
         public void InvokeInit()
@@ -92,7 +95,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        IPluginDataProvider IPluginActivator.Activate(AlgoPlugin instance)
+        IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
         {
             if (plugin == null) // Activate() is called from constructor
                 return provider;
@@ -161,7 +164,7 @@ namespace TickTrader.Algo.Core
             return descriptor;
         }
 
-        public static PluginAdapter Create(AlgoPluginDescriptor descriptor, IPluginDataProvider dataProvider)
+        public static PluginAdapter Create(AlgoPluginDescriptor descriptor, IPluginContext dataProvider)
         {
             if (descriptor.AlgoLogicType == AlgoTypes.Indicator)
                 return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);

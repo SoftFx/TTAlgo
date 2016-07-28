@@ -12,6 +12,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,8 +21,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
 
-        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed)
-            : base(symbol, catalog, feed)
+        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
+            : base(symbol, catalog, feed, journal)
         {
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
@@ -53,7 +54,7 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                var tickArray = await Feed.History.GetTicks(Symbol, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                var tickArray = await Feed.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
 
                 foreach (var tick in tickArray)
                 {
@@ -72,7 +73,22 @@ namespace TickTrader.BotTerminal
             return new DataMetrics();
         }
 
-        protected override IIndicatorSetup CreateInidactorConfig(AlgoPluginRef repItem)
+        protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IndicatorBuilder CreateBuilder(PluginSetup setup)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override FeedStrategy GetFeedStrategy()
         {
             throw new NotImplementedException();
         }

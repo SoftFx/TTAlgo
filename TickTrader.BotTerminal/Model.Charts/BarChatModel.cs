@@ -25,8 +25,8 @@ namespace TickTrader.BotTerminal
         //private List<QuoteEntity> updateQueue;
         private BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed)
-            : base(symbol, catalog, feed)
+        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
+            : base(symbol, catalog, feed, journal)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
             //        Symbol, DateTime.Now + TimeSpan.FromDays(1),
             //        -10000, SoftFX.Extended.PriceType.Ask, periodCopy));
 
-            var barArray = await Feed.History.GetBars(Symbol, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
+            var barArray = await Feed.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
             var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
@@ -106,9 +106,45 @@ namespace TickTrader.BotTerminal
             return metrics;
         }
 
-        protected override IIndicatorSetup CreateInidactorConfig(AlgoPluginRef repItem)
+        protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
         {
-            return new IndicatorConfig(repItem, this);
+            return new BarBasedPluginSetup(catalogItem, SymbolCode);
+        }
+
+        protected override IndicatorBuilder CreateBuilder(PluginSetup setup)
+        {
+            IndicatorBuilder builder = new IndicatorBuilder(setup.Descriptor);
+
+            var mainBuffer = builder.GetBuffer<BarEntity>(SymbolCode);
+            mainBuffer.Append(indicatorData);
+
+            builder.MainSymbol = SymbolCode;
+
+            foreach (var input in setup.Inputs)
+                ((BarInputSetup)input).Configure(builder);
+
+            foreach (var parameter in setup.Parameters)
+                builder.SetParameter(parameter.Id, parameter.ValueObj);
+
+            return builder;
+        }
+
+        protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
+        {
+            return new IndicatorModel2( setup, this);
+
+            //foreach (var outputSetup in UiModel.Outputs)
+            //{
+            //    if (outputSetup is ColoredLineOutputSetup)
+            //        new DoubleSeriesAdapter(model, (ColoredLineOutputSetup)outputSetup);
+            //    else if (outputSetup is MarkerSeriesOutputSetup)
+            //        new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
+            //}
+        }
+
+        protected override FeedStrategy GetFeedStrategy()
+        {
+            return new BarStrategy();
         }
 
         private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
@@ -126,59 +162,59 @@ namespace TickTrader.BotTerminal
             }));
         }
 
-        private class IndicatorConfig : IIndicatorSetup
-        {
-            private BarChartModel chart;
-            private AlgoPluginRef repItem;
+        //private class IndicatorConfig : IIndicatorSetup
+        //{
+        //    private BarChartModel chart;
+        //    private AlgoPluginRef repItem;
 
-            public IndicatorConfig(AlgoPluginRef repItem, BarChartModel chart, IndicatorSetup_Bars srcSetup = null)
-            {
-                this.chart = chart;
-                this.repItem = repItem;
-                this.InstanceId = chart.GetNextIndicatorId();
-                this.UiModel = new IndicatorSetup_Bars(repItem.Descriptor, chart.Symbol);
-            }
+        //    public IndicatorConfig(AlgoPluginRef repItem, BarChartModel chart, BarBasedPluginSetup srcSetup = null)
+        //    {
+        //        this.chart = chart;
+        //        this.repItem = repItem;
+        //        this.InstanceId = chart.GetNextIndicatorId();
+        //        this.UiModel = new BarBasedPluginSetup(repItem.Descriptor, chart.Symbol);
+        //    }
 
-            public long InstanceId { get; private set; }
-            public AlgoPluginDescriptor Descriptor { get { return UiModel.Descriptor; } }
-            public IndicatorSetupBase UiModel { get; private set; }
-            public int DataLen { get { return chart.indicatorData.Count; } }
+        //    public long InstanceId { get; private set; }
+        //    public AlgoPluginDescriptor Descriptor { get { return UiModel.Descriptor; } }
+        //    public PluginSetup UiModel { get; private set; }
+        //    public int DataLen { get { return chart.indicatorData.Count; } }
 
-            public IndicatorModel CreateIndicator()
-            {
-                IndicatorBuilder builder = new IndicatorBuilder(Descriptor);
+        //    public IndicatorModel CreateIndicator()
+        //    {
+        //        IndicatorBuilder builder = new IndicatorBuilder(Descriptor);
 
-                var mainBuffer = builder.GetBuffer<BarEntity>(chart.Symbol);
-                mainBuffer.Append(chart.indicatorData);
+        //        var mainBuffer = builder.GetBuffer<BarEntity>(chart.Symbol);
+        //        mainBuffer.Append(chart.indicatorData);
 
-                builder.MainSymbol = chart.Symbol;
+        //        builder.MainSymbol = chart.Symbol;
 
-                foreach (var input in UiModel.Inputs)
-                    ((BarInputSetup)input).Configure(builder);
+        //        foreach (var input in UiModel.Inputs)
+        //            ((BarInputSetup)input).Configure(builder);
 
-                foreach (var parameter in UiModel.Parameters)
-                    builder.SetParameter(parameter.Id, parameter.ValueObj);
+        //        foreach (var parameter in UiModel.Parameters)
+        //            builder.SetParameter(parameter.Id, parameter.ValueObj);
 
-                IndicatorModel model = new IndicatorModel(this, builder, chart.Feed, i => mainBuffer[i].OpenTime);
+        //        IndicatorModel model = new IndicatorModel(this, builder, chart.Feed, i => mainBuffer[i].OpenTime);
 
-                //foreach (var outputSetup in UiModel.Outputs)
-                //{
-                //    if (outputSetup is ColoredLineOutputSetup)
-                //        new DoubleSeriesAdapter(model, (ColoredLineOutputSetup)outputSetup);
-                //    else if (outputSetup is MarkerSeriesOutputSetup)
-                //        new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
-                //}
+        //        //foreach (var outputSetup in UiModel.Outputs)
+        //        //{
+        //        //    if (outputSetup is ColoredLineOutputSetup)
+        //        //        new DoubleSeriesAdapter(model, (ColoredLineOutputSetup)outputSetup);
+        //        //    else if (outputSetup is MarkerSeriesOutputSetup)
+        //        //        new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
+        //        //}
 
-                return model;
-            }
+        //        return model;
+        //    }
 
-            public IIndicatorSetup CreateCopy()
-            {
-                var copy = new IndicatorConfig(repItem, chart);
-                copy.UiModel.CopyFrom(UiModel);
-                return copy;
-            }
-        }
+        //    public IIndicatorSetup CreateCopy()
+        //    {
+        //        var copy = new IndicatorConfig(repItem, chart);
+        //        copy.UiModel.CopyFrom(UiModel);
+        //        return copy;
+        //    }
+        //}
     }
 }
     

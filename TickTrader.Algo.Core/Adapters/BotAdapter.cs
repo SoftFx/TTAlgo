@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
 {
     internal class BotAdapter : PluginAdapter
     {
-        internal BotAdapter(Func<AlgoPlugin> pluginFactory, IPluginDataProvider provider)
+        internal BotAdapter(Func<AlgoPlugin> pluginFactory, IPluginContext provider)
             : base(pluginFactory, provider, new BuffersCoordinator())
         {
             InitParameters();

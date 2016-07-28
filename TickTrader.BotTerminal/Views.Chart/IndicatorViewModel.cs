@@ -11,8 +11,11 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorViewModel
     {
-        public IndicatorViewModel(IndicatorModel indicator)
+        private ChartModelBase chart;
+
+        public IndicatorViewModel(ChartModelBase chart, IndicatorModel2 indicator)
         {
+            this.chart = chart;
             Model = indicator;
             Series = new DynamicList<IRenderableSeriesViewModel>();
 
@@ -24,13 +27,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IndicatorModel Model { get; private set; }
-        public string DisplayName { get { return "[" + Model.Id + "] " + Model.DisplayName; } }
+        public IndicatorModel2 Model { get; private set; }
+        public string DisplayName { get { return Model.Name; } }
         public DynamicList<IRenderableSeriesViewModel> Series { get; private set; }
 
         public void Close()
         {
-            Model.Close();
+            chart.RemoveIndicator(Model);
         }
     }
 }

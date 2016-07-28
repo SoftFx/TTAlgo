@@ -23,33 +23,34 @@ using SciChart.Charting.Model.DataSeries;
 using NLog;
 using Machinarium.Qnil;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    class ChartViewModel : Conductor<Screen>, IDropHandler
+    class ChartViewModel : Screen, IDropHandler
     {
         private static int idSeed;
         private Logger logger;
         private readonly FeedModel feed;
         private PluginCatalog catalog;
-        private IWindowManager wndManager;
+        private BotJournal journal;
         private ChartModelBase activeChart;
         private BarChartModel barChart;
         private TickChartModel tickChart;
-        private OrderUi orderUi;
-        private DynamicList<IndicatorModel> indicators = new DynamicList<IndicatorModel>();
+        private IShell shell;
+        private DynamicList<IDynamicListSource<IndicatorModel2>> indicatorCollections = new DynamicList<IDynamicListSource<IndicatorModel2>>();
         private DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private DynamicList<IRenderableSeriesViewModel> mainSeries = new DynamicList<IRenderableSeriesViewModel>();
 
-        public ChartViewModel(string symbol, FeedModel feed, PluginCatalog catalog, IWindowManager wndManager, OrderUi orderUi)
+        public ChartViewModel(string symbol, IShell shell, FeedModel feed, PluginCatalog catalog, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.feed = feed;
             this.catalog = catalog;
-            this.wndManager = wndManager;
-            this.orderUi = orderUi;
+            this.shell = shell;
+            this.journal = journal;
 
             ChartWindowId = "Chart" + ++idSeed;
 
@@ -57,12 +58,14 @@ namespace TickTrader.BotTerminal
 
             UpdateLabelFormat(smb);
 
-            this.barChart = new BarChartModel(smb, catalog, feed);
-            this.tickChart = new TickChartModel(smb, catalog, feed);
+            this.barChart = new BarChartModel(smb, catalog, feed, journal);
+            this.tickChart = new TickChartModel(smb, catalog, feed, journal);
+            this.UiLock = new UiLock();
 
             //OverlaySeries = new DynamicList<IRenderableSeriesViewModel>();
 
-            var indicatorViewModels = indicators.Select(i => new IndicatorViewModel(i));
+            var indicators = indicatorCollections.SelectMany(c => c);
+            var indicatorViewModels = indicators.Select(i => new IndicatorViewModel(Chart, i));
             var overlayIndicators = indicatorViewModels.Where(i => i.Model.IsOverlay);
             var paneIndicator = indicatorViewModels.Where(i => !i.Model.IsOverlay);
             var panes = paneIndicator.Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
@@ -123,7 +126,7 @@ namespace TickTrader.BotTerminal
             private set
             {
                 if (activeChart != null)
-                    DisposeChart();
+                    DeinitChart();
                 activeChart = value;
                 NotifyOfPropertyChange();
                 InitChart();
@@ -155,29 +158,38 @@ namespace TickTrader.BotTerminal
         #endregion
 
         public string Symbol { get; private set; }
+        public UiLock UiLock { get; private set; }
 
         public override void TryClose(bool? dialogResult = null)
         {
             base.TryClose(dialogResult);
 
-            if (this.ActiveItem != null)
-                this.ActiveItem.TryClose();
+            shell.ToolWndManager.CloseWindow(this);
         }
 
         public void OpenOrder()
         {
-            orderUi.OpenMarkerOrder(Symbol);
+            shell.OrderCommands.OpenMarkerOrder(Symbol);
         }
+
+        #region Algo
 
         public void OpenIndicator(object descriptorObj)
         {
+            OpenAlgoSetup((PluginCatalogItem)descriptorObj);
+        }
+
+        private void OpenAlgoSetup(PluginCatalogItem item)
+        {
             try
             {
-                var model = new IndicatorSetupViewModel(catalog, (PluginCatalogItem)descriptorObj, Chart);
-                wndManager.ShowWindow(model);
-                ActivateItem(model);
+                var model = new PluginSetupViewModel(catalog, item, Chart);
+                if (!model.IsEmpty)
+                    shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
+                else
+                    OpenPlugin(model);
 
-                model.Closed += model_Closed;
+                model.Closed += AlgoSetup_Closed;
             }
             catch (Exception ex)
             {
@@ -185,9 +197,78 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void model_Closed(IndicatorSetupViewModel setupModel, bool dlgResult)
+        private void OpenPlugin(PluginSetupViewModel setupModel)
         {
-            setupModel.Closed -= model_Closed;
+            var pluginType = setupModel.Setup.Descriptor.AlgoLogicType;
+
+            if (pluginType == AlgoTypes.Indicator)
+            {
+                Chart.AddIndicator(setupModel.Setup);
+            }
+            else if (pluginType == AlgoTypes.Robot)
+            {
+                var bot = new TradeBotModel2(setupModel.Setup, Chart);
+                //bot.TimeFrame = Chart.TimeFrame;
+                //bot.MainSymbol = Chart.SymbolCode;
+                //bot.TimelineStart = Chart.TimelineStart;
+                //bot.TimelineEnd = DateTime.Now + TimeSpan.FromDays(100);
+                var viewModel = new BotControlViewModel(bot, shell.ToolWndManager);
+                viewModel.Closed += Bot_Closed;
+                bots.Add(viewModel);
+                //bot.StateChanged += Bot_StateChanged;
+            }
+        }
+
+        void AlgoSetup_Closed(PluginSetupViewModel setupModel, bool dlgResult)
+        {
+            setupModel.Closed -= AlgoSetup_Closed;
+            if (dlgResult)
+                OpenPlugin(setupModel);
+        }
+
+        //private void AddIndicator(IndicatorModel2 i)
+        //{
+        //    indicatorCollections.Values.Add(i);
+        //}
+
+        //private void RemoveIndicator(IndicatorModel2 i)
+        //{
+        //    indicatorCollections.Values.Remove(i);
+        //}
+
+        //private void Bot_StateChanged(TradeBotModel bot)
+        //{
+        //    if (!bot.IsStarted && bot.IsBusy) // strating
+        //    {
+        //        shell.ConnectionLock.Lock();
+        //        UiLock.Lock();
+        //    }
+        //    else if (!bot.IsStarted && !bot.IsBusy) // stopped
+        //    {
+        //        shell.ConnectionLock.Release();
+        //        UiLock.Release();
+        //    }
+        //}
+
+        private void Bot_Closed(BotControlViewModel sender)
+        {
+            bots.Remove(sender);
+            sender.Dispose();
+            sender.Closed -= Bot_Closed;
+            //sender.Model.StateChanged -= Bot_StateChanged;
+        }
+
+        #endregion
+
+        public void Drop(object o)
+        {
+            var algo = o as AlgoItemViewModel;
+            if (algo != null)
+            {
+                var pluginType = algo.PluginItem.Descriptor.AlgoLogicType;
+                if (pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot)
+                    OpenAlgoSetup(algo.PluginItem);
+            }
         }
 
         private void ActivateBarChart(TimeFrames timeFrame, string dateLabelFormat)
@@ -205,17 +286,55 @@ namespace TickTrader.BotTerminal
             //barChart.Deactivate();
         }
 
+        private void Chart_ParamsLocked()
+        {
+            shell.ConnectionLock.Lock();
+            UiLock.Lock();
+        }
+
+        private void Chart_ParamsUnlocked()
+        {
+            shell.ConnectionLock.Release();
+            UiLock.Release();
+        }
+
         private void InitChart()
         {
             RefreshMainSeries();
+            indicatorCollections.Add(Chart.Indicators);
 
-            foreach (var i in barChart.Indicators.Values)
-                AddIndicator(i);
+            //foreach (var i in barChart.Indicators.Values)
+            //    AddIndicator(i);
 
-            Chart.ChartTypeChanged += RefreshMainSeries;
-            Chart.Indicators.Added += AddIndicator;
-            Chart.Indicators.Removed += RemoveIndicator;
+
+            Chart.ParamsLocked += Chart_ParamsLocked;
+            Chart.ParamsUnlocked += Chart_ParamsUnlocked;
+            //Chart.ChartTypeChanged += RefreshMainSeries;
+            //Chart.Indicators.Added += AddIndicator;
+            //Chart.Indicators.Removed += RemoveIndicator;
             //barChart.Indicators.Replaced += ReplaceIndicator;
+        }
+
+        private void DeinitChart()
+        {
+            //indicatorCollections.Values.Clear();
+
+            indicatorCollections.Clear();
+            mainSeries.Values.Clear();
+
+            Chart.ParamsLocked -= Chart_ParamsLocked;
+            Chart.ParamsUnlocked -= Chart_ParamsUnlocked;
+
+            //foreach (var bot in bots.Values)
+            //    bot.Dispose();
+
+            //if (barChart != null)
+            //{
+            //    Chart.ChartTypeChanged -= RefreshMainSeries;
+            //    Chart.Indicators.Added -= AddIndicator;
+            //    Chart.Indicators.Removed -= RemoveIndicator;
+            //    //barChart.Indicators.Replaced -= ReplaceIndicator;
+            //}
         }
 
         private void RefreshMainSeries()
@@ -226,42 +345,6 @@ namespace TickTrader.BotTerminal
                 var viewModel = SeriesViewModel.Create(Chart, series);
                 if (viewModel != null)
                     mainSeries.Add(viewModel);
-            }
-        }
-
-        private void DisposeChart()
-        {
-            indicators.Values.Clear();
-            mainSeries.Values.Clear();
-
-            if (barChart != null)
-            {
-                Chart.ChartTypeChanged -= RefreshMainSeries;
-                Chart.Indicators.Added -= AddIndicator;
-                Chart.Indicators.Removed -= RemoveIndicator;
-                //barChart.Indicators.Replaced -= ReplaceIndicator;
-            }
-        }
-
-        private void AddIndicator(IndicatorModel i)
-        {
-            indicators.Values.Add(i);
-        }
-
-        private void RemoveIndicator(IndicatorModel i)
-        {
-            indicators.Values.Remove(i);
-        }
-
-        public void Drop(object o)
-        {
-            var algo = o as AlgoItemViewModel;
-            if (algo != null)
-            {
-                if (algo.PluginItem.Descriptor.AlgoLogicType == Algo.Core.Metadata.AlgoTypes.Indicator)
-                    OpenIndicator(algo.PluginItem);
-                else if (algo.PluginItem.Descriptor.AlgoLogicType == Algo.Core.Metadata.AlgoTypes.Robot)
-                    AddBotTrader(algo.PluginItem);
             }
         }
 
@@ -281,23 +364,6 @@ namespace TickTrader.BotTerminal
             {
                 return base.OnCalculateNewYRange(yAxis, renderPassInfo);
             }
-        }
-
-        private void AddBotTrader(PluginCatalogItem item)
-        {
-            var bot = new BotControlViewModel(item.Ref, feed);
-            bot.TimeFrame = Chart.TimeFrame;
-            bot.MainSymbol = Chart.Symbol;
-            bot.TimelineStart = Chart.TimelineStart;
-            bot.TimelineEnd = DateTime.Now + TimeSpan.FromDays(100);
-            bot.Closed += Bot_Closed;
-            bots.Add(bot);
-        }
-
-        private void Bot_Closed(BotControlViewModel sender)
-        {
-            bots.Remove(sender);
-            sender.Closed -= Bot_Closed;
         }
 
         private void UpdateLabelFormat(SymbolModel smb)

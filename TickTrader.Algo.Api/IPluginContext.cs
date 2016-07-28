@@ -6,15 +6,24 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    internal interface IPluginDataProvider
+    internal interface IPluginContext
     {
         MarketDataProvider GetMarketDataProvider();
         AccountDataProvider GetAccountDataProvider();
         SymbolProvider GetSymbolProvider();
+        IPluginMonitor GetPluginLogger();
+        ITradeCommands GetTradeApi();
+        void OnExit();
+    }
+
+    internal interface IPluginMonitor
+    {
+        void UpdateStatus(string status);
+        void WriteLog(string entry, object[] parameters);
     }
 
     internal interface IPluginActivator
     {
-        IPluginDataProvider Activate(AlgoPlugin instance);
+        IPluginContext Activate(AlgoPlugin instance);
     }
 }

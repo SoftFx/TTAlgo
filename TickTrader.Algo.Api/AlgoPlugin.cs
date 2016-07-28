@@ -11,16 +11,20 @@ namespace TickTrader.Algo.Api
         [ThreadStatic]
         internal static IPluginActivator activator;
 
-        private IPluginDataProvider context;
+        private IPluginContext context;
         private SymbolProvider symbolProvider;
         private MarketDataProvider marketDataProvider;
         private AccountDataProvider accountDataProvider;
+        private IPluginMonitor monitor;
+        private ITradeCommands tradeCmdApi;
 
         internal AlgoPlugin()
         {
             if (activator != null)
                 this.context = activator.Activate(this);
         }
+
+        internal IPluginContext Context { get { return context; } }
 
         protected AccountDataProvider Account
         {
@@ -57,6 +61,20 @@ namespace TickTrader.Algo.Api
         internal void InvokeInit()
         {
             Init();
+        }
+
+        internal IPluginMonitor GetLogger()
+        {
+            if (monitor == null)
+                monitor = context.GetPluginLogger();
+            return monitor;
+        }
+
+        internal ITradeCommands GetTradeApi()
+        {
+            if (tradeCmdApi == null)
+                tradeCmdApi = context.GetTradeApi();
+            return tradeCmdApi;
         }
 
         //internal virtual void DoInit()

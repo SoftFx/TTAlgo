@@ -39,22 +39,22 @@ namespace TickTrader.BotTerminal
             return null;
         }
 
-        public static IRenderableSeriesViewModel Create(IIndicatorAdapterContext context, OutputSetup outputSetup)
+        public static IRenderableSeriesViewModel Create(IndicatorModel2 model, OutputSetup outputSetup)
         {
+            var seriesData = model.GetOutputSeries(outputSetup.Id);
+
             if (outputSetup is ColoredLineOutputSetup)
-                return Create(context, (ColoredLineOutputSetup)outputSetup);
+                return Create(seriesData, (ColoredLineOutputSetup)outputSetup);
             else if (outputSetup is MarkerSeriesOutputSetup)
-                return Create(context, (MarkerSeriesOutputSetup)outputSetup);
+                return Create(seriesData, (MarkerSeriesOutputSetup)outputSetup);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel Create(IIndicatorAdapterContext context, ColoredLineOutputSetup outputSetup)
+        private static IRenderableSeriesViewModel Create(IXyDataSeries seriesData, ColoredLineOutputSetup outputSetup)
         {
-            DoubleSeriesAdapter adapter = new DoubleSeriesAdapter(context, outputSetup.Id);
-
             var viewModel = new LineRenderableSeriesViewModel();
-            viewModel.DataSeries = adapter.SeriesData;
+            viewModel.DataSeries = seriesData;
             viewModel.DrawNaNAs = outputSetup.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
                  LineDrawMode.Gaps : LineDrawMode.ClosedLines;
             viewModel.Stroke = outputSetup.LineColor;
@@ -66,12 +66,10 @@ namespace TickTrader.BotTerminal
             return viewModel;
         }
 
-        private static IRenderableSeriesViewModel Create(IIndicatorAdapterContext context, MarkerSeriesOutputSetup outputSetup)
+        private static IRenderableSeriesViewModel Create(IXyDataSeries seriesData, MarkerSeriesOutputSetup outputSetup)
         {
-            MarkerSeriesAdapter adapter = new MarkerSeriesAdapter(context, outputSetup.Id);
-
             var viewModel = new LineRenderableSeriesViewModel();
-            viewModel.DataSeries = adapter.SeriesData;
+            viewModel.DataSeries = seriesData;
             viewModel.DrawNaNAs = LineDrawMode.Gaps;
             viewModel.StrokeThickness = 0;
             viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
@@ -90,148 +88,6 @@ namespace TickTrader.BotTerminal
             viewModel.PointMarker = markerTool;
 
             return viewModel;
-        }
-    }
-
-    internal class DoubleSeriesAdapter
-    {
-        private IIndicatorAdapterContext context;
-        private OutputBuffer<double> buffer;
-
-        private bool isBatchBuild;
-
-        public DoubleSeriesAdapter(IIndicatorAdapterContext context, string outputId)
-        {
-            this.context = context;
-            this.buffer = context.GetOutput<double>(outputId);
-            this.SeriesData = new XyDataSeries<DateTime, double>();
-
-            buffer.Updated = Update;
-            buffer.Appended = Append;
-
-            buffer.BeginBatchBuild = () => isBatchBuild = true;
-
-            buffer.EndBatchBuild = () =>
-            {
-                isBatchBuild = false;
-                CopyAll();
-            };
-        }
-
-        public XyDataSeries<DateTime, double> SeriesData { get; private set; }
-
-        private void Append(int index, double data)
-        {
-            if (!isBatchBuild)
-            {
-                DateTime x = context.GetTimeCoordinate(index);
-                Execute.OnUIThread(() => SeriesData.Append(x, data));
-            }
-        }
-
-        private void Update(int index, double data)
-        {
-            if (!isBatchBuild)
-            {
-                DateTime x = context.GetTimeCoordinate(index);
-                Execute.OnUIThread(() => SeriesData.YValues[index] = data);
-            }
-        }
-
-        private void CopyAll()
-        {
-            Execute.OnUIThread(() =>
-            {
-                SeriesData.Clear();
-                SeriesData.Append(EnumerateDateTimeCoordinate(), buffer);
-            });
-        }
-
-        private IEnumerable<DateTime> EnumerateDateTimeCoordinate()
-        {
-            for (int i = 0; i < buffer.Count; i++)
-                yield return context.GetTimeCoordinate(i);
-        }
-    }
-
-    internal class MarkerSeriesAdapter
-    {
-        private IIndicatorAdapterContext context;
-        private OutputBuffer<Marker> buffer;
-
-        private bool isBatchBuild;
-
-        public MarkerSeriesAdapter(IIndicatorAdapterContext context, string outputId)
-        {
-            this.context = context;
-            this.buffer = context.GetOutput<Marker>(outputId);
-
-            SeriesData = new XyDataSeries<DateTime, double>();
-
-            buffer.Updated = Update;
-            buffer.Appended = Append;
-
-            buffer.BeginBatchBuild = () => isBatchBuild = true;
-
-            buffer.EndBatchBuild = () =>
-            {
-                isBatchBuild = false;
-                CopyAll();
-            };
-        }
-
-        public XyDataSeries<DateTime, double> SeriesData { get; private set; }
-
-        private void SetSize(AlgoPointMarker markerTool, MarkerSizes size)
-        {
-            switch (size)
-            {
-                case MarkerSizes.Large: markerTool.Width = 16; markerTool.Height = 16; break;
-                case MarkerSizes.Small: markerTool.Width = 4; markerTool.Height = 4; break;
-                default: markerTool.Width = 8; markerTool.Height = 8; break;
-            }
-        }
-
-        private void Append(int index, Marker marker)
-        {
-            if (!isBatchBuild)
-            {
-                DateTime x = context.GetTimeCoordinate(index);
-                Execute.OnUIThread(() => SeriesData.Append(x, marker.Y, new AlgoMarkerMetadata(marker)));
-            }
-        }
-
-        private void Update(int index, Marker marker)
-        {
-            if (!isBatchBuild)
-            {
-                DateTime x = context.GetTimeCoordinate(index);
-                Execute.OnUIThread(() =>
-                {
-                    SeriesData.Metadata[index] = new AlgoMarkerMetadata(marker);
-                    SeriesData.YValues[index] = marker.Y;
-                });
-            }
-        }
-
-        private void CopyAll()
-        {
-            Execute.OnUIThread(() =>
-            {
-                for (int i = 0; i < buffer.Count; i++)
-                {
-                    var marker = buffer[i];
-                    var x = context.GetTimeCoordinate(i);
-                    var y = marker.Y;
-                    SeriesData.Append(x, y, new AlgoMarkerMetadata(marker));
-                }
-            });
-        }
-
-        private IEnumerable<DateTime> EnumerateDateTimeCoordinate()
-        {
-            for (int i = 0; i < buffer.Count; i++)
-                yield return context.GetTimeCoordinate(i);
         }
     }
 }

@@ -12,11 +12,8 @@ using System.Timers;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, OrderUi
+    internal class ShellViewModel : Screen, IConnectionViewModel, OrderUi, IShell, ToolWindowsManager
     {
-        private bool canConnect;
-        private bool canDisconnect;
-
         private ConnectionManager cManager;
         private TraderModel trade;
         private FeedModel feed;
@@ -43,25 +40,21 @@ namespace TickTrader.BotTerminal
             trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
 
+            ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(catalog);
             SymbolList = new SymbolListViewModel(feed.Symbols, this);
             PositionList = new PositionListViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
-            Charts = new ChartCollectionViewModel(feed, catalog, wndManager, this);
-            AccountPane = new AccountPaneViewModel(cManager, this);
+            Charts = new ChartCollectionViewModel(feed, catalog, this, botJournal);
+            AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(botJournal);
             CanConnect = true;
 
-            UpdateCommandStates(cManager.State);
-            cManager.StateChanged += UpdateCommandStates;
-
+            UpdateCommandStates();
+            cManager.StateChanged += s => UpdateCommandStates();
             SymbolList.NewChartRequested += s => Charts.Open(s);
-            UI.Instance.StateChanged += () =>
-            {
-                NotifyOfPropertyChange(nameof(CanConnect));
-                NotifyOfPropertyChange(nameof(CanDisconnect));
-            };
+            ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
             catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
@@ -69,19 +62,17 @@ namespace TickTrader.BotTerminal
             LogStateLoop();
         }
 
-        private void UpdateCommandStates(ConnectionManager.States state)
+        private void UpdateCommandStates()
         {
-            CanConnect = true;
-            CanDisconnect = state == ConnectionManager.States.Online;
-            CanCancel = state == ConnectionManager.States.Connecting;
+            var state = cManager.State;
+            CanConnect = !ConnectionLock.IsLocked;
+            CanDisconnect = state == ConnectionManager.States.Online && !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
-            NotifyOfPropertyChange(nameof(CanCancel));
         }
 
-        public bool CanConnect { get { return canConnect && !UI.Instance.Locked; } private set { canConnect = value; } }
-        public bool CanDisconnect { get { return canDisconnect && !UI.Instance.Locked; } private set { canDisconnect = value; } }
-        public bool CanCancel { get; private set; }
+        public bool CanConnect { get; private set; }
+        public bool CanDisconnect { get; private set; }
 
         public void Connect()
         {
@@ -100,18 +91,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex);
             }
             //SetBusyConnecting(false);
-        }
-
-        public void Cancel()
-        {
-            try
-            {
-                //await cManager.
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
         }
 
         protected override void OnDeactivate(bool close)
@@ -155,6 +134,9 @@ namespace TickTrader.BotTerminal
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
         public BotJournalViewModel BotJournal { get; set; }
+        public OrderUi OrderCommands { get { return this; } }
+        public UiLock ConnectionLock { get; private set; }
+        public ToolWindowsManager ToolWndManager { get { return this; } }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
@@ -215,7 +197,7 @@ namespace TickTrader.BotTerminal
             builder.Append(name).Append(':').Append(state).Append(" ");
         }
 
-        #region OrderUi
+        #region OrderUi implementation
 
         public void OpenMarkerOrder(string symbol)
         {
@@ -232,6 +214,50 @@ namespace TickTrader.BotTerminal
 
         public void OpenMarkerOrder(string symbol, decimal volume, OrderSides side)
         {
+        }
+
+        #endregion
+
+        #region ToolWindowsManager implementation
+
+        private Dictionary<object, IScreen> wndModels = new Dictionary<object, IScreen>();
+
+        public IScreen GetWindow(object key)
+        {
+            return wndModels.GetValueOrDefault(key);
+        }
+
+        public void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false)
+        {
+            IScreen existing = GetWindow(wndKey);
+            if (existing != null)
+            {
+                if (closeExisting)
+                    existing.TryClose();
+                else
+                    throw new Exception("Window already opened!");
+            }
+            wndModel.Deactivated += WndModel_Deactivated;
+            wndModels[wndKey] = wndModel;
+            wndManager.ShowWindow(wndModel);
+        }
+
+        private void WndModel_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            if (e.WasClosed)
+            {
+                var wndModel = sender as IScreen;
+                wndModel.Deactivated -= WndModel_Deactivated;
+
+                var keyValue = wndModels.FirstOrDefault(m => m.Value == wndModel);
+                if (keyValue.Key != null)
+                    wndModels.Remove(keyValue.Key);
+            }
+        }
+
+        public void CloseWindow(object wndKey)
+        {
+            GetWindow(wndKey)?.TryClose();
         }
 
         #endregion

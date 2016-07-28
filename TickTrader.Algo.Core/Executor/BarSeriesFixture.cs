@@ -24,7 +24,6 @@ namespace TickTrader.Algo.Core
                 buffer.Append(data);
         }
 
-        public int Depth { get { return 1; } }
         public int Count { get { return buffer.Count; } }
 
         public override BufferUpdateResults Update(QuoteEntity quote)
