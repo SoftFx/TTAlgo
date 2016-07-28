@@ -151,18 +151,21 @@ namespace TickTrader.BotTerminal
             ConnectLast();
         }
 
-        private void PrintSystemInfo()
+        private async void PrintSystemInfo()
         {
-            var os = ComputerInfo.OperatingSystem;
-            var cpu = ComputerInfo.Processor;
-            var sign = TimeZoneInfo.Local.BaseUtcOffset < TimeSpan.Zero ? "-" : "+";
-            eventJournal.Info("{0} ({1}), {2}, RAM: {3} / {4} Mb, UTC{5}{6:hh\\:mm}",
-                os.Name, os.Architecture,
-                cpu.Name,
-                os.FreePhysicalMemory / 1024,
-                os.TotalVisibleMemorySize / 1024,
-                sign,
-                TimeZoneInfo.Local.BaseUtcOffset);
+            await Task.Factory.StartNew(() =>
+            {
+                var os = ComputerInfo.OperatingSystem;
+                var cpu = ComputerInfo.Processor;
+                var sign = TimeZoneInfo.Local.BaseUtcOffset < TimeSpan.Zero ? "-" : "+";
+                eventJournal.Info("{0} ({1}), {2}, RAM: {3} / {4} Mb, UTC{5}{6:hh\\:mm}",
+                    os.Name, os.Architecture,
+                    cpu.Name,
+                    os.FreePhysicalMemory / 1024,
+                    os.TotalVisibleMemorySize / 1024,
+                    sign,
+                    TimeZoneInfo.Local.BaseUtcOffset);
+            });
         }
 
         private void ConnectLast()
