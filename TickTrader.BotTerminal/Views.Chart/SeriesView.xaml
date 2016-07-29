@@ -44,4 +44,49 @@
         <Setter Property="FillDown" Value="#F15923"/>
     </Style>
 
+    <Style x:Key="TickChart_LineStyle_Ask" TargetType="s:FastLineRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="Stroke" Value="#009344"/>
+        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+    </Style>
+
+    <Style x:Key="TickChart_LineStyle_Bid" TargetType="s:FastLineRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="Stroke" Value="#F15923"/>
+        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+    </Style>
+
+    <Style x:Key="TickChart_DigitalLineStyle_Ask" TargetType="s:FastLineRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="Stroke" Value="#009344"/>
+        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+    </Style>
+
+    <Style x:Key="TickChart_DigitalLineStyle_Bid" TargetType="s:FastLineRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="Stroke" Value="#F15923"/>
+        <!--<Setter Property="Stroke" Value="{DynamicResource RateUpColor}" />-->
+    </Style>
+
+    <Style x:Key="TickChart_ScatterStyle_Ask" TargetType="s:XyScatterRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="PointMarker">
+            <Setter.Value>
+                <s:EllipsePointMarker Width="4" Height="4" Fill="#009344" Stroke="#009344" StrokeThickness="2"/>
+            </Setter.Value>
+        </Setter>
+        <!--<Setter Property="Stroke" Value="{DynamicResource RateDownColor}" />-->
+    </Style>
+
+    <Style x:Key="TickChart_ScatterStyle_Bid" TargetType="s:XyScatterRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="PointMarker">
+            <Setter.Value>
+                <s:EllipsePointMarker Width="4" Height="4" Fill="#F15923" Stroke="#F15923" StrokeThickness="2"/>
+            </Setter.Value>
+        </Setter>
+        <!--<Setter Property="Stroke" Value="{DynamicResource RateDownColor}" />-->
+    </Style>
+
+
 </ResourceDictionary>

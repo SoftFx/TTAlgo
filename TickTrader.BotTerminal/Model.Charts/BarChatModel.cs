@@ -13,16 +13,16 @@ using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.Qnil;
+using SciChart.Charting.Model.ChartSeries;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        //private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
+        private OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
         private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
         private Api.TimeFrames timeframe;
-        //private List<QuoteEntity> updateQueue;
         private BarVector barCollection = new BarVector();
 
         public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
@@ -34,8 +34,6 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.Mountain);
 
             SelectedChartType = SelectableChartTypes.Candle;
-
-            var chartData = new OhlcDataSeries<DateTime, double>();
 
             barCollection.Updated += a =>
             {
@@ -52,8 +50,6 @@ namespace TickTrader.BotTerminal
                 else if (a.Action == DLinqAction.Remove)
                     chartData.RemoveAt(a.Index);
             };
-
-            AddSeries(chartData);
         }
 
         public void Activate(Api.TimeFrames timeframe)
@@ -72,27 +68,13 @@ namespace TickTrader.BotTerminal
 
         protected async override Task<DataMetrics> LoadData(CancellationToken cToken)
         {
-            //var response = await Task.Factory.StartNew(
-            //    () => Connection.FeedProxy.Server.GetHistoryBars(
-            //        Symbol, DateTime.Now + TimeSpan.FromDays(1),
-            //        -10000, SoftFX.Extended.PriceType.Ask, periodCopy));
-
             var barArray = await Feed.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
             var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
 
-            //var rawData = response.Bars.Reverse().ToList();
-
             indicatorData.Clear();
             FdkAdapter.Convert(loadedData, indicatorData);
-            //Convert(rawData, indicatorData);
-
-            //foreach (var bar in loadedData)
-            //    chartData.Append(bar.From, bar.Open, bar.High, bar.Low, bar.Close);
-
-            //if (indicatorData.Count > 0)
-                //barCollection.SetBoundaries(indicatorData[0].OpenTime);
 
             barCollection.Update(indicatorData);
 
@@ -111,35 +93,9 @@ namespace TickTrader.BotTerminal
             return new BarBasedPluginSetup(catalogItem, SymbolCode);
         }
 
-        protected override IndicatorBuilder CreateBuilder(PluginSetup setup)
-        {
-            IndicatorBuilder builder = new IndicatorBuilder(setup.Descriptor);
-
-            var mainBuffer = builder.GetBuffer<BarEntity>(SymbolCode);
-            mainBuffer.Append(indicatorData);
-
-            builder.MainSymbol = SymbolCode;
-
-            foreach (var input in setup.Inputs)
-                ((BarInputSetup)input).Configure(builder);
-
-            foreach (var parameter in setup.Parameters)
-                builder.SetParameter(parameter.Id, parameter.ValueObj);
-
-            return builder;
-        }
-
         protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
         {
-            return new IndicatorModel2( setup, this);
-
-            //foreach (var outputSetup in UiModel.Outputs)
-            //{
-            //    if (outputSetup is ColoredLineOutputSetup)
-            //        new DoubleSeriesAdapter(model, (ColoredLineOutputSetup)outputSetup);
-            //    else if (outputSetup is MarkerSeriesOutputSetup)
-            //        new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
-            //}
+            return new IndicatorModel2(setup, this);
         }
 
         protected override FeedStrategy GetFeedStrategy()
@@ -162,59 +118,32 @@ namespace TickTrader.BotTerminal
             }));
         }
 
-        //private class IndicatorConfig : IIndicatorSetup
-        //{
-        //    private BarChartModel chart;
-        //    private AlgoPluginRef repItem;
+        protected override void UpdateSeries()
+        {
+            var seriesModel = CreateSeriesModel();
 
-        //    public IndicatorConfig(AlgoPluginRef repItem, BarChartModel chart, BarBasedPluginSetup srcSetup = null)
-        //    {
-        //        this.chart = chart;
-        //        this.repItem = repItem;
-        //        this.InstanceId = chart.GetNextIndicatorId();
-        //        this.UiModel = new BarBasedPluginSetup(repItem.Descriptor, chart.Symbol);
-        //    }
+            if (SeriesCollection.Count == 0)
+                SeriesCollection.Add(seriesModel);
+            else
+                SeriesCollection[0] = seriesModel;
+        }
 
-        //    public long InstanceId { get; private set; }
-        //    public AlgoPluginDescriptor Descriptor { get { return UiModel.Descriptor; } }
-        //    public PluginSetup UiModel { get; private set; }
-        //    public int DataLen { get { return chart.indicatorData.Count; } }
+        private IRenderableSeriesViewModel CreateSeriesModel()
+        {
+            switch (SelectedChartType)
+            {
+                case SelectableChartTypes.OHLC:
+                    return new OhlcRenderableSeriesViewModel() { DataSeries = chartData, StyleKey = "BarChart_OhlcStyle" };
+                case SelectableChartTypes.Candle:
+                    return new CandlestickRenderableSeriesViewModel() { DataSeries = chartData, StyleKey = "BarChart_CandlestickStyle" };
+                case SelectableChartTypes.Line:
+                    return new LineRenderableSeriesViewModel() { DataSeries = chartData, StyleKey = "BarChart_LineStyle" };
+                case SelectableChartTypes.Mountain:
+                    return new MountainRenderableSeriesViewModel() { DataSeries = chartData, StyleKey = "BarChart_MountainStyle" };
+            }
 
-        //    public IndicatorModel CreateIndicator()
-        //    {
-        //        IndicatorBuilder builder = new IndicatorBuilder(Descriptor);
-
-        //        var mainBuffer = builder.GetBuffer<BarEntity>(chart.Symbol);
-        //        mainBuffer.Append(chart.indicatorData);
-
-        //        builder.MainSymbol = chart.Symbol;
-
-        //        foreach (var input in UiModel.Inputs)
-        //            ((BarInputSetup)input).Configure(builder);
-
-        //        foreach (var parameter in UiModel.Parameters)
-        //            builder.SetParameter(parameter.Id, parameter.ValueObj);
-
-        //        IndicatorModel model = new IndicatorModel(this, builder, chart.Feed, i => mainBuffer[i].OpenTime);
-
-        //        //foreach (var outputSetup in UiModel.Outputs)
-        //        //{
-        //        //    if (outputSetup is ColoredLineOutputSetup)
-        //        //        new DoubleSeriesAdapter(model, (ColoredLineOutputSetup)outputSetup);
-        //        //    else if (outputSetup is MarkerSeriesOutputSetup)
-        //        //        new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
-        //        //}
-
-        //        return model;
-        //    }
-
-        //    public IIndicatorSetup CreateCopy()
-        //    {
-        //        var copy = new IndicatorConfig(repItem, chart);
-        //        copy.UiModel.CopyFrom(UiModel);
-        //        return copy;
-        //    }
-        //}
+            throw new InvalidOperationException("Unsupported chart type: " + SelectedChartType);
+        }
     }
 }
     

@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Core
 {
     public class PluginBuilder : IPluginContext, IPluginInvoker, IPluginSubscriptionHandler
     {
+        private static readonly NullLogger nullLogger = new NullLogger();
+
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
         private bool isAccountInitialized;
@@ -23,10 +25,11 @@ namespace TickTrader.Algo.Core
             marketData = new MarketDataImpl(this);
             Account = new AccountEntity();
             Symbols = new SymbolsCollection(this);
+            Logger = nullLogger;
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
 
-            OnException = ex => Logger.WriteError("Exception: " + ex.Message, ex.ToString());
+            //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
 
         internal PluginAdapter PluginProxy { get; private set; }
@@ -162,8 +165,6 @@ namespace TickTrader.Algo.Core
 
         IPluginMonitor IPluginContext.GetPluginLogger()
         {
-            if (Logger == null)
-                return new NullLogger();
             return new PluginLoggerAdapter(Logger);
         }
 
@@ -189,7 +190,7 @@ namespace TickTrader.Algo.Core
             {
                 OnPluginException(ex);
             }
-            Logger.WriteLog("Bot started");
+            Logger.OnPrint("Bot started");
         }
 
         void IPluginInvoker.InvokeOnStop()
@@ -202,7 +203,7 @@ namespace TickTrader.Algo.Core
             {
                 OnPluginException(ex);
             }
-            Logger.WriteLog("Bot stopped");
+            Logger.OnPrint("Bot stopped");
         }
 
         void IPluginInvoker.StartBatch()
@@ -230,12 +231,19 @@ namespace TickTrader.Algo.Core
             {
                 OnPluginException(ex);
             }
-            Logger.WriteLog("Bot initialized");
+            Logger.OnInitialized();
         }
 
         void IPluginInvoker.InvokeOnQuote(QuoteEntity quote)
         {
-            PluginProxy.InvokeOnQuote(quote);
+            try
+            {
+                PluginProxy.InvokeOnQuote(quote);
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
         }
 
         void IPluginSubscriptionHandler.Subscribe(string smbCode, int depth)
@@ -252,7 +260,7 @@ namespace TickTrader.Algo.Core
 
         void IPluginContext.OnExit()
         {
-            Logger.WriteLog("Bot exited");
+            Logger.OnExit();
             OnExit?.Invoke();
         }
 

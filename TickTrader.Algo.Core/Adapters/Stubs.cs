@@ -10,8 +10,12 @@ namespace TickTrader.Algo.Core
     public interface IPluginLogger
     {
         void UpdateStatus(string status);
-        void WriteLog(string entry, params object[] parameters);
-        void WriteError(string msg, string description);
+        void OnPrint(string entry, params object[] parameters);
+        void OnError(string msg, string description);
+        void OnInitialized();
+        void OnStart();
+        void OnStop();
+        void OnExit();
     }
 
     internal class PluginLoggerAdapter : Api.IPluginMonitor
@@ -28,19 +32,39 @@ namespace TickTrader.Algo.Core
             logger.UpdateStatus(status);
         }
 
-        public void WriteLog(string entry, object[] parameters)
+        public void Print(string entry, object[] parameters)
         {
-            logger.WriteLog(entry, parameters);
+            logger.OnPrint(entry, parameters);
         }
     }
 
-    public class NullLogger : Api.IPluginMonitor
+    public class NullLogger : IPluginLogger
     {
-        public void UpdateStatus(string status)
+        public void OnError(string msg, string description)
         {
         }
 
-        public void WriteLog(string entry, object[] parameters)
+        public void OnExit()
+        {
+        }
+
+        public void OnInitialized()
+        {
+        }
+
+        public void OnPrint(string entry, params object[] parameters)
+        {
+        }
+
+        public void OnStart()
+        {
+        }
+
+        public void OnStop()
+        {
+        }
+
+        public void UpdateStatus(string status)
         {
         }
     }

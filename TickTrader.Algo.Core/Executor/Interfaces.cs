@@ -25,8 +25,8 @@ namespace TickTrader.Algo.Core
         DateTime TimePeriodStart { get; }
         DateTime TimePeriodEnd { get; }
         IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<L2QuoteEntity> QueryTicksL2(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to);
+        IEnumerable<QuoteEntityL2> QueryTicksL2(string symbolCode, DateTime from, DateTime to);
         void Add(IFeedFixture subscriber);
         void Remove(IFeedFixture subscriber);
         //void Subscribe(string symbolCode, int depth);

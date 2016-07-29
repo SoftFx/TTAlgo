@@ -96,7 +96,7 @@ namespace TickTrader.BotTerminal
                 statusChanged(status);
             }
 
-            public void WriteLog(string entry, object[] parameters)
+            public void OnPrint(string entry, object[] parameters)
             {
                 string msg = entry;
                 try
@@ -108,9 +108,29 @@ namespace TickTrader.BotTerminal
                 journal.Info(botName, msg);
             }
 
-            public void WriteError(string msg, string description)
+            public void OnError(string msg, string description)
             {
                 journal.Error(botName, msg);
+            }
+
+            public void OnInitialized()
+            {
+                journal.Info(botName, "Bot initialized");
+            }
+
+            public void OnStart()
+            {
+                journal.Info(botName, "Bot started");
+            }
+
+            public void OnStop()
+            {
+                journal.Info(botName, "Bot stopped");
+            }
+
+            public void OnExit()
+            {
+                journal.Info(botName, "Bot exited");
             }
         }
     }

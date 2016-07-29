@@ -13,6 +13,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.Algo.Core;
+using SciChart.Charting.Model.ChartSeries;
 
 namespace TickTrader.BotTerminal
 {
@@ -29,10 +30,7 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
 
-            AddSeries(askData);
-            AddSeries(bidData);
-
-            SelectedChartType = SelectableChartTypes.Line;
+            SelectedChartType = SelectableChartTypes.Scatter;
         }
 
         public override TimeFrames TimeFrame { get { return TimeFrames.Ticks; } }
@@ -50,17 +48,19 @@ namespace TickTrader.BotTerminal
 
         protected override async Task<DataMetrics> LoadData(CancellationToken cToken)
         {
+            var metrics = new DataMetrics();
+
             if (Model.LastQuote != null)
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
                 var tickArray = await Feed.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
 
-                foreach (var tick in tickArray)
-                {
-                    askData.Append(tick.CreatingTime, tick.Ask);
-                    bidData.Append(tick.CreatingTime, tick.Bid);
-                }
+                //foreach (var tick in tickArray)
+                //{
+                //    askData.Append(tick.CreatingTime, tick.Ask);
+                //    bidData.Append(tick.CreatingTime, tick.Bid);
+                //}
 
                 askData.Append(
                     tickArray.Select(t => t.CreatingTime),
@@ -68,39 +68,66 @@ namespace TickTrader.BotTerminal
                 bidData.Append(
                     tickArray.Select(t => t.CreatingTime),
                     tickArray.Select(t => t.Bid));
+                
+                metrics.Count = tickArray.Length;
+                if (tickArray.Length > 0)
+                {
+                    metrics.StartDate = tickArray.First().CreatingTime;
+                    metrics.EndDate = tickArray.Last().CreatingTime;
+                }
+                return metrics;
             }
 
-            return new DataMetrics();
+            return metrics;
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override IndicatorBuilder CreateBuilder(PluginSetup setup)
-        {
-            throw new NotImplementedException();
+            return new TickBasedPluginSetup(catalogItem, SymbolCode);
         }
 
         protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
         {
-            throw new NotImplementedException();
+            return new IndicatorModel2(setup, this);
         }
 
         protected override FeedStrategy GetFeedStrategy()
         {
-            throw new NotImplementedException();
+            return new QuoteStrategy();
         }
 
-        private IPointMarker CreateMarker(Color fillColor, Color strokeColor)
+        protected override void UpdateSeries()
         {
-            EllipsePointMarker marker = new EllipsePointMarker();
-            marker.Width = 6;
-            marker.Height = 6;
-            marker.Fill = fillColor;
-            marker.Stroke = strokeColor;
-            return marker;
+            var askSeriesModel = CreateSeriesModel(askData, "_Ask");
+            var bidSeriesModel = CreateSeriesModel(bidData, "_Bid");
+
+            if (SeriesCollection.Count == 0)
+            {
+                SeriesCollection.Add(askSeriesModel);
+                SeriesCollection.Add(bidSeriesModel);
+            }
+            else
+            {
+                SeriesCollection[0] = askSeriesModel;
+                SeriesCollection[1] = bidSeriesModel;
+            }
+        }
+
+        private IRenderableSeriesViewModel CreateSeriesModel(IXyDataSeries data, string seriesType)
+        {
+            switch (SelectedChartType)
+            {
+                case SelectableChartTypes.Line:
+                    return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_LineStyle" + seriesType };
+                case SelectableChartTypes.Mountain:
+                    return new MountainRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_MountainStyle" + seriesType };
+                case SelectableChartTypes.DigitalLine:
+                    return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_DigitalLineStyle" + seriesType, IsDigitalLine = true };
+                case SelectableChartTypes.Scatter:
+                    return new XyScatterRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_ScatterStyle" + seriesType };
+            }
+
+            throw new InvalidOperationException("Unsupported chart type: " + SelectedChartType);
         }
     }
 }

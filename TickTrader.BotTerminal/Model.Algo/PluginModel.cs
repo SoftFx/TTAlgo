@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.RenderableSeries;
@@ -18,6 +19,8 @@ namespace TickTrader.BotTerminal
 {
     internal class PluginModel : NoTimeoutByRefObject
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private PluginExecutor executor;
         private IAlgoPluginHost host;
 
@@ -31,10 +34,17 @@ namespace TickTrader.BotTerminal
             Setup.Apply(executor);
         }
 
-        protected Task StartExcecutor()
+        protected async Task StartExcecutor()
         {
-            ConfigureExecutor(executor);
-            return Task.Factory.StartNew(() => executor.Start());
+            try
+            {
+                ConfigureExecutor(executor);
+                await Task.Factory.StartNew(() => executor.Start());
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "StartExcecutor() failed!");
+            }
         }
 
         protected Task StopExecutor()

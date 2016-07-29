@@ -190,7 +190,8 @@ namespace TickTrader.Algo.Core
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
                 builder.Symbols.Init(feed.GetSymbolMetadata());
-                builder.Logger = logger;
+                if (logger != null)
+                    builder.Logger = logger;
                 builder.OnSubscribe = OnUserSubscribe;
                 //builder.OnException = OnException;
                 builder.OnExit = Abort;
@@ -261,6 +262,11 @@ namespace TickTrader.Algo.Core
         public void MapBarInput(string inputName, string symbolCode)
         {
             setupActions.Add(() => fStrategy.MapInput<BarEntity, Api.Bar>(inputName, symbolCode, b => b));
+        }
+
+        public void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector)
+        {
+            setupActions.Add(() => fStrategy.MapInput<TEntity, TData>(inputName, symbolCode, selector));
         }
 
         public void SetParameter(string name, object value)
@@ -344,6 +350,16 @@ namespace TickTrader.Algo.Core
             return feed.QueryBars(symbolCode, from, to, timeFrame);
         }
 
+        IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to)
+        {
+            return feed.QueryTicks(symbolCode, from, to, 1);
+        }
+
+        IEnumerable<QuoteEntityL2> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to)
+        {
+            throw new NotImplementedException();
+        }
+
         void IFeedStrategyContext.Add(IFeedFixture subscriber)
         {
             subscriptionManager.Add(subscriber);
@@ -364,16 +380,6 @@ namespace TickTrader.Algo.Core
         #region IInvokeStrategyContext
 
         IPluginInvoker IInvokeStrategyContext.Builder { get { return builder; } }
-
-        IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<L2QuoteEntity> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
-        {
-            throw new NotImplementedException();
-        }
 
         BufferUpdateResults IInvokeStrategyContext.UpdateBuffers(FeedUpdate update)
         {

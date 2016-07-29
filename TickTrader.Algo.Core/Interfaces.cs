@@ -17,7 +17,6 @@ namespace TickTrader.Algo.Core
     public interface IPluginSetupTarget
     {
         void SetParameter(string id, object value);
-        void MapBarInput(string id, string symbolCode);
-        void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector);
+        void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector);
     }
 }

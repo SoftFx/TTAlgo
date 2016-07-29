@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Api
     internal interface IPluginMonitor
     {
         void UpdateStatus(string status);
-        void WriteLog(string entry, object[] parameters);
+        void Print(string entry, object[] parameters);
     }
 
     internal interface IPluginActivator

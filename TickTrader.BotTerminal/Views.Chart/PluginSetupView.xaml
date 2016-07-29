@@ -218,6 +218,20 @@
                       IsEnabled="{Binding HasChoice}"/>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type am:QuoteToBarInput}">
+            <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
+                      IsEnabled="{Binding HasChoice}"/>
+        </DataTemplate>
+
+        <!-- Tick Input Setup Template  -->
+
+        <DataTemplate DataType="{x:Type am:QuoteToQuoteInput}">
+            <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
+                      IsEnabled="{Binding HasChoice}"/>
+        </DataTemplate>
+
         <!-- Double (bar based) Input Setup Template  -->
 
         <DataTemplate DataType="{x:Type am:BarToDoubleInput}">
@@ -228,8 +242,25 @@
                 </Grid.ColumnDefinitions>
 
                 <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                          SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
-                          IsEnabled="{Binding HasChoice}"/>
+                          SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"/>
+                <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                          ItemsSource="{Binding AvailableMappings}"
+                          SelectedItem="{Binding Mapping}"
+                          Margin="2,0,0,0" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- Double (tick based) Input Setup Template  -->
+
+        <DataTemplate DataType="{x:Type am:QuoteToDoubleInput}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="65" />
+                </Grid.ColumnDefinitions>
+
+                <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                          SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"/>
                 <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                           ItemsSource="{Binding AvailableMappings}"
                           SelectedItem="{Binding Mapping}"

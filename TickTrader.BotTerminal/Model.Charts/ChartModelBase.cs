@@ -20,6 +20,7 @@ using TickTrader.BotTerminal.Lib;
 using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using SciChart.Charting.Model.ChartSeries;
 
 namespace TickTrader.BotTerminal
 {
@@ -33,7 +34,7 @@ namespace TickTrader.BotTerminal
         private enum Events { Loaded, Stopped }
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
-        private List<IDataSeries> seriesCollection = new List<IDataSeries>();
+        private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
         private DynamicList<IndicatorModel2> indicators = new DynamicList<IndicatorModel2>();
         private PluginCatalog catalog;
         private SelectableChartTypes chartType;
@@ -87,9 +88,10 @@ namespace TickTrader.BotTerminal
         protected SymbolModel Model { get; private set; }
         protected FeedModel Feed { get; private set; }
         protected ConnectionModel Connection { get { return Feed.Connection; } }
+        protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
-        public IEnumerable<IDataSeries> DataSeriesCollection { get { return seriesCollection; } }
+        public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
         public IDynamicListSource<IndicatorModel2> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
@@ -104,10 +106,10 @@ namespace TickTrader.BotTerminal
             stateController.ModifyConditions(() => isUpdateRequired = true);
         }
 
-        protected void AddSeries(IDataSeries series)
-        {
-            seriesCollection.Add(series);
-        }
+        //protected void AddSeries(IRenderableSeriesViewModel series)
+        //{
+        //    seriesCollection.Add(series);
+        //}
 
         public void Deactivate()
         {
@@ -174,6 +176,7 @@ namespace TickTrader.BotTerminal
             set
             {
                 chartType = value;
+                UpdateSeries();
                 ChartTypeChanged();
                 NotifyOfPropertyChange(nameof(SelectedChartType));
             }
@@ -227,9 +230,9 @@ namespace TickTrader.BotTerminal
         }
 
         protected abstract PluginSetup CreateSetup(AlgoPluginRef catalogItem);
-        protected abstract IndicatorBuilder CreateBuilder(PluginSetup setup);
 
         protected abstract void ClearData();
+        protected abstract void UpdateSeries();
         protected abstract Task<DataMetrics> LoadData(CancellationToken cToken);
         protected abstract IndicatorModel2 CreateIndicator(PluginSetup setup);
 
@@ -314,11 +317,6 @@ namespace TickTrader.BotTerminal
             isIndicatorsOnline = false;
             await StopEvent.InvokeAsync(this);
             stateController.PushEvent(Events.Stopped);
-        }
-
-        IndicatorBuilder IAlgoSetupFactory.CreateBuilder(PluginSetup setup)
-        {
-            return CreateBuilder(setup);
         }
 
         PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
