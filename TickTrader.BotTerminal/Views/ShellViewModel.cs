@@ -7,8 +7,11 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using System.Timers;
+using System.Windows.Threading;
 
 namespace TickTrader.BotTerminal
 {
@@ -43,7 +46,9 @@ namespace TickTrader.BotTerminal
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(catalog);
             SymbolList = new SymbolListViewModel(feed.Symbols, this);
-            PositionList = new PositionListViewModel(trade.Account);
+            GrossPositionList = new GrossPositionListViewModel(trade.Account);
+            NetPositionList = new NetPositionListViewModel(trade.Account);
+            Assets = new AssetsViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
             Charts = new ChartCollectionViewModel(feed, catalog, this, botJournal);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
@@ -128,7 +133,9 @@ namespace TickTrader.BotTerminal
 
         public AlgoListViewModel AlgoList { get; set; }
         public SymbolListViewModel SymbolList { get; private set; }
-        public PositionListViewModel PositionList { get; private set; }
+        public GrossPositionListViewModel GrossPositionList { get; private set; }
+        public NetPositionListViewModel NetPositionList { get; private set; }
+        public AssetsViewModel Assets { get; private set; }
         public OrderListViewModel OrderList { get; private set; }
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
@@ -153,7 +160,7 @@ namespace TickTrader.BotTerminal
 
         private async void PrintSystemInfo()
         {
-            await Task.Factory.StartNew(() =>
+            await Task.Run(() =>
             {
                 var os = ComputerInfo.OperatingSystem;
                 var cpu = ComputerInfo.Processor;

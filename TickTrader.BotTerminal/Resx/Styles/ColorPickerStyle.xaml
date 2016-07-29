@@ -215,6 +215,8 @@
 
     <!--ColorPicker-->
     <Style TargetType="{x:Type local:ColorPicker}">
+        <Setter Property="Height" Value="235"></Setter>
+        <Setter Property="Width" Value="160"></Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:ColorPicker}">

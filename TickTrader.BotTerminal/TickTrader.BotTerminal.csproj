@@ -217,6 +217,7 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Converters\InvertableBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
@@ -248,6 +249,7 @@
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
+    <Compile Include="Model\AssetModel.cs" />
     <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\OrderAmountModel.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
@@ -353,6 +355,10 @@
       <DependentUpon>AlgoListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\AlgoListViewModel.cs" />
+    <Compile Include="Views\AssetsView.xaml.cs">
+      <DependentUpon>AssetsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AssetsViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -372,6 +378,10 @@
     <Compile Include="Views\BotJournalView.xaml.cs">
       <DependentUpon>BotJournalView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\GrossPositionListView.xaml.cs">
+      <DependentUpon>GrossPositionListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GrossPositionListViewModel.cs" />
     <Compile Include="Views\JournalView.xaml.cs">
       <DependentUpon>JournalView.xaml</DependentUpon>
     </Compile>
@@ -380,14 +390,14 @@
     <Compile Include="Views\ExitDialogView.xaml.cs">
       <DependentUpon>ExitDialogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\NetPositionListView.xaml.cs">
+      <DependentUpon>NetPositionListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NetPositionListViewModel.cs" />
     <Compile Include="Views\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OrderListViewModel.cs" />
-    <Compile Include="Views\PositionListView.xaml.cs">
-      <DependentUpon>PositionListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PositionListViewModel.cs" />
     <Compile Include="Views\ShellView.xaml.cs">
       <DependentUpon>ShellView.xaml</DependentUpon>
     </Compile>
@@ -693,6 +703,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\AssetsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -713,6 +727,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\GrossPositionListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\JournalView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -721,11 +739,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\OrderListView.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Views\NetPositionListView.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\PositionListView.xaml">
+    <Page Include="Views\OrderListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

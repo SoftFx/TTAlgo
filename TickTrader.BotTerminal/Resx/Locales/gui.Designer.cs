@@ -484,6 +484,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Assets##.
+        /// </summary>
+        internal static string Tab_Assets {
+            get {
+                return ResourceManager.GetString("Tab_Assets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##BotLog##.
         /// </summary>
         internal static string Tab_BotJournal {

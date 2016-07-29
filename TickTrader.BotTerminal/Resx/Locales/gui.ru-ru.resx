@@ -231,6 +231,9 @@
   <data name="Tab_Algo" xml:space="preserve">
     <value>Алго?</value>
   </data>
+  <data name="Tab_Assets" xml:space="preserve">
+    <value>Актив</value>
+  </data>
   <data name="Tab_BotJournal" xml:space="preserve">
     <value>Bot Лог</value>
   </data>
