@@ -98,6 +98,7 @@ namespace TestAlgoProject
         protected override void OnStart()
         {
             throw new Exception("Fail!");
+
         }
 
         protected override void OnStop()

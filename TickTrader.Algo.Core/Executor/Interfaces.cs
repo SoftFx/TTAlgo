@@ -11,8 +11,10 @@ namespace TickTrader.Algo.Core
     public interface IPluginFeedProvider
     {
         IEnumerable<SymbolEntity> GetSymbolMetadata();
-        IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
+        IEnumerable<BarEntity> QueryBars(string symbolCode);
+        IEnumerable<QuoteEntity> QueryTicks();
+        IEnumerable<BarEntity> CustomQueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        IEnumerable<QuoteEntity> CustomQueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
         void Subscribe(string symbolCode, int depth);
         void Unsubscribe(string symbolCode);
         event Action<FeedUpdate[]> FeedUpdated;

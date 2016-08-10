@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     {
         void UpdateStatus(string status);
         void OnPrint(string entry, params object[] parameters);
-        void OnError(string msg, string description);
+        void OnError(Exception ex);
         void OnInitialized();
         void OnStart();
         void OnStop();
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Core
 
     public class NullLogger : IPluginLogger
     {
-        public void OnError(string msg, string description)
+        public void OnError(Exception ex)
         {
         }
 

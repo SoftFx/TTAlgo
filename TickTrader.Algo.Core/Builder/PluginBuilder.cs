@@ -134,6 +134,7 @@ namespace TickTrader.Algo.Core
 
         private void OnPluginException(Exception ex)
         {
+            Logger.OnError(ex);
             OnException?.Invoke(ex);
         }
 
@@ -332,12 +333,12 @@ namespace TickTrader.Algo.Core
                 throw new NotImplementedException();
             }
 
-            public QuoteSeries GetLevel2(string symbolCode)
+            public QuoteL2Series GetLevel2(string symbolCode)
             {
                 throw new NotImplementedException();
             }
 
-            public QuoteSeries GetLevel2(string symbolCode, DateTime from, DateTime to)
+            public QuoteL2Series GetLevel2(string symbolCode, DateTime from, DateTime to)
             {
                 throw new NotImplementedException();
             }

@@ -33,6 +33,8 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
 
+            Navigator = new UniformChartNavigator();
+
             SelectedChartType = SelectableChartTypes.Candle;
 
             barCollection.Updated += a =>
@@ -66,7 +68,7 @@ namespace TickTrader.BotTerminal
             barCollection.Clear();
         }
 
-        protected async override Task<DataMetrics> LoadData(CancellationToken cToken)
+        protected async override Task LoadData(CancellationToken cToken)
         {
             var barArray = await Feed.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
             var loadedData = barArray.Reverse().ToArray();
@@ -78,14 +80,8 @@ namespace TickTrader.BotTerminal
 
             barCollection.Update(indicatorData);
 
-            var metrics = new DataMetrics();
-            metrics.Count = loadedData.Length;
             if (loadedData.Length > 0)
-            {
-                metrics.StartDate = loadedData.First().From;
-                metrics.EndDate = loadedData.Last().From;
-            }
-            return metrics;
+                InitBoundaries(loadedData.Length, loadedData.First().From, loadedData.Last().From);
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
@@ -101,6 +97,11 @@ namespace TickTrader.BotTerminal
         protected override FeedStrategy GetFeedStrategy()
         {
             return new BarStrategy();
+        }
+
+        protected override void ApplyUpdate(Quote update)
+        {
+
         }
 
         private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)

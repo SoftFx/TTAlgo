@@ -44,7 +44,8 @@ namespace TickTrader.BotTerminal
             {
                 case "System.Double": return new QuoteToDoubleInput(descriptor, mainSymbol);
                 case "TickTrader.Algo.Api.Bar": return new QuoteToBarInput(descriptor, mainSymbol);
-                case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInput(descriptor, mainSymbol);
+                case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInput(descriptor, mainSymbol, false);
+                case "TickTrader.Algo.Api.QuoteL2": return new QuoteToQuoteInput(descriptor, mainSymbol, true);
                 default: return new InputSetup.Invalid(descriptor, "UnsupportedInputType");
             }
         }

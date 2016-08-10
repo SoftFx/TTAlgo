@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
             if (IsRunning)
             {
                 await startTask;
-                await StartExcecutor();
+                await StopExecutor();
                 startTask = null;
             }
         }

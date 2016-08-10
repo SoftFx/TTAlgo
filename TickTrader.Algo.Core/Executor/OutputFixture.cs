@@ -96,6 +96,7 @@ namespace TickTrader.Algo.Core
         public event Action<Point> Updated = delegate { };
         public event Action<Point> Appended = delegate { };
 
+        [Serializable]
         public struct Point
         {
             public Point(DateTime? time, int index, T val)

@@ -10,15 +10,22 @@ namespace TickTrader.Algo.GuiModel
 {
     public class QuoteToQuoteInput : InputSetup
     {
-        public QuoteToQuoteInput(InputDescriptor descriptor, string symbolCode)
+        private bool useL2;
+
+        public QuoteToQuoteInput(InputDescriptor descriptor, string symbolCode, bool useL2)
             : base(descriptor, symbolCode)
         {
+            this.useL2 = useL2;
+
             SetMetadata(descriptor);
         }
 
         public override void Apply(IPluginSetupTarget target)
         {
-            target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
+            if (useL2)
+                target.MapInput<QuoteEntityL2, Api.QuoteL2>(Descriptor.Id, SymbolCode, b => b);
+            else
+                target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
         }
 
         public override void Configure(IndicatorBuilder builder)
@@ -32,6 +39,31 @@ namespace TickTrader.Algo.GuiModel
             SymbolCode = otherInput.SymbolCode;
         }
     }
+
+    //public class QuoteToQuoteL2Input : InputSetup
+    //{
+    //    public QuoteToQuoteL2Input(InputDescriptor descriptor, string symbolCode)
+    //        : base(descriptor, symbolCode)
+    //    {
+    //        SetMetadata(descriptor);
+    //    }
+
+    //    public override void Apply(IPluginSetupTarget target)
+    //    {
+    //        target.MapInput<QuoteEntityL2, Api.QuoteL2>(Descriptor.Id, SymbolCode, b => b);
+    //    }
+
+    //    public override void Configure(IndicatorBuilder builder)
+    //    {
+    //        builder.MapBarInput(Descriptor.Id, SymbolCode);
+    //    }
+
+    //    public override void CopyFrom(PropertySetupBase srcProperty)
+    //    {
+    //        var otherInput = srcProperty as BarToBarInput;
+    //        SymbolCode = otherInput.SymbolCode;
+    //    }
+    //}
 
     public class QuoteToDoubleInput : InputSetup
     {

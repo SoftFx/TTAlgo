@@ -14,6 +14,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
+using Fdk = SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,6 +22,7 @@ namespace TickTrader.BotTerminal
     {
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
+        private Fdk.Quote lastSeriesQuote;
 
         public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
             : base(symbol, catalog, feed, journal)
@@ -29,6 +31,8 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.Mountain);
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
+
+            Navigator = new RealTimeChartNavigator();
 
             SelectedChartType = SelectableChartTypes.Scatter;
         }
@@ -46,9 +50,9 @@ namespace TickTrader.BotTerminal
             bidData.Clear();
         }
 
-        protected override async Task<DataMetrics> LoadData(CancellationToken cToken)
+        protected override async Task LoadData(CancellationToken cToken)
         {
-            var metrics = new DataMetrics();
+            lastSeriesQuote = null;
 
             if (Model.LastQuote != null)
             {
@@ -68,17 +72,26 @@ namespace TickTrader.BotTerminal
                 bidData.Append(
                     tickArray.Select(t => t.CreatingTime),
                     tickArray.Select(t => t.Bid));
-                
-                metrics.Count = tickArray.Length;
+
                 if (tickArray.Length > 0)
                 {
-                    metrics.StartDate = tickArray.First().CreatingTime;
-                    metrics.EndDate = tickArray.Last().CreatingTime;
-                }
-                return metrics;
-            }
+                    lastSeriesQuote = tickArray.Last();
 
-            return metrics;
+                    var start = tickArray.First().CreatingTime;
+                    var end = tickArray.Last().CreatingTime;
+                    InitBoundaries(tickArray.Length, start, end);
+                }
+            }
+        }
+
+        protected override void ApplyUpdate(Fdk.Quote update)
+        {
+            if (lastSeriesQuote == null || update.CreatingTime > lastSeriesQuote.CreatingTime)
+            {
+                askData.Append(update.CreatingTime, update.Ask);
+                bidData.Append(update.CreatingTime, update.Bid);
+                ExtendBoundaries(askData.Count, update.CreatingTime);
+            }
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)

@@ -50,13 +50,13 @@ namespace TickTrader.Algo.CoreUsageSample
             return data;
         }
 
-        IEnumerable<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        IEnumerable<BarEntity> IPluginFeedProvider.CustomQueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
         {
             return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame);
         }
 
 
-        IEnumerable<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        IEnumerable<QuoteEntity> IPluginFeedProvider.CustomQueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             return null;
         }

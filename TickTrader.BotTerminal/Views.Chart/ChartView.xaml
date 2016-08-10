@@ -54,17 +54,6 @@
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>
 
-            <l:MenuItemSelector Header="{l:Resx ContextMenu_Timeline}"
-                                ItemsSource="{Binding Chart.AvailableTimelines}"
-                                SelectedItem="{Binding Chart.TimelineType, Mode=TwoWay}">
-                <l:MenuItemSelector.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{l:ResxBinding Prefix=TimelineType_}"/>
-                    </DataTemplate>
-                </l:MenuItemSelector.ItemTemplate>
-            </l:MenuItemSelector>
-            <Separator/>
-
             <MenuItem Header="Add Indicator" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
                               cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
 

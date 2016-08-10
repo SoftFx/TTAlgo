@@ -74,7 +74,10 @@ namespace TickTrader.BotTerminal
             Execute.OnUIThread(() =>
             {
                 if (!pluginExecutor.IsRunning && State == BotModelStates.Running)
+                {
                     ChangeState(BotModelStates.Stopped);
+                    Host.Unlock();
+                }
             });
         }
 
@@ -108,9 +111,9 @@ namespace TickTrader.BotTerminal
                 journal.Info(botName, msg);
             }
 
-            public void OnError(string msg, string description)
+            public void OnError(Exception ex)
             {
-                journal.Error(botName, msg);
+                journal.Error(botName, "Exception: " + ex.Message);
             }
 
             public void OnInitialized()

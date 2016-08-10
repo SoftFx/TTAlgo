@@ -347,12 +347,12 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
         {
-            return feed.QueryBars(symbolCode, from, to, timeFrame);
+            return feed.CustomQueryBars(symbolCode, from, to, timeFrame);
         }
 
         IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to)
         {
-            return feed.QueryTicks(symbolCode, from, to, 1);
+            return feed.CustomQueryTicks(symbolCode, from, to, 1);
         }
 
         IEnumerable<QuoteEntityL2> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to)
