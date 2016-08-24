@@ -256,39 +256,81 @@
     <value>##Sell##</value>
   </data>
   <data name="Tab_Algo" xml:space="preserve">
-    <value>##Algo##</value>
+    <value>##Tab_Algo##</value>
   </data>
   <data name="Tab_Assets" xml:space="preserve">
-    <value>##Assets##</value>
+    <value>##Tab_Assets##</value>
   </data>
   <data name="Tab_BotJournal" xml:space="preserve">
-    <value>##BotLog##</value>
+    <value>##Tab_BotJournal##</value>
   </data>
   <data name="Tab_History" xml:space="preserve">
-    <value>##History##</value>
+    <value>##Tab_History##</value>
   </data>
   <data name="Tab_Journal" xml:space="preserve">
-    <value>##Journal##</value>
+    <value>##Tab_Journal##</value>
   </data>
   <data name="Tab_Orders" xml:space="preserve">
-    <value>##Orders##</value>
+    <value>##Tab_Orders##</value>
   </data>
   <data name="Tab_Positions" xml:space="preserve">
-    <value>##Positions##</value>
+    <value>##Tab_Positions##</value>
   </data>
   <data name="Tab_Symbols" xml:space="preserve">
-    <value>##Symbols##</value>
+    <value>##Tab_Symbols##</value>
+  </data>
+  <data name="Tab_Trade" xml:space="preserve">
+    <value>##Tab_Trade##</value>
   </data>
   <data name="Theme_Dark" xml:space="preserve">
-    <value>##Dark##</value>
+    <value>##Theme_Dark##</value>
   </data>
   <data name="Theme_Light" xml:space="preserve">
-    <value>##Light##</value>
+    <value>##Theme_Light##</value>
   </data>
   <data name="TimelineType_Real" xml:space="preserve">
-    <value>##Real##</value>
+    <value>##TimelineType_Real##</value>
   </data>
   <data name="TimelineType_Uniform" xml:space="preserve">
-    <value>##Uniform##</value>
+    <value>##TimelineType_Uniform##</value>
+  </data>
+  <data name="TimePeriod_All" xml:space="preserve">
+    <value>##TimePeriod_All##</value>
+  </data>
+  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
+    <value>##TimePeriod_CurrentMonth##</value>
+  </data>
+  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
+    <value>##TimePeriod_PreviousMonth##</value>
+  </data>
+  <data name="TimePeriod_Today" xml:space="preserve">
+    <value>##TimePeriod_Today##</value>
+  </data>
+  <data name="TimePeriod_Yesterday" xml:space="preserve">
+    <value>##TimePeriod_Yesterday##</value>
+  </data>
+  <data name="TimePeriod_Custom" xml:space="preserve">
+    <value>##TradePeriod_Custom##</value>
+  </data>
+  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
+    <value>##TradePeriod_LastSixMonths##</value>
+  </data>
+  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
+    <value>##TradePeriod_LastThreeMonths##</value>
+  </data>
+  <data name="TimePeriod_LastYear" xml:space="preserve">
+    <value>##TradePeriod_LastYear##</value>
+  </data>
+  <data name="TradeDirection_All" xml:space="preserve">
+    <value>##TradeDirection_All##</value>
+  </data>
+  <data name="TradeDirection_Buy" xml:space="preserve">
+    <value>##TradeDirection_Buy##</value>
+  </data>
+  <data name="TradeDirection_Sell" xml:space="preserve">
+    <value>##TradeDirection_Buy##</value>
+  </data>
+  <data name="DownloadingTradeHistoryError" xml:space="preserve">
+    <value>##DownloadingTradeHistoryError##</value>
   </data>
 </root>

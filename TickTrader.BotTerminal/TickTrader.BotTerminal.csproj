@@ -225,6 +225,8 @@
     <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Converters\TradeSideTypeConverter.cs" />
+    <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
@@ -249,7 +251,9 @@
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
     <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Model\TradeTransactionModel.cs" />
     <Compile Include="Model\Journal.cs" />
+    <Compile Include="Model\ObservableTask.cs" />
     <Compile Include="Model\OrderAmountModel.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model.Auth\AuthEntry.cs" />
@@ -350,14 +354,18 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views.TradeInfo\TradeHistoryView.xaml.cs">
+      <DependentUpon>TradeHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\TradeHistoryViewModel.cs" />
     <Compile Include="Views\AlgoListView.xaml.cs">
       <DependentUpon>AlgoListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\AlgoListViewModel.cs" />
-    <Compile Include="Views\AssetsView.xaml.cs">
+    <Compile Include="Views.TradeInfo\AssetsView.xaml.cs">
       <DependentUpon>AssetsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\AssetsViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -377,10 +385,10 @@
     <Compile Include="Views\BotJournalView.xaml.cs">
       <DependentUpon>BotJournalView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\GrossPositionListView.xaml.cs">
+    <Compile Include="Views.TradeInfo\GrossPositionListView.xaml.cs">
       <DependentUpon>GrossPositionListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\GrossPositionListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\GrossPositionListViewModel.cs" />
     <Compile Include="Views\JournalView.xaml.cs">
       <DependentUpon>JournalView.xaml</DependentUpon>
     </Compile>
@@ -389,14 +397,21 @@
     <Compile Include="Views\ExitDialogView.xaml.cs">
       <DependentUpon>ExitDialogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\NetPositionListView.xaml.cs">
+    <Compile Include="Views.TradeInfo\TradeInfoView.xaml.cs">
+      <DependentUpon>TradeInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\PositionListView.xaml.cs">
+      <DependentUpon>PositionListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\NetPositionListView.xaml.cs">
       <DependentUpon>NetPositionListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\NetPositionListViewModel.cs" />
-    <Compile Include="Views\OrderListView.xaml.cs">
+    <Compile Include="Views.TradeInfo\NetPositionListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\OrderListView.xaml.cs">
       <DependentUpon>OrderListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OrderListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\ShellView.xaml.cs">
       <DependentUpon>ShellView.xaml</DependentUpon>
     </Compile>
@@ -418,6 +433,7 @@
     </Compile>
     <Compile Include="Views\ExitDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
+    <Compile Include="Views.TradeInfo\TradeInfoViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -521,6 +537,10 @@
     <Page Include="Resx\Images\Images.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles\DockPanelStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles\DragDropStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -698,11 +718,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.TradeInfo\TradeHistoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\AlgoListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\AssetsView.xaml">
+    <Page Include="Views.TradeInfo\AssetsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -726,7 +750,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\GrossPositionListView.xaml">
+    <Page Include="Views.TradeInfo\GrossPositionListView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -738,11 +762,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\NetPositionListView.xaml">
+    <Page Include="Views.TradeInfo\TradeInfoView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\OrderListView.xaml">
+    <Page Include="Views.TradeInfo\PositionListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\NetPositionListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\OrderListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

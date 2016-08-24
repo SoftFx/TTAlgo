@@ -259,6 +259,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##DownloadingTradeHistoryError##.
+        /// </summary>
+        internal static string DownloadingTradeHistoryError {
+            get {
+                return ResourceManager.GetString("DownloadingTradeHistoryError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to #JournalMessage#.
         /// </summary>
         internal static string Journal_Message {
@@ -475,7 +484,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Algo##.
+        ///   Looks up a localized string similar to ##Tab_Algo##.
         /// </summary>
         internal static string Tab_Algo {
             get {
@@ -484,7 +493,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Assets##.
+        ///   Looks up a localized string similar to ##Tab_Assets##.
         /// </summary>
         internal static string Tab_Assets {
             get {
@@ -493,7 +502,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##BotLog##.
+        ///   Looks up a localized string similar to ##Tab_BotJournal##.
         /// </summary>
         internal static string Tab_BotJournal {
             get {
@@ -502,7 +511,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##History##.
+        ///   Looks up a localized string similar to ##Tab_History##.
         /// </summary>
         internal static string Tab_History {
             get {
@@ -511,7 +520,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Journal##.
+        ///   Looks up a localized string similar to ##Tab_Journal##.
         /// </summary>
         internal static string Tab_Journal {
             get {
@@ -520,7 +529,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Orders##.
+        ///   Looks up a localized string similar to ##Tab_Orders##.
         /// </summary>
         internal static string Tab_Orders {
             get {
@@ -529,7 +538,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Positions##.
+        ///   Looks up a localized string similar to ##Tab_Positions##.
         /// </summary>
         internal static string Tab_Positions {
             get {
@@ -538,7 +547,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Symbols##.
+        ///   Looks up a localized string similar to ##Tab_Symbols##.
         /// </summary>
         internal static string Tab_Symbols {
             get {
@@ -547,7 +556,16 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Dark##.
+        ///   Looks up a localized string similar to ##Tab_Trade##.
+        /// </summary>
+        internal static string Tab_Trade {
+            get {
+                return ResourceManager.GetString("Tab_Trade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Theme_Dark##.
         /// </summary>
         internal static string Theme_Dark {
             get {
@@ -556,7 +574,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Light##.
+        ///   Looks up a localized string similar to ##Theme_Light##.
         /// </summary>
         internal static string Theme_Light {
             get {
@@ -565,7 +583,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Real##.
+        ///   Looks up a localized string similar to ##TimelineType_Real##.
         /// </summary>
         internal static string TimelineType_Real {
             get {
@@ -574,11 +592,119 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##Uniform##.
+        ///   Looks up a localized string similar to ##TimelineType_Uniform##.
         /// </summary>
         internal static string TimelineType_Uniform {
             get {
                 return ResourceManager.GetString("TimelineType_Uniform", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TimePeriod_All##.
+        /// </summary>
+        internal static string TimePeriod_All {
+            get {
+                return ResourceManager.GetString("TimePeriod_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TimePeriod_CurrentMonth##.
+        /// </summary>
+        internal static string TimePeriod_CurrentMonth {
+            get {
+                return ResourceManager.GetString("TimePeriod_CurrentMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradePeriod_Custom##.
+        /// </summary>
+        internal static string TimePeriod_Custom {
+            get {
+                return ResourceManager.GetString("TimePeriod_Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradePeriod_LastSixMonths##.
+        /// </summary>
+        internal static string TimePeriod_LastSixMonths {
+            get {
+                return ResourceManager.GetString("TimePeriod_LastSixMonths", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradePeriod_LastThreeMonths##.
+        /// </summary>
+        internal static string TimePeriod_LastThreeMonths {
+            get {
+                return ResourceManager.GetString("TimePeriod_LastThreeMonths", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradePeriod_LastYear##.
+        /// </summary>
+        internal static string TimePeriod_LastYear {
+            get {
+                return ResourceManager.GetString("TimePeriod_LastYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TimePeriod_PreviousMonth##.
+        /// </summary>
+        internal static string TimePeriod_PreviousMonth {
+            get {
+                return ResourceManager.GetString("TimePeriod_PreviousMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TimePeriod_Today##.
+        /// </summary>
+        internal static string TimePeriod_Today {
+            get {
+                return ResourceManager.GetString("TimePeriod_Today", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TimePeriod_Yesterday##.
+        /// </summary>
+        internal static string TimePeriod_Yesterday {
+            get {
+                return ResourceManager.GetString("TimePeriod_Yesterday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradeDirection_All##.
+        /// </summary>
+        internal static string TradeDirection_All {
+            get {
+                return ResourceManager.GetString("TradeDirection_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradeDirection_Buy##.
+        /// </summary>
+        internal static string TradeDirection_Buy {
+            get {
+                return ResourceManager.GetString("TradeDirection_Buy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##TradeDirection_Buy##.
+        /// </summary>
+        internal static string TradeDirection_Sell {
+            get {
+                return ResourceManager.GetString("TradeDirection_Sell", resourceCulture);
             }
         }
     }

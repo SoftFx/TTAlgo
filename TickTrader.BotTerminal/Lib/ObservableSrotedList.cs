@@ -82,6 +82,6 @@ namespace TickTrader.BotTerminal
 
         public int Count { get{return innerList.Count;}}
         public IEnumerator<TValue> GetEnumerator() { return innerList.Values.GetEnumerator(); }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return innerList.GetEnumerator(); }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return innerList.Values.GetEnumerator(); }
     }
 }

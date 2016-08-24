@@ -46,10 +46,17 @@ namespace TickTrader.BotTerminal
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(catalog);
             SymbolList = new SymbolListViewModel(feed.Symbols, this);
-            GrossPositionList = new GrossPositionListViewModel(trade.Account);
-            NetPositionList = new NetPositionListViewModel(trade.Account);
-            Assets = new AssetsViewModel(trade.Account);
-            OrderList = new OrderListViewModel(trade.Account);
+
+            var netPositions = new NetPositionListViewModel(trade.Account);
+            var grossPositions = new GrossPositionListViewModel(trade.Account);
+            var positionList = new PositionListViewModel(netPositions, grossPositions);
+            var orderList = new OrderListViewModel(trade.Account);
+            var assets = new AssetsViewModel(trade.Account);
+            Trade = new TradeInfoViewModel(orderList, positionList, assets);
+           
+            TradeHistory = new TradeHistoryViewModel(trade.Account);
+            
+
             Charts = new ChartCollectionViewModel(feed, catalog, this, botJournal);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
@@ -131,12 +138,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public TradeInfoViewModel Trade { get; }
+        public TradeHistoryViewModel TradeHistory { get; }
         public AlgoListViewModel AlgoList { get; set; }
         public SymbolListViewModel SymbolList { get; private set; }
-        public GrossPositionListViewModel GrossPositionList { get; private set; }
-        public NetPositionListViewModel NetPositionList { get; private set; }
-        public AssetsViewModel Assets { get; private set; }
-        public OrderListViewModel OrderList { get; private set; }
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }

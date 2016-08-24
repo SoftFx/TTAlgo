@@ -7,5 +7,6 @@
     <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
+    <l:TradeSideTypeConverter x:Key="TradeSideTypeFormat"/>
 
 </ResourceDictionary>
