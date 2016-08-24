@@ -22,6 +22,8 @@ namespace TickTrader.Algo.Api
 
     public interface OrderList : IEnumerable<Order>
     {
+        int Count { get; }
+
         Order this[string id] { get; }
 
         event Action<OrderOpenedEventArgs> Opened;

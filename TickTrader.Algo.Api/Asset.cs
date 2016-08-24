@@ -14,7 +14,9 @@ namespace TickTrader.Algo.Api
 
     public interface AssetList : IEnumerable<Asset>
     {
-        Asset this[string symbolCode] { get; }
+        int Count { get; }
+
+        Asset this[string currencyCode] { get; }
 
         event Action<AssetModifiedEventArgs> Modified;
     }

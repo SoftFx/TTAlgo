@@ -69,6 +69,8 @@ namespace TickTrader.Algo.Core
         {
             private Dictionary<string, OrderEntity> orders = new Dictionary<string, OrderEntity>();
 
+            public int Count { get { return orders.Count; } }
+
             public Order this[string id]
             {
                 get

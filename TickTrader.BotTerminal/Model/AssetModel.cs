@@ -14,6 +14,12 @@ namespace TickTrader.BotTerminal
         private double balance;
         private double tradeAmount;
 
+        public AssetModel(double balance, string currency)
+        {
+            this.currency = currency;
+            this.balance = balance;
+        }
+
         public AssetModel(AssetInfo asset)
         {
             Currency = asset.Currency;
@@ -61,6 +67,15 @@ namespace TickTrader.BotTerminal
                     NotifyOfPropertyChange(nameof(TradeAmount));
                 }
             }
+        }
+
+        public Algo.Core.AssetEntity ToAlgoAsset()
+        {
+            return new Algo.Core.AssetEntity()
+            {
+                CurrencyCode = currency,
+                Volume = balance
+            };
         }
     }
 }

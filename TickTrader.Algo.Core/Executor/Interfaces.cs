@@ -27,11 +27,19 @@ namespace TickTrader.Algo.Core
 
     public interface IAccountInfoProvider
     {
+        double Balance { get; }
+        string BalanceCurrencyCode { get; }
+        Api.AccountTypes AccountType { get; }
+        string Account { get; }
+
         void SyncInvoke(Action action);
+
         List<OrderEntity> GetOrders();
+        IEnumerable<OrderEntity> GetPosition();
+        IEnumerable<AssetEntity> GetAssets();
         event Action<OrderExecReport> OrderUpdated;
-        // IEnumerable<OrderEntity> GetPosition();
-        // IEnumerable<OrderEntity> GetAssets();
+        event Action<PositionExecReport> PositionUpdated;
+        event Action<BalanceOperationReport> BalanceUpdated;
     }
 
     internal interface IFixtureContext

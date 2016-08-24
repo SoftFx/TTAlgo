@@ -60,4 +60,14 @@ namespace TickTrader.Algo.Core
 
         public Order Order { get; private set; }
     }
+
+    public class AssetUpdateEventArgsImpl : AssetModifiedEventArgs
+    {
+        public AssetUpdateEventArgsImpl(AssetEntity newAsset)
+        {
+            this.NewAsset = newAsset;
+        }
+
+        public Asset NewAsset { get; private set; }
+    }
 }

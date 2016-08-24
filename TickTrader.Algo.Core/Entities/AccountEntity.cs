@@ -12,30 +12,26 @@ namespace TickTrader.Algo.Core
         public AccountEntity()
         {
             Orders = new OrdersCollection();
+            Assets = new AssetsCollection();
         }
 
         public OrdersCollection Orders { get; private set; }
+        public AssetsCollection Assets { get; private set; }
+
+        public string Id { get; set; }
         public double Balance { get; set; }
+        public string BalanceCurrency { get; set; }
+        public AccountTypes Type { get; set; }
+
+        internal void FireBalanceUpdateEvent()
+        {
+            BalanceUpdated();
+        }
 
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
-
-        public double BalanceCurrency
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
 
         public double Equity
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public AccountTypes Type
         {
             get
             {
@@ -51,12 +47,6 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public AssetList Assets
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public event Action BalanceUpdated = delegate { };
     }
 }

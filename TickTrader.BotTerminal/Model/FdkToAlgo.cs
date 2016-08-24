@@ -65,6 +65,18 @@ namespace TickTrader.BotTerminal
             };
         }
 
+        public static Api.AccountTypes Convert(AccountType fdkType)
+        {
+            switch (fdkType)
+            {
+                case AccountType.Cash: return Algo.Api.AccountTypes.Cash;
+                case AccountType.Gross: return Algo.Api.AccountTypes.Gross;
+                case AccountType.Net: return Algo.Api.AccountTypes.Net;
+
+                default: throw new ArgumentException("Unsupported account type: " + fdkType);
+            }
+        }
+
         public static Api.OrderTypes Convert(TradeRecordType fdkType)
         {
             switch (fdkType)

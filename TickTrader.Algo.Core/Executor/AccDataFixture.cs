@@ -21,15 +21,38 @@ namespace TickTrader.Algo.Core
         public void Start()
         {
             if (DataProvider != null)
-                DataProvider.SyncInvoke(InitOrders);
+                DataProvider.SyncInvoke(Init);
         }
 
-        private void InitOrders()
+        private void Init()
         {
-            DataProvider.OrderUpdated += DataProvider_OrderUpdated;
             var builder = context.Builder;
+
+            DataProvider.OrderUpdated += DataProvider_OrderUpdated;
+            DataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
+            DataProvider.PositionUpdated += DataProvider_PositionUpdated;
+
+            var accType = DataProvider.AccountType;
+
+            builder.Account.Id = DataProvider.Account;
+            builder.Account.Type = accType;
+
+
+            if (accType == Api.AccountTypes.Cash)
+            {
+                builder.Account.Balance = double.NaN;
+                builder.Account.BalanceCurrency = "";
+            }
+            else
+            {
+                builder.Account.Balance = (double)DataProvider.Balance;
+                builder.Account.BalanceCurrency = DataProvider.BalanceCurrencyCode;
+            }
+            
             foreach (var order in DataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
+            foreach (var asset in DataProvider.GetAssets())
+                builder.Account.Assets.Update(asset);
         }
 
         public void Stop()
@@ -52,63 +75,114 @@ namespace TickTrader.Algo.Core
                 collection.Replace(eReport.OrderCopy);
         }
 
+        private void DataProvider_BalanceUpdated(BalanceOperationReport report)
+        {
+            var accProxy = context.Builder.Account;
+
+            if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
+            {
+                accProxy.Balance = report.Balance;
+                accProxy.FireBalanceUpdateEvent();
+            }
+            else if (accProxy.Type == Api.AccountTypes.Cash)
+            {
+                accProxy.Assets.Update(new AssetEntity() { CurrencyCode = report.CurrencyCode, Volume = report.Balance });
+                accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(report.Balance, report.CurrencyCode)));
+            }
+        }
+
+        private void DataProvider_PositionUpdated(PositionExecReport report)
+        {
+        }
+
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
         {
             context.PluginInvoke(b =>
             {
-                var orderCollection = b.Account.Orders;
+                UpdateOrders(b, eReport);
+                UpdateBalance(b, eReport);
+            });
+        }
 
-                if (eReport.ExecAction == OrderExecAction.Opened)
+        private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
+        {
+            var orderCollection = builder.Account.Orders;
+
+            if (eReport.ExecAction == OrderExecAction.Opened)
+            {
+                ApplyOrderEntity(eReport, orderCollection);
+                orderCollection.FireOrderOpened(new OrderOpenedEventArgsImpl(null));
+            }
+            else if (eReport.ExecAction == OrderExecAction.Closed)
+            {
+                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderOpened(new OrderOpenedEventArgsImpl(null));
+                    orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(oldOrder));
                 }
-                else if (eReport.ExecAction == OrderExecAction.Closed)
+            }
+            else if (eReport.ExecAction == OrderExecAction.Canceled)
+            {
+                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (oldOrder != null)
                 {
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    if (oldOrder != null)
+                    ApplyOrderEntity(eReport, orderCollection);
+                    orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(oldOrder));
+                }
+            }
+            else if (eReport.ExecAction == OrderExecAction.Expired)
+            {
+                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (oldOrder != null)
+                {
+                    ApplyOrderEntity(eReport, orderCollection);
+                    orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(oldOrder));
+                }
+            }
+            else if (eReport.ExecAction == OrderExecAction.Modified)
+            {
+                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (oldOrder != null && eReport.OrderCopy != null)
+                {
+                    ApplyOrderEntity(eReport, orderCollection);
+                    orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, eReport.OrderCopy));
+                }
+            }
+            else if (eReport.ExecAction == OrderExecAction.Filled)
+            {
+                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (oldOrder != null && eReport.OrderCopy != null)
+                {
+                    ApplyOrderEntity(eReport, orderCollection);
+                    orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, eReport.OrderCopy));
+                }
+            }
+        }
+
+        private void UpdateBalance(PluginBuilder builder, OrderExecReport eReport)
+        {
+            var acc = builder.Account;
+
+            if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
+            {
+                if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
+                {
+                    acc.Balance = eReport.NewBalance.Value;
+                    acc.FireBalanceUpdateEvent();
+                }
+            }
+            else if (acc.Type == Api.AccountTypes.Cash)
+            {
+                if (eReport.Assets != null)
+                {
+                    foreach (var asset in eReport.Assets)
                     {
-                        ApplyOrderEntity(eReport, orderCollection);
-                        orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(oldOrder));
+                        acc.Assets.Update(new AssetEntity() { CurrencyCode = asset.CurrencyCode, Volume = asset.Volume });
+                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.CurrencyCode)));
                     }
                 }
-                else if (eReport.ExecAction == OrderExecAction.Canceled)
-                {
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    if (oldOrder != null)
-                    {
-                        ApplyOrderEntity(eReport, orderCollection);
-                        orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(oldOrder));
-                    }
-                }
-                else if (eReport.ExecAction == OrderExecAction.Expired)
-                {
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    if (oldOrder != null)
-                    {
-                        ApplyOrderEntity(eReport, orderCollection);
-                        orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(oldOrder));
-                    }
-                }
-                else if (eReport.ExecAction == OrderExecAction.Modified)
-                {
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    if (oldOrder != null && eReport.OrderCopy != null)
-                    {
-                        ApplyOrderEntity(eReport, orderCollection);
-                        orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, eReport.OrderCopy));
-                    }
-                }
-                else if (eReport.ExecAction == OrderExecAction.Filled)
-                {
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    if (oldOrder != null && eReport.OrderCopy != null)
-                    {
-                        ApplyOrderEntity(eReport, orderCollection);
-                        orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, eReport.OrderCopy));
-                    }
-                }
-            });
+            }
         }
     }
 }

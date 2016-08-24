@@ -20,14 +20,38 @@ namespace TestAlgoProject
             Account.Orders.Modified += args => PrintStat();
             Account.Orders.Filled += args => PrintStat();
             Account.Orders.Expired += args => PrintStat();
+            Account.Assets.Modified += args => PrintStat();
+            Account.BalanceUpdated += () => PrintStat();
         }
 
         private void PrintStat()
         {
             StringBuilder builder = new StringBuilder();
+
+            PrintAccountInfo(builder);
+
+            if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
+                PrintBalance(builder);
+
+            builder.AppendLine();
+
             PrintPendingOrders(builder);
-            PrintPositions(builder);
+
+            builder.AppendLine();
+
+            if (Account.Type == AccountTypes.Gross)
+                PrintGrossPositions(builder);
+            else if (Account.Type == AccountTypes.Net)
+                PrintNetPositions(builder);
+            else if (Account.Type == AccountTypes.Cash)
+                PrintAssets(builder);
+
             UpdateStatus(builder.ToString());
+        }
+
+        private void PrintAccountInfo(StringBuilder builder)
+        {
+            builder.Append(Account.Id).Append(" ").Append(Account.Type).AppendLine();
         }
 
         private void PrintPendingOrders(StringBuilder builder)
@@ -49,7 +73,7 @@ namespace TestAlgoProject
                 builder.AppendLine("No orders");
         }
 
-        private void PrintPositions(StringBuilder builder)
+        private void PrintGrossPositions(StringBuilder builder)
         {
             var positions = Account.Orders.Where(o => o.Type == OrderTypes.Position).ToList();
             if (positions.Count > 0)
@@ -66,6 +90,31 @@ namespace TestAlgoProject
             }
             else
                 builder.AppendLine("No positions");
+        }
+
+        private void PrintNetPositions(StringBuilder builder)
+        {
+        }
+
+        private void PrintAssets(StringBuilder builder)
+        {
+            if (Account.Assets.Count > 0)
+            {
+                builder.Append(Account.Assets.Count).AppendLine(" assets:");
+                foreach (var asset in Account.Assets)
+                {
+                    builder.Append("#").Append(asset.CurrencyCode)
+                        .Append(" ").Append(asset.Volume)
+                        .AppendLine();
+                }
+            }
+            else
+                builder.AppendLine("No assets");
+        }
+
+        private void PrintBalance(StringBuilder builder)
+        {
+            builder.Append(Account.Balance).Append(" ").Append(Account.BalanceCurrency).AppendLine();
         }
     }
 }

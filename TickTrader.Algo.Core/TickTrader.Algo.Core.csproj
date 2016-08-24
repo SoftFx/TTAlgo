@@ -48,6 +48,9 @@
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
+    <Compile Include="Entities\AssetEntity.cs" />
+    <Compile Include="Entities\AssetsCollection.cs" />
+    <Compile Include="Entities\BalanceOperationReport.cs" />
     <Compile Include="Entities\BarEntity.cs" />
     <Compile Include="Buffers\BuffersCoordinator.cs" />
     <Compile Include="Buffers\CachingProxyBuffer.cs" />
@@ -62,6 +65,7 @@
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrderExecReport.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
+    <Compile Include="Entities\PositionExecReport.cs" />
     <Compile Include="Entities\SymbolAccessor.cs" />
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />

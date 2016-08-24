@@ -11,6 +11,7 @@ using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -54,6 +55,7 @@ namespace TickTrader.BotTerminal
                     connection.TradeProxy.AccountInfo += TradeProxy_AccountInfo;
                     connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
                     connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
+                    connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
                     connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
                 };
 
@@ -80,15 +82,11 @@ namespace TickTrader.BotTerminal
             stateControl.EventFired += e => logger.Debug("EVENT " + e);
         }
 
-        private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
-        {
-            var a = e.Report;
-        }
-
         public event Action AccountTypeChanged = delegate { };
         public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }
         public ReadonlyDictionaryObserver<string, OrderModel> Orders { get; private set; }
         public ReadonlyDictionaryObserver<string, AssetModel> Assets { get; private set; }
+
         public AccountType? Type
         {
             get { return accType; }
@@ -101,7 +99,11 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public IStateProvider<States> State { get { return stateControl; } }
+        public double Balance { get; private set; }
+        public string BalanceCurrencyCode { get; private set; }
+        public string Account { get; private set; }
 
         public void Init()
         {
@@ -113,7 +115,12 @@ namespace TickTrader.BotTerminal
 
         public void UpdateSnapshots()
         {
-            Type = connection.TradeProxy.Cache.AccountInfo.Type;
+            var accInfo = connection.TradeProxy.Cache.AccountInfo;
+
+            Account = accInfo.AccountId;
+            Type = accInfo.Type;
+            Balance = accInfo.Balance;
+            BalanceCurrencyCode = accInfo.Currency;
 
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
@@ -162,7 +169,7 @@ namespace TickTrader.BotTerminal
                 positions.Add(report.Symbol, new PositionModel(report));
         }
 
-        void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
+        private void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
         {
             if (IsEmpty(e.Report))
                 uiUpdater.SendAsync(() => positions.Remove(e.Report.Symbol));
@@ -170,9 +177,27 @@ namespace TickTrader.BotTerminal
                 uiUpdater.SendAsync(() => UpsertPosition(e.Report));
         }
 
-        void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
+        private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
             uiUpdater.SendAsync(() => ApplyReport(e.Report));
+        }
+
+        private void TradeProxy_BalanceOperation(object sender, SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
+        {
+            uiUpdater.SendAsync(() =>
+            {
+                if (Type == AccountType.Gross || Type == AccountType.Net)
+                    Balance = e.Data.Balance;
+                else if (Type == AccountType.Cash)
+                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency);
+
+                AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency));
+            });
+        }
+
+        private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
+        {
+            var a = e.Report;
         }
 
         private void ApplyReport(ExecutionReport report)
@@ -227,19 +252,19 @@ namespace TickTrader.BotTerminal
         private void OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = UpsertOrder(report);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Added, order.Id, order);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
         }
 
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
         {
             orders.Remove(report.OrderId);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report.OrderId);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report);
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = UpsertOrder(report);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Updated, order.Id, order);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
         }
 
         private void UpdateAsset(AssetInfo assetInfo)
@@ -279,17 +304,28 @@ namespace TickTrader.BotTerminal
 
         #region IAccountInfoProvider
 
-        private event Action<OrderExecReport> OrderUpdated = delegate { };
+        private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
+        private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
+        private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
 
-        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, string orderId, OrderModel newOrder = null)
+        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
         {
             OrderExecReport algoReport = new OrderExecReport();
             if (newOrder != null)
                 algoReport.OrderCopy = newOrder.ToAlgoOrder();
-            algoReport.OrderId = orderId;
+            algoReport.OrderId = report.OrderId;
             algoReport.ExecAction = action;
             algoReport.Action = entityAction;
-            OrderUpdated(algoReport);
+            if (!double.IsNaN(report.Balance))
+                algoReport.NewBalance = report.Balance;
+            AlgoEvent_OrderUpdated(algoReport);
+        }
+
+        AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
+
+        void IAccountInfoProvider.SyncInvoke(Action action)
+        {
+            Caliburn.Micro.Execute.OnUIThread(action);
         }
 
         List<OrderEntity> IAccountInfoProvider.GetOrders()
@@ -297,15 +333,32 @@ namespace TickTrader.BotTerminal
             return Orders.Select(pair => pair.Value.ToAlgoOrder()).ToList();
         }
 
-        void IAccountInfoProvider.SyncInvoke(Action action)
+        IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
         {
-            Caliburn.Micro.Execute.OnUIThread(action);
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
+        {
+            return Assets.Select(pair => pair.Value.ToAlgoAsset()).ToList();
         }
 
         event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
         {
-            add { OrderUpdated += value; }
-            remove { OrderUpdated -= value; }
+            add { AlgoEvent_OrderUpdated += value; }
+            remove { AlgoEvent_OrderUpdated -= value; }
+        }
+
+        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated
+        {
+            add { AlgoEvent_PositionUpdated += value; }
+            remove { AlgoEvent_PositionUpdated -= value; }
+        }
+
+        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated
+        {
+            add { AlgoEvent_BalanceUpdated += value; }
+            remove { AlgoEvent_BalanceUpdated -= value; }
         }
 
         #endregion

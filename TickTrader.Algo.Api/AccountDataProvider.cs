@@ -15,12 +15,15 @@ namespace TickTrader.Algo.Api
 
     public interface AccountDataProvider
     {
+        string Id { get; }
         double Balance { get; }
-        double BalanceCurrency { get; }
+        string BalanceCurrency { get; }
         double Equity { get; }
         AccountTypes Type { get; }
         OrderList Orders { get; }
         NetPositionList NetPositions { get; }
         AssetList Assets { get; }
+
+        event Action BalanceUpdated;
     }
 }
