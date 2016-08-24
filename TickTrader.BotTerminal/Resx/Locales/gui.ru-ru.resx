@@ -252,6 +252,9 @@
   <data name="Tab_Symbols" xml:space="preserve">
     <value>Символы</value>
   </data>
+  <data name="Tab_Trade" xml:space="preserve">
+    <value>Торговля</value>
+  </data>
   <data name="Theme_Dark" xml:space="preserve">
     <value>Темная</value>
   </data>
@@ -263,5 +266,44 @@
   </data>
   <data name="TimelineType_Uniform" xml:space="preserve">
     <value>Унифицированная?</value>
+  </data>
+  <data name="TimePeriod_All" xml:space="preserve">
+    <value>За все время</value>
+  </data>
+  <data name="TimePeriod_CurrentMonth" xml:space="preserve">
+    <value>Текущий месяц</value>
+  </data>
+  <data name="TimePeriod_PreviousMonth" xml:space="preserve">
+    <value>Предыдущий месяц</value>
+  </data>
+  <data name="TimePeriod_Today" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="TimePeriod_Yesterday" xml:space="preserve">
+    <value>Вчера</value>
+  </data>
+  <data name="TimePeriod_Custom" xml:space="preserve">
+    <value>Произвольный</value>
+  </data>
+  <data name="TimePeriod_LastSixMonths" xml:space="preserve">
+    <value>Последние 6 месяца</value>
+  </data>
+  <data name="TimePeriod_LastThreeMonths" xml:space="preserve">
+    <value>Последние 3 месяца</value>
+  </data>
+  <data name="TimePeriod_LastYear" xml:space="preserve">
+    <value>Последние 12 месяца</value>
+  </data>
+  <data name="TradeDirection_All" xml:space="preserve">
+    <value>Все направления</value>
+  </data>
+  <data name="TradeDirection_Buy" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+  <data name="TradeDirection_Sell" xml:space="preserve">
+    <value>Sell</value>
+  </data>
+  <data name="DownloadingTradeHistoryError" xml:space="preserve">
+    <value>Произошла ошибка при загрузке истории</value>
   </data>
 </root>

@@ -67,11 +67,6 @@ namespace TickTrader.BotTerminal
             Positions.Clear();
         }
 
-        private bool Filter(OrderModel record)
-        {
-            return record.OrderType == TradeRecordType.Position;
-        }
-
         public void Close()
         {
             model.Positions.Added -= PositionAdded;

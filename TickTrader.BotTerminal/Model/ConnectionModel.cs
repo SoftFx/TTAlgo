@@ -326,6 +326,8 @@ namespace TickTrader.BotTerminal
         }
     }
 
+
+
     public enum ConnectionErrorCodes
     {
         None,
