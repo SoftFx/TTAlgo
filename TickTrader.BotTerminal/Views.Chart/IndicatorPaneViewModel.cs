@@ -30,7 +30,6 @@ namespace TickTrader.BotTerminal
             Series = indicator.Series.AsObservable();
 
             UpdateAxis();
-            chart.NavigatorChanged += UpdateAxis;
 
             //Annotations = new AnnotationCollection();
 
@@ -42,7 +41,6 @@ namespace TickTrader.BotTerminal
 
         public void Close()
         {
-            chart.NavigatorChanged -= UpdateAxis;
         }
 
         private void UpdateAxis()

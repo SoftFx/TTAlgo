@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Api
 
         protected void Print(string msg, params object[] parameters)
         {
-            GetLogger().WriteLog(msg, parameters);
+            GetLogger().Print(msg, parameters);
         }
 
         protected void UpdateStatus(string status)
@@ -48,49 +48,34 @@ namespace TickTrader.Algo.Api
 
         #region Order Commands
 
-        public OrderCmdResult MarketBuy(string symbolCode, double price, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        public OrderCmdResult MarketBuy(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
         {
-            return GetTradeApi().OpenOrder(
-                new OpenOrdeRequest()
-                {
-                    Type = OrderTypes.Market,
-                    Side = OrderSides.Buy,
-                    Price = price,
-                    Volume = volume,
-                    StopLoss = stopLoss,
-                    TaskProfit = takeProfit,
-                    Comment = comment
-                });
+            return MarketBuyAsync(symbolCode, volume, stopLoss, takeProfit, comment).Result;
         }
 
-        public OrderCmdResult MarketSell(string symbolCode, double price, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        public Task<OrderCmdResult> MarketBuyAsync(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
         {
-            return GetTradeApi().OpenOrder(
-                new OpenOrdeRequest()
-                {
-                    Type = OrderTypes.Market,
-                    Side = OrderSides.Sell,
-                    Price = price,
-                    Volume = volume,
-                    StopLoss = stopLoss,
-                    TaskProfit = takeProfit,
-                    Comment = comment
-                });
+            return GetTradeApi().OpenMarketOrder(symbolCode, OrderSides.Buy, volume, stopLoss, takeProfit, comment);
         }
 
-        public OrderCmdResult OpenMarketOrder(string symbolCode, OrderSides side, double price, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        public OrderCmdResult MarketSell(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
         {
-            return GetTradeApi().OpenOrder(
-                new OpenOrdeRequest()
-                {
-                    Type = OrderTypes.Market,
-                    Side = side,
-                    Price = price,
-                    Volume = volume,
-                    StopLoss = stopLoss,
-                    TaskProfit = takeProfit,
-                    Comment = comment
-                });
+            return MarketSellAsync(symbolCode, volume, stopLoss, takeProfit, comment).Result;
+        }
+
+        public Task<OrderCmdResult> MarketSellAsync(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        {
+            return GetTradeApi().OpenMarketOrder(symbolCode, OrderSides.Sell, volume, stopLoss, takeProfit, comment);
+        }
+
+        public OrderCmdResult OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        {
+            return OpenMarketOrderAsync(symbolCode, side, volume, stopLoss, takeProfit, comment).Result;
+        }
+
+        public Task<OrderCmdResult> OpenMarketOrderAsync(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        {
+            return GetTradeApi().OpenMarketOrder(symbolCode, side, volume, stopLoss, takeProfit, comment);
         }
 
         #endregion

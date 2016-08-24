@@ -34,17 +34,17 @@ namespace TickTrader.BotTerminal
 
         public event Action<FeedUpdate[]> FeedUpdated = delegate { };
 
-        public IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        public IEnumerable<BarEntity> CustomQueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
-            BarPeriod period = FdkAdapter.ToBarPeriod(timeFrame);
+            BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
             var result = history.GetBars(symbolCode, PriceType.Ask, period, from, to).Result;
-            return FdkAdapter.Convert(result).ToList();
+            return FdkToAlgo.Convert(result).ToList();
         }
 
-        public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        public IEnumerable<QuoteEntity> CustomQueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             var result = history.GetTicks(symbolCode, from, to, depth).Result;
-            return FdkAdapter.Convert(result).ToList();
+            return FdkToAlgo.Convert(result).ToList();
         }
 
         public void Subscribe(string symbolCode, int depth)
@@ -71,7 +71,22 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
         {
-            return symbols.Snapshot.Select(m => FdkAdapter.Convert(m.Value.Descriptor)).ToList();
+            return symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToList();
+        }
+
+        public IEnumerable<BarEntity> QueryBars(string symbolCode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<QuoteEntity> QueryTicks()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SyncInvoke(Action action)
+        {
+            Caliburn.Micro.Execute.OnUIThread(action);
         }
 
         private class Subscription : IRateUpdatesListener
@@ -104,7 +119,7 @@ namespace TickTrader.BotTerminal
 
             public void OnRateUpdate(Quote tick)
             {
-                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkAdapter.Convert(tick)));
+                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkToAlgo.Convert(tick)));
             }
 
             public void Dispose()

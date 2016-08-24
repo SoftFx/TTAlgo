@@ -8,50 +8,77 @@ namespace TickTrader.Algo.Core
 {
     public enum BufferUpdateResults { Extended, LastItemUpdated, NotUpdated }
 
-    public interface IPluginFeedProvider
+    public interface IPluginMetadataProvider
     {
         IEnumerable<SymbolEntity> GetSymbolMetadata();
-        IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
+    }
+
+    public interface IPluginFeedProvider
+    {
+        //IEnumerable<BarEntity> QueryBars(string symbolCode);
+        //IEnumerable<QuoteEntity> QueryTicks();
+        void SyncInvoke(Action action);
+        IEnumerable<BarEntity> CustomQueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        IEnumerable<QuoteEntity> CustomQueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
         void Subscribe(string symbolCode, int depth);
         void Unsubscribe(string symbolCode);
         event Action<FeedUpdate[]> FeedUpdated;
     }
 
-    internal interface IFeedStrategyContext
+    public interface IAccountInfoProvider
+    {
+        void SyncInvoke(Action action);
+        List<OrderEntity> GetOrders();
+        event Action<OrderExecReport> OrderUpdated;
+        // IEnumerable<OrderEntity> GetPosition();
+        // IEnumerable<OrderEntity> GetAssets();
+    }
+
+    internal interface IFixtureContext
     {
         PluginBuilder Builder { get; }
+        string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         DateTime TimePeriodStart { get; }
         DateTime TimePeriodEnd { get; }
-        IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<L2QuoteEntity> QueryTicksL2(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        void Add(IFeedFixture subscriber);
-        void Remove(IFeedFixture subscriber);
+        void PluginInvoke(Action<PluginBuilder> action);
+        
+        //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        //IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to);
+        //IEnumerable<QuoteEntityL2> QueryTicksL2(string symbolCode, DateTime from, DateTime to);
+        //void Add(IFeedFixture subscriber);
+        //void Remove(IFeedFixture subscriber);
         //void Subscribe(string symbolCode, int depth);
         //void Unsubscribe(string symbolCode);
-        void InvokeUpdateOnCustomSubscription(QuoteEntity update);
+        //void InvokeUpdateOnCustomSubscription(QuoteEntity update);
     }
 
-    public interface IPluginInvoker
+    internal interface IFeedFixtureContext
     {
-        void StartBatch();
-        void StopBatch();
-        void InvokeInit();
-        void IncreaseVirtualPosition();
-        void InvokeOnStart();
-        void InvokeOnStop();
-        void InvokeCalculate(bool isUpdate);
-        void InvokeOnQuote(QuoteEntity quote);
+        IFixtureContext ExecContext { get; }
+        IPluginFeedProvider Feed { get; }
+        void Add(IFeedFixture subscriber);
+        void Remove(IFeedFixture subscriber);
     }
 
-    public interface IInvokeStrategyContext
-    {
-        IPluginInvoker Builder { get; }
-        BufferUpdateResults UpdateBuffers(FeedUpdate update);
-        void InvokeFeedEvents(FeedUpdate update);
-    }
+    //public interface IPluginInvoker
+    //{
+    //    void StartBatch();
+    //    void StopBatch();
+    //    void InvokeInit();
+    //    void IncreaseVirtualPosition();
+    //    void InvokeOnStart();
+    //    void InvokeOnStop();
+    //    void InvokeCalculate(bool isUpdate);
+    //    void InvokeOnQuote(QuoteEntity quote);
+    //}
+
+    //public interface IInvokeStrategyContext
+    //{
+    //    IPluginInvoker Builder { get; }
+    //    BufferUpdateResults UpdateBuffers(FeedUpdate update);
+    //    void InvokeFeedEvents(FeedUpdate update);
+    //}
 
     internal interface IFeedFixture 
     {

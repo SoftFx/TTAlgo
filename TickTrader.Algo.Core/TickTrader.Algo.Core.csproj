@@ -46,6 +46,7 @@
     <Compile Include="Adapters\BotAdapter.cs" />
     <Compile Include="Adapters\IndicatorAdapter.cs" />
     <Compile Include="Adapters\Stubs.cs" />
+    <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\BarEntity.cs" />
     <Compile Include="Buffers\BuffersCoordinator.cs" />
@@ -59,12 +60,15 @@
     <Compile Include="Entities\FeedUpdate.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
+    <Compile Include="Entities\OrderExecReport.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />
     <Compile Include="Entities\SymbolAccessor.cs" />
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\AccDataFixture.cs" />
+    <Compile Include="Executor\BarStrategy.cs" />
     <Compile Include="Executor\FeedFixture.cs" />
     <Compile Include="Executor\FeedStrategy.cs" />
     <Compile Include="Executor\Interfaces.cs" />
@@ -73,6 +77,9 @@
     <Compile Include="Executor\PluginExecutor.cs" />
     <Compile Include="Executor\SubscriptionFixture.cs" />
     <Compile Include="Executor\SubscriptionManager.cs" />
+    <Compile Include="Executor\QuoteStrategy.cs" />
+    <Compile Include="Executor\QuoteSeriesFixture.cs" />
+    <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Realtime\RealtimePluginSetup.cs" />
     <Compile Include="Math\BarSampler.cs" />
     <Compile Include="Metadata\ValueFactory.cs" />

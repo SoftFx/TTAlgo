@@ -13,6 +13,8 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.GuiModel;
 using TickTrader.Algo.Core;
+using SciChart.Charting.Model.ChartSeries;
+using Fdk = SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,19 +22,19 @@ namespace TickTrader.BotTerminal
     {
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
+        private Fdk.Quote lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
-            : base(symbol, catalog, feed, journal)
+        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
+            : base(symbol, catalog, feed, trade, journal)
         {
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
 
-            AddSeries(askData);
-            AddSeries(bidData);
+            Navigator = new RealTimeChartNavigator();
 
-            SelectedChartType = SelectableChartTypes.Line;
+            SelectedChartType = SelectableChartTypes.Scatter;
         }
 
         public override TimeFrames TimeFrame { get { return TimeFrames.Ticks; } }
@@ -48,19 +50,21 @@ namespace TickTrader.BotTerminal
             bidData.Clear();
         }
 
-        protected override async Task<DataMetrics> LoadData(CancellationToken cToken)
+        protected override async Task LoadData(CancellationToken cToken)
         {
+            lastSeriesQuote = null;
+
             if (Model.LastQuote != null)
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
                 var tickArray = await Feed.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
 
-                foreach (var tick in tickArray)
-                {
-                    askData.Append(tick.CreatingTime, tick.Ask);
-                    bidData.Append(tick.CreatingTime, tick.Bid);
-                }
+                //foreach (var tick in tickArray)
+                //{
+                //    askData.Append(tick.CreatingTime, tick.Ask);
+                //    bidData.Append(tick.CreatingTime, tick.Bid);
+                //}
 
                 askData.Append(
                     tickArray.Select(t => t.CreatingTime),
@@ -68,39 +72,75 @@ namespace TickTrader.BotTerminal
                 bidData.Append(
                     tickArray.Select(t => t.CreatingTime),
                     tickArray.Select(t => t.Bid));
-            }
 
-            return new DataMetrics();
+                if (tickArray.Length > 0)
+                {
+                    lastSeriesQuote = tickArray.Last();
+
+                    var start = tickArray.First().CreatingTime;
+                    var end = tickArray.Last().CreatingTime;
+                    InitBoundaries(tickArray.Length, start, end);
+                }
+            }
+        }
+
+        protected override void ApplyUpdate(Fdk.Quote update)
+        {
+            if (lastSeriesQuote == null || update.CreatingTime > lastSeriesQuote.CreatingTime)
+            {
+                askData.Append(update.CreatingTime, update.Ask);
+                bidData.Append(update.CreatingTime, update.Bid);
+                ExtendBoundaries(askData.Count, update.CreatingTime);
+            }
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override IndicatorBuilder CreateBuilder(PluginSetup setup)
-        {
-            throw new NotImplementedException();
+            return new TickBasedPluginSetup(catalogItem, SymbolCode);
         }
 
         protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
         {
-            throw new NotImplementedException();
+            return new IndicatorModel2(setup, this);
         }
 
         protected override FeedStrategy GetFeedStrategy()
         {
-            throw new NotImplementedException();
+            return new QuoteStrategy(CreateProvider());
         }
 
-        private IPointMarker CreateMarker(Color fillColor, Color strokeColor)
+        protected override void UpdateSeries()
         {
-            EllipsePointMarker marker = new EllipsePointMarker();
-            marker.Width = 6;
-            marker.Height = 6;
-            marker.Fill = fillColor;
-            marker.Stroke = strokeColor;
-            return marker;
+            var askSeriesModel = CreateSeriesModel(askData, "_Ask");
+            var bidSeriesModel = CreateSeriesModel(bidData, "_Bid");
+
+            if (SeriesCollection.Count == 0)
+            {
+                SeriesCollection.Add(askSeriesModel);
+                SeriesCollection.Add(bidSeriesModel);
+            }
+            else
+            {
+                SeriesCollection[0] = askSeriesModel;
+                SeriesCollection[1] = bidSeriesModel;
+            }
+        }
+
+        private IRenderableSeriesViewModel CreateSeriesModel(IXyDataSeries data, string seriesType)
+        {
+            switch (SelectedChartType)
+            {
+                case SelectableChartTypes.Line:
+                    return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_LineStyle" + seriesType };
+                case SelectableChartTypes.Mountain:
+                    return new MountainRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_MountainStyle" + seriesType };
+                case SelectableChartTypes.DigitalLine:
+                    return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_DigitalLineStyle" + seriesType, IsDigitalLine = true };
+                case SelectableChartTypes.Scatter:
+                    return new XyScatterRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_ScatterStyle" + seriesType };
+            }
+
+            throw new InvalidOperationException("Unsupported chart type: " + SelectedChartType);
         }
     }
 }

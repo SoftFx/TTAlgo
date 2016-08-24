@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using Machinarium.State;
 using NLog;
 using SoftFX.Extended;
@@ -12,15 +12,17 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AccountModel
+    internal class AccountModel : NoTimeoutByRefObject, IAccountInfoProvider
     {
         private Logger logger;
         public enum States { Offline, WaitingData, Canceled, Online, Deinitializing }
-        public enum Events { Connected, ConnectionCanceled, CacheInitialized, Diconnected, DoneInit, DoneDeinit }
+        public enum Events { Connected, ConnectionCanceled, CacheInitialized, Diconnected, DoneDeinit }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
         private ObservableDictionary<string, PositionModel> positions = new ObservableDictionary<string, PositionModel>();
@@ -140,13 +142,17 @@ namespace TickTrader.BotTerminal
             stateControl.PushEvent(Events.DoneDeinit);
         }
 
-        private void UpsertOrder(ExecutionReport report)
+        private OrderModel UpsertOrder(ExecutionReport report)
         {
             OrderModel order;
             if (orders.TryGetValue(report.OrderId, out order))
                 order.Update(report);
             else
-                orders.Add(report.OrderId, new OrderModel(report));
+            {
+                order = new OrderModel(report);
+                orders.Add(report.OrderId, order);
+            }
+            return order;
         }
 
         private void UpsertPosition(Position report)
@@ -168,29 +174,74 @@ namespace TickTrader.BotTerminal
 
         void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
-            var execType = e.Report.ExecutionType;
+            uiUpdater.SendAsync(() => ApplyReport(e.Report));
+        }
 
-            if (execType == ExecutionType.Canceled
-                || execType == ExecutionType.Expired
-                || e.Report.LeavesVolume == 0)
+        private void ApplyReport(ExecutionReport report)
+        {
+            switch (report.ExecutionType)
             {
-                uiUpdater.SendAsync(() => orders.Remove(e.Report.OrderId));
-            }
-            else if (execType == ExecutionType.Calculated
-                || execType == ExecutionType.Replace
-                || execType == ExecutionType.Trade
-                || execType == ExecutionType.PendingCancel
-                || execType == ExecutionType.PendingReplace)
-            {
-                uiUpdater.SendAsync(() => UpsertOrder(e.Report));
+                case ExecutionType.Calculated:
+                    if (report.OrderType == TradeRecordType.Position)
+                        OnOrderUpdated(report, OrderExecAction.Opened);
+                    else
+                        OnOrderAdded(report, OrderExecAction.Opened);
+                    break;
+
+                case ExecutionType.Replace:
+                    OnOrderUpdated(report, OrderExecAction.Modified);
+                    break;
+
+                case ExecutionType.Expired:
+                    OnOrderRemoved(report, OrderExecAction.Expired);
+                    break;
+
+                case ExecutionType.Canceled:
+                    OnOrderRemoved(report, OrderExecAction.Canceled);
+                    break;
+
+                case ExecutionType.Trade:
+                    if (report.OrderType == TradeRecordType.Limit
+                        || report.OrderType == TradeRecordType.Stop)
+                    {
+                        if (report.LeavesVolume != 0)
+                            OnOrderUpdated(report, OrderExecAction.Filled);
+                        else if (accType != AccountType.Gross)
+                            OnOrderRemoved(report, OrderExecAction.Filled);
+                    }
+                    else if (report.OrderType == TradeRecordType.Position)
+                    {
+                        if (report.LeavesVolume != 0)
+                            OnOrderUpdated(report, OrderExecAction.Closed);
+                        else
+                            OnOrderRemoved(report, OrderExecAction.Closed);
+                    }
+                    break;
             }
 
             if (Type == AccountType.Cash)
-                uiUpdater.SendAsync(() =>
-                {
-                    foreach (var asset in e.Report.Assets)
-                        UpdateAsset(asset);
-                });
+            {
+                foreach (var asset in report.Assets)
+                    UpdateAsset(asset);
+            }
+        }
+
+        private void OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
+        {
+            var order = UpsertOrder(report);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Added, order.Id, order);
+        }
+
+        private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
+        {
+            orders.Remove(report.OrderId);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report.OrderId);
+        }
+
+        private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
+        {
+            var order = UpsertOrder(report);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Updated, order.Id, order);
         }
 
         private void UpdateAsset(AssetInfo assetInfo)
@@ -226,6 +277,39 @@ namespace TickTrader.BotTerminal
         {
             return assetInfo.Balance == 0;
         }
+
+        #region IAccountInfoProvider
+
+        private event Action<OrderExecReport> OrderUpdated = delegate { };
+
+        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, string orderId, OrderModel newOrder = null)
+        {
+            OrderExecReport algoReport = new OrderExecReport();
+            if (newOrder != null)
+                algoReport.OrderCopy = newOrder.ToAlgoOrder();
+            algoReport.OrderId = orderId;
+            algoReport.ExecAction = action;
+            algoReport.Action = entityAction;
+            OrderUpdated(algoReport);
+        }
+
+        List<OrderEntity> IAccountInfoProvider.GetOrders()
+        {
+            return Orders.Select(pair => pair.Value.ToAlgoOrder()).ToList();
+        }
+
+        void IAccountInfoProvider.SyncInvoke(Action action)
+        {
+            Caliburn.Micro.Execute.OnUIThread(action);
+        }
+
+        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
+        {
+            add { OrderUpdated += value; }
+            remove { OrderUpdated -= value; }
+        }
+
+        #endregion
     }
 
     internal class TradeHistoryProvider

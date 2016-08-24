@@ -11,11 +11,12 @@ using System.Windows.Media;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Entities;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DoubleSeriesAdapter
+    internal class DoubleSeriesAdapter : NoTimeoutByRefObject
     {
         private OutputFixture<double> buffer;
 

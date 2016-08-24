@@ -20,10 +20,6 @@ namespace TickTrader.Algo.Api
     {
     }
 
-    public interface BookSeries : DataSeries<IReadOnlyList<BookEntry>>
-    {
-    }
-
     public interface MarkerSeries : DataSeries<Marker>
     {
     }

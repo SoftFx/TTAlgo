@@ -102,6 +102,4 @@ namespace TickTrader.BotTerminal
             model.AccountTypeChanged -= AccountTypeChanged;
         }
     }
-
-
 }

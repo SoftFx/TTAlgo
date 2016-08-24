@@ -10,10 +10,13 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TradeResultEntity : OrderCmdResult
     {
-        public TradeResultEntity(OrderCmdResultCodes code, Order entity)
+        public TradeResultEntity(OrderCmdResultCodes code, Order entity = null)
         {
             this.ResultCode = code;
-            this.ResultingOrder = entity;
+            if (entity != null)
+                this.ResultingOrder = entity;
+            else
+                this.ResultingOrder = OrderEntity.Null;
         }
 
         public bool IsCompleted { get { return ResultCode == OrderCmdResultCodes.Ok; } }

@@ -67,7 +67,7 @@ namespace Machinarium.Qnil
             return new ListComposition<IDynamicListSource<T>, T>(srcAdapter, c => c, false);
         }
 
-        public static IDynamicListSource<T> CombineChained<T>(params DynamicList<T>[] collections)
+        public static IDynamicListSource<T> CombineChained<T>(params IDynamicListSource<T>[] collections)
         {
             var srcAdapter = new ListAdapter<IDynamicListSource<T>>(collections);
             return new ListComposition<IDynamicListSource<T>, T>(srcAdapter, c => c, true);

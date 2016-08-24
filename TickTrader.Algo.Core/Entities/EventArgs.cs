@@ -29,9 +29,31 @@ namespace TickTrader.Algo.Core
         public Order OldOrder { get; private set; }
     }
 
+    public class OrderFilledEventArgsImpl : OrderFilledEventArgs
+    {
+        public OrderFilledEventArgsImpl(Order newOrder, Order oldOrder)
+        {
+            this.NewOrder = newOrder;
+            this.OldOrder = oldOrder;
+        }
+
+        public Order NewOrder { get; private set; }
+        public Order OldOrder { get; private set; }
+    }
+
     public class OrderClosedEventArgsImpl : OrderClosedEventArgs
     {
         public OrderClosedEventArgsImpl(Order order)
+        {
+            this.Order = order;
+        }
+
+        public Order Order { get; private set; }
+    }
+
+    public class OrderCanceledEventArgsImpl : OrderCanceledEventArgs, OrderExpiredEventArgs
+    {
+        public OrderCanceledEventArgsImpl(Order order)
         {
             this.Order = order;
         }

@@ -12,14 +12,16 @@ namespace TickTrader.Algo.Core
         private BarSampler sampler;
         private InputBuffer<BarEntity> buffer;
 
-        public BarSeriesFixture(string symbolCode, IFeedStrategyContext context)
+        public BarSeriesFixture(string symbolCode, IFeedFixtureContext context)
             : base(symbolCode, context)
         {
-            sampler = BarSampler.Get(context.TimeFrame);
+            var execContext = context.ExecContext;
 
-            var data = context.QueryBars(SymbolCode, context.TimePeriodStart, context.TimePeriodEnd, context.TimeFrame);
+            sampler = BarSampler.Get(execContext.TimeFrame);
 
-            buffer = context.Builder.GetBarBuffer(SymbolCode);
+            var data = context.Feed.CustomQueryBars(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, execContext.TimeFrame);
+
+            buffer = execContext.Builder.GetBarBuffer(SymbolCode);
             if (data != null)
                 buffer.Append(data);
         }
@@ -32,7 +34,7 @@ namespace TickTrader.Algo.Core
             var barOpenTime = barBoundaries.Open;
 
             // validate against time boundaries
-            if (barOpenTime < Context.TimePeriodStart || barOpenTime >= Context.TimePeriodEnd)
+            if (barOpenTime < Context.ExecContext.TimePeriodStart || barOpenTime >= Context.ExecContext.TimePeriodEnd)
                 return BufferUpdateResults.NotUpdated;
 
             if (Count > 0)
@@ -64,7 +66,7 @@ namespace TickTrader.Algo.Core
 
     internal class TimeSyncBarSeriesFixture : BarSeriesFixture
     {
-        public TimeSyncBarSeriesFixture(string symbolCode, IFeedStrategyContext context, ITimeRef syncRef)
+        public TimeSyncBarSeriesFixture(string symbolCode, IFeedFixtureContext context, ITimeRef syncRef)
             : base(symbolCode, context)
         {
         }

@@ -55,10 +55,11 @@ namespace TickTrader.BotTerminal
 
         private void ConfigurateLogger()
         {
-            var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message}" };
+            var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message} ${exception:format=tostring}" };
 
             var logTarget = new FileTarget()
             {
+                Layout = "${logger} -> ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "Log.txt"),
                 ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "Archive-{#}.txt"),
                 ArchiveEvery = FileArchivePeriod.Day,

@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BarInputSetup.cs" />
     <Compile Include="Convert.cs" />
     <Compile Include="InputSetup.cs" />
     <Compile Include="OutputSetup.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="GuiModelMsg.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuoteInputSetup.cs" />
     <Compile Include="UiConverter.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -19,25 +19,39 @@ namespace TickTrader.BotTerminal
 {
     internal static class SeriesViewModel
     {
-        public static IRenderableSeriesViewModel Create(ChartModelBase chart, IDataSeries data)
-        {
-            if (chart is BarChartModel && data is OhlcDataSeries<DateTime, double>)
-            {
-                switch (chart.SelectedChartType)
-                {
-                    case SelectableChartTypes.OHLC:
-                        return new OhlcRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_OhlcStyle" };
-                    case SelectableChartTypes.Candle:
-                        return new CandlestickRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_CandlestickStyle" };
-                    case SelectableChartTypes.Line:
-                        return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey= "BarChart_LineStyle" };
-                    case SelectableChartTypes.Mountain:
-                        return new MountainRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_MountainStyle" };
-                }
-            }
+        //public static IRenderableSeriesViewModel Create(ChartModelBase chart, IDataSeries data)
+        //{
+        //    if (chart is BarChartModel && data is OhlcDataSeries<DateTime, double>)
+        //    {
+        //        switch (chart.SelectedChartType)
+        //        {
+        //            case SelectableChartTypes.OHLC:
+        //                return new OhlcRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_OhlcStyle" };
+        //            case SelectableChartTypes.Candle:
+        //                return new CandlestickRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_CandlestickStyle" };
+        //            case SelectableChartTypes.Line:
+        //                return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_LineStyle" };
+        //            case SelectableChartTypes.Mountain:
+        //                return new MountainRenderableSeriesViewModel() { DataSeries = data, StyleKey = "BarChart_MountainStyle" };
+        //        }
+        //    }
+        //    else if (chart is TickChartModel && data is XyDataSeries<DateTime, double>)
+        //    {
+        //        switch (chart.SelectedChartType)
+        //        {
+        //            case SelectableChartTypes.Line:
+        //                return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_LineStyle" };
+        //            case SelectableChartTypes.Mountain:
+        //                return new MountainRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_MountainStyle" };
+        //            case SelectableChartTypes.DigitalLine:
+        //                return new LineRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_DigitalLineStyle", IsDigitalLine = true };
+        //            case SelectableChartTypes.Scatter:
+        //                return new XyScatterRenderableSeriesViewModel() { DataSeries = data, StyleKey = "TickChart_ScatterStyle" };
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         public static IRenderableSeriesViewModel Create(IndicatorModel2 model, OutputSetup outputSetup)
         {

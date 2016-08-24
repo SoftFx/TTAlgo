@@ -20,6 +20,62 @@ namespace TickTrader.Algo.Core
     {
     }
 
+    internal class QuoteSeriesProxy : DataSeriesProxy<Quote>, Api.QuoteSeries
+    {
+        private Lazy<DataSeriesProxy> askBufferLazy;
+        private Lazy<DataSeriesProxy> bidBufferLazy;
+        private Lazy<TimeSeriesProxy> timeBufferLazy;
+
+        public QuoteSeriesProxy()
+        {
+            askBufferLazy = ConstructLazy<DataSeriesProxy, double>(q => q.Ask);
+            bidBufferLazy = ConstructLazy<DataSeriesProxy, double>(q => q.Ask);
+            timeBufferLazy = ConstructLazy<TimeSeriesProxy, DateTime>(q => q.Time);
+        }
+
+        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Quote, TData> selector) where TProxy : DataSeriesProxy<TData>, new()
+        {
+            return new Lazy<TProxy>(() =>
+            {
+                var seriesProxy = new TProxy();
+                seriesProxy.Buffer = new ProxyBuffer<Quote, TData>(selector) { SrcBuffer = Buffer };
+                return seriesProxy;
+            }, LazyThreadSafetyMode.None);
+        }
+
+        public DataSeries Ask { get { return askBufferLazy.Value; } }
+        public DataSeries Bid { get { return bidBufferLazy.Value; } }
+        public TimeSeries Time { get { return timeBufferLazy.Value; } }
+    }
+
+    internal class QuoteL2SeriesProxy : DataSeriesProxy<QuoteL2>, Api.QuoteL2Series
+    {
+        private Lazy<DataSeriesProxy> askBufferLazy;
+        private Lazy<DataSeriesProxy> bidBufferLazy;
+        private Lazy<TimeSeriesProxy> timeBufferLazy;
+
+        public QuoteL2SeriesProxy()
+        {
+            askBufferLazy = ConstructLazy<DataSeriesProxy, double>(q => q.Ask);
+            bidBufferLazy = ConstructLazy<DataSeriesProxy, double>(q => q.Ask);
+            timeBufferLazy = ConstructLazy<TimeSeriesProxy, DateTime>(q => q.Time);
+        }
+
+        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<QuoteL2, TData> selector) where TProxy : DataSeriesProxy<TData>, new()
+        {
+            return new Lazy<TProxy>(() =>
+            {
+                var seriesProxy = new TProxy();
+                seriesProxy.Buffer = new ProxyBuffer<QuoteL2, TData>(selector) { SrcBuffer = Buffer };
+                return seriesProxy;
+            }, LazyThreadSafetyMode.None);
+        }
+
+        public DataSeries Ask { get { return askBufferLazy.Value; } }
+        public DataSeries Bid { get { return bidBufferLazy.Value; } }
+        public TimeSeries Time { get { return timeBufferLazy.Value; } }
+    }
+
     internal class BarSeriesProxy : DataSeriesProxy<Bar>, Api.BarSeries
     {
         private ProxyBuffer<Bar, double> openBuffer = new ProxyBuffer<Bar, double>(b => b.Open);

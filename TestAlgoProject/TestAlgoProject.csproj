@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccDisplayBot.cs" />
+    <Compile Include="OpenOrderBot.cs" />
     <Compile Include="TestBot.cs" />
     <Compile Include="FxCalendarIndicator.cs" />
     <Compile Include="FxCalendar\FxNews.cs" />
@@ -56,6 +58,7 @@
     <Compile Include="FxCalendar\RegionInfoUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleMovingAverage.cs" />
+    <Compile Include="TickIndicator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

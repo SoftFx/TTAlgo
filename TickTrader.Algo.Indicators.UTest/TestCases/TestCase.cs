@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual void Setup()
         {
             ReadQuotes();
-            PluginSetup = new BarBasedPluginSetup(AlgoPluginDescriptor.Get(IndicatorType), new SetupMetadata(Symbol));
+            PluginSetup = new BarBasedPluginSetup(new AlgoPluginRef(AlgoPluginDescriptor.Get(IndicatorType)), new SetupMetadata(Symbol));
             SetupParameters();
             Builder = PluginSetup.CreateIndicatorBuilder();
             SetupInput();

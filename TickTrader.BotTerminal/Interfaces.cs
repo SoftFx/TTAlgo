@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -26,6 +27,4 @@ namespace TickTrader.BotTerminal
         UiLock ConnectionLock { get; }
         ToolWindowsManager ToolWndManager { get; }
     }
-
-    internal enum OrderSides { Buy, Sell }
 }

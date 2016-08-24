@@ -78,20 +78,16 @@ namespace TickTrader.Algo.Core
         public DateTime Time { get; set; }
         public double Ask { get; set; }
         public double Bid { get; set; }
-
-        public virtual IReadOnlyList<BookEntry> BidBook { get { return emptyBook; } }
-        public virtual IReadOnlyList<BookEntry> AskBook { get { return emptyBook; } }
-
     }
 
     [Serializable]
-    public class L2QuoteEntity : QuoteEntity, Api.Quote
+    public class QuoteEntityL2 : QuoteEntity, Api.QuoteL2
     {
         public List<BookEntryEntity> BidList { get; set; }
         public List<BookEntryEntity> AskList { get; set; }
 
-        public override IReadOnlyList<BookEntry> BidBook { get { return BidList; } }
-        public override IReadOnlyList<BookEntry> AskBook { get { return AskList; } }
+        public IReadOnlyList<BookEntry> BidBook { get { return BidList; } }
+        public IReadOnlyList<BookEntry> AskBook { get { return AskList; } }
     }
 
     [Serializable]

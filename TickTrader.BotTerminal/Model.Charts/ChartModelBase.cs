@@ -20,6 +20,7 @@ using TickTrader.BotTerminal.Lib;
 using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using SciChart.Charting.Model.ChartSeries;
 
 namespace TickTrader.BotTerminal
 {
@@ -33,7 +34,7 @@ namespace TickTrader.BotTerminal
         private enum Events { Loaded, Stopped }
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
-        private List<IDataSeries> seriesCollection = new List<IDataSeries>();
+        private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
         private DynamicList<IndicatorModel2> indicators = new DynamicList<IndicatorModel2>();
         private PluginCatalog catalog;
         private SelectableChartTypes chartType;
@@ -49,16 +50,16 @@ namespace TickTrader.BotTerminal
         private AxisBase timeAxis;
         private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
+        private List<Quote> updateQueue;
 
-        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
+        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.Feed = feed;
+            this.Trade = trade;
             this.Model = symbol;
             this.catalog = catalog;
             this.Journal = journal;
-
-            TimelineType = TimelineTypes.Uniform;
 
             this.AvailableIndicators = catalog.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
@@ -86,14 +87,15 @@ namespace TickTrader.BotTerminal
 
         protected SymbolModel Model { get; private set; }
         protected FeedModel Feed { get; private set; }
+        protected TraderModel Trade { get; private set; }
         protected ConnectionModel Connection { get { return Feed.Connection; } }
+        protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
-        public IEnumerable<IDataSeries> DataSeriesCollection { get { return seriesCollection; } }
+        public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
         public IDynamicListSource<IndicatorModel2> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
-        public IEnumerable<TimelineTypes> AvailableTimelines { get { return new TimelineTypes[] { TimelineTypes.Uniform, TimelineTypes.Real }; } }
         public string SymbolCode { get { return Model.Name; } }
         public BotJournal Journal { get; private set; }
         public double? CurrentAsk { get; private set; }
@@ -104,10 +106,10 @@ namespace TickTrader.BotTerminal
             stateController.ModifyConditions(() => isUpdateRequired = true);
         }
 
-        protected void AddSeries(IDataSeries series)
-        {
-            seriesCollection.Add(series);
-        }
+        //protected void AddSeries(IRenderableSeriesViewModel series)
+        //{
+        //    seriesCollection.Add(series);
+        //}
 
         public void Deactivate()
         {
@@ -129,21 +131,10 @@ namespace TickTrader.BotTerminal
 
         public bool IsReady { get { return !IsLoading; } }
 
-        public TimelineTypes TimelineType
-        {
-            get { return timelineType; }
-            set
-            {
-                this.timelineType = value;
-                NotifyOfPropertyChange("TimelineType");
-                SwitchNavigator(value);
-            }
-        }
-
         public ChartNavigator Navigator
         {
             get { return navigator; }
-            private set
+            protected set
             {
                 navigator = value;
                 TimeAxis = value.CreateAxis();
@@ -152,9 +143,6 @@ namespace TickTrader.BotTerminal
                 cursorTextFormatBinding.Source = this;
                 cursorTextFormatBinding.Mode = BindingMode.TwoWay;
                 TimeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
-
-                if (NavigatorChanged != null)
-                    NavigatorChanged();
             }
         }
 
@@ -174,6 +162,7 @@ namespace TickTrader.BotTerminal
             set
             {
                 chartType = value;
+                UpdateSeries();
                 ChartTypeChanged();
                 NotifyOfPropertyChange(nameof(SelectedChartType));
             }
@@ -203,7 +192,6 @@ namespace TickTrader.BotTerminal
         public DateTime TimelineStart { get; private set; }
         public DateTime TimelineEnd { get; private set; }
 
-        public event System.Action NavigatorChanged = delegate { };
         public event System.Action ChartTypeChanged = delegate { };
         public event System.Action DepthChanged = delegate { };
         public event System.Action ParamsLocked = delegate { };
@@ -227,11 +215,12 @@ namespace TickTrader.BotTerminal
         }
 
         protected abstract PluginSetup CreateSetup(AlgoPluginRef catalogItem);
-        protected abstract IndicatorBuilder CreateBuilder(PluginSetup setup);
 
         protected abstract void ClearData();
-        protected abstract Task<DataMetrics> LoadData(CancellationToken cToken);
+        protected abstract void UpdateSeries();
+        protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel2 CreateIndicator(PluginSetup setup);
+        protected abstract void ApplyUpdate(Quote update);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -246,11 +235,10 @@ namespace TickTrader.BotTerminal
             {
                 isUpdateRequired = false;
                 ClearData();
+                updateQueue = new List<Quote>();
                 await StopEvent.InvokeAsync(this);
-                var metrics = await LoadData(cToken);
-                TimelineStart = metrics.StartDate;
-                TimelineEnd = metrics.EndDate;
-                Navigator.Update(metrics.Count, metrics.StartDate, metrics.EndDate);
+                await LoadData(cToken);
+                ApplyQueue();
                 StartEvent();
             }
             catch (Exception ex)
@@ -263,19 +251,17 @@ namespace TickTrader.BotTerminal
             this.IsLoading = false;
         }
 
-        private void SwitchNavigator(TimelineTypes timelineType)
+        protected void InitBoundaries(int count, DateTime startDate, DateTime endDate)
         {
-            switch (timelineType)
-            {
-                case TimelineTypes.Real:
-                    Navigator = new NonUniformChartNavigator();
-                    break;
-                case TimelineTypes.Uniform:
-                    Navigator = new UniformChartNavigator();
-                    break;
-                default:
-                    throw new Exception("Unsupported: " + timelineType);
-            }
+            TimelineStart = startDate;
+            TimelineEnd = endDate;
+            Navigator.Init(count, startDate, endDate);
+        }
+
+        protected void ExtendBoundaries(int count, DateTime endDate)
+        {
+            TimelineEnd = endDate;
+            Navigator.Extend(count, endDate);
         }
 
         private void Connection_Disconnected1()
@@ -297,10 +283,21 @@ namespace TickTrader.BotTerminal
 
         public virtual void OnRateUpdate(Quote tick)
         {
+            if (stateController.Current == States.LoadingData)
+                updateQueue.Add(tick);
+            else if (stateController.Current == States.Online)
+                ApplyUpdate(tick);
+
             this.CurrentAsk = tick.Ask;
             this.CurrentBid = tick.Bid;
             NotifyOfPropertyChange(nameof(CurrentAsk));
             NotifyOfPropertyChange(nameof(CurrentBid));
+        }
+
+        private void ApplyQueue()
+        {
+            updateQueue.ForEach(ApplyUpdate);
+            updateQueue = null;
         }
 
         private void StartIndicators()
@@ -316,14 +313,14 @@ namespace TickTrader.BotTerminal
             stateController.PushEvent(Events.Stopped);
         }
 
-        IndicatorBuilder IAlgoSetupFactory.CreateBuilder(PluginSetup setup)
-        {
-            return CreateBuilder(setup);
-        }
-
         PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
         {
             return CreateSetup(catalogItem);
+        }
+
+        protected virtual IPluginFeedProvider CreateProvider()
+        {
+            return new PluginFeedProvider(Feed.Symbols, Feed.History);
         }
 
         #region IAlgoPluginHost
@@ -338,9 +335,9 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-        IPluginFeedProvider IAlgoPluginHost.GetProvider()
+        IPluginFeedProvider IAlgoPluginHost.GetFeedProvider()
         {
-            return new PluginFeedProvider(Feed.Symbols, Feed.History);
+            return CreateProvider();
         }
 
         protected abstract FeedStrategy GetFeedStrategy();
@@ -350,6 +347,16 @@ namespace TickTrader.BotTerminal
             return GetFeedStrategy();
         }
 
+        ITradeApi IAlgoPluginHost.GetTradeApi()
+        {
+            return Trade.TradeApi;
+        }
+
+        IAccountInfoProvider IAlgoPluginHost.GetAccInfoProvider()
+        {
+            return Trade.Account;
+        }
+
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }
 
         public event System.Action ParamsChanged = delegate { };
@@ -357,12 +364,5 @@ namespace TickTrader.BotTerminal
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
 
         #endregion
-
-        protected struct DataMetrics
-        {
-            public DateTime StartDate { get; set; }
-            public DateTime EndDate { get; set; }
-            public int Count { get; set; }
-        }
     }
 }

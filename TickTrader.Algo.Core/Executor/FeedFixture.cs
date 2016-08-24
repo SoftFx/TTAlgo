@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
 {
     internal abstract class FeedFixture : IFeedFixture
     {
-        public FeedFixture(string symbolCode, IFeedStrategyContext context)
+        public FeedFixture(string symbolCode, IFeedFixtureContext context)
         {
             this.SymbolCode = symbolCode;
             this.Context = context;
@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core
             context.Add(this);
         }
 
-        protected IFeedStrategyContext Context { get; private set; }
+        protected IFeedFixtureContext Context { get; private set; }
         public string SymbolCode { get; private set; }
         public int Depth { get { return 1; } }
 

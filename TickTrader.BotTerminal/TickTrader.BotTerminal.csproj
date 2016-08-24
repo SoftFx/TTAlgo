@@ -247,6 +247,9 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model\TradeExecutor.cs" />
+    <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
+    <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
@@ -260,7 +263,7 @@
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model\BotJournal.cs" />
-    <Compile Include="Model\FdkAdapter.cs" />
+    <Compile Include="Model\FdkToAlgo.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model\PluginCatalog.cs" />
@@ -293,7 +296,7 @@
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
-    <Compile Include="Model.Algo\IndicatorSetup_Bars.cs" />
+    <Compile Include="Model.Algo\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\IndicatorModel.cs" />
     <Compile Include="Model.Algo\IndicatorsCollection.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />

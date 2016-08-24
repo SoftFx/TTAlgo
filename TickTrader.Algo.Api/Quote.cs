@@ -12,7 +12,10 @@ namespace TickTrader.Algo.Api
         DateTime Time { get; }
         double Ask { get; }
         double Bid { get; }
+    }
 
+    public interface QuoteL2 : Quote
+    {
         IReadOnlyList<BookEntry> AskBook { get; }
         IReadOnlyList<BookEntry> BidBook { get; }
     }

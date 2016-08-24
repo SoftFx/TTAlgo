@@ -30,7 +30,6 @@ namespace TickTrader.BotTerminal
 
     internal interface IAlgoSetupFactory
     {
-        IndicatorBuilder CreateBuilder(PluginSetup setup); 
         PluginSetup CreateSetup(AlgoPluginRef catalogItem);
     }
 
@@ -57,8 +56,10 @@ namespace TickTrader.BotTerminal
         //FeedModel Feed { get; }
         //TraderModel Trade { get; }
 
-        IPluginFeedProvider GetProvider();
+        IAccountInfoProvider GetAccInfoProvider();
+        IPluginFeedProvider GetFeedProvider();
         FeedStrategy GetFeedStrategy();
+        ITradeApi GetTradeApi();
 
         event Action ParamsChanged;
         event Action StartEvent;

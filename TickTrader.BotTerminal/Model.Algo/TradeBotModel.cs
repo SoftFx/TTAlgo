@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         public BotModelStates State { get; private set; }
         public string CustomStatus { get; private set; }
 
-        public event System.Action<TradeBotModel2> CustomStatusChnaged = delegate { };
+        public event System.Action<TradeBotModel2> CustomStatusChanged = delegate { };
         public event System.Action<TradeBotModel2> StateChanged = delegate { };
         public event System.Action<TradeBotModel2> Removed = delegate { };
 
@@ -61,10 +61,11 @@ namespace TickTrader.BotTerminal
         {
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
+            executor.TradeApi = Host.GetTradeApi();
             executor.Logger = new LogAdapter(Host.Journal, Name, s =>
             {
                 CustomStatus = s;
-                CustomStatusChnaged(this);
+                CustomStatusChanged(this);
             });
             return executor;
         }
@@ -74,7 +75,10 @@ namespace TickTrader.BotTerminal
             Execute.OnUIThread(() =>
             {
                 if (!pluginExecutor.IsRunning && State == BotModelStates.Running)
+                {
                     ChangeState(BotModelStates.Stopped);
+                    Host.Unlock();
+                }
             });
         }
 
@@ -96,7 +100,7 @@ namespace TickTrader.BotTerminal
                 statusChanged(status);
             }
 
-            public void WriteLog(string entry, object[] parameters)
+            public void OnPrint(string entry, object[] parameters)
             {
                 string msg = entry;
                 try
@@ -108,9 +112,29 @@ namespace TickTrader.BotTerminal
                 journal.Info(botName, msg);
             }
 
-            public void WriteError(string msg, string description)
+            public void OnError(Exception ex)
             {
-                journal.Error(botName, msg);
+                journal.Error(botName, "Exception: " + ex.Message);
+            }
+
+            public void OnInitialized()
+            {
+                journal.Info(botName, "Bot initialized");
+            }
+
+            public void OnStart()
+            {
+                journal.Info(botName, "Bot started");
+            }
+
+            public void OnStop()
+            {
+                journal.Info(botName, "Bot stopped");
+            }
+
+            public void OnExit()
+            {
+                journal.Info(botName, "Bot exited");
             }
         }
     }

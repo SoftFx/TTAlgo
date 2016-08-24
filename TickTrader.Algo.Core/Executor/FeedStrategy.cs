@@ -7,90 +7,113 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public abstract class FeedStrategy
+    public abstract class FeedStrategy : IFeedFixtureContext
     {
-        internal FeedStrategy()
+        private SubscriptionManager dispenser;
+        private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
+
+        public FeedStrategy(IPluginFeedProvider feed)
         {
+            if (feed == null)
+                throw new ArgumentNullException("feed");
+
+            this.dispenser = new SubscriptionManager(feed);
+            this.Feed = feed;
+
+            feed.FeedUpdated += Feed_FeedUpdated;
         }
+
+        internal IFixtureContext ExecContext { get; private set; }
+        internal IPluginFeedProvider Feed { get; private set; }
 
         public abstract int BufferSize { get; }
         public abstract ITimeRef TimeRef { get; }
-        internal abstract void Start(PluginExecutor executor);
-        public abstract BufferUpdateResults UpdateBuffers(FeedUpdate update);
+
+        internal abstract void OnInit();
+        protected abstract BufferUpdateResults UpdateBuffers(FeedUpdate update);
         internal abstract void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector);
         internal abstract void Stop();
-    }
 
-    [Serializable]
-    public sealed class BarStrategy : FeedStrategy
-    {
-        private IFeedStrategyContext context;
-        private BarSeriesFixture mainSeries;
-        private Dictionary<string, BarSeriesFixture> fixtures = new Dictionary<string, BarSeriesFixture>();
-
-        public BarStrategy()
+        public void OnUserSubscribe(string symbolCode, int depth)
         {
+            SubscriptionFixture fixture;
+            if (userSubscriptions.TryGetValue(symbolCode, out fixture))
+                dispenser.Remove(fixture);
+            fixture = new SubscriptionFixture(this, symbolCode, depth);
+            userSubscriptions[symbolCode] = fixture;
+            dispenser.Add(fixture);
         }
 
-        public override ITimeRef TimeRef { get { return mainSeries; } }
-        public override int BufferSize { get { return mainSeries.Count; } }
-
-        internal override void Start(PluginExecutor executor)
+        internal void Init(IFixtureContext executor)
         {
-            this.context = executor;
-
-            if (mainSeries != null)
-                fixtures.Clear();
-
-            mainSeries = new BarSeriesFixture(executor.MainSymbolCode, executor);
-
-            fixtures.Add(executor.MainSymbolCode, mainSeries);
+            ExecContext = executor;
+            OnInit();
         }
 
-        private void InitSymbol(string symbolCode)
+        internal virtual void Start()
         {
-            BarSeriesFixture fixture;
-            if (!fixtures.TryGetValue(symbolCode, out fixture))
+            ExecContext.PluginInvoke(b => BatchBuild(BufferSize));
+        }
+
+        private void BatchBuild(int x)
+        {
+            var builder = ExecContext.Builder;
+
+            builder.StartBatch();
+
+            for (int i = 0; i < x; i++)
             {
-                fixture = new BarSeriesFixture(symbolCode, context);
-                fixtures.Add(symbolCode, fixture);
+                builder.IncreaseVirtualPosition();
+                builder.InvokeCalculate(false);
             }
+
+            builder.StopBatch();
         }
 
-        private BarSeriesFixture GetFixutre(string smbCode)
+        private void Feed_FeedUpdated(FeedUpdate[] updates)
         {
-            BarSeriesFixture fixture;
-            fixtures.TryGetValue(smbCode, out fixture);
-            return fixture;
+            ExecContext.PluginInvoke(b =>
+            {
+                foreach (var update in updates)
+                    UpdateBuild(update);
+            });
         }
 
-        public override BufferUpdateResults UpdateBuffers(FeedUpdate update)
+        private void UpdateBuild(FeedUpdate update)
         {
-            var fixture = GetFixutre(update.SymbolCode);
+            var result = UpdateBuffers(update);
+            if (result == BufferUpdateResults.Extended)
+            {
+                ExecContext.Builder.IncreaseVirtualPosition();
+                ExecContext.Builder.InvokeCalculate(false);
+                dispenser.OnBufferUpdated(update.Quote);
+                dispenser.OnUpdateEvent(update.Quote);
+            }
+            else if (result == BufferUpdateResults.LastItemUpdated)
+            {
+                ExecContext.Builder.InvokeCalculate(true);
+                dispenser.OnBufferUpdated(update.Quote);
+                dispenser.OnUpdateEvent(update.Quote);
+            }
 
-            if (fixture == null)
-                return BufferUpdateResults.NotUpdated;
-
-            return fixture.Update(update.Quote);
+            ExecContext.Builder.InvokeOnQuote(update.Quote);
         }
 
-        private void ThrowIfNotbarType<TSrc>()
+        #region IFeedStrategyContext
+
+        IFixtureContext IFeedFixtureContext.ExecContext { get { return ExecContext; } }
+        IPluginFeedProvider IFeedFixtureContext.Feed { get { return Feed; } }
+
+        void IFeedFixtureContext.Add(IFeedFixture subscriber)
         {
-            if (!typeof(TSrc).Equals(typeof(BarEntity)))
-                throw new InvalidOperationException("Wrong data type! BarStrategy only works with BarEntity data!");
+            dispenser.Add(subscriber);
         }
 
-        internal override void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector)
+        void IFeedFixtureContext.Remove(IFeedFixture subscriber)
         {
-            ThrowIfNotbarType<TSrc>();
-            InitSymbol(symbolCode);
-            context.Builder.MapInput(inputName, symbolCode, selector);
+            dispenser.Remove(subscriber);
         }
 
-        internal override void Stop()
-        {
-            foreach (var fixture in fixtures.Values)
-                fixture.Dispose();
-        }
+        #endregion IFeedStrategyContext
     }
 }
