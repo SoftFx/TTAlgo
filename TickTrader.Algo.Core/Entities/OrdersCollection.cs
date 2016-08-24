@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
 
         public void Add(OrderEntity entity)
         {
-            fixture.Add(entity, IsEnabled);
+            fixture.Add(entity);
         }
 
         public void Replace(OrderEntity entity)
@@ -25,16 +25,51 @@ namespace TickTrader.Algo.Core
             fixture.Replace(entity, IsEnabled);
         }
 
-        public void Remove(long orderId)
+        public Order GetOrderOrNull(string id)
         {
-            fixture.Remove(orderId, IsEnabled);
+            return fixture[id];
+        }
+
+        public void Remove(string orderId)
+        {
+            fixture.Remove(orderId);
+        }
+
+        public void FireOrderOpened(OrderOpenedEventArgs args)
+        {
+            fixture.FireOrderOpened(args);
+        }
+
+        public void FireOrderModified(OrderModifiedEventArgs args)
+        {
+            fixture.FireOrderModified(args);
+        }
+
+        public void FireOrderClosed(OrderClosedEventArgs args)
+        {
+            fixture.FireOrderClosed(args);
+        }
+
+        public void FireOrderCanceled(OrderCanceledEventArgs args)
+        {
+            fixture.FireOrderCanceled(args);
+        }
+
+        public void FireOrderExpired(OrderExpiredEventArgs args)
+        {
+            fixture.FireOrderExpired(args);
+        }
+
+        public void FireOrderFilled(OrderFilledEventArgs args)
+        {
+            fixture.FireOrderFilled(args);
         }
 
         internal class OrdersFixture : OrderList
         {
-            private Dictionary<long, OrderEntity> orders = new Dictionary<long, OrderEntity>();
+            private Dictionary<string, OrderEntity> orders = new Dictionary<string, OrderEntity>();
 
-            public Order this[long id]
+            public Order this[string id]
             {
                 get
                 {
@@ -45,28 +80,57 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            public void Add(OrderEntity entity, bool fireEvent)
+            public void Add(OrderEntity entity)
             {
                 orders.Add(entity.Id, entity);
-                Opened(new OrderOpenedEventArgsImpl(entity));
             }
 
             public void Replace(OrderEntity entity, bool fireEvent)
             {
-                var oldOrder = orders[entity.Id];
                 orders[entity.Id] = entity;
-                Modified(new OrderModifiedEventArgsImpl(entity, oldOrder));
             }
 
-            public void Remove(long orderId, bool fireEvent)
+            public void Remove(string orderId)
             {
-                var removedOrder = orders[orderId];
-                Closed(new OrderClosedEventArgsImpl(removedOrder));
+                orders.Remove(orderId);
+            }
+
+            public void FireOrderOpened(OrderOpenedEventArgs args)
+            {
+                Opened(args);
+            }
+
+            public void FireOrderModified(OrderModifiedEventArgs args)
+            {
+                Modified(args);
+            }
+
+            public void FireOrderClosed(OrderClosedEventArgs args)
+            {
+                Closed(args);
+            }
+
+            public void FireOrderCanceled(OrderCanceledEventArgs args)
+            {
+                Canceled(args);
+            }
+
+            public void FireOrderExpired(OrderExpiredEventArgs args)
+            {
+                Expired(args);
+            }
+
+            public void FireOrderFilled(OrderFilledEventArgs args)
+            {
+                Filled(args);
             }
 
             public event Action<OrderClosedEventArgs> Closed = delegate { };
             public event Action<OrderModifiedEventArgs> Modified = delegate { };
             public event Action<OrderOpenedEventArgs> Opened = delegate { };
+            public event Action<OrderCanceledEventArgs> Canceled = delegate { };
+            public event Action<OrderExpiredEventArgs> Expired = delegate { };
+            public event Action<OrderFilledEventArgs> Filled = delegate { };
 
             public IEnumerator<Order> GetEnumerator()
             {

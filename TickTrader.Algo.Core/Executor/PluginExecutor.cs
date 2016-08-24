@@ -10,30 +10,30 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginExecutor : NoTimeoutByRefObject, IFeedStrategyContext, IInvokeStrategyContext, IPluginSetupTarget
+    public class PluginExecutor : NoTimeoutByRefObject, IFixtureContext, IPluginSetupTarget
     {
         public enum States { Idle, Running }
 
         private object _sync = new object();
-        private IPluginFeedProvider feed;
         private IPluginLogger logger;
-        private SubscriptionManager subscriptionManager;
         private FeedStrategy fStrategy;
         private InvokeStartegy iStrategy;
+        private AccDataFixture accFixture;
         private string mainSymbol;
         private PluginBuilder builder;
         private DateTime periodStart;
         private DateTime periodEnd;
         private Api.TimeFrames timeframe;
+        private ITradeApi tradeApi;
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
-        private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
 
         public PluginExecutor(string pluginId)
         {
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
+            this.accFixture = new AccDataFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -44,19 +44,15 @@ namespace TickTrader.Algo.Core
 
         public bool IsRunning { get; private set; }
 
-        public IPluginFeedProvider FeedProvider
+        public IAccountInfoProvider AccInfoProvider
         {
-            get { return feed; }
+            get { return accFixture.DataProvider; }
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-
-                    if (value == null)
-                        throw new InvalidOperationException("FeedProvider cannot be null!");
-
-                    feed = value;
+                    accFixture.DataProvider = value;
                 }
             }
         }
@@ -168,6 +164,19 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public ITradeApi TradeApi
+        {
+            get { return tradeApi; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+                    tradeApi = value;
+                }
+            }
+        }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
 
         #endregion
@@ -185,20 +194,29 @@ namespace TickTrader.Algo.Core
 
                 stopTask = null;
 
-                feed.FeedUpdated += Feed_FeedUpdated;
-                subscriptionManager = new SubscriptionManager(feed);
+                // Setup builder
+                //feed.FeedUpdated += Feed_FeedUpdated;
+                //subscriptionManager = new SubscriptionManager(feed);
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
-                builder.Symbols.Init(feed.GetSymbolMetadata());
+                //builder.Symbols.Init(feed.GetSymbolMetadata());
+                builder.TradeApi = tradeApi;
                 if (logger != null)
                     builder.Logger = logger;
-                builder.OnSubscribe = OnUserSubscribe;
+                builder.OnSubscribe = fStrategy.OnUserSubscribe;
                 //builder.OnException = OnException;
                 builder.OnExit = Abort;
-                fStrategy.Start(this);
+                fStrategy.Init(this);
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
-                iStrategy.Start(this, fStrategy.BufferSize);
+                iStrategy.Init(builder);
+
+                // Start
+                accFixture.Start();
+                iStrategy.Start();
+                iStrategy.EnqueueInvoke(b => b.InvokeInit());
+                fStrategy.Start();
+                iStrategy.EnqueueInvoke(b => b.InvokeOnStart());
 
                 IsRunning = true;
                 IsRunningChanged(this);
@@ -226,8 +244,10 @@ namespace TickTrader.Algo.Core
         private async Task DoStop()
         {
             fStrategy.Stop();
-            feed.FeedUpdated -= Feed_FeedUpdated;
+            accFixture.Stop();
             await iStrategy.Stop();
+
+            await Task.Factory.StartNew(() => builder.InvokeOnStop());
 
             lock (_sync)
             {
@@ -292,8 +312,8 @@ namespace TickTrader.Algo.Core
             if (IsRunning)
                 throw new InvalidOperationException("Executor has been already started!");
 
-            if (feed == null)
-                throw new InvalidOperationException("Feed provider is not specified!");
+            //if (feed == null)
+            //    throw new InvalidOperationException("Feed provider is not specified!");
 
             if (fStrategy == null)
                 throw new InvalidOperationException("Feed strategy is not specified!");
@@ -311,20 +331,10 @@ namespace TickTrader.Algo.Core
                 throw new InvalidOperationException("Executor parameters cannot be changed after start!");
         }
 
-        private void Feed_FeedUpdated(FeedUpdate[] updates)
-        {
-            iStrategy.OnUpdate(updates).Wait();
-        }
-
-        private void OnUserSubscribe(string symbolCode, int depth)
-        {
-            SubscriptionFixture fixture;
-            if (userSubscriptions.TryGetValue(symbolCode, out fixture))
-                subscriptionManager.Remove(fixture);
-            fixture = new SubscriptionFixture(this, symbolCode, depth);
-            userSubscriptions[symbolCode] = fixture;
-            subscriptionManager.Add(fixture);
-        }
+        //private void Feed_FeedUpdated(FeedUpdate[] updates)
+        //{
+        //    //iStrategy.OnUpdate(updates).Wait();
+        //}
 
         private void OnException(Exception pluginError)
         {
@@ -343,54 +353,59 @@ namespace TickTrader.Algo.Core
 
         #region IFeedStrategyContext
 
-        PluginBuilder IFeedStrategyContext.Builder { get { return builder; } }
+        PluginBuilder IFixtureContext.Builder { get { return builder; } }
 
-        IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        void IFixtureContext.PluginInvoke(Action<PluginBuilder> action)
         {
-            return feed.CustomQueryBars(symbolCode, from, to, timeFrame);
+            iStrategy.EnqueueInvoke(action);
         }
 
-        IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to)
-        {
-            return feed.CustomQueryTicks(symbolCode, from, to, 1);
-        }
+        //IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        //{
+        //    return feed.CustomQueryBars(symbolCode, from, to, timeFrame);
+        //}
 
-        IEnumerable<QuoteEntityL2> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to)
-        {
-            throw new NotImplementedException();
-        }
+        //IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to)
+        //{
+        //    return feed.CustomQueryTicks(symbolCode, from, to, 1);
+        //}
 
-        void IFeedStrategyContext.Add(IFeedFixture subscriber)
-        {
-            subscriptionManager.Add(subscriber);
-        }
+        //IEnumerable<QuoteEntityL2> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        void IFeedStrategyContext.Remove(IFeedFixture subscriber)
-        {
-            subscriptionManager.Remove(subscriber);
-        }
+        //void IFeedStrategyContext.Add(IFeedFixture subscriber)
+        //{
+        //    subscriptionManager.Add(subscriber);
+        //}
 
-        void IFeedStrategyContext.InvokeUpdateOnCustomSubscription(QuoteEntity update)
-        {
-            builder.InvokeUpdateNotification(update);
-        }
+        //void IFeedStrategyContext.Remove(IFeedFixture subscriber)
+        //{
+        //    subscriptionManager.Remove(subscriber);
+        //}
+
+        //void IFeedStrategyContext.InvokeUpdateOnCustomSubscription(QuoteEntity update)
+        //{
+        //    builder.InvokeUpdateNotification(update);
+        //}
 
         #endregion
 
-        #region IInvokeStrategyContext
+        //#region IInvokeStrategyContext
 
-        IPluginInvoker IInvokeStrategyContext.Builder { get { return builder; } }
+        //IPluginInvoker IInvokeStrategyContext.Builder { get { return builder; } }
 
-        BufferUpdateResults IInvokeStrategyContext.UpdateBuffers(FeedUpdate update)
-        {
-            return fStrategy.UpdateBuffers(update);
-        }
+        //BufferUpdateResults IInvokeStrategyContext.UpdateBuffers(FeedUpdate update)
+        //{
+        //    return fStrategy.UpdateBuffers(update);
+        //}
 
-        void IInvokeStrategyContext.InvokeFeedEvents(FeedUpdate update)
-        {
-            subscriptionManager.OnUpdateEvent(update.Quote);
-        }
+        //void IInvokeStrategyContext.InvokeFeedEvents(FeedUpdate update)
+        //{
+        //    subscriptionManager.OnUpdateEvent(update.Quote);
+        //}
 
-        #endregion
+        //#endregion
     } 
 }

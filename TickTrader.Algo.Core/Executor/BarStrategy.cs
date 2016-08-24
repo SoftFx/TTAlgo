@@ -9,27 +9,24 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public sealed class BarStrategy : FeedStrategy
     {
-        private IFeedStrategyContext context;
         private BarSeriesFixture mainSeries;
         private Dictionary<string, BarSeriesFixture> fixtures = new Dictionary<string, BarSeriesFixture>();
 
-        public BarStrategy()
+        public BarStrategy(IPluginFeedProvider feed)
+            : base(feed)
         {
         }
 
         public override ITimeRef TimeRef { get { return mainSeries; } }
         public override int BufferSize { get { return mainSeries.Count; } }
 
-        internal override void Start(PluginExecutor executor)
+        internal override void OnInit()
         {
-            this.context = executor;
-
             if (mainSeries != null)
                 fixtures.Clear();
 
-            mainSeries = new BarSeriesFixture(executor.MainSymbolCode, executor);
-
-            fixtures.Add(executor.MainSymbolCode, mainSeries);
+            mainSeries = new BarSeriesFixture(ExecContext.MainSymbolCode, this);
+            fixtures.Add(ExecContext.MainSymbolCode, mainSeries);
         }
 
         private void InitSymbol(string symbolCode)
@@ -37,7 +34,7 @@ namespace TickTrader.Algo.Core
             BarSeriesFixture fixture;
             if (!fixtures.TryGetValue(symbolCode, out fixture))
             {
-                fixture = new BarSeriesFixture(symbolCode, context);
+                fixture = new BarSeriesFixture(symbolCode, this);
                 fixtures.Add(symbolCode, fixture);
             }
         }
@@ -49,7 +46,7 @@ namespace TickTrader.Algo.Core
             return fixture;
         }
 
-        public override BufferUpdateResults UpdateBuffers(FeedUpdate update)
+        protected override BufferUpdateResults UpdateBuffers(FeedUpdate update)
         {
             var fixture = GetFixutre(update.SymbolCode);
 
@@ -69,7 +66,7 @@ namespace TickTrader.Algo.Core
         {
             ThrowIfNotbarType<TSrc>();
             InitSymbol(symbolCode);
-            context.Builder.MapInput(inputName, symbolCode, selector);
+            ExecContext.Builder.MapInput(inputName, symbolCode, selector);
         }
 
         internal override void Stop()

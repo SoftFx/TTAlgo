@@ -86,7 +86,7 @@
         <Label Content="Status:" FontSize="10" Grid.Row="1"/>
 
         <Border Background="{DynamicResource Dialog_PanelBackground}" Grid.Row="2" CornerRadius="4" Margin="2">
-            <TextBlock Text="{Binding Bot.CustomStatus}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2"/>
+            <TextBlock Text="{Binding CustomStatus}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2"/>
         </Border>
 
     </Grid>

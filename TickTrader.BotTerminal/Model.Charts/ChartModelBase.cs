@@ -52,10 +52,11 @@ namespace TickTrader.BotTerminal
         private string dateAxisLabelFormat;
         private List<Quote> updateQueue;
 
-        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
+        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.Feed = feed;
+            this.Trade = trade;
             this.Model = symbol;
             this.catalog = catalog;
             this.Journal = journal;
@@ -86,6 +87,7 @@ namespace TickTrader.BotTerminal
 
         protected SymbolModel Model { get; private set; }
         protected FeedModel Feed { get; private set; }
+        protected TraderModel Trade { get; private set; }
         protected ConnectionModel Connection { get { return Feed.Connection; } }
         protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
@@ -333,7 +335,7 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-        IPluginFeedProvider IAlgoPluginHost.GetProvider()
+        IPluginFeedProvider IAlgoPluginHost.GetFeedProvider()
         {
             return CreateProvider();
         }
@@ -343,6 +345,16 @@ namespace TickTrader.BotTerminal
         FeedStrategy IAlgoPluginHost.GetFeedStrategy()
         {
             return GetFeedStrategy();
+        }
+
+        ITradeApi IAlgoPluginHost.GetTradeApi()
+        {
+            return Trade.TradeApi;
+        }
+
+        IAccountInfoProvider IAlgoPluginHost.GetAccInfoProvider()
+        {
+            return Trade.Account;
         }
 
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }

@@ -32,12 +32,13 @@ namespace TickTrader.BotTerminal
         private static int idSeed;
         private Logger logger;
         private readonly FeedModel feed;
-        private PluginCatalog catalog;
-        private BotJournal journal;
+        private readonly TraderModel trade;
+        private readonly PluginCatalog catalog;
+        private readonly BotJournal journal;
         private ChartModelBase activeChart;
         private BarChartModel barChart;
         private TickChartModel tickChart;
-        private IShell shell;
+        private readonly IShell shell;
         private IDynamicListSource<IRenderableSeriesViewModel> allSeries;
         private IDynamicListSource<IndicatorPaneViewModel> panes;
         //private DynamicList<IDynamicListSource<IndicatorModel2>> indicatorCollections = new DynamicList<IDynamicListSource<IndicatorModel2>>();
@@ -45,12 +46,13 @@ namespace TickTrader.BotTerminal
         //private DynamicList<IRenderableSeriesViewModel> mainSeries = new DynamicList<IRenderableSeriesViewModel>();
         //private DynamicList<IDynamicListSource
 
-        public ChartViewModel(string symbol, IShell shell, FeedModel feed, PluginCatalog catalog, BotJournal journal)
+        public ChartViewModel(string symbol, IShell shell, FeedModel feed, TraderModel trade, PluginCatalog catalog, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.feed = feed;
+            this.trade = trade;
             this.catalog = catalog;
             this.shell = shell;
             this.journal = journal;
@@ -61,8 +63,8 @@ namespace TickTrader.BotTerminal
 
             UpdateLabelFormat(smb);
 
-            this.barChart = new BarChartModel(smb, catalog, feed, journal);
-            this.tickChart = new TickChartModel(smb, catalog, feed, journal);
+            this.barChart = new BarChartModel(smb, catalog, feed, trade, journal);
+            this.tickChart = new TickChartModel(smb, catalog, feed, trade, journal);
             this.UiLock = new UiLock();
 
             //OverlaySeries = new DynamicList<IRenderableSeriesViewModel>();

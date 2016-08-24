@@ -8,9 +8,9 @@ namespace TickTrader.Algo.Core
 {
     internal class SubscriptionFixture : IFeedFixture
     {
-        private IFeedStrategyContext context;
+        private IFeedFixtureContext context;
 
-        public SubscriptionFixture(IFeedStrategyContext context, string symbol, int depth)
+        public SubscriptionFixture(IFeedFixtureContext context, string symbol, int depth)
         {
             this.context = context;
             this.Depth = depth;
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
 
         public void OnUpdateEvent(QuoteEntity quote)
         {
-            context.InvokeUpdateOnCustomSubscription(quote);   
+            context.ExecContext.Builder.InvokeUpdateNotification(quote);
         }
     }
 }

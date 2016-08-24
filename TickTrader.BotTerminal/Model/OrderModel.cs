@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -40,6 +41,19 @@ namespace TickTrader.BotTerminal
             this.OrderType = report.OrderType;
             this.Side = report.OrderSide;
             this.Price = (decimal)report.Price;
+        }
+
+        public OrderEntity ToAlgoOrder()
+        {
+            return new OrderEntity(Id)
+            {
+                RemainingAmount = (double)RemainingAmount,
+                RequestedAmount = (double)Amount,
+                Symbol = Symbol,
+                Type = FdkToAlgo.Convert(orderType),
+                Side = FdkToAlgo.Convert(Side),
+                Price = (double)Price
+            };
         }
 
         #region Order Properties 

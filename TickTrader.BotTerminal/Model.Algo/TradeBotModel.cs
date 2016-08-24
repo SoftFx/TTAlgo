@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         public BotModelStates State { get; private set; }
         public string CustomStatus { get; private set; }
 
-        public event System.Action<TradeBotModel2> CustomStatusChnaged = delegate { };
+        public event System.Action<TradeBotModel2> CustomStatusChanged = delegate { };
         public event System.Action<TradeBotModel2> StateChanged = delegate { };
         public event System.Action<TradeBotModel2> Removed = delegate { };
 
@@ -61,10 +61,11 @@ namespace TickTrader.BotTerminal
         {
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
+            executor.TradeApi = Host.GetTradeApi();
             executor.Logger = new LogAdapter(Host.Journal, Name, s =>
             {
                 CustomStatus = s;
-                CustomStatusChnaged(this);
+                CustomStatusChanged(this);
             });
             return executor;
         }

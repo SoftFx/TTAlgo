@@ -20,7 +20,7 @@ namespace TickTrader.Algo.CoreUsageSample
             IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
 
             builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
-            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", TotalAmount = new OrderVolume(), RemainingAmount = new OrderVolume() });
+            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", RequestedAmount = new OrderVolume(), RemainingAmount = new OrderVolume() });
 
             builder.MainSymbol = "EURUSD";
             builder.GetBarBuffer("EURUSD").Append(data);

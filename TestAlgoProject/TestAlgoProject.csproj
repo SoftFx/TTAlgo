@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccDisplayBot.cs" />
+    <Compile Include="OpenOrderBot.cs" />
     <Compile Include="TestBot.cs" />
     <Compile Include="FxCalendarIndicator.cs" />
     <Compile Include="FxCalendar\FxNews.cs" />

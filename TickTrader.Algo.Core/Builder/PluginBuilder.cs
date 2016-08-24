@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginBuilder : IPluginContext, IPluginInvoker, IPluginSubscriptionHandler
+    public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler
     {
         private static readonly NullLogger nullLogger = new NullLogger();
 
@@ -120,17 +120,10 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        protected void InvokeCalculate(bool isUpdate)
-        {
-            try
-            {
-                PluginProxy.InvokeCalculate(isUpdate);
-            }
-            catch (Exception ex)
-            {
-                OnPluginException(ex);
-            }
-        }
+        //protected void InvokeCalculate(bool isUpdate)
+        //{
+           
+        //}
 
         private void OnPluginException(Exception ex)
         {
@@ -173,15 +166,22 @@ namespace TickTrader.Algo.Core
         {
             if (TradeApi == null)
                 return new NullTradeApi();
-            return new TradeApiAdapter(TradeApi);
+            return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account);
         }
 
-        void IPluginInvoker.InvokeCalculate(bool isUpdate)
+        internal void InvokeCalculate(bool isUpdate)
         {
-            InvokeCalculate(isUpdate);
+            try
+            {
+                PluginProxy.InvokeCalculate(isUpdate);
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
         }
 
-        void IPluginInvoker.InvokeOnStart()
+        internal void InvokeOnStart()
         {
             try
             {
@@ -194,7 +194,7 @@ namespace TickTrader.Algo.Core
             Logger.OnPrint("Bot started");
         }
 
-        void IPluginInvoker.InvokeOnStop()
+        internal void InvokeOnStop()
         {
             try
             {
@@ -207,22 +207,22 @@ namespace TickTrader.Algo.Core
             Logger.OnPrint("Bot stopped");
         }
 
-        void IPluginInvoker.StartBatch()
+        internal void StartBatch()
         {
             PluginProxy.Coordinator.FireBeginBatch();
         }
 
-        void IPluginInvoker.StopBatch()
+        internal void StopBatch()
         {
             PluginProxy.Coordinator.FireEndBatch();
         }
 
-        void IPluginInvoker.IncreaseVirtualPosition()
+        internal void IncreaseVirtualPosition()
         {
             PluginProxy.Coordinator.MoveNext();
         }
 
-        void IPluginInvoker.InvokeInit()
+        internal void InvokeInit()
         {
             try
             {
@@ -235,7 +235,7 @@ namespace TickTrader.Algo.Core
             Logger.OnInitialized();
         }
 
-        void IPluginInvoker.InvokeOnQuote(QuoteEntity quote)
+        internal void InvokeOnQuote(QuoteEntity quote)
         {
             try
             {

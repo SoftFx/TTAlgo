@@ -17,10 +17,11 @@ namespace TickTrader.BotTerminal
         {
             Connection = connection;
             Account = new AccountModel(Connection);
+            TradeApi = new TradeExecutor(this);
         }
 
         public ConnectionModel Connection { get; private set; }
-        
+        public TradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
     }
 

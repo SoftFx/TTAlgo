@@ -24,8 +24,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
         private Fdk.Quote lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
-            : base(symbol, catalog, feed, journal)
+        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
+            : base(symbol, catalog, feed, trade, journal)
         {
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
 
         protected override FeedStrategy GetFeedStrategy()
         {
-            return new QuoteStrategy();
+            return new QuoteStrategy(CreateProvider());
         }
 
         protected override void UpdateSeries()

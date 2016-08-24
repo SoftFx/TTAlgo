@@ -10,13 +10,15 @@ namespace TickTrader.BotTerminal
     internal class ChartCollectionViewModel : Conductor<ChartViewModel>.Collection.OneActive
     {
         private FeedModel feed;
+        private TraderModel trade;
         private PluginCatalog catalog;
         private IShell shell;
         private BotJournal pluginJournal;
 
-        public ChartCollectionViewModel(FeedModel feedProvider, PluginCatalog catalog, IShell shell, BotJournal pluginJournal)
+        public ChartCollectionViewModel(FeedModel feed,  TraderModel trade, PluginCatalog catalog, IShell shell, BotJournal pluginJournal)
         {
-            this.feed = feedProvider;
+            this.feed = feed;
+            this.trade = trade;
             this.catalog = catalog;
             this.shell = shell;
             this.pluginJournal = pluginJournal;
@@ -24,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, shell, feed, catalog, pluginJournal));
+            ActivateItem(new ChartViewModel(symbol, shell, feed, trade, catalog, pluginJournal));
         }
 
         public void CloseItem(ChartViewModel chart)

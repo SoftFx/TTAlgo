@@ -30,8 +30,6 @@ namespace TickTrader.BotTerminal
             model.AccountTypeChanged += AccountTypeChanged;
         }
 
-       
-
         public ObservableSrotedList<string, OrderModel> Positions { get; private set; }
         public bool IsBusy { get; private set; }
         public bool IsEnabled { get; private set; }
@@ -104,6 +102,4 @@ namespace TickTrader.BotTerminal
             model.AccountTypeChanged -= AccountTypeChanged;
         }
     }
-
-
 }

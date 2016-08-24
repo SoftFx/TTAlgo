@@ -14,22 +14,27 @@ namespace TickTrader.BotTerminal
             this.Bot = bot;
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
+            Bot.CustomStatusChanged += Bot_CustomStatusChanged;
             DisplayName = "Status: " + bot.Name;
             BotName = string.Format("{0} ({1}, {2})", Bot.Name, "", "");
             Bot_StateChanged(Bot);
+            Bot_CustomStatusChanged(Bot);
         }
 
         public TradeBotModel2 Bot { get; private set; }
         public string BotName { get; private set; }
         public string ExecStatus { get; private set; }
+        public string CustomStatus { get; private set; }
         public bool IsStarted { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopping; } }
         public bool CanStartStop { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopped; } }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
             base.TryClose(dialogResult);
-            Bot.StateChanged -= Bot_StateChanged;
+
             Bot.Removed -= Bot_Removed;
+            Bot.StateChanged -= Bot_StateChanged;
+            Bot.CustomStatusChanged -= Bot_CustomStatusChanged;
         }
 
         public async void StartStop()
@@ -43,6 +48,12 @@ namespace TickTrader.BotTerminal
         private void Bot_Removed(TradeBotModel2 bot)
         {
             TryClose();
+        }
+
+        private void Bot_CustomStatusChanged(TradeBotModel2 bot)
+        {
+            CustomStatus = bot.CustomStatus;
+            NotifyOfPropertyChange(nameof(CustomStatus));
         }
 
         private void Bot_StateChanged(TradeBotModel2 bot)

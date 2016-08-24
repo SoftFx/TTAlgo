@@ -60,9 +60,10 @@ namespace TickTrader.BotTerminal
         protected virtual PluginExecutor CreateExecutor()
         {
             var executor = PluginRef.CreateExecutor();
-            executor.FeedProvider = host.GetProvider();
+            //executor.FeedProvider = host.GetProvider();
             executor.FeedStrategy = host.GetFeedStrategy();
             executor.InvokeStrategy = new DataflowInvokeStartegy();
+            executor.AccInfoProvider = host.GetAccInfoProvider();
             return executor;
         }
 

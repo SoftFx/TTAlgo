@@ -25,8 +25,8 @@ namespace TickTrader.BotTerminal
         private Api.TimeFrames timeframe;
         private BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, BotJournal journal)
-            : base(symbol, catalog, feed, journal)
+        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
+            : base(symbol, catalog, feed, trade, journal)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
         public void Activate(Api.TimeFrames timeframe)
         {
             this.timeframe = timeframe;
-            this.period = FdkAdapter.ToBarPeriod(timeframe);
+            this.period = FdkToAlgo.ToBarPeriod(timeframe);
             base.Activate();
         }
 
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
             cToken.ThrowIfCancellationRequested();
 
             indicatorData.Clear();
-            FdkAdapter.Convert(loadedData, indicatorData);
+            FdkToAlgo.Convert(loadedData, indicatorData);
 
             barCollection.Update(indicatorData);
 
@@ -96,7 +96,7 @@ namespace TickTrader.BotTerminal
 
         protected override FeedStrategy GetFeedStrategy()
         {
-            return new BarStrategy();
+            return new BarStrategy(CreateProvider());
         }
 
         protected override void ApplyUpdate(Quote update)

@@ -8,19 +8,20 @@ namespace TickTrader.Algo.Api
 {
     internal interface ITradeCommands
     {
-        OrderCmdResult OpenOrder(OpenOrdeRequest request);
-        OrderCmdResult CancelOrder(CancelOrdeRequest request);
-        OrderCmdResult ModifyOrder(ModifyOrdeRequest request);
-        OrderCmdResult CloseOrder(CloseOrdeRequest request);
+        Task<OrderCmdResult> OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null);
+        Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request);
+        Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request);
+        Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request);
+        Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request);
     }
 
     [Serializable]
     public class OpenOrdeRequest
     {
-        public OrderTypes Type { get; set; }
+        public OrderTypes OrderType { get; set; }
         public OrderSides Side { get; set; }
         public string SymbolCode { get; set; }
-        public OrderVolume Volume { get; set; }
+        public double Volume { get; set; }
         public double Price { get; set; }
         public double? TaskProfit { get; set; }
         public double? StopLoss { get; set; }
@@ -31,6 +32,9 @@ namespace TickTrader.Algo.Api
     public class ModifyOrdeRequest
     {
         public int OrderId { get; set; }
+        public OrderTypes OrderType { get; set; }
+        public OrderSides Side { get; set; }
+        public string SymbolCode { get; set; }
         public OrderVolume Volume { get; set; }
         public double Price { get; set; }
         public double? TaskProfit { get; set; }
@@ -48,7 +52,8 @@ namespace TickTrader.Algo.Api
     [Serializable]
     public class CancelOrdeRequest
     {
-        public int OrderId { get; set; }
+        public long OrderId { get; set; }
+        public OrderSides Side { get; set; }
     }
 
     public interface OrderCmdResult
@@ -88,6 +93,7 @@ namespace TickTrader.Algo.Api
         Ok,
         DealerReject,
         ConnectionError,
-        Unsupported
+        Unsupported,
+        SymbolNotFound
     }
 }

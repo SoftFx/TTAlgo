@@ -9,13 +9,16 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class QuoteStrategy : FeedStrategy
     {
-        private IFeedStrategyContext context;
         private QuoteSeriesFixture mainSeries;
 
         public override ITimeRef TimeRef { get { return mainSeries; } }
         public override int BufferSize { get { return mainSeries.Count; } }
 
-        public override BufferUpdateResults UpdateBuffers(FeedUpdate update)
+        public QuoteStrategy(IPluginFeedProvider feed) : base(feed)
+        {
+        }
+
+        protected override BufferUpdateResults UpdateBuffers(FeedUpdate update)
         {
             return mainSeries.Update(update.Quote);
         }
@@ -33,17 +36,15 @@ namespace TickTrader.Algo.Core
             if(symbolCode != mainSeries.SymbolCode)
                 throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
 
-            context.Builder.MapInput(inputName, symbolCode, selector);
+            ExecContext.Builder.MapInput(inputName, symbolCode, selector);
         }
 
-        internal override void Start(PluginExecutor executor)
+        internal override void OnInit()
         {
-            this.context = executor;
-
             if (mainSeries != null)
                 mainSeries.Dispose();
 
-            mainSeries = new QuoteSeriesFixture(executor.MainSymbolCode, executor);
+            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, this);
         }
 
         internal override void Stop()

@@ -8,11 +8,13 @@ namespace TickTrader.Algo.Api
 {
     public interface Order
     {
-        long Id { get; }
+        string Id { get; }
         string Symbol { get; }
-        OrderVolume TotalAmount { get; }
-        OrderVolume RemainingAmount { get; }
+        double RequestedAmount { get; }
+        double RemainingAmount { get; }
         OrderTypes Type { get; }
+        OrderSides Side { get; }
+        double Price { get; }
     }
 
     public enum OrderTypes { Market, Limit, Stop, Position }
@@ -20,11 +22,14 @@ namespace TickTrader.Algo.Api
 
     public interface OrderList : IEnumerable<Order>
     {
-        Order this[long id] { get; }
+        Order this[string id] { get; }
 
         event Action<OrderOpenedEventArgs> Opened;
+        event Action<OrderCanceledEventArgs> Canceled;
         event Action<OrderClosedEventArgs> Closed;
         event Action<OrderModifiedEventArgs> Modified;
+        event Action<OrderFilledEventArgs> Filled;
+        event Action<OrderExpiredEventArgs> Expired;
     }
 
     public interface OrderOpenedEventArgs
@@ -37,7 +42,23 @@ namespace TickTrader.Algo.Api
         Order Order { get; }
     }
 
+    public interface OrderExpiredEventArgs
+    {
+        Order Order { get; }
+    }
+
+    public interface OrderCanceledEventArgs
+    {
+        Order Order { get; }
+    }
+
     public interface OrderModifiedEventArgs
+    {
+        Order OldOrder { get; }
+        Order NewOrder { get; }
+    }
+
+    public interface OrderFilledEventArgs
     {
         Order OldOrder { get; }
         Order NewOrder { get; }

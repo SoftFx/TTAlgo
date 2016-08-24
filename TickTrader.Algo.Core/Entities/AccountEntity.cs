@@ -18,6 +18,45 @@ namespace TickTrader.Algo.Core
         public double Balance { get; set; }
 
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
-        PositionList AccountDataProvider.Positions { get { throw new NotImplementedException(); } }
+
+        public double BalanceCurrency
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public double Equity
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public AccountTypes Type
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public NetPositionList NetPositions
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public AssetList Assets
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

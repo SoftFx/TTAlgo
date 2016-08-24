@@ -136,7 +136,7 @@ namespace TickTrader.BotTerminal
 
             snapshot = e.Information;
             //algoSymbolCache.Clear();
-            algoSymbolCache = snapshot.Select(FdkAdapter.Convert).ToList();
+            algoSymbolCache = snapshot.Select(FdkToAlgo.Convert).ToList();
             stateControl.ModifyConditions(() => isSymbolsArrived = true);
         }
 

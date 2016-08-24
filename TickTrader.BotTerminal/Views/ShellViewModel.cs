@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Timers;
 using System.Windows.Threading;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -50,7 +51,7 @@ namespace TickTrader.BotTerminal
             NetPositionList = new NetPositionListViewModel(trade.Account);
             Assets = new AssetsViewModel(trade.Account);
             OrderList = new OrderListViewModel(trade.Account);
-            Charts = new ChartCollectionViewModel(feed, catalog, this, botJournal);
+            Charts = new ChartCollectionViewModel(feed, trade, catalog, this, botJournal);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(botJournal);
@@ -224,6 +225,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenMarkerOrder(string symbol, decimal volume, OrderSides side)
         {
+
         }
 
         #endregion
