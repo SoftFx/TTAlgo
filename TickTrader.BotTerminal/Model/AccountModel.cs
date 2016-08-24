@@ -127,8 +127,6 @@ namespace TickTrader.BotTerminal
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
                 assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
-
-            stateControl.PushEvent(Events.DoneInit);
         }
 
         public async void Deinit()
@@ -298,7 +296,7 @@ namespace TickTrader.BotTerminal
             return Orders.Select(pair => pair.Value.ToAlgoOrder()).ToList();
         }
 
-        void IAccountInfoProvider.SyncInvoke(Action action)
+        void IAccountInfoProvider.SyncInvoke(System.Action action)
         {
             Caliburn.Micro.Execute.OnUIThread(action);
         }
