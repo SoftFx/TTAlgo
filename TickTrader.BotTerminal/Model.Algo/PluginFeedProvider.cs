@@ -12,7 +12,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginFeedProvider : NoTimeoutByRefObject, IPluginFeedProvider
+    internal class PluginFeedProvider : NoTimeoutByRefObject, IPluginFeedProvider, IPluginMetadata
     {
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
         private SymbolCollectionModel symbols;
@@ -27,7 +27,17 @@ namespace TickTrader.BotTerminal
             this.history = history;
 
             rxBuffer = new BufferBlock<FeedUpdate>();
-            txBlock = new ActionBlock<FeedUpdate[]>(uList => FeedUpdated(uList));
+            txBlock = new ActionBlock<FeedUpdate[]>(uList =>
+                {
+                    try
+                    {
+                        FeedUpdated(uList);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.Write(ex.ToString());
+                    }
+                });
 
             rxBuffer.BatchLinkTo(txBlock, 30);
         }

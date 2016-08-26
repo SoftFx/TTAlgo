@@ -333,12 +333,12 @@ namespace TickTrader.Algo.Core
                 throw new NotImplementedException();
             }
 
-            public QuoteL2Series GetLevel2(string symbolCode)
+            public QuoteSeries GetLevel2(string symbolCode)
             {
                 throw new NotImplementedException();
             }
 
-            public QuoteL2Series GetLevel2(string symbolCode, DateTime from, DateTime to)
+            public QuoteSeries GetLevel2(string symbolCode, DateTime from, DateTime to)
             {
                 throw new NotImplementedException();
             }

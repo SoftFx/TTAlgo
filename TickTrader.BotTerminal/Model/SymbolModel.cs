@@ -10,6 +10,7 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolModel
     {
+        private object lockObj = new object();
         private SymbolCollectionModel container;
         private List<IRateUpdatesListener> listeners = new List<IRateUpdatesListener>();
 
@@ -23,8 +24,8 @@ namespace TickTrader.BotTerminal
 
         public string Name { get { return Descriptor.Name; } }
         public SymbolInfo Descriptor { get; private set; }
-        public SubscriptionInfo CurrentSubscription { get; set; }
-        public SubscriptionInfo RequestedSubscription { get; private set; }
+        public int Depth { get; private set; }
+        public int RequestedDepth { get; private set; }
         public Quote LastQuote { get; private set; }
         public OrderAmountModel Amounts { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
@@ -63,34 +64,41 @@ namespace TickTrader.BotTerminal
                 && (amount / step) % 1 == 0;
         }
 
+        public void Reset()
+        {
+            Depth = RequestedDepth;
+        }
+
         private void UpdateRequestedSubscription()
         {
-            if (listeners.Count > 0)
-                RequestedSubscription = new SubscriptionInfo(false, 1);
+            if (listeners.Count == 0)
+                RequestedDepth = 1;
             else
-                RequestedSubscription = new SubscriptionInfo(true, listeners.Max(l => l.Depth));
+                RequestedDepth = GetMaxDepth();
+
+            if (RequestedDepth != Depth)
+            {
+                container.EnqueueSubscriptionRequest(RequestedDepth, Name);
+                Depth = RequestedDepth;
+            }
+        }
+
+        private int GetMaxDepth()
+        {
+            int max = 0;
+            foreach (var l in listeners)
+            {
+                if (l.Depth == 0)
+                    return 0;
+                if (l.Depth > max)
+                    max = l.Depth;
+            }
+            return max;
         }
 
         private void listener_DepthChanged()
         {
             UpdateRequestedSubscription();
-        }
-    }
-
-    public struct SubscriptionInfo
-    {
-        public SubscriptionInfo(bool subscribed, int depth) : this()
-        {
-            this.Subscribed = subscribed;
-            this.Depth = depth;
-        }
-
-        public bool Subscribed { get; private set; }
-        public int Depth { get; private set; }
-
-        public static bool IsEquals(SubscriptionInfo s1, SubscriptionInfo s2)
-        {
-            return s1.Subscribed == s2.Subscribed && s1.Depth == s2.Depth;
         }
     }
 

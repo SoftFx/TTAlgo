@@ -94,9 +94,11 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel2(setup, this);
         }
 
-        protected override FeedStrategy GetFeedStrategy()
+        protected override void InitPluign(PluginExecutor plugin)
         {
-            return new BarStrategy(CreateProvider());
+            var feed = CreateProvider();
+            plugin.InitBarStartegy(feed);
+            plugin.Metadata = feed;
         }
 
         protected override void ApplyUpdate(Quote update)

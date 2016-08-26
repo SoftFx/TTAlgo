@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Api
         BarSeries GetBars(string symbolCode, TimeFrames timeFrame, DateTime from, DateTime to);
         QuoteSeries GetQuotes(string symbolCode);
         QuoteSeries GetQuotes(string symbolCode, DateTime from, DateTime to);
-        QuoteL2Series GetLevel2(string symbolCode);
-        QuoteL2Series GetLevel2(string symbolCode, DateTime from, DateTime to);
+        QuoteSeries GetLevel2(string symbolCode);
+        QuoteSeries GetLevel2(string symbolCode, DateTime from, DateTime to);
     }
 
     public interface BarSeries : DataSeries<Bar>
@@ -46,10 +46,7 @@ namespace TickTrader.Algo.Api
         DataSeries Bid { get; }
     }
 
-    public interface QuoteL2Series : DataSeries<QuoteL2>
+    public interface QuoteL2Series : QuoteSeries
     {
-        TimeSeries Time { get; }
-        DataSeries Ask { get; }
-        DataSeries Bid { get; }
     }
 }

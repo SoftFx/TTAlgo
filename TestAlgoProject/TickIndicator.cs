@@ -11,7 +11,7 @@ namespace TestAlgoProject
     public class TickIndicator : Indicator
     {
         [Input]
-        public DataSeries<QuoteL2> QuoteInput { get; set; }
+        public QuoteL2Series QuoteInput { get; set; }
 
         //[Input]
         //public QuoteL2Series QuoteInputL2 { get; set; }

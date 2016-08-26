@@ -74,6 +74,11 @@ namespace TickTrader.Algo.CoreUsageSample
             return null;
         }
 
+        public void SyncInvoke(Action action)
+        {
+            throw new NotImplementedException();
+        }
+
         private class SymbolDataModel
         {
             private List<BarEntity> data = new List<BarEntity>();

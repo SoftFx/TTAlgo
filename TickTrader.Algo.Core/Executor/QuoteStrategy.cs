@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
-    public class QuoteStrategy : FeedStrategy
+    internal class QuoteStrategy : FeedStrategy
     {
         private QuoteSeriesFixture mainSeries;
 

@@ -73,12 +73,12 @@ namespace TickTrader.Algo.Core
     public interface ITradeApi
     {
         void OpenOrder(OpenOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
-        Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request);
-        Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request);
-        Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request);
+        void CancelOrder(CancelOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
+        void ModifyOrder(ModifyOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
+        void CloseOrder(CloseOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
     }
 
-    internal class NullTradeApi : Api.ITradeCommands
+    internal class NullTradeApi : ITradeCommands
     {
         private static Task<OrderCmdResult> rejectResult
             = Task.FromResult<OrderCmdResult>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, OrderEntity.Null));
@@ -104,6 +104,11 @@ namespace TickTrader.Algo.Core
         }
 
         public Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request)
+        {
+            return rejectResult;
+        }
+
+        public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolume)
         {
             return rejectResult;
         }

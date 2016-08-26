@@ -9,10 +9,12 @@ namespace TickTrader.Algo.Api
     internal interface ITradeCommands
     {
         Task<OrderCmdResult> OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null);
-        Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request);
-        Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request);
-        Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request);
-        Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request);
+        Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolume);
+
+        //Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request);
+        //Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request);
+        //Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request);
+        //Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request);
     }
 
     [Serializable]
@@ -45,8 +47,8 @@ namespace TickTrader.Algo.Api
     [Serializable]
     public class CloseOrdeRequest
     {
-        public int OrderId { get; set; }
-        public OrderVolume Volume { get; set; }
+        public string OrderId { get; set; }
+        public double? Volume { get; set; }
     }
 
     [Serializable]

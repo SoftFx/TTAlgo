@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
 
         private object _sync = new object();
         private IPluginLogger logger;
+        private IPluginMetadata metadata;
         private FeedStrategy fStrategy;
         private InvokeStartegy iStrategy;
         private AccDataFixture accFixture;
@@ -91,23 +92,6 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public FeedStrategy FeedStrategy
-        {
-            get { return fStrategy; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    if (value == null)
-                        throw new InvalidOperationException("FeedStrategy cannot be null!");
-
-                    fStrategy = value;
-                }
-            }
-        }
-
         public string MainSymbolCode
         {
             get { return mainSymbol; }
@@ -177,6 +161,23 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public IPluginMetadata Metadata
+        {
+            get { return metadata; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    if (value == null)
+                        throw new InvalidOperationException("Metadata cannot be null!");
+
+                    metadata = value;
+                }
+            }
+        }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
 
         #endregion
@@ -199,6 +200,7 @@ namespace TickTrader.Algo.Core
                 //subscriptionManager = new SubscriptionManager(feed);
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
+                InitMetadata();
                 //builder.Symbols.Init(feed.GetSymbolMetadata());
                 builder.TradeApi = tradeApi;
                 if (logger != null)
@@ -268,6 +270,24 @@ namespace TickTrader.Algo.Core
         }
 
         #region Setup Methods
+
+        public void InitBarStartegy(IPluginFeedProvider feed)
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                fStrategy = new BarStrategy(feed);
+            }
+        }
+
+        public void InitQuoteStartegy(IPluginFeedProvider feed)
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                fStrategy = new QuoteStrategy(feed);
+            }
+        }
 
         public void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector)
         {
@@ -347,7 +367,17 @@ namespace TickTrader.Algo.Core
             {
                 var outputBuffer = builder.GetOutput(fixtureEntry.Key);
                 if (outputBuffer != null)
-                    fixtureEntry.Value.BindTo(outputBuffer, FeedStrategy.TimeRef);
+                    fixtureEntry.Value.BindTo(outputBuffer, fStrategy.TimeRef);
+            }
+        }
+
+        private void InitMetadata()
+        {
+            if (metadata != null)
+            {
+                var symbolInfoList = metadata.GetSymbolMetadata();
+                foreach (var smb in symbolInfoList)
+                    builder.Symbols.Add(smb);
             }
         }
 

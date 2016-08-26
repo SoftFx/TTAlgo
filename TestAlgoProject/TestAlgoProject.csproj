@@ -45,8 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccDisplayBot.cs" />
-    <Compile Include="OpenOrderBot.cs" />
+    <Compile Include="Bots\AccDisplayBot.cs" />
+    <Compile Include="Bots\CloseAllPositiosBot.cs" />
+    <Compile Include="Bots\OpenmarketOrderBot.cs" />
+    <Compile Include="Bots\VWAPBot.cs" />
     <Compile Include="TestBot.cs" />
     <Compile Include="FxCalendarIndicator.cs" />
     <Compile Include="FxCalendar\FxNews.cs" />
@@ -71,6 +73,9 @@
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Indicators\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

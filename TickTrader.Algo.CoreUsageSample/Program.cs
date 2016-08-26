@@ -15,18 +15,18 @@ namespace TickTrader.Algo.CoreUsageSample
     {
         static void Main(string[] args)
         {
-            var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
+            //var data = TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt");
 
-            IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
+            //IndicatorBuilder builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(typeof(Alligator)));
 
-            builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
-            builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", RequestedAmount = new OrderVolume(), RemainingAmount = new OrderVolume() });
+            //builder.Symbols.Add(new SymbolEntity("EURUSD") { Digits = 5, LotSize = 100000, MaxAmount = 10000000, MinAmount = 10000 });
+            //builder.Account.Orders.Add(new OrderEntity(10) { Symbol = "EURUSD", RequestedAmount = new OrderVolume(), RemainingAmount = new OrderVolume() });
 
-            builder.MainSymbol = "EURUSD";
-            builder.GetBarBuffer("EURUSD").Append(data);
-            builder.MapBarInput("Input", "EURUSD");
+            //builder.MainSymbol = "EURUSD";
+            //builder.GetBarBuffer("EURUSD").Append(data);
+            //builder.MapBarInput("Input", "EURUSD");
 
-            builder.BuildNext(data.Count);
+            //builder.BuildNext(data.Count);
 
             ////builder.Account.Orders.Add(new OrderEntity(11) { Symbol = "EURUSD", TotalAmount = 6000, RemainingAmount = 6000 });
 
@@ -57,8 +57,8 @@ namespace TickTrader.Algo.CoreUsageSample
             var descriptor = AlgoPluginDescriptor.Get(typeof(Alligator));
             var executor = new PluginExecutor(descriptor.Id);
             executor.MainSymbolCode = "EURUSD";
-            executor.FeedProvider = dataModel;
-            executor.FeedStrategy = new BarStrategy();
+            //executor.FeedProvider = dataModel;
+            executor.FeedStrategy = new BarStrategy(dataModel);
             executor.InvokeStrategy = new DataflowInvokeStartegy();
             executor.TimeFrame = dataModel.TimeFrame;
             executor.TimePeriodStart = DateTime.Parse("2015.11.02 00:25:00");

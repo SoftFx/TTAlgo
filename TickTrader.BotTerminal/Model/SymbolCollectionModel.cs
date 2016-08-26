@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>
     {
         private Logger logger;
-        public enum States { Offline, WatingData, Canceled, Online, UpdatingSubscription, Stopping }
+        public enum States { Offline, WatingData, Canceled, Online, Stopping }
         public enum Events { Disconnected, OnConnecting, SybmolsArrived, ConnectCanceled, DoneUpdating, DoneStopping }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
@@ -26,10 +26,9 @@ namespace TickTrader.BotTerminal
         private ConnectionModel connection;
         private IEnumerable<SymbolInfo> snapshot;
         private bool isSymbolsArrived;
-        private bool pendingSubscribe;
-        private TriggeredActivity updateSubscriptionActivity;
         private ActionBlock<Quote> rateUpdater;
         private List<Algo.Core.SymbolEntity> algoSymbolCache = new List<Algo.Core.SymbolEntity>();
+        private ActionBlock<Task> requestQueue;
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
@@ -38,21 +37,14 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.connection = connection;
 
-            updateSubscriptionActivity = new TriggeredActivity(UpdateSubscription);
-
             stateControl.AddTransition(States.Offline, Events.OnConnecting, States.WatingData);
-            stateControl.AddTransition(States.WatingData, () => isSymbolsArrived, States.UpdatingSubscription);
+            stateControl.AddTransition(States.WatingData, () => isSymbolsArrived, States.Online);
             stateControl.AddTransition(States.WatingData, Events.ConnectCanceled, States.Canceled);
-            stateControl.AddTransition(States.UpdatingSubscription, Events.Disconnected, States.Stopping);
-            stateControl.AddTransition(States.UpdatingSubscription, Events.DoneUpdating, States.Online);
-            stateControl.AddTransition(States.Online, () => pendingSubscribe, States.UpdatingSubscription);
             stateControl.AddTransition(States.Online, Events.Disconnected, States.Stopping);
             stateControl.AddTransition(States.Stopping, Events.DoneStopping, States.Offline);
 
-            stateControl.OnEnter(States.UpdatingSubscription, () => updateSubscriptionActivity.Trigger());
+            stateControl.OnEnter(States.Online, Init);
             stateControl.OnEnter(States.Stopping, Stop);
-            stateControl.OnEnter(States.Offline, ResetSubscription);
-            stateControl.OnExit(States.WatingData, () => Merge(snapshot));
 
             connection.Connecting += () =>
             {
@@ -85,6 +77,7 @@ namespace TickTrader.BotTerminal
 
         public States State { get { return stateControl.Current; } }
         public IEnumerable<Algo.Core.SymbolEntity> AlgoSymbolCache { get { return algoSymbolCache; } }
+        public bool IsOnline { get { return State == States.Online; } }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
 
@@ -95,38 +88,64 @@ namespace TickTrader.BotTerminal
                 symbol.CastNewTick(tick);
         }
 
-        private async Task UpdateSubscription(CancellationToken cToken)
+        private void Init()
         {
-            try
-            {
-                List<string> toSubscribe = new List<string>();
-                int depth = -1;
-                pendingSubscribe = false;
-                foreach (SymbolModel symbol in symbols.Values)
-                {
-                    if (!SubscriptionInfo.IsEquals(symbol.RequestedSubscription, symbol.CurrentSubscription))
-                    {
-                        if (depth == -1 || depth == symbol.RequestedSubscription.Depth)
-                        {
-                            toSubscribe.Add(symbol.Name);
-                            symbol.CurrentSubscription = symbol.RequestedSubscription;
-                        }
-                        else
-                            pendingSubscribe = true;
-                    }
-                }
-
-                //await Task.Delay(1000);
-                logger.Debug("SubscribeToQuotes(" + toSubscribe.Count + ")");
-                await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
-            }
-            catch (Exception ex) { logger.Error("UpdateSubscription ERROR: " + ex.Message); }
-            stateControl.PushEvent(Events.DoneUpdating);
+            Merge(snapshot);
+            Reset();
+            requestQueue = new ActionBlock<Task>(t => t.RunSynchronously());
+            EnqueuBatchSubscription();
         }
+
+        private void Reset()
+        {
+            foreach (var smb in symbols.Values)
+                smb.Reset();
+        }
+
+        private void EnqueuBatchSubscription()
+        {
+            foreach (var group in symbols.Values.GroupBy(s => s.Depth))
+            {
+                var depth = group.Key;
+                var symbols = group.Select(s => s.Name).ToArray();
+                EnqueueSubscriptionRequest(depth, symbols);
+            }
+        }
+
+        //private async Task UpdateSubscription(CancellationToken cToken)
+        //{
+        //    try
+        //    {
+        //        List<string> toSubscribe = new List<string>();
+        //        int depth = -1;
+        //        pendingSubscribe = false;
+        //        foreach (SymbolModel symbol in symbols.Values)
+        //        {
+        //            if (!SubscriptionInfo.IsEquals(symbol.RequestedSubscription, symbol.CurrentSubscription))
+        //            {
+        //                if (depth == -1 || depth == symbol.RequestedSubscription.Depth)
+        //                {
+        //                    toSubscribe.Add(symbol.Name);
+        //                    symbol.CurrentSubscription = symbol.RequestedSubscription;
+        //                }
+        //                else
+        //                    pendingSubscribe = true;
+        //            }
+        //        }
+
+        //        //await Task.Delay(1000);
+        //        logger.Debug("SubscribeToQuotes(" + toSubscribe.Count + ")");
+        //        if (toSubscribe.Count > 0)
+        //            await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
+        //    }
+        //    catch (Exception ex) { logger.Error("UpdateSubscription ERROR: " + ex.Message); }
+        //    stateControl.PushEvent(Events.DoneUpdating);
+        //}
 
         private async void Stop()
         {
-            await updateSubscriptionActivity.Stop();
+            requestQueue.Complete();
+            await requestQueue.Completion;
             stateControl.PushEvent(Events.DoneStopping);
         }
 
@@ -174,17 +193,17 @@ namespace TickTrader.BotTerminal
                 symbols.Remove(model.Name);
         }
 
-        private void ResetSubscription()
-        {
-            foreach (var smb in symbols.Values) smb.CurrentSubscription = new SubscriptionInfo();
-        }
-
         public void Dispose()
         {
         }
 
-        //        public event Action<SymbolModel> Added = delegate { };
-        //      public event Action<SymbolModel> Removed = delegate { };
+        public Task EnqueueSubscriptionRequest(int depth, params string[] symbols)
+        {
+            var subscribeTask = new Task(() => connection.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
+            requestQueue.Post(subscribeTask);
+            return subscribeTask;
+            
+        }
 
         public SymbolModel GetOrDefault(string key)
         {

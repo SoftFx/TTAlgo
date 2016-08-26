@@ -89,7 +89,7 @@ namespace TickTrader.BotTerminal
             stateControl.EventFired += e => logger.Debug("EVENT " + e);
         }
 
-        public event Action AccountTypeChanged = delegate { };
+        public event System.Action AccountTypeChanged = delegate { };
         public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }
         public ReadonlyDictionaryObserver<string, OrderModel> Orders { get; private set; }
         public ReadonlyDictionaryObserver<string, AssetModel> Assets { get; private set; }
@@ -329,7 +329,7 @@ namespace TickTrader.BotTerminal
 
         AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
 
-        void IAccountInfoProvider.SyncInvoke(Action action)
+        void IAccountInfoProvider.SyncInvoke(System.Action action)
         {
             Caliburn.Micro.Execute.OnUIThread(action);
         }
@@ -339,14 +339,12 @@ namespace TickTrader.BotTerminal
             return Orders.Select(pair => pair.Value.ToAlgoOrder()).ToList();
         }
 
-        void IAccountInfoProvider.SyncInvoke(Action action)
         IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
         {
             throw new NotImplementedException();
         }
 
         IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
-        void IAccountInfoProvider.SyncInvoke(System.Action action)
         {
             return Assets.Select(pair => pair.Value.ToAlgoAsset()).ToList();
         }

@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core.Metadata
             }
             else if (propertyType == typeof(QuoteL2Series))
             {
-                DatdaSeriesBaseType = typeof(Api.QuoteL2);
+                DatdaSeriesBaseType = typeof(Api.Quote);
                 IsShortDefinition = true;
             }
             else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(DataSeries<>))
@@ -68,8 +68,6 @@ namespace TickTrader.Algo.Core.Metadata
                 return (DataSeriesProxy<T>)(object)new BarSeriesProxy();
             else if (typeof(T) == typeof(Api.Quote) && IsShortDefinition)
                 return (DataSeriesProxy<T>)(object)new QuoteSeriesProxy();
-            else if (typeof(T) == typeof(Api.QuoteL2) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new QuoteL2SeriesProxy();
             else
                 return new DataSeriesProxy<T>();
         }

@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
             orderQueue.LinkTo(orderSender);
         }
 
-        public Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request)
+        public void CancelOrder(CancelOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
         {
             Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
             {
@@ -48,20 +48,26 @@ namespace TickTrader.BotTerminal
                 }
             });
 
+            waitHandler.Attach(task);
             orderQueue.Post(task);
-            return task;
         }
 
-        public Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request)
+        public void CloseOrder(CloseOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
         {
-            Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
+            var task = new Task<OrderCmdResult>(() =>
             {
                 try
                 {
-                    var result = conenction.TradeProxy.Server.ClosePositionPartially(
-                         request.OrderId.ToString(),
-                         Convert(request.Volume));
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                    if (request.Volume == null)
+                    {
+                        var result = conenction.TradeProxy.Server.ClosePosition(request.OrderId);
+                        return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                    }
+                    else
+                    {
+                        var result = conenction.TradeProxy.Server.ClosePositionPartially(request.OrderId, request.Volume.Value);
+                        return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                    }
                 }
                 catch (Exception)
                 {
@@ -69,11 +75,11 @@ namespace TickTrader.BotTerminal
                 }
             });
 
+            waitHandler.Attach(task);
             orderQueue.Post(task);
-            return task;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request)
+        public void ModifyOrder(ModifyOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
         {
             Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
             {
@@ -99,8 +105,8 @@ namespace TickTrader.BotTerminal
                 }
             });
 
+            waitHandler.Attach(task);
             orderQueue.Post(task);
-            return task;
         }
 
         public void OpenOrder(OpenOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
