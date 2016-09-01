@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Core
     {
         void UpdateStatus(string status);
         void OnPrint(string entry, params object[] parameters);
+        void OnPrintError(string entry, params object[] parameters);
         void OnError(Exception ex);
         void OnInitialized();
         void OnStart();
@@ -19,7 +20,7 @@ namespace TickTrader.Algo.Core
         void OnExit();
     }
 
-    internal class PluginLoggerAdapter : Api.IPluginMonitor
+    internal class PluginLoggerAdapter : IPluginMonitor
     {
         private IPluginLogger logger;
 
@@ -36,6 +37,11 @@ namespace TickTrader.Algo.Core
         public void Print(string entry, object[] parameters)
         {
             logger.OnPrint(entry, parameters);
+        }
+
+        public void PrintError(string entry, object[] parameters)
+        {
+            logger.OnPrintError(entry, parameters);
         }
     }
 
@@ -54,6 +60,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnPrint(string entry, params object[] parameters)
+        {
+        }
+
+        public void OnPrintError(string entry, params object[] parameters)
         {
         }
 

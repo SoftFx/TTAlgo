@@ -52,6 +52,7 @@
     <Compile Include="Asset.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
+    <Compile Include="File.cs" />
     <Compile Include="ITradeCommands.cs" />
     <Compile Include="Marker.cs" />
     <Compile Include="NetPosition.cs" />

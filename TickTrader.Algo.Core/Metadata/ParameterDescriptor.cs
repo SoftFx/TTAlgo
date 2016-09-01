@@ -30,6 +30,8 @@ namespace TickTrader.Algo.Core.Metadata
 
             this.DataType = propertyInfo.PropertyType.FullName;
 
+            this.IsRequired = attribute.IsRequired;
+
             if (propertyInfo.PropertyType.IsEnum)
             {
                 IsEnum = true;
@@ -40,10 +42,23 @@ namespace TickTrader.Algo.Core.Metadata
             }
             else
                 EnumValues = emptyEnumValuesList;
+
+            InspectFileFilterAttr(propertyInfo);
+        }
+
+        private void InspectFileFilterAttr(PropertyInfo propertyInfo)
+        {
+            var filterEntries = propertyInfo.GetCustomAttributes<FileFilterAttribute>(false);
+            if (filterEntries != null)
+                FileFilters = filterEntries.Select(e => new FileFilterEntry(e.Name, e.Mask)).ToList();
+            else
+                FileFilters = new List<FileFilterEntry>();
         }
 
         public bool IsEnum { get; private set; }
+        public bool IsRequired { get; private set; }
         public List<EnumValueDescriptor> EnumValues { get; private set; }
+        public List<FileFilterEntry> FileFilters { get; private set; }
         public string DataType { get; private set; }
         public object DefaultValue { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
@@ -68,5 +83,18 @@ namespace TickTrader.Algo.Core.Metadata
                 .Select(o => new EnumValueDescriptor(o.ToString(), o))
                 .ToList();
         }
+    }
+
+    [Serializable]
+    public class FileFilterEntry
+    {
+        public FileFilterEntry(string name, string mask)
+        {
+            this.FileTypeName = name;
+            this.FileMask = mask;
+        }
+
+        public string FileTypeName { get; }
+        public string FileMask { get; }
     }
 }

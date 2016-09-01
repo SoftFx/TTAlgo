@@ -35,6 +35,7 @@ namespace TickTrader.Algo.Api
     {
         public object DefaultValue { get; set; }
         public string DisplayName { get; set; }
+        public bool IsRequired { get; set; }
     }
 
     [Serializable]
@@ -64,5 +65,19 @@ namespace TickTrader.Algo.Api
         }
 
         public string Text { get; set; }
+    }
+
+    [Serializable]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+    public class FileFilterAttribute : Attribute
+    {
+        public FileFilterAttribute(string name, string mask)
+        {
+            this.Name = name;
+            this.Mask = mask;
+        }
+
+        public string Name { get; set; }
+        public string Mask { get; set; }
     }
 }

@@ -39,6 +39,11 @@ namespace TickTrader.Algo.Api
             GetLogger().Print(msg, parameters);
         }
 
+        protected void PrintError(string msg, params object[] parameters)
+        {
+            GetLogger().PrintError(msg, parameters);
+        }
+
         protected void UpdateStatus(string status)
         {
             GetLogger().UpdateStatus(status);

@@ -190,6 +190,7 @@
     <Compile Include="Behaviors\DragDrop\TransparentContainer.xaml.cs">
       <DependentUpon>TransparentContainer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\StockChartDeltaCalculator.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
@@ -237,6 +238,7 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\ValidationGroup.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
