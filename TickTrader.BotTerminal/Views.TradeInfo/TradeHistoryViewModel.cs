@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Windows;
 using System.Windows.Data;
 using TickTrader.BotTerminal.Lib;
 
