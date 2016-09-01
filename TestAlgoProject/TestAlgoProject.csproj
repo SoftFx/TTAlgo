@@ -35,6 +35,10 @@
       <HintPath>packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Nett, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Nett.0.5.0\lib\Net40\Nett.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -64,6 +68,7 @@
     <Compile Include="TickIndicator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Bots\config.tml" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
