@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
-    public abstract class FeedStrategy : IFeedFixtureContext
+    internal abstract class FeedStrategy : NoTimeoutByRefObject,  IFeedFixtureContext
     {
         private SubscriptionManager dispenser;
         private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
@@ -19,8 +19,6 @@ namespace TickTrader.Algo.Core
 
             this.dispenser = new SubscriptionManager(feed);
             this.Feed = feed;
-
-            feed.FeedUpdated += Feed_FeedUpdated;
         }
 
         internal IFixtureContext ExecContext { get; private set; }
@@ -47,12 +45,18 @@ namespace TickTrader.Algo.Core
         internal void Init(IFixtureContext executor)
         {
             ExecContext = executor;
-            OnInit();
         }
 
         internal virtual void Start()
         {
+            Feed.SyncInvoke(InitStrategy);
+        }
+
+        private void InitStrategy()
+        {
+            OnInit();
             ExecContext.PluginInvoke(b => BatchBuild(BufferSize));
+            Feed.FeedUpdated += Feed_FeedUpdated;
         }
 
         private void BatchBuild(int x)

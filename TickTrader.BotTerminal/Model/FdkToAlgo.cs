@@ -22,9 +22,9 @@ namespace TickTrader.BotTerminal
             return fdkBarCollection.Select(Convert);
         }
 
-        public static IEnumerable<QuoteEntity> Convert(IEnumerable<Quote> fdkBarCollection)
+        public static IEnumerable<QuoteEntity> Convert(IEnumerable<Quote> fdkQuoteArray)
         {
-            return fdkBarCollection.Select(Convert);
+            return fdkQuoteArray.Select(Convert);
         }
 
         public static BarEntity Convert(Bar fdkBar)
@@ -43,12 +43,50 @@ namespace TickTrader.BotTerminal
 
         public static QuoteEntity Convert(Quote fdkTick)
         {
-            return new QuoteEntity()
+            var entity = new QuoteEntity();
+
+            if (fdkTick.HasAsk)
             {
-                SymbolCode = fdkTick.Symbol,
-                Ask = fdkTick.Ask,
-                Bid = fdkTick.Bid,
-                Time = fdkTick.CreatingTime
+                entity.Ask = fdkTick.Ask;
+                entity.AskList = ConvertLevel2(fdkTick.Asks);
+            }
+            else
+            {
+                entity.Ask = double.NaN;
+                entity.AskList = QuoteEntity.EmptyBook;
+            }
+
+            if (fdkTick.HasBid)
+            {
+                entity.Bid = fdkTick.Bid;
+                entity.BidList = ConvertLevel2(fdkTick.Bids);
+            }
+            else
+            {
+                entity.Bid = double.NaN;
+                entity.BidList = QuoteEntity.EmptyBook;
+            }
+
+            entity.SymbolCode = fdkTick.Symbol;
+            entity.Time = fdkTick.CreatingTime;
+
+            return entity;
+        }
+
+        private static IReadOnlyList<Api.BookEntry> ConvertLevel2(QuoteEntry[] book)
+        {
+            if (book == null || book.Length == 0)
+                return QuoteEntity.EmptyBook;
+            else
+                return book.Select(Convert).ToList().AsReadOnly();
+        }
+
+        public static BookEntryEntity Convert(QuoteEntry fdkEntry)
+        {
+            return new BookEntryEntity()
+            {
+                 Price = fdkEntry.Price,
+                 Volume = fdkEntry.Volume
             };
         }
 

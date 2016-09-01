@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
 {
     public enum BufferUpdateResults { Extended, LastItemUpdated, NotUpdated }
 
-    public interface IPluginMetadataProvider
+    public interface IPluginMetadata
     {
         IEnumerable<SymbolEntity> GetSymbolMetadata();
     }

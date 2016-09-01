@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
         {
             var executor = PluginRef.CreateExecutor();
             //executor.FeedProvider = host.GetProvider();
-            executor.FeedStrategy = host.GetFeedStrategy();
+            host.InitializePluginFeed(executor);
             executor.InvokeStrategy = new DataflowInvokeStartegy();
             executor.AccInfoProvider = host.GetAccInfoProvider();
             return executor;

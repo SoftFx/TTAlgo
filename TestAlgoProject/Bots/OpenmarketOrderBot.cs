@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TestAlgoProject
 {
-    [TradeBot(DisplayName = "Just Open Order")]
+    [TradeBot(DisplayName = "Open Market")]
     public class OpenOrderBot : TradeBot
     {
         [Parameter(DefaultValue = 1000D)]

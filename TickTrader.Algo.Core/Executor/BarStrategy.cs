@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public sealed class BarStrategy : FeedStrategy
+    internal sealed class BarStrategy : FeedStrategy
     {
         private BarSeriesFixture mainSeries;
-        private Dictionary<string, BarSeriesFixture> fixtures = new Dictionary<string, BarSeriesFixture>();
+        private Dictionary<string, BarSeriesFixture> fixtures;
 
         public BarStrategy(IPluginFeedProvider feed)
             : base(feed)
@@ -22,9 +22,7 @@ namespace TickTrader.Algo.Core
 
         internal override void OnInit()
         {
-            if (mainSeries != null)
-                fixtures.Clear();
-
+            fixtures = new Dictionary<string, BarSeriesFixture>();
             mainSeries = new BarSeriesFixture(ExecContext.MainSymbolCode, this);
             fixtures.Add(ExecContext.MainSymbolCode, mainSeries);
         }

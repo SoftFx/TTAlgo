@@ -22,9 +22,9 @@ namespace TickTrader.Algo.GuiModel
 
         public override void Apply(IPluginSetupTarget target)
         {
-            if (useL2)
-                target.MapInput<QuoteEntityL2, Api.QuoteL2>(Descriptor.Id, SymbolCode, b => b);
-            else
+            //if (useL2)
+            //    target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
+            //else
                 target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
         }
 

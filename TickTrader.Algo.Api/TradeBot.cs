@@ -78,6 +78,16 @@ namespace TickTrader.Algo.Api
             return GetTradeApi().OpenMarketOrder(symbolCode, side, volume, stopLoss, takeProfit, comment);
         }
 
+        public Task<OrderCmdResult> CloseOrderAsync(string orderId, double? volume = null)
+        {
+            return GetTradeApi().CloseOrder(orderId, volume);
+        }
+
+        public OrderCmdResult CloseOrder(string orderId, double? volume = null)
+        {
+            return CloseOrderAsync(orderId, volume).Result;
+        }
+
         #endregion
     }
 }

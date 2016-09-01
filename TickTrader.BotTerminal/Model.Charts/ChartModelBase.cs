@@ -221,6 +221,7 @@ namespace TickTrader.BotTerminal
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel2 CreateIndicator(PluginSetup setup);
         protected abstract void ApplyUpdate(Quote update);
+        protected abstract void InitPluign(PluginExecutor plugin);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -318,7 +319,7 @@ namespace TickTrader.BotTerminal
             return CreateSetup(catalogItem);
         }
 
-        protected virtual IPluginFeedProvider CreateProvider()
+        protected virtual PluginFeedProvider CreateProvider()
         {
             return new PluginFeedProvider(Feed.Symbols, Feed.History);
         }
@@ -340,13 +341,6 @@ namespace TickTrader.BotTerminal
             return CreateProvider();
         }
 
-        protected abstract FeedStrategy GetFeedStrategy();
-
-        FeedStrategy IAlgoPluginHost.GetFeedStrategy()
-        {
-            return GetFeedStrategy();
-        }
-
         ITradeApi IAlgoPluginHost.GetTradeApi()
         {
             return Trade.TradeApi;
@@ -355,6 +349,11 @@ namespace TickTrader.BotTerminal
         IAccountInfoProvider IAlgoPluginHost.GetAccInfoProvider()
         {
             return Trade.Account;
+        }
+
+        void IAlgoPluginHost.InitializePluginFeed(PluginExecutor plugin)
+        {
+            InitPluign(plugin);
         }
 
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }

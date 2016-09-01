@@ -21,21 +21,6 @@ namespace TickTrader.Algo.Core
             this.account = account;
         }
 
-        public Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request)
-        {
-            return api.CancelOrder(request);
-        }
-
-        public Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request)
-        {
-            return api.CloseOrder(request);
-        }
-
-        public Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request)
-        {
-            return api.ModifyOrder(request);
-        }
-
         public Task<OrderCmdResult> OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = default(double?), double? takeProfit = default(double?), string comment = null)
         {
             OrderCmdResultCodes code;
@@ -58,10 +43,31 @@ namespace TickTrader.Algo.Core
             return OpenOrder(request);
         }
 
-        public Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request)
+        private Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request)
         {
             var waitHandler = new TaskProxy<OrderCmdResult>();
             api.OpenOrder(request, waitHandler);
+            return waitHandler.LocalTask;
+        }
+
+        private Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request)
+        {
+            var waitHandler = new TaskProxy<OrderCmdResult>();
+            api.CloseOrder(request, waitHandler);
+            return waitHandler.LocalTask;
+        }
+
+        private Task<OrderCmdResult> CloseOrder(CancelOrdeRequest request)
+        {
+            var waitHandler = new TaskProxy<OrderCmdResult>();
+            api.CancelOrder(request, waitHandler);
+            return waitHandler.LocalTask;
+        }
+
+        private Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request)
+        {
+            var waitHandler = new TaskProxy<OrderCmdResult>();
+            api.ModifyOrder(request, waitHandler);
             return waitHandler.LocalTask;
         }
 
@@ -91,6 +97,17 @@ namespace TickTrader.Algo.Core
                     return smbMetatda.LotSize * volume.Value;
                 }
             }
+        }
+
+        public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolume)
+        {
+            var request = new CloseOrdeRequest()
+            {
+                OrderId = orderId,
+                Volume = closeVolume
+            };
+
+            return CloseOrder(request);
         }
     }
 }
