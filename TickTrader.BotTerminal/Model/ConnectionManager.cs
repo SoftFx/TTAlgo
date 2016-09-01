@@ -79,10 +79,7 @@ namespace TickTrader.BotTerminal
             internalStateControl.StateChanged += (from, to) =>
             {
                 if (IsConnected(from, to))
-                {
-                    AppSounds.Clinking.Play();
                     journal.Info("{0}: login on {1}", Creds.Login, Creds.Server.Name);
-                }
                 else if (IsUsualDisconnect(from, to))
                     journal.Info("{0}: logout from {1}", GetLast().Login, GetLast().Server.Name);
                 else if (IsFailedConnection(from, to))

@@ -16,6 +16,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Api;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -26,9 +27,9 @@ namespace TickTrader.BotTerminal
         public enum Events { Connected, ConnectionCanceled, CacheInitialized, Diconnected, DoneDeinit }
 
         private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
-        private ObservableDictionary<string, PositionModel> positions = new ObservableDictionary<string, PositionModel>();
-        private ObservableDictionary<string, AssetModel> assets = new ObservableDictionary<string, AssetModel>();
-        private ObservableDictionary<string, OrderModel> orders = new ObservableDictionary<string, OrderModel>();
+        private DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
+        private DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
+        private DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private ConnectionModel connection;
         private ActionBlock<System.Action> uiUpdater;
         private AccountType? accType;
@@ -39,9 +40,6 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
 
             this.connection = connection;
-            this.Positions = positions.AsReadonly();
-            this.Orders = orders.AsReadonly();
-            this.Assets = assets.AsReadonly();
 
             //this.initActivity = new RepeatableActivity(Init);
             TradeHistory = new TradeHistoryProvider(connection);
@@ -90,9 +88,9 @@ namespace TickTrader.BotTerminal
         }
 
         public event System.Action AccountTypeChanged = delegate { };
-        public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }
-        public ReadonlyDictionaryObserver<string, OrderModel> Orders { get; private set; }
-        public ReadonlyDictionaryObserver<string, AssetModel> Assets { get; private set; }
+        public IDynamicDictionarySource<string, PositionModel> Positions { get { return positions; } }
+        public IDynamicDictionarySource<string, OrderModel> Orders { get { return orders; } }
+        public IDynamicDictionarySource<string, AssetModel> Assets { get { return assets; } }
 
         public TradeHistoryProvider TradeHistory { get; private set; }
         public AccountType? Type
@@ -236,7 +234,7 @@ namespace TickTrader.BotTerminal
                     {
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Filled);
-                        else if (accType != AccountType.Gross)
+                        else if (Type != AccountType.Gross)
                             OnOrderRemoved(report, OrderExecAction.Filled);
                     }
                     else if (report.OrderType == TradeRecordType.Position)
@@ -264,8 +262,9 @@ namespace TickTrader.BotTerminal
 
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
         {
+            var orderCopy = orders[report.OrderId];
             orders.Remove(report.OrderId);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, orderCopy);
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
@@ -336,7 +335,7 @@ namespace TickTrader.BotTerminal
 
         List<OrderEntity> IAccountInfoProvider.GetOrders()
         {
-            return Orders.Select(pair => pair.Value.ToAlgoOrder()).ToList();
+            return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
         }
 
         IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
@@ -346,7 +345,7 @@ namespace TickTrader.BotTerminal
 
         IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
         {
-            return Assets.Select(pair => pair.Value.ToAlgoAsset()).ToList();
+            return Assets.Snapshot.Select(pair => pair.Value.ToAlgoAsset()).ToList();
         }
 
         event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated

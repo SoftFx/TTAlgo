@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -19,18 +20,23 @@ namespace TickTrader.BotTerminal
 
             Positions = new ObservableSrotedList<string, PositionModel>();
 
-            foreach (var position in model.Positions.Values)
-                Positions.Add(position.Symbol, position);
+            foreach (var pair in model.Positions.Snapshot)
+                Positions.Add(pair.Key, pair.Value);
 
-            model.Positions.Added += PositionAdded;
-            model.Positions.Removed += PositionRemoved;
-            model.Positions.Cleared += PositionsCleared;
-
+            model.Positions.Updated += PositionsUpdated;
             model.State.StateChanged += StateChanged;
             model.AccountTypeChanged += AccountTypeChanged;
         }
 
-       
+        private void PositionsUpdated(DictionaryUpdateArgs<string, PositionModel> args)
+        {
+            switch(args.Action)
+            {
+                case DLinqAction.Insert: Positions.Add(args.Key, args.NewItem); break;
+                case DLinqAction.Remove: Positions.Remove(args.Key); break;
+            }
+        }
+
         public ObservableSrotedList<string, PositionModel> Positions { get; private set; }
         public bool IsBusy { get; private set; }
         public bool IsEnabled { get; private set; }
@@ -52,28 +58,13 @@ namespace TickTrader.BotTerminal
             UpdateState();
         }
 
-        private void PositionAdded(KeyValuePair<string, PositionModel> pair)
-        {
-            Positions.Add(pair.Key, pair.Value);
-        }
-
-        private void PositionRemoved(string id)
-        {
-            Positions.Remove(id);
-        }
-
-        private void PositionsCleared()
-        {
-            Positions.Clear();
-        }
-
         public void Close()
         {
-            model.Positions.Added -= PositionAdded;
-            model.Positions.Removed -= PositionRemoved;
-            model.Positions.Cleared -= PositionsCleared;
+            model.Positions.Updated -= PositionsUpdated;
             model.State.StateChanged -= StateChanged;
             model.AccountTypeChanged -= AccountTypeChanged;
+
+            Positions.Clear();
         }
     }
 

@@ -8,26 +8,39 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800">
     <UserControl.Resources>
-        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}" x:Shared="False">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding DownloadObserver.IsNotCompleted}" Value="True">
+                <DataTrigger Binding="{Binding DownloadObserver.IsNotCompleted, Mode=OneWay}" Value="True">
                     <Setter Property="l:OverlayControl.Content">
                         <Setter.Value>
                             <l:BusyIndicator/>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding DownloadObserver.IsFaulted}" Value="True">
+                <DataTrigger Binding="{Binding DownloadObserver.IsFaulted, Mode=OneWay}" Value="True">
                     <Setter Property="l:OverlayControl.Content">
                         <Setter.Value>
                             <TextBlock Text="{l:Resx DownloadingTradeHistoryError}" 
                                        Foreground="{DynamicResource Shell_WarningForeground}" 
                                        VerticalAlignment="Center" 
-                                       HorizontalAlignment="Center"
-                                       Visibility="{Binding DownloadObserver.IsFaulted, Converter={StaticResource BoolToVis}}"/>
+                                       HorizontalAlignment="Center"/>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding TradesList.IsEmpty, Mode=OneWay}" Value="True"></Condition>
+                        <Condition Binding="{Binding DownloadObserver.IsSuccessfullyCompleted}" Value="True"></Condition>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="l:OverlayControl.Content">
+                        <Setter.Value>
+                            <TextBlock Text="No data" 
+                                       Foreground="{DynamicResource Shell_PrimaryForeground}" 
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center"/>
+                        </Setter.Value>
+                    </Setter>
+                </MultiDataTrigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
@@ -64,7 +77,6 @@
         <DataGrid Grid.Row="1" ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Visibility="{Binding IsGrossAccount, Converter={StaticResource BoolToVis}}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Order" Width="*" Binding="{Binding Id}" />
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
                 <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OrderCreated, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Type" Width="*">
                     <DataGridTextColumn.Binding>
@@ -75,12 +87,16 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding TradeTransactionReportType}" />
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Initial Volume" Width="*" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Open Price" Width="*" Binding="{Binding ActualOpenPrice}" />
                 <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding StopLoss}" />
                 <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding TakeProfit}" Visibility="{Binding IsGrossAccount, Converter={StaticResource BoolToVis}}"/>
                 <DataGridTextColumn Header="Close Time" Width="Auto" Binding="{Binding PositionClosed, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Trade Volume" Width="*" Binding="{Binding PositionLastQuantity}" />
                 <DataGridTextColumn Header="Close Price" Width="*" Binding="{Binding PositionClosePrice}" />
+                <DataGridTextColumn Header="Remaining Volume" Width="*" Binding="{Binding PositionLeavesQuantity}" />
+                <DataGridTextColumn Header="Gross P/L" Width="*" Binding="{Binding GrossPL}" />
                 <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Commission}" />
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Swap}" />
                 <DataGridTextColumn Header="Net P/L" Width="*" Binding="{Binding TransactionAmount}" />
@@ -91,7 +107,6 @@
         <DataGrid Grid.Row="1" ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Visibility="{Binding IsNetAccount, Converter={StaticResource BoolToVis}}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Order" Width="*" Binding="{Binding Id}" />
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
                 <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OrderCreated, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Type" Width="*">
                     <DataGridTextColumn.Binding>
@@ -102,11 +117,14 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding TradeTransactionReportType}" />
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Initial Volume" Width="*" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Open Price" Width="*" Binding="{Binding ActualOpenPrice}" />
                 <DataGridTextColumn Header="Close Time" Width="Auto" Binding="{Binding PositionClosed, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Trade Volume" Width="*" Binding="{Binding PositionLastQuantity}" />
                 <DataGridTextColumn Header="Close Price" Width="*" Binding="{Binding PositionClosePrice}" />
-                <DataGridTextColumn Header="Remaining Volume" Width="*" Binding="{Binding LeavesQuantity}" />
+                <DataGridTextColumn Header="Remaining Volume" Width="*" Binding="{Binding PositionLeavesQuantity}" />
+                <DataGridTextColumn Header="Gross P/L" Width="*" Binding="{Binding GrossPL}" />
                 <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Commission}" />
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Swap}" />
                 <DataGridTextColumn Header="Net P/L" Width="*" Binding="{Binding TransactionAmount}" />
@@ -117,7 +135,6 @@
         <DataGrid Grid.Row="1" ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Visibility="{Binding IsCachAccount, Converter={StaticResource BoolToVis}}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Order" Width="*" Binding="{Binding Id}" />
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
                 <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OrderCreated, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Type" Width="*">
                     <DataGridTextColumn.Binding>
@@ -128,12 +145,15 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding TradeTransactionReportType}" />
-                <DataGridTextColumn Header="Volume Requested" Width="*" Binding="{x:Null}" />
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Volume Requested" Width="*" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Price Requested" Width="*" Binding="{Binding ActualOpenPrice}" />
                 <DataGridTextColumn Header="Fill Time" Width="Auto" Binding="{Binding TransactionTime, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" />
                 <DataGridTextColumn Header="Volume Filled" Width="*" Binding="{Binding OrderLastFillAmount}" />
                 <DataGridTextColumn Header="Price Filled" Width="*" Binding="{Binding OrderFillPrice}" />
                 <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Commission}" />
+                <DataGridTextColumn Header="Asset I" Width="*" Binding="{x:Null}" />
+                <DataGridTextColumn Header="Asset II" Width="*" Binding="{x:Null}" />
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
             </DataGrid.Columns>
         </DataGrid>

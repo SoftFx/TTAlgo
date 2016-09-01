@@ -17,7 +17,7 @@
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource Dialog_PageControlPanelBackground}" CornerRadius="6 0 0 6" Width="70" Height="70">
+                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource SoftFxLogo_BackgroundBrush}" CornerRadius="6 0 0 6" Width="70" Height="70">
                     <Image  Source="{StaticResource PagedControlImage}"  Stretch="Fill"/>
                 </Border>
 
@@ -42,7 +42,7 @@
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource Dialog_PageControlPanelBackground}" CornerRadius="6 0 0 6" Width="70" Height="70">
+                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource SoftFxLogo_BackgroundBrush}" CornerRadius="6 0 0 6" Width="70" Height="70">
                     <Image  Source="{StaticResource PagedControlImage}"  Stretch="Fill"/>
                 </Border>
 
@@ -67,7 +67,7 @@
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource Dialog_PageControlPanelBackground}" CornerRadius="6 0 0 6" Width="70" Height="70">
+                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource SoftFxLogo_BackgroundBrush}" CornerRadius="6 0 0 6" Width="70" Height="70">
                     <Image  Source="{StaticResource PagedControlImage}"  Stretch="Fill"/>
                 </Border>
 
@@ -91,7 +91,7 @@
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource Dialog_PageControlPanelBackground}" CornerRadius="6 0 0 6" Width="70" Height="70">
+                <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource SoftFxLogo_BackgroundBrush}" CornerRadius="6 0 0 6" Width="70" Height="70">
                     <Image  Source="{StaticResource PagedControlImage}"  Stretch="Fill"/>
                 </Border>
 

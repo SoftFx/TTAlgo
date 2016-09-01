@@ -249,6 +249,7 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
@@ -417,6 +418,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
+    <Compile Include="Views\NotificationsViewModel.cs" />
     <Compile Include="Views\ShellView.xaml.cs">
       <DependentUpon>ShellView.xaml</DependentUpon>
     </Compile>

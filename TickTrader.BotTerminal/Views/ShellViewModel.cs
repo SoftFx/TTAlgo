@@ -28,12 +28,14 @@ namespace TickTrader.BotTerminal
         private BotJournal botJournal;
         private Logger logger;
         private bool isClosed;
+        private INotificationCenter notificationCenter;
 
         public ShellViewModel()
         {
             DisplayName = "Bot Trader";
 
             logger = NLog.LogManager.GetCurrentClassLogger();
+            notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
             botJournal = new BotJournal(1000);
             storage = new PersistModel();
@@ -56,7 +58,8 @@ namespace TickTrader.BotTerminal
             Trade = new TradeInfoViewModel(orderList, positionList, assets);
            
             TradeHistory = new TradeHistoryViewModel(trade.Account);
-            
+
+            Notifications = new NotificationsViewModel(notificationCenter, trade.Account, cManager.Connection);
 
             Charts = new ChartCollectionViewModel(feed, trade, catalog, this, botJournal);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
@@ -150,6 +153,8 @@ namespace TickTrader.BotTerminal
         public OrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public ToolWindowsManager ToolWndManager { get { return this; } }
+
+        public NotificationsViewModel Notifications { get; private set; }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {

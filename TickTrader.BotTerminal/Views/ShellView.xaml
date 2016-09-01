@@ -73,6 +73,8 @@
                         </DataTemplate>
                     </l:MenuItemSelector.ItemTemplate>
                 </l:MenuItemSelector>
+                <MenuItem Header="Sounds" IsChecked="{Binding Notifications.SoundsEnabled}" IsCheckable="True"></MenuItem>
+                <MenuItem Header="Notifications" IsChecked="{Binding Notifications.NotificationsEnabled}" IsCheckable="True"></MenuItem>
             </MenuItem>
         </Menu>
 

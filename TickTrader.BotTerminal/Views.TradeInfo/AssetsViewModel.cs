@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -19,15 +20,21 @@ namespace TickTrader.BotTerminal
 
             Assets = new ObservableSrotedList<string, AssetModel>();
 
-            foreach (var asset in model.Assets.Values)
-                Assets.Add(asset.Currency, asset);
+            foreach (var pair in model.Assets.Snapshot)
+                Assets.Add(pair.Key, pair.Value);
 
-            model.Assets.Added += AssetAdded;
-            model.Assets.Removed += AssetRemoved;
-            model.Assets.Cleared += AssetsCleared;
-
+            model.Assets.Updated += AssetUpdated;
             model.State.StateChanged += StateChanged;
             model.AccountTypeChanged += AccountTypeChanged;
+        }
+
+        private void AssetUpdated(DictionaryUpdateArgs<string, AssetModel> args)
+        {
+            switch(args.Action)
+            {
+                case DLinqAction.Insert: Assets.Add(args.Key, args.NewItem); break;
+                case DLinqAction.Remove: Assets.Remove(args.Key); break;
+            }
         }
 
         private void AccountTypeChanged()
@@ -51,28 +58,13 @@ namespace TickTrader.BotTerminal
             UpdateState();
         }
 
-        private void AssetAdded(KeyValuePair<string, AssetModel> pair)
-        {
-            Assets.Add(pair.Key, pair.Value);
-        }
-
-        private void AssetRemoved(string id)
-        {
-            Assets.Remove(id);
-        }
-
-        private void AssetsCleared()
-        {
-            Assets.Clear();
-        }
-
         public void Close()
         {
-            model.Assets.Added -= AssetAdded;
-            model.Assets.Removed -= AssetRemoved;
-            model.Assets.Cleared -= AssetsCleared;
+            model.Assets.Updated -= AssetUpdated;
             model.State.StateChanged -= StateChanged;
             model.AccountTypeChanged -= AccountTypeChanged;
+
+            Assets.Clear();
         }
     }
 

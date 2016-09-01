@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,49 +21,52 @@ namespace TickTrader.BotTerminal
 
             Orders = new ObservableSrotedList<string, OrderModel>();
 
-            foreach (var orderModel in model.Orders.Values)
-                Orders.Add(orderModel.Id, orderModel);
+            foreach (var pair in model.Orders.Snapshot)
+                Orders.Add(pair.Key, pair.Value);
 
-            model.Orders.Added += Orders_Added;
-            model.Orders.Removed += Orders_Removed;
-            model.Orders.Cleared += Orders_Cleared;
+            model.Orders.Updated += OrderUpdated;
         }
 
-        void Orders_Added(KeyValuePair<string, OrderModel> pair)
+        private void OrderUpdated(DictionaryUpdateArgs<string, OrderModel> args)
         {
-            if (Filter(pair.Value))
+            switch(args.Action)
             {
-                Orders.Add(pair.Key, pair.Value);
-                pair.Value.PropertyChanged += Order_PropertyChanged;
+                case DLinqAction.Insert:
+                    AddOrder(args.NewItem);
+                    break;
+                case DLinqAction.Remove:
+                    RemoveOrder(args.Key);
+                    break;
             }
         }
 
-        void Order_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        void OrderPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             OrderModel order = (OrderModel)sender;
 
             if (!Filter(order))
-                Orders_Removed(order.Id);
+                RemoveOrder(order.Id);
             else
             {
                 if (Orders.GetOrDefault(order.Id) == null)
-                    Orders_Added(new KeyValuePair<string, OrderModel>(order.Id, order));
+                    AddOrder(order);
             }
         }
 
-        void Orders_Removed(string id)
+        private void AddOrder(OrderModel order)
+        {
+            if (Filter(order))
+            {
+                Orders.Add(order.Id, order);
+                order.PropertyChanged += OrderPropertyChanged;
+            }
+        }
+
+        void RemoveOrder(string id)
         {
             OrderModel removedOrder;
             if (Orders.Remove(id, out removedOrder))
-                removedOrder.PropertyChanged -= Order_PropertyChanged;
-        }
-
-        void Orders_Cleared()
-        {
-            foreach(OrderModel order in Orders)
-                order.PropertyChanged -= Order_PropertyChanged;
-
-            Orders.Clear();
+                removedOrder.PropertyChanged -= OrderPropertyChanged;
         }
 
         public ObservableSrotedList<string, OrderModel> Orders { get; private set; }
@@ -74,9 +78,12 @@ namespace TickTrader.BotTerminal
 
         public void Close()
         {
-            model.Orders.Added -= Orders_Added;
-            model.Orders.Removed -= Orders_Removed;
-            model.Orders.Cleared -= Orders_Cleared;
+            model.Orders.Updated -= OrderUpdated;
+
+            foreach (OrderModel order in Orders)
+                order.PropertyChanged -= OrderPropertyChanged;
+
+            Orders.Clear();
         }
     }
 }

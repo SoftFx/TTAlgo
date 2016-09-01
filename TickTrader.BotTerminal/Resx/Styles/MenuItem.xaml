@@ -93,7 +93,7 @@
                     <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut" />
                     <ColumnDefinition Width="13"/>
                 </Grid.ColumnDefinitions>
-                <ContentPresenter Name="Icon" Margin="6,0,6,0" VerticalAlignment="Center" ContentSource="Icon" />
+                <ContentPresenter Name="Icon" Margin="6,0,6,0" VerticalAlignment="Center" ContentSource="Icon" Width="13" Height="13" />
                 <Border Name="Check"
                         Width="13" Height="13"
                         Visibility="Collapsed"
@@ -157,7 +157,8 @@
                 <ContentPresenter Name="Icon"
                                   Margin="6,0,6,0"
                                   VerticalAlignment="Center"
-                                  ContentSource="Icon"/>
+                                  ContentSource="Icon"
+                                  Width="13" Height="13"/>
                 <ContentPresenter Name="HeaderHost"
                                   Grid.Column="1"
                                   ContentSource="Header"

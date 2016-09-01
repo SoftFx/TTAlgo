@@ -24,7 +24,11 @@ namespace TickTrader.BotTerminal
                 await task;
             }
             catch { }
+            NotifyOfPropertiesChange(task);
+        }
 
+        private void NotifyOfPropertiesChange(Task task)
+        {
             NotifyOfPropertyChange(nameof(Status));
             NotifyOfPropertyChange(nameof(IsCompleted));
             NotifyOfPropertyChange(nameof(IsNotCompleted));
@@ -46,6 +50,7 @@ namespace TickTrader.BotTerminal
 
             }
         }
+
         public Task<TResult> Task { get; private set; }
         public TResult Result { get { return (Task.Status == TaskStatus.RanToCompletion) ? Task.Result : default(TResult); } }
         public TaskStatus Status { get { return Task.Status; } }
