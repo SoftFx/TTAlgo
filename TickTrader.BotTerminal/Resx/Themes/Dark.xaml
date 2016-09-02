@@ -38,6 +38,7 @@
     <SolidColorBrush x:Key="Dialog_Background" Color="#666666"/>
     <SolidColorBrush x:Key="Dialog_PageControlPanelBackground" Color="#003A5C"/>
     <SolidColorBrush x:Key="Dialog_ControlBackground" Color="#292929"/>
+    <SolidColorBrush x:Key="Dialog_ErrorBackground" Color="#9F4747"/>
     <SolidColorBrush x:Key="Dialog_ControlDisabledBackground" Color="#434343"/>
     <SolidColorBrush x:Key="Dialog_ControlFocusBorder" Color="#292929"/>
     <SolidColorBrush x:Key="Dialog_PageHeaderBackground" Color="#292929"/>

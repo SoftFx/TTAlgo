@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TickTrader.BotHost")]
+[assembly: AssemblyTitle("TickTrader.BotHost.Contract")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TickTrader.BotHost")]
+[assembly: AssemblyProduct("TickTrader.BotHost.Contract")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8ddc0a79-4157-4f21-a1d5-1793b5b540ac")]
+[assembly: Guid("457434b9-6075-424b-b5dc-26d7e2cbbb1f")]
 
 // Version information for an assembly consists of the following four values:
 //

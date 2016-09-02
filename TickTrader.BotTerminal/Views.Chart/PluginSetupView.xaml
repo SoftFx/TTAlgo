@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:am="clr-namespace:TickTrader.Algo.GuiModel;assembly=TickTrader.Algo.GuiModel"
         Title="IndicatorSetupView"
         Height="300" Width="340"
@@ -17,6 +18,28 @@
             <Setter Property="Margin" Value="10,7" />
             <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}" />
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}" />
+        </Style>
+
+        <Style x:Key="ParamUtilityButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
+            <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+            <Setter Property="Margin" Value="3,0,0,0"/>
+        </Style>
+
+        <Style x:Key="ControlImitationBorder" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}"/>
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Height" Value="22"/>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource Dialog_ControlFocusBorder}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="Label">
@@ -162,7 +185,7 @@
                                      HorizontalAlignment="Stretch" Margin="0"/>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding HasError}" Value="True">
-                    <Setter TargetName="input" Property="Background" Value="Red" />
+                    <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -174,19 +197,19 @@
                                      HorizontalAlignment="Stretch" Margin="0"/>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding HasError}" Value="True">
-                    <Setter TargetName="input" Property="Background" Value="Red" />
+                    <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 
-        <!--   StringParam template  -->
+        <!--  StringParam template  -->
 
         <DataTemplate DataType="{x:Type am:StringParamSetup}">
             <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch"/>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding HasError}" Value="True">
-                    <Setter TargetName="input" Property="Background" Value="Red" />
+                    <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -205,7 +228,33 @@
             </ComboBox>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding HasError}" Value="True">
-                    <Setter TargetName="input" Property="Background" Value="Red" />
+                    <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!--  File Param template  -->
+
+        <DataTemplate DataType="{x:Type am:FileParamSetup}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Name="input" Style="{StaticResource ControlImitationBorder}">
+                    <TextBlock Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Shell_PrimaryForeground}"
+                               Padding="4,0,4,0" TextTrimming="CharacterEllipsis"/>
+                </Border>
+                <l:FlatButton Grid.Column="1" Content="..." Style="{StaticResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
+                    <i:Interaction.Behaviors>
+                        <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" Filter="{Binding Filter}"/>
+                    </i:Interaction.Behaviors>
+                </l:FlatButton>
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -296,6 +345,7 @@
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <UniformGrid Columns="2" VerticalAlignment="Top" />
+                            <!--<StackPanel Orientation="Vertical" />-->
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>

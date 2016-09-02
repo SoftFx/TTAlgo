@@ -29,5 +29,6 @@ namespace TickTrader.Algo.GuiModel
         NotInteger,
         NotDouble,
         NumberOverflow,
+        RequiredButNotSet
     }
 }

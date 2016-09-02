@@ -112,6 +112,18 @@ namespace TickTrader.BotTerminal
                 journal.Info(botName, msg);
             }
 
+            public void OnPrintError(string entry, object[] parameters)
+            {
+                string msg = entry;
+                try
+                {
+                    msg = string.Format(entry, parameters);
+                }
+                catch { }
+
+                journal.Error(botName, msg);
+            }
+
             public void OnError(Exception ex)
             {
                 journal.Error(botName, "Exception: " + ex.Message);

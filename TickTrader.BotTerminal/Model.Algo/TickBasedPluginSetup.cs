@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
                 input.Configure(builder);
 
             foreach (var parameter in Parameters)
-                builder.SetParameter(parameter.Id, parameter.ValueObj);
+                builder.SetParameter(parameter.Id, parameter.GetApplyValue());
 
             return builder;
         }

@@ -32,6 +32,7 @@ namespace TickTrader.Algo.GuiModel
                 case "System.Int32": return new IntParamSetup();
                 case "System.Double": return new DoubleParamSetup();
                 case "System.String": return new StringParamSetup();
+                case "TickTrader.Algo.Api.File": return new FileParamSetup();
                 default: return new AlgoInvalidParameter(new GuiModelMsg(MsgCodes.UnsupportedPropertyType));
             }
         }
@@ -40,16 +41,17 @@ namespace TickTrader.Algo.GuiModel
         {
             base.SetMetadata(descriptor);
             this.DataType = descriptor.DataType;
+            this.IsRequired = descriptor.IsRequired;
         }
 
         public string DataType { get; private set; }
+        public bool IsRequired { get; private set; }
         public virtual bool IsReadonly { get { return false; } }
-        public abstract object ValueObj { get; set; }
-        public abstract string ValueStr { get; set; }
+        public abstract object GetApplyValue();
 
         public override void Apply(IPluginSetupTarget target)
         {
-            target.SetParameter(Id, ValueObj);
+            target.SetParameter(Id, GetApplyValue());
         }
     }
 
@@ -78,8 +80,6 @@ namespace TickTrader.Algo.GuiModel
             set
             {
                 selected = value;
-                ValueObj = value.Value;
-                ValueStr = value.Name;
 
                 NotifyPropertyChanged("SelectedValue");
                 NotifyPropertyChanged("Value");
@@ -88,15 +88,15 @@ namespace TickTrader.Algo.GuiModel
 
         public List<EnumValueDescriptor> EnumValues { get; private set; }   
         public EnumValueDescriptor DefaultValue { get; private set; }
-        public override object ValueObj { get; set; }
-        public override string ValueStr { get; set; }
+        //public override object ValueObj { get; set; }
+        //public string ValueStr { get; set; }
 
         public override void CopyFrom(PropertySetupBase srcProperty)
         {
             var typedSrcProperty = srcProperty as EnumParamSetup;
             if (typedSrcProperty != null)
             {
-                var upToDateValue = ((ParameterDescriptor)Descriptor).EnumValues.First(e => e.Value == typedSrcProperty.ValueObj);
+                var upToDateValue = ((ParameterDescriptor)Descriptor).EnumValues.First(e => e.Value == typedSrcProperty.selected);
                 if (upToDateValue != null)
                     SelectedValue = upToDateValue;
             }
@@ -113,9 +113,80 @@ namespace TickTrader.Algo.GuiModel
                 DefaultValue = descriptor.EnumValues.FirstOrDefault();
         }
 
+        public override object GetApplyValue()
+        {
+            return selected;
+        }
+
         public override void Reset()
         {
             SelectedValue = DefaultValue;
+        }
+    }
+
+    public class FileParamSetup : ParameterSetup
+    {
+        private string path;
+
+        public string FilePath
+        {
+            get { return path; }
+            set
+            {
+                this.path = value;
+                NotifyPropertyChanged(nameof(FilePath));
+                string fileName = "";
+                try
+                {
+                    if (FilePath != null)
+                        fileName = System.IO.Path.GetFileName(FilePath);
+                }
+                catch (ArgumentException) { }
+                FileName = fileName;
+                NotifyPropertyChanged(nameof(FileName));
+
+                if (IsRequired && string.IsNullOrWhiteSpace(FileName))
+                    Error = new GuiModelMsg(MsgCodes.RequiredButNotSet);
+                else
+                    Error = null;
+            }
+        }
+
+        public string FileName { get; private set; }
+        public string Filter { get; private set; }
+
+        public override void CopyFrom(PropertySetupBase srcProperty)
+        {
+            var typedSrcProperty = srcProperty as FileParamSetup;
+            if (typedSrcProperty != null)
+                this.FilePath = typedSrcProperty.FilePath;
+        }
+
+        internal override void SetMetadata(ParameterDescriptor descriptor)
+        {
+            base.SetMetadata(descriptor);
+
+            var filterEntries = descriptor.FileFilters
+               .Where(s => !string.IsNullOrWhiteSpace(s.FileMask) && !string.IsNullOrWhiteSpace(s.FileTypeName));
+
+            StringBuilder filterStrBuilder = new StringBuilder();
+            foreach (var entry in filterEntries)
+            {
+                if (filterStrBuilder.Length > 0)
+                    filterStrBuilder.Append('|');
+                filterStrBuilder.Append(entry.FileTypeName).Append('|').Append(entry.FileMask);
+            }
+            Filter = filterStrBuilder.ToString();
+        }
+
+        public override void Reset()
+        {
+            FilePath = "";
+        }
+
+        public override object GetApplyValue()
+        {
+            return new FileEntity(FilePath);
         }
     }
 
@@ -158,9 +229,12 @@ namespace TickTrader.Algo.GuiModel
 
         public T DefaultValue { get; set; }
 
-        public override object ValueObj { get { return Value; } set { Value = (T)value; } }
+        public override object GetApplyValue()
+        {
+            return Value;
+        }
 
-        public override string ValueStr
+        public string ValueStr
         {
             get { return strValue; }
             set
@@ -195,10 +269,9 @@ namespace TickTrader.Algo.GuiModel
         }
 
         public override bool IsReadonly { get { return true; } }
-        public override object ValueObj { get; set; }
-        public override string ValueStr { get; set; }
 
         public override void CopyFrom(PropertySetupBase srcProperty) { }
         public override void Reset() { }
+        public override object GetApplyValue() { return null; }
     }
 }
