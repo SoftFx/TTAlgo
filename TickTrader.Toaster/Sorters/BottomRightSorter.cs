@@ -7,8 +7,10 @@ namespace TickTrader.Toaster.Sorters
     {
         public Point GetPosition(IToastSize toast, int postion)
         {
-            var workingArea = Screen.PrimaryScreen.WorkingArea;
-            return new Point(workingArea.Width - toast.ActualWidth, workingArea.Height - toast.ActualHeight * (postion+1));
+            var mainWindow = System.Windows.Application.Current.MainWindow;
+            var appWindowBounds = new System.Drawing.Rectangle((int)mainWindow.Left, (int)mainWindow.Top, (int)mainWindow.ActualWidth, (int)mainWindow.ActualHeight);
+            var screenBounds = Screen.FromRectangle(appWindowBounds).Bounds;
+            return new Point(screenBounds.Left + screenBounds.Width - toast.ActualWidth, screenBounds.Top + screenBounds.Height - toast.ActualHeight * (postion+1));
         }
     }
 }
