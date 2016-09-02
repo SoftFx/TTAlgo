@@ -10,63 +10,23 @@ using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    class NetPositionListViewModel : PropertyChangedBase
+    class NetPositionListViewModel : AccountBasedViewModel
     {
         private AccountModel model;
 
         public NetPositionListViewModel(AccountModel model)
+            : base(model)
         {
             this.model = model;
 
-            Positions = new ObservableSrotedList<string, PositionModel>();
-
-            foreach (var pair in model.Positions.Snapshot)
-                Positions.Add(pair.Key, pair.Value);
-
-            model.Positions.Updated += PositionsUpdated;
-            model.State.StateChanged += StateChanged;
-            model.AccountTypeChanged += AccountTypeChanged;
+            Positions = model.Positions.OrderBy((id, p) => id).AsObservable();
         }
 
-        private void PositionsUpdated(DictionaryUpdateArgs<string, PositionModel> args)
+        protected override bool SupportsAccount(AccountType accType)
         {
-            switch(args.Action)
-            {
-                case DLinqAction.Insert: Positions.Add(args.Key, args.NewItem); break;
-                case DLinqAction.Remove: Positions.Remove(args.Key); break;
-            }
+            return accType == AccountType.Net;
         }
 
-        public ObservableSrotedList<string, PositionModel> Positions { get; private set; }
-        public bool IsBusy { get; private set; }
-        public bool IsEnabled { get; private set; }
-
-        private void UpdateState()
-        {
-            IsBusy = model.State.Current == AccountModel.States.WaitingData;
-            NotifyOfPropertyChange(nameof(IsBusy));
-        }
-
-        private void AccountTypeChanged()
-        {
-            IsEnabled = model.Type == AccountType.Net;
-            NotifyOfPropertyChange(nameof(IsEnabled));
-        }
-
-        private void StateChanged(AccountModel.States arg1, AccountModel.States arg2)
-        {
-            UpdateState();
-        }
-
-        public void Close()
-        {
-            model.Positions.Updated -= PositionsUpdated;
-            model.State.StateChanged -= StateChanged;
-            model.AccountTypeChanged -= AccountTypeChanged;
-
-            Positions.Clear();
-        }
+        public IObservableListSource<PositionModel> Positions { get; private set; }
     }
-
-
 }

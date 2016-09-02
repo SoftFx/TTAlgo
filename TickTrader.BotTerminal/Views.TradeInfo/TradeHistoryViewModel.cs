@@ -42,13 +42,14 @@ namespace TickTrader.BotTerminal
 
             _accountModel = accountModel;
             _accountModel.AccountTypeChanged += AccountTypeChanged;
-            _accountModel.State.StateChanged += AccountStateChanged;
+            //_accountModel.StateChanged += AccountStateChanged;
             _accountModel.TradeHistory.OnTradeReport += TradeTransactionReport;
         }
 
         public bool IsNetAccount { get; private set; }
         public bool IsCachAccount { get; private set; }
         public bool IsGrossAccount { get; private set; }
+
         public TradeDirection TradeDirectionFilter
         {
             get { return _tradeDirectionFilter; }
@@ -62,6 +63,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public TimePeriod Period
         {
             get { return _period; }
@@ -76,6 +78,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public DateTime From
         {
             get { return _from; }
@@ -91,6 +94,7 @@ namespace TickTrader.BotTerminal
                 LoadHistory();
             }
         }
+
         public DateTime To
         {
             get { return _to; }
@@ -106,6 +110,7 @@ namespace TickTrader.BotTerminal
                 LoadHistory();
             }
         }
+
         public ICollectionView TradesList { get; private set; }
 
         public ObservableTask<TradeTransactionModel[]> DownloadObserver
@@ -120,6 +125,7 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(DownloadObserver));
             }
         }
+
         public async void LoadHistory()
         {
             try
@@ -137,10 +143,11 @@ namespace TickTrader.BotTerminal
             }
             catch { }
         }
+
         public void Close()
         {
             _accountModel.AccountTypeChanged -= AccountTypeChanged;
-            _accountModel.State.StateChanged -= AccountStateChanged;
+            //_accountModel.State.StateChanged -= AccountStateChanged;
             _accountModel.TradeHistory.OnTradeReport -= TradeTransactionReport;
         }
 
@@ -149,11 +156,13 @@ namespace TickTrader.BotTerminal
             for (int i = 0; i < trades.Length; i++)
                 AddIfNeed(trades[i]);
         }
+
         private void AddIfNeed(TradeTransactionModel tradeTransaction)
         {
             if (_tradesList.GetOrDefault(tradeTransaction.Id) == null)
                 _tradesList.Add(tradeTransaction.Id, tradeTransaction);
         }
+
         private void UpdateDateTimePeriod()
         {
             switch (Period)
@@ -195,11 +204,13 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(From));
             NotifyOfPropertyChange(nameof(To));
         }
+
         private void RefreshCollection()
         {
             if (this.TradesList != null)
                 TradesList.Refresh();
         }
+
         private bool FilterTradesList(object o)
         {
             if (o != null)
@@ -209,6 +220,7 @@ namespace TickTrader.BotTerminal
             }
             return false;
         }
+
         private TradeDirection Convert(TradeTransactionModel.TradeSide side)
         {
             switch (side)
@@ -224,11 +236,13 @@ namespace TickTrader.BotTerminal
             if (tradeTransaction.TransactionTime.Between(From, To))
                 Execute.OnUIThread(() => AddIfNeed(tradeTransaction));
         }
-        private void AccountStateChanged(AccountModel.States arg1, AccountModel.States arg2)
-        {
-            if (_accountModel.State.Current == AccountModel.States.Online)
-                LoadHistory();
-        }
+
+        //private void AccountStateChanged(AccountModel.States arg1, AccountModel.States arg2)
+        //{
+        //    if (_accountModel.State.Current == AccountModel.States.Online)
+        //        LoadHistory();
+        //}
+
         private void AccountTypeChanged()
         {
             IsCachAccount = _accountModel.Type == AccountType.Cash;

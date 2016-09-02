@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
             Update(asset);
         }
 
-        public void Update(AssetInfo asset)
+        private void Update(AssetInfo asset)
         {
             Balance = asset.Balance;
             TradeAmount = asset.TradeAmount;
@@ -44,6 +44,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double Balance
         {
             get { return balance; }
@@ -56,6 +57,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double TradeAmount
         {
             get { return tradeAmount; }

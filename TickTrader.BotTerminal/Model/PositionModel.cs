@@ -28,7 +28,7 @@ namespace TickTrader.BotTerminal
             Update(position);
         }
 
-        public void Update(Position position)
+        private void Update(Position position)
         {
             if (position.Symbol != Symbol)
                 return;
@@ -57,6 +57,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public string Symbol
         {
             get { return symbol; }
@@ -69,6 +70,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double Amount
         {
             get { return amount; }
@@ -81,6 +83,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double Price
         {
             get { return price; }
@@ -93,6 +96,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public TradeRecordSide Side
         {
             get { return side;  }
@@ -105,6 +109,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double BuyAmount
         {
             get { return buyAmount; }
@@ -117,6 +122,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double? BuyPrice
         {
             get { return buyPrice; }
@@ -129,6 +135,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double SellAmount
         {
             get { return sellAmount; }
@@ -141,6 +148,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double? SellPrice
         {
             get { return sellPrice; }
@@ -153,6 +161,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double AgentCommission
         {
             get { return agentCommission; }
@@ -165,6 +174,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public double SettlementPrice
         {
             get { return settlementPrice; }

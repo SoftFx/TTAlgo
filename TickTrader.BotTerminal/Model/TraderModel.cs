@@ -31,10 +31,11 @@ namespace TickTrader.BotTerminal
         {
             this.Connection = connection;
             this.Symbols = new SymbolCollectionModel(connection);
+            this.History = new FeedHistoryProviderModel(connection);
         }
 
         public ConnectionModel Connection { get; private set; }
         public SymbolCollectionModel Symbols { get; private set; }
-        public FeedHistoryProviderModel History { get { return Connection.FeedCache; } }
+        public FeedHistoryProviderModel History { get; private set; }
     }
 }

@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             Update(report);
         }
         
-        public void Update(TradeRecord record)
+        private void Update(TradeRecord record)
         {
             this.Amount = (decimal)record.InitialVolume;
             this.RemainingAmount = (decimal)record.Volume;
@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
             this.Price = (decimal)record.Price;
         }
 
-        public void Update(ExecutionReport report)
+        private void Update(ExecutionReport report)
         {
             this.Amount = (decimal)report.InitialVolume;
             this.RemainingAmount = (decimal)report.LeavesVolume;

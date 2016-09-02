@@ -178,7 +178,7 @@ namespace Machinarium.State
             return currentDescriptor;
         }
 
-        [System.Diagnostics.DebuggerHidden]
+        //[System.Diagnostics.DebuggerHidden]
         private void CheckConditions()
         {
             StateDescriptor<T> currentDescriptor = FindDescriptor(Current);
@@ -190,7 +190,7 @@ namespace Machinarium.State
             }
         }
 
-        [System.Diagnostics.DebuggerHidden]
+        //[System.Diagnostics.DebuggerHidden]
         private void ChangeState(StateDescriptor<T> currentDescriptor, StateTransition<T> transition)
         {
             T oldState = Current;

@@ -205,7 +205,6 @@ namespace TickTrader.BotTerminal
                 LogState(builder, "ConnectionManager", cManager.State.ToString());
                 LogState(builder, "Connection", cManager.Connection.State.Current.ToString());
                 LogState(builder, "Feed.Symbols", feed.Symbols.State.ToString());
-                LogState(builder, "Trade.Account", trade.Account.State.Current.ToString());
 
                 logger.Debug(builder.ToString());
 

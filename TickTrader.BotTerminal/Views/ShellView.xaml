@@ -6,8 +6,8 @@
         xmlns:cal="http://www.caliburnproject.org"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Title="ShellView"
-        Height="{l:Setting Window.Height, Default=700}"
-        Width="{l:Setting Window.Width, Default=900}"
+        Height="{l:Setting Window.Height, Default=800}"
+        Width="{l:Setting Window.Width, Default=1100}"
         Left="{l:Setting Window.Left}"
         Top="{l:Setting Window.Top}"
         MinWidth="500"
@@ -27,7 +27,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="3*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" MinHeight="150"/>
         </Grid.RowDefinitions>

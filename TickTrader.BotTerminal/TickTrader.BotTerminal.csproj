@@ -360,6 +360,7 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AccountBasedViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeHistoryView.xaml.cs">
       <DependentUpon>TradeHistoryView.xaml</DependentUpon>
     </Compile>

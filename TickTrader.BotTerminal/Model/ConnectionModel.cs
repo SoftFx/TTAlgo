@@ -34,7 +34,6 @@ namespace TickTrader.BotTerminal
         public ConnectionModel()
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            FeedCache = new FeedHistoryProviderModel();
 
             stateControl.AddTransition(States.Offline, Events.Started, States.Connecting);
             //stateControl.AddTransition(States.Offline, () => shouldReconnect, States.Initializing);
@@ -66,18 +65,30 @@ namespace TickTrader.BotTerminal
 
         public DataFeed FeedProxy { get { return feedProxy; } }
         public DataTrade TradeProxy { get { return tradeProxy; } }
-        public FeedHistoryProviderModel FeedCache { get; private set; }
         public ConnectionErrorCodes LastError { get; private set; }
         public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
 
         public IStateProvider<States> State { get { return stateControl; } }
 
+        public bool IsConnecting
+        {
+            get
+            {
+                var state = State.Current;
+                return state == ConnectionModel.States.Connecting
+                    || state == ConnectionModel.States.WaitingLogon
+                    || state == ConnectionModel.States.Initializing;
+            }
+        }
+
         public event Action Connecting = delegate { }; // background thread event
         public event Action Connected = delegate { }; // main thread event
         public event Action Disconnecting = delegate { }; // background thread event
         public event Action Disconnected = delegate { }; // main thread event
+        public event AsyncEventHandler SysInitalizing; // main thread event (called after before Initalizing)
         public event AsyncEventHandler Initalizing; // main thread event
         public event AsyncEventHandler Deinitalizing; // background thread event
+        public event AsyncEventHandler SysDeinitalizing; // background thread event (called after Deinitalizing)
 
         public async Task<ConnectionErrorCodes> Connect(string username, string password, string address, CancellationToken cToken)
         {
@@ -125,6 +136,7 @@ namespace TickTrader.BotTerminal
                        feedProxy = new DataFeed();
                        feedProxy.Logout += feedProxy_Logout;
                        feedProxy.Logon += feedProxy_Logon;
+                       feedProxy.CacheInitialized += FeedProxy_CacheInitialized;
 
                        FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
                        {
@@ -165,6 +177,7 @@ namespace TickTrader.BotTerminal
                        tradeCs.FixLogDirectory = LogPath;
 
                        tradeProxy.Initialize(tradeCs.ToString());
+                       tradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
 
                        Connecting();
 
@@ -186,9 +199,8 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                FeedCache.Start(feedProxy);
-
                 var cToken = connectCancelSrc.Token;
+                await SysInitalizing.InvokeAsync(this, cToken);
                 await Initalizing.InvokeAsync(this, cToken);
             }
             catch (Exception ex)
@@ -198,10 +210,22 @@ namespace TickTrader.BotTerminal
             stateControl.PushEvent(Events.DoneInit);
         }
 
+        private void FeedProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
+        {
+            logger.Debug("EVENT Trade.CacheInitialized");
+            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+        }
+
+        private void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
+        {
+            logger.Debug("EVENT Feed.CacheInitialized");
+            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
+        }
+
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
             logger.Debug("EVENT Trade.Logon");
-            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+            //stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
         void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
@@ -232,7 +256,7 @@ namespace TickTrader.BotTerminal
         void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
             logger.Debug("EVENT Feed.Logon");
-            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
+            //stateControl.ModifyConditions(() => isFeedLoggedIn = true);
         }
 
         void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
@@ -257,9 +281,7 @@ namespace TickTrader.BotTerminal
                 // fire events and wait all handlers
                 logger.Debug("Deinit. Invoking Deinitalizing event...");
                 await Deinitalizing.InvokeAsync(this, CancellationToken.None);
-
-                // stop history DB
-                await FeedCache.Shutdown();
+                await SysDeinitalizing.InvokeAsync(this, CancellationToken.None);
             }
             catch (Exception ex) { logger.Error(ex); }
             stateControl.PushEvent(Events.DoneDeinit);
@@ -289,6 +311,7 @@ namespace TickTrader.BotTerminal
                         {
                             feedProxy.Logout -= feedProxy_Logout;
                             feedProxy.Logon -= feedProxy_Logon;
+                            feedProxy.CacheInitialized -= FeedProxy_CacheInitialized;
                             feedProxy.Stop();
                             feedProxy.Dispose();
                         }
@@ -303,6 +326,7 @@ namespace TickTrader.BotTerminal
                         {
                             tradeProxy.Logout -= tradeProxy_Logout;
                             tradeProxy.Logon -= tradeProxy_Logon;
+                            tradeProxy.CacheInitialized -= TradeProxy_CacheInitialized;
                             tradeProxy.Stop();
                             tradeProxy.Dispose();
                         }
@@ -325,8 +349,6 @@ namespace TickTrader.BotTerminal
             get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs"); }
         }
     }
-
-
 
     public enum ConnectionErrorCodes
     {

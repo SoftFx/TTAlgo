@@ -16,77 +16,87 @@ namespace TickTrader.BotTerminal
     internal class FeedHistoryProviderModel
     {
         private Logger logger;
-        private enum States { Starting, Online, Stopping, Offline }
-        private enum Events { Start, Initialized, InitFailed, Stopped }
+        //private enum States { Starting, Online, Stopping, Offline }
+        //private enum Events { Start, Initialized, InitFailed, Stopped }
 
-        private StateMachine<States> stateControl = new StateMachine<States>(States.Offline);
+        //private StateMachine<States> stateControl = new StateMachine<States>(States.Offline);
+        private ConnectionModel connection;
         private DataFeedStorage fdkStorage;
-        private bool stopRequested;
-        private DataFeed feedProxy;
+        //private bool stopRequested;
         private BufferBlock<Task> requestQueue = new BufferBlock<Task>();
         private ActionBlock<Task> requestProcessor;
         private IDisposable pipeLink;
 
-        public FeedHistoryProviderModel()
+        public FeedHistoryProviderModel(ConnectionModel connection)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            stateControl.AddTransition(States.Offline, Events.Start, States.Starting);
-            stateControl.AddTransition(States.Starting, Events.Initialized, States.Online);
-            stateControl.AddTransition(States.Starting, Events.InitFailed, States.Stopping);
-            stateControl.AddTransition(States.Online, () => stopRequested, States.Stopping);
-            stateControl.AddTransition(States.Stopping, Events.Stopped, States.Offline);
+            this.connection = connection;
+            //stateControl.AddTransition(States.Offline, Events.Start, States.Starting);
+            //stateControl.AddTransition(States.Starting, Events.Initialized, States.Online);
+            //stateControl.AddTransition(States.Starting, Events.InitFailed, States.Stopping);
+            //stateControl.AddTransition(States.Online, () => stopRequested, States.Stopping);
+            //stateControl.AddTransition(States.Stopping, Events.Stopped, States.Offline);
 
-            stateControl.OnEnter(States.Starting, Init);
-            stateControl.OnEnter(States.Stopping, Stop);
-            stateControl.OnEnter(States.Offline, Reset);
+            //stateControl.OnEnter(States.Starting, Init);
+            //stateControl.OnEnter(States.Stopping, Stop);
+            //stateControl.OnEnter(States.Offline, Reset);
 
-            stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
+            //stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
+
+            connection.SysInitalizing += Connection_Initalizing;
+            connection.SysDeinitalizing += Connection_Deinitalizing;
 
             requestProcessor = new ActionBlock<Task>(t => t.RunSynchronously(), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 });
         }
 
-        public void Start(DataFeed feedProxy)
+        private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
         {
-            this.feedProxy = feedProxy;
-            stateControl.PushEvent(Events.Start);
+            return Init();
         }
 
-        private async void Init()
+        private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
-            try
-            {
-                fdkStorage = await Task.Factory.StartNew(() => new DataFeedStorage(EnvService.Instance.FeedHistoryCacheFolder, StorageProvider.SQLite, feedProxy, false));
-
-                pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
-                stateControl.PushEvent(Events.Initialized);
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Init ERROR " + ex.ToString());
-                stateControl.PushEvent(Events.InitFailed);
-            }
+            return Deinit();
         }
 
-        private async void Stop()
+        //public void Start(DataFeed feedProxy)
+        //{
+        //    this.feedProxy = feedProxy;
+        //    stateControl.PushEvent(Events.Start);
+        //}
+
+        private async Task Init()
+        {
+            fdkStorage = await Task.Factory.StartNew(
+                () => new DataFeedStorage(EnvService.Instance.FeedHistoryCacheFolder,
+                    StorageProvider.SQLite, 1, connection.FeedProxy, false, false));
+            pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
+        }
+
+        private async Task Deinit()
         {
             try
             {
                 pipeLink.Dispose(); // deattach buffer from the processor
 
-                await Task.Factory.StartNew(() => fdkStorage.Dispose());
+                await Task.Factory.StartNew(() =>
+                {
+                    fdkStorage.Bind(null);
+                    fdkStorage.Dispose();
+                });
             }
             catch (Exception ex)
             {
                 logger.Error("Init ERROR " + ex.ToString());
             }
 
-            stateControl.PushEvent(Events.Stopped);
+            //stateControl.PushEvent(Events.Stopped);
         }
 
-        private void Reset()
-        {
-            stopRequested = false;
-        }
+        //private void Reset()
+        //{
+        //    stopRequested = false;
+        //}
 
         public Task<Quote[]> GetTicks(string symbol, DateTime startTime, DateTime endTime, int depth)
         {
@@ -110,10 +120,10 @@ namespace TickTrader.BotTerminal
             return task;
         }
 
-        public Task Shutdown()
-        {
-            stateControl.ModifyConditions(() => stopRequested = true);
-            return stateControl.AsyncWait(States.Offline);
-        }
+        //public Task Shutdown()
+        //{
+        //    //stateControl.ModifyConditions(() => stopRequested = true);
+        //    //return stateControl.AsyncWait(States.Offline);
+        //}
     }
 }

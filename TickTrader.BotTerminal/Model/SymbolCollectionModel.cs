@@ -112,36 +112,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        //private async Task UpdateSubscription(CancellationToken cToken)
-        //{
-        //    try
-        //    {
-        //        List<string> toSubscribe = new List<string>();
-        //        int depth = -1;
-        //        pendingSubscribe = false;
-        //        foreach (SymbolModel symbol in symbols.Values)
-        //        {
-        //            if (!SubscriptionInfo.IsEquals(symbol.RequestedSubscription, symbol.CurrentSubscription))
-        //            {
-        //                if (depth == -1 || depth == symbol.RequestedSubscription.Depth)
-        //                {
-        //                    toSubscribe.Add(symbol.Name);
-        //                    symbol.CurrentSubscription = symbol.RequestedSubscription;
-        //                }
-        //                else
-        //                    pendingSubscribe = true;
-        //            }
-        //        }
-
-        //        //await Task.Delay(1000);
-        //        logger.Debug("SubscribeToQuotes(" + toSubscribe.Count + ")");
-        //        if (toSubscribe.Count > 0)
-        //            await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
-        //    }
-        //    catch (Exception ex) { logger.Error("UpdateSubscription ERROR: " + ex.Message); }
-        //    stateControl.PushEvent(Events.DoneUpdating);
-        //}
-
         private async void Stop()
         {
             requestQueue.Complete();

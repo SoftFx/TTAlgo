@@ -23,75 +23,67 @@ namespace TickTrader.BotTerminal
     internal class AccountModel : NoTimeoutByRefObject, IAccountInfoProvider
     {
         private Logger logger;
-        public enum States { Offline, WaitingData, Canceled, Online, Deinitializing }
-        public enum Events { Connected, ConnectionCanceled, CacheInitialized, Diconnected, DoneDeinit }
-
-        private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
         private DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
         private DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
         private DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private ConnectionModel connection;
         private ActionBlock<System.Action> uiUpdater;
         private AccountType? accType;
-        //private RepeatableActivity initActivity;
 
         public AccountModel(ConnectionModel connection)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
 
             this.connection = connection;
-
-            //this.initActivity = new RepeatableActivity(Init);
             TradeHistory = new TradeHistoryProvider(connection);
 
-            stateControl.AddTransition(States.Offline, Events.Connected, States.WaitingData);
-            stateControl.AddTransition(States.WaitingData, Events.CacheInitialized, States.Online);
-            stateControl.AddTransition(States.WaitingData, Events.Diconnected, States.Offline);
-            stateControl.AddTransition(States.Online, Events.Diconnected, States.Deinitializing);
-            stateControl.AddTransition(States.Deinitializing, Events.DoneDeinit, States.Offline);
-
-            stateControl.OnEnter(States.WaitingData, Init);
-            stateControl.OnEnter(States.Online, UpdateSnapshots);
-            stateControl.OnEnter(States.Deinitializing, Deinit);
+            connection.State.StateChanged += State_StateChanged;
+            connection.SysInitalizing += Connection_Initalizing;
+            connection.SysDeinitalizing += Connection_Deinitalizing;
 
             connection.Connecting += () =>
-                {
-                    connection.TradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
-                    connection.TradeProxy.AccountInfo += AccountInfoChanged;
-                    connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
-                    connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
-                    connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
-                    connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
-                    connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
-                };
+            {
+                connection.TradeProxy.AccountInfo += AccountInfoChanged;
+                connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
+                connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
+                connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
+                connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
+                connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
+            };
 
             connection.Disconnecting += () =>
             {
-                connection.TradeProxy.CacheInitialized -= TradeProxy_CacheInitialized;
                 connection.TradeProxy.AccountInfo -= AccountInfoChanged;
                 connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
                 connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
             };
+        }
 
-            connection.Connected += () => stateControl.PushEvent(Events.Connected);
+        private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
+        {
+            if (newState == ConnectionModel.States.Connecting)
+            {
+                positions.Clear();
+                orders.Clear();
+                assets.Clear();
+            }
+        }
 
-            //connection.Initalizing += (s, c) =>
-            //{
-            //    c.Register(() => stateControl.PushEvent(Events.ConnectionCanceled));
-            //    return stateControl.PushEventAndWait(Events.Connected, state => state == States.Online || state == States.Canceled);
-            //};
+        private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
+        {
+            return Init();
+        }
 
-            connection.Deinitalizing += (s, c) => stateControl.PushEventAndWait(Events.Diconnected, States.Offline);
-
-            stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
-            stateControl.EventFired += e => logger.Debug("EVENT " + e);
+        private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
+        {
+            return Deinit();
         }
 
         public event System.Action AccountTypeChanged = delegate { };
         public IDynamicDictionarySource<string, PositionModel> Positions { get { return positions; } }
         public IDynamicDictionarySource<string, OrderModel> Orders { get { return orders; } }
         public IDynamicDictionarySource<string, AssetModel> Assets { get { return assets; } }
-
+        public ConnectionModel Connection { get { return connection; } }
         public TradeHistoryProvider TradeHistory { get; private set; }
         public AccountType? Type
         {
@@ -106,17 +98,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IStateProvider<States> State { get { return stateControl; } }
         public double Balance { get; private set; }
         public string BalanceCurrencyCode { get; private set; }
         public string Account { get; private set; }
 
-        public void Init()
+        public event AsyncEventHandler Starting; // main thread event
+        public event AsyncEventHandler Stopping; // background thread event
+
+        public async Task Init()
         {
             this.uiUpdater = DataflowHelper.CreateUiActionBlock<System.Action>(a => a(), 100, 100, CancellationToken.None);
-            positions.Clear();
-            orders.Clear();
-            assets.Clear();
+            UpdateSnapshots();
+            await Starting.InvokeAsync(this);
         }
 
         public void UpdateSnapshots()
@@ -141,37 +134,27 @@ namespace TickTrader.BotTerminal
                 assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
         }
 
-        public async void Deinit()
+        public async Task Deinit()
         {
+            await Stopping.InvokeAsync(this);
+
             await Task.Factory.StartNew(() =>
                 {
                     uiUpdater.Complete();
                     uiUpdater.Completion.Wait();
                 });
-
-            stateControl.PushEvent(Events.DoneDeinit);
         }
 
         private OrderModel UpsertOrder(ExecutionReport report)
         {
-            OrderModel order;
-            if (orders.TryGetValue(report.OrderId, out order))
-                order.Update(report);
-            else
-            {
-                order = new OrderModel(report);
-                orders.Add(report.OrderId, order);
-            }
+            OrderModel order = new OrderModel(report);
+            orders[order.Id] = order;
             return order;
         }
 
         private void UpsertPosition(Position report)
         {
-            PositionModel position;
-            if (positions.TryGetValue(report.Symbol, out position))
-                position.Update(report);
-            else
-                positions.Add(report.Symbol, new PositionModel(report));
+            positions[report.Symbol] = new PositionModel(report);
         }
 
         private void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
@@ -275,16 +258,10 @@ namespace TickTrader.BotTerminal
 
         private void UpdateAsset(AssetInfo assetInfo)
         {
-            AssetModel asset;
-            if (assets.TryGetValue(assetInfo.Currency, out asset))
-            {
-                if (IsEmpty(assetInfo))
-                    assets.Remove(asset.Currency);
-                else
-                    asset.Update(assetInfo);
-            }
+            if (IsEmpty(assetInfo))
+                assets.Remove(assetInfo.Currency);
             else
-                assets.Add(assetInfo.Currency, new AssetModel(assetInfo));
+                assets[assetInfo.Currency] = new AssetModel(assetInfo);
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
@@ -292,16 +269,12 @@ namespace TickTrader.BotTerminal
             Type = e.Information.Type;
         }
 
-        void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
-        {
-            stateControl.PushEvent(Events.CacheInitialized);
-        }
-
         private bool IsEmpty(Position position)
         {
             return position.BuyAmount == 0
                && position.SellAmount == 0;
         }
+
         private bool IsEmpty(AssetInfo assetInfo)
         {
             return assetInfo.Balance == 0;
