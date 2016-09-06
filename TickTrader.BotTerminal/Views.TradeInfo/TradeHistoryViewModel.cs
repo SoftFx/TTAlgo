@@ -25,12 +25,13 @@ namespace TickTrader.BotTerminal
         private ObservableSrotedList<string, TradeTransactionModel> _tradesList;
         private ObservableTask<TradeTransactionModel[]> _downloadObserver;
         private AccountModel _accountModel;
+        private ConnectionModel _connectionModel;
         private DateTime _from;
         private DateTime _to;
         private TimePeriod _period;
         private TradeDirection _tradeDirectionFilter;
 
-        public TradeHistoryViewModel(AccountModel accountModel)
+        public TradeHistoryViewModel(AccountModel accountModel, ConnectionModel connectionModel)
         {
             _period = TimePeriod.CurrentMonth;
             UpdateDateTimePeriod();
@@ -42,7 +43,9 @@ namespace TickTrader.BotTerminal
 
             _accountModel = accountModel;
             _accountModel.AccountTypeChanged += AccountTypeChanged;
-            //_accountModel.StateChanged += AccountStateChanged;
+
+            _connectionModel = connectionModel;
+            _connectionModel.State.StateChanged += ConnectionStateChanged;
             _accountModel.TradeHistory.OnTradeReport += TradeTransactionReport;
         }
 
@@ -147,7 +150,7 @@ namespace TickTrader.BotTerminal
         public void Close()
         {
             _accountModel.AccountTypeChanged -= AccountTypeChanged;
-            //_accountModel.State.StateChanged -= AccountStateChanged;
+            _connectionModel.State.StateChanged -= ConnectionStateChanged;
             _accountModel.TradeHistory.OnTradeReport -= TradeTransactionReport;
         }
 
@@ -237,11 +240,11 @@ namespace TickTrader.BotTerminal
                 Execute.OnUIThread(() => AddIfNeed(tradeTransaction));
         }
 
-        //private void AccountStateChanged(AccountModel.States arg1, AccountModel.States arg2)
-        //{
-        //    if (_accountModel.State.Current == AccountModel.States.Online)
-        //        LoadHistory();
-        //}
+        private void ConnectionStateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
+        {
+            if (newState == ConnectionModel.States.Online)
+                LoadHistory();
+        }
 
         private void AccountTypeChanged()
         {
