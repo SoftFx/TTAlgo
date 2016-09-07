@@ -52,11 +52,6 @@ namespace TickTrader.Algo.Core
 
         object IDataBuffer.this[int index] { get { return data[index]; } set { data[index] = (T)value; } }
 
-        void IDataBuffer.Append(object item)
-        {
-            Append((T)item);
-        }
-
         public IEnumerator<T> GetEnumerator()
         {
             return data.GetEnumerator();

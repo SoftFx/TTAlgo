@@ -115,7 +115,7 @@ namespace TickTrader.Algo.GuiModel
 
         public override object GetApplyValue()
         {
-            return selected;
+            return selected.Value;
         }
 
         public override void Reset()

@@ -9,22 +9,24 @@ namespace TickTrader.Algo.Core
     [Serializable]
     internal sealed class BarStrategy : FeedStrategy
     {
-        private BarSeriesFixture mainSeries;
+        private BarSeriesFixture mainSeriesFixture;
         private Dictionary<string, BarSeriesFixture> fixtures;
 
-        public BarStrategy(IPluginFeedProvider feed)
+        public BarStrategy(IBarBasedFeed feed)
             : base(feed)
         {
         }
 
-        public override ITimeRef TimeRef { get { return mainSeries; } }
-        public override int BufferSize { get { return mainSeries.Count; } }
+        public override ITimeRef TimeRef { get { return mainSeriesFixture; } }
+        public override int BufferSize { get { return mainSeriesFixture.Count; } }
 
         internal override void OnInit()
         {
             fixtures = new Dictionary<string, BarSeriesFixture>();
-            mainSeries = new BarSeriesFixture(ExecContext.MainSymbolCode, this);
-            fixtures.Add(ExecContext.MainSymbolCode, mainSeries);
+            var mainSeries = ((IBarBasedFeed)Feed).GetMainSeries();
+            mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, this, mainSeries);
+
+            fixtures.Add(ExecContext.MainSymbolCode, mainSeriesFixture);
         }
 
         private void InitSymbol(string symbolCode)

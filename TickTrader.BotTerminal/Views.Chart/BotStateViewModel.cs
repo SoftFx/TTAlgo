@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
             if (Bot.State == BotModelStates.Running)
                 await Bot.Stop();
             else if (Bot.State == BotModelStates.Stopped)
-                await Bot.Start();
+                Bot.Start();
         }
 
         private void Bot_Removed(TradeBotModel2 bot)
@@ -60,7 +60,6 @@ namespace TickTrader.BotTerminal
         {
             switch (bot.State)
             {
-                case BotModelStates.Starting: ExecStatus = "Starting..."; break;
                 case BotModelStates.Stopping: ExecStatus = "Stopping..."; break;
                 case BotModelStates.Running: ExecStatus = "Running"; break;
                 case BotModelStates.Stopped: ExecStatus = "Idle"; break;

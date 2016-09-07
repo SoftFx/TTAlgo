@@ -45,17 +45,17 @@ namespace TickTrader.Algo.Core
         internal void Init(IFixtureContext executor)
         {
             ExecContext = executor;
+            OnInit();
         }
 
         internal virtual void Start()
         {
-            Feed.SyncInvoke(InitStrategy);
+            Feed.Sync.Invoke(StartStrategy);
         }
 
-        private void InitStrategy()
+        private void StartStrategy()
         {
-            OnInit();
-            ExecContext.PluginInvoke(b => BatchBuild(BufferSize));
+            ExecContext.Enqueue(b => BatchBuild(BufferSize));
             Feed.FeedUpdated += Feed_FeedUpdated;
         }
 
@@ -76,7 +76,7 @@ namespace TickTrader.Algo.Core
 
         private void Feed_FeedUpdated(FeedUpdate[] updates)
         {
-            ExecContext.PluginInvoke(b =>
+            ExecContext.Enqueue(b =>
             {
                 foreach (var update in updates)
                     UpdateBuild(update);

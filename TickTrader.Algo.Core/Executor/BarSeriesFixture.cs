@@ -12,14 +12,15 @@ namespace TickTrader.Algo.Core
         private BarSampler sampler;
         private InputBuffer<BarEntity> buffer;
 
-        public BarSeriesFixture(string symbolCode, IFeedFixtureContext context)
+        public BarSeriesFixture(string symbolCode, IFeedFixtureContext context, List<BarEntity> data = null)
             : base(symbolCode, context)
         {
             var execContext = context.ExecContext;
 
             sampler = BarSampler.Get(execContext.TimeFrame);
 
-            var data = context.Feed.CustomQueryBars(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, execContext.TimeFrame);
+            if (data == null)
+                data = context.Feed.QueryBars(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, execContext.TimeFrame);
 
             buffer = execContext.Builder.GetBarBuffer(SymbolCode);
             if (data != null)

@@ -28,9 +28,14 @@ namespace Machinarium.Qnil
             get { return snapshot[key]; }
             set
             {
-                var oldItem = snapshot[key];
-                snapshot[key] = value;
-                OnUpdate(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Replace, key, value, oldItem));
+                TValue oldItem;
+                if (snapshot.TryGetValue(key, out oldItem))
+                {
+                    snapshot[key] = value;
+                    OnUpdate(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Replace, key, value, oldItem));
+                }
+                else
+                    Add(key, value);
             }
         }
 

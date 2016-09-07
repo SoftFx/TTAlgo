@@ -21,7 +21,6 @@ namespace TickTrader.Algo.Core
 
     public interface IDataBuffer : IEnumerable
     {
-        void Append(object item);
         object this[int index] { get; set; }
     }
 

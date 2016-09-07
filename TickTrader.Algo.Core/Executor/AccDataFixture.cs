@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
         {
-            context.PluginInvoke(b =>
+            context.Enqueue(b =>
             {
                 UpdateOrders(b, eReport);
                 UpdateBalance(b, eReport);

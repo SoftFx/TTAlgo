@@ -115,7 +115,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("Ui Action failed.", ex);
+                    logger.Error(ex, "Ui Action failed.");
                 }
             };
 
@@ -205,7 +205,7 @@ namespace TickTrader.BotTerminal
             switch (report.ExecutionType)
             {
                 case ExecutionType.Calculated:
-                    if (report.OrderType == TradeRecordType.Position)
+                    if (orders.ContainsKey(report.OrderId))
                         OnOrderUpdated(report, OrderExecAction.Opened);
                     else
                         OnOrderAdded(report, OrderExecAction.Opened);

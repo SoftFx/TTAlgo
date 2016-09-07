@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
     internal class SubscriptionManager
     {
         private IPluginFeedProvider feed;

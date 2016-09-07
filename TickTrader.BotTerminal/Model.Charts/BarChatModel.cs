@@ -96,7 +96,7 @@ namespace TickTrader.BotTerminal
 
         protected override void InitPluign(PluginExecutor plugin)
         {
-            var feed = CreateProvider();
+            var feed = new BarBasedFeedProvider(Feed, () => barCollection.Snapshot.ToList());
             plugin.InitBarStartegy(feed);
             plugin.Metadata = feed;
         }

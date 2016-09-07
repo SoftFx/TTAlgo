@@ -12,7 +12,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginFeedProvider : NoTimeoutByRefObject, IPluginFeedProvider, IPluginMetadata
+    internal abstract class PluginFeedProvider : NoTimeoutByRefObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
     {
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
         private SymbolCollectionModel symbols;
@@ -20,6 +20,8 @@ namespace TickTrader.BotTerminal
 
         private BufferBlock<FeedUpdate> rxBuffer;
         private ActionBlock<FeedUpdate[]> txBlock;
+
+        public ISynchronizationContext Sync { get { return this; } }
 
         public PluginFeedProvider(SymbolCollectionModel symbols, FeedHistoryProviderModel history)
         {
@@ -44,14 +46,14 @@ namespace TickTrader.BotTerminal
 
         public event Action<FeedUpdate[]> FeedUpdated = delegate { };
 
-        public IEnumerable<BarEntity> CustomQueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        public IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
             BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
             var result = history.GetBars(symbolCode, PriceType.Ask, period, from, to).Result;
             return FdkToAlgo.Convert(result).ToList();
         }
 
-        public IEnumerable<QuoteEntity> CustomQueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             var result = history.GetTicks(symbolCode, from, to, depth).Result;
             return FdkToAlgo.Convert(result).ToList();
@@ -94,9 +96,19 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException();
         }
 
-        public void SyncInvoke(Action action)
+        public void Invoke(Action action)
         {
             Caliburn.Micro.Execute.OnUIThread(action);
+        }
+
+        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        {
+            throw new NotImplementedException();
         }
 
         private class Subscription : IRateUpdatesListener
@@ -136,6 +148,44 @@ namespace TickTrader.BotTerminal
             {
                 symbols.GetOrDefault(SymbolCode)?.Unsubscribe(this);
             }
+        }
+    }
+
+    internal class BarBasedFeedProvider : PluginFeedProvider, IBarBasedFeed
+    {
+        private Func<List<BarEntity>> mainSeriesProvider;
+
+        public BarBasedFeedProvider(FeedModel feed, Func<List<BarEntity>> mainSeriesProvider)
+            : base(feed.Symbols, feed.History)
+        {
+            if (mainSeriesProvider == null)
+                throw new ArgumentNullException("mainSeriesProvider");
+
+            this.mainSeriesProvider = mainSeriesProvider;
+        }
+
+        public List<BarEntity> GetMainSeries()
+        {
+            return mainSeriesProvider();
+        }
+    }
+
+    internal class QuoteBasedFeedProvider : PluginFeedProvider, IQuoteBasedFeed
+    {
+        private Func<List<QuoteEntity>> mainSeriesProvider;
+
+        public QuoteBasedFeedProvider(FeedModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
+            : base(feed.Symbols, feed.History)
+        {
+            if (mainSeriesProvider == null)
+                throw new ArgumentNullException("mainSeriesProvider");
+
+            this.mainSeriesProvider = mainSeriesProvider;
+        }
+
+        public List<QuoteEntity> GetMainSeries()
+        {
+            return mainSeriesProvider();
         }
     }
 }

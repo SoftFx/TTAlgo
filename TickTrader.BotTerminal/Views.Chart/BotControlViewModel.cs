@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
             if (Model.State == BotModelStates.Running)
                 await Model.Stop();
             else if (Model.State == BotModelStates.Stopped)
-                await Model.Start();
+                Model.Start();
         }
 
         public TradeBotModel2 Model { get; private set; }

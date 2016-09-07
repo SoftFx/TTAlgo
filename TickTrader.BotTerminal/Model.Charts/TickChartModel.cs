@@ -106,9 +106,9 @@ namespace TickTrader.BotTerminal
 
         protected override void InitPluign(PluginExecutor plugin)
         {
-            var feed = CreateProvider();
-            plugin.InitQuoteStartegy(feed);
-            plugin.Metadata = feed;
+            var feedProvider = new QuoteBasedFeedProvider(Feed, () => null);
+            plugin.InitQuoteStartegy(feedProvider);
+            plugin.Metadata = feedProvider;
         }
 
         protected override void UpdateSeries()

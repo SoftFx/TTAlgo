@@ -18,7 +18,6 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel2 : PluginModel
     {
-        private Task startTask;
         private Dictionary<string, IXyDataSeries> series = new Dictionary<string, IXyDataSeries>();
 
         public IndicatorModel2(PluginSetup pSetup, IAlgoPluginHost host)
@@ -62,21 +61,26 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
-        private bool IsRunning { get { return startTask != null; } }
+        private bool IsRunning { get; set; }
+        private bool IsStopping { get; set; }
 
         private void StartIndicator()
         {
             if (!IsRunning)
-                startTask = StartExcecutor();
+            {
+                IsRunning = true;
+                StartExcecutor();
+            }
         }
 
         private async Task StopIndicator()
         {
-            if (IsRunning)
+            if (IsRunning && !IsStopping)
             {
-                await startTask;
+                IsStopping = true;
                 await StopExecutor();
-                startTask = null;
+                IsRunning = false;
+                IsStopping = false;
             }
         }
 

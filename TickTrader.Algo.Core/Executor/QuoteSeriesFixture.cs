@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
         {
             var execContext = context.ExecContext;
             var feed = context.Feed;
-            var data = feed.CustomQueryTicks(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, 1);
+            var data = feed.QueryTicks(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, 1);
 
             buffer = execContext.Builder.GetBuffer<QuoteEntity>(SymbolCode);
             if (data != null)

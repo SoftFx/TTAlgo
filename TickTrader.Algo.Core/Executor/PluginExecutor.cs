@@ -196,12 +196,9 @@ namespace TickTrader.Algo.Core
                 stopTask = null;
 
                 // Setup builder
-                //feed.FeedUpdated += Feed_FeedUpdated;
-                //subscriptionManager = new SubscriptionManager(feed);
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
-                //builder.Symbols.Init(feed.GetSymbolMetadata());
                 builder.TradeApi = tradeApi;
                 if (logger != null)
                     builder.Logger = logger;
@@ -271,7 +268,7 @@ namespace TickTrader.Algo.Core
 
         #region Setup Methods
 
-        public void InitBarStartegy(IPluginFeedProvider feed)
+        public void InitBarStartegy(IBarBasedFeed feed)
         {
             lock (_sync)
             {
@@ -280,7 +277,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void InitQuoteStartegy(IPluginFeedProvider feed)
+        public void InitQuoteStartegy(IQuoteBasedFeed feed)
         {
             lock (_sync)
             {
@@ -385,7 +382,7 @@ namespace TickTrader.Algo.Core
 
         PluginBuilder IFixtureContext.Builder { get { return builder; } }
 
-        void IFixtureContext.PluginInvoke(Action<PluginBuilder> action)
+        void IFixtureContext.Enqueue(Action<PluginBuilder> action)
         {
             iStrategy.EnqueueInvoke(action);
         }

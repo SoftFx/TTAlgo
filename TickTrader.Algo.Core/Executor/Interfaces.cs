@@ -15,14 +15,28 @@ namespace TickTrader.Algo.Core
 
     public interface IPluginFeedProvider
     {
-        //IEnumerable<BarEntity> QueryBars(string symbolCode);
-        //IEnumerable<QuoteEntity> QueryTicks();
-        void SyncInvoke(Action action);
-        IEnumerable<BarEntity> CustomQueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        IEnumerable<QuoteEntity> CustomQueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
+        ISynchronizationContext Sync { get; }
+
+        List<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
         void Subscribe(string symbolCode, int depth);
         void Unsubscribe(string symbolCode);
         event Action<FeedUpdate[]> FeedUpdated;
+    }
+
+    public interface IBarBasedFeed : IPluginFeedProvider
+    {
+        List<BarEntity> GetMainSeries();
+    }
+
+    public interface IQuoteBasedFeed : IPluginFeedProvider
+    {
+        List<QuoteEntity> GetMainSeries();
+    }
+
+    public interface ISynchronizationContext
+    {
+        void Invoke(Action action);
     }
 
     public interface IAccountInfoProvider
@@ -49,7 +63,7 @@ namespace TickTrader.Algo.Core
         Api.TimeFrames TimeFrame { get; }
         DateTime TimePeriodStart { get; }
         DateTime TimePeriodEnd { get; }
-        void PluginInvoke(Action<PluginBuilder> action);
+        void Enqueue(Action<PluginBuilder> action);
         
         //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         //IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to);
@@ -68,6 +82,7 @@ namespace TickTrader.Algo.Core
         void Add(IFeedFixture subscriber);
         void Remove(IFeedFixture subscriber);
     }
+
 
     //public interface IPluginInvoker
     //{

@@ -19,13 +19,12 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        public async Task Start()
+        public void Start()
         {
             if (State != BotModelStates.Stopped)
                 return;
-            ChangeState(BotModelStates.Starting);
             Host.Lock();
-            await StartExcecutor();
+            StartExcecutor();
             ChangeState(BotModelStates.Running);
         }
 

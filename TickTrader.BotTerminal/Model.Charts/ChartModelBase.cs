@@ -319,11 +319,6 @@ namespace TickTrader.BotTerminal
             return CreateSetup(catalogItem);
         }
 
-        protected virtual PluginFeedProvider CreateProvider()
-        {
-            return new PluginFeedProvider(Feed.Symbols, Feed.History);
-        }
-
         #region IAlgoPluginHost
 
         void IAlgoPluginHost.Lock()
@@ -336,10 +331,6 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-        IPluginFeedProvider IAlgoPluginHost.GetFeedProvider()
-        {
-            return CreateProvider();
-        }
 
         ITradeApi IAlgoPluginHost.GetTradeApi()
         {
@@ -351,7 +342,7 @@ namespace TickTrader.BotTerminal
             return Trade.Account;
         }
 
-        void IAlgoPluginHost.InitializePluginFeed(PluginExecutor plugin)
+        void IAlgoPluginHost.InitializePlugin(PluginExecutor plugin)
         {
             InitPluign(plugin);
         }

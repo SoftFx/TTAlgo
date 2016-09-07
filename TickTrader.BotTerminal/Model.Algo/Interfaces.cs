@@ -57,8 +57,7 @@ namespace TickTrader.BotTerminal
         //TraderModel Trade { get; }
 
         IAccountInfoProvider GetAccInfoProvider();
-        IPluginFeedProvider GetFeedProvider();
-        void InitializePluginFeed(PluginExecutor plugin);
+        void InitializePlugin(PluginExecutor plugin);
         ITradeApi GetTradeApi();
 
         event Action ParamsChanged;

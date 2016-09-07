@@ -34,12 +34,12 @@ namespace TickTrader.BotTerminal
             Setup.Apply(executor);
         }
 
-        protected async Task StartExcecutor()
+        protected void StartExcecutor()
         {
             try
             {
                 ConfigureExecutor(executor);
-                await Task.Factory.StartNew(() => executor.Start());
+                executor.Start();
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
         {
             var executor = PluginRef.CreateExecutor();
             //executor.FeedProvider = host.GetProvider();
-            host.InitializePluginFeed(executor);
+            host.InitializePlugin(executor);
             executor.InvokeStrategy = new DataflowInvokeStartegy();
             executor.AccInfoProvider = host.GetAccInfoProvider();
             return executor;
@@ -76,5 +76,5 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    internal enum BotModelStates { Stopped, Starting, Running, Stopping }
+    internal enum BotModelStates { Stopped, Running, Stopping }
 }
