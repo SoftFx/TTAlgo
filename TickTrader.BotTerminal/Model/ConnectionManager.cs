@@ -193,14 +193,14 @@ namespace TickTrader.BotTerminal
             internalStateControl.PushEvent(InEvents.DisconnectRequest);
         }
 
-        public Task Disconnect()
+        public async Task Disconnect()
         {
             if (State == States.Offline)
-                return Task.FromResult(0);
+                return;
 
             CancelRequest();
             UpdateState(States.Disconnecting);
-            return internalStateControl.PushEventAndWait(InEvents.DisconnectRequest, state => state == InStates.Offline || state == InStates.Connecting);
+            await internalStateControl.PushEventAndWait(InEvents.DisconnectRequest, InStates.Offline);
         }
 
         private void InitAuthData()

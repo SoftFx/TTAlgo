@@ -233,10 +233,10 @@ namespace Machinarium.State
             return AsyncWait(s => stateToWait.Equals(s));
         }
 
-        [System.Diagnostics.DebuggerHidden]
+        //[System.Diagnostics.DebuggerHidden]
         private Task AsyncWaitInternal(Predicate<T> stateCondition)
         {
-            if(stateCondition(Current))
+            if (stateCondition(Current))
                 return CompletedTask;
 
             StateAwaiter waiter = new StateAwaiter(stateCondition);
@@ -244,7 +244,7 @@ namespace Machinarium.State
             return waiter.Task;
         }
 
-        [System.Diagnostics.DebuggerHidden]
+        //[System.Diagnostics.DebuggerHidden]
         public Task PushEventAndWait(object eventId, Predicate<T> stateCondition)
         {
             Task waitTask = null;
@@ -268,7 +268,7 @@ namespace Machinarium.State
             AsyncWait(stateToWait).Wait();
         }
 
-        [System.Diagnostics.DebuggerHidden]
+        //[System.Diagnostics.DebuggerHidden]
         private void ReleaseAwaiters()
         {
             var node = stateWaiters.First;

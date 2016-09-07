@@ -112,14 +112,16 @@ namespace TickTrader.BotTerminal
         protected override void OnDeactivate(bool close)
         {
             if (close)
-                cManager.TriggerDisconnect();
+                Shutdown();
         }
+
         public override void CanClose(Action<bool> callback)
         {
             var exit = new ExitDialogViewModel();
             wndManager.ShowDialog(exit);
             callback(exit.IsConfirmed);
         }
+
         public void ManageAccounts()
         {
         }
@@ -156,10 +158,30 @@ namespace TickTrader.BotTerminal
 
         public NotificationsViewModel Notifications { get; private set; }
 
-        public override void TryClose(bool? dialogResult = default(bool?))
+        //public override void TryClose(bool? dialogResult = default(bool?))
+        //{
+        //    //isClosed = true;
+
+        //    var exitDlg = new ExitDialogViewModel();
+        //    wndManager.ShowDialog(exitDlg);
+
+        //    if (exitDlg.IsConfirmed)
+        //    {
+        //        Shutdown();
+        //    }
+        //}
+
+        private async void Shutdown()
         {
             isClosed = true;
-            base.TryClose(dialogResult);
+
+            try
+            {
+                await cManager.Disconnect();
+            }
+            catch (Exception) { }
+
+            App.Current.Shutdown();
         }
 
         protected override void OnViewLoaded(object view)
