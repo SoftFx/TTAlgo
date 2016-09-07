@@ -9,12 +9,14 @@ using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
-    internal class FeedModel : IPluginFeedProvider
+    internal class FeedModel : IBarBasedFeed, ISynchronizationContext
     {
         private event Action<FeedUpdate[]> FeedUpdated = delegate { };
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
 
         public TimeFrames TimeFrame { get; private set; }
+
+        public ISynchronizationContext Sync { get { return this; } }
 
         public FeedModel(TimeFrames timeFrame)
         {
@@ -50,13 +52,12 @@ namespace TickTrader.Algo.CoreUsageSample
             return data;
         }
 
-        IEnumerable<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
         {
-            return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame);
+            return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame).ToList();
         }
 
-
-        IEnumerable<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             return null;
         }
@@ -74,7 +75,11 @@ namespace TickTrader.Algo.CoreUsageSample
             return null;
         }
 
-        public void SyncInvoke(Action action)
+        public void Invoke(Action action)
+        {
+        }
+
+        public List<BarEntity> GetMainSeries()
         {
             throw new NotImplementedException();
         }
