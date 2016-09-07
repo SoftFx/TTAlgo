@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Indicators.Other.HeikenAshi
     public class HeikenAshi : Indicator
     {
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Low/High", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
         public DataSeries HaLowHigh { get; set; }

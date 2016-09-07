@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
         public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Force", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Force { get; set; }

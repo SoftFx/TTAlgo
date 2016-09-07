@@ -131,7 +131,7 @@ namespace TickTrader.Algo.Core
             OnException?.Invoke(ex);
         }
 
-        MarketDataProvider IPluginContext.GetMarketDataProvider()
+        FeedProvider IPluginContext.GetFeed()
         {
             return marketData;
         }
@@ -162,7 +162,7 @@ namespace TickTrader.Algo.Core
             return new PluginLoggerAdapter(Logger);
         }
 
-        ITradeCommands IPluginContext.GetTradeApi()
+        TradeCommands IPluginContext.GetTradeApi()
         {
             if (TradeApi == null)
                 return new NullTradeApi();
@@ -265,7 +265,7 @@ namespace TickTrader.Algo.Core
             OnExit?.Invoke();
         }
 
-        private class MarketDataImpl : MarketDataProvider
+        private class MarketDataImpl : FeedProvider, CustomFeedProvider
         {
             private PluginBuilder builder;
             private BarSeriesProxy mainBars;
@@ -302,21 +302,7 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            //public QuoteSeries Level2
-            //{
-            //    get
-            //    {
-            //        throw new NotImplementedException();
-            //    }
-            //}
-
-            //public QuoteSeries Quotes
-            //{
-            //    get
-            //    {
-            //        throw new NotImplementedException();
-            //    }
-            //}
+            public CustomFeedProvider CustomCommds { get { return this; } }
 
             public BarSeries GetBars(string symbolCode)
             {

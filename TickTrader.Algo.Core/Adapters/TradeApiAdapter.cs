@@ -8,7 +8,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradeApiAdapter : ITradeCommands
+    internal class TradeApiAdapter : TradeCommands
     {
         private ITradeApi api;
         private SymbolProvider symbols;
@@ -21,53 +21,59 @@ namespace TickTrader.Algo.Core
             this.account = account;
         }
 
-        public Task<OrderCmdResult> OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = default(double?), double? takeProfit = default(double?), string comment = null)
+        public Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volumeLots, double? tp, double? sl, string comment)
         {
             OrderCmdResultCodes code;
-            double vol = ResolveVolume(volume, symbolCode, out code);
+            double volume = ConvertVolume(volumeLots, symbol, out code);
             if (code != OrderCmdResultCodes.Ok)
                 return CreateResult(code);
 
-            var request = new OpenOrdeRequest()
+            var waitHandler = new TaskProxy<OrderCmdResult>();
+            api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment);
+            return waitHandler.LocalTask;
+        }
+
+        public Task<OrderCmdResult> CancelOrder(string orderId)
+        {
+            Order orderToCancel = account.Orders[orderId];
+            if (orderToCancel.IsNull)
+                return CreateResult(OrderCmdResultCodes.OrderNotFound);
+
+            var waitHandler = new TaskProxy<OrderCmdResult>();
+            api.CancelOrder(waitHandler, orderId, orderToCancel.Side);
+            return waitHandler.LocalTask;
+        }
+
+        public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolumeLots)
+        {            
+            double? closeVolume = null;
+
+            if (closeVolumeLots != null)
             {
-                OrderType = OrderTypes.Market,
-                Side = side,
-                Volume = vol,
-                SymbolCode = symbolCode,
-                Comment = comment,
-                Price = 1,
-                StopLoss = stopLoss,
-                TaskProfit = takeProfit
-            };
+                Order orderToClose = account.Orders[orderId];
+                if (orderToClose.IsNull)
+                    return CreateResult(OrderCmdResultCodes.OrderNotFound);
 
-            return OpenOrder(request);
-        }
+                OrderCmdResultCodes code;
+                closeVolume = ConvertVolume(closeVolumeLots.Value, orderToClose.Symbol, out code);
+                if (code != OrderCmdResultCodes.Ok)
+                    return CreateResult(code);
+            }
 
-        private Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request)
-        {
             var waitHandler = new TaskProxy<OrderCmdResult>();
-            api.OpenOrder(request, waitHandler);
+            api.CloseOrder(waitHandler, orderId, closeVolume);
             return waitHandler.LocalTask;
         }
 
-        private Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request)
+        public Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? tp, double? sl, string comment)
         {
-            var waitHandler = new TaskProxy<OrderCmdResult>();
-            api.CloseOrder(request, waitHandler);
-            return waitHandler.LocalTask;
-        }
+            Order orderToModify = account.Orders[orderId];
+            if (orderToModify.IsNull)
+                return CreateResult(OrderCmdResultCodes.OrderNotFound);
 
-        private Task<OrderCmdResult> CloseOrder(CancelOrdeRequest request)
-        {
             var waitHandler = new TaskProxy<OrderCmdResult>();
-            api.CancelOrder(request, waitHandler);
-            return waitHandler.LocalTask;
-        }
-
-        private Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request)
-        {
-            var waitHandler = new TaskProxy<OrderCmdResult>();
-            api.ModifyOrder(request, waitHandler);
+            api.ModifyOrder(waitHandler, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
+                price, orderToModify.RequestedAmount, tp, sl, comment);
             return waitHandler.LocalTask;
         }
 
@@ -76,38 +82,19 @@ namespace TickTrader.Algo.Core
             return Task.FromResult<OrderCmdResult>(new TradeResultEntity(code));
         }
 
-        private double ResolveVolume(OrderVolume volume, string symbolCode, out OrderCmdResultCodes rCode)
+        private double ConvertVolume(double volumeInLots, string symbolCode, out OrderCmdResultCodes rCode)
         {
-            if (volume.Units == VolumeUnits.CurrencyUnits)
+            var smbMetatda = symbols.List[symbolCode];
+            if (smbMetatda.IsNull)
+            {
+                rCode = OrderCmdResultCodes.SymbolNotFound;
+                return double.NaN;
+            }
+            else
             {
                 rCode = OrderCmdResultCodes.Ok;
-                return volume.Value;
+                return smbMetatda.ContractSize * volumeInLots;
             }
-            else // if (volume.Units == VolumeUnits.Lots)
-            {
-                var smbMetatda = symbols[symbolCode];
-                if (smbMetatda.IsNull)
-                {
-                    rCode = OrderCmdResultCodes.SymbolNotFound;
-                    return -1;
-                }
-                else
-                {
-                    rCode = OrderCmdResultCodes.Ok;
-                    return smbMetatda.LotSize * volume.Value;
-                }
-            }
-        }
-
-        public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolume)
-        {
-            var request = new CloseOrdeRequest()
-            {
-                OrderId = orderId,
-                Volume = closeVolume
-            };
-
-            return CloseOrder(request);
         }
     }
 }

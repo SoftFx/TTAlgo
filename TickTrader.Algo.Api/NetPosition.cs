@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Api
     {
         string SymbolCode { get; }
         double Volume { get; }
-        OrderSides Side { get; }
+        OrderSide Side { get; }
     }
 
     public interface NetPositionList : IEnumerable<NetPosition>

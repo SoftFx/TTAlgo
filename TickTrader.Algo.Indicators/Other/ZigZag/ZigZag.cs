@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         public double PointSize { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "ZigZag", DefaultColor = Colors.Red)]
         public DataSeries Zigzag { get; set; }

@@ -11,7 +11,7 @@ namespace TickTrader.BotTerminal
     internal interface OrderUi
     {
         void OpenMarkerOrder(string symbol);
-        void OpenMarkerOrder(string symbol, decimal volume, OrderSides side);
+        void OpenMarkerOrder(string symbol, decimal volume, OrderSide side);
     }
 
     internal interface ToolWindowsManager

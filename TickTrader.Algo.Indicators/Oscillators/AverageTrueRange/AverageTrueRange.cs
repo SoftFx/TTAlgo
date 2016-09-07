@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
         public int Period { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "ATR", DefaultColor = Colors.DodgerBlue)]
         public DataSeries Atr { get; set; }

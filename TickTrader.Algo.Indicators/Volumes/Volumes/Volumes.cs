@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Indicators.Volumes.Volumes
     public class Volumes : Indicator
     {
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Value Up", DefaultColor = Colors.Green)]
         public DataSeries ValueUp { get; set; }

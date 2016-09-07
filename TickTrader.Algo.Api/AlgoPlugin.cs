@@ -13,10 +13,10 @@ namespace TickTrader.Algo.Api
 
         private IPluginContext context;
         private SymbolProvider symbolProvider;
-        private MarketDataProvider marketDataProvider;
+        private FeedProvider feed;
         private AccountDataProvider accountDataProvider;
         private IPluginMonitor monitor;
-        private ITradeCommands tradeCmdApi;
+        private TradeCommands tradeCmdApi;
 
         internal AlgoPlugin()
         {
@@ -36,25 +36,12 @@ namespace TickTrader.Algo.Api
             }
         }
 
-        protected MarketDataProvider MarketSeries
-        {
-            get
-            {
-                if (marketDataProvider == null)
-                    marketDataProvider = context.GetMarketDataProvider();
-                return marketDataProvider;
-            }
-        }
-
-        protected SymbolProvider Symbols
-        {
-            get
-            {
-                if (symbolProvider == null)
-                    symbolProvider = context.GetSymbolProvider();
-                return symbolProvider;
-            }
-        }
+        protected CustomFeedProvider Feed { get { return GetFeedProvider().CustomCommds; } }
+        protected SymbolList Symbols { get { return GetSymbolProvider().List; } }
+        protected Symbol Symbol { get { return GetSymbolProvider().MainSymbol; } }
+        protected BarSeries Bars { get { return GetFeedProvider().Bars; } }
+        protected double Bid { get { return Symbol.Bid; } }
+        protected double Ask { get { return Symbol.Ask; } }
 
         protected virtual void Init() { }
 
@@ -70,11 +57,25 @@ namespace TickTrader.Algo.Api
             return monitor;
         }
 
-        internal ITradeCommands GetTradeApi()
+        internal TradeCommands GetTradeApi()
         {
             if (tradeCmdApi == null)
                 tradeCmdApi = context.GetTradeApi();
             return tradeCmdApi;
+        }
+
+        internal SymbolProvider GetSymbolProvider()
+        {
+            if (symbolProvider == null)
+                symbolProvider = context.GetSymbolProvider();
+            return symbolProvider;
+        }
+
+        internal FeedProvider GetFeedProvider()
+        {
+            if (feed == null)
+                feed = context.GetFeed();
+            return feed;
         }
 
         //internal virtual void DoInit()

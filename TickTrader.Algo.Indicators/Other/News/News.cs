@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Indicators.Other.News
         public string AdditionalCurrency { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "First Currency Impact", DefaultColor = Colors.Green)]
         public DataSeries FirstCurrencyImpact { get; set; }

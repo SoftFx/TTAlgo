@@ -82,43 +82,33 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeApi
     {
-        void OpenOrder(OpenOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
-        void CancelOrder(CancelOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
-        void ModifyOrder(ModifyOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
-        void CloseOrder(CloseOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler);
+        void OpenOrder(TaskProxy<OrderCmdResult> waitHandler, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
+        void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, OrderSide side);
+        void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
+        void CloseOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, double? volume);
     }
 
-    internal class NullTradeApi : ITradeCommands
+    internal class NullTradeApi : TradeCommands
     {
         private static Task<OrderCmdResult> rejectResult
             = Task.FromResult<OrderCmdResult>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, OrderEntity.Null));
 
-        public Task<OrderCmdResult> OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = default(double?), double? takeProfit = default(double?), string comment = null)
+        public Task<OrderCmdResult> CancelOrder(string orderId)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> CancelOrder(CancelOrdeRequest request)
+        public Task<OrderCmdResult> CloseOrder(string orderId, double? volume)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> CloseOrder(CloseOrdeRequest request)
+        public Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? tp, double? sl, string comment)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(ModifyOrdeRequest request)
-        {
-            return rejectResult;
-        }
-
-        public Task<OrderCmdResult> OpenOrder(OpenOrdeRequest request)
-        {
-            return rejectResult;
-        }
-
-        public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolume)
+        public Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
             return rejectResult;
         }

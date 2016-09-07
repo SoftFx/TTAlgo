@@ -20,7 +20,7 @@ namespace TestAlgoProject
 
         protected override void OnStart()
         {
-            var positions = Account.Orders.Where(o => o.Type == OrderTypes.Position).ToList();
+            var positions = Account.Orders.Where(o => o.Type == OrderType.Position).ToList();
 
             foreach (var pos in positions)
             {

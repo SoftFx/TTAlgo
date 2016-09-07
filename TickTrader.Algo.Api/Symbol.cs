@@ -8,22 +8,30 @@ namespace TickTrader.Algo.Api
 {
     public interface Symbol
     {
-        string Code { get; }
+        string Name { get; }
         int Digits { get; }
-        double LotSize { get; }
-        double MaxAmount { get; }
-        double MinAmount { get; }
+        double Point { get; }
+        double ContractSize { get; }
+        double MaxTradeAmount { get; }
+        double MinTradeAmount { get; }
         bool IsNull { get; }
         string BaseCurrencyCode { get; }
         string CounterCurrencyCode { get; }
+        double Bid { get; }
+        double Ask { get; }
 
         void Subscribe(int depth = 1);
         void Unsubscribe();
     }
 
-    public interface SymbolProvider : IEnumerable<Symbol>
+    public interface SymbolProvider
+    {
+        SymbolList List { get; }
+        Symbol MainSymbol { get; }
+    }
+
+    public interface SymbolList : IEnumerable<Symbol>
     {
         Symbol this[string symbolCode] { get; }
-        Symbol Current { get; }
     }
 }

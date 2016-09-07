@@ -29,17 +29,15 @@ namespace TickTrader.BotTerminal
             orderQueue.LinkTo(orderSender);
         }
 
-        public void CancelOrder(CancelOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
+        public void OpenOrder(TaskProxy<OrderCmdResult> waitHandler, string symbol,
+            OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
             Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
             {
                 try
                 {
-                    conenction.TradeProxy.Server.DeletePendingOrder(
-                         request.OrderId.ToString(),
-                         null,
-                         Convert(request.Side)
-                         );
+                    var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type), Convert(side),
+                        price, volume, sl, tp, null, comment);
                     return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
                 }
                 catch (Exception)
@@ -52,20 +50,60 @@ namespace TickTrader.BotTerminal
             orderQueue.Post(task);
         }
 
-        public void CloseOrder(CloseOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
+        public void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, OrderSide side)
+        {
+            Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
+            {
+                try
+                {
+                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, null, Convert(side));
+                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                }
+                catch (Exception)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
+                }
+            });
+
+            waitHandler.Attach(task);
+            orderQueue.Post(task);
+        }
+
+        public void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string symbol,
+            OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
+        {
+            Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
+            {
+                try
+                {
+                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, null, symbol,
+                        ToRecordType(orderType), Convert(side), volume, price, sl, tp, null, comment);
+                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                }
+                catch (Exception)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
+                }
+            });
+
+            waitHandler.Attach(task);
+            orderQueue.Post(task);
+        }
+
+        public void CloseOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, double? volume)
         {
             var task = new Task<OrderCmdResult>(() =>
             {
                 try
                 {
-                    if (request.Volume == null)
+                    if (volume == null)
                     {
-                        var result = conenction.TradeProxy.Server.ClosePosition(request.OrderId);
+                        var result = conenction.TradeProxy.Server.ClosePosition(orderId);
                         return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
                     }
                     else
                     {
-                        var result = conenction.TradeProxy.Server.ClosePositionPartially(request.OrderId, request.Volume.Value);
+                        var result = conenction.TradeProxy.Server.ClosePositionPartially(orderId, volume.Value);
                         return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
                     }
                 }
@@ -79,101 +117,37 @@ namespace TickTrader.BotTerminal
             orderQueue.Post(task);
         }
 
-        public void ModifyOrder(ModifyOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
-        {
-            Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
-            {
-                try
-                {
-                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(
-                         request.OrderId.ToString(),
-                         null,
-                         request.SymbolCode,
-                         ToRecorType(request.OrderType),
-                         Convert(request.Side),
-                         Convert(request.Volume),
-                         request.Price,
-                         request.StopLoss,
-                         request.TaskProfit,
-                         null,
-                         request.Comment);
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
-                }
-                catch (Exception)
-                {
-                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
-                }
-            });
-
-            waitHandler.Attach(task);
-            orderQueue.Post(task);
-        }
-
-        public void OpenOrder(OpenOrdeRequest request, TaskProxy<OrderCmdResult> waitHandler)
-        {
-            Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
-            {
-                try
-                {
-                    var record = conenction.TradeProxy.Server.SendOrder(
-                         request.SymbolCode,
-                         Convert(request.OrderType),
-                         Convert(request.Side),
-                         request.Price,
-                         request.Volume,
-                         request.StopLoss,
-                         request.TaskProfit,
-                         null,
-                         request.Comment
-                         );
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
-                }
-                catch (Exception)
-                {
-                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
-                }
-            });
-
-            waitHandler.Attach(task);
-            orderQueue.Post(task);
-        }
-
-        private double Convert(OrderVolume vol)
-        {
-            return vol.Value;
-        }
-
-        private TradeCommand Convert(OrderTypes type)
+        private TradeCommand Convert(OrderType type)
         {
             switch (type)
             {
-                case OrderTypes.Limit: return TradeCommand.Limit;
-                case OrderTypes.Market: return TradeCommand.Market;
-                case OrderTypes.Stop: return TradeCommand.Stop;
+                case OrderType.Limit: return TradeCommand.Limit;
+                case OrderType.Market: return TradeCommand.Market;
+                case OrderType.Stop: return TradeCommand.Stop;
             }
 
             throw new Exception("Not Supported: " + type);
         }
 
-        private TradeRecordType ToRecorType(OrderTypes type)
+        private TradeRecordType ToRecordType(OrderType type)
         {
             switch (type)
             {
-                case OrderTypes.Limit: return TradeRecordType.Limit;
-                case OrderTypes.Market: return TradeRecordType.Market;
-                case OrderTypes.Stop: return TradeRecordType.Stop;
-                case OrderTypes.Position: return TradeRecordType.Position;
+                case OrderType.Limit: return TradeRecordType.Limit;
+                case OrderType.Market: return TradeRecordType.Market;
+                case OrderType.Stop: return TradeRecordType.Stop;
+                case OrderType.Position: return TradeRecordType.Position;
             }
 
             throw new Exception("Not Supported: " + type);
         }
 
-        private TradeRecordSide Convert(OrderSides side)
+        private TradeRecordSide Convert(OrderSide side)
         {
             switch (side)
             {
-                case OrderSides.Buy: return TradeRecordSide.Buy;
-                case OrderSides.Sell: return TradeRecordSide.Sell;
+                case OrderSide.Buy: return TradeRecordSide.Buy;
+                case OrderSide.Sell: return TradeRecordSide.Sell;
             }
 
             throw new Exception("Not Supported: " + side);

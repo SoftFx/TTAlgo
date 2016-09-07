@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
         public double PointSize { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "MFI Up Volume Up", DefaultColor = Colors.Lime, PlotType = PlotType.Histogram)]
         public DataSeries MfiUpVolumeUp { get; set; }

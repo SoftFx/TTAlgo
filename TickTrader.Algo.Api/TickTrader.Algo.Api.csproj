@@ -53,7 +53,7 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="File.cs" />
-    <Compile Include="ITradeCommands.cs" />
+    <Compile Include="TradeCommands.cs" />
     <Compile Include="Marker.cs" />
     <Compile Include="NetPosition.cs" />
     <Compile Include="TradeBot.cs" />
@@ -63,7 +63,7 @@
     <Compile Include="IPluginContext.cs" />
     <Compile Include="Indicator.cs" />
     <Compile Include="LineStyles.cs" />
-    <Compile Include="MarketDataProvider.cs" />
+    <Compile Include="FeedProvider.cs" />
     <Compile Include="Order.cs" />
     <Compile Include="PlotType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

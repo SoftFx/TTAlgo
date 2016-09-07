@@ -20,13 +20,13 @@ namespace TestAlgoProject.Bots
 
         protected override void Init()
         {
-            Symbols.Current.Subscribe(Depth);
+            Symbol.Subscribe(Depth);
         }
 
         protected override void OnQuote(Quote quote)
         {
             builder.Clear();
-            builder.Append(Symbols.Current.Code).Append(" ").Append(quote.Time).Append(" ").Append(quote.Bid).Append("/").Append(quote.Ask);
+            builder.Append(Symbol.Name).Append(" ").Append(quote.Time).Append(" ").Append(quote.Bid).Append("/").Append(quote.Ask);
             builder.AppendLine();
             PrintBookSide(quote.AskBook, "Ask", true);
             builder.AppendLine();
@@ -49,7 +49,7 @@ namespace TestAlgoProject.Bots
 
         private string FormatPrice(double price)
         {
-            int digits = Symbols.Current.Digits;
+            int digits = Symbol.Digits;
             return price.ToString("F" + digits);
         }
 

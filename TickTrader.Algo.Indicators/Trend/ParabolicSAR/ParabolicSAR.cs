@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
         public double Maximum { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "SAR", DefaultColor = Colors.Lime, PlotType = PlotType.Points)]
         public DataSeries Sar { get; set; }

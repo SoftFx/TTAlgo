@@ -115,25 +115,25 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static Api.OrderTypes Convert(TradeRecordType fdkType)
+        public static Api.OrderType Convert(TradeRecordType fdkType)
         {
             switch (fdkType)
             {
-                case TradeRecordType.Limit: return Algo.Api.OrderTypes.Limit;
-                case TradeRecordType.Market: return Algo.Api.OrderTypes.Market;
-                case TradeRecordType.Position: return Algo.Api.OrderTypes.Position;
-                case TradeRecordType.Stop: return Algo.Api.OrderTypes.Stop;
+                case TradeRecordType.Limit: return Algo.Api.OrderType.Limit;
+                case TradeRecordType.Market: return Algo.Api.OrderType.Market;
+                case TradeRecordType.Position: return Algo.Api.OrderType.Position;
+                case TradeRecordType.Stop: return Algo.Api.OrderType.Stop;
 
                 default: throw new ArgumentException("Unsupported order type: " + fdkType);
             }
         }
 
-        public static Api.OrderSides Convert(TradeRecordSide fdkSide)
+        public static Api.OrderSide Convert(TradeRecordSide fdkSide)
         {
             switch (fdkSide)
             {
-                case TradeRecordSide.Buy: return Api.OrderSides.Buy;
-                case TradeRecordSide.Sell: return Api.OrderSides.Sell;
+                case TradeRecordSide.Buy: return Api.OrderSide.Buy;
+                case TradeRecordSide.Sell: return Api.OrderSide.Sell;
 
                 default: throw new ArgumentException("Unsupported order side: " + fdkSide);
             }

@@ -8,11 +8,11 @@ namespace TickTrader.Algo.Api
 {
     internal interface IPluginContext
     {
-        MarketDataProvider GetMarketDataProvider();
+        FeedProvider GetFeed();
         AccountDataProvider GetAccountDataProvider();
         SymbolProvider GetSymbolProvider();
         IPluginMonitor GetPluginLogger();
-        ITradeCommands GetTradeApi();
+        TradeCommands GetTradeApi();
         void OnExit();
     }
 

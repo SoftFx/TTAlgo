@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
         private MovingAverage _slowSma, _fastSma;
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Value Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries ValueUp { get; set; }

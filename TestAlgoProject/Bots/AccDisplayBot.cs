@@ -56,7 +56,7 @@ namespace TestAlgoProject
 
         private void PrintPendingOrders(StringBuilder builder)
         {
-            var pOrders = Account.Orders.Where(o => o.Type != OrderTypes.Position).ToList();
+            var pOrders = Account.Orders.Where(o => o.Type != OrderType.Position).ToList();
             if (pOrders.Count > 0)
             {
                 builder.Append(pOrders.Count).AppendLine(" orders:");
@@ -75,7 +75,7 @@ namespace TestAlgoProject
 
         private void PrintGrossPositions(StringBuilder builder)
         {
-            var positions = Account.Orders.Where(o => o.Type == OrderTypes.Position).ToList();
+            var positions = Account.Orders.Where(o => o.Type == OrderType.Position).ToList();
             if (positions.Count > 0)
             {
                 builder.Append(positions.Count).AppendLine(" positions:");

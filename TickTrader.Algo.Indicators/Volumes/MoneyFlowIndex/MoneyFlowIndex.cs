@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
         public int Period { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "MFI", DefaultColor = Colors.DodgerBlue)]
         public DataSeries Mfi { get; set; }

@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         public PriceField TargetPrice { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Stoch", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Stoch { get; set; }

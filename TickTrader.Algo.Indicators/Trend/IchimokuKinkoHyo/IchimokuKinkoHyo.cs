@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
         public int SenkouSpanB { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Tenkan-sen", DefaultColor = Colors.Red)]
         public DataSeries Tenkan { get; set; }

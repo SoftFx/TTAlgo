@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
         public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Bulls", DefaultColor = Colors.Silver)]
         public DataSeries Bulls { get; set; }

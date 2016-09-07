@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
         public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         public DataSeries Price { get; private set; }
 

@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.WilliamsPercentRange
         public int Period { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "WPR", DefaultColor = Colors.Aqua)]
         public DataSeries Wpr { get; set; }

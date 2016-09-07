@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
         public AppliedPrice.Target TargetPrice { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "Bears", DefaultColor = Colors.Silver)]
         public DataSeries Bears { get; set; }

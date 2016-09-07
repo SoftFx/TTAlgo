@@ -53,34 +53,19 @@ namespace TickTrader.Algo.Api
 
         #region Order Commands
 
-        public OrderCmdResult MarketBuy(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp = null, double? sl = null, string comment = "")
         {
-            return MarketBuyAsync(symbolCode, volume, stopLoss, takeProfit, comment).Result;
+            return OpenOrderAsync(symbol, type, side, price, volume, tp, sl, comment).Result;
         }
 
-        public Task<OrderCmdResult> MarketBuyAsync(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp = null, double? sl = null, string comment = "")
         {
-            return GetTradeApi().OpenMarketOrder(symbolCode, OrderSides.Buy, volume, stopLoss, takeProfit, comment);
+            return GetTradeApi().OpenOrder(symbol, type, side, price, volume, tp, sl, comment);
         }
 
-        public OrderCmdResult MarketSell(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
+        public OrderCmdResult CloseOrder(string orderId, double? volume = null)
         {
-            return MarketSellAsync(symbolCode, volume, stopLoss, takeProfit, comment).Result;
-        }
-
-        public Task<OrderCmdResult> MarketSellAsync(string symbolCode, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
-        {
-            return GetTradeApi().OpenMarketOrder(symbolCode, OrderSides.Sell, volume, stopLoss, takeProfit, comment);
-        }
-
-        public OrderCmdResult OpenMarketOrder(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
-        {
-            return OpenMarketOrderAsync(symbolCode, side, volume, stopLoss, takeProfit, comment).Result;
-        }
-
-        public Task<OrderCmdResult> OpenMarketOrderAsync(string symbolCode, OrderSides side, OrderVolume volume, double? stopLoss = null, double? takeProfit = null, string comment = null)
-        {
-            return GetTradeApi().OpenMarketOrder(symbolCode, side, volume, stopLoss, takeProfit, comment);
+            return CloseOrderAsync(orderId, volume).Result;
         }
 
         public Task<OrderCmdResult> CloseOrderAsync(string orderId, double? volume = null)
@@ -88,9 +73,58 @@ namespace TickTrader.Algo.Api
             return GetTradeApi().CloseOrder(orderId, volume);
         }
 
-        public OrderCmdResult CloseOrder(string orderId, double? volume = null)
+        public OrderCmdResult CancelOrder(string orderId)
         {
-            return CloseOrderAsync(orderId, volume).Result;
+            return CancelOrderAsync(orderId).Result;
+        }
+
+        public Task<OrderCmdResult> CancelOrderAsync(string orderId)
+        {
+            return GetTradeApi().CancelOrder(orderId);
+        }
+
+        public OrderCmdResult ModifyOrder(string orderId, double price, double? tp = null, double? sl = null, string comment = "")
+        {
+            return ModifyOrderAsync(orderId, price, tp, sl, comment).Result;
+        }
+
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? tp = null, double? sl = null, string comment = "")
+        {
+            return GetTradeApi().ModifyOrder(orderId, price, tp, sl, comment);
+        }
+
+        #endregion
+
+        #region Order Short Commands
+
+        public OrderCmdResult MarketSell(double volume, double? tp = null, double? sl = null, string comment = "")
+        {
+            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, 1, volume, tp, sl, comment);
+        }
+
+        public OrderCmdResult MarketSell(string symbol, double volume, double? tp = null, double? sl = null, string comment = "")
+        {
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, 1, volume, tp, sl, comment);
+        }
+
+        public OrderCmdResult MarketBuy(double volume, double? tp = null, double? sl = null, string comment = "")
+        {
+            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, 1, volume, tp, sl, comment);
+        }
+
+        public OrderCmdResult MarketBuy(string symbol, double volume, double? tp = null, double? sl = null, string comment = "")
+        {
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Buy, 1, volume, tp, sl, comment);
+        }
+
+        public OrderCmdResult OpenMarketOrder(OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
+        {
+            return OpenOrder(Symbol.Name, OrderType.Market, side, 1, volume, tp, sl, comment);
+        }
+
+        public OrderCmdResult OpenMarketOrder(string symbol, OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
+        {
+            return OpenOrder(symbol, OrderType.Market, side, 1, volume, tp, sl, comment);
         }
 
         #endregion

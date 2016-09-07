@@ -29,8 +29,8 @@ namespace TickTrader.Algo.Indicators.Other.News
         {
             var currenciesList = new List<string>();
 
-            currenciesList.Add(Symbols.Current.BaseCurrencyCode);
-            currenciesList.Add(Symbols.Current.CounterCurrencyCode);
+            currenciesList.Add(Symbol.BaseCurrencyCode);
+            currenciesList.Add(Symbol.CounterCurrencyCode);
 
             currenciesList.AddRange(
                 AdCurrencies.Split(',')
@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Indicators.Other.News
                         .Append(n.Event).Append(" ")
                         .Append(n.Actual).AppendLine();
 
-                Markers[0].Y = MarketSeries.Bars.Median[0];
+                Markers[0].Y = Bars.Median[0];
                 Markers[0].Icon = MarkerIcons.Diamond;
                 Markers[0].DisplayText = markerTextBuilder.ToString();
 
@@ -89,8 +89,8 @@ namespace TickTrader.Algo.Indicators.Other.News
 
         private IEnumerable<FxStreetNewsModel> GetCurrentNews(FxStreetProvider provider)
         {
-            var from = MarketSeries.Bars.Count > 1 ? MarketSeries.Bars[1].CloseTime : MarketSeries.Bars[0].OpenTime;
-            var to = MarketSeries.Bars[0].CloseTime;
+            var from = Bars.Count > 1 ? Bars[1].CloseTime : Bars[0].OpenTime;
+            var to = Bars[0].CloseTime;
 
             return provider.GetNews(from, to);
         }

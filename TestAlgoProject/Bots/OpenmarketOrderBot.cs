@@ -19,7 +19,8 @@ namespace TestAlgoProject
 
         protected override void OnStart()
         {
-            OpenMarketOrder(Symbols.Current.Code, OrderSides.Buy, OrderVolume.Absolute(Volume));
+            OpenMarketOrder(Symbol.Name, OrderSide.Buy, 1);
+            this.
             Exit();
         }
     }

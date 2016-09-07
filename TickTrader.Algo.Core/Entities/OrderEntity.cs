@@ -19,9 +19,10 @@ namespace TickTrader.Algo.Core
         public double RequestedAmount { get; set; }
         public double RemainingAmount { get; set; }
         public string Symbol { get; set; }
-        public OrderTypes Type { get; set; }
-        public OrderSides Side { get; set; }
+        public OrderType Type { get; set; }
+        public OrderSide Side { get; set; }
         public double Price { get; set; }
+        public bool IsNull { get { return false; } }
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
@@ -34,8 +35,9 @@ namespace TickTrader.Algo.Core
         public double RequestedAmount { get { return double.NaN; } }
         public double RemainingAmount { get { return double.NaN; } }
         public string Symbol { get { return ""; } }
-        public OrderTypes Type { get { return OrderTypes.Market; } }
-        public OrderSides Side { get { return OrderSides.Buy; } }
+        public OrderType Type { get { return OrderType.Market; } }
+        public OrderSide Side { get { return OrderSide.Buy; } }
         public double Price { get { return double.NaN; } }
+        public bool IsNull { get { return true; } }
     }
 }

@@ -107,7 +107,19 @@ namespace TickTrader.BotTerminal
 
         public async Task Init()
         {
-            this.uiUpdater = DataflowHelper.CreateUiActionBlock<System.Action>(a => a(), 100, 100, CancellationToken.None);
+            Action<System.Action> uiActionhandler = (a) =>
+            {
+                try
+                {
+                    a();
+                }
+                catch (Exception ex)
+                {
+                    logger.Error("Ui Action failed.", ex);
+                }
+            };
+
+            this.uiUpdater = DataflowHelper.CreateUiActionBlock<System.Action>(uiActionhandler, 100, 100, CancellationToken.None);
             UpdateSnapshots();
             await Starting.InvokeAsync(this);
         }
@@ -406,6 +418,4 @@ namespace TickTrader.BotTerminal
             OnTradeReport(new TradeTransactionModel(e.Report));
         }
     }
-
-
 }

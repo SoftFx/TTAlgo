@@ -232,7 +232,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenMarkerOrder(string symbol, decimal volume, OrderSides side)
+        public void OpenMarkerOrder(string symbol, decimal volume, OrderSide side)
         {
 
         }

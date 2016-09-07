@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         public int Period { get; set; }
 
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "RVI Average", DefaultColor = Colors.Green)]
         public DataSeries RviAverage { get; set; }

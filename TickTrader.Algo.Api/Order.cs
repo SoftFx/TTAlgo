@@ -12,13 +12,14 @@ namespace TickTrader.Algo.Api
         string Symbol { get; }
         double RequestedAmount { get; }
         double RemainingAmount { get; }
-        OrderTypes Type { get; }
-        OrderSides Side { get; }
+        OrderType Type { get; }
+        OrderSide Side { get; }
         double Price { get; }
+        bool IsNull { get; }
     }
 
-    public enum OrderTypes { Market, Limit, Stop, Position }
-    public enum OrderSides { Buy, Sell }
+    public enum OrderType { Market, Limit, Stop, Position }
+    public enum OrderSide { Buy, Sell }
 
     public interface OrderList : IEnumerable<Order>
     {

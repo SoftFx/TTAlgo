@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.Volumes.AccumulationDistribution
     public class AccumulationDistribution : Indicator
     {
         [Input]
-        public BarSeries Bars { get; set; }
+        public new BarSeries Bars { get; set; }
 
         [Output(DisplayName = "A/D", DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Ad { get; set; }

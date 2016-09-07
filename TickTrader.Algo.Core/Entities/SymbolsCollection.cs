@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
 
         private void InitCurrentSymbol()
         {
-            fixture.Current = fixture[mainSymbolCode];
+            fixture.MainSymbol = fixture[mainSymbolCode];
         }
 
         public void Add(SymbolEntity symbol)
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private class SymbolFixture : Api.SymbolProvider
+        private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
         {
             private Dictionary<string, Api.Symbol> symbols = new Dictionary<string, Api.Symbol>();
 
@@ -75,8 +75,10 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            public Symbol Current { get; set; }
+            public Symbol MainSymbol { get; set; }
             public Dictionary<string, Api.Symbol> InnerCollection { get { return symbols; } }
+
+            public SymbolList List { get { return this; } }
 
             public IEnumerator<Symbol> GetEnumerator()
             {

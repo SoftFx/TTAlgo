@@ -27,7 +27,7 @@ namespace TestAlgoProject
 
         protected override void Init()
         {
-            avgIndicator = new SimpleMovingAverage() { Input = this.MarketSeries.Bars.Low, Shift = 0, Window = 10 };
+            avgIndicator = new SimpleMovingAverage() { Input = Bars.Low, Shift = 0, Window = 10 };
         }
 
         protected override void OnStart()
@@ -40,7 +40,7 @@ namespace TestAlgoProject
 
             foreach (var symbol in Symbols.Take(5))
             {
-                Print("Subscribing for {0}", symbol.Code);
+                Print("Subscribing for {0}", symbol.Name);
                 symbol.Subscribe();
             }
         }

@@ -92,25 +92,25 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Opened:
                     switch (obj.OrderCopy.Type)
                     {
-                        case OrderTypes.Position:
+                        case OrderType.Position:
                             header = string.Format("Order {0} Filled at {1}", obj.OrderId, obj.OrderCopy.Price);
                             body = string.Format("Your request to {0} {1} of {2} was filled at {3}.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
                             break;
-                        case OrderTypes.Limit:
+                        case OrderType.Limit:
                             header = string.Format("Order {0} Placed at {1} ", obj.OrderId, obj.OrderCopy.Price);
                             body = string.Format("Your {0} Limit order for {1} of {2} at {3} was successfully placed.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
                             break;
                     }
                     break;
                 case OrderExecAction.Modified:
-                    if (obj.OrderCopy.Type == Algo.Api.OrderTypes.Limit)
+                    if (obj.OrderCopy.Type == Algo.Api.OrderType.Limit)
                     {
                         header = string.Format("Order {0} Modified", obj.OrderId);
                         body = string.Format("The entry price of the order with ID {0}, was successfully modified.",obj.OrderCopy.Id);
                     }
                     break;
                 case OrderExecAction.Closed:
-                    if (obj.OrderCopy.Type == Algo.Api.OrderTypes.Position)
+                    if (obj.OrderCopy.Type == Algo.Api.OrderType.Position)
                     {
                         header = string.Format("Order {0} Filled at {1}", obj.OrderId, obj.OrderCopy.Price);
                         body = string.Format("Your request to close position {0} {1} of {2} was filled at {3}.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
