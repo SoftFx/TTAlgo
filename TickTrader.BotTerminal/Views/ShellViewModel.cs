@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
             var assets = new AssetsViewModel(trade.Account);
             Trade = new TradeInfoViewModel(orderList, positionList, assets);
            
-            TradeHistory = new TradeHistoryViewModel(trade.Account);
+            TradeHistory = new TradeHistoryViewModel(trade.Account, cManager.Connection);
 
             Notifications = new NotificationsViewModel(notificationCenter, trade.Account, cManager.Connection);
 
