@@ -8,13 +8,11 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Fractals Up", DefaultColor = Colors.Gray, PlotType = PlotType.Points,
-            DefaultThickness = 4)]
-        public DataSeries FractalsUp { get; set; }
+        [Output(DisplayName = "Fractals Up", DefaultColor = Colors.Gray)]
+        public DataSeries<Marker> FractalsUp { get; set; }
 
-        [Output(DisplayName = "Fractals Down", DefaultColor = Colors.Gray, PlotType = PlotType.Points,
-            DefaultThickness = 4)]
-        public DataSeries FractalsDown { get; set; }
+        [Output(DisplayName = "Fractals Down", DefaultColor = Colors.Gray)]
+        public DataSeries<Marker> FractalsDown { get; set; }
 
         public int LastPositionChanged
         {
@@ -142,11 +140,21 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
 
         protected override void Calculate()
         {
-            FractalsUp[0] = double.NaN;
-            FractalsDown[0] = double.NaN;
             var i = LastPositionChanged;
-            FractalsUp[i] = IsFractalsUp(i) ? Bars[i].High : double.NaN;
-            FractalsDown[i] = IsFractalsDown(i) ? Bars[i].Low : double.NaN;
+
+            if (IsFractalsUp(i))
+                SetMarker(i, Bars[i].High, true);
+
+            if (IsFractalsDown(i))
+                SetMarker(i, Bars[i].Low, false);
+        }
+
+        private void SetMarker(int pos, double level, bool up)
+        {
+            var marker = FractalsUp[pos];
+            marker.Y = level;
+            marker.Icon = up ? MarkerIcons.UpTriangle : MarkerIcons.DownTriangle;
+            marker.DisplayText = (up ? "Fractal Up " : "Fractal Down ") + level;
         }
     }
 }

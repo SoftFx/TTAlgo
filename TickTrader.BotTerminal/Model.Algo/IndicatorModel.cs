@@ -54,8 +54,12 @@ namespace TickTrader.BotTerminal
                     var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetup)outputSetup);
                     series.Add(outputSetup.Id, adapter.SeriesData);
                 }
-                //else if (outputSetup is MarkerSeriesOutputSetup)
-                //    new MarkerSeriesAdapter(model, (MarkerSeriesOutputSetup)outputSetup);
+                else if (outputSetup is MarkerSeriesOutputSetup)
+                {
+                    var buffer = executor.GetOutput<Marker>(outputSetup.Id);
+                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetup)outputSetup);
+                    series.Add(outputSetup.Id, adapter.SeriesData);
+                }
             }
 
             return executor;

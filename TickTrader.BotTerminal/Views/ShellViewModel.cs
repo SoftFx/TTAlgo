@@ -99,14 +99,12 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                //SetBusyConnecting(true);
                 cManager.TriggerDisconnect();
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
             }
-            //SetBusyConnecting(false);
         }
 
         protected override void OnDeactivate(bool close)
@@ -157,19 +155,6 @@ namespace TickTrader.BotTerminal
         public ToolWindowsManager ToolWndManager { get { return this; } }
 
         public NotificationsViewModel Notifications { get; private set; }
-
-        //public override void TryClose(bool? dialogResult = default(bool?))
-        //{
-        //    //isClosed = true;
-
-        //    var exitDlg = new ExitDialogViewModel();
-        //    wndManager.ShowDialog(exitDlg);
-
-        //    if (exitDlg.IsConfirmed)
-        //    {
-        //        Shutdown();
-        //    }
-        //}
 
         private async void Shutdown()
         {
