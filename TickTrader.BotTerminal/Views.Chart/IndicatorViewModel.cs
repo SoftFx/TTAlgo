@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
 
             foreach (OutputSetup output in indicator.Setup.Outputs)
             {
-                var seriesViewModel = SeriesViewModel.Create(indicator, output);
+                var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator, output);
                 if (seriesViewModel != null)
                     Series.Values.Add(seriesViewModel);
             }

@@ -14,6 +14,7 @@ using Caliburn.Micro;
 using TickTrader.Algo.GuiModel;
 using SciChart.Charting.Visuals.RenderableSeries;
 using TickTrader.Algo.Api;
+using SciChart.Charting.Visuals.PointMarkers;
 
 namespace TickTrader.BotTerminal
 {
@@ -53,34 +54,73 @@ namespace TickTrader.BotTerminal
         //    return null;
         //}
 
-        public static IRenderableSeriesViewModel Create(IndicatorModel2 model, OutputSetup outputSetup)
+        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel2 model, OutputSetup outputSetup)
         {
             var seriesData = model.GetOutputSeries(outputSetup.Id);
 
             if (outputSetup is ColoredLineOutputSetup)
-                return Create(seriesData, (ColoredLineOutputSetup)outputSetup);
+                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetup)outputSetup);
             else if (outputSetup is MarkerSeriesOutputSetup)
-                return Create(seriesData, (MarkerSeriesOutputSetup)outputSetup);
+                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetup)outputSetup);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel Create(IXyDataSeries seriesData, ColoredLineOutputSetup outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetup outputSetup)
         {
-            var viewModel = new LineRenderableSeriesViewModel();
-            viewModel.DataSeries = seriesData;
-            viewModel.DrawNaNAs = outputSetup.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
-                 LineDrawMode.Gaps : LineDrawMode.ClosedLines;
-            viewModel.Stroke = outputSetup.LineColor;
-            viewModel.StrokeThickness = outputSetup.LineThickness;
-            viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
-            viewModel.StrokeDashArray = outputSetup.LineStyle.ToStrokeDashArray();
-            viewModel.StyleKey = "DoubleSeries_Style";
+            var plotType = outputSetup.Descriptor.PlotType;
 
-            return viewModel;
+            if (plotType == PlotType.Line || plotType == PlotType.DiscontinuousLine)
+            {
+                var viewModel = new LineRenderableSeriesViewModel();
+                viewModel.DataSeries = seriesData;
+                viewModel.DrawNaNAs = outputSetup.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
+                     LineDrawMode.Gaps : LineDrawMode.ClosedLines;
+                viewModel.Stroke = outputSetup.LineColor;
+                viewModel.StrokeThickness = outputSetup.LineThickness;
+                viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
+                viewModel.StrokeDashArray = outputSetup.LineStyle.ToStrokeDashArray();
+                viewModel.StyleKey = "IndicatorSeriesStyle_Line";
+
+                return viewModel;
+            }
+            else if (plotType == PlotType.Points)
+            {
+                var viewModel = new LineRenderableSeriesViewModel();
+                viewModel.DataSeries = seriesData;
+                viewModel.Stroke = outputSetup.LineColor;
+                viewModel.StrokeThickness = 0;
+                viewModel.PointMarker = new EllipsePointMarker()
+                {
+                    Height = 4,
+                    Width = 4,
+                    Fill = outputSetup.LineColor,
+                    StrokeThickness = outputSetup.LineThickness / 2
+                };
+                viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
+                viewModel.StyleKey = "IndicatorSeriesStyle_Dots";
+
+                return viewModel;
+            }
+            else if (plotType == PlotType.Histogram)
+            {
+                var viewModel = new ColumnRenderableSeriesViewModel();
+                viewModel.DataSeries = seriesData;
+                viewModel.DrawNaNAs = outputSetup.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
+                     LineDrawMode.Gaps : LineDrawMode.ClosedLines;
+                viewModel.Stroke = outputSetup.LineColor;
+                viewModel.Fill = new SolidColorBrush(outputSetup.LineColor);
+                viewModel.StrokeThickness = outputSetup.LineThickness;
+                viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
+                viewModel.StyleKey = "IndicatorSeriesStyle_Histogram";
+
+                return viewModel;
+            }
+
+            throw new NotImplementedException("Unsupported plot type: " + plotType);
         }
 
-        private static IRenderableSeriesViewModel Create(IXyDataSeries seriesData, MarkerSeriesOutputSetup outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetup outputSetup)
         {
             var viewModel = new LineRenderableSeriesViewModel();
             viewModel.DataSeries = seriesData;

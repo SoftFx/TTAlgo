@@ -19,8 +19,20 @@
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
     </Style>
 
-    <Style x:Key="DoubleSeries_Style" TargetType="s:FastLineRenderableSeries">
+    <Style x:Key="IndicatorSeriesStyle_Line" TargetType="s:FastLineRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+    </Style>
+
+    <Style x:Key="IndicatorSeriesStyle_Dots" TargetType="s:FastLineRenderableSeries" >
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="PointMarker" Value="{Binding PointMarker}" />
+    </Style>
+
+    <Style x:Key="IndicatorSeriesStyle_Histogram" TargetType="s:FastColumnRenderableSeries">
+        <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
+        <!--<Setter Property="StrokeThickness" Value="0.5"/>-->
+        <Setter Property="DataPointWidth" Value="0" />
     </Style>
 
     <Style x:Key="MarkerSeries_Style" TargetType="s:FastLineRenderableSeries">
