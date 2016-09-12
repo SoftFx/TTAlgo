@@ -52,6 +52,7 @@
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\CloseAllPositiosBot.cs" />
     <Compile Include="Bots\MMBot.cs" />
+    <Compile Include="Bots\OnTickBot.cs" />
     <Compile Include="Bots\OpenmarketOrderBot.cs" />
     <Compile Include="Bots\VWAPBot.cs" />
     <Compile Include="TestBot.cs" />

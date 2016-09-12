@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Api
         MarkerIcons Icon { get; set; }
         //MarkerAlignments Alignment { get; set; }
         string DisplayText { get; set; }
-        IDictionary<string, string> DisplayProperties { get; }
+        //IDictionary<string, string> DisplayProperties { get; }
         Colors Color { get; set; }
         void Clear();
     }

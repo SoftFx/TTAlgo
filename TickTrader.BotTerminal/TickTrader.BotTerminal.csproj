@@ -192,7 +192,6 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
-    <Compile Include="Controls.Chart\StockChartDeltaCalculator.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />

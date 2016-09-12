@@ -59,97 +59,103 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    //internal class MarkerSeriesAdapter
-    //{
-    //    private IIndicatorAdapterContext context;
-    //    private OutputBuffer<Marker> buffer;
-    //    private XyDataSeries<DateTime, double> seriesData = new XyDataSeries<DateTime, double>();
+    internal class MarkerSeriesAdapter : NoTimeoutByRefObject
+    {
+        private OutputFixture<Marker> buffer;
 
-    //    private bool isBatchBuild;
+        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetup setup)
+        {
+            this.buffer = buffer;
 
-    //    public MarkerSeriesAdapter(IIndicatorAdapterContext context, MarkerSeriesOutputSetup setup)
-    //    {
-    //        this.context = context;
-    //        this.buffer = context.GetOutput<Marker>(setup.Descriptor.Id);
+            SeriesData = new XyDataSeries<DateTime, double>();
 
-    //        if (setup.IsEnabled)
-    //        {
-    //            buffer.Updated = Update;
-    //            buffer.Appended = Append;
+            if (setup.IsEnabled)
+            {
+                buffer.Updated += Update;
+                buffer.Appended += Append;
+                buffer.AllUpdated += CopyAll;
 
-    //            buffer.BeginBatchBuild = () => isBatchBuild = true;
+                SeriesData.SeriesName = setup.Descriptor.Id;
 
-    //            buffer.EndBatchBuild = () =>
-    //            {
-    //                isBatchBuild = false;
-    //                CopyAll();
-    //            };
+                //buffer.Updated = Update;
+                //buffer.Appended = Append;
 
-    //            seriesData.SeriesName = setup.Descriptor.DisplayName;
-    //            FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
-    //            chartSeries.DataSeries = seriesData;
-    //            chartSeries.StrokeThickness = 0;
-    //            var markerTool = new AlgoPointMarker()
-    //            {
-    //                Stroke = setup.LineColor,
-    //                StrokeThickness = setup.LineThickness
-    //            };
-    //            SetSize(markerTool, setup.MarkerSize);
-    //            chartSeries.PointMarker = markerTool;
-    //            context.AddSeries(chartSeries);
-    //        }
-    //    }
+                //buffer.BeginBatchBuild = () => isBatchBuild = true;
 
-    //    private void SetSize(AlgoPointMarker markerTool, MarkerSizes size)
-    //    {
-    //        switch (size)
-    //        {
-    //            case MarkerSizes.Large: markerTool.Width = 16; markerTool.Height = 16; break;
-    //            case MarkerSizes.Small: markerTool.Width = 4; markerTool.Height = 4; break;
-    //            default: markerTool.Width = 8; markerTool.Height = 8; break;
-    //        }
-    //    }
+                //buffer.EndBatchBuild = () =>
+                //{
+                //    isBatchBuild = false;
+                //    CopyAll();
+                //};
 
-    //    private void Append(int index, Marker marker)
-    //    {
-    //        if (!isBatchBuild)
-    //        {
-    //            DateTime x = context.GetTimeCoordinate(index);
-    //            Execute.OnUIThread(() => seriesData.Append(x, marker.Y, new AlgoMarkerMetadata(marker)));
-    //        }
-    //    }
+                //seriesData.SeriesName = setup.Descriptor.DisplayName;
+                //FastLineRenderableSeries chartSeries = new FastLineRenderableSeries();
+                //chartSeries.DataSeries = seriesData;
+                //chartSeries.StrokeThickness = 0;
+                //var markerTool = new AlgoPointMarker()
+                //{
+                //    Stroke = setup.LineColor,
+                //    StrokeThickness = setup.LineThickness
+                //};
+                //SetSize(markerTool, setup.MarkerSize);
+                //chartSeries.PointMarker = markerTool;
+                //context.AddSeries(chartSeries);
+            }
+        }
 
-    //    private void Update(int index, Marker marker)
-    //    {
-    //        if (!isBatchBuild)
-    //        {
-    //            DateTime x = context.GetTimeCoordinate(index);
-    //            Execute.OnUIThread(() =>
-    //            {
-    //                seriesData.Metadata[index] = new AlgoMarkerMetadata(marker);
-    //                seriesData.YValues[index] = marker.Y;
-    //            });
-    //        }
-    //    }
+        public XyDataSeries<DateTime, double> SeriesData { get; private set; }
 
-    //    private void CopyAll()
-    //    {
-    //        Execute.OnUIThread(() =>
-    //        {
-    //            for (int i = 0; i < buffer.Count; i++)
-    //            {
-    //                var marker = buffer[i];
-    //                var x = context.GetTimeCoordinate(i);
-    //                var y = marker.Y;
-    //                seriesData.Append(x, y, new AlgoMarkerMetadata(marker));
-    //            }
-    //        });
-    //    }
+        private void SetSize(AlgoPointMarker markerTool, MarkerSizes size)
+        {
+            switch (size)
+            {
+                case MarkerSizes.Large: markerTool.Width = 16; markerTool.Height = 16; break;
+                case MarkerSizes.Small: markerTool.Width = 4; markerTool.Height = 4; break;
+                default: markerTool.Width = 8; markerTool.Height = 8; break;
+            }
+        }
 
-    //    private IEnumerable<DateTime> EnumerateDateTimeCoordinate()
-    //    {
-    //        for (int i = 0; i < buffer.Count; i++)
-    //            yield return context.GetTimeCoordinate(i);
-    //    }
-    //}
+        private void Append(OutputFixture<Marker>.Point point)
+        {
+            var x = point.TimeCoordinate;
+            var marker = point.Value;
+
+            if (x != null)
+                Execute.OnUIThread(() => SeriesData.Append(x.Value, marker.Y, new AlgoMarkerMetadata(marker)));
+        }
+
+        private void Update(OutputFixture<Marker>.Point point)
+        {
+            var x = point.TimeCoordinate;
+            var marker = point.Value;
+
+            if (x != null)
+            {
+                Execute.OnUIThread(() =>
+                {
+                    SeriesData.Metadata[point.Index] = new AlgoMarkerMetadata(marker);
+                    SeriesData.YValues[point.Index] = marker.Y;
+                });
+            }
+        }
+
+        private void CopyAll(OutputFixture<Marker>.Point[] points)
+        {
+            Execute.OnUIThread(() =>
+            {
+                SeriesData.Clear();
+                SeriesData.Append(
+                    points.Select(p => p.TimeCoordinate.Value),
+                    points.Select(p => p.Value.Y),
+                    points.Select(p => GetMetadata(p.Value)));
+            });
+        }
+
+        private AlgoMarkerMetadata GetMetadata(Marker marker)
+        {
+            if (double.IsNaN(marker.Y))
+                return null;
+            return new AlgoMarkerMetadata(marker);
+        }
+    }
 }
