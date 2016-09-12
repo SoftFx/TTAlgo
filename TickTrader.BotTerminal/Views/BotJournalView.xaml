@@ -14,24 +14,6 @@
             <Setter Property="Margin" Value="8 0 0 0"/>
         </Style>
 
-        <!--<Style x:Key="SelectorAutoSelectStyle"
-       TargetType="{x:Type Selector}">
-            <Style.Triggers>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="SelectedItem"
-                           Value="" />
-                        <Condition Property="HasItems"
-                           Value="True" />
-                    </MultiTrigger.Conditions>
-                    <Setter Property="SelectedIndex"
-                    Value="0" />
-                </MultiTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style BasedOn="{StaticResource SelectorAutoSelectStyle}" TargetType="{x:Type ComboBox}" />-->
-
         <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"></l:MessageTypeToBrushConverter>
     </UserControl.Resources>
     <Grid>
@@ -79,7 +61,7 @@
                                         </Border.Background>
                                     </Border>
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding Time, StringFormat=dd/MM/yyyy HH:mm:ss.fff}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"/>
                             </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

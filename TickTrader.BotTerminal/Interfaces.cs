@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal interface OrderUi
+    internal interface iOrderUi
     {
         void OpenMarkerOrder(string symbol);
         void OpenMarkerOrder(string symbol, decimal volume, OrderSide side);
@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
 
     internal interface IShell
     {
-        OrderUi OrderCommands { get; }
+        iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
         ToolWindowsManager ToolWndManager { get; }
     }

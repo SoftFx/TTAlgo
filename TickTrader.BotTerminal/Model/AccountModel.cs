@@ -27,18 +27,21 @@ namespace TickTrader.BotTerminal
         private DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
         private DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private ConnectionModel connection;
+        private SymbolCollectionModel symbols;
         private ActionBlock<System.Action> uiUpdater;
         private AccountType? accType;
 
-        public AccountModel(ConnectionModel connection)
+        public AccountModel(ConnectionModel connection, SymbolCollectionModel symbols)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
 
             this.connection = connection;
+            this.symbols = symbols;
             TradeHistory = new TradeHistoryProvider(connection);
 
             connection.State.StateChanged += State_StateChanged;
-            connection.SysInitalizing += Connection_Initalizing;
+            //connection.SysInitalizing += Connection_Initalizing;
+            connection.Connected += Connection_Connected;
             connection.SysDeinitalizing += Connection_Deinitalizing;
 
             connection.Connecting += () =>
@@ -57,6 +60,11 @@ namespace TickTrader.BotTerminal
                 connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
                 connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
             };
+        }
+
+        private void Connection_Connected()
+        {
+            Init();
         }
 
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
@@ -139,7 +147,7 @@ namespace TickTrader.BotTerminal
 
             var fdkOrdersArray = connection.TradeProxy.Cache.TradeRecords;
             foreach (var fdkOrder in fdkOrdersArray)
-                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder));
+                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, symbols[fdkOrder.Symbol]));
 
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
@@ -159,7 +167,7 @@ namespace TickTrader.BotTerminal
 
         private OrderModel UpsertOrder(ExecutionReport report)
         {
-            OrderModel order = new OrderModel(report);
+            OrderModel order = new OrderModel(report, symbols[report.Symbol]);
             orders[order.Id] = order;
             return order;
         }
@@ -260,6 +268,7 @@ namespace TickTrader.BotTerminal
             var orderCopy = orders[report.OrderId];
             orders.Remove(report.OrderId);
             ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, orderCopy);
+            orderCopy.Dispose();
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)

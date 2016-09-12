@@ -16,7 +16,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, OrderUi, IShell, ToolWindowsManager
+    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager
     {
         private ConnectionManager cManager;
         private TraderModel trade;
@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
 
         public ShellViewModel()
         {
-            DisplayName = "Bot Trader";
+            DisplayName = EnvService.Instance.ApplicationName;
 
             logger = NLog.LogManager.GetCurrentClassLogger();
             notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
@@ -43,8 +43,8 @@ namespace TickTrader.BotTerminal
             wndManager = new MdiWindowManager(this);
 
             cManager = new ConnectionManager(storage, eventJournal);
-            trade = new TraderModel(cManager.Connection);
             feed = new FeedModel(cManager.Connection);
+            trade = new TraderModel(cManager.Connection, feed.Symbols);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(catalog);
@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
             var orderList = new OrderListViewModel(trade.Account);
             var assets = new AssetsViewModel(trade.Account);
             Trade = new TradeInfoViewModel(orderList, positionList, assets);
-           
+
             TradeHistory = new TradeHistoryViewModel(trade.Account, cManager.Connection);
 
             Notifications = new NotificationsViewModel(notificationCenter, trade.Account, cManager.Connection);
@@ -68,6 +68,7 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
 
             UpdateCommandStates();
+            cManager.StateChanged += s => UpdateDisplayName();
             cManager.StateChanged += s => UpdateCommandStates();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
@@ -76,6 +77,12 @@ namespace TickTrader.BotTerminal
             catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
 
             LogStateLoop();
+        }
+
+        private void UpdateDisplayName()
+        {
+            if (cManager.State == ConnectionManager.States.Online)
+                DisplayName = $"{cManager.Creds.Login} {cManager.Creds.Server.Address} - {EnvService.Instance.ApplicationName}";
         }
 
         private void UpdateCommandStates()
@@ -152,7 +159,7 @@ namespace TickTrader.BotTerminal
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
         public BotJournalViewModel BotJournal { get; set; }
-        public OrderUi OrderCommands { get { return this; } }
+        public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public ToolWindowsManager ToolWndManager { get { return this; } }
 

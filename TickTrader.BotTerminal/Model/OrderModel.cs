@@ -9,22 +9,32 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal class OrderModel : PropertyChangedBase
+    internal class OrderModel : PropertyChangedBase, IDisposable
     {
-        public OrderModel(TradeRecord record)
+        private SymbolObserver symbolObserver;
+
+        public OrderModel(TradeRecord record) : this(record, null) { }
+        public OrderModel(ExecutionReport report): this(report, null) { }
+
+        public OrderModel(TradeRecord record, SymbolModel symbolModel)
         {
+            if(symbolModel != null)
+                this.symbolObserver = new SymbolObserver(symbolModel);
             this.Id = record.OrderId;
             this.Symbol = record.Symbol;
             Update(record);
         }
 
-        public OrderModel(ExecutionReport report)
+        public OrderModel(ExecutionReport report, SymbolModel symbolModel)
         {
+            if (symbolModel != null)
+                this.symbolObserver = new SymbolObserver(symbolModel);
             this.Id = report.OrderId;
             this.Symbol = report.Symbol;
+
             Update(report);
         }
-        
+
         private void Update(TradeRecord record)
         {
             this.Amount = (decimal)record.InitialVolume;
@@ -32,6 +42,11 @@ namespace TickTrader.BotTerminal
             this.OrderType = record.Type;
             this.Side = record.Side;
             this.Price = (decimal)record.Price;
+            this.Created = record.Created;
+            this.Expiration = record.Expiration;
+            this.Comment = record.Comment;
+            this.StopLoss = (decimal?)record.StopLoss;
+            this.TakeProfit = (decimal?)record.TakeProfit;
         }
 
         private void Update(ExecutionReport report)
@@ -40,7 +55,12 @@ namespace TickTrader.BotTerminal
             this.RemainingAmount = (decimal)report.LeavesVolume;
             this.OrderType = report.OrderType;
             this.Side = report.OrderSide;
-            this.Price = (decimal)report.Price;
+            this.Price = (decimal?)(report.Price ?? report.StopPrice);
+            this.Created = report.Created;
+            this.Expiration = report.Expiration;
+            this.Comment = report.Comment;
+            this.StopLoss = (decimal?)report.StopLoss;
+            this.TakeProfit = (decimal?)report.TakeProfit;
         }
 
         public OrderEntity ToAlgoOrder()
@@ -62,11 +82,16 @@ namespace TickTrader.BotTerminal
         private decimal amount;
         private decimal amountRemaining;
         public TradeRecordSide side;
-        private decimal price;
+        private decimal? price;
+        private DateTime? created;
+        private DateTime? expiration;
+        private string comment;
+        private decimal? stopLoss;
+        private decimal? takeProfit;
 
         public string Id { get; private set; }
         public string Symbol { get; private set; }
-        
+
         public decimal Amount
         {
             get { return amount; }
@@ -75,7 +100,7 @@ namespace TickTrader.BotTerminal
                 if (this.amount != value)
                 {
                     this.amount = value;
-                    NotifyOfPropertyChange("Amount");
+                    NotifyOfPropertyChange(nameof(Amount));
                 }
             }
         }
@@ -88,7 +113,7 @@ namespace TickTrader.BotTerminal
                 if (this.amountRemaining != value)
                 {
                     this.amountRemaining = value;
-                    NotifyOfPropertyChange("RemainingAmount");
+                    NotifyOfPropertyChange(nameof(RemainingAmount));
                 }
             }
         }
@@ -101,7 +126,7 @@ namespace TickTrader.BotTerminal
                 if (orderType != value)
                 {
                     this.orderType = value;
-                    NotifyOfPropertyChange("OrderType");
+                    NotifyOfPropertyChange(nameof(OrderType));
                 }
             }
         }
@@ -114,12 +139,16 @@ namespace TickTrader.BotTerminal
                 if (side != value)
                 {
                     side = value;
-                    NotifyOfPropertyChange("Side");
+
+                    CurrentPrice = side == TradeRecordSide.Buy ? symbolObserver?.Ask : symbolObserver?.Bid;
+
+                    NotifyOfPropertyChange(nameof(Side));
+                    NotifyOfPropertyChange(nameof(CurrentPrice));
                 }
             }
         }
 
-        public decimal Price
+        public decimal? Price
         {
             get { return price; }
             set
@@ -127,11 +156,84 @@ namespace TickTrader.BotTerminal
                 if (price != value)
                 {
                     price = value;
-                    NotifyOfPropertyChange("Price");
+                    NotifyOfPropertyChange(nameof(Price));
                 }
             }
         }
 
+        public DateTime? Created
+        {
+            get { return created; }
+            set
+            {
+                if (created != value)
+                {
+                    created = value;
+                    NotifyOfPropertyChange(nameof(Created));
+                }
+            }
+        }
+
+        public DateTime? Expiration
+        {
+            get { return expiration; }
+            set
+            {
+                if (expiration != value)
+                {
+                    expiration = value;
+                    NotifyOfPropertyChange(nameof(Expiration));
+                }
+            }
+        }
+
+        public string Comment
+        {
+            get { return comment; }
+            set
+            {
+                if (comment != value)
+                {
+                    comment = value;
+                    NotifyOfPropertyChange(nameof(Comment));
+                }
+            }
+        }
+
+        public decimal? TakeProfit
+        {
+            get { return takeProfit; }
+            set
+            {
+                if (takeProfit != value)
+                {
+                    takeProfit = value;
+                    NotifyOfPropertyChange(nameof(TakeProfit));
+                }
+            }
+        }
+
+        public decimal? StopLoss
+        {
+            get { return stopLoss; }
+            set
+            {
+                if (stopLoss != value)
+                {
+                    stopLoss = value;
+                    NotifyOfPropertyChange(nameof(StopLoss));
+                }
+            }
+        }
+
+        public RateDirectionTracker CurrentPrice { get; private set; }
+
         #endregion
+
+        public void Dispose()
+        {
+            this.symbolObserver?.Dispose();
+            this.symbolObserver = null;
+        }
     }
 }

@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+       
+
         public string Error
         {
             get
@@ -38,9 +40,7 @@ namespace TickTrader.BotTerminal
         }
 
         #region Bindable Properties
-
         public OpenOrderDialogViewModel Order { get; private set; }
-
         #endregion
     }
 }
