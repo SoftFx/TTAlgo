@@ -118,11 +118,11 @@
         </Grid.RowDefinitions>
         <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource SellButtonStyle}"
                       cal:Message.Attach="Sell">
-            <TextBlock Text="{Binding SellTracker.Rate}"  HorizontalAlignment="Right" FontSize="18" />
+            <TextBlock Text="{Binding SellTracker.RateString}"  HorizontalAlignment="Right" FontSize="18" />
         </l:FlatButton>
         <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource BuyButtonStyle}"
                       cal:Message.Attach="Buy">
-            <TextBlock Text="{Binding BuyTracker.Rate}" HorizontalAlignment="Left" FontSize="18" />
+            <TextBlock Text="{Binding BuyTracker.RateString}" HorizontalAlignment="Left" FontSize="18" />
         </l:FlatButton>
         <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Margin="4,1,4,6" Focusable="False"
                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectedIndex="1">
