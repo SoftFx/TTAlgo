@@ -80,6 +80,7 @@
     <Compile Include="Executor\InvokeStartegy.cs" />
     <Compile Include="Executor\OutputFixture.cs" />
     <Compile Include="Executor\PluginExecutor.cs" />
+    <Compile Include="Executor\StatusFixture.cs" />
     <Compile Include="Executor\SubscriptionFixture.cs" />
     <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Executor\QuoteStrategy.cs" />

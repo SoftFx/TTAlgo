@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Api
 
         #region Logger
 
+        protected StatusApi Status { get { return GetStatusApi(); } }
+
         protected void Print(string msg, params object[] parameters)
         {
             GetLogger().Print(msg, parameters);
@@ -42,11 +44,6 @@ namespace TickTrader.Algo.Api
         protected void PrintError(string msg, params object[] parameters)
         {
             GetLogger().PrintError(msg, parameters);
-        }
-
-        protected void UpdateStatus(string status)
-        {
-            GetLogger().UpdateStatus(status);
         }
 
         #endregion

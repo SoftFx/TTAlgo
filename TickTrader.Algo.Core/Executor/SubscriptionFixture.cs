@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
 
         public void OnUpdateEvent(QuoteEntity quote)
         {
-            context.ExecContext.Builder.InvokeUpdateNotification(quote);
+            context.ExecContext.Builder.InvokeOnQuote(quote);
         }
     }
 }

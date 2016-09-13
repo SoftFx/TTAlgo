@@ -15,8 +15,8 @@ namespace TickTrader.Algo.Api
         double MaxTradeAmount { get; }
         double MinTradeAmount { get; }
         bool IsNull { get; }
-        string BaseCurrencyCode { get; }
-        string CounterCurrencyCode { get; }
+        string BaseCurrency { get; }
+        string CounterCurrency { get; }
         double Bid { get; }
         double Ask { get; }
 
@@ -32,6 +32,6 @@ namespace TickTrader.Algo.Api
 
     public interface SymbolList : IEnumerable<Symbol>
     {
-        Symbol this[string symbolCode] { get; }
+        Symbol this[string symbol] { get; }
     }
 }

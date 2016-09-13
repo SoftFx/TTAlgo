@@ -18,12 +18,13 @@ namespace TickTrader.Algo.Core
         private MarketDataImpl marketData;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
+        private StatusApiImpl statusApi = new StatusApiImpl();
 
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
             Descriptor = descriptor;
             marketData = new MarketDataImpl(this);
-            Account = new AccountEntity();
+            Account = new AccountEntity(this);
             Symbols = new SymbolsCollection(this);
             Logger = nullLogger;
 
@@ -47,6 +48,8 @@ namespace TickTrader.Algo.Core
         public Action<string> OnUnsubscribe { get; set; }
         public Action<Exception> OnException { get; set; }
         public Action OnExit { get; set; }
+        public string Status { get { return statusApi.Status; } }
+        public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
         public IReadOnlyDictionary<string, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
@@ -108,21 +111,9 @@ namespace TickTrader.Algo.Core
             input.Buffer = buffer;
         }
 
-        internal void InvokeUpdateNotification(Quote quote)
-        {
-            try
-            {
-                PluginProxy.InvokeOnQuote(quote);
-            }
-            catch (Exception ex)
-            {
-                OnPluginException(ex);
-            }
-        }
-
         //protected void InvokeCalculate(bool isUpdate)
         //{
-           
+
         //}
 
         private void OnPluginException(Exception ex)
@@ -169,43 +160,65 @@ namespace TickTrader.Algo.Core
             return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account);
         }
 
-        internal void InvokeCalculate(bool isUpdate)
+        StatusApi IPluginContext.GetStatusApi()
         {
+            return statusApi;
+        }
+
+        #region Invoke
+
+        private void OnBeforeInvoke()
+        {
+        }
+
+        private void OnAfterInvoke()
+        {
+            statusApi.Apply();
+        }
+
+        internal void InvokePluginMethod(Action invokeAction)
+        {
+            OnBeforeInvoke();
             try
             {
-                PluginProxy.InvokeCalculate(isUpdate);
+                invokeAction();
             }
             catch (Exception ex)
             {
                 OnPluginException(ex);
             }
+            OnAfterInvoke();
+        }
+
+        internal void InvokeCalculate(bool isUpdate)
+        {
+            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate));
         }
 
         internal void InvokeOnStart()
         {
-            try
-            {
-                PluginProxy.InvokeOnStart();
-            }
-            catch (Exception ex)
-            {
-                OnPluginException(ex);
-            }
+            InvokePluginMethod(PluginProxy.InvokeOnStart);
             Logger.OnPrint("Bot started");
         }
 
         internal void InvokeOnStop()
         {
-            try
-            {
-                PluginProxy.InvokeOnStop();
-            }
-            catch (Exception ex)
-            {
-                OnPluginException(ex);
-            }
+            InvokePluginMethod(PluginProxy.InvokeOnStop);
             Logger.OnPrint("Bot stopped");
         }
+
+        internal void InvokeInit()
+        {
+            InvokePluginMethod(PluginProxy.InvokeInit);
+            Logger.OnInitialized();
+        }
+
+        internal void InvokeOnQuote(QuoteEntity quote)
+        {
+            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote));
+        }
+
+        #endregion
 
         internal void StartBatch()
         {
@@ -220,31 +233,6 @@ namespace TickTrader.Algo.Core
         internal void IncreaseVirtualPosition()
         {
             PluginProxy.Coordinator.MoveNext();
-        }
-
-        internal void InvokeInit()
-        {
-            try
-            {
-                PluginProxy.InvokeInit();
-            }
-            catch (Exception ex)
-            {
-                OnPluginException(ex);
-            }
-            Logger.OnInitialized();
-        }
-
-        internal void InvokeOnQuote(QuoteEntity quote)
-        {
-            try
-            {
-                PluginProxy.InvokeOnQuote(quote);
-            }
-            catch (Exception ex)
-            {
-                OnPluginException(ex);
-            }
         }
 
         void IPluginSubscriptionHandler.Subscribe(string smbCode, int depth)
@@ -337,6 +325,59 @@ namespace TickTrader.Algo.Core
             public QuoteSeries GetQuotes(string symbolCode, DateTime from, DateTime to)
             {
                 throw new NotImplementedException();
+            }
+
+            public void Subscribe(string symbol, int depth = 1)
+            {
+            }
+        }
+
+        private class StatusApiImpl : StatusApi
+        {
+            private StringBuilder statusBuilder = new StringBuilder();
+            private bool hasChanges;
+            
+            public string Status { get; private set; }
+            public Action<string> Updated { get; set; }
+
+            public void Apply()
+            {
+                if (hasChanges)
+                {
+                    hasChanges = false;
+                    Status = statusBuilder.ToString();
+                    Updated?.Invoke(Status);
+                    statusBuilder.Clear();
+                }
+            }
+
+            void StatusApi.Flush()
+            {
+                Apply();
+            }
+
+            void StatusApi.Write(string str, object[] strParams)
+            {
+                statusBuilder.AppendFormat(str, strParams);
+                hasChanges = true;
+            }
+
+            void StatusApi.WriteLine(string str, object[] strParams)
+            {
+                statusBuilder.AppendFormat(str, strParams).AppendLine();
+                hasChanges = true;
+            }
+
+            public void WriteLine()
+            {
+                statusBuilder.AppendLine();
+                hasChanges = true;
+            }
+
+            public void Clear()
+            {
+                statusBuilder.Clear();
+                hasChanges = true;
             }
         }
     }

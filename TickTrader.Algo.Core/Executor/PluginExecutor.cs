@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
         private FeedStrategy fStrategy;
         private InvokeStartegy iStrategy;
         private AccDataFixture accFixture;
+        private StatusFixture statusFixture;
         private string mainSymbol;
         private PluginBuilder builder;
         private DateTime periodStart;
@@ -35,6 +36,7 @@ namespace TickTrader.Algo.Core
         {
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
             this.accFixture = new AccDataFixture(this);
+            this.statusFixture = new StatusFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -205,6 +207,7 @@ namespace TickTrader.Algo.Core
                 builder.OnSubscribe = fStrategy.OnUserSubscribe;
                 //builder.OnException = OnException;
                 builder.OnExit = Abort;
+                statusFixture.Start();
                 fStrategy.Init(this);
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
@@ -247,6 +250,8 @@ namespace TickTrader.Algo.Core
             await iStrategy.Stop();
 
             await Task.Factory.StartNew(() => builder.InvokeOnStop());
+
+            statusFixture.Stop();
 
             lock (_sync)
             {

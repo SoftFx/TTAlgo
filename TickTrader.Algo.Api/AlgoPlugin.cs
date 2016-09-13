@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Api
         private AccountDataProvider accountDataProvider;
         private IPluginMonitor monitor;
         private TradeCommands tradeCmdApi;
+        private StatusApi status;
 
         internal AlgoPlugin()
         {
@@ -69,6 +70,13 @@ namespace TickTrader.Algo.Api
             if (symbolProvider == null)
                 symbolProvider = context.GetSymbolProvider();
             return symbolProvider;
+        }
+
+        internal StatusApi GetStatusApi()
+        {
+            if (status == null)
+                status = context.GetStatusApi();
+            return status;
         }
 
         internal FeedProvider GetFeedProvider()

@@ -63,6 +63,7 @@ namespace TickTrader.Algo.Core
         Api.TimeFrames TimeFrame { get; }
         DateTime TimePeriodStart { get; }
         DateTime TimePeriodEnd { get; }
+        IPluginLogger Logger { get; }
         void Enqueue(Action<PluginBuilder> action);
         
         //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);

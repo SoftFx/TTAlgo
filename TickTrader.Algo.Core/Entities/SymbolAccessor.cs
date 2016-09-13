@@ -27,8 +27,8 @@ namespace TickTrader.Algo.Core
         public double ContractSize { get { return entity.LotSize; } }
         public double MaxTradeAmount { get { return entity.MaxAmount; } }
         public double MinTradeAmount { get { return entity.MinAmount; } }
-        public string BaseCurrencyCode { get { return entity.BaseCurrencyCode; } }
-        public string CounterCurrencyCode { get { return entity.CounterCurrencyCode; } }
+        public string BaseCurrency { get { return entity.BaseCurrencyCode; } }
+        public string CounterCurrency { get { return entity.CounterCurrencyCode; } }
         public bool IsNull { get { return false; } }
         public double Point { get; private set; }
         public double Bid { get; set; }
@@ -57,8 +57,8 @@ namespace TickTrader.Algo.Core
         public double ContractSize { get { return double.NaN; } }
         public double MaxTradeAmount { get { return double.NaN; } }
         public double MinTradeAmount { get { return double.NaN; } }
-        public string BaseCurrencyCode { get { return ""; } }
-        public string CounterCurrencyCode { get { return ""; } }
+        public string BaseCurrency { get { return ""; } }
+        public string CounterCurrency { get { return ""; } }
         public bool IsNull { get { return true; } }
         public double Point { get { return double.NaN; } }
         public double Bid { get { return double.NaN; } }

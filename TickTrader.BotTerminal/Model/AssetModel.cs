@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
         {
             return new Algo.Core.AssetEntity()
             {
-                CurrencyCode = currency,
+                Currency = currency,
                 Volume = balance
             };
         }

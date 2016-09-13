@@ -9,10 +9,14 @@ namespace TickTrader.Algo.Core
 {
     public class AccountEntity : AccountDataProvider
     {
-        public AccountEntity()
+        private PluginBuilder builder;
+
+        public AccountEntity(PluginBuilder builder)
         {
-            Orders = new OrdersCollection();
-            Assets = new AssetsCollection();
+            this.builder = builder;
+
+            Orders = new OrdersCollection(builder);
+            Assets = new AssetsCollection(builder);
         }
 
         public OrdersCollection Orders { get; private set; }
@@ -25,7 +29,7 @@ namespace TickTrader.Algo.Core
 
         internal void FireBalanceUpdateEvent()
         {
-            BalanceUpdated();
+            builder.InvokePluginMethod(() => BalanceUpdated());
         }
 
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }

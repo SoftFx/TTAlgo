@@ -29,8 +29,8 @@ namespace TickTrader.Algo.Indicators.Other.News
         {
             var currenciesList = new List<string>();
 
-            currenciesList.Add(Symbol.BaseCurrencyCode);
-            currenciesList.Add(Symbol.CounterCurrencyCode);
+            currenciesList.Add(Symbol.BaseCurrency);
+            currenciesList.Add(Symbol.CounterCurrency);
 
             currenciesList.AddRange(
                 AdCurrencies.Split(',')

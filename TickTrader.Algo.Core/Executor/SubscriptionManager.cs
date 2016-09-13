@@ -18,13 +18,13 @@ namespace TickTrader.Algo.Core
 
         public void OnBufferUpdated(QuoteEntity quote)
         {
-            var list =  GetOrAddList(quote.SymbolCode);
+            var list =  GetOrAddList(quote.Symbol);
             list.ForEach(s => s.OnBufferUpdated(quote));
         }
 
         public void OnUpdateEvent(QuoteEntity quote)
         {
-            var list = GetOrAddList(quote.SymbolCode);
+            var list = GetOrAddList(quote.Symbol);
             list.ForEach(s => s.OnUpdateEvent(quote));
         }
 

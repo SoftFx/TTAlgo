@@ -16,13 +16,14 @@ namespace TickTrader.Algo.Api
 
     public interface CustomFeedProvider
     {
-        BarSeries GetBars(string symbolCode);
-        BarSeries GetBars(string symbolCode, TimeFrames timeFrame);
-        BarSeries GetBars(string symbolCode, TimeFrames timeFrame, DateTime from, DateTime to);
-        QuoteSeries GetQuotes(string symbolCode);
-        QuoteSeries GetQuotes(string symbolCode, DateTime from, DateTime to);
-        QuoteSeries GetLevel2(string symbolCode);
-        QuoteSeries GetLevel2(string symbolCode, DateTime from, DateTime to);
+        void Subscribe(string symbol, int depth = 1);
+        BarSeries GetBars(string symbol);
+        BarSeries GetBars(string symbol, TimeFrames timeFrame);
+        BarSeries GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
+        QuoteSeries GetQuotes(string symbol);
+        QuoteSeries GetQuotes(string symbol, DateTime from, DateTime to);
+        QuoteSeries GetLevel2(string symbol);
+        QuoteSeries GetLevel2(string symbol, DateTime from, DateTime to);
     }
 
     public interface BarSeries : DataSeries<Bar>
@@ -33,7 +34,7 @@ namespace TickTrader.Algo.Api
         DataSeries High { get; }
         DataSeries Low { get; }
         DataSeries Median { get; }
-        string SymbolCode { get; }
+        string Symbol { get; }
         DataSeries Volume { get; }
         DataSeries Typical { get; }
         DataSeries Weighted { get; }
