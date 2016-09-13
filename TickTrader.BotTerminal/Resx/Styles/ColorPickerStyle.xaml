@@ -194,7 +194,7 @@
         </Grid>
     </ControlTemplate>
 
-    <Style TargetType="{x:Type Slider}" x:Key="SpectrumSlider">
+    <Style TargetType="{x:Type Slider}" x:Key="SpectrumSlider" x:Shared="False">
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="MinWidth" Value="104" />

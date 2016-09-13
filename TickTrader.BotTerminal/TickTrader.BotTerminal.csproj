@@ -217,6 +217,7 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\InvertableBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
@@ -249,6 +250,7 @@
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
+    <Compile Include="Model\SymbolRateObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />

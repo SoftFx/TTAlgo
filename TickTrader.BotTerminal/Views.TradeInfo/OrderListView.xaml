@@ -19,15 +19,21 @@
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
-    
+
     <Grid>
         <Grid>
             <DataGrid Name="Orders">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
-                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Symbol}" />
-                    <DataGridTextColumn Header="{l:Resx Order_Side}" Width="*" Binding="{Binding Side}" />
-                    <DataGridTextColumn Header="{l:Resx Order_OrderType}" Width="*" Binding="{Binding OrderType}" />
+                    <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Created, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Type" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0}" Converter="{StaticResource TradeSideTypeFormat}">
+                                <Binding Path="Side" />
+                                <Binding Path="OrderType" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Amount}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding StringFormat="{}{0}/{1}">
@@ -36,7 +42,13 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
+                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Symbol}" />
                     <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Price}" />
+                    <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding StopLoss}" />
+                    <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding TakeProfit}" />
+                    <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
+                    <DataGridTextColumn Header="Expiration" Width="*" Binding="{Binding Expiration, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

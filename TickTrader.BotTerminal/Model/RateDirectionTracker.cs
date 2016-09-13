@@ -55,9 +55,14 @@ namespace TickTrader.BotTerminal
 
         public string RateString
         {
-            get { return Rate.HasValue ? string.Format(rateFormat, Rate) : ""; }
+            get { return this.ToString(); }
         }
 
         public RateChangeDirections Direction { get; private set; }
+
+        public override string ToString()
+        {
+            return Rate.HasValue ? string.Format(rateFormat, Rate) : "";
+        }
     }
 }

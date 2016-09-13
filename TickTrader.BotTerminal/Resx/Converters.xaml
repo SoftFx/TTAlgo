@@ -8,5 +8,6 @@
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
     <l:TradeSideTypeConverter x:Key="TradeSideTypeFormat"/>
+    <l:DateTimeConverter x:Key="FullDateTimeFormat"></l:DateTimeConverter>
 
 </ResourceDictionary>

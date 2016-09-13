@@ -13,6 +13,8 @@ namespace TickTrader.BotTerminal
 {
     class OrderListViewModel : AccountBasedViewModel
     {
+        private SymbolCollectionModel _symbols;
+
         public OrderListViewModel(AccountModel model)
             : base(model)
         {

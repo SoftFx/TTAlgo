@@ -6,16 +6,19 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
-    internal class OpenOrderDialogViewModel: Conductor<IOpenOrderDialogPage>.Collection.OneActive, IDisposable
+    internal class OpenOrderDialogViewModel: Conductor<IOpenOrderDialogPage>.Collection.OneActive, IRateUpdatesListener, IDisposable
     {        
         private MarketOrderPageViewModel marketOrderPage;
         private PendingOrderPageViewModel pendingOrderPage;
         private SymbolModel selectedSymbol;
 
         private TraderModel trade;
+
+        public event System.Action DepthChanged;
 
         public OpenOrderDialogViewModel(TraderModel trade, FeedModel feed, string preselectedSymbol)
         {
@@ -45,6 +48,9 @@ namespace TickTrader.BotTerminal
         public IObservableListSource<SymbolModel> Symbols { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
 
+        public RateDirectionTracker Bid { get; private set; }
+        public RateDirectionTracker Ask { get; private set; }
+
         public SymbolModel SelectedSymbol
         {
             get { return selectedSymbol; }
@@ -57,6 +63,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public int Depth
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
         #endregion
 
         public void Dispose()
@@ -73,6 +86,15 @@ namespace TickTrader.BotTerminal
         private void UpdateState(ConnectionModel.States state)
         {
             IsEnabled = state == ConnectionModel.States.Online;
+        }
+
+        public void OnRateUpdate(Quote tick)
+        {
+            if (tick.HasAsk)
+                Ask.Rate = tick.Ask;
+
+            if (tick.HasBid)
+                Ask.Rate = tick.Bid;
         }
     }
 

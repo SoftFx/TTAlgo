@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
         public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.DisplayName = "Add Indicator";
+            this.DisplayName = $"Add Indicator - {item.DisplayName}";
             this.PluginItem = item;
             //this.host = host;
             this.setupFactory = setupFactory;
@@ -80,10 +80,10 @@ namespace TickTrader.BotTerminal
             Setup.ValidityChanged += Validate;
             Validate();
 
-           logger.Debug("Init "
-                + Setup.Parameters.Count() + " params "
-                + Setup.Inputs.Count() + " inputs "
-                + Setup.Outputs.Count() + " outputs ");
+            logger.Debug("Init "
+                 + Setup.Parameters.Count() + " params "
+                 + Setup.Inputs.Count() + " inputs "
+                 + Setup.Outputs.Count() + " outputs ");
 
             NotifyOfPropertyChange("Setup");
         }

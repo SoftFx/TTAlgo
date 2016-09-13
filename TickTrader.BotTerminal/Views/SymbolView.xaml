@@ -43,7 +43,7 @@
     <UserControl.ContextMenu>
         <ContextMenu Style="{StaticResource ContextMenu_Style}">
             <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
-            <MenuItem Header="{l:Resx ContextMenu_OpenOrder}"/>
+            <MenuItem Header="{l:Resx ContextMenu_OpenOrder}" cal:Message.Attach="OpenOrder"/>
         </ContextMenu>
     </UserControl.ContextMenu>
 

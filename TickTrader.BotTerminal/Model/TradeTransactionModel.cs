@@ -40,15 +40,15 @@ namespace TickTrader.BotTerminal
             this.Id = item.Id;
             this.LeavesQuantity = item.LeavesQuantity;
             this.OpenConversionRate = item.OpenConversionRate;
-            this.OrderCreated = ConvertToNullOrLocal(item.OrderCreated);
+            this.OrderCreated = CheckIsNull(item.OrderCreated);
             this.OrderFillPrice = item.OrderFillPrice;
             this.OrderLastFillAmount = item.OrderLastFillAmount;
-            this.OrderModified = ConvertToNullOrLocal(item.OrderModified);
-            this.PositionClosed = ConvertToNullOrLocal(item.PositionClosed);
+            this.OrderModified = CheckIsNull(item.OrderModified);
+            this.PositionClosed = CheckIsNull(item.PositionClosed);
             this.PositionCloseRequestedPrice = item.PositionCloseRequestedPrice;
             this.PositionId = item.PositionId;
-            this.PositionModified = ConvertToNullOrLocal(item.PositionModified);
-            this.PositionOpened = ConvertToNullOrLocal(item.PositionOpened);
+            this.PositionModified = CheckIsNull(item.PositionModified);
+            this.PositionOpened = CheckIsNull(item.PositionOpened);
             this.PositionQuantity = item.PositionQuantity;
             this.PosOpenReqPrice = item.PosOpenReqPrice;
             this.PosRemainingPrice = item.PosRemainingPrice;
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             this.TradeTransactionReportType = item.TradeTransactionReportType;
             this.TransactionAmount = item.TransactionAmount;
             this.TransactionCurrency = item.TransactionCurrency;
-            this.TransactionTime = item.TransactionTime.ToLocalTime();
+            this.TransactionTime = item.TransactionTime;
 
         }
        
@@ -111,12 +111,12 @@ namespace TickTrader.BotTerminal
         public string TransactionCurrency { get; }
         public DateTime TransactionTime { get; }
 
-        private DateTime? ConvertToNullOrLocal(DateTime dateTime)
+        private DateTime? CheckIsNull(DateTime dateTime)
         {
             if (dateTime.Year == 1970 && dateTime.Month == 1 && dateTime.Day == 1)
                 return null;
 
-            return dateTime.ToLocalTime();
+            return dateTime;
         }
     }
 }
