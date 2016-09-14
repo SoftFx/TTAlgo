@@ -67,18 +67,18 @@ namespace TickTrader.BotTerminal
                 entity.BidList = QuoteEntity.EmptyBook;
             }
 
-            entity.SymbolCode = fdkTick.Symbol;
+            entity.Symbol = fdkTick.Symbol;
             entity.Time = fdkTick.CreatingTime;
 
             return entity;
         }
 
-        private static IReadOnlyList<Api.BookEntry> ConvertLevel2(QuoteEntry[] book)
+        private static Api.BookEntry[] ConvertLevel2(QuoteEntry[] book)
         {
             if (book == null || book.Length == 0)
                 return QuoteEntity.EmptyBook;
             else
-                return book.Select(Convert).ToList().AsReadOnly();
+                return book.Select(Convert).ToArray();
         }
 
         public static BookEntryEntity Convert(QuoteEntry fdkEntry)

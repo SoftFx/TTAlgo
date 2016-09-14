@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core
             }
             else if (accProxy.Type == Api.AccountTypes.Cash)
             {
-                accProxy.Assets.Update(new AssetEntity() { CurrencyCode = report.CurrencyCode, Volume = report.Balance });
+                accProxy.Assets.Update(new AssetEntity() { Currency = report.CurrencyCode, Volume = report.Balance });
                 accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(report.Balance, report.CurrencyCode)));
             }
         }
@@ -178,8 +178,8 @@ namespace TickTrader.Algo.Core
                 {
                     foreach (var asset in eReport.Assets)
                     {
-                        acc.Assets.Update(new AssetEntity() { CurrencyCode = asset.CurrencyCode, Volume = asset.Volume });
-                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.CurrencyCode)));
+                        acc.Assets.Update(new AssetEntity() { Currency = asset.Currency, Volume = asset.Volume });
+                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.Currency)));
                     }
                 }
             }

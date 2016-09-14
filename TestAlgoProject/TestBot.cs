@@ -14,7 +14,6 @@ namespace TestAlgoProject
     {
         private SimpleMovingAverage avgIndicator;
         private Dictionary<string, Quote> snapshot = new Dictionary<string, Quote>();
-        private StringBuilder statusBuilder = new StringBuilder();
 
         [Parameter(DisplayName = "Symbols")]
         public string CfgSymbols { get; set; }
@@ -52,24 +51,18 @@ namespace TestAlgoProject
 
         protected override void OnQuote(Quote quote)
         {
-            snapshot[quote.SymbolCode] = quote;
+            snapshot[quote.Symbol] = quote;
             PrintSnapshot();
             //Print("OnQuote {0}", quote.SymbolCode);
         }
 
         private void PrintSnapshot()
         {
-            statusBuilder.Clear();
-
             foreach (var pair in snapshot)
             {
                 var smb = Symbols[pair.Key];
-
-                statusBuilder.Append(pair.Key).Append(" ").Append(pair.Value.Bid).Append("/").Append(pair.Value.Ask)
-                    .Append('[').Append(smb.Digits).Append(']').AppendLine();
+                Status.WriteLine("{0} {1} {2}/{3} [{4}]", pair.Key, pair.Value.Bid, pair.Value.Ask, smb.Digits);
             }
-
-            UpdateStatus(statusBuilder.ToString());
         }
     }
 

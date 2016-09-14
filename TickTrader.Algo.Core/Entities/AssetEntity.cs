@@ -15,11 +15,11 @@ namespace TickTrader.Algo.Core
 
         public AssetEntity(double balance, string currency)
         {
-            this.CurrencyCode = currency;
+            this.Currency = currency;
             this.Volume = balance;
         }
 
-        public string CurrencyCode { get; set; }
+        public string Currency { get; set; }
         public double Volume { get; set; }
     }
 }

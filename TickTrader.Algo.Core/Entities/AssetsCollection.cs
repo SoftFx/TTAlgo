@@ -10,23 +10,29 @@ namespace TickTrader.Algo.Core
 {
     public class AssetsCollection
     {
+        private PluginBuilder builder;
         private OrdersFixture fixture = new OrdersFixture();
 
         internal AssetList AssetListImpl { get { return fixture; } }
 
+        public AssetsCollection(PluginBuilder builder)
+        {
+            this.builder = builder;
+        }
+
         public void FireModified(AssetModifiedEventArgs args)
         {
-            fixture.FireModified(args);
+            builder.InvokePluginMethod(() => fixture.FireModified(args));
         }
 
         public void Update(AssetEntity entity)
         {
-            fixture.Update(entity);
+            builder.InvokePluginMethod(() => fixture.Update(entity));
         }
 
         public void Remove(string currencyCode)
         {
-            fixture.Remove(currencyCode);
+            builder.InvokePluginMethod(() => fixture.Remove(currencyCode));
         }
 
         internal class OrdersFixture : AssetList
@@ -55,7 +61,7 @@ namespace TickTrader.Algo.Core
 
             public void Update(AssetEntity entity)
             {
-                assets[entity.CurrencyCode] = entity;
+                assets[entity.Currency] = entity;
             }
 
             public void Remove(string currencyCode)

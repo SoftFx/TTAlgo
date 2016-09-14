@@ -8,13 +8,13 @@ namespace TickTrader.Algo.Api
 {
     public interface Quote
     {
-        string SymbolCode { get; }
+        string Symbol { get; }
         DateTime Time { get; }
         double Ask { get; }
         double Bid { get; }
 
-        IReadOnlyList<BookEntry> AskBook { get; }
-        IReadOnlyList<BookEntry> BidBook { get; }
+        BookEntry[] AskBook { get; }
+        BookEntry[] BidBook { get; }
     }
 
     public interface BookEntry

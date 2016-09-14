@@ -99,8 +99,6 @@ namespace TickTrader.Algo.Core
                 dispenser.OnBufferUpdated(update.Quote);
                 dispenser.OnUpdateEvent(update.Quote);
             }
-
-            ExecContext.Builder.InvokeOnQuote(update.Quote);
         }
 
         #region IFeedStrategyContext

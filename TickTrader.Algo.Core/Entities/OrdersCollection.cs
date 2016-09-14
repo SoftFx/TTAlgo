@@ -10,10 +10,16 @@ namespace TickTrader.Algo.Core
 {
     public class OrdersCollection
     {
+        private PluginBuilder builder;
         private OrdersFixture fixture = new OrdersFixture();
 
         internal OrderList OrderListImpl { get { return fixture; } }
         internal bool IsEnabled { get { return true; } }
+
+        public OrdersCollection(PluginBuilder builder)
+        {
+            this.builder = builder;
+        }
 
         public void Add(OrderEntity entity)
         {
@@ -37,32 +43,32 @@ namespace TickTrader.Algo.Core
 
         public void FireOrderOpened(OrderOpenedEventArgs args)
         {
-            fixture.FireOrderOpened(args);
+            builder.InvokePluginMethod(() => fixture.FireOrderOpened(args));
         }
 
         public void FireOrderModified(OrderModifiedEventArgs args)
         {
-            fixture.FireOrderModified(args);
+            builder.InvokePluginMethod(() => fixture.FireOrderModified(args));
         }
 
         public void FireOrderClosed(OrderClosedEventArgs args)
         {
-            fixture.FireOrderClosed(args);
+            builder.InvokePluginMethod(() => fixture.FireOrderClosed(args));
         }
 
         public void FireOrderCanceled(OrderCanceledEventArgs args)
         {
-            fixture.FireOrderCanceled(args);
+            builder.InvokePluginMethod(() => fixture.FireOrderCanceled(args));
         }
 
         public void FireOrderExpired(OrderExpiredEventArgs args)
         {
-            fixture.FireOrderExpired(args);
+            builder.InvokePluginMethod(() => fixture.FireOrderExpired(args));
         }
 
         public void FireOrderFilled(OrderFilledEventArgs args)
         {
-            fixture.FireOrderFilled(args);
+            builder.InvokePluginMethod(() => fixture.FireOrderFilled(args));
         }
 
         internal class OrdersFixture : OrderList

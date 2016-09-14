@@ -8,14 +8,14 @@ namespace TickTrader.Algo.Api
 {
     public interface NetPosition
     {
-        string SymbolCode { get; }
+        string Symbol { get; }
         double Volume { get; }
         OrderSide Side { get; }
     }
 
     public interface NetPositionList : IEnumerable<NetPosition>
     {
-        NetPosition this[string symbolCode] { get; }
+        NetPosition this[string symbol] { get; }
 
         event Action<NetPositionModifiedEventArgs> Modified;
     }

@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Core
             moveBufferLazy = ConstructLazy<DataSeriesProxy, double>(b => b.Close - b.Open);
             rangeBufferLazy = ConstructLazy<DataSeriesProxy, double>(b => b.High - b.Low);
 
-            SymbolCode = string.Empty;
+            Symbol = string.Empty;
         }
 
         private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Bar, TData> selector) where TProxy : DataSeriesProxy<TData>, new()
@@ -90,7 +90,7 @@ namespace TickTrader.Algo.Core
             }, LazyThreadSafetyMode.None);
         }
 
-        public string SymbolCode { get; set; }
+        public string Symbol { get; set; }
 
         public override IPluginDataBuffer<Bar> Buffer
         {

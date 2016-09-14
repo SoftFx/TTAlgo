@@ -13,12 +13,12 @@ namespace TickTrader.Algo.Api
         SymbolProvider GetSymbolProvider();
         IPluginMonitor GetPluginLogger();
         TradeCommands GetTradeApi();
+        StatusApi GetStatusApi();
         void OnExit();
     }
 
     internal interface IPluginMonitor
     {
-        void UpdateStatus(string status);
         void Print(string entry, object[] parameters);
         void PrintError(string entry, object[] parameters);
     }

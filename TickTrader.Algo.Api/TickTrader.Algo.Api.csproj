@@ -53,6 +53,8 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="File.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="StatusApi.cs" />
     <Compile Include="TradeCommands.cs" />
     <Compile Include="Marker.cs" />
     <Compile Include="NetPosition.cs" />

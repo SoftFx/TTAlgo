@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Api
 {
     public interface Asset
     {
-        string CurrencyCode { get; }
+        string Currency { get; }
         double Volume { get; }
     }
 
@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Api
     {
         int Count { get; }
 
-        Asset this[string currencyCode] { get; }
+        Asset this[string currency] { get; }
 
         event Action<AssetModifiedEventArgs> Modified;
     }
