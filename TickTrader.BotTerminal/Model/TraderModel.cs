@@ -13,10 +13,10 @@ namespace TickTrader.BotTerminal
     {
         public enum States { Offline, Online }
 
-        public TraderModel(ConnectionModel connection, SymbolCollectionModel symbols)
+        public TraderModel(ConnectionModel connection)
         {
             Connection = connection;
-            Account = new AccountModel(Connection, symbols);
+            Account = new AccountModel(Connection);
             TradeApi = new TradeExecutor(this);
         }
 

@@ -9,93 +9,43 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal class OrderModel : PropertyChangedBase, IDisposable
+    internal class OrderModel : PropertyChangedBase
     {
-        private SymbolObserver symbolObserver;
+        private TradeRecordType orderType;
+        private double amount;
+        private double amountRemaining;
+        public TradeRecordSide side;
+        private double price;
+        private double swap;
+        private double commission;
+        private DateTime? created;
+        private DateTime? expiration;
+        private string comment;
+        private double? stopLoss;
+        private double? takeProfit;
 
-        public OrderModel(TradeRecord record) : this(record, null) { }
-        public OrderModel(ExecutionReport report): this(report, null) { }
-
-        public OrderModel(TradeRecord record, SymbolModel symbolModel)
+        public OrderModel(TradeRecord record)
         {
-            if(symbolModel != null)
-                this.symbolObserver = new SymbolObserver(symbolModel);
             this.Id = record.OrderId;
             this.Symbol = record.Symbol;
             Update(record);
         }
 
-        public OrderModel(ExecutionReport report, SymbolModel symbolModel)
+        public OrderModel(ExecutionReport report)
         {
-            if (symbolModel != null)
-                this.symbolObserver = new SymbolObserver(symbolModel);
             this.Id = report.OrderId;
             this.Symbol = report.Symbol;
 
             Update(report);
         }
 
-        private void Update(TradeRecord record)
-        {
-            this.Amount = (decimal)record.InitialVolume;
-            this.RemainingAmount = (decimal)record.Volume;
-            this.OrderType = record.Type;
-            this.Side = record.Side;
-            this.Price = (decimal)record.Price;
-            this.Created = record.Created;
-            this.Expiration = record.Expiration;
-            this.Comment = record.Comment;
-            this.StopLoss = (decimal?)record.StopLoss;
-            this.TakeProfit = (decimal?)record.TakeProfit;
-        }
-
-        private void Update(ExecutionReport report)
-        {
-            this.Amount = (decimal)report.InitialVolume;
-            this.RemainingAmount = (decimal)report.LeavesVolume;
-            this.OrderType = report.OrderType;
-            this.Side = report.OrderSide;
-            this.Price = (decimal?)(report.Price ?? report.StopPrice);
-            this.Created = report.Created;
-            this.Expiration = report.Expiration;
-            this.Comment = report.Comment;
-            this.StopLoss = (decimal?)report.StopLoss;
-            this.TakeProfit = (decimal?)report.TakeProfit;
-        }
-
-        public OrderEntity ToAlgoOrder()
-        {
-            return new OrderEntity(Id)
-            {
-                RemainingAmount = (double)RemainingAmount,
-                RequestedAmount = (double)Amount,
-                Symbol = Symbol,
-                Type = FdkToAlgo.Convert(orderType),
-                Side = FdkToAlgo.Convert(Side),
-                Price = (double)Price
-            };
-        }
-
         #region Order Properties 
-
-        private TradeRecordType orderType;
-        private decimal amount;
-        private decimal amountRemaining;
-        public TradeRecordSide side;
-        private decimal? price;
-        private DateTime? created;
-        private DateTime? expiration;
-        private string comment;
-        private decimal? stopLoss;
-        private decimal? takeProfit;
-
         public string Id { get; private set; }
         public string Symbol { get; private set; }
-
-        public decimal Amount
+        public double Amount
         {
             get { return amount; }
-            set
+            private set
             {
                 if (this.amount != value)
                 {
@@ -104,11 +54,10 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
-        public decimal RemainingAmount
+        public double RemainingAmount
         {
             get { return amountRemaining; }
-            set
+            private set
             {
                 if (this.amountRemaining != value)
                 {
@@ -117,11 +66,10 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
         public TradeRecordType OrderType
         {
             get { return orderType; }
-            set
+            private set
             {
                 if (orderType != value)
                 {
@@ -130,28 +78,22 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
         public TradeRecordSide Side
         {
             get { return side; }
-            set
+            private set
             {
                 if (side != value)
                 {
                     side = value;
-
-                    CurrentPrice = side == TradeRecordSide.Buy ? symbolObserver?.Ask : symbolObserver?.Bid;
-
                     NotifyOfPropertyChange(nameof(Side));
-                    NotifyOfPropertyChange(nameof(CurrentPrice));
                 }
             }
         }
-
-        public decimal? Price
+        public double Price
         {
             get { return price; }
-            set
+            private set
             {
                 if (price != value)
                 {
@@ -160,11 +102,34 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
+        public double Swap
+        {
+            get { return swap; }
+            private set
+            {
+                if (swap != value)
+                {
+                    swap = value;
+                    NotifyOfPropertyChange(nameof(Swap));
+                }
+            }
+        }
+        public double Commission
+        {
+            get { return commission; }
+            private set
+            {
+                if (commission != value)
+                {
+                    commission = value;
+                    NotifyOfPropertyChange(nameof(Commission));
+                }
+            }
+        }
         public DateTime? Created
         {
             get { return created; }
-            set
+            private set
             {
                 if (created != value)
                 {
@@ -173,11 +138,10 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
         public DateTime? Expiration
         {
             get { return expiration; }
-            set
+            private set
             {
                 if (expiration != value)
                 {
@@ -186,11 +150,10 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
         public string Comment
         {
             get { return comment; }
-            set
+            private set
             {
                 if (comment != value)
                 {
@@ -199,11 +162,10 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
-        public decimal? TakeProfit
+        public double? TakeProfit
         {
             get { return takeProfit; }
-            set
+            private set
             {
                 if (takeProfit != value)
                 {
@@ -212,11 +174,10 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
-        public decimal? StopLoss
+        public double? StopLoss
         {
             get { return stopLoss; }
-            set
+            private set
             {
                 if (stopLoss != value)
                 {
@@ -225,15 +186,50 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
-        public RateDirectionTracker CurrentPrice { get; private set; }
-
         #endregion
 
-        public void Dispose()
+        public OrderEntity ToAlgoOrder()
         {
-            this.symbolObserver?.Dispose();
-            this.symbolObserver = null;
+            return new OrderEntity(Id)
+            {
+                RemainingAmount = RemainingAmount,
+                RequestedAmount = Amount,
+                Symbol = Symbol,
+                Type = FdkToAlgo.Convert(orderType),
+                Side = FdkToAlgo.Convert(Side),
+                Price = Price
+            };
+        }
+
+        private void Update(TradeRecord record)
+        {
+            this.Amount = record.InitialVolume;
+            this.RemainingAmount = record.Volume;
+            this.OrderType = record.Type;
+            this.Side = record.Side;
+            this.Price = record.Price;
+            this.Created = record.Created;
+            this.Expiration = record.Expiration;
+            this.Comment = record.Comment;
+            this.StopLoss = record.StopLoss;
+            this.TakeProfit = record.TakeProfit;
+            this.Swap = record.Swap;
+            this.Commission = record.Commission;
+        }
+        private void Update(ExecutionReport report)
+        {
+            this.Amount = report.InitialVolume ?? 0;
+            this.RemainingAmount = report.LeavesVolume;
+            this.OrderType = report.OrderType;
+            this.Side = report.OrderSide;
+            this.Price = (report.Price ?? report.StopPrice) ?? 0;
+            this.Created = report.Created;
+            this.Expiration = report.Expiration;
+            this.Comment = report.Comment;
+            this.StopLoss = report.StopLoss;
+            this.TakeProfit = report.TakeProfit;
+            this.Swap = report.Swap;
+            this.Commission = report.Commission;
         }
     }
 }
