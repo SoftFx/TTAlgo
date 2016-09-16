@@ -76,7 +76,34 @@ namespace TickTrader.BotTerminal
             catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
             catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
 
+            feed.Symbols.State.StateChanged += OpenDefaultChart;
+
             LogStateLoop();
+        }
+
+        private void OpenDefaultChart(SymbolCollectionModel.States oldValue, SymbolCollectionModel.States newValue)
+        {
+            /*FIXME: Open Default Chart*/
+            if (newValue == SymbolCollectionModel.States.Online)
+            {
+                if (feed.Symbols.Snapshot.Any())
+                {
+                    var defaultSymbol = string.Empty;
+                    switch (trade.Account.Type)
+                    {
+                        case SoftFX.Extended.AccountType.Gross:
+                        case SoftFX.Extended.AccountType.Cash:
+                            defaultSymbol = "EURUSD";
+                            break;
+                        case SoftFX.Extended.AccountType.Net:
+                            defaultSymbol = "EUR/USD";
+                            break;
+                    }
+
+                    Charts.Open(feed.Symbols.GetOrDefault(defaultSymbol)?.Name ?? feed.Symbols.Snapshot.First().Key);
+                }
+                feed.Symbols.State.StateChanged -= OpenDefaultChart;
+            }
         }
 
         private void UpdateDisplayName()
