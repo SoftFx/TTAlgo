@@ -27,21 +27,19 @@ namespace TickTrader.BotTerminal
         private DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
         private DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private ConnectionModel connection;
-        private SymbolCollectionModel symbols;
         private ActionBlock<System.Action> uiUpdater;
         private AccountType? accType;
 
-        public AccountModel(ConnectionModel connection, SymbolCollectionModel symbols)
+        public AccountModel(ConnectionModel connection)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
 
             this.connection = connection;
-            this.symbols = symbols;
             TradeHistory = new TradeHistoryProvider(connection);
 
             connection.State.StateChanged += State_StateChanged;
             //connection.SysInitalizing += Connection_Initalizing;
-            connection.Connected += Connection_Connected;
+            connection.Connected += ConnectionConnected;
             connection.SysDeinitalizing += Connection_Deinitalizing;
 
             connection.Connecting += () =>
@@ -51,7 +49,6 @@ namespace TickTrader.BotTerminal
                 connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
                 connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
                 connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
-                connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
             };
 
             connection.Disconnecting += () =>
@@ -59,10 +56,12 @@ namespace TickTrader.BotTerminal
                 connection.TradeProxy.AccountInfo -= AccountInfoChanged;
                 connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
                 connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
+                connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
+                connection.TradeProxy.BalanceOperation -= TradeProxy_BalanceOperation;
             };
         }
 
-        private void Connection_Connected()
+        private void ConnectionConnected()
         {
             Init();
         }
@@ -147,7 +146,7 @@ namespace TickTrader.BotTerminal
 
             var fdkOrdersArray = connection.TradeProxy.Cache.TradeRecords;
             foreach (var fdkOrder in fdkOrdersArray)
-                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, symbols[fdkOrder.Symbol]));
+                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder));
 
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
@@ -163,18 +162,6 @@ namespace TickTrader.BotTerminal
                     uiUpdater.Complete();
                     uiUpdater.Completion.Wait();
                 });
-        }
-
-        private OrderModel UpsertOrder(ExecutionReport report)
-        {
-            OrderModel order = new OrderModel(report, symbols[report.Symbol]);
-            orders[order.Id] = order;
-            return order;
-        }
-
-        private void UpsertPosition(Position report)
-        {
-            positions[report.Symbol] = new PositionModel(report);
         }
 
         private void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
@@ -257,6 +244,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void UpsertPosition(Position report)
+        {
+            positions[report.Symbol] = new PositionModel(report);
+        }
+
+        private OrderModel UpsertOrder(ExecutionReport report)
+        {
+            OrderModel order = new OrderModel(report);
+            orders[order.Id] = order;
+            return order;
+        }
+
         private void OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = UpsertOrder(report);
@@ -268,7 +267,6 @@ namespace TickTrader.BotTerminal
             var orderCopy = orders[report.OrderId];
             orders.Remove(report.OrderId);
             ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, orderCopy);
-            orderCopy.Dispose();
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)

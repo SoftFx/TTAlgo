@@ -24,31 +24,31 @@
         <Grid>
             <DataGrid Name="Orders">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
-                    <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Created, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
+                    <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
                     <DataGridTextColumn Header="Type" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding StringFormat="{}{0}" Converter="{StaticResource TradeSideTypeFormat}">
-                                <Binding Path="Side" />
-                                <Binding Path="OrderType" />
+                                <Binding Path="Order.Side" />
+                                <Binding Path="Order.OrderType" />
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Amount}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="RemainingAmount" />
-                                <Binding Path="Amount" />
+                                <Binding Path="Order.RemainingAmount" />
+                                <Binding Path="Order.Amount" />
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Symbol}" />
-                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Price}" />
-                    <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding StopLoss}" />
-                    <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding TakeProfit}" />
+                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
+                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Order.Price}" />
+                    <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
+                    <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
                     <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
-                    <DataGridTextColumn Header="Expiration" Width="*" Binding="{Binding Expiration, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
+                    <DataGridTextColumn Header="Expiration" Width="*" Binding="{Binding Order.Expiration, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

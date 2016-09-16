@@ -75,9 +75,9 @@ namespace TickTrader.BotTerminal
             rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
         }
 
-        public States State { get { return stateControl.Current; } }
+        public IStateProvider<States> State { get { return stateControl; } }
         public IEnumerable<Algo.Core.SymbolEntity> AlgoSymbolCache { get { return algoSymbolCache; } }
-        public bool IsOnline { get { return State == States.Online; } }
+        public bool IsOnline { get { return State.Current == States.Online; } }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
 

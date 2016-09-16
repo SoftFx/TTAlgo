@@ -8,7 +8,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     
     <UserControl.Resources>
-        <!--<Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsBusy}" Value="True">
                     <Setter Property="l:OverlayControl.Content">
@@ -18,15 +18,16 @@
                     </Setter>
                 </DataTrigger>
             </Style.Triggers>
-        </Style>-->
+        </Style>
     </UserControl.Resources>
     
     <Grid>
         <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Currency}" />
-                <DataGridTextColumn Header="Balance" Width="*" Binding="{Binding Balance}" />
-                <DataGridTextColumn Header="Trade Amount" Width="*" Binding="{Binding TradeAmount}" />
+                <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Balance}" />
+                <DataGridTextColumn Header="Locked Volume" Width="*" />
+                <DataGridTextColumn Header="Available Volume" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

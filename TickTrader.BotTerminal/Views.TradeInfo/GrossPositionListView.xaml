@@ -23,21 +23,29 @@
     
     <Grid>
         <DataGrid Name="Positions">
-            
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Id}"/>
-                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Symbol}" />
-                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Side}" />
-                <DataGridTextColumn Header="{l:Resx Position_Amount}" Width="*">
+                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
+                <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
+                <DataGridTextColumn Header="Side" Width="*">
                     <DataGridTextColumn.Binding>
-                        <MultiBinding StringFormat="{}{0}/{1}">
-                            <Binding Path="RemainingAmount" />
-                            <Binding Path="Amount" />
+                        <MultiBinding StringFormat="{}{0}" Converter="{StaticResource TradeSideTypeFormat}">
+                            <Binding Path="Order.Side" />
+                            <Binding Path="Order.OrderType" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
+                <DataGridTextColumn Header="{l:Resx Order_Amount}" Binding="{Binding Order.Amount}"/>
+                <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}" />
+                <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Order.Price}" />
+                <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
+                <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
+                <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
+                <DataGridTextColumn Header="P/L" Width="*" />
+                <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Order.Commission}"/>
+                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Order.Swap}" />
+                <DataGridTextColumn Header="Net P/L" Width="*" />
+                <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
             </DataGrid.Columns>
-            
         </DataGrid>
     </Grid>
 </UserControl>

@@ -6,7 +6,7 @@
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    
+
     <UserControl.Resources>
         <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
             <Style.Triggers>
@@ -20,14 +20,18 @@
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
-    
+
     <Grid>
         <DataGrid Name="Positions">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Symbol}" />
-                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Side}" />
-                <DataGridTextColumn Header="Price" Width="*" Binding="{Binding Price}" />
-                <DataGridTextColumn Header="{l:Resx Position_Amount}" Width="*" Binding="{Binding Amount}" />
+                <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Position.Symbol}" />
+                <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Position.Side}" />
+                <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Position.Amount}" />
+                <DataGridTextColumn Header="Price" Width="*" Binding="{Binding Position.Price}" />
+                <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
+                <DataGridTextColumn Header="P/L" Width="*" />
+                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" />
+                <DataGridTextColumn Header="Net P/L" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -13,6 +13,7 @@ namespace TickTrader.BotTerminal
         private double commission;
         private double agentCommission;
         private string symbol;
+        private double swap;
         private double buyAmount;
         private double? buyPrice;
         private double? sellPrice;
@@ -42,6 +43,7 @@ namespace TickTrader.BotTerminal
             SettlementPrice = position.SettlementPrice;
             Side = position.BuyAmount > 0 ? TradeRecordSide.Buy : TradeRecordSide.Sell;
             Amount = Math.Max(position.BuyAmount, position.SellAmount);
+            Swap = position.Swap;
             Price = Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
         }
 
@@ -54,6 +56,19 @@ namespace TickTrader.BotTerminal
                 {
                     commission = value;
                     NotifyOfPropertyChange(nameof(Commission));
+                }
+            }
+        }
+
+        public double Swap
+        {
+            get { return swap; }
+            private set
+            {
+                if (swap != value)
+                {
+                    swap = value;
+                    NotifyOfPropertyChange(nameof(Swap));
                 }
             }
         }

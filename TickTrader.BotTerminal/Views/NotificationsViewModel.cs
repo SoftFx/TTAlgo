@@ -81,7 +81,7 @@ namespace TickTrader.BotTerminal
         }
         private void SoundNotificationOnConnected()
         {
-            _notificationCenter.SoundNotification.Notify(AppSounds.Clinking);
+            _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
         }
         private void PopupNotificationOnOrderUpdated(OrderExecReport obj)
         {

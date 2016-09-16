@@ -44,16 +44,16 @@ namespace TickTrader.BotTerminal
 
             cManager = new ConnectionManager(storage, eventJournal);
             feed = new FeedModel(cManager.Connection);
-            trade = new TraderModel(cManager.Connection, feed.Symbols);
+            trade = new TraderModel(cManager.Connection);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(catalog);
             SymbolList = new SymbolListViewModel(feed.Symbols, this);
 
-            var netPositions = new NetPositionListViewModel(trade.Account);
-            var grossPositions = new GrossPositionListViewModel(trade.Account);
+            var netPositions = new NetPositionListViewModel(trade.Account, feed.Symbols);
+            var grossPositions = new GrossPositionListViewModel(trade.Account, feed.Symbols);
             var positionList = new PositionListViewModel(netPositions, grossPositions);
-            var orderList = new OrderListViewModel(trade.Account);
+            var orderList = new OrderListViewModel(trade.Account, feed.Symbols);
             var assets = new AssetsViewModel(trade.Account);
             Trade = new TradeInfoViewModel(orderList, positionList, assets);
 
@@ -218,7 +218,7 @@ namespace TickTrader.BotTerminal
 
                 LogState(builder, "ConnectionManager", cManager.State.ToString());
                 LogState(builder, "Connection", cManager.Connection.State.Current.ToString());
-                LogState(builder, "Feed.Symbols", feed.Symbols.State.ToString());
+                LogState(builder, "Feed.Symbols", feed.Symbols.State.Current.ToString());
 
                 logger.Debug(builder.ToString());
 
