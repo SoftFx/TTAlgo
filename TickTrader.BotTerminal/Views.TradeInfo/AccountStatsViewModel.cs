@@ -10,6 +10,8 @@ namespace TickTrader.BotTerminal
     internal class AccountStatsViewModel : PropertyChangedBase
     {
         private AccountModel account;
+        private string currencyFormatStr;
+        private string precentFormatStr = "{0:F2}%";
 
         public AccountStatsViewModel(TraderClientModel client)
         {
@@ -18,6 +20,7 @@ namespace TickTrader.BotTerminal
             client.Connected += () =>
             {
                 account.Calc.Updated += Calc_Updated;
+                PrebuildCurrencyFormat();
                 IsStatsVisible = account.Type != SoftFX.Extended.AccountType.Cash;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
                 Calc_Updated(account.Calc);
@@ -27,11 +30,11 @@ namespace TickTrader.BotTerminal
 
         private void Calc_Updated(AccountCalculatorModel calc)
         {
-            Balance = FormatNumber(account.Balance, account.BalanceDigits);
-            Equity = FormatNumber(calc.Equity, account.BalanceDigits);
-            Margin = FormatNumber(calc.Margin, account.BalanceDigits);
-            MarginLevel = FormatNumber(calc.MarginLevel, 2);
-            FreeMargin = FormatNumber(calc.Equity - calc.Margin, account.BalanceDigits);
+            Balance = FormatNumber(account.Balance);
+            Equity = FormatNumber(calc.Equity);
+            Margin = FormatNumber(calc.Margin);
+            MarginLevel = FormatPrecent(calc.MarginLevel);
+            FreeMargin = FormatNumber(calc.Equity - calc.Margin);
 
             NotifyOfPropertyChange(nameof(Balance));
             NotifyOfPropertyChange(nameof(Equity));
@@ -40,14 +43,49 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(MarginLevel));
         }
 
-        private string FormatNumber(double number, int precision)
+        private void PrebuildCurrencyFormat()
         {
-            return number.ToString("F" + precision);
+            var sign = GetCurrencySymbol(account.BalanceCurrency);
+
+            if (sign != null)
+                currencyFormatStr = sign.Value + " {0:# ###." + GetZeroes(account.BalanceDigits) + "}";
+            else
+                currencyFormatStr = "{0:# ###." + GetZeroes(account.BalanceDigits) + "} " + account.BalanceCurrency;
         }
 
-        private string FormatNumber(decimal number, int precision)
+        private string GetZeroes(int count)
         {
-            return number.ToString("F" + precision);
+            var builder = new StringBuilder();
+            for (int i = 0; i < count; i++)
+                builder.Append('0');
+            return builder.ToString();
+        }
+
+        private char? GetCurrencySymbol(string currencyName)
+        {
+            switch (currencyName.ToLower())
+            {
+                case "usd": return '$';
+                case "eur": return '€';
+                case "jpy": return '¥';
+                case "gbp": return '£';
+                default: return null;
+            }
+        }
+
+        private string FormatNumber(double number)
+        {
+            return string.Format(currencyFormatStr, number);
+        }
+
+        private string FormatNumber(decimal number)
+        {
+            return string.Format(currencyFormatStr, number);
+        }
+
+        private string FormatPrecent(decimal number)
+        {
+            return string.Format(precentFormatStr, number);
         }
 
         public bool IsStatsVisible { get; private set; }
