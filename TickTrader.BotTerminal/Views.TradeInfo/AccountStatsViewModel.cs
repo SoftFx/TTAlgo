@@ -33,12 +33,14 @@ namespace TickTrader.BotTerminal
             Balance = FormatNumber(account.Balance);
             Equity = FormatNumber(calc.Equity);
             Margin = FormatNumber(calc.Margin);
+            Profit = FormatNumber(calc.Profit);
             MarginLevel = FormatPrecent(calc.MarginLevel);
             FreeMargin = FormatNumber(calc.Equity - calc.Margin);
 
             NotifyOfPropertyChange(nameof(Balance));
             NotifyOfPropertyChange(nameof(Equity));
             NotifyOfPropertyChange(nameof(Margin));
+            NotifyOfPropertyChange(nameof(Profit));
             NotifyOfPropertyChange(nameof(FreeMargin));
             NotifyOfPropertyChange(nameof(MarginLevel));
         }
@@ -92,6 +94,7 @@ namespace TickTrader.BotTerminal
         public string Balance { get; private set; }
         public string Equity { get; private set; }
         public string Margin { get; private set; }
+        public string Profit { get; private set; }
         public string FreeMargin { get; private set; }
         public string MarginLevel { get; private set; }
     }

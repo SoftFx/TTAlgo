@@ -33,6 +33,7 @@
             <l:KeyValueLabel Key="Margin Used:" Value="{Binding Margin}" />
             <l:KeyValueLabel Key="Free Margin:" Value="{Binding FreeMargin}" />
             <l:KeyValueLabel Key="Margin Level:" Value="{Binding MarginLevel}" />
+            <l:KeyValueLabel Key="Profit/Loss:" Value="{Binding Profit}" />
         </UniformGrid>
     </Grid>
 </UserControl>
