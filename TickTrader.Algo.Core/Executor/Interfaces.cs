@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core
     public interface IAccountInfoProvider
     {
         double Balance { get; }
-        string BalanceCurrencyCode { get; }
+        string BalanceCurrency { get; }
         Api.AccountTypes AccountType { get; }
         string Account { get; }
 

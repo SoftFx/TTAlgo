@@ -24,8 +24,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
         private Fdk.Quote lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
-            : base(symbol, catalog, feed, trade, journal)
+        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, TraderClientModel clientModel, BotJournal journal)
+            : base(symbol, catalog, clientModel, journal)
         {
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
@@ -58,7 +58,7 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                var tickArray = await Feed.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                var tickArray = await ClientModel.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
 
                 //foreach (var tick in tickArray)
                 //{
@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
 
         protected override void InitPluign(PluginExecutor plugin)
         {
-            var feedProvider = new QuoteBasedFeedProvider(Feed, () => null);
+            var feedProvider = new QuoteBasedFeedProvider(ClientModel, () => null);
             plugin.InitQuoteStartegy(feedProvider);
             plugin.Metadata = feedProvider;
         }

@@ -1145,6 +1145,11 @@
             
              </summary>
         </member>
+        <member name="P:TickTrader.BusinessObjects.Order.ClientApp">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:TickTrader.BusinessObjects.Order.Clone">
              <summary>
             
@@ -1816,6 +1821,11 @@
             The amount specified on order closing.
             Not affected by consequent order modifications.
             Null in case of Balance and Credit transactions.
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.ClientApp">
+            <summary>
+            
             </summary>
         </member>
         <member name="P:TickTrader.BusinessObjects.TradeReport.RequestTime">

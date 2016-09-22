@@ -149,6 +149,15 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="TickTrader.BusinessLogic">
+      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.BusinessObjects">
+      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.Common">
+      <HintPath>..\lib\TickTrader.Common.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -199,6 +208,7 @@
     <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
+    <Compile Include="Controls\KeyValueLabel.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls.Chart\MarkerAnnotation.xaml.cs">
       <DependentUpon>MarkerAnnotation.xaml</DependentUpon>
@@ -227,6 +237,7 @@
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\TradeSideTypeConverter.cs" />
+    <Compile Include="Converters\CustomDecimalConverter.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
@@ -249,6 +260,7 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\SymbolRateObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
@@ -316,7 +328,7 @@
     <Compile Include="Model\RateSplitModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
-    <Compile Include="Model\TraderModel.cs" />
+    <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -361,7 +373,11 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
+      <DependentUpon>AccountStatsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views.TradeInfo\AccountBasedViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AccountStatsViewModel.cs" />
     <Compile Include="Views.TradeInfo\OrderViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeHistoryView.xaml.cs">
@@ -726,6 +742,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Order\OpenOrderDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.TradeInfo\AccountStatsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

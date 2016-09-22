@@ -25,8 +25,8 @@ namespace TickTrader.BotTerminal
         private Api.TimeFrames timeframe;
         private BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
-            : base(symbol, catalog, feed, trade, journal)
+        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, TraderClientModel clientModel, BotJournal journal)
+            : base(symbol, catalog, clientModel, journal)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            var barArray = await Feed.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
+            var barArray = await ClientModel.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
             var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
@@ -96,7 +96,7 @@ namespace TickTrader.BotTerminal
 
         protected override void InitPluign(PluginExecutor plugin)
         {
-            var feed = new BarBasedFeedProvider(Feed, () => barCollection.Snapshot.ToList());
+            var feed = new BarBasedFeedProvider(ClientModel, () => barCollection.Snapshot.ToList());
             plugin.InitBarStartegy(feed);
             plugin.Metadata = feed;
         }

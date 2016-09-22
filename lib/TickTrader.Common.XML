@@ -22,13 +22,6 @@
             </summary>
             <param name="waitForQueueEmpty"></param>
         </member>
-        <member name="M:System.CollectionExtentions.RemoveFisrt``1(System.Collections.Generic.IList{``0})">
-            <summary>
-            Warning! It's a heavy operation O(n).
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="srcList"></param>
-        </member>
         <member name="M:TickTrader.Common.DebugApi.Dump.Dump.WriteNormalDumpOnError(System.String)">
             <summary>
             The method specifies a path, which should be used for normal dump writing on exception/fatal error.
@@ -107,11 +100,6 @@
             </para>
             </remarks>
         </member>
-        <member name="T:TickTrader.Common.NaturalComparer">
-            <summary>
-            NaturalComparer
-            </summary>
-        </member>
         <member name="T:TickTrader.Common.Logging.AsyncForwardingAppender">
             <summary>
             Asynchronous forwarding log appender.
@@ -136,6 +124,92 @@
             <summary>
             Override Append() method.
             </summary>
+        </member>
+        <member name="T:TickTrader.Common.NaturalComparer">
+            <summary>
+            NaturalComparer
+            </summary>
+        </member>
+        <member name="T:TickTrader.Common.Security.DeviceIdGenerator">
+            <summary>
+            http://www.codeproject.com/Articles/28678/Generating-Unique-Key-Finger-Print-for-a-Computer
+            </summary>
+        </member>
+        <member name="M:TickTrader.Common.Security.DeviceIdGenerator.GetDeviceId">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:TickTrader.Common.Security.TwoFactorAuthentication">
+            <summary>
+            Provides methods for Two-factor authentication
+            </summary>
+        </member>
+        <member name="M:TickTrader.Common.Security.TwoFactorAuthentication.GenerateSecretKey">
+            <summary>
+            Generates secret key
+            </summary>
+            <returns>The generated key</returns>
+        </member>
+        <member name="M:TickTrader.Common.Security.TwoFactorAuthentication.GenerateTotpKeyUri(System.String,System.String,System.String)">
+            <summary>
+            Generates TOTP Key Uri that is used to generate QR code
+            </summary>
+            <param name="secret">Secret key</param>
+            <param name="identity">Identity name</param>
+            <param name="issuer">Issuer name</param>
+            <returns>The Key Uri</returns>
+        </member>
+        <member name="M:TickTrader.Common.Security.TwoFactorAuthentication.ValidateTotp(System.String,System.Byte[])">
+            <summary>
+            Validates TOTP
+            </summary>
+            <param name="token">TOTP token</param>
+            <param name="secret">Secret key</param>
+            <returns>True if token is valid</returns>
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.Generate">
+            <summary>  
+            Generates a random password with the default length.  
+            </summary>  
+            <returns>Randomly generated password.</returns>  
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.Generate(TickTrader.Common.Security.RandomPasswordOptions)">
+            <summary>  
+            Generates a random password with the default length.  
+            </summary>  
+            <returns>Randomly generated password.</returns>  
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.Generate(System.Int32)">
+            <summary>  
+            Generates a random password with the default length.  
+            </summary>  
+            <returns>Randomly generated password.</returns>  
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.Generate(System.Int32,TickTrader.Common.Security.RandomPasswordOptions)">
+            <summary>  
+            Generates a random password.  
+            </summary>  
+            <returns>Randomly generated password.</returns>  
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.GeneratePassword(System.Int32,TickTrader.Common.Security.RandomPasswordOptions)">
+            <summary>  
+            Generates the password.  
+            </summary>  
+            <returns></returns>  
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.GetCharacters(TickTrader.Common.Security.RandomPasswordOptions)">
+            <summary>  
+            Gets the characters selected by the option  
+            </summary>  
+            <returns></returns>  
+        </member>
+        <member name="M:TickTrader.Common.Security.RandomPasswordGenerator.GetRandom">
+            <summary>  
+            Gets a random object with a real random seed  
+            </summary>  
+            <returns></returns>  
         </member>
         <member name="M:TickTrader.Common.PerfCounters.SystemPerfCounters.#ctor(System.Type,TickTrader.Common.PerfCounters.SystemPerfCounters.LogDelegate)">
             <summary>
@@ -181,48 +255,6 @@
             Compresses byte array to new byte array.
             </summary>
         </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.Generate">
-            <summary>  
-            Generates a random password with the default length.  
-            </summary>  
-            <returns>Randomly generated password.</returns>  
-        </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.Generate(TickTrader.Common.RandomPasswordOptions)">
-            <summary>  
-            Generates a random password with the default length.  
-            </summary>  
-            <returns>Randomly generated password.</returns>  
-        </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.Generate(System.Int32)">
-            <summary>  
-            Generates a random password with the default length.  
-            </summary>  
-            <returns>Randomly generated password.</returns>  
-        </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.Generate(System.Int32,TickTrader.Common.RandomPasswordOptions)">
-            <summary>  
-            Generates a random password.  
-            </summary>  
-            <returns>Randomly generated password.</returns>  
-        </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.GeneratePassword(System.Int32,TickTrader.Common.RandomPasswordOptions)">
-            <summary>  
-            Generates the password.  
-            </summary>  
-            <returns></returns>  
-        </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.GetCharacters(TickTrader.Common.RandomPasswordOptions)">
-            <summary>  
-            Gets the characters selected by the option  
-            </summary>  
-            <returns></returns>  
-        </member>
-        <member name="M:TickTrader.Common.RandomPasswordGenerator.GetRandom">
-            <summary>  
-            Gets a random object with a real random seed  
-            </summary>  
-            <returns></returns>  
-        </member>
         <member name="M:TickTrader.Common.Threading.ReaderWriterLockSlimExtensions.UnderReadLock(System.Threading.ReaderWriterLockSlim,System.Action)">
             <summary>
             Executes an action under read lock. Warning! Some performance loss in exchange for better looking code.
@@ -235,24 +267,46 @@
             </summary>
             <param name="locker"></param>
         </member>
+        <member name="T:TickTrader.Common.Threading.TaskPriority">
+            <summary>Tasks priority</summary>
+        </member>
+        <member name="F:TickTrader.Common.Threading.TaskPriority.Highest">
+            <summary>Highest</summary>
+        </member>
+        <member name="F:TickTrader.Common.Threading.TaskPriority.High">
+            <summary>High</summary>
+        </member>
+        <member name="F:TickTrader.Common.Threading.TaskPriority.Normal">
+            <summary>Normal</summary>
+        </member>
+        <member name="F:TickTrader.Common.Threading.TaskPriority.Low">
+            <summary>Low</summary>
+        </member>
+        <member name="F:TickTrader.Common.Threading.TaskPriority.Lowest">
+            <summary>Lowest</summary>
+        </member>
+        <member name="T:TickTrader.Common.Threading.SerialTaskProcessor`1">
+            <summary>Serial tasks processor</summary>
+        </member>
+        <member name="P:TickTrader.Common.Threading.SerialTaskProcessor`1.TasksCount">
+            <summary>Count of tasks in processor</summary>
+        </member>
+        <member name="M:TickTrader.Common.Threading.SerialTaskProcessor`1.#ctor(System.Int32)">
+            <summary>Constructor</summary>
+        </member>
+        <member name="M:TickTrader.Common.Threading.SerialTaskProcessor`1.ExecuteTask(`0)">
+            <summary>Execute task</summary>
+        </member>
+        <member name="M:TickTrader.Common.Threading.SerialTaskProcessor`1.Enqueue(`0,TickTrader.Common.Threading.TaskPriority)">
+            <summary>Enquire new task</summary>
+        </member>
+        <member name="M:TickTrader.Common.Threading.SerialTaskProcessor`1.Close(System.Int32)">
+            <summary>Close task processor</summary>
+        </member>
         <member name="T:TickTrader.Common.Threading.ThreadHost">
             <summary>
             Containes code to start and stop long-live thread or multiple long-live threads.
             </summary>
-        </member>
-        <member name="F:TickTrader.BusinessObjects.Validators.StringValidators.MatchEmailPattern">
-            <summary>
-            Regular expression, which is used to validate an E-Mail address.
-            </summary>
-        </member>
-        <member name="M:TickTrader.BusinessObjects.Validators.StringValidators.IsEmailValid(System.String)">
-            <summary>
-            Checks whether the given Email-Parameter is a valid E-Mail address.
-            </summary>
-            <param name="email">Parameter-string that contains an E-Mail address.</param>
-            <returns>True, when Parameter-string is not null and 
-            contains a valid E-Mail address;
-            otherwise false.</returns>
         </member>
         <member name="T:TickTrader.Common.WCF.ConfigurableChannelFactory`1">
             <summary>
@@ -804,6 +858,27 @@
             This provides easy way to debug Windows Services from Visual Studio.
             It works only in debug configurations.
             </summary>
+        </member>
+        <member name="F:TickTrader.BusinessObjects.Validators.StringValidators.MatchEmailPattern">
+            <summary>
+            Regular expression, which is used to validate an E-Mail address.
+            </summary>
+        </member>
+        <member name="M:TickTrader.BusinessObjects.Validators.StringValidators.IsEmailValid(System.String)">
+            <summary>
+            Checks whether the given Email-Parameter is a valid E-Mail address.
+            </summary>
+            <param name="email">Parameter-string that contains an E-Mail address.</param>
+            <returns>True, when Parameter-string is not null and 
+            contains a valid E-Mail address;
+            otherwise false.</returns>
+        </member>
+        <member name="M:System.CollectionExtentions.RemoveFisrt``1(System.Collections.Generic.IList{``0})">
+            <summary>
+            Warning! It's a heavy operation O(n).
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="srcList"></param>
         </member>
     </members>
 </doc>

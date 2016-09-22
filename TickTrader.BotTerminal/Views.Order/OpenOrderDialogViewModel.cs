@@ -16,15 +16,15 @@ namespace TickTrader.BotTerminal
         private PendingOrderPageViewModel pendingOrderPage;
         private SymbolModel selectedSymbol;
 
-        private TraderModel trade;
+        private TraderClientModel clientModel;
 
         public event System.Action DepthChanged;
 
-        public OpenOrderDialogViewModel(TraderModel trade, FeedModel feed, string preselectedSymbol)
+        public OpenOrderDialogViewModel(TraderClientModel clientModel, string preselectedSymbol)
         {
-            this.trade = trade;
+            this.clientModel = clientModel;
 
-            Symbols = feed.Symbols.OrderBy((k, v) => k).Chain().AsObservable();
+            Symbols = clientModel.Symbols.OrderBy((k, v) => k).Chain().AsObservable();
 
             marketOrderPage = new MarketOrderPageViewModel(this);
             pendingOrderPage = new PendingOrderPageViewModel(this);
@@ -32,8 +32,8 @@ namespace TickTrader.BotTerminal
             Items.Add(marketOrderPage);
             Items.Add(pendingOrderPage);
 
-            UpdateState(trade.Connection.State.Current);
-            trade.Connection.State.StateChanged += State_StateChanged;
+            UpdateState(clientModel.Connection.State.Current);
+            clientModel.Connection.State.StateChanged += State_StateChanged;
 
             if (preselectedSymbol != null)
                 SelectedSymbol = Symbols.FirstOrDefault(s => s.Name == preselectedSymbol);
@@ -74,7 +74,7 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            trade.Connection.State.StateChanged -= State_StateChanged;
+            clientModel.Connection.State.StateChanged -= State_StateChanged;
             Symbols.Dispose();
         }
 

@@ -52,20 +52,19 @@ namespace TickTrader.BotTerminal
         private string dateAxisLabelFormat;
         private List<Quote> updateQueue;
 
-        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
+        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, TraderClientModel client, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.Feed = feed;
-            this.Trade = trade;
+            this.ClientModel = client;
             this.Model = symbol;
             this.catalog = catalog;
             this.Journal = journal;
 
             this.AvailableIndicators = catalog.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
-            this.isConnected = feed.Connection.State.Current == ConnectionModel.States.Online;
-            feed.Connection.Connected += Connection_Connected;
-            feed.Connection.Disconnected += Connection_Disconnected1;
+            this.isConnected = client.Connection.State.Current == ConnectionModel.States.Online;
+            client.Connection.Connected += Connection_Connected;
+            client.Connection.Disconnected += Connection_Disconnected1;
 
             symbol.Subscribe(this);
 
@@ -86,9 +85,8 @@ namespace TickTrader.BotTerminal
         }
 
         protected SymbolModel Model { get; private set; }
-        protected FeedModel Feed { get; private set; }
-        protected TraderModel Trade { get; private set; }
-        protected ConnectionModel Connection { get { return Feed.Connection; } }
+        protected TraderClientModel ClientModel { get; private set; }
+        protected ConnectionModel Connection { get { return ClientModel.Connection; } }
         protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
@@ -331,15 +329,14 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-
         ITradeApi IAlgoPluginHost.GetTradeApi()
         {
-            return Trade.TradeApi;
+            return ClientModel.TradeApi;
         }
 
         IAccountInfoProvider IAlgoPluginHost.GetAccInfoProvider()
         {
-            return Trade.Account;
+            return ClientModel.Account;
         }
 
         void IAlgoPluginHost.InitializePlugin(PluginExecutor plugin)

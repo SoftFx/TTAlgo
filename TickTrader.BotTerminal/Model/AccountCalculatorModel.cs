@@ -1,0 +1,199 @@
+﻿using Machinarium.Qnil;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TickTrader.BusinessLogic;
+using TickTrader.BusinessObjects;
+using TickTrader.Common.Business;
+
+namespace TickTrader.BotTerminal
+{
+    internal abstract class AccountCalculatorModel
+    {
+        private TraderClientModel feed;
+
+        private AccountCalculatorModel(AccountModel acc, TraderClientModel feed)
+        {
+            this.feed = feed;
+            this.Account = new AccountAdapter(acc);
+            this.MarketModel = new MarketState(NettingCalculationTypes.OneByOne);
+
+            MarketModel.Set(feed.Symbols.Snapshot.Values);
+            MarketModel.Set(feed.CurrencyList.Select(c => new CurrencyInfoAdapter(c)));
+
+            feed.Symbols.RateUpdated += Symbols_RateUpdated;
+        }
+
+        protected AccountAdapter Account { get; private set; }
+        protected MarketState MarketModel { get; private set; }
+
+        public decimal Equity { get; protected set; }
+        public decimal Margin { get; protected set; }
+        public decimal Profit { get; protected set; }
+        public decimal MarginLevel { get; protected set; }
+
+        public event Action<AccountCalculatorModel> Updated;
+
+        protected void OnUpdate()
+        {
+            Updated?.Invoke(this);
+        }
+
+        public static AccountCalculatorModel Create(AccountModel acc, TraderClientModel feed)
+        {
+            if (acc.Type == SoftFX.Extended.AccountType.Cash)
+                return new CashCalc(acc, feed);
+            else
+                return new MarginCalc(acc, feed);
+        }
+
+        public virtual void Dispose()
+        {
+            Account.Dispose();
+            feed.Symbols.RateUpdated -= Symbols_RateUpdated;
+        }
+
+        private void Symbols_RateUpdated(SoftFX.Extended.Quote quote)
+        {
+            MarketModel.Update(new RateAdapter(quote));
+        }
+
+        private class RateAdapter : ISymbolRate
+        {
+            public RateAdapter(SoftFX.Extended.Quote quote)
+            {
+                if (quote.HasAsk)
+                {
+                    Ask = (decimal)quote.Ask;
+                    NullableAsk = (decimal)quote.Ask;
+                }
+
+                if (quote.HasBid)
+                {
+                    Bid = (decimal)quote.Bid;
+                    NullableBid = (decimal)quote.Bid;
+                }
+
+                Symbol = quote.Symbol;
+            }
+
+            public decimal Ask { get; private set; }
+            public decimal Bid { get; private set; }
+            public decimal? NullableAsk { get; private set; }
+            public decimal? NullableBid { get; private set; }
+            public string Symbol { get; private set; }
+        }
+
+        private class CurrencyInfoAdapter : ICurrencyInfo
+        {
+            public CurrencyInfoAdapter(SoftFX.Extended.CurrencyInfo info)
+            {
+                Name = info.Name;
+                Precision = info.Precision;
+                SortOrder = info.SortOrder;
+            }
+
+            public string Name { get; private set; }
+            public int Precision { get; private set; }
+            public int SortOrder { get; private set; }
+        }
+
+        protected class AccountAdapter : IMarginAccountInfo
+        {
+            private AccountModel acc;
+
+            public AccountAdapter(AccountModel acc)
+            {
+                this.acc = acc;
+                this.acc.Orders.Updated += Orders_Updated;
+            }
+
+            public void Dispose()
+            {
+                this.acc.Orders.Updated -= Orders_Updated;
+            }
+
+            public AccountingTypes AccountingType
+            {
+                get
+                {
+                    switch (acc.Type)
+                    {
+                        case SoftFX.Extended.AccountType.Cash: return AccountingTypes.Cash;
+                        case SoftFX.Extended.AccountType.Gross: return AccountingTypes.Gross;
+                        case SoftFX.Extended.AccountType.Net: return AccountingTypes.Net;
+                        default: throw new NotImplementedException("Account type is not supported: " + acc.Type);
+                    }
+                }
+            }
+
+            public decimal Balance { get { return (decimal)acc.Balance; } }
+            public string BalanceCurrency { get { return acc.BalanceCurrency; } }
+            public long Id { get { return 0; } }
+            public int Leverage { get { return acc.Leverage; } }
+
+            public IEnumerable<IOrderModel> Orders { get { return acc.Orders.Snapshot.Values; } }
+
+            public IEnumerable<IPositionModel> Positions { get { return Enumerable.Empty<IPositionModel>(); } }
+
+            private void Orders_Updated(DictionaryUpdateArgs<string, OrderModel> args)
+            {
+                if (args.Action == DLinqAction.Insert)
+                    OrderAdded(args.NewItem);
+                else if (args.Action == DLinqAction.Replace)
+                    OrderReplaced(args.NewItem);
+                else if (args.Action == DLinqAction.Remove)
+                    OrderRemoved(args.OldItem);
+            }
+
+            public event Action<IOrderModel> OrderAdded = delegate { };
+            public event Action<IOrderModel> OrderRemoved = delegate { };
+            public event Action<IOrderModel> OrderReplaced = delegate { };
+            public event Action<IEnumerable<IOrderModel>> OrdersAdded = delegate { };
+            public event Action<IPositionModel, PositionChageTypes> PositionChanged = delegate { };
+        }
+
+        private class MarginCalc : AccountCalculatorModel
+        {
+            private AccCalcAdapter calc;
+
+            public MarginCalc(AccountModel acc, TraderClientModel feed)
+                : base(acc, feed)
+            {
+                calc = new AccCalcAdapter(Account,  MarketModel);
+                calc.Updated = () =>
+                {
+                    Equity = calc.Equity;
+                    Margin = calc.Margin;
+                    Profit = calc.Profit;
+                    MarginLevel = calc.MarginLevel;
+                    OnUpdate();
+                };
+            }
+        }
+
+        private class CashCalc : AccountCalculatorModel
+        {
+            public CashCalc(AccountModel acc, TraderClientModel feed)
+                : base(acc, feed)
+            {
+            }
+        }
+
+        private class AccCalcAdapter : AccountCalculator
+        {
+            public AccCalcAdapter(IMarginAccountInfo infoProvider, MarketState market) : base(infoProvider, market)
+            {
+            }
+
+            public Action Updated { get; set; }
+
+            protected override void OnUpdated()
+            {
+                Updated?.Invoke();
+            }
+        }
+    }
+}

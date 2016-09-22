@@ -155,7 +155,7 @@ namespace TickTrader.BotTerminal
     {
         private Func<List<BarEntity>> mainSeriesProvider;
 
-        public BarBasedFeedProvider(FeedModel feed, Func<List<BarEntity>> mainSeriesProvider)
+        public BarBasedFeedProvider(TraderClientModel feed, Func<List<BarEntity>> mainSeriesProvider)
             : base(feed.Symbols, feed.History)
         {
             if (mainSeriesProvider == null)
@@ -174,7 +174,7 @@ namespace TickTrader.BotTerminal
     {
         private Func<List<QuoteEntity>> mainSeriesProvider;
 
-        public QuoteBasedFeedProvider(FeedModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
+        public QuoteBasedFeedProvider(TraderClientModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
             : base(feed.Symbols, feed.History)
         {
             if (mainSeriesProvider == null)

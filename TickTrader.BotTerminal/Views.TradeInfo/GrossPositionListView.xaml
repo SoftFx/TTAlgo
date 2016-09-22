@@ -36,14 +36,49 @@
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="{l:Resx Order_Amount}" Binding="{Binding Order.Amount}"/>
                 <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}" />
-                <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Order.Price}" />
+                <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource CustomDecimalConverter}" >
+                            <Binding Path="Order.Price"/>
+                            <Binding Path="PriceDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
                 <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
-                <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
-                <DataGridTextColumn Header="P/L" Width="*" />
-                <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Order.Commission}"/>
+                <DataGridTextColumn Header="Current Price" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource CustomDecimalConverter}" >
+                            <Binding Path="Order.CurrentPrice"/>
+                            <Binding Path="PriceDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="P/L" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource CustomDecimalConverter}" >
+                            <Binding Path="Order.Profit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Commission" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource CustomDecimalConverter}" >
+                            <Binding Path="Order.Commission"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Order.Swap}" />
-                <DataGridTextColumn Header="Net P/L" Width="*" />
+                <DataGridTextColumn Header="Net P/L" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource CustomDecimalConverter}" >
+                            <Binding Path="Order.NetProfit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
             </DataGrid.Columns>
         </DataGrid>

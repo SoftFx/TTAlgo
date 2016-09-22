@@ -31,8 +31,7 @@ namespace TickTrader.BotTerminal
     {
         private static int idSeed;
         private Logger logger;
-        private readonly FeedModel feed;
-        private readonly TraderModel trade;
+        private readonly TraderClientModel clientModel;
         private readonly PluginCatalog catalog;
         private readonly BotJournal journal;
         private ChartModelBase activeChart;
@@ -46,25 +45,24 @@ namespace TickTrader.BotTerminal
         //private DynamicList<IRenderableSeriesViewModel> mainSeries = new DynamicList<IRenderableSeriesViewModel>();
         //private DynamicList<IDynamicListSource
 
-        public ChartViewModel(string symbol, IShell shell, FeedModel feed, TraderModel trade, PluginCatalog catalog, BotJournal journal)
+        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, PluginCatalog catalog, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.Symbol = symbol;
             this.DisplayName = symbol;
-            this.feed = feed;
-            this.trade = trade;
+            this.clientModel = clientModel;
             this.catalog = catalog;
             this.shell = shell;
             this.journal = journal;
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            SymbolModel smb = feed.Symbols[symbol];
+            SymbolModel smb = clientModel.Symbols[symbol];
 
             UpdateLabelFormat(smb);
 
-            this.barChart = new BarChartModel(smb, catalog, feed, trade, journal);
-            this.tickChart = new TickChartModel(smb, catalog, feed, trade, journal);
+            this.barChart = new BarChartModel(smb, catalog, clientModel, journal);
+            this.tickChart = new TickChartModel(smb, catalog, clientModel, journal);
             this.UiLock = new UiLock();
 
             //OverlaySeries = new DynamicList<IRenderableSeriesViewModel>();
