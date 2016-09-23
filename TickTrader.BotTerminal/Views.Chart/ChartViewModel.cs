@@ -30,20 +30,16 @@ namespace TickTrader.BotTerminal
     class ChartViewModel : Screen, IDropHandler
     {
         private static int idSeed;
-        private Logger logger;
+        private readonly Logger logger;
         private readonly TraderClientModel clientModel;
         private readonly PluginCatalog catalog;
         private readonly BotJournal journal;
         private ChartModelBase activeChart;
-        private BarChartModel barChart;
-        private TickChartModel tickChart;
+        private readonly BarChartModel barChart;
+        private readonly TickChartModel tickChart;
         private readonly IShell shell;
-        private IDynamicListSource<IRenderableSeriesViewModel> allSeries;
-        private IDynamicListSource<IndicatorPaneViewModel> panes;
-        //private DynamicList<IDynamicListSource<IndicatorModel2>> indicatorCollections = new DynamicList<IDynamicListSource<IndicatorModel2>>();
-        private DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
-        //private DynamicList<IRenderableSeriesViewModel> mainSeries = new DynamicList<IRenderableSeriesViewModel>();
-        //private DynamicList<IDynamicListSource
+        private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
+        private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
 
         public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, PluginCatalog catalog, BotJournal journal)
         {
@@ -65,33 +61,22 @@ namespace TickTrader.BotTerminal
             this.tickChart = new TickChartModel(smb, catalog, clientModel, journal);
             this.UiLock = new UiLock();
 
-            //OverlaySeries = new DynamicList<IRenderableSeriesViewModel>();
+            var allIndicators = charts.SelectMany(c => c.Indicators);
+            var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
+            var indicatorViewModels = allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i));
+            var overlayIndicators = indicatorViewModels.Chain().Where(i => i.Model.IsOverlay);
+            var overlaySeries = overlayIndicators.Chain().SelectMany(i => i.Series);
+            var allSeries = Dynamic.CombineChained(dataSeries, overlaySeries);
+            var paneIndicators = indicatorViewModels.Chain().Where(i => !i.Model.IsOverlay);
+            var panes = paneIndicators.Chain().Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
 
-            //var indicators = indicatorCollections.SelectMany(c => c);
-            //var indicatorViewModels = indicators.Select(i => new IndicatorViewModel(Chart, i));
-            //var overlayIndicators = indicatorViewModels.Where(i => i.Model.IsOverlay);
-            //var paneIndicator = indicatorViewModels.Where(i => !i.Model.IsOverlay);
-            //var panes = paneIndicator.Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
-            //var overlaySeries = overlayIndicators.SelectMany(i => i.Series);
-            //var allSeries = Dynamic.Combine(mainSeries, overlaySeries);
+            Series = new ObservableCollection<IRenderableSeriesViewModel>();
+            allSeries.ConnectTo(Series); // Do not use ConnectTo method except in case of ugly hacks
 
-            //Indicators = indicatorViewModels.AsObservable();
+            Indicators = indicatorViewModels.AsObservable();
+            Panes = panes.AsObservable();
             Bots = bots.AsObservable();
-            //Panes = panes.AsObservable();
-
-            // SciChart does not support anything except ObservableCollection. Booo!
-            //Series = new ObservableCollection<IRenderableSeriesViewModel>();
-            //allSeries.ConnectTo(Series); // Do not use ConnectTo method except in case of ugly hacks
-
-            ///Series = mainSeries new ObservableComposer<IRenderableSeriesViewModel>();
-
-            //Indicators = new ObservableCollection<IndicatorModel>();
-
-            //indicators.Updated += (a) => NotifyOfPropertyChange("HasIndicators");
-
-            //repository.Removed += repository_Removed;
-            //repository.Replaced += repository_Replaced;
-
+            
             periodActivatos.Add("MN1", () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add("W1", () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
             periodActivatos.Add("D1", () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
@@ -106,11 +91,7 @@ namespace TickTrader.BotTerminal
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
             SelectedPeriod = periodActivatos.ElementAt(8);
-
-            //IndicatorPanes.Add(new IndicatorPaneViewModel());
-            //IndicatorPanes.Add(new IndicatorPaneViewModel());
-            //IndicatorPanes.Add(new IndicatorPaneViewModel());
-
+            
             ViewPort = new CustomViewPortManager();
         }
 
@@ -301,82 +282,28 @@ namespace TickTrader.BotTerminal
             UiLock.Release();
         }
 
-        private void Indicators_Updated(ListUpdateArgs<IndicatorModel2> args)
+        private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
             NotifyOfPropertyChange("HasIndicators");
         }
 
         private void InitChart()
         {
-            //indicatorCollections.Add(Chart.Indicators);
-
-            var indicatorViewModels = Chart.Indicators.Select(i => new IndicatorViewModel(Chart, i));
-            var overlayIndicators = indicatorViewModels.Chain().Where(i => i.Model.IsOverlay);
-            var overlaySeries = overlayIndicators.Chain().SelectMany(i => i.Series);
-            allSeries = Dynamic.CombineChained(Chart.DataSeriesCollection, overlaySeries);
-            Series = new ObservableCollection<IRenderableSeriesViewModel>();
-            allSeries.ConnectTo(Series); // Do not use ConnectTo method except in case of ugly hacks
-            NotifyOfPropertyChange(nameof(Series));
-
-            Indicators = indicatorViewModels.AsObservable();
-
-            var paneIndicators = indicatorViewModels.Chain().Where(i => !i.Model.IsOverlay);
-            panes = paneIndicators.Chain().Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
-            Panes = panes.AsObservable();
-            NotifyOfPropertyChange(nameof(Panes));
-            
-
-            //var indicatorViewModels = indicators.Select(i => new IndicatorViewModel(Chart, i));
-            //var overlaySeries = Chart.Indicators.Where(i => i.IsOverlay).Select(i => i.s
-
-
-            //foreach (var i in barChart.Indicators.Values)
-            //    AddIndicator(i);
+            charts.Clear();
+            charts.Add(Chart);
 
 
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;
             Chart.Indicators.Updated += Indicators_Updated;
-            //Chart.ChartTypeChanged += RefreshMainSeries;
-            //Chart.Indicators.Added += AddIndicator;
-            //Chart.Indicators.Removed += RemoveIndicator;
-            //barChart.Indicators.Replaced += ReplaceIndicator;
         }
 
         private void DeinitChart()
         {
-            //indicatorCollections.Values.Clear();
-
-            allSeries.Dispose();
-            panes.Dispose();
-
             Chart.ParamsLocked -= Chart_ParamsLocked;
             Chart.ParamsUnlocked -= Chart_ParamsUnlocked;
             Chart.Indicators.Updated -= Indicators_Updated;
-            //Chart.ChartTypeChanged -= RefreshMainSeries;
-
-            //foreach (var bot in bots.Values)
-            //    bot.Dispose();
-
-            //if (barChart != null)
-            //{
-            //    Chart.ChartTypeChanged -= RefreshMainSeries;
-            //    Chart.Indicators.Added -= AddIndicator;
-            //    Chart.Indicators.Removed -= RemoveIndicator;
-            //    //barChart.Indicators.Replaced -= ReplaceIndicator;
-            //}
         }
-
-        //private void RefreshMainSeries()
-        //{
-        //    mainSeries.Clear();
-        //    foreach (var series in Chart.DataSeriesCollection)
-        //    {
-        //        var viewModel = SeriesViewModel.Create(Chart, series);
-        //        if (viewModel != null)
-        //            mainSeries.Add(viewModel);
-        //    }
-        //}
 
         public bool CanDrop(object o)
         {

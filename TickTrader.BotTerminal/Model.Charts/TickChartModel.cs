@@ -58,7 +58,17 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                var tickArray = await ClientModel.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                SoftFX.Extended.Quote[] tickArray;
+
+                try
+                {
+                    tickArray = await ClientModel.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                }
+                catch (Exception)
+                {
+                    // TO DO: dysplay error on chart
+                    tickArray = new SoftFX.Extended.Quote[0];
+                }
 
                 //foreach (var tick in tickArray)
                 //{
@@ -99,9 +109,9 @@ namespace TickTrader.BotTerminal
             return new TickBasedPluginSetup(catalogItem, SymbolCode);
         }
 
-        protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
+        protected override IndicatorModel CreateIndicator(PluginSetup setup)
         {
-            return new IndicatorModel2(setup, this);
+            return new IndicatorModel(setup, this);
         }
 
         protected override void InitPluign(PluginExecutor plugin)

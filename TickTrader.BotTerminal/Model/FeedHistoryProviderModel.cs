@@ -16,13 +16,8 @@ namespace TickTrader.BotTerminal
     internal class FeedHistoryProviderModel
     {
         private Logger logger;
-        //private enum States { Starting, Online, Stopping, Offline }
-        //private enum Events { Start, Initialized, InitFailed, Stopped }
-
-        //private StateMachine<States> stateControl = new StateMachine<States>(States.Offline);
         private ConnectionModel connection;
         private DataFeedStorage fdkStorage;
-        //private bool stopRequested;
         private BufferBlock<Task> requestQueue = new BufferBlock<Task>();
         private ActionBlock<Task> requestProcessor;
         private IDisposable pipeLink;
@@ -31,17 +26,6 @@ namespace TickTrader.BotTerminal
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.connection = connection;
-            //stateControl.AddTransition(States.Offline, Events.Start, States.Starting);
-            //stateControl.AddTransition(States.Starting, Events.Initialized, States.Online);
-            //stateControl.AddTransition(States.Starting, Events.InitFailed, States.Stopping);
-            //stateControl.AddTransition(States.Online, () => stopRequested, States.Stopping);
-            //stateControl.AddTransition(States.Stopping, Events.Stopped, States.Offline);
-
-            //stateControl.OnEnter(States.Starting, Init);
-            //stateControl.OnEnter(States.Stopping, Stop);
-            //stateControl.OnEnter(States.Offline, Reset);
-
-            //stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
 
             connection.SysInitalizing += Connection_Initalizing;
             connection.SysDeinitalizing += Connection_Deinitalizing;
@@ -58,12 +42,6 @@ namespace TickTrader.BotTerminal
         {
             return Deinit();
         }
-
-        //public void Start(DataFeed feedProxy)
-        //{
-        //    this.feedProxy = feedProxy;
-        //    stateControl.PushEvent(Events.Start);
-        //}
 
         private async Task Init()
         {
@@ -89,14 +67,7 @@ namespace TickTrader.BotTerminal
             {
                 logger.Error("Init ERROR " + ex.ToString());
             }
-
-            //stateControl.PushEvent(Events.Stopped);
         }
-
-        //private void Reset()
-        //{
-        //    stopRequested = false;
-        //}
 
         public Task<Quote[]> GetTicks(string symbol, DateTime startTime, DateTime endTime, int depth)
         {
@@ -119,11 +90,5 @@ namespace TickTrader.BotTerminal
             requestQueue.Post(task);
             return task;
         }
-
-        //public Task Shutdown()
-        //{
-        //    //stateControl.ModifyConditions(() => stopRequested = true);
-        //    //return stateControl.AsyncWait(States.Offline);
-        //}
     }
 }

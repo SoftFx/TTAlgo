@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
-        private DynamicList<IndicatorModel2> indicators = new DynamicList<IndicatorModel2>();
+        private DynamicList<IndicatorModel> indicators = new DynamicList<IndicatorModel>();
         private PluginCatalog catalog;
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
@@ -92,7 +92,7 @@ namespace TickTrader.BotTerminal
         public abstract Api.TimeFrames TimeFrame { get; }
         public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
-        public IDynamicListSource<IndicatorModel2> Indicators { get { return indicators; } }
+        public IDynamicListSource<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
         public BotJournal Journal { get; private set; }
@@ -201,7 +201,7 @@ namespace TickTrader.BotTerminal
             indicators.Add(indicator);
         }
 
-        public void RemoveIndicator(IndicatorModel2 i)
+        public void RemoveIndicator(IndicatorModel i)
         {
             if (indicators.Remove(i))
                 i.Dispose();
@@ -217,7 +217,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel2 CreateIndicator(PluginSetup setup);
+        protected abstract IndicatorModel CreateIndicator(PluginSetup setup);
         protected abstract void ApplyUpdate(Quote update);
         protected abstract void InitPluign(PluginExecutor plugin);
 

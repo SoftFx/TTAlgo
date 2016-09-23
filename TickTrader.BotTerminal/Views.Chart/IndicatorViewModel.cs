@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
     {
         private ChartModelBase chart;
 
-        public IndicatorViewModel(ChartModelBase chart, IndicatorModel2 indicator)
+        public IndicatorViewModel(ChartModelBase chart, IndicatorModel indicator)
         {
             this.chart = chart;
             Model = indicator;
@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IndicatorModel2 Model { get; private set; }
+        public IndicatorModel Model { get; private set; }
         public string DisplayName { get { return Model.Name; } }
         public DynamicList<IRenderableSeriesViewModel> Series { get; private set; }
 

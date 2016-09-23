@@ -17,8 +17,12 @@ namespace TickTrader.Algo.Core.Math
             cachedSamplers.Add(Api.TimeFrames.D, new FormulaSampler(TimeSpan.FromDays(1)));
             cachedSamplers.Add(Api.TimeFrames.H4, new FormulaSampler(TimeSpan.FromHours(4)));
             cachedSamplers.Add(Api.TimeFrames.H1, new FormulaSampler(TimeSpan.FromHours(1)));
-            cachedSamplers.Add(Api.TimeFrames.M30, new FormulaSampler(TimeSpan.FromMinutes(1)));
+            cachedSamplers.Add(Api.TimeFrames.M30, new FormulaSampler(TimeSpan.FromMinutes(30)));
+            cachedSamplers.Add(Api.TimeFrames.M15, new FormulaSampler(TimeSpan.FromMinutes(15)));
+            cachedSamplers.Add(Api.TimeFrames.M5, new FormulaSampler(TimeSpan.FromMinutes(5)));
             cachedSamplers.Add(Api.TimeFrames.M1, new FormulaSampler(TimeSpan.FromMinutes(1)));
+            cachedSamplers.Add(Api.TimeFrames.S10, new FormulaSampler(TimeSpan.FromSeconds(10)));
+            cachedSamplers.Add(Api.TimeFrames.S1, new FormulaSampler(TimeSpan.FromSeconds(1)));
         }
 
         public static BarSampler Get(Api.TimeFrames timeFrame)

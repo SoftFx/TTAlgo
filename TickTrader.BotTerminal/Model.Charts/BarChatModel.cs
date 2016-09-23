@@ -89,9 +89,9 @@ namespace TickTrader.BotTerminal
             return new BarBasedPluginSetup(catalogItem, SymbolCode);
         }
 
-        protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
+        protected override IndicatorModel CreateIndicator(PluginSetup setup)
         {
-            return new IndicatorModel2(setup, this);
+            return new IndicatorModel(setup, this);
         }
 
         protected override void InitPluign(PluginExecutor plugin)

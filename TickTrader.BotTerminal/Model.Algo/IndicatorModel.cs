@@ -16,11 +16,11 @@ using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class IndicatorModel2 : PluginModel
+    internal class IndicatorModel : PluginModel
     {
         private Dictionary<string, IXyDataSeries> series = new Dictionary<string, IXyDataSeries>();
 
-        public IndicatorModel2(PluginSetup pSetup, IAlgoPluginHost host)
+        public IndicatorModel(PluginSetup pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
             host.StartEvent += Host_StartEvent;
@@ -85,6 +85,8 @@ namespace TickTrader.BotTerminal
                 await StopExecutor();
                 IsRunning = false;
                 IsStopping = false;
+                foreach (var dataLine in this.series.Values)
+                    dataLine.Clear();
             }
         }
 

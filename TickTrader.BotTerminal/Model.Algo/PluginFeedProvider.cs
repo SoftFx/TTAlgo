@@ -55,8 +55,15 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
-            var result = history.GetTicks(symbolCode, from, to, depth).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            try
+            {
+                var result = history.GetTicks(symbolCode, from, to, depth).Result;
+                return FdkToAlgo.Convert(result).ToList();
+            }
+            catch (Exception ex)
+            {
+                return Enumerable.Empty<QuoteEntity>();
+            }
         }
 
         public void Subscribe(string symbolCode, int depth)
