@@ -379,6 +379,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\AccountBasedViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AssetViewModel.cs" />
     <Compile Include="Views.TradeInfo\OrderViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeHistoryView.xaml.cs">

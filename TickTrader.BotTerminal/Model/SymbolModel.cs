@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         private SymbolCollectionModel container;
         private List<IRateUpdatesListener> listeners = new List<IRateUpdatesListener>();
 
-        public SymbolModel(SymbolCollectionModel container, SymbolInfo info, Dictionary<string, CurrencyInfo> currencies)
+        public SymbolModel(SymbolCollectionModel container, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
         {
             this.container = container;
             this.Descriptor = info;

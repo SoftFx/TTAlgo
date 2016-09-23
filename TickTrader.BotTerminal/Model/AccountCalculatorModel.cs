@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
             this.MarketModel = new MarketState(NettingCalculationTypes.OneByOne);
 
             MarketModel.Set(feed.Symbols.Snapshot.Values);
-            MarketModel.Set(feed.CurrencyList.Select(c => new CurrencyInfoAdapter(c)));
+            MarketModel.Set(feed.Currencies.Values.Select(c => new CurrencyInfoAdapter(c)));
 
             feed.Symbols.RateUpdated += Symbols_RateUpdated;
         }
@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
             public int SortOrder { get; private set; }
         }
 
-        protected class AccountAdapter : IMarginAccountInfo
+        protected class AccountAdapter : IMarginAccountInfo, ICashAccountInfo
         {
             private AccountModel acc;
 
@@ -139,6 +139,7 @@ namespace TickTrader.BotTerminal
 
             public IEnumerable<IOrderModel> Orders { get { return acc.Orders.Snapshot.Values; } }
             public IEnumerable<IPositionModel> Positions { get { return acc.Positions.Snapshot.Values; } }
+            public IEnumerable<IAssetModel> Assets { get { return acc.Assets.Snapshot.Values; } }
 
             private void Orders_Updated(DictionaryUpdateArgs<string, OrderModel> args)
             {
@@ -163,6 +164,7 @@ namespace TickTrader.BotTerminal
             public event Action<IOrderModel> OrderReplaced = delegate { };
             public event Action<IEnumerable<IOrderModel>> OrdersAdded = delegate { };
             public event Action<IPositionModel, PositionChageTypes> PositionChanged = delegate { };
+            public event Action<IAssetModel, AssetChangeTypes> AssetsChanged;
         }
 
         private class MarginCalc : AccountCalculatorModel
@@ -191,9 +193,12 @@ namespace TickTrader.BotTerminal
 
         private class CashCalc : AccountCalculatorModel
         {
+            private CashAccountCalculator calc;
+
             public CashCalc(AccountModel acc, TraderClientModel feed)
                 : base(acc, feed)
             {
+                this.calc = new CashAccountCalculator(Account, MarketModel);
             }
         }
 

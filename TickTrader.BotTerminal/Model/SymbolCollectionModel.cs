@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
     {
         private Logger logger;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
-        private Dictionary<string, CurrencyInfo> currencies;
+        private IDictionary<string, CurrencyInfo> currencies;
         private ConnectionModel connection;
         private ActionBlock<Quote> rateUpdater;
         private List<Algo.Core.SymbolEntity> algoSymbolCache = new List<Algo.Core.SymbolEntity>();
@@ -51,9 +51,9 @@ namespace TickTrader.BotTerminal
             RateUpdated(tick);
         }
 
-        public void Initialize(SymbolInfo[] symbolSnapshot, CurrencyInfo[] currencySnapshot)
+        public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {
-            currencies = currencySnapshot.ToDictionary(c => c.Name);
+            this.currencies = currencySnapshot;
             algoSymbolCache = symbolSnapshot.Select(FdkToAlgo.Convert).ToList();
 
             Merge(symbolSnapshot);

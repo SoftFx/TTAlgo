@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal
         public string Account { get; private set; }
         public int Leverage { get; private set; }
 
-        public void Init(IEnumerable<CurrencyInfo> currencies)
+        public void Init(IDictionary<string, CurrencyInfo> currencies)
         {
             Action<System.Action> uiActionhandler = (a) =>
             {
@@ -134,11 +134,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void UpdateData(IEnumerable<CurrencyInfo> currencies)
+        public void UpdateData(IDictionary<string, CurrencyInfo> currencies)
         {
-            var currencyMap = currencies.ToDictionary(c => c.Name);
             var accInfo = connection.TradeProxy.Cache.AccountInfo;
-            var balanceCurrencyInfo = currencyMap.GetOrDefault(accInfo.Currency);
+            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
 
             Account = accInfo.AccountId;
             Type = accInfo.Type;

@@ -8,16 +8,17 @@ using Caliburn.Micro;
 
 namespace TickTrader.BotTerminal
 {
-    class AssetModel : PropertyChangedBase
+    internal class AssetModel : PropertyChangedBase, TickTrader.BusinessLogic.IAssetModel
     {
         private string currency;
-        private double balance;
+        private decimal amount;
         private double tradeAmount;
+        private decimal margin;
 
         public AssetModel(double balance, string currency)
         {
             this.currency = currency;
-            this.balance = balance;
+            this.amount = (decimal)balance;
         }
 
         public AssetModel(AssetInfo asset)
@@ -28,7 +29,7 @@ namespace TickTrader.BotTerminal
 
         private void Update(AssetInfo asset)
         {
-            Balance = asset.Balance;
+            Amount = (decimal)asset.Balance;
             TradeAmount = asset.TradeAmount;
         }
 
@@ -45,15 +46,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public double Balance
+        public decimal Amount
         {
-            get { return balance; }
+            get { return amount; }
             private set
             {
-                if (balance != value)
+                if (amount != value)
                 {
-                    balance = value;
-                    NotifyOfPropertyChange(nameof(Balance));
+                    amount = value;
+                    NotifyOfPropertyChange(nameof(Amount));
                 }
             }
         }
@@ -71,12 +72,30 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public decimal Margin
+        {
+            get { return margin; }
+            set
+            {
+                if (margin != value)
+                {
+                    margin = value;
+                    NotifyOfPropertyChange(nameof(Margin));
+                    NotifyOfPropertyChange(nameof(FreeAmount));
+                    NotifyOfPropertyChange(nameof(LockedAmount));
+                }
+            }
+        }
+
+        public decimal FreeAmount => Amount - Margin;
+        public decimal LockedAmount => Margin;
+
         public Algo.Core.AssetEntity ToAlgoAsset()
         {
             return new Algo.Core.AssetEntity()
             {
                 Currency = currency,
-                Volume = balance
+                Volume = (double)amount
             };
         }
     }

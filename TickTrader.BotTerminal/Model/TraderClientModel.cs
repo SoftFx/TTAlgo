@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
             this.History = new FeedHistoryProviderModel(connection);
             this.TradeApi = new TradeExecutor(this);
             this.Account = new AccountModel(this);
+            this.Currencies = new Dictionary<string, CurrencyInfo>();
         }
 
         private void Connection_Connected()
@@ -61,9 +62,11 @@ namespace TickTrader.BotTerminal
             try
             {
                 var cache = Connection.FeedProxy.Cache;
-                CurrencyList = cache.Currencies;
-                Symbols.Initialize(cache.Symbols, cache.Currencies);
-                Account.Init(cache.Currencies);
+                Currencies.Clear();
+                foreach (var c in cache.Currencies)
+                    Currencies.Add(c.Name, c);
+                Symbols.Initialize(cache.Symbols, Currencies);
+                Account.Init(Currencies);
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
             }
@@ -90,6 +93,6 @@ namespace TickTrader.BotTerminal
         public AccountModel Account { get; private set; }
         public SymbolCollectionModel Symbols { get; private set; }
         public FeedHistoryProviderModel History { get; private set; }
-        public IEnumerable<CurrencyInfo> CurrencyList { get; private set; }
+        public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
     }
 }

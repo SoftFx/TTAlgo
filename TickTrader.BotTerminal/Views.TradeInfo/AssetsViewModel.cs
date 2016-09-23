@@ -12,9 +12,12 @@ namespace TickTrader.BotTerminal
 {
     class AssetsViewModel : AccountBasedViewModel
     {
-        public AssetsViewModel(AccountModel model) : base(model)
+        public AssetsViewModel(AccountModel model, IDictionary<string, CurrencyInfo> currencies) : base(model)
         {
-            Assets = model.Assets.OrderBy((c, a) => c).AsObservable();
+            Assets = model.Assets
+                .OrderBy((c, a) => c)
+                .Select(a => new AssetViewModel(a, currencies.GetOrDefault(a.Currency)))
+                .AsObservable();
         }
 
         protected override bool SupportsAccount(AccountType accType)
@@ -22,6 +25,6 @@ namespace TickTrader.BotTerminal
             return accType == AccountType.Cash;
         }
 
-        public IObservableListSource<AssetModel> Assets { get; private set; }
+        public IObservableListSource<AssetViewModel> Assets { get; private set; }
     }
 }
