@@ -5,15 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.BusinessLogic;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PositionModel : PropertyChangedBase
+    internal class PositionModel : PropertyChangedBase, TickTrader.BusinessLogic.IPositionModel
     {
-        private double commission;
-        private double agentCommission;
+        private decimal commission;
+        private decimal agentCommission;
         private string symbol;
-        private double swap;
+        private decimal swap;
         private double buyAmount;
         private double? buyPrice;
         private double? sellPrice;
@@ -22,6 +23,7 @@ namespace TickTrader.BotTerminal
         private TradeRecordSide side;
         private double price;
         private double amount;
+        private DateTime? modified;
 
         public PositionModel(Position position)
         {
@@ -38,16 +40,41 @@ namespace TickTrader.BotTerminal
             SellAmount = position.SellAmount;
             BuyPrice = position.BuyPrice;
             BuyAmount = position.BuyAmount;
-            AgentCommission = position.AgentCommission;
-            Commission = position.Commission;
+            AgentCommission = (decimal)position.AgentCommission;
+            Commission = (decimal)position.Commission;
             SettlementPrice = position.SettlementPrice;
             Side = position.BuyAmount > 0 ? TradeRecordSide.Buy : TradeRecordSide.Sell;
             Amount = Math.Max(position.BuyAmount, position.SellAmount);
-            Swap = position.Swap;
+            Swap = (decimal)position.Swap;
             Price = Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
+
+            Long = new PositionSide();
+            Short = new PositionSide();
+
+            Long.Amount = (decimal)position.BuyAmount;
+            Long.Price = (decimal)(position.BuyPrice ?? 0);
+            Short.Amount = (decimal)position.SellAmount;
+            Short.Price = (decimal)(position.SellPrice ?? 0);
+
+            Long.ProfitUpdated = OnProfitUpdated;
+            Short.ProfitUpdated = OnProfitUpdated;
+            Long.MarginUpdated = OnMarginUpdated;
+            Short.MarginUpdated = OnMarginUpdated;
         }
 
-        public double Commission
+        private void OnProfitUpdated()
+        {
+            NotifyOfPropertyChange(nameof(Profit));
+        }
+
+        private void OnMarginUpdated()
+        {
+            NotifyOfPropertyChange(nameof(Margin));
+        }
+
+        #region Properties
+
+        public decimal Commission
         {
             get { return commission; }
             private set
@@ -60,7 +87,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public double Swap
+        public decimal Swap
         {
             get { return swap; }
             private set
@@ -177,7 +204,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public double AgentCommission
+        public decimal AgentCommission
         {
             get { return agentCommission; }
             private set
@@ -201,6 +228,67 @@ namespace TickTrader.BotTerminal
                     NotifyOfPropertyChange(nameof(SettlementPrice));
                 }
             }
+        }
+
+        public DateTime? Modified
+        {
+            get { return modified; }
+            set
+            {
+                if (modified != value)
+                {
+                    modified = value;
+                    NotifyOfPropertyChange(nameof(Modified));
+                }
+            }
+        }
+
+        public decimal Profit { get { return Long.Profit + Short.Profit; } }
+        public decimal Margin { get { return Long.Margin + Short.Margin; } }
+        public OrderCalculator Calculator { get; set; }
+        public PositionSide Long { get; private set; }
+        public PositionSide Short { get; private set; }
+        IPositionSide IPositionModel.Long { get { return Long; } }
+        IPositionSide IPositionModel.Short { get { return Long; } }
+
+        #endregion
+
+        public class PositionSide : IPositionSide
+        {
+            private decimal margin;
+            private decimal profit;
+
+            public decimal Amount { get; set; }
+            public decimal Price { get; set; }
+
+            public decimal Margin
+            {
+                get { return margin; }
+                set
+                {
+                    if (margin != value)
+                    {
+                        margin = value;
+                        MarginUpdated?.Invoke();
+                    }
+                }
+            }
+            
+            public decimal Profit
+            {
+                get { return profit; }
+                set
+                {
+                    if (profit != value)
+                    {
+                        profit = value;
+                        ProfitUpdated?.Invoke();
+                    }
+                }
+            }
+
+            public System.Action ProfitUpdated;
+            public System.Action MarginUpdated;
         }
     }
 }

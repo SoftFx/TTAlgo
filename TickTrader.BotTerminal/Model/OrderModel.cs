@@ -244,7 +244,7 @@ namespace TickTrader.BotTerminal
         public decimal? AgentCommision { get { return 0; } }
         public OrderError CalculationError { get; set; }
         public OrderCalculator Calculator { get; set; }
-        bool IOrderModel.IsCalculated { get { return true; } }
+        bool IOrderModel.IsCalculated { get { return CalculationError == null; } }
         decimal? IOrderModel.MarginRateCurrent { get; set; }
 
         OrderTypes ICommonOrder.Type

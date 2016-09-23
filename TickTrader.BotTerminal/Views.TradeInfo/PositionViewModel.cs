@@ -10,31 +10,22 @@ namespace TickTrader.BotTerminal
 {
     class PositionViewModel : PropertyChangedBase, IDisposable
     {
-        private PositionModel _position;
         private SymbolObserver _symbolObserver = new SymbolObserver();
 
-        public PositionViewModel(PositionModel position)
+        public PositionViewModel(PositionModel position, SymbolModel symbol = null)
         {
             Position = position;
-        }
-        public PositionViewModel(PositionModel position, SymbolModel symbol) : this(position)
-        {
             _symbolObserver.ObservableSymbol = symbol;
             NotifyOfPropertyChange(nameof(CurrentPrice));
+
+            PriceDigits = symbol?.PriceDigits ?? 5;
+            ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
         }
 
-        public PositionModel Position
-        {
-            get { return _position; }
-            set
-            {
-                if (_position != value)
-                {
-                    _position = value;
-                    NotifyOfPropertyChange(nameof(Position));
-                }
-            }
-        }
+        public int PriceDigits { get; private set; }
+        public int ProfitDigits { get; private set; }
+        public PositionModel Position { get; private set; }
+
         public RateDirectionTracker CurrentPrice => Position.Side == TradeRecordSide.Buy ? _symbolObserver?.Bid : _symbolObserver?.Ask;
 
         public void Dispose()

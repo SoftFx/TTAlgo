@@ -9,6 +9,7 @@
     <l:BoolInverter x:Key="BoolInverter" />
     <l:TradeSideTypeConverter x:Key="TradeSideTypeFormat" />
     <l:DateTimeConverter x:Key="FullDateTimeFormat" />
-    <l:CustomDecimalConverter x:Key="CustomDecimalConverter" />
+    <l:NumberConverter x:Key="PriceConverter" Type="Price" />
+    <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
 
 </ResourceDictionary>

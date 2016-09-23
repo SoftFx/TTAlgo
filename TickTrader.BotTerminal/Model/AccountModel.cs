@@ -148,6 +148,7 @@ namespace TickTrader.BotTerminal
             BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
 
             Calc = AccountCalculatorModel.Create(this, clientModel);
+            Calc.Recalculate();
 
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
@@ -175,10 +176,15 @@ namespace TickTrader.BotTerminal
 
         private void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
         {
+            // TO DO: save updates in a buffer and apply them on Init()
+            var uiUpdaterCopy = this.uiUpdater;
+            if (uiUpdaterCopy == null)
+                return;
+
             if (IsEmpty(e.Report))
-                uiUpdater.SendAsync(() => positions.Remove(e.Report.Symbol));
+                uiUpdaterCopy.SendAsync(() => positions.Remove(e.Report.Symbol));
             else
-                uiUpdater.SendAsync(() => UpsertPosition(e.Report));
+                uiUpdaterCopy.SendAsync(() => UpsertPosition(e.Report));
         }
 
         private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
@@ -191,7 +197,11 @@ namespace TickTrader.BotTerminal
             uiUpdater.SendAsync(() =>
             {
                 if (Type == AccountType.Gross || Type == AccountType.Net)
+                {
                     Balance = e.Data.Balance;
+                    // TO DO : Calc should listen to BalanceUpdated event and recalculate iteself
+                    Calc.Recalculate();
+                }
                 else if (Type == AccountType.Cash)
                     assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency);
 

@@ -237,7 +237,7 @@
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\TradeSideTypeConverter.cs" />
-    <Compile Include="Converters\CustomDecimalConverter.cs" />
+    <Compile Include="Converters\NumberConverter.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
@@ -262,6 +262,7 @@
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
+    <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\SymbolRateObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />

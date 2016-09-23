@@ -36,6 +36,8 @@ namespace TickTrader.BotTerminal
 
         public event Action<AccountCalculatorModel> Updated;
 
+        public virtual void Recalculate() { }
+
         protected void OnUpdate()
         {
             Updated?.Invoke(this);
@@ -108,6 +110,7 @@ namespace TickTrader.BotTerminal
             {
                 this.acc = acc;
                 this.acc.Orders.Updated += Orders_Updated;
+                this.acc.Positions.Updated += Positions_Updated;
             }
 
             public void Dispose()
@@ -135,8 +138,7 @@ namespace TickTrader.BotTerminal
             public int Leverage { get { return acc.Leverage; } }
 
             public IEnumerable<IOrderModel> Orders { get { return acc.Orders.Snapshot.Values; } }
-
-            public IEnumerable<IPositionModel> Positions { get { return Enumerable.Empty<IPositionModel>(); } }
+            public IEnumerable<IPositionModel> Positions { get { return acc.Positions.Snapshot.Values; } }
 
             private void Orders_Updated(DictionaryUpdateArgs<string, OrderModel> args)
             {
@@ -146,6 +148,14 @@ namespace TickTrader.BotTerminal
                     OrderReplaced(args.NewItem);
                 else if (args.Action == DLinqAction.Remove)
                     OrderRemoved(args.OldItem);
+            }
+
+            private void Positions_Updated(DictionaryUpdateArgs<string, PositionModel> args)
+            {
+                if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
+                    PositionChanged(args.NewItem, PositionChageTypes.AddedModified);
+                else if (args.Action == DLinqAction.Remove)
+                    PositionChanged(args.OldItem, PositionChageTypes.Removed);
             }
 
             public event Action<IOrderModel> OrderAdded = delegate { };
@@ -171,6 +181,11 @@ namespace TickTrader.BotTerminal
                     MarginLevel = calc.MarginLevel;
                     OnUpdate();
                 };
+            }
+
+            public override void Recalculate()
+            {
+                calc.UpdateSummary(UpdateKind.AccountBalanceChanged);
             }
         }
 

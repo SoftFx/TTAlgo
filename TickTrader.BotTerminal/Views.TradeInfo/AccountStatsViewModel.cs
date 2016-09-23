@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace TickTrader.BotTerminal
             client.Connected += () =>
             {
                 account.Calc.Updated += Calc_Updated;
-                PrebuildCurrencyFormat();
+                currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
                 IsStatsVisible = account.Type != SoftFX.Extended.AccountType.Cash;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
                 Calc_Updated(account.Calc);
@@ -45,49 +46,19 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(MarginLevel));
         }
 
-        private void PrebuildCurrencyFormat()
-        {
-            var sign = GetCurrencySymbol(account.BalanceCurrency);
-
-            if (sign != null)
-                currencyFormatStr = sign.Value + " {0:# ###." + GetZeroes(account.BalanceDigits) + "}";
-            else
-                currencyFormatStr = "{0:# ###." + GetZeroes(account.BalanceDigits) + "} " + account.BalanceCurrency;
-        }
-
-        private string GetZeroes(int count)
-        {
-            var builder = new StringBuilder();
-            for (int i = 0; i < count; i++)
-                builder.Append('0');
-            return builder.ToString();
-        }
-
-        private char? GetCurrencySymbol(string currencyName)
-        {
-            switch (currencyName.ToLower())
-            {
-                case "usd": return '$';
-                case "eur": return '€';
-                case "jpy": return '¥';
-                case "gbp": return '£';
-                default: return null;
-            }
-        }
-
         private string FormatNumber(double number)
         {
-            return string.Format(currencyFormatStr, number);
+            return string.Format(NumberFormat.AmountNumberInfo, currencyFormatStr, number);
         }
 
         private string FormatNumber(decimal number)
         {
-            return string.Format(currencyFormatStr, number);
+            return string.Format(NumberFormat.AmountNumberInfo, currencyFormatStr, number);
         }
 
         private string FormatPrecent(decimal number)
         {
-            return string.Format(precentFormatStr, number);
+            return string.Format(NumberFormat.AmountNumberInfo, precentFormatStr, number);
         }
 
         public bool IsStatsVisible { get; private set; }
