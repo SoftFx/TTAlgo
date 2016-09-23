@@ -146,9 +146,6 @@ namespace TickTrader.BotTerminal
             Leverage = accInfo.Leverage;
             BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
 
-            Calc = AccountCalculatorModel.Create(this, clientModel);
-            Calc.Recalculate();
-
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
                 positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition));
@@ -160,6 +157,9 @@ namespace TickTrader.BotTerminal
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
                 assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
+
+            Calc = AccountCalculatorModel.Create(this, clientModel);
+            Calc.Recalculate();
         }
 
         public async Task Deinit()

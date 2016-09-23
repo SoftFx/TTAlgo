@@ -111,6 +111,7 @@ namespace TickTrader.BotTerminal
                 this.acc = acc;
                 this.acc.Orders.Updated += Orders_Updated;
                 this.acc.Positions.Updated += Positions_Updated;
+                this.acc.Assets.Updated += Assets_Updated;
             }
 
             public void Dispose()
@@ -159,12 +160,22 @@ namespace TickTrader.BotTerminal
                     PositionChanged(args.OldItem, PositionChageTypes.Removed);
             }
 
+            private void Assets_Updated(DictionaryUpdateArgs<string, AssetModel> args)
+            {
+                if (args.Action == DLinqAction.Insert)
+                    AssetsChanged(args.NewItem, AssetChangeTypes.Added);
+                else if (args.Action == DLinqAction.Replace)
+                    AssetsChanged(args.NewItem, AssetChangeTypes.Replaced);
+                else if(args.Action == DLinqAction.Remove)
+                    AssetsChanged(args.OldItem, AssetChangeTypes.Removed);
+            }
+
             public event Action<IOrderModel> OrderAdded = delegate { };
             public event Action<IOrderModel> OrderRemoved = delegate { };
             public event Action<IOrderModel> OrderReplaced = delegate { };
             public event Action<IEnumerable<IOrderModel>> OrdersAdded = delegate { };
             public event Action<IPositionModel, PositionChageTypes> PositionChanged = delegate { };
-            public event Action<IAssetModel, AssetChangeTypes> AssetsChanged;
+            public event Action<IAssetModel, AssetChangeTypes> AssetsChanged = delegate { };
         }
 
         private class MarginCalc : AccountCalculatorModel
