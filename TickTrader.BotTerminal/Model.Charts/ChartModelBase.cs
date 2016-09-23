@@ -68,8 +68,8 @@ namespace TickTrader.BotTerminal
 
             symbol.Subscribe(this);
 
-            CurrentAsk = symbol.LastQuote?.Ask;
-            CurrentBid = symbol.LastQuote?.Bid;
+            CurrentAsk = symbol.CurrentAsk;
+            CurrentBid = symbol.CurrentBid;
 
             stateController.AddTransition(States.Idle, () => isUpdateRequired && isConnected, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);

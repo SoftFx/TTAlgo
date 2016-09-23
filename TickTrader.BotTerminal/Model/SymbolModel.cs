@@ -39,6 +39,8 @@ namespace TickTrader.BotTerminal
         public int Depth { get; private set; }
         public int RequestedDepth { get; private set; }
         public Quote LastQuote { get; private set; }
+        public double? CurrentAsk { get; private set; }
+        public double? CurrentBid { get; private set; }
         public OrderAmountModel Amounts { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
 
@@ -85,8 +87,12 @@ namespace TickTrader.BotTerminal
 
         public void CastNewTick(Quote tick)
         {
-            listeners.ForEach(l => l.OnRateUpdate(tick));
             LastQuote = tick;
+
+            CurrentBid = LastQuote.HasBid ? LastQuote.Bid : (double?)null;
+            CurrentAsk = LastQuote.HasAsk ? LastQuote.Ask : (double?)null;
+
+            listeners.ForEach(l => l.OnRateUpdate(tick));
         }
 
         public void Subscribe(IRateUpdatesListener listener)
