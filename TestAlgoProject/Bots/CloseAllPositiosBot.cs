@@ -20,12 +20,19 @@ namespace TestAlgoProject
 
         protected override void OnStart()
         {
-            var positions = Account.Orders.Where(o => o.Type == OrderType.Position).ToList();
-
-            foreach (var pos in positions)
+            if (Account.Type == AccountTypes.Gross)
             {
-                Print("Trying close order #" + pos.Id + " ...");
-                CloseOrder(pos.Id);
+                var positions = Account.Orders.Where(o => o.Type == OrderType.Position).ToList();
+
+                foreach (var pos in positions)
+                {
+                    Print("Trying close order #" + pos.Id + " ...");
+                    CloseOrder(pos.Id);
+                }
+            }
+            else if (Account.Type == AccountTypes.Cash)
+            {
+                var positions = this.Account.NetPositions;
             }
 
             Exit();

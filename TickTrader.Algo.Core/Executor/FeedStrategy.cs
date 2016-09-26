@@ -91,14 +91,14 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
                 dispenser.OnBufferUpdated(update.Quote);
-                dispenser.OnUpdateEvent(update.Quote);
             }
             else if (result == BufferUpdateResults.LastItemUpdated)
             {
                 ExecContext.Builder.InvokeCalculate(true);
                 dispenser.OnBufferUpdated(update.Quote);
-                dispenser.OnUpdateEvent(update.Quote);
             }
+            
+            dispenser.OnUpdateEvent(update.Quote);
         }
 
         #region IFeedStrategyContext

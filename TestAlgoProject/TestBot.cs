@@ -53,7 +53,7 @@ namespace TestAlgoProject
         {
             snapshot[quote.Symbol] = quote;
             PrintSnapshot();
-            //Print("OnQuote {0}", quote.SymbolCode);
+            Print("OnQuote {0}", quote.Symbol);
         }
 
         private void PrintSnapshot()
@@ -61,7 +61,7 @@ namespace TestAlgoProject
             foreach (var pair in snapshot)
             {
                 var smb = Symbols[pair.Key];
-                Status.WriteLine("{0} {1} {2}/{3} [{4}]", pair.Key, pair.Value.Bid, pair.Value.Ask, smb.Digits);
+                Status.WriteLine("{0} {1}/{2} [{3}]", pair.Key, pair.Value.Bid, pair.Value.Ask, smb.Digits);
             }
         }
     }
@@ -77,31 +77,6 @@ namespace TestAlgoProject
         protected override void OnQuote(Quote quote)
         {
             Exit();
-        }
-    }
-
-    [TradeBot(DisplayName = "Exception Bot")]
-    public class ExceptionBot : TradeBot
-    {
-        protected override void Init()
-        {
-            throw new Exception("Fail!");
-        }
-
-        protected override void OnStart()
-        {
-            throw new Exception("Fail!");
-
-        }
-
-        protected override void OnStop()
-        {
-            throw new Exception("Fail!");
-        }
-
-        protected override void OnQuote(Quote quote)
-        {
-            
         }
     }
 }
