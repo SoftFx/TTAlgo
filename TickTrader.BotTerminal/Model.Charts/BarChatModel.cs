@@ -14,16 +14,17 @@ using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
+using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
+        private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
         private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private BarPeriod period;
         private Api.TimeFrames timeframe;
-        private BarVector barCollection = new BarVector();
+        private readonly BarVector barCollection = new BarVector();
 
         public BarChartModel(SymbolModel symbol, PluginCatalog catalog, TraderClientModel clientModel, BotJournal journal)
             : base(symbol, catalog, clientModel, journal)
@@ -78,7 +79,8 @@ namespace TickTrader.BotTerminal
             indicatorData.Clear();
             FdkToAlgo.Convert(loadedData, indicatorData);
 
-            barCollection.Update(indicatorData);
+            barCollection.ChangeTimeframe(TimeFrame);
+            barCollection.Append(indicatorData);
 
             if (loadedData.Length > 0)
                 InitBoundaries(loadedData.Length, loadedData.First().From, loadedData.Last().From);
@@ -101,9 +103,13 @@ namespace TickTrader.BotTerminal
             plugin.Metadata = feed;
         }
 
-        protected override void ApplyUpdate(Quote update)
+        protected override void ApplyUpdate(Quote quote)
         {
-
+            if (quote.HasBid)
+            {
+                barCollection.Update(quote.CreatingTime, quote.Bid, 1);
+                ExtendBoundaries(barCollection.Count, quote.CreatingTime);
+            }
         }
 
         private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
