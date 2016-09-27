@@ -49,10 +49,14 @@ namespace TickTrader.BotTerminal
             }
 
             EnsureFolder(AlgoRepositoryFolder);
+            EnsureFolder(AlgoWorkingFolder);
             EnsureFolder(LogFolder);
             EnsureFolder(JournalFolder);
             EnsureFolder(FeedHistoryCacheFolder);
             EnsureFolder(AppDataFolder);
+
+            // This is required for normal Algo plugin execution. Do not change working folder elsewhere!
+            Directory.SetCurrentDirectory(AlgoWorkingFolder);
 
             UserDataStorage = new XmlObjectStorage(new FolderBinStorage(AppDataFolder));
             ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder)));

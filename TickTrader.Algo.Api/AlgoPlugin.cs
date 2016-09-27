@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Api
         private IPluginMonitor monitor;
         private TradeCommands tradeCmdApi;
         private StatusApi status;
+        private EnvironmentInfo env;
 
         internal AlgoPlugin()
         {
@@ -38,6 +39,7 @@ namespace TickTrader.Algo.Api
         }
 
         protected CustomFeedProvider Feed { get { return GetFeedProvider().CustomCommds; } }
+        protected EnvironmentInfo Enviroment { get { return GetEnvInfoProvider(); } }
         protected SymbolList Symbols { get { return GetSymbolProvider().List; } }
         protected Symbol Symbol { get { return GetSymbolProvider().MainSymbol; } }
         protected BarSeries Bars { get { return GetFeedProvider().Bars; } }
@@ -84,6 +86,13 @@ namespace TickTrader.Algo.Api
             if (feed == null)
                 feed = context.GetFeed();
             return feed;
+        }
+
+        internal EnvironmentInfo GetEnvInfoProvider()
+        {
+            if (env == null)
+                env = context.GetEnvironment();
+            return env;
         }
 
         //internal virtual void DoInit()

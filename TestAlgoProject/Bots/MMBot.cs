@@ -11,7 +11,7 @@ namespace TestAlgoProject.Bots
     [TradeBot(DisplayName = "Market Maker")]
     public class MMBot : TradeBot
     {
-        [Parameter(DisplayName = "Symbol Config File")]
+        [Parameter(DisplayName = "Symbol Config File", DefaultValue = "config.tml")]
         [FileFilter("Toml Config (*.tml)", "*.tml")]
         public File Config { get; set; }
 

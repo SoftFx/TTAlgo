@@ -74,6 +74,7 @@
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\AccDataFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
+    <Compile Include="Executor\Exceptions.cs" />
     <Compile Include="Executor\FeedFixture.cs" />
     <Compile Include="Executor\FeedStrategy.cs" />
     <Compile Include="Executor\Interfaces.cs" />

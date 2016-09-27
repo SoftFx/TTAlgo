@@ -64,6 +64,7 @@ namespace TickTrader.BotTerminal
             host.InitializePlugin(executor);
             executor.InvokeStrategy = new DataflowInvokeStartegy();
             executor.AccInfoProvider = host.GetAccInfoProvider();
+            executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             return executor;
         }
 

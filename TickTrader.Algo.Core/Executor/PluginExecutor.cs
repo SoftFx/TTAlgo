@@ -31,6 +31,7 @@ namespace TickTrader.Algo.Core
         private AlgoPluginDescriptor descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
+        private string workingFolder;
 
         public PluginExecutor(string pluginId)
         {
@@ -180,6 +181,23 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public string WorkingFolder
+        {
+            get { return workingFolder; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    if (string.IsNullOrEmpty(value))
+                        throw new InvalidOperationException("Working folder cannot be null or empty string!");
+
+                    workingFolder = value;
+                }
+            }
+        }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
 
         #endregion
@@ -201,6 +219,7 @@ namespace TickTrader.Algo.Core
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
+                InitWorkingFolder();
                 builder.TradeApi = tradeApi;
                 if (logger != null)
                     builder.Logger = logger;
@@ -211,7 +230,7 @@ namespace TickTrader.Algo.Core
                 fStrategy.Init(this);
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
-                iStrategy.Init(builder);
+                iStrategy.Init(builder, OnInternalException, OnRuntimeException);
 
                 // Start
                 accFixture.Start();
@@ -332,19 +351,19 @@ namespace TickTrader.Algo.Core
         private void Validate()
         {
             if (IsRunning)
-                throw new InvalidOperationException("Executor has been already started!");
+                throw new ExecutorException("Executor has been already started!");
 
             //if (feed == null)
             //    throw new InvalidOperationException("Feed provider is not specified!");
 
             if (fStrategy == null)
-                throw new InvalidOperationException("Feed strategy is not specified!");
+                throw new ExecutorException("Feed strategy is not specified!");
 
             if (iStrategy == null)
-                throw new InvalidOperationException("Invoke strategy is not specified!");
+                throw new ExecutorException("Invoke strategy is not specified!");
 
             if (string.IsNullOrEmpty(mainSymbol))
-                throw new InvalidOperationException("Main symbol is not specified!");
+                throw new ExecutorException("Main symbol is not specified!");
         }
 
         private void ThrowIfRunning()
@@ -361,6 +380,16 @@ namespace TickTrader.Algo.Core
         private void OnException(Exception pluginError)
         {
             Abort();
+        }
+
+        private void OnInternalException(ExecutorException ex)
+        {
+            logger.OnError(ex);
+        }
+
+        private void OnRuntimeException(Exception ex)
+        {
+            logger.OnError(ex);
         }
 
         private void BindAllOutputs()
@@ -381,6 +410,14 @@ namespace TickTrader.Algo.Core
                 foreach (var smb in symbolInfoList)
                     builder.Symbols.Add(smb);
             }
+        }
+
+        private void InitWorkingFolder()
+        {
+            if (!string.IsNullOrEmpty(workingFolder))
+                builder.DataFolder = workingFolder;
+            else
+                builder.DataFolder = System.IO.Directory.GetCurrentDirectory();
         }
 
         #region IFeedStrategyContext

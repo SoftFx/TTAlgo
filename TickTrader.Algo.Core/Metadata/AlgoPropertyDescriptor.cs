@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core.Metadata
         InputIsOnlyForIndicators,
         InputIsNotDataSeries,
         OutputIsNotDataSeries,
-        DefaultValueTypeMismatch,
+        //DefaultValueTypeMismatch,
         EmptyEnum
     }
 

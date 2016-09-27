@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Core
             foreach (var paramProperty in Descriptor.Parameters)
             {
                 if (paramProperty.DefaultValue != null)
-                    paramProperty.Set(plugin, paramProperty.DefaultValue);
+                    paramProperty.ResetValue(plugin);
             }
         }
 
