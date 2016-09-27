@@ -15,24 +15,47 @@ namespace TickTrader.BotTerminal
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             ApplicationName = "BotTrader";
-            var myDocumentsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),ApplicationName);
-            LogFolder = Path.Combine(myDocumentsFolder, "Logs");
-            JournalFolder = Path.Combine(myDocumentsFolder, "Journals");
 
-            string appDir = AppDomain.CurrentDomain.BaseDirectory;
-            AlgoRepositoryFolder = Path.Combine(appDir, "AlgoRepository");
-            FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");
+            if (System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed)
+            {
+                // ------- Click Once Mode -------------
+
+                var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
+
+                LogFolder = Path.Combine(appDocumentsFolder, "Logs");
+                JournalFolder = Path.Combine(appDocumentsFolder, "Journals");
+                AlgoRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
+                AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
+                FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
+
+                AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            }
+            else
+            {
+                // ------- Portable Mode -------------
+
+                var appFolder = AppDomain.CurrentDomain.BaseDirectory;
+
+                LogFolder = Path.Combine(appFolder, "Logs");
+                JournalFolder = Path.Combine(appFolder, "Journal");
+
+                string appDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                AlgoRepositoryFolder = Path.Combine(appDir, "AlgoRepository");
+                AlgoWorkingFolder = Path.Combine(appDir, "AlgoData");
+                FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");
+                AppDataFolder = Path.Combine(appDir, "Settings");
+            }
 
             EnsureFolder(AlgoRepositoryFolder);
             EnsureFolder(LogFolder);
             EnsureFolder(JournalFolder);
+            EnsureFolder(FeedHistoryCacheFolder);
+            EnsureFolder(AppDataFolder);
 
-            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-            
-
-            UserDataStorage = new XmlObjectStorage(new FolderBinStorage(appDataFolder));
-            ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(appDataFolder)));
+            UserDataStorage = new XmlObjectStorage(new FolderBinStorage(AppDataFolder));
+            ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder)));
         }
 
         private static EnvService instance = new EnvService();
@@ -43,6 +66,8 @@ namespace TickTrader.BotTerminal
         public string LogFolder { get; private set; }
         public string JournalFolder { get; private set; }
         public string AlgoRepositoryFolder { get; private set; }
+        public string AlgoWorkingFolder { get; private set; }
+        public string AppDataFolder { get; private set; }
         public IObjectStorage UserDataStorage { get; private set; }
         public IObjectStorage ProtectedUserDataStorage { get; private set; }
 
