@@ -59,7 +59,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+    <ProjectReference Include="..\..\..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901C84D-FB62-433C-A25F-4D24255B9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>

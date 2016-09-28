@@ -23,7 +23,7 @@ namespace MMBot
     {
         MMBotConfiguration conf = new MMBotConfiguration();
 
-        [Parameter(DisplayName = "Config File")]
+        [Parameter(DisplayName = "Config File", DefaultValue = "defaultConfig.tml")]
         [FileFilter("Toml Config (*.tml)", "*.tml")]
         public File FileConfig { get; set; }
 
