@@ -152,6 +152,7 @@ namespace TickTrader.Algo.GuiModel
             }
         }
 
+        public string DefaultFile { get; private set; }
         public string FileName { get; private set; }
         public string Filter { get; private set; }
 
@@ -165,6 +166,12 @@ namespace TickTrader.Algo.GuiModel
         internal override void SetMetadata(ParameterDescriptor descriptor)
         {
             base.SetMetadata(descriptor);
+
+            string defFileName = descriptor.DefaultValue as string;
+            if (defFileName != null)
+                DefaultFile = defFileName;
+            else
+                DefaultFile = "";
 
             var filterEntries = descriptor.FileFilters
                .Where(s => !string.IsNullOrWhiteSpace(s.FileMask) && !string.IsNullOrWhiteSpace(s.FileTypeName));
@@ -181,7 +188,7 @@ namespace TickTrader.Algo.GuiModel
 
         public override void Reset()
         {
-            FilePath = "";
+            FilePath = DefaultFile;
         }
 
         public override object GetApplyValue()
@@ -199,8 +206,19 @@ namespace TickTrader.Algo.GuiModel
         {
             base.SetMetadata(descriptor);
 
+            DefaultValue = default(T);
+
             if (descriptor.DefaultValue != null)
-                this.DefaultValue = (T)descriptor.DefaultValue;
+            {
+                if (descriptor.DefaultValue is T)
+                    DefaultValue = (T)descriptor.DefaultValue;
+                else
+                {
+                    T convertedFromObj;
+                    if (Converter.FromObject(descriptor.DefaultValue, out convertedFromObj))
+                        DefaultValue = convertedFromObj;
+                }
+            }
         }
 
         internal virtual UiConverter<T> Converter { get { return null; } }

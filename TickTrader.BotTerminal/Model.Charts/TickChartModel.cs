@@ -24,8 +24,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
         private Fdk.Quote lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
-            : base(symbol, catalog, feed, trade, journal)
+        public TickChartModel(SymbolModel symbol, PluginCatalog catalog, TraderClientModel clientModel, BotJournal journal)
+            : base(symbol, catalog, clientModel, journal)
         {
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
@@ -58,7 +58,17 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                var tickArray = await Feed.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                SoftFX.Extended.Quote[] tickArray;
+
+                try
+                {
+                    tickArray = await ClientModel.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                }
+                catch (Exception)
+                {
+                    // TO DO: dysplay error on chart
+                    tickArray = new SoftFX.Extended.Quote[0];
+                }
 
                 //foreach (var tick in tickArray)
                 //{
@@ -99,14 +109,14 @@ namespace TickTrader.BotTerminal
             return new TickBasedPluginSetup(catalogItem, SymbolCode);
         }
 
-        protected override IndicatorModel2 CreateIndicator(PluginSetup setup)
+        protected override IndicatorModel CreateIndicator(PluginSetup setup)
         {
-            return new IndicatorModel2(setup, this);
+            return new IndicatorModel(setup, this);
         }
 
         protected override void InitPluign(PluginExecutor plugin)
         {
-            var feedProvider = new QuoteBasedFeedProvider(Feed, () => null);
+            var feedProvider = new QuoteBasedFeedProvider(ClientModel, () => null);
             plugin.InitQuoteStartegy(feedProvider);
             plugin.Metadata = feedProvider;
         }

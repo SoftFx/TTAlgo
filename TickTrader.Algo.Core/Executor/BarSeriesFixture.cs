@@ -47,12 +47,12 @@ namespace TickTrader.Algo.Core
                     return BufferUpdateResults.NotUpdated;
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    buffer.Last.Append(quote.Bid);
+                    buffer.Last.Append(quote.Bid, 1);
                     return BufferUpdateResults.LastItemUpdated;
                 }
             }
 
-            var newBar = new BarEntity(barOpenTime, barBoundaries.Close, quote);
+            var newBar = new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1);
             buffer.Append(newBar);
             return BufferUpdateResults.Extended;
         }

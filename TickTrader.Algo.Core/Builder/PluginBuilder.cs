@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler
+    public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler, EnvironmentInfo
     {
         private static readonly NullLogger nullLogger = new NullLogger();
 
@@ -49,6 +49,8 @@ namespace TickTrader.Algo.Core
         public Action<Exception> OnException { get; set; }
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
+        public string DataFolder { get; set; }
+
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
         public IReadOnlyDictionary<string, IDataBuffer> DataBuffers { get { return inputBuffers; } }
@@ -163,6 +165,11 @@ namespace TickTrader.Algo.Core
         StatusApi IPluginContext.GetStatusApi()
         {
             return statusApi;
+        }
+
+        EnvironmentInfo IPluginContext.GetEnvironment()
+        {
+            return this;
         }
 
         #region Invoke

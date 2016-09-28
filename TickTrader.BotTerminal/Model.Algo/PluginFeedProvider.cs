@@ -55,8 +55,15 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
-            var result = history.GetTicks(symbolCode, from, to, depth).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            try
+            {
+                var result = history.GetTicks(symbolCode, from, to, depth).Result;
+                return FdkToAlgo.Convert(result).ToList();
+            }
+            catch (Exception ex)
+            {
+                return Enumerable.Empty<QuoteEntity>();
+            }
         }
 
         public void Subscribe(string symbolCode, int depth)
@@ -155,7 +162,7 @@ namespace TickTrader.BotTerminal
     {
         private Func<List<BarEntity>> mainSeriesProvider;
 
-        public BarBasedFeedProvider(FeedModel feed, Func<List<BarEntity>> mainSeriesProvider)
+        public BarBasedFeedProvider(TraderClientModel feed, Func<List<BarEntity>> mainSeriesProvider)
             : base(feed.Symbols, feed.History)
         {
             if (mainSeriesProvider == null)
@@ -174,7 +181,7 @@ namespace TickTrader.BotTerminal
     {
         private Func<List<QuoteEntity>> mainSeriesProvider;
 
-        public QuoteBasedFeedProvider(FeedModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
+        public QuoteBasedFeedProvider(TraderClientModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
             : base(feed.Symbols, feed.History)
         {
             if (mainSeriesProvider == null)

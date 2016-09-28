@@ -20,6 +20,9 @@ namespace TickTrader.BotTerminal
             this.wndManager = wndManager;
 
             model.StateChanged += Model_StateChanged;
+
+            StartStop();
+            OpenState();
         }
 
         public async void StartStop()

@@ -11,11 +11,13 @@
             <RowDefinition MinHeight="50"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition MinHeight="50"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
 
         <ContentControl Grid.Row="0" x:Name="Positions"></ContentControl>
         <ContentControl Grid.Row="0" x:Name="Assets" Visibility="{Binding Assets.IsEnabled, Converter={StaticResource BoolToVis}}"></ContentControl>
-        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="4" Background="Transparent"></GridSplitter>
-        <ContentControl Grid.Row="2" x:Name="Orders"></ContentControl>
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="4" Background="Transparent" />
+        <ContentControl Grid.Row="2" x:Name="Orders" />
+        <ContentControl Grid.Row="3" x:Name="AccountStats" />
     </Grid>
 </UserControl>

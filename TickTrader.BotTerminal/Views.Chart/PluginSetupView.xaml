@@ -15,7 +15,7 @@
             <Setter Property="MinWidth" Value="75" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Margin" Value="10,7" />
+            <Setter Property="Margin" Value="5,7" />
             <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}" />
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}" />
         </Style>
@@ -361,12 +361,15 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
+                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <l:FlatButton x:Name="Ok" Content="Ok"
+            <l:FlatButton x:Name="Ok" Content="Ok" Grid.Column="1"
                           Background="{DynamicResource Dialog_OkButtonBackground}"
                           HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+            <l:FlatButton x:Name="Cancel" Content="Cancel"
+                          Grid.Column="2"/>
             <l:FlatButton x:Name="Reset" Content="Reset"
-                          Grid.Column="1"/>
+                          Grid.Column="0"/>
         </Grid>
     </Grid>
 </Window>

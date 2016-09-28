@@ -27,11 +27,25 @@
                 <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Position.Symbol}" />
                 <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Position.Side}" />
                 <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Position.Amount}" />
-                <DataGridTextColumn Header="Price" Width="*" Binding="{Binding Position.Price}" />
+                <DataGridTextColumn Header="Price" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <Binding Path="Position.Price"/>
+                            <Binding Path="PriceDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
-                <DataGridTextColumn Header="P/L" Width="*" />
+                <DataGridTextColumn Header="P/L" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Position.Profit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" />
-                <DataGridTextColumn Header="Net P/L" Width="*" />
+                <DataGridTextColumn Header="Net P/L" Width="*" Binding="{Binding Position.NetProfit}"  />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

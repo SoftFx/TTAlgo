@@ -13,18 +13,17 @@ namespace TickTrader.Algo.Core.Metadata
     {
         private static readonly List<EnumValueDescriptor> emptyEnumValuesList = new List<EnumValueDescriptor>();
 
+        private bool isDefaultValueDirectlyAssignable;
+
         public ParameterDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, ParameterAttribute attribute)
             : base(classMetadata, propertyInfo)
         {
             Validate(propertyInfo);
 
-            if (attribute.DefaultValue != null)
-            {
-                if (attribute.DefaultValue.GetType() != propertyInfo.PropertyType)
-                    SetError(AlgoPropertyErrors.DefaultValueTypeMismatch);
-                else
-                    DefaultValue = attribute.DefaultValue;
-            }
+            DefaultValue = attribute.DefaultValue;
+
+            isDefaultValueDirectlyAssignable = DefaultValue != null
+                && DefaultValue.GetType() == propertyInfo.PropertyType;
 
             InitDisplayName(attribute.DisplayName);
 
@@ -62,6 +61,12 @@ namespace TickTrader.Algo.Core.Metadata
         public string DataType { get; private set; }
         public object DefaultValue { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
+
+        internal void ResetValue(Api.AlgoPlugin instance)
+        {
+            if (isDefaultValueDirectlyAssignable)
+                Set(instance, DefaultValue);
+        }
     }
 
     [Serializable]

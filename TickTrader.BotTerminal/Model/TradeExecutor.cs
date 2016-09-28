@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         private ActionBlock<Task> orderSender;
         private ConnectionModel conenction;
 
-        public TradeExecutor(TraderModel trader)
+        public TradeExecutor(TraderClientModel trader)
         {
             this.conenction = trader.Connection;
 

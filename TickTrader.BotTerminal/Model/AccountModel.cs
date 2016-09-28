@@ -26,20 +26,22 @@ namespace TickTrader.BotTerminal
         private DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
         private DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
         private DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
+        private TraderClientModel clientModel;
         private ConnectionModel connection;
         private ActionBlock<System.Action> uiUpdater;
         private AccountType? accType;
 
-        public AccountModel(ConnectionModel connection)
+        public AccountModel(TraderClientModel clientModel)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
 
-            this.connection = connection;
+            this.clientModel = clientModel;
+            this.connection = clientModel.Connection;
             TradeHistory = new TradeHistoryProvider(connection);
 
             connection.State.StateChanged += State_StateChanged;
             //connection.SysInitalizing += Connection_Initalizing;
-            connection.Connected += ConnectionConnected;
+            //connection.Connected += ConnectionConnected;
             connection.SysDeinitalizing += Connection_Deinitalizing;
 
             connection.Connecting += () =>
@@ -61,11 +63,6 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        private void ConnectionConnected()
-        {
-            Init();
-        }
-
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
         {
             if (newState == ConnectionModel.States.Connecting)
@@ -76,10 +73,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
-        {
-            return Init();
-        }
+        //private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
+        //{
+        //    return Init();
+        //}
 
         private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
@@ -104,15 +101,15 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+        public AccountCalculatorModel Calc { get; private set; }
 
         public double Balance { get; private set; }
-        public string BalanceCurrencyCode { get; private set; }
+        public string BalanceCurrency { get; private set; }
+        public int BalanceDigits { get; private set; }
         public string Account { get; private set; }
+        public int Leverage { get; private set; }
 
-        public event AsyncEventHandler Starting; // main thread event
-        public event AsyncEventHandler Stopping; // background thread event
-
-        public async Task Init()
+        public void Init(IDictionary<string, CurrencyInfo> currencies)
         {
             Action<System.Action> uiActionhandler = (a) =>
             {
@@ -126,19 +123,28 @@ namespace TickTrader.BotTerminal
                 }
             };
 
-            this.uiUpdater = DataflowHelper.CreateUiActionBlock<System.Action>(uiActionhandler, 100, 100, CancellationToken.None);
-            UpdateSnapshots();
-            await Starting.InvokeAsync(this);
+            try
+            {
+                this.uiUpdater = DataflowHelper.CreateUiActionBlock<System.Action>(uiActionhandler, 100, 100, CancellationToken.None);
+                UpdateData(currencies);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Init() failed.");
+            }
         }
 
-        public void UpdateSnapshots()
+        public void UpdateData(IDictionary<string, CurrencyInfo> currencies)
         {
             var accInfo = connection.TradeProxy.Cache.AccountInfo;
+            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
 
             Account = accInfo.AccountId;
             Type = accInfo.Type;
             Balance = accInfo.Balance;
-            BalanceCurrencyCode = accInfo.Currency;
+            BalanceCurrency = accInfo.Currency;
+            Leverage = accInfo.Leverage;
+            BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
 
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
@@ -151,11 +157,14 @@ namespace TickTrader.BotTerminal
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
                 assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
+
+            Calc = AccountCalculatorModel.Create(this, clientModel);
+            Calc.Recalculate();
         }
 
         public async Task Deinit()
         {
-            await Stopping.InvokeAsync(this);
+            Calc.Dispose();
 
             await Task.Factory.StartNew(() =>
                 {
@@ -166,10 +175,15 @@ namespace TickTrader.BotTerminal
 
         private void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
         {
+            // TO DO: save updates in a buffer and apply them on Init()
+            var uiUpdaterCopy = this.uiUpdater;
+            if (uiUpdaterCopy == null)
+                return;
+
             if (IsEmpty(e.Report))
-                uiUpdater.SendAsync(() => positions.Remove(e.Report.Symbol));
+                uiUpdaterCopy.SendAsync(() => positions.Remove(e.Report.Symbol));
             else
-                uiUpdater.SendAsync(() => UpsertPosition(e.Report));
+                uiUpdaterCopy.SendAsync(() => UpsertPosition(e.Report));
         }
 
         private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
@@ -182,7 +196,11 @@ namespace TickTrader.BotTerminal
             uiUpdater.SendAsync(() =>
             {
                 if (Type == AccountType.Gross || Type == AccountType.Net)
+                {
                     Balance = e.Data.Balance;
+                    // TO DO : Calc should listen to BalanceUpdated event and recalculate iteself
+                    Calc.Recalculate();
+                }
                 else if (Type == AccountType.Cash)
                     assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency);
 

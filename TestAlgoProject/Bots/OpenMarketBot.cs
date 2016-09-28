@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 namespace TestAlgoProject
 {
     [TradeBot(DisplayName = "Open Market")]
-    public class OpenOrderBot : TradeBot
+    public class OpenMarketBot : TradeBot
     {
         [Parameter(DefaultValue = 1000D)]
         public double Volume { get; set; }

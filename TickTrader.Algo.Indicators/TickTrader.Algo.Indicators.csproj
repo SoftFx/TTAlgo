@@ -69,6 +69,7 @@
     <Compile Include="Oscillators\StochasticOscillator\StochasticOscillator.cs" />
     <Compile Include="Oscillators\WilliamsPercentRange\WilliamsPercentRange.cs" />
     <Compile Include="Other\News\News.cs" />
+    <Compile Include="Other\News\NewsBase.cs" />
     <Compile Include="Other\News\NewsMarkersOverlay.cs" />
     <Compile Include="Trend\AverageDirectionalMovementIndex\AverageDirectionalMovementIndex.cs" />
     <Compile Include="Trend\BollingerBands\BollingerBands.cs" />

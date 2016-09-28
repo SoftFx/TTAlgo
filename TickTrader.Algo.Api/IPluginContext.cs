@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Api
         IPluginMonitor GetPluginLogger();
         TradeCommands GetTradeApi();
         StatusApi GetStatusApi();
+        EnvironmentInfo GetEnvironment();
         void OnExit();
     }
 

@@ -18,14 +18,9 @@ namespace TickTrader.BotTerminal
     internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>
     {
         private Logger logger;
-        public enum States { Offline, WatingData, Canceled, Online, Stopping }
-        public enum Events { Disconnected, OnConnecting, SybmolsArrived, ConnectCanceled, DoneUpdating, DoneStopping }
-
-        private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
+        private IDictionary<string, CurrencyInfo> currencies;
         private ConnectionModel connection;
-        private IEnumerable<SymbolInfo> snapshot;
-        private bool isSymbolsArrived;
         private ActionBlock<Quote> rateUpdater;
         private List<Algo.Core.SymbolEntity> algoSymbolCache = new List<Algo.Core.SymbolEntity>();
         private ActionBlock<Task> requestQueue;
@@ -37,60 +32,31 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.connection = connection;
 
-            stateControl.AddTransition(States.Offline, Events.OnConnecting, States.WatingData);
-            stateControl.AddTransition(States.WatingData, () => isSymbolsArrived, States.Online);
-            stateControl.AddTransition(States.WatingData, Events.ConnectCanceled, States.Canceled);
-            stateControl.AddTransition(States.Online, Events.Disconnected, States.Stopping);
-            stateControl.AddTransition(States.Stopping, Events.DoneStopping, States.Offline);
-
-            stateControl.OnEnter(States.Online, Init);
-            stateControl.OnEnter(States.Stopping, Stop);
-
-            connection.Connecting += () =>
-            {
-                connection.FeedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-                connection.FeedProxy.Tick += FeedProxy_Tick;
-                isSymbolsArrived = false;
-                stateControl.PushEvent(Events.OnConnecting);
-            };
-
-            connection.Disconnecting += () =>
-            {
-                connection.FeedProxy.SymbolInfo -= FeedProxy_SymbolInfo;
-                connection.FeedProxy.Tick -= FeedProxy_Tick;
-            };
-
-            //connection.Initalizing += (s, c) =>
-            //{
-            //    isSymbolsArrived = false;
-            //    c.Register(() => stateControl.PushEvent(Events.ConnectCanceled));
-            //    return stateControl.PushEventAndWait(Events.OnConnecting, state => state == States.Online || state == States.Canceled);
-            //};
-
-            connection.Deinitalizing += (s, c) => stateControl.PushEventAndWait(Events.Disconnected, States.Offline);
-
-            stateControl.StateChanged += (from, to) => logger.Debug("STATE " + from + " => " + to);
-            stateControl.EventFired += e => logger.Debug("EVENT " + e);
+            connection.Connecting += () => connection.FeedProxy.Tick += FeedProxy_Tick;
+            connection.Disconnecting += () => connection.FeedProxy.Tick -= FeedProxy_Tick;
+            connection.Deinitalizing += (s, c) => Stop();
 
             rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
         }
 
-        public IStateProvider<States> State { get { return stateControl; } }
         public IEnumerable<Algo.Core.SymbolEntity> AlgoSymbolCache { get { return algoSymbolCache; } }
-        public bool IsOnline { get { return State.Current == States.Online; } }
-
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
+        public event Action<Quote> RateUpdated = delegate { };
 
         private void UpdateRate(Quote tick)
         {
             SymbolModel symbol;
             if (symbols.TryGetValue(tick.Symbol, out symbol))
                 symbol.CastNewTick(tick);
+            RateUpdated(tick);
         }
 
-        private void Init()
+        public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {
-            Merge(snapshot);
+            this.currencies = currencySnapshot;
+            algoSymbolCache = symbolSnapshot.Select(FdkToAlgo.Convert).ToList();
+
+            Merge(symbolSnapshot);
             Reset();
             requestQueue = new ActionBlock<Task>(t => t.RunSynchronously());
             EnqueuBatchSubscription();
@@ -112,21 +78,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async void Stop()
+        private async Task Stop()
         {
             requestQueue.Complete();
             await requestQueue.Completion;
-            stateControl.PushEvent(Events.DoneStopping);
-        }
-
-        void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
-        {
-            logger.Debug("EVENT SymbolsArrived");
-
-            snapshot = e.Information;
-            //algoSymbolCache.Clear();
-            algoSymbolCache = snapshot.Select(FdkToAlgo.Convert).ToList();
-            stateControl.ModifyConditions(() => isSymbolsArrived = true);
         }
 
         void FeedProxy_Tick(object sender, SoftFX.Extended.Events.TickEventArgs e)
@@ -146,7 +101,7 @@ namespace TickTrader.BotTerminal
                     model.Update(info);
                 else
                 {
-                    model = new SymbolModel(this, info);
+                    model = new SymbolModel(this, info, currencies);
                     symbols.Add(info.Name, model);
                 }
             }

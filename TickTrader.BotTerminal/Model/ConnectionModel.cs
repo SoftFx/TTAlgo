@@ -30,6 +30,9 @@ namespace TickTrader.BotTerminal
         private Task initTask;
         private bool isFeedLoggedIn;
         private bool isTradeLoggedIn;
+        private bool isFeedCacheLoaded;
+        private bool isTradeCacheLoaded;
+        private bool isSymbolsLoaded;
 
         public ConnectionModel()
         {
@@ -41,7 +44,7 @@ namespace TickTrader.BotTerminal
             stateControl.AddTransition(States.Connecting, Events.FailedConnecting, States.Disconnecting);
             stateControl.AddTransition(States.Connecting, Events.OnLogout, States.Disconnecting);
             stateControl.AddTransition(States.Connecting, Events.StopRequested, States.Disconnecting);
-            stateControl.AddTransition(States.WaitingLogon, () => isFeedLoggedIn && isTradeLoggedIn, States.Initializing);
+            stateControl.AddTransition(States.WaitingLogon, () => isSymbolsLoaded && isFeedLoggedIn && isTradeLoggedIn && isFeedCacheLoaded && isTradeCacheLoaded, States.Initializing);
             stateControl.AddTransition(States.WaitingLogon, Events.OnLogout, States.Disconnecting);
             stateControl.AddTransition(States.WaitingLogon, Events.StopRequested, States.Disconnecting);
             stateControl.AddTransition(States.Initializing, Events.DoneInit, States.Online);
@@ -126,17 +129,20 @@ namespace TickTrader.BotTerminal
                {
                    try
                    {
-
                        if (!Directory.Exists(LogPath))
                            Directory.CreateDirectory(LogPath);
 
-                       isTradeLoggedIn = false;
                        isFeedLoggedIn = false;
+                       isTradeLoggedIn = false;
+                       isFeedCacheLoaded = false;
+                       isTradeCacheLoaded = false;
+                       isSymbolsLoaded = false;
 
                        feedProxy = new DataFeed();
                        feedProxy.Logout += feedProxy_Logout;
                        feedProxy.Logon += feedProxy_Logon;
                        feedProxy.CacheInitialized += FeedProxy_CacheInitialized;
+                       feedProxy.SymbolInfo += FeedProxy_SymbolInfo;
 
                        FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
                        {
@@ -159,6 +165,7 @@ namespace TickTrader.BotTerminal
                        tradeProxy = new DataTrade();
                        tradeProxy.Logout += tradeProxy_Logout;
                        tradeProxy.Logon += tradeProxy_Logon;
+                       tradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
 
                        FixConnectionStringBuilder tradeCs = new FixConnectionStringBuilder()
                        {
@@ -177,7 +184,6 @@ namespace TickTrader.BotTerminal
                        tradeCs.FixLogDirectory = LogPath;
 
                        tradeProxy.Initialize(tradeCs.ToString());
-                       tradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
 
                        Connecting();
 
@@ -210,22 +216,34 @@ namespace TickTrader.BotTerminal
             stateControl.PushEvent(Events.DoneInit);
         }
 
+        private void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
+        {
+            logger.Debug("EVENT Feed.SymbolInfo");
+            stateControl.ModifyConditions(() => isSymbolsLoaded = true);
+        }
+
+        void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
+        {
+            logger.Debug("EVENT Feed.Logon");
+            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
+        }
+
         private void FeedProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
         {
             logger.Debug("EVENT Trade.CacheInitialized");
-            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+            stateControl.ModifyConditions(() => isFeedCacheLoaded = true);
         }
 
         private void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
         {
             logger.Debug("EVENT Feed.CacheInitialized");
-            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
+            stateControl.ModifyConditions(() => isTradeCacheLoaded = true);
         }
 
         void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
         {
             logger.Debug("EVENT Trade.Logon");
-            //stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
         }
 
         void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
@@ -253,11 +271,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
-        {
-            logger.Debug("EVENT Feed.Logon");
-            //stateControl.ModifyConditions(() => isFeedLoggedIn = true);
-        }
+
 
         void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
         {
@@ -312,6 +326,7 @@ namespace TickTrader.BotTerminal
                             feedProxy.Logout -= feedProxy_Logout;
                             feedProxy.Logon -= feedProxy_Logon;
                             feedProxy.CacheInitialized -= FeedProxy_CacheInitialized;
+                            feedProxy.SymbolInfo -= FeedProxy_SymbolInfo;
                             feedProxy.Stop();
                             feedProxy.Dispose();
                         }

@@ -118,12 +118,12 @@ namespace TickTrader.Algo.CoreUsageSample
                         return;
                     else if (barOpenTime == lastBar.OpenTime)
                     {
-                        lastBar.Append(quote.Bid);
+                        lastBar.Append(quote.Bid, 1);
                         return;
                     }
                 }
 
-                data.Add(new BarEntity(barOpenTime, barBoundaries.Close, quote));
+                data.Add(new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1));
             }
 
             public IEnumerable<BarEntity> QueryBars(DateTime from, DateTime to, TimeFrames timeFrame)

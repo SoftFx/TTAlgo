@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
             Positions = model.Orders
                 .Where((id, order) => order.OrderType == TradeRecordType.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, _symbols[o.Symbol]))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol)))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
@@ -33,6 +33,7 @@ namespace TickTrader.BotTerminal
         }
 
         public IObservableListSource<OrderViewModel> Positions { get; private set; }
+
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace

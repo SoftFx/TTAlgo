@@ -19,8 +19,7 @@ namespace TickTrader.BotTerminal
     internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager
     {
         private ConnectionManager cManager;
-        private TraderModel trade;
-        private FeedModel feed;
+        private TraderClientModel clientModel;
         private WindowManager wndManager;
         private PluginCatalog catalog = new PluginCatalog();
         private PersistModel storage;
@@ -43,25 +42,19 @@ namespace TickTrader.BotTerminal
             wndManager = new MdiWindowManager(this);
 
             cManager = new ConnectionManager(storage, eventJournal);
-            feed = new FeedModel(cManager.Connection);
-            trade = new TraderModel(cManager.Connection);
+            clientModel = new TraderClientModel(cManager.Connection);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(catalog);
-            SymbolList = new SymbolListViewModel(feed.Symbols, this);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
 
-            var netPositions = new NetPositionListViewModel(trade.Account, feed.Symbols);
-            var grossPositions = new GrossPositionListViewModel(trade.Account, feed.Symbols);
-            var positionList = new PositionListViewModel(netPositions, grossPositions);
-            var orderList = new OrderListViewModel(trade.Account, feed.Symbols);
-            var assets = new AssetsViewModel(trade.Account);
-            Trade = new TradeInfoViewModel(orderList, positionList, assets);
+            Trade = new TradeInfoViewModel(clientModel);
 
-            TradeHistory = new TradeHistoryViewModel(trade.Account, cManager.Connection);
+            TradeHistory = new TradeHistoryViewModel(clientModel.Account, cManager.Connection);
 
-            Notifications = new NotificationsViewModel(notificationCenter, trade.Account, cManager.Connection);
+            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager.Connection);
 
-            Charts = new ChartCollectionViewModel(feed, trade, catalog, this, botJournal);
+            Charts = new ChartCollectionViewModel(clientModel, catalog, this, botJournal);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(botJournal);
@@ -76,7 +69,29 @@ namespace TickTrader.BotTerminal
             catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
             catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
 
+            clientModel.Connected += OpenDefaultChart;
+
             LogStateLoop();
+        }
+
+        private void OpenDefaultChart()
+        {
+            if (clientModel.Symbols.Snapshot.Any())
+            {
+                var defaultSymbol = string.Empty;
+                switch (clientModel.Account.Type)
+                {
+                    case SoftFX.Extended.AccountType.Gross:
+                    case SoftFX.Extended.AccountType.Cash:
+                        defaultSymbol = "EURUSD";
+                        break;
+                    case SoftFX.Extended.AccountType.Net:
+                        defaultSymbol = "EUR/USD";
+                        break;
+                }
+
+                Charts.Open(clientModel.Symbols.GetOrDefault(defaultSymbol)?.Name ?? clientModel.Symbols.Snapshot.First().Key);
+            }
         }
 
         private void UpdateDisplayName()
@@ -218,7 +233,6 @@ namespace TickTrader.BotTerminal
 
                 LogState(builder, "ConnectionManager", cManager.State.ToString());
                 LogState(builder, "Connection", cManager.Connection.State.Current.ToString());
-                LogState(builder, "Feed.Symbols", feed.Symbols.State.Current.ToString());
 
                 logger.Debug(builder.ToString());
 
@@ -237,7 +251,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                using (var openOrderModel = new OpenOrderDialogViewModel(trade, feed, symbol))
+                using (var openOrderModel = new OpenOrderDialogViewModel(clientModel, symbol))
                     wndManager.ShowWindow(openOrderModel);
             }
             catch (Exception ex)

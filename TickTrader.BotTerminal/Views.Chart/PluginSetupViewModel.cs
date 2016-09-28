@@ -64,6 +64,12 @@ namespace TickTrader.BotTerminal
             TryClose();
         }
 
+        public void Cancel()
+        {
+            dlgResult = false;
+            TryClose();
+        }
+
         public override void CanClose(Action<bool> callback)
         {
             callback(true);

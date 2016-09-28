@@ -72,8 +72,10 @@ namespace TickTrader.BotTerminal
 
                 if (watchingEnd)
                 {
-                    int newStart = itemsCount - range.Diff;
-                    VisibleRange = new IndexRange(newStart, itemsCount - 1);
+                    int min = itemsCount - range.Diff - 1;
+                    int max = itemsCount - 1;
+                    if (range.Min != min || range.Max != max)
+                        VisibleRange = new IndexRange(min, itemsCount - 1);
                 }
             }
         }

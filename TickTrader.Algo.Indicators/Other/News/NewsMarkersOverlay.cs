@@ -13,19 +13,12 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Indicators.Other.News
 {
     [Indicator(Category = "Other", DisplayName = "Other/News Marker", IsOverlay = true)]
-    public class NewsMarkersOverlay : Indicator
+    public class NewsMarkersOverlay : NewsMarkersBase
     {
-        private List<FxStreetProvider> providers;
-        private StringBuilder markerTextBuilder = new StringBuilder();
-        private List<FxStreetNewsModel> markerNewsList = new List<FxStreetNewsModel>();
-
         [Parameter(DefaultValue = "", DisplayName = "Additional Currencies")]
-        public string AdCurrencies { get; set; }
+        public string Currencies { get; set; }
 
-        [Output(DisplayName = "Markers", DefaultColor = Colors.LightGreen)]
-        public DataSeries<Marker> Markers { get; set; }
-
-        protected override void Init()
+        public override void InitializeNewsProviders()
         {
             var currenciesList = new List<string>();
 
@@ -33,66 +26,40 @@ namespace TickTrader.Algo.Indicators.Other.News
             currenciesList.Add(Symbol.CounterCurrency);
 
             currenciesList.AddRange(
-                AdCurrencies.Split(',')
+                Currencies.Split(',')
                 .Select(s => s.Trim())
                 .Where(s => !string.IsNullOrWhiteSpace(s)));
 
-            providers = currenciesList.Select(CreateProvider).ToList();
+            NewsProviders = currenciesList.Distinct().Select(c => new FxStreetProvider(
+                new FxStreetCalendar(new FxStreetFilter()),
+                new FxStreetStorage("NewsCache", c),
+                ImpactLevel.None)).ToList();
         }
 
-        private FxStreetProvider CreateProvider(string currency)
+        protected override void Draw()
         {
-            var storage = new FxStreetStorage("NewsCache", currency);
-            var calendar = new FxStreetCalendar(new FxStreetFilter());
-            return new FxStreetProvider(calendar, storage, ImpactLevel.None);
-        }
-
-        protected override void Calculate()
-        {
-            markerNewsList.Clear();
-
-            foreach (var provider in providers)
-                markerNewsList.AddRange(GetCurrentNews(provider));
-
-            DrawMarkers();
-        }
-
-        private void DrawMarkers()
-        {
-            if (markerNewsList.Count > 0)
+            if (News.Any())
             {
-                markerTextBuilder.Clear();
+                MarkerText.Clear();
 
-                foreach (var n in markerNewsList)
-                    markerTextBuilder
-                        .Append(n.CurrencyCode).Append("  [")
-                        .Append(n.Impact).Append("]  ")
-                        .Append(n.Event).Append(" ")
-                        .Append(n.Actual).AppendLine();
+                var sortedNews = News.OrderByDescending(news => (int)news.Impact).ToList();
+                var maxImpact = sortedNews.First().Impact;
+
+                foreach (var n in sortedNews)
+                {
+                    if (!string.IsNullOrWhiteSpace(n.CurrencyCode))
+                        MarkerText.Append(n.CurrencyCode.PadRight(4));
+
+                    MarkerText.Append("[").Append(n.Impact).Append("] ")
+                         .Append(n.Event).Append(" ")
+                         .Append(n.Actual).AppendLine();
+                }
 
                 Markers[0].Y = Bars.Median[0];
                 Markers[0].Icon = MarkerIcons.Diamond;
-                Markers[0].DisplayText = markerTextBuilder.ToString();
-
-                var maxImpact = markerNewsList.Max(n => n.Impact);
-
-                if (maxImpact == ImpactLevel.High)
-                    Markers[0].Color = Colors.OrangeRed;
-                else if (maxImpact == ImpactLevel.Medium)
-                    Markers[0].Color = Colors.Green;
-                else if (maxImpact == ImpactLevel.Low)
-                    Markers[0].Color = Colors.Gray;
-                else if (maxImpact == ImpactLevel.Medium)
-                    Markers[0].Color = Colors.Gray;
+                Markers[0].DisplayText = MarkerText.ToString();
+                Markers[0].Color = ConvertToColor(maxImpact);
             }
-        }
-
-        private IEnumerable<FxStreetNewsModel> GetCurrentNews(FxStreetProvider provider)
-        {
-            var from = Bars.Count > 1 ? Bars[1].CloseTime : Bars[0].OpenTime;
-            var to = Bars[0].CloseTime;
-
-            return provider.GetNews(from, to);
         }
     }
 }

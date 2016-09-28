@@ -24,10 +24,31 @@
     <Grid>
         <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Currency}" />
-                <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Balance}" />
-                <DataGridTextColumn Header="Locked Volume" Width="*" />
-                <DataGridTextColumn Header="Available Volume" Width="*" />
+                <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Asset.Currency}" />
+                <DataGridTextColumn Header="Volume" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Asset.Amount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Locked Volume" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Asset.LockedAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Available Volume" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Asset.FreeAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

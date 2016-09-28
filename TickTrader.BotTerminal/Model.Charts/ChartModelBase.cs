@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
-        private DynamicList<IndicatorModel2> indicators = new DynamicList<IndicatorModel2>();
+        private DynamicList<IndicatorModel> indicators = new DynamicList<IndicatorModel>();
         private PluginCatalog catalog;
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
@@ -52,25 +52,24 @@ namespace TickTrader.BotTerminal
         private string dateAxisLabelFormat;
         private List<Quote> updateQueue;
 
-        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, FeedModel feed, TraderModel trade, BotJournal journal)
+        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, TraderClientModel client, BotJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.Feed = feed;
-            this.Trade = trade;
+            this.ClientModel = client;
             this.Model = symbol;
             this.catalog = catalog;
             this.Journal = journal;
 
             this.AvailableIndicators = catalog.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
-            this.isConnected = feed.Connection.State.Current == ConnectionModel.States.Online;
-            feed.Connection.Connected += Connection_Connected;
-            feed.Connection.Disconnected += Connection_Disconnected1;
+            this.isConnected = client.Connection.State.Current == ConnectionModel.States.Online;
+            client.Connection.Connected += Connection_Connected;
+            client.Connection.Disconnected += Connection_Disconnected1;
 
             symbol.Subscribe(this);
 
-            CurrentAsk = symbol.LastQuote?.Ask;
-            CurrentBid = symbol.LastQuote?.Bid;
+            CurrentAsk = symbol.CurrentAsk;
+            CurrentBid = symbol.CurrentBid;
 
             stateController.AddTransition(States.Idle, () => isUpdateRequired && isConnected, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
@@ -86,15 +85,14 @@ namespace TickTrader.BotTerminal
         }
 
         protected SymbolModel Model { get; private set; }
-        protected FeedModel Feed { get; private set; }
-        protected TraderModel Trade { get; private set; }
-        protected ConnectionModel Connection { get { return Feed.Connection; } }
+        protected TraderClientModel ClientModel { get; private set; }
+        protected ConnectionModel Connection { get { return ClientModel.Connection; } }
         protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
         public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
-        public IDynamicListSource<IndicatorModel2> Indicators { get { return indicators; } }
+        public IDynamicListSource<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
         public BotJournal Journal { get; private set; }
@@ -203,7 +201,7 @@ namespace TickTrader.BotTerminal
             indicators.Add(indicator);
         }
 
-        public void RemoveIndicator(IndicatorModel2 i)
+        public void RemoveIndicator(IndicatorModel i)
         {
             if (indicators.Remove(i))
                 i.Dispose();
@@ -219,7 +217,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel2 CreateIndicator(PluginSetup setup);
+        protected abstract IndicatorModel CreateIndicator(PluginSetup setup);
         protected abstract void ApplyUpdate(Quote update);
         protected abstract void InitPluign(PluginExecutor plugin);
 
@@ -331,15 +329,14 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-
         ITradeApi IAlgoPluginHost.GetTradeApi()
         {
-            return Trade.TradeApi;
+            return ClientModel.TradeApi;
         }
 
         IAccountInfoProvider IAlgoPluginHost.GetAccInfoProvider()
         {
-            return Trade.Account;
+            return ClientModel.Account;
         }
 
         void IAlgoPluginHost.InitializePlugin(PluginExecutor plugin)

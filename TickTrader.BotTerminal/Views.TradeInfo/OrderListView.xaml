@@ -22,7 +22,7 @@
 
     <Grid>
         <Grid>
-            <DataGrid Name="Orders">
+            <DataGrid Name="Orders" Margin="5,0,0,0">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
                     <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
@@ -46,7 +46,7 @@
                     <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Order.Price}" />
                     <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
                     <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
-                    <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
+                    <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding Order.CurrentPrice}" />
                     <DataGridTextColumn Header="Expiration" Width="*" Binding="{Binding Order.Expiration, Converter={StaticResource FullDateTimeFormat}}" />
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
                 </DataGrid.Columns>

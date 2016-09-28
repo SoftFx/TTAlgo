@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 builder.Account.Balance = (double)DataProvider.Balance;
-                builder.Account.BalanceCurrency = DataProvider.BalanceCurrencyCode;
+                builder.Account.BalanceCurrency = DataProvider.BalanceCurrency;
             }
             
             foreach (var order in DataProvider.GetOrders())

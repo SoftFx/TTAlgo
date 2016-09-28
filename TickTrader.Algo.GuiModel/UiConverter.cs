@@ -31,6 +31,12 @@ namespace TickTrader.Algo.GuiModel
             {
                 return val;
             }
+
+            public override bool FromObject(object objVal, out string result)
+            {
+                result = objVal?.ToString() ?? "";
+                return true;
+            }
         }
 
         internal class IntConverter : UiConverter<int>
@@ -55,7 +61,21 @@ namespace TickTrader.Algo.GuiModel
 
             public override string ToString(int val)
             {
-                return ((int)val).ToString();
+                return val.ToString();
+            }
+
+            public override bool FromObject(object objVal, out int result)
+            {
+                try
+                {
+                    result = System.Convert.ToInt32(objVal);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    result = 0;
+                    return false;
+                }
             }
         }
 
@@ -81,7 +101,21 @@ namespace TickTrader.Algo.GuiModel
 
             public override string ToString(double val)
             {
-                return ((double)val).ToString("R");
+                return val.ToString("R");
+            }
+
+            public override bool FromObject(object objVal, out double result)
+            {
+                try
+                {
+                    result = System.Convert.ToDouble(objVal);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    result = 0;
+                    return false;
+                }
             }
         }
     }
@@ -90,5 +124,6 @@ namespace TickTrader.Algo.GuiModel
     {
         public abstract T Parse(string str, out GuiModelMsg error);
         public abstract string ToString(T val);
+        public abstract bool FromObject(object objVal, out T result);
     }
 }

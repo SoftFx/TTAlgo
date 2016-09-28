@@ -59,9 +59,9 @@ namespace TickTrader.BotTerminal
 
             var logTarget = new FileTarget()
             {
-                Layout = "${logger} -> ${message} ${exception:format=tostring}",
-                FileName = Path.Combine(EnvService.Instance.LogFolder, "Log.txt"),
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "Archive-{#}.txt"),
+                Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
+                FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
+                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "terminal-{#}.txt"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 ArchiveOldFileOnStartup = true,
