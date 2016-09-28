@@ -60,7 +60,7 @@ namespace TestAlgoProject
         {
             foreach (var pair in snapshot)
             {
-                var smb = Symbols[pair.Key];
+                Symbol smb = Symbols[pair.Key];
                 Status.WriteLine("{0} {1} {2}/{3} [{4}]", pair.Key, pair.Value.Bid, pair.Value.Ask, smb.Digits);
             }
         }

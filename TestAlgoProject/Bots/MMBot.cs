@@ -30,7 +30,7 @@ namespace TestAlgoProject.Bots
                 var volumes = table.Get<TomlTable>("VOLUMES");
 
                 foreach (var row in combinations.Rows)
-                    Print(row.Key + " = " + row.Value.Get<string>());
+                    Status.Write(row.Key + " = " + row.Value.Get<string>());
             }
             catch (Exception ex)
             {
