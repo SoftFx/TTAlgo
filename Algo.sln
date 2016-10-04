@@ -41,8 +41,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Terminal", "Terminal", "{DF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Host", "Host", "{EAFDF5CB-7010-4EA0-8D57-4D5035362975}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Algo.Examples", "Algo.Examples", "{9AFC9CF4-C84F-44C3-9D59-817339C9FBC6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CmdUtil", "TickTrader.Algo.CmdUtil\TickTrader.Algo.CmdUtil.csproj", "{19514472-B817-4447-B155-337661C29440}"
 EndProject
 Global

@@ -58,8 +58,8 @@ namespace TestAlgoProject
                 Status.WriteLine("{0}  orders:", pOrders.Count);
                 foreach (var order in pOrders)
                 {
-                    Status.WriteLine("#{0} {1} {2}/{3}", order.Symbol, order.Side,
-                        order.RemainingAmount, order.RequestedAmount);
+                    Status.WriteLine("#{0} {1} {2}/{3} {4}", order.Symbol, order.Side,
+                        order.RemainingAmount, order.RequestedAmount, order.Comment);
                 }
             }
             else
@@ -74,8 +74,8 @@ namespace TestAlgoProject
                 Status.WriteLine("{0} positions:", positions.Count);
                 foreach (var order in positions)
                 {
-                    Status.WriteLine("#{0} {1} {2} {3}", order.Id, order.Symbol, order.Side,
-                        order.RemainingAmount, order.RequestedAmount);
+                    Status.WriteLine("#{0} {1} {2} {3} {4} {5}", order.Id, order.Symbol, order.Side,
+                        order.RemainingAmount, order.RequestedAmount, order.Comment);
                 }
             }
             else

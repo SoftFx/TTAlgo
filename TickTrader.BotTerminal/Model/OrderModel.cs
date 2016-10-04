@@ -13,6 +13,7 @@ namespace TickTrader.BotTerminal
 {
     internal class OrderModel : PropertyChangedBase, TickTrader.BusinessLogic.IOrderModel
     {
+        private string clientOrderId;
         private TradeRecordType orderType;
         private decimal amount;
         private decimal amountRemaining;
@@ -32,6 +33,7 @@ namespace TickTrader.BotTerminal
         public OrderModel(TradeRecord record)
         {
             this.Id = record.OrderId;
+            this.clientOrderId = record.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = record.Symbol;
             Update(record);
@@ -40,6 +42,7 @@ namespace TickTrader.BotTerminal
         public OrderModel(ExecutionReport report)
         {
             this.Id = report.OrderId;
+            this.clientOrderId = report.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = report.Symbol;
 
@@ -281,12 +284,14 @@ namespace TickTrader.BotTerminal
         {
             return new OrderEntity(Id)
             {
+                ClientOrderId = this.clientOrderId,
                 RemainingAmount = (double)RemainingAmount,
                 RequestedAmount = (double)Amount,
                 Symbol = Symbol,
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),
-                Price = (double)Price
+                Price = (double)Price,
+                Comment = this.Comment
             };
         }
 

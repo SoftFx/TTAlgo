@@ -13,6 +13,8 @@ namespace TickTrader.BotTerminal
 {
     internal class TradeExecutor : NoTimeoutByRefObject, ITradeApi
     {
+        private static readonly NLog.ILogger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private BufferBlock<Task> orderQueue;
         private ActionBlock<Task> orderSender;
         private ConnectionModel conenction;
@@ -38,11 +40,24 @@ namespace TickTrader.BotTerminal
                 {
                     var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type), Convert(side),
                         price, volume, sl, tp, null, comment);
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                    return new TradeResultEntity(OrderCmdResultCodes.Ok, new OrderModel(record).ToAlgoOrder());
                 }
-                catch (Exception)
+                catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
+                    return new TradeResultEntity(Convert(rex.Reason), null);
+                }
+                catch (SoftFX.Extended.Errors.LogoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+                }
+                catch (SoftFX.Extended.Errors.TimeoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.Timeout, null);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "OpenOrder() failed!");
+                    return new TradeResultEntity(OrderCmdResultCodes.InternalError, null);
                 }
             });
 
@@ -50,18 +65,31 @@ namespace TickTrader.BotTerminal
             orderQueue.Post(task);
         }
 
-        public void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, OrderSide side)
+        public void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string clientOrderId, OrderSide side)
         {
             Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
             {
                 try
                 {
-                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, null, Convert(side));
+                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, clientOrderId, Convert(side));
                     return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
                 }
-                catch (Exception)
+                catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
+                    return new TradeResultEntity(Convert(rex.Reason), null);
+                }
+                catch (SoftFX.Extended.Errors.LogoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+                }
+                catch (SoftFX.Extended.Errors.TimeoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.Timeout, null);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "CancelOrder() failed!");
+                    return new TradeResultEntity(OrderCmdResultCodes.InternalError, null);
                 }
             });
 
@@ -69,20 +97,33 @@ namespace TickTrader.BotTerminal
             orderQueue.Post(task);
         }
 
-        public void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string symbol,
+        public void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string clientOrderId, string symbol,
             OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
             Task<OrderCmdResult> task = new Task<OrderCmdResult>(() =>
             {
                 try
                 {
-                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, null, symbol,
+                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, clientOrderId, symbol,
                         ToRecordType(orderType), Convert(side), volume, price, sl, tp, null, comment);
                     return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
                 }
-                catch (Exception)
+                catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
+                    return new TradeResultEntity(Convert(rex.Reason), null);
+                }
+                catch (SoftFX.Extended.Errors.LogoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+                }
+                catch (SoftFX.Extended.Errors.TimeoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.Timeout, null);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "ModifyOrder() failed!");
+                    return new TradeResultEntity(OrderCmdResultCodes.InternalError, null);
                 }
             });
 
@@ -107,9 +148,22 @@ namespace TickTrader.BotTerminal
                         return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
                     }
                 }
-                catch (Exception)
+                catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new TradeResultEntity(OrderCmdResultCodes.DealerReject, null);
+                    return new TradeResultEntity(Convert(rex.Reason), null);
+                }
+                catch (SoftFX.Extended.Errors.LogoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.ConnectionError, null);
+                }
+                catch (SoftFX.Extended.Errors.TimeoutException)
+                {
+                    return new TradeResultEntity(OrderCmdResultCodes.Timeout, null);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "CloseOrder() failed!");
+                    return new TradeResultEntity(OrderCmdResultCodes.InternalError, null);
                 }
             });
 
@@ -151,6 +205,19 @@ namespace TickTrader.BotTerminal
             }
 
             throw new Exception("Not Supported: " + side);
+        }
+
+        private OrderCmdResultCodes Convert(RejectReason reason)
+        {
+            switch (reason)
+            {
+                case RejectReason.DealerReject: return OrderCmdResultCodes.DealerReject;
+                case RejectReason.UnknownSymbol: return OrderCmdResultCodes.SymbolNotFound;
+                case RejectReason.UnknownOrder: return OrderCmdResultCodes.OrderNotFound;
+                case RejectReason.IncorrectQuantity: return OrderCmdResultCodes.IncorrectVolume;
+                case RejectReason.OffQuotes: return OrderCmdResultCodes.Offquotes;
+                default: return OrderCmdResultCodes.UnknownError;
+            }
         }
     }
 }
