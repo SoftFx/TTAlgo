@@ -8,7 +8,8 @@
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
     <l:TradeSideTypeConverter x:Key="TradeSideTypeFormat" />
-    <l:DateTimeConverter x:Key="FullDateTimeFormat" />
+    <l:FullDateTimeConverter x:Key="FullDateTimeFormat" />
+    <l:FullTimeConverter x:Key="FullTimeFormat" />
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
     <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
 

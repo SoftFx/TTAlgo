@@ -228,7 +228,7 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
-    <Compile Include="Converters\DateTimeConverter.cs" />
+    <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\InvertableBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\BoolInverter.cs" />

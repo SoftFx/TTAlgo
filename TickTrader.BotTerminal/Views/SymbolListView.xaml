@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
-        
+
         <CollectionViewSource x:Key="SymbolGroupViewSrc" Source="{Binding Symbols}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Group" />
@@ -18,16 +18,14 @@
                 <PropertyGroupDescription PropertyName="Group" />
             </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
-        
+
     </UserControl.Resources>
-  
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition/>
         </Grid.RowDefinitions>
-        
-        <!--<Label Content="Ask Bid" Foreground="{DynamicResource Shell_PrimaryForeground}" />-->
 
         <ListBox Name="Symbols"
                  Grid.Row="1"
@@ -44,7 +42,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-            
+
     </Grid>
 
 </UserControl>

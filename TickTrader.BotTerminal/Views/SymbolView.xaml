@@ -64,6 +64,8 @@
                 <ColumnDefinition Width="50"/>
                 <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition/>
                 <ColumnDefinition Width="4"/>
             </Grid.ColumnDefinitions>
 
@@ -78,6 +80,7 @@
 
             <TextBlock Text="{Binding Bid.RateString}" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
             <TextBlock Text="{Binding Ask.RateString}" Grid.Column="4" Style="{StaticResource AskTextStyle}"/>
+            <TextBlock Text="{Binding QuoteTime, Converter={StaticResource FullTimeFormat}}" Grid.Column="6" Style="{StaticResource RateTextStyle}" TextTrimming="CharacterEllipsis"/>
         </Grid>
         
 

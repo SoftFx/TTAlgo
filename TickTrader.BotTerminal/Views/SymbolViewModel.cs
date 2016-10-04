@@ -17,6 +17,7 @@ namespace TickTrader.BotTerminal
         private bool isSelected;
         private States currentState;
         private iOrderUi _orderUi;
+        private DateTime _quoteTime;
 
         public SymbolViewModel(SymbolModel model, iOrderUi orderUi)
         {
@@ -36,7 +37,7 @@ namespace TickTrader.BotTerminal
             if (model.Descriptor.Features.IsColorSupported)
                 Color = model.Descriptor.Color;
 
-            this.DetailsPanel.OnBuyClick = ()=> _orderUi.OpenMarkerOrder(model.Name);
+            this.DetailsPanel.OnBuyClick = () => _orderUi.OpenMarkerOrder(model.Name);
             this.DetailsPanel.OnSellClick = () => _orderUi.OpenMarkerOrder(model.Name);
         }
 
@@ -52,6 +53,18 @@ namespace TickTrader.BotTerminal
 
         public RateDirectionTracker Bid { get; private set; }
         public RateDirectionTracker Ask { get; private set; }
+        public DateTime QuoteTime
+        {
+            get { return _quoteTime; }
+            private set
+            {
+                if (_quoteTime != value)
+                {
+                    _quoteTime = value;
+                    NotifyOfPropertyChange(nameof(QuoteTime));
+                }
+            }
+        }
         public int Depth { get; private set; }
         public SymbolDetailsViewModel DetailsPanel { get; private set; }
         public SymbolLevel2ViewModel Level2Panel { get; private set; }
@@ -114,6 +127,8 @@ namespace TickTrader.BotTerminal
 
             if (tick.HasAsk)
                 Ask.Rate = tick.Ask;
+
+            QuoteTime = tick.CreatingTime;
         }
 
         public void OpenOrder()
