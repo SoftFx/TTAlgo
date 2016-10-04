@@ -93,32 +93,40 @@ namespace TickTrader.BotTerminal
                     switch (obj.OrderCopy.Type)
                     {
                         case OrderType.Position:
-                            header = string.Format("Order {0} Filled at {1}", obj.OrderId, obj.OrderCopy.Price);
-                            body = string.Format("Your request to {0} {1} of {2} was filled at {3}.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
+                            header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
+                            body = $"Your request to {obj.OrderCopy.Side} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} was filled at {obj.OrderCopy.Price}.";
                             break;
                         case OrderType.Limit:
-                            header = string.Format("Order {0} Placed at {1} ", obj.OrderId, obj.OrderCopy.Price);
-                            body = string.Format("Your {0} Limit order for {1} of {2} at {3} was successfully placed.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
+                        case OrderType.Stop:
+                            header = $"Order {obj.OrderId} Placed at {obj.OrderCopy.Price}";
+                            body =$"Your {obj.OrderCopy.Side} {obj.OrderCopy.Type} order for {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} was successfully placed.";
                             break;
                     }
                     break;
                 case OrderExecAction.Modified:
-                    if (obj.OrderCopy.Type == Algo.Api.OrderType.Limit)
+                    switch(obj.OrderCopy.Type)
                     {
-                        header = string.Format("Order {0} Modified", obj.OrderId);
-                        body = string.Format("The entry price of the order with ID {0}, was successfully modified.",obj.OrderCopy.Id);
+                        case OrderType.Position:
+                            header = $"Position {obj.OrderId} Modified";
+                            body = $"Position {obj.OrderCopy.Side} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} modified.";
+                            break;
+                        case OrderType.Limit:
+                        case OrderType.Stop:
+                            header = $"Order {obj.OrderId} Modified";
+                            body = $"Order {obj.OrderCopy.Side} {obj.OrderCopy.Type} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} was successfully modified.";
+                            break;
                     }
                     break;
                 case OrderExecAction.Closed:
                     if (obj.OrderCopy.Type == Algo.Api.OrderType.Position)
                     {
-                        header = string.Format("Order {0} Filled at {1}", obj.OrderId, obj.OrderCopy.Price);
-                        body = string.Format("Your request to close position {0} {1} of {2} was filled at {3}.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
+                        header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
+                        body = $"Your request to close position {obj.OrderCopy.Side} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} was filled at {obj.OrderCopy.Price}.";
                     }
                     break;
                 case OrderExecAction.Canceled:
-                    header = string.Format("Order {0} Canceled", obj.OrderId);
-                    body = string.Format("Your order {0} Limit {1} of {2} at {3} was successfully canceled.", obj.OrderCopy.Side, obj.OrderCopy.RequestedAmount, obj.OrderCopy.Symbol, obj.OrderCopy.Price);
+                    header = $"Order {obj.OrderId} Canceled";
+                    body = $"Your order {obj.OrderCopy.Side} {obj.OrderCopy.Type} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} was successfully canceled.";
                     break;
             }
             _notificationCenter.PopupNotification.Notify(new InfoMessage(header, body));
