@@ -38,15 +38,22 @@ namespace TickTrader.BotTerminal
                     return;
 
                 if (value)
+                {
                     _accountInfo.OrderUpdated += PopupNotificationOnOrderUpdated;
+                    _accountInfo.PositionUpdated += PopupNotificationOnPositionUpdated;
+                }
                 else
+                {
                     _accountInfo.OrderUpdated -= PopupNotificationOnOrderUpdated;
+                    _accountInfo.PositionUpdated -= PopupNotificationOnPositionUpdated;
+                }
 
                 _notificationCenter.PopupNotification.Enabled = value;
 
                 NotifyOfPropertyChange(nameof(NotificationsEnabled));
             }
         }
+
         public bool SoundsEnabled
         {
             get
@@ -62,11 +69,13 @@ namespace TickTrader.BotTerminal
                 {
                     _connectionModel.Connected += SoundNotificationOnConnected;
                     _accountInfo.OrderUpdated += SoundNotificationOnOrderUpdated;
+                    _accountInfo.PositionUpdated += SoundNotificationOnPositionUpdated;
                 }
                 else
                 {
                     _connectionModel.Connected -= SoundNotificationOnConnected;
                     _accountInfo.OrderUpdated -= SoundNotificationOnOrderUpdated;
+                    _accountInfo.PositionUpdated -= SoundNotificationOnPositionUpdated;
                 }
 
                 _notificationCenter.SoundNotification.Enabled = value;
@@ -75,6 +84,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void SoundNotificationOnPositionUpdated(PositionExecReport obj)
+        {
+            _notificationCenter.SoundNotification.Notify(AppSounds.Woosh);
+        }
         private void SoundNotificationOnOrderUpdated(OrderExecReport obj)
         {
             _notificationCenter.SoundNotification.Notify(AppSounds.Woosh);
@@ -85,51 +98,104 @@ namespace TickTrader.BotTerminal
         }
         private void PopupNotificationOnOrderUpdated(OrderExecReport obj)
         {
+            var message = NotificationBuilder.BuildMessage(obj);
+            if (!message.IsEmpty)
+                _notificationCenter.PopupNotification.Notify(new InfoMessage(message.Header, message.Body));
+        }
+        private void PopupNotificationOnPositionUpdated(PositionExecReport obj)
+        {
+            var message = NotificationBuilder.BuildMessage(obj);
+            if (!message.IsEmpty)
+                _notificationCenter.PopupNotification.Notify(new InfoMessage(message.Header, message.Body));
+        }
+    }
+
+    public class NotificationBuilder
+    {
+        public class Message
+        {
+            public Message(string header, string body)
+            {
+                Header = header;
+                Body = body;
+            }
+
+            public string Body { get; private set; }
+            public string Header { get; private set; }
+            public bool IsEmpty => string.IsNullOrWhiteSpace(Body) && string.IsNullOrWhiteSpace(Header);
+        }
+
+        public static Message BuildMessage(OrderExecReport obj)
+        {
+            var order = obj.OrderCopy;
             string header = "";
             string body = "";
             switch (obj.ExecAction)
             {
                 case OrderExecAction.Opened:
-                    switch (obj.OrderCopy.Type)
+                    switch (order.Type)
                     {
                         case OrderType.Position:
                             header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
-                            body = $"Your request to {obj.OrderCopy.Side} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} was filled at {obj.OrderCopy.Price}.";
+                            body = $"Your request to {order.Side} {order.RequestedAmount} of {order.Symbol} was filled at {order.Price}.";
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
-                            header = $"Order {obj.OrderId} Placed at {obj.OrderCopy.Price}";
-                            body =$"Your {obj.OrderCopy.Side} {obj.OrderCopy.Type} order for {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} was successfully placed.";
+                            header = $"Order {obj.OrderId} Placed at {order.Price}";
+                            body = $"Your {order.Side} {order.Type} order for {order.RequestedAmount} of {order.Symbol} at {order.Price} was successfully placed.";
                             break;
                     }
                     break;
                 case OrderExecAction.Modified:
-                    switch(obj.OrderCopy.Type)
+                    switch (order.Type)
                     {
                         case OrderType.Position:
-                            header = $"Position {obj.OrderId} Modified";
-                            body = $"Position {obj.OrderCopy.Side} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} modified.";
+                            header = $"Order {obj.OrderId} Modified";
+                            body = $"Order {order.Side} {order.RequestedAmount} of {order.Symbol} at {order.Price} modified.";
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
                             header = $"Order {obj.OrderId} Modified";
-                            body = $"Order {obj.OrderCopy.Side} {obj.OrderCopy.Type} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} was successfully modified.";
+                            body = $"Order {order.Side} {order.Type} {order.RequestedAmount} of {order.Symbol} at {order.Price} was successfully modified.";
                             break;
                     }
                     break;
                 case OrderExecAction.Closed:
-                    if (obj.OrderCopy.Type == Algo.Api.OrderType.Position)
+                    if (order.Type == Algo.Api.OrderType.Position)
                     {
-                        header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
-                        body = $"Your request to close position {obj.OrderCopy.Side} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} was filled at {obj.OrderCopy.Price}.";
+                        header = $"Order {obj.OrderId} Filled at {order.Price}";
+                        body = $"Your request to close position {order.Side} {order.RequestedAmount} of {order.Symbol} was filled at {order.Price}.";
                     }
                     break;
                 case OrderExecAction.Canceled:
                     header = $"Order {obj.OrderId} Canceled";
-                    body = $"Your order {obj.OrderCopy.Side} {obj.OrderCopy.Type} {obj.OrderCopy.RequestedAmount} of {obj.OrderCopy.Symbol} at {obj.OrderCopy.Price} was successfully canceled.";
+                    body = $"Your order {order.Side} {order.Type} {order.RequestedAmount} of {order.Symbol} at {order.Price} was successfully canceled.";
+                    break;
+                case OrderExecAction.Filled:
+                    header = $"Order {obj.OrderId} Filled at {order.Price}";
+                    body = $"Your order {order.Side} {order.Type} {order.RequestedAmount} of {order.Symbol} was filled at at {order.Price}.";
                     break;
             }
-            _notificationCenter.PopupNotification.Notify(new InfoMessage(header, body));
+
+            return new Message(header, body);
+        }
+        public static Message BuildMessage(PositionExecReport obj)
+        {
+            var position = obj.PositionCopy;
+            string header = "";
+            string body = "";
+            switch (obj.ExecAction)
+            {
+                case OrderExecAction.Modified:
+                    header = $"Position Modified";
+                    body = $"Position {position.Side} {position.Amount} of {position.Symbol} at {position.Price} modified.";
+                    break;
+                case OrderExecAction.Closed:
+                    header = $"Position Closed";
+                    body = $"Position {position.Side} {position.Amount} of {position.Symbol} at {position.Price} closed.";
+                    break;
+            }
+            return new Message(header, body);
         }
     }
 }
