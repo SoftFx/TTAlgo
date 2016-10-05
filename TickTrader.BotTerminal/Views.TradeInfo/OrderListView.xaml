@@ -34,7 +34,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="{l:Resx Order_Amount}" Width="*">
+                    <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding StringFormat="{}{0}/{1}">
                                 <Binding Path="Order.RemainingAmount" />
