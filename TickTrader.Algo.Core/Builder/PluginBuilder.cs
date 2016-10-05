@@ -12,13 +12,12 @@ namespace TickTrader.Algo.Core
 {
     public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler, EnvironmentInfo
     {
-        private static readonly NullLogger nullLogger = new NullLogger();
-
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
         private StatusApiImpl statusApi = new StatusApiImpl();
+        private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
 
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
@@ -26,7 +25,6 @@ namespace TickTrader.Algo.Core
             marketData = new MarketDataImpl(this);
             Account = new AccountEntity(this);
             Symbols = new SymbolsCollection(this);
-            Logger = nullLogger;
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
 
@@ -43,7 +41,7 @@ namespace TickTrader.Algo.Core
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
         public ITradeApi TradeApi { get; set; }
-        public IPluginLogger Logger { get; set; }
+        public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
         public Action<string, int> OnSubscribe { get; set; }
         public Action<string> OnUnsubscribe { get; set; }
         public Action<Exception> OnException { get; set; }
@@ -152,14 +150,14 @@ namespace TickTrader.Algo.Core
 
         IPluginMonitor IPluginContext.GetPluginLogger()
         {
-            return new PluginLoggerAdapter(Logger);
+            return logAdapter;
         }
 
         TradeCommands IPluginContext.GetTradeApi()
         {
             if (TradeApi == null)
                 return new NullTradeApi();
-            return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account);
+            return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter);
         }
 
         StatusApi IPluginContext.GetStatusApi()
@@ -205,13 +203,13 @@ namespace TickTrader.Algo.Core
         internal void InvokeOnStart()
         {
             InvokePluginMethod(PluginProxy.InvokeOnStart);
-            Logger.OnPrint("Bot started");
+            Logger.OnStart();
         }
 
         internal void InvokeOnStop()
         {
             InvokePluginMethod(PluginProxy.InvokeOnStop);
-            Logger.OnPrint("Bot stopped");
+            Logger.OnStop();
         }
 
         internal void InvokeInit()

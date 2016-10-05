@@ -13,35 +13,52 @@ namespace TickTrader.Algo.Core
         private ITradeApi api;
         private SymbolProvider symbols;
         private AccountDataProvider account;
+        private PluginLoggerAdapter logger;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountDataProvider account)
+        public TradeApiAdapter(ITradeApi api,  SymbolProvider symbols, AccountDataProvider account, PluginLoggerAdapter logger)
         {
             this.api = api;
             this.symbols = symbols;
             this.account = account;
+            this.logger = logger;
         }
 
-        public Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volumeLots, double? tp, double? sl, string comment)
+        public async Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment)
         {
             OrderCmdResultCodes code;
             double volume = ConvertVolume(volumeLots, symbol, out code);
             if (code != OrderCmdResultCodes.Ok)
-                return CreateResult(code);
+                return new TradeResultEntity(code);
+
+            LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
             var waitHandler = new TaskProxy<OrderCmdResult>();
             api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment);
-            return waitHandler.LocalTask;
+            var result = await waitHandler.LocalTask;
+
+            LogOrderOpenResults(result);
+
+            return result;
         }
 
-        public Task<OrderCmdResult> CancelOrder(string orderId)
+        public async Task<OrderCmdResult> CancelOrder(string orderId)
         {
             Order orderToCancel = account.Orders[orderId];
             if (orderToCancel.IsNull)
-                return CreateResult(OrderCmdResultCodes.OrderNotFound);
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+
+            logger.PrintInfo("Canceling order #" + orderId);
 
             var waitHandler = new TaskProxy<OrderCmdResult>();
-            api.CancelOrder(waitHandler, orderId, orderToCancel.Side);
-            return waitHandler.LocalTask;
+            api.CancelOrder(waitHandler, orderId, ((OrderEntity)orderToCancel).ClientOrderId, orderToCancel.Side);
+            var result = await waitHandler.LocalTask;
+
+            if (result.IsCompleted)
+                logger.PrintInfo("→ SUCCESS: Order #" + orderId + " canceled");
+            else
+                logger.PrintInfo("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
+
+            return result;
         }
 
         public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolumeLots)
@@ -65,14 +82,14 @@ namespace TickTrader.Algo.Core
             return waitHandler.LocalTask;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? tp, double? sl, string comment)
+        public Task<OrderCmdResult> ModifyOrder(string orderId, double price,  double? sl, double? tp, string comment)
         {
             Order orderToModify = account.Orders[orderId];
             if (orderToModify.IsNull)
                 return CreateResult(OrderCmdResultCodes.OrderNotFound);
 
             var waitHandler = new TaskProxy<OrderCmdResult>();
-            api.ModifyOrder(waitHandler, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
+            api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
                 price, orderToModify.RequestedAmount, tp, sl, comment);
             return waitHandler.LocalTask;
         }
@@ -96,5 +113,74 @@ namespace TickTrader.Algo.Core
                 return smbMetatda.ContractSize * volumeInLots;
             }
         }
+
+        #region Logging
+
+        private void LogOrderOpening(string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)
+        {
+            StringBuilder logEntry = new StringBuilder();
+            logEntry.Append("Executing ");
+            AppendOrderParams(logEntry, " Order to ", symbol, type, side, volumeLots, price, sl, tp);
+            logger.PrintInfo(logEntry.ToString());
+        }
+
+        private void LogOrderOpenResults(OrderCmdResult result)
+        {
+            var order = result.ResultingOrder;
+            StringBuilder logEntry = new StringBuilder();
+
+            if (result.IsCompleted)
+            {
+                logEntry.Append("→ SUCCESS: Opened ");
+                if (order != null)
+                {
+                    logEntry.Append("#").Append(order.Id).Append(" ");
+                    AppendOrderParams(logEntry, " ", order.Symbol, order.Type, order.Side,
+                        order.RemainingAmount, order.Price, order.StopLoss, order.TakeProfit);
+                }
+                else
+                    logEntry.Append("Null Order");
+            }
+            else
+            {
+                logEntry.Append("→ FAILED Executing ");
+                if (order != null)
+                {
+                    AppendOrderParams(logEntry, " Order to ", order.Symbol, order.Type, order.Side,
+                        order.RemainingAmount, order.Price, order.StopLoss, order.TakeProfit);
+                    logEntry.Append(" error=").Append(result.ResultCode);
+                }
+                else
+                    logEntry.Append("Null Order");
+            }
+
+            logger.PrintInfo(logEntry.ToString());
+        }
+
+        private void AppendOrderParams(StringBuilder logEntry, string sufix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)
+        {
+            logEntry.Append(type)
+                .Append(sufix).Append(side)
+                .Append(" ").Append(volumeLots)
+                .Append(" ").Append(symbol);
+
+            if (tp != null || sl != null)
+            {
+                logEntry.Append(" (");
+                if (sl != null)
+                    logEntry.Append("SL:").Append(sl.Value);
+                if (sl != null && tp != null)
+                    logEntry.Append(", ");
+                if (tp != null)
+                    logEntry.Append("TP:").Append(tp.Value);
+
+                logEntry.Append(")");
+            }
+
+            if (!double.IsNaN(price) && price != 0)
+                logEntry.Append(" at price ").Append(price);
+        }
+
+        #endregion
     }
 }

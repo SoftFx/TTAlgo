@@ -50,14 +50,14 @@ namespace TickTrader.Algo.Api
 
         #region Order Commands
 
-        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return OpenOrderAsync(symbol, type, side, price, volume, tp, sl, comment).Result;
+            return OpenOrderAsync(symbol, type, side, volume, price, sl, tp, comment).Result;
         }
 
-        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp = null, double? sl = null, string comment = "")
+        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return GetTradeApi().OpenOrder(symbol, type, side, price, volume, tp, sl, comment);
+            return GetTradeApi().OpenOrder(symbol, type, side, volume, price, sl, tp, comment);
         }
 
         public OrderCmdResult CloseOrder(string orderId, double? volume = null)
@@ -80,14 +80,14 @@ namespace TickTrader.Algo.Api
             return GetTradeApi().CancelOrder(orderId);
         }
 
-        public OrderCmdResult ModifyOrder(string orderId, double price, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult ModifyOrder(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return ModifyOrderAsync(orderId, price, tp, sl, comment).Result;
+            return ModifyOrderAsync(orderId, price, sl, tp, comment).Result;
         }
 
-        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? tp = null, double? sl = null, string comment = "")
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return GetTradeApi().ModifyOrder(orderId, price, tp, sl, comment);
+            return GetTradeApi().ModifyOrder(orderId, price, sl, tp, comment);
         }
 
         #endregion
@@ -121,7 +121,7 @@ namespace TickTrader.Algo.Api
 
         public OrderCmdResult OpenMarketOrder(string symbol, OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
         {
-            return OpenOrder(symbol, OrderType.Market, side, 1, volume, tp, sl, comment);
+            return OpenOrder(symbol, OrderType.Market, side, volume, 1, tp, sl, comment);
         }
 
         #endregion

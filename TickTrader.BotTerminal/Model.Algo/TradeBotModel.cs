@@ -123,6 +123,11 @@ namespace TickTrader.BotTerminal
                 journal.Error(botName, msg);
             }
 
+            public void OnPrintInfo(string entry)
+            {
+                journal.Info(botName, entry);
+            }
+
             public void OnError(Exception ex)
             {
                 journal.Error(botName, "Exception: " + ex.Message);

@@ -8,9 +8,9 @@ namespace TickTrader.Algo.Api
 {
     internal interface TradeCommands
     {
-        Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
+        Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment);
         Task<OrderCmdResult> CancelOrder(string orderId);
-        Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? tp, double? sl, string comment);
+        Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? sl, double? tp, string comment);
         Task<OrderCmdResult> CloseOrder(string orderId, double? volume);
     }
 
@@ -24,11 +24,16 @@ namespace TickTrader.Algo.Api
 
     public enum OrderCmdResultCodes
     {
-        Ok,
-        DealerReject,
-        ConnectionError,
-        Unsupported,
-        SymbolNotFound,
-        OrderNotFound
+        Ok                  = 0,
+        UnknownError        = 1,
+        InternalError       = 5,
+        ConnectionError     = 6,
+        Timeout             = 7,
+        DealerReject        = 100,
+        Unsupported         = 101,
+        SymbolNotFound      = 102,
+        OrderNotFound       = 103,
+        IncorrectVolume     = 104,
+        Offquotes           = 105,
     }
 }

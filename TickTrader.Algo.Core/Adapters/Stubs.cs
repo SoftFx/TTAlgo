@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Core
     public interface IPluginLogger
     {
         void UpdateStatus(string status);
+        void OnPrintInfo(string info);
         void OnPrint(string entry, params object[] parameters);
         void OnPrintError(string entry, params object[] parameters);
         void OnError(Exception ex);
@@ -22,11 +23,24 @@ namespace TickTrader.Algo.Core
 
     internal class PluginLoggerAdapter : IPluginMonitor
     {
+        private static readonly IPluginLogger nullLogger = new NullLogger();
         private IPluginLogger logger;
 
-        public PluginLoggerAdapter(IPluginLogger logger)
+        public PluginLoggerAdapter()
         {
-            this.logger = logger;
+            this.logger = nullLogger;
+        }
+
+        public IPluginLogger Logger
+        {
+            get { return logger; }
+            set
+            {
+                if (value == null)
+                    throw new InvalidOperationException("Logger cannot be null!");
+
+                this.logger = value;
+            }
         }
 
         public void UpdateStatus(string status)
@@ -42,6 +56,11 @@ namespace TickTrader.Algo.Core
         public void PrintError(string entry, object[] parameters)
         {
             logger.OnPrintError(entry, parameters);
+        }
+
+        public void PrintInfo(string entry)
+        {
+            logger.OnPrintInfo(entry);
         }
     }
 
@@ -67,6 +86,10 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        public void OnPrintInfo(string info)
+        {
+        }
+
         public void OnStart()
         {
         }
@@ -83,8 +106,8 @@ namespace TickTrader.Algo.Core
     public interface ITradeApi
     {
         void OpenOrder(TaskProxy<OrderCmdResult> waitHandler, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
-        void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, OrderSide side);
-        void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
+        void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string clientOrderId, OrderSide side);
+        void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string clientOrderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
         void CloseOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, double? volume);
     }
 

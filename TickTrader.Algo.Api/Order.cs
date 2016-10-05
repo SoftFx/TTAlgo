@@ -15,7 +15,10 @@ namespace TickTrader.Algo.Api
         OrderType Type { get; }
         OrderSide Side { get; }
         double Price { get; }
+        double StopLoss { get; }
+        double TakeProfit { get; }
         bool IsNull { get; }
+        string Comment { get; }
     }
 
     public enum OrderType { Market, Limit, Stop, Position }
