@@ -63,6 +63,7 @@
     <Compile Include="Entities\FeedUpdate.cs" />
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
+    <Compile Include="Entities\PositionEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrderExecReport.cs" />
     <Compile Include="Entities\OrdersCollection.cs" />

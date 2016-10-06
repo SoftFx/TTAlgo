@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.BusinessLogic;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -289,6 +290,21 @@ namespace TickTrader.BotTerminal
 
             public System.Action ProfitUpdated;
             public System.Action MarginUpdated;
+        }
+
+        internal PositionEntity ToAlgoPosition()
+        {
+            return new PositionEntity()
+            {
+                Symbol = this.Symbol,
+                AgentCommission = (double)this.AgentCommission,
+                Commission = (double)this.Commission,
+                SettlementPrice = this.SettlementPrice,
+                Side = FdkToAlgo.Convert(this.Side),
+                Amount = this.Amount,
+                Swap = (double)this.Swap,
+                Price = (double)this.Price
+            };
         }
     }
 }

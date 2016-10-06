@@ -87,7 +87,7 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding TradeTransactionReportType}" />
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding SymbolOrTransactionCurrency}" />
                 <DataGridTextColumn Header="Initial Volume" Width="*" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Open Price" Width="*" Binding="{Binding ActualOpenPrice}" />
                 <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding StopLoss}" />
@@ -117,7 +117,7 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding TradeTransactionReportType}" />
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding SymbolOrTransactionCurrency}" />
                 <DataGridTextColumn Header="Initial Volume" Width="*" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Open Price" Width="*" Binding="{Binding ActualOpenPrice}" />
                 <DataGridTextColumn Header="Close Time" Width="Auto" Binding="{Binding PositionClosed, Converter={StaticResource FullDateTimeFormat}}" />
@@ -145,7 +145,7 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding TradeTransactionReportType}" />
-                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding SymbolOrTransactionCurrency}" />
                 <DataGridTextColumn Header="Volume Requested" Width="*" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Price Requested" Width="*" Binding="{Binding ActualOpenPrice}" />
                 <DataGridTextColumn Header="Fill Time" Width="Auto" Binding="{Binding TransactionTime, Converter={StaticResource FullDateTimeFormat}}" />

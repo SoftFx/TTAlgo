@@ -64,12 +64,12 @@ namespace TickTrader.BotTerminal
             this.TransactionTime = item.TransactionTime;
 
         }
-       
+
 
         public double AccountBalance { get; }
         public int ActionId { get; }
-        public double? ActualOpenPrice { get { return PosOpenPrice == 0d ? Price : PosOpenPrice; } }
-        public double GrossPL { get { return TransactionAmount - (Swap ?? 0d) - (Commission ?? 0d); } }
+        public double? ActualOpenPrice => PosOpenPrice == 0d ? Price : PosOpenPrice;
+        public double GrossPL => TransactionAmount - (Swap ?? 0d) - (Commission ?? 0d);
         public double AgentCommission { get; }
         public string ClientId { get; }
         public double? CloseConversionRate { get; }
@@ -102,6 +102,7 @@ namespace TickTrader.BotTerminal
         public double StopPrice { get; }
         public double? Swap { get; }
         public string Symbol { get; }
+        public string SymbolOrTransactionCurrency => TradeRecordSide == TradeSide.Deposit ? TransactionCurrency : Symbol;
         public double? TakeProfit { get; }
         public TradeSide TradeRecordSide { get; }
         public TradeRecordType TradeRecordType { get; }

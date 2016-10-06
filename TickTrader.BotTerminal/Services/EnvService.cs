@@ -35,13 +35,10 @@ namespace TickTrader.BotTerminal
             {
                 // ------- Portable Mode -------------
 
-                var appFolder = AppDomain.CurrentDomain.BaseDirectory;
-
-                LogFolder = Path.Combine(appFolder, "Logs");
-                JournalFolder = Path.Combine(appFolder, "Journal");
-
                 string appDir = AppDomain.CurrentDomain.BaseDirectory;
 
+                LogFolder = Path.Combine(appDir, "Logs");
+                JournalFolder = Path.Combine(appDir, "Journal");
                 AlgoRepositoryFolder = Path.Combine(appDir, "AlgoRepository");
                 AlgoWorkingFolder = Path.Combine(appDir, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");

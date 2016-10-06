@@ -180,11 +180,10 @@ namespace TickTrader.BotTerminal
             if (uiUpdaterCopy == null)
                 return;
 
-            if (IsEmpty(e.Report))
-                uiUpdaterCopy.SendAsync(() => positions.Remove(e.Report.Symbol));
-            else
-                uiUpdaterCopy.SendAsync(() => UpsertPosition(e.Report));
+            uiUpdater.SendAsync(() => ApplyReport(e.Report));
         }
+
+
 
         private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
@@ -211,6 +210,47 @@ namespace TickTrader.BotTerminal
         private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
         {
             var a = e.Report;
+        }
+
+        private void ApplyReport(Position report)
+        {
+            if (IsEmpty(report))
+                OnPositionRemoved(report);
+            else if (!positions.ContainsKey(report.Symbol))
+                OnPositionAdded(report);
+            else
+                OnPositionUpdated(report);
+        }
+
+        private void OnPositionUpdated(Position report)
+        {
+            var position = UpsertPosition(report);
+            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Modified, position.ToAlgoPosition()));
+        }
+
+        private void OnPositionAdded(Position report)
+        {
+            var position = UpsertPosition(report);
+            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Opened, position.ToAlgoPosition()));
+        }
+
+        private void OnPositionRemoved(Position report)
+        {
+            PositionModel position;
+
+            if (!positions.TryGetValue(report.Symbol, out position))
+                return;
+
+            positions.Remove(report.Symbol);
+            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Closed, position.ToAlgoPosition()));
+        }
+
+        private PositionModel UpsertPosition(Position position)
+        {
+            var positionModel = new PositionModel(position);
+            positions[position.Symbol] = positionModel;
+
+            return positionModel;
         }
 
         private void ApplyReport(ExecutionReport report)
@@ -260,11 +300,6 @@ namespace TickTrader.BotTerminal
                 foreach (var asset in report.Assets)
                     UpdateAsset(asset);
             }
-        }
-
-        private void UpsertPosition(Position report)
-        {
-            positions[report.Symbol] = new PositionModel(report);
         }
 
         private OrderModel UpsertOrder(ExecutionReport report)
@@ -433,8 +468,8 @@ namespace TickTrader.BotTerminal
 
                     return tradesList.ToArray();
                 }
-                catch(OperationCanceledException) { throw; }
-                catch(Exception ex) { _logger.Error(ex, "DownloadHistoryAsync FAILED"); throw; }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) { _logger.Error(ex, "DownloadHistoryAsync FAILED"); throw; }
             }, token);
 
         }
