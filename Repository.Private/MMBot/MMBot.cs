@@ -117,7 +117,7 @@ namespace MMBot
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + reqVolume);
 
-                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Buy, currPair.Value, cumPrice);
+                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Sell, currPair.Value, cumPrice);
             }
         }
 
@@ -134,20 +134,12 @@ namespace MMBot
         }
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
-        {
-            
+        {   
             Order order = this.Account.Orders.SingleOrDefault(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
             if ( order == null )
-            {
-                base.OpenOrder(symbol, OrderType.Limit, side, price, volume / base.Symbols[symbol].ContractSize);
-            }
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
             else
-            {
-                base.CancelOrder(order.Id);
-                base.OpenOrder(symbol, OrderType.Limit, side, price, volume / base.Symbols[symbol].ContractSize);
-                //base.ModifyOrder(order.Id, price);
-            }
-            /
+                base.ModifyOrder(order.Id, price);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         private bool isSymbolsInitialized;
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
+        private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
 
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
@@ -45,6 +46,7 @@ namespace TickTrader.Algo.Core
         public Action<string, int> OnSubscribe { get; set; }
         public Action<string> OnUnsubscribe { get; set; }
         public Action<Exception> OnException { get; set; }
+        public Action<SendOrPostCallback, object> OnAsyncAction { get { return syncContext.OnAsyncAction; } set { syncContext.OnAsyncAction = value; } }
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
@@ -184,6 +186,8 @@ namespace TickTrader.Algo.Core
         internal void InvokePluginMethod(Action invokeAction)
         {
             OnBeforeInvoke();
+            //var oldContext = SynchronizationContext.Current;
+            //SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
                 invokeAction();
@@ -192,6 +196,7 @@ namespace TickTrader.Algo.Core
             {
                 OnPluginException(ex);
             }
+            //SynchronizationContext.SetSynchronizationContext(oldContext);
             OnAfterInvoke();
         }
 

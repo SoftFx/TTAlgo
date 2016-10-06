@@ -12,10 +12,10 @@ namespace TickTrader.Algo.Core
     {
         private ITradeApi api;
         private SymbolProvider symbols;
-        private AccountDataProvider account;
+        private AccountEntity account;
         private PluginLoggerAdapter logger;
 
-        public TradeApiAdapter(ITradeApi api,  SymbolProvider symbols, AccountDataProvider account, PluginLoggerAdapter logger)
+        public TradeApiAdapter(ITradeApi api,  SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger)
         {
             this.api = api;
             this.symbols = symbols;
@@ -36,6 +36,9 @@ namespace TickTrader.Algo.Core
             api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment);
             var result = await waitHandler.LocalTask;
 
+            if (result.IsCompleted)
+                account.Orders.Add((OrderEntity)result.ResultingOrder);
+
             LogOrderOpenResults(result);
 
             return result;
@@ -43,8 +46,8 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> CancelOrder(string orderId)
         {
-            Order orderToCancel = account.Orders[orderId];
-            if (orderToCancel.IsNull)
+            Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
+            if (orderToCancel == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
             logger.PrintInfo("Canceling order #" + orderId);
@@ -54,44 +57,76 @@ namespace TickTrader.Algo.Core
             var result = await waitHandler.LocalTask;
 
             if (result.IsCompleted)
+            {
+                account.Orders.Remove(orderId);
                 logger.PrintInfo("→ SUCCESS: Order #" + orderId + " canceled");
+            }
             else
                 logger.PrintInfo("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
             return result;
         }
 
-        public Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolumeLots)
+        public async Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolumeLots)
         {            
             double? closeVolume = null;
 
             if (closeVolumeLots != null)
             {
-                Order orderToClose = account.Orders[orderId];
-                if (orderToClose.IsNull)
-                    return CreateResult(OrderCmdResultCodes.OrderNotFound);
+                Order orderToClose = account.Orders.GetOrderOrNull(orderId);
+                if (orderToClose == null)
+                    return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
                 OrderCmdResultCodes code;
                 closeVolume = ConvertVolume(closeVolumeLots.Value, orderToClose.Symbol, out code);
                 if (code != OrderCmdResultCodes.Ok)
-                    return CreateResult(code);
+                    return new TradeResultEntity(code);
             }
+
+            logger.PrintInfo("Closing order #" + orderId);
 
             var waitHandler = new TaskProxy<OrderCmdResult>();
             api.CloseOrder(waitHandler, orderId, closeVolume);
-            return waitHandler.LocalTask;
+            var result = await waitHandler.LocalTask;
+
+            if (result.IsCompleted)
+            {
+                if (result.ResultingOrder.RemainingAmount == 0)
+                    account.Orders.Remove(orderId);
+                else
+                    account.Orders.Replace((OrderEntity)result.ResultingOrder);
+
+                logger.PrintInfo("→ SUCCESS: Order #" + orderId + " closed");
+            }
+            else
+                logger.PrintInfo("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+
+            return result;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(string orderId, double price,  double? sl, double? tp, string comment)
+        public async Task<OrderCmdResult> ModifyOrder(string orderId, double price,  double? sl, double? tp, string comment)
         {
-            Order orderToModify = account.Orders[orderId];
-            if (orderToModify.IsNull)
-                return CreateResult(OrderCmdResultCodes.OrderNotFound);
+            Order orderToModify = account.Orders.GetOrderOrNull(orderId);
+            if (orderToModify == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+
+            logger.PrintInfo("Modifying order #" + orderId);
 
             var waitHandler = new TaskProxy<OrderCmdResult>();
             api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
                 price, orderToModify.RequestedAmount, tp, sl, comment);
-            return waitHandler.LocalTask;
+            var result = await waitHandler.LocalTask;
+
+            if (result.IsCompleted)
+            {
+                account.Orders.Replace((OrderEntity)result.ResultingOrder);
+                logger.PrintInfo("→ SUCCESS: Order #" + orderId + " modified");
+            }
+            else
+                logger.PrintInfo("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
+
+
+            return result;
         }
 
         private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)

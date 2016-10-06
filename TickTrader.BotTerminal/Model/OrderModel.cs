@@ -240,6 +240,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public DateTime? Modified { get; private set; }
+
         #endregion
 
         #region IOrderModel
@@ -291,7 +293,9 @@ namespace TickTrader.BotTerminal
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),
                 Price = (double)Price,
-                Comment = this.Comment
+                Comment = this.Comment,
+                Created = this.Created ?? DateTime.MinValue,
+                Modified = this.Modified ?? DateTime.MinValue
             };
         }
 
@@ -303,6 +307,7 @@ namespace TickTrader.BotTerminal
             this.Side = record.Side;
             this.Price = (decimal)record.Price;
             this.Created = record.Created;
+            this.Modified = record.Modified;
             this.Expiration = record.Expiration;
             this.Comment = record.Comment;
             this.StopLoss = record.StopLoss;
@@ -319,6 +324,7 @@ namespace TickTrader.BotTerminal
             this.Side = report.OrderSide;
             this.Price = (decimal?)(report.Price ?? report.StopPrice) ?? 0;
             this.Created = report.Created;
+            this.Modified = report.Modified;
             this.Expiration = report.Expiration;
             this.Comment = report.Comment;
             this.StopLoss = report.StopLoss;

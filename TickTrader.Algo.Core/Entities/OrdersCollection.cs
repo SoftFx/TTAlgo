@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,7 +74,7 @@ namespace TickTrader.Algo.Core
 
         internal class OrdersFixture : OrderList
         {
-            private Dictionary<string, OrderEntity> orders = new Dictionary<string, OrderEntity>();
+            private ConcurrentDictionary<string, OrderEntity> orders = new ConcurrentDictionary<string, OrderEntity>();
 
             public int Count { get { return orders.Count; } }
 
@@ -90,17 +91,20 @@ namespace TickTrader.Algo.Core
 
             public void Add(OrderEntity entity)
             {
-                orders.Add(entity.Id, entity);
+                orders.TryAdd(entity.Id, entity);
             }
 
             public void Replace(OrderEntity entity, bool fireEvent)
             {
-                orders[entity.Id] = entity;
+                var oldValue = this[entity.Id];
+                if (oldValue != null && oldValue.Modified >= entity.Modified)
+                    orders[entity.Id] = entity;
             }
 
             public void Remove(string orderId)
             {
-                orders.Remove(orderId);
+                OrderEntity removed;
+                orders.TryRemove(orderId, out removed);
             }
 
             public void FireOrderOpened(OrderOpenedEventArgs args)

@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
                 {
                     var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, clientOrderId, symbol,
                         ToRecordType(orderType), Convert(side), volume, price, sl, tp, null, comment);
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, null);
+                    return new TradeResultEntity(OrderCmdResultCodes.Ok, new OrderModel(result).ToAlgoOrder());
                 }
                 catch (SoftFX.Extended.Errors.RejectException rex)
                 {
