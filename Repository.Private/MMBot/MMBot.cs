@@ -120,6 +120,7 @@ namespace MMBot
                 SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Buy, currPair.Value, cumPrice);
             }
         }
+
         double CalculateSynteticPrice(EdgeWeightedDigraph digraph, string[] currencies, double reqVolume)
         {
             double cumPrice = 1;
@@ -134,7 +135,7 @@ namespace MMBot
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
         {
-            /*
+            
             Order order = this.Account.Orders.SingleOrDefault(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
             if ( order == null )
             {
@@ -146,7 +147,7 @@ namespace MMBot
                 base.OpenOrder(symbol, OrderType.Limit, side, price, volume / base.Symbols[symbol].ContractSize);
                 //base.ModifyOrder(order.Id, price);
             }
-            */
+            /
         }
     }
 }

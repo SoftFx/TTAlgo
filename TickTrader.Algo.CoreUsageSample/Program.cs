@@ -59,7 +59,7 @@ namespace TickTrader.Algo.CoreUsageSample
             executor.MainSymbolCode = "EURUSD";
             //executor.FeedProvider = dataModel;
             executor.InitBarStartegy(dataModel);
-            executor.InvokeStrategy = new DataflowInvokeStartegy();
+            executor.InvokeStrategy = new PriorityInvokeStartegy();
             executor.TimeFrame = dataModel.TimeFrame;
             executor.TimePeriodStart = DateTime.Parse("2015.11.02 00:25:00");
             executor.TimePeriodEnd = DateTime.Parse("2015.11.03 3:00:00");

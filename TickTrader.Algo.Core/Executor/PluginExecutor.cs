@@ -228,16 +228,17 @@ namespace TickTrader.Algo.Core
                 builder.OnExit = Abort;
                 statusFixture.Start();
                 fStrategy.Init(this);
+                fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
-                iStrategy.Init(builder, OnInternalException, OnRuntimeException);
+                iStrategy.Init(builder, OnInternalException, OnRuntimeException, OnFeedUpdate);
 
                 // Start
                 accFixture.Start();
                 iStrategy.Start();
-                iStrategy.EnqueueInvoke(b => b.InvokeInit());
+                iStrategy.Enqueue(b => b.InvokeInit());
                 fStrategy.Start();
-                iStrategy.EnqueueInvoke(b => b.InvokeOnStart());
+                iStrategy.Enqueue(b => b.InvokeOnStart());
 
                 IsRunning = true;
                 IsRunningChanged(this);
@@ -392,6 +393,11 @@ namespace TickTrader.Algo.Core
             logger.OnError(ex);
         }
 
+        private void OnFeedUpdate(FeedUpdate update)
+        {
+            fStrategy.ApplyUpdate(update);
+        }
+
         private void BindAllOutputs()
         {
             foreach (var fixtureEntry in outputFixtures)
@@ -426,7 +432,12 @@ namespace TickTrader.Algo.Core
 
         void IFixtureContext.Enqueue(Action<PluginBuilder> action)
         {
-            iStrategy.EnqueueInvoke(action);
+            iStrategy.Enqueue(action);
+        }
+
+        void IFixtureContext.Enqueue(FeedUpdate update)
+        {
+            iStrategy.Enqueue(update);
         }
 
         //IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
