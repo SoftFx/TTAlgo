@@ -25,7 +25,7 @@
         <DataGrid Name="Positions">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
-                <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
+                <DataGridTextColumn Header="Exec Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
                 <DataGridTextColumn Header="Side" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}" Converter="{StaticResource TradeSideTypeFormat}">
@@ -34,7 +34,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_Amount}" Binding="{Binding Order.Amount}"/>
+                <DataGridTextColumn Header="{l:Resx Order_Volume}" Binding="{Binding Order.Amount}"/>
                 <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}" />
                 <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
                     <DataGridTextColumn.Binding>

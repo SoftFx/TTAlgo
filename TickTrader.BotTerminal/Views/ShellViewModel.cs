@@ -2,22 +2,18 @@
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using System.Timers;
-using System.Windows.Threading;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
     internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private ConnectionManager cManager;
         private TraderClientModel clientModel;
         private WindowManager wndManager;
@@ -25,7 +21,6 @@ namespace TickTrader.BotTerminal
         private PersistModel storage;
         private EventJournal eventJournal;
         private BotJournal botJournal;
-        private Logger logger;
         private bool isClosed;
         private INotificationCenter notificationCenter;
 
@@ -33,7 +28,6 @@ namespace TickTrader.BotTerminal
         {
             DisplayName = EnvService.Instance.ApplicationName;
 
-            logger = NLog.LogManager.GetCurrentClassLogger();
             notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
             botJournal = new BotJournal(1000);

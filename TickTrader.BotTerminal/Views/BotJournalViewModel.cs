@@ -1,19 +1,10 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
-using NLog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using System.Windows.Threading;
 
 namespace TickTrader.BotTerminal
 {
