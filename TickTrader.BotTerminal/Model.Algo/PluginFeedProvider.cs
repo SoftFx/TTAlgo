@@ -68,24 +68,18 @@ namespace TickTrader.BotTerminal
 
         public void Subscribe(string symbolCode, int depth)
         {
-            Cl.Execute.OnUIThread(() =>
-            {
-                Subscription s;
-                if (subscriptions.TryGetValue(symbolCode, out s))
-                    s.ChangeDepth(depth);
-                else
-                    subscriptions.Add(symbolCode, new Subscription(symbolCode, depth, symbols, rxBuffer));
-            });
+            Subscription s;
+            if (subscriptions.TryGetValue(symbolCode, out s))
+                s.ChangeDepth(depth);
+            else
+                subscriptions.Add(symbolCode, new Subscription(symbolCode, depth, symbols, rxBuffer));
         }
 
         public void Unsubscribe(string symbolCode)
         {
-            Cl.Execute.OnUIThread(() =>
-            {
-                Subscription s;
-                if (subscriptions.TryGetValue(symbolCode, out s))
-                    s.Dispose();
-            });
+            Subscription s;
+            if (subscriptions.TryGetValue(symbolCode, out s))
+                s.Dispose();
         }
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()

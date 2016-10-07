@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -42,12 +43,32 @@ namespace TickTrader.Algo.Core
             UpdateSubscription(fixture.SymbolCode, list);
         }
 
+        [Serializable]
+        private class CrossdomainRequest
+        {
+            public string Symbol { get; set; }
+            public int Depth { get; set; }
+            public IPluginFeedProvider Feed { get; set; }
+
+            public void Subscribe()
+            {
+                Feed.Subscribe(Symbol, Depth);
+            }
+
+            public void Unsubscribe()
+            {
+                Feed.Unsubscribe(Symbol);
+            }
+        }
+
         private void UpdateSubscription(string symbol, List<IFeedFixture> subscribers)
         {
-            if (subscribers.Count == 0)
-                feed.Unsubscribe(symbol);
+            var request = new CrossdomainRequest() { Feed = feed, Symbol = symbol, Depth = GetMaxDepth(subscribers) };
+
+            if (subscribers.Count > 0)
+                feed.Sync.Invoke(request.Subscribe);
             else
-                feed.Subscribe(symbol, GetMaxDepth(subscribers));
+                feed.Sync.Invoke(request.Unsubscribe);
         }
 
         private List<IFeedFixture> GetOrAddList(string symbolCode)
@@ -61,7 +82,7 @@ namespace TickTrader.Algo.Core
             return list;
         }
 
-        private int GetMaxDepth(List<IFeedFixture> subscribersList)
+        private static int GetMaxDepth(List<IFeedFixture> subscribersList)
         {
             int max = 1;
 

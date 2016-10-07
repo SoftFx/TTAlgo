@@ -36,10 +36,24 @@ namespace TickTrader.Algo.Core
         {
             SubscriptionFixture fixture;
             if (userSubscriptions.TryGetValue(symbolCode, out fixture))
+            {
+                if (fixture.Depth == depth)
+                    return;
                 dispenser.Remove(fixture);
+            }
             fixture = new SubscriptionFixture(this, symbolCode, depth);
             userSubscriptions[symbolCode] = fixture;
             dispenser.Add(fixture);
+        }
+
+        public void OnUserUnsubscribe(string symbolCode)
+        {
+            SubscriptionFixture fixture;
+            if (userSubscriptions.TryGetValue(symbolCode, out fixture))
+            {
+                userSubscriptions.Remove(symbolCode);
+                dispenser.Remove(fixture);
+            }
         }
 
         internal void Init(IFixtureContext executor)

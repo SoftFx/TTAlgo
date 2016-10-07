@@ -57,6 +57,7 @@
     <Compile Include="Bots\MMBot.cs" />
     <Compile Include="Bots\OnTickBot.cs" />
     <Compile Include="Bots\OpenMarketBot.cs" />
+    <Compile Include="Bots\SubscriptionTestBot.cs" />
     <Compile Include="Bots\VWAPBot.cs" />
     <Compile Include="TestBot.cs" />
     <Compile Include="FxCalendarIndicator.cs" />

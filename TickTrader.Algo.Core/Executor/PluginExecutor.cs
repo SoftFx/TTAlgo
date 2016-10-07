@@ -224,6 +224,7 @@ namespace TickTrader.Algo.Core
                 if (logger != null)
                     builder.Logger = logger;
                 builder.OnSubscribe = fStrategy.OnUserSubscribe;
+                builder.OnUnsubscribe = fStrategy.OnUserUnsubscribe;
                 //builder.OnException = OnException;
                 builder.OnExit = Abort;
                 statusFixture.Start();
@@ -253,6 +254,8 @@ namespace TickTrader.Algo.Core
             {
                 if (!IsRunning)
                     return;
+
+                iStrategy.Abort();
 
                 if (stopTask == null)
                     stopTask = DoStop();
