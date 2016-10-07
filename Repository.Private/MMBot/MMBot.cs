@@ -73,15 +73,19 @@ namespace MMBot
                     Print("Subscribing to " + currSymbol);
                     Symbols[currSymbol].Subscribe(0);
                 }
-                sellDigraph = new EdgeWeightedDigraph(currencies);
-                buyDigraph = new EdgeWeightedDigraph(currencies);
             }
+            IEnumerable<string> allCurrencies = Symbols.Select(o => o.BaseCurrency).Union<string>(Symbols.Select(o => o.CounterCurrency)).Distinct<string>();
+            sellDigraph = new EdgeWeightedDigraph(allCurrencies);
+            buyDigraph = new EdgeWeightedDigraph(allCurrencies);
+
             base.Status.WriteLine("MarkupinPercent is " + conf.MarkupInPercent);
         }
         protected override void OnQuote(Quote quote)
         {
             string from = Symbols[quote.Symbol].BaseCurrency;
             string to = Symbols[quote.Symbol].CounterCurrency;
+            if (to == "CNH")
+                base.Status.WriteLine("CNH is coming");
 
             sellDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.BidBook)));
             sellDigraph.AddEdge(new DirectEdge(to, from, new BookSide(quote.AskBook, true)));
@@ -117,9 +121,10 @@ namespace MMBot
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + reqVolume);
 
-                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Buy, currPair.Value, cumPrice);
+                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Sell, currPair.Value, cumPrice);
             }
         }
+
         double CalculateSynteticPrice(EdgeWeightedDigraph digraph, string[] currencies, double reqVolume)
         {
             double cumPrice = 1;
@@ -133,20 +138,12 @@ namespace MMBot
         }
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
-        {
-            /*
+        {   
             Order order = this.Account.Orders.SingleOrDefault(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
             if ( order == null )
-            {
-                base.OpenOrder(symbol, OrderType.Limit, side, price, volume / base.Symbols[symbol].ContractSize);
-            }
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
             else
-            {
-                base.CancelOrder(order.Id);
-                base.OpenOrder(symbol, OrderType.Limit, side, price, volume / base.Symbols[symbol].ContractSize);
-                //base.ModifyOrder(order.Id, price);
-            }
-            */
+                base.ModifyOrder(order.Id, price);
         }
     }
 }

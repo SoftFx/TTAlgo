@@ -19,6 +19,8 @@ namespace TickTrader.Algo.Api
         double TakeProfit { get; }
         bool IsNull { get; }
         string Comment { get; }
+        DateTime Modified { get; }
+        DateTime Created { get; }
     }
 
     public enum OrderType { Market, Limit, Stop, Position }

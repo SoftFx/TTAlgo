@@ -76,14 +76,11 @@ namespace TickTrader.Algo.Core
 
         private void Feed_FeedUpdated(FeedUpdate[] updates)
         {
-            ExecContext.Enqueue(b =>
-            {
-                foreach (var update in updates)
-                    UpdateBuild(update);
-            });
+            foreach (var update in updates)
+                ExecContext.Enqueue(update);
         }
 
-        private void UpdateBuild(FeedUpdate update)
+        internal void ApplyUpdate(FeedUpdate update)
         {
             var result = UpdateBuffers(update);
             if (result == BufferUpdateResults.Extended)
@@ -97,7 +94,7 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.InvokeCalculate(true);
                 dispenser.OnBufferUpdated(update.Quote);
             }
-            
+
             dispenser.OnUpdateEvent(update.Quote);
         }
 
