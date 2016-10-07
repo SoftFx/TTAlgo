@@ -1,14 +1,9 @@
 ﻿using Caliburn.Micro;
 using NLog;
-using NLog.Common;
 using NLog.Config;
 using NLog.Targets;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace TickTrader.BotTerminal
@@ -74,7 +69,7 @@ namespace TickTrader.BotTerminal
                 Layout = "${longdate} | ${message}"
             };
 
-            var ruleForJournalTarget = new LoggingRule(string.Concat("*",nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
+            var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
             var ruleForLogTarget = new LoggingRule("*", LogLevel.Debug, logTarget);
             var ruleForDebuggerTarget = new LoggingRule("*", LogLevel.Debug, debuggerTarget);
 
@@ -89,7 +84,7 @@ namespace TickTrader.BotTerminal
             NLog.LogManager.Configuration = config;
         }
 
-        protected override void OnStartup(object sender, System.Windows.StartupEventArgs e)
+        protected override void OnStartup(object sender, StartupEventArgs e)
         {
             DisplayRootViewFor<ShellViewModel>();
         }

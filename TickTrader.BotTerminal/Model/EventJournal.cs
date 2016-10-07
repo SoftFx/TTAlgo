@@ -1,24 +1,13 @@
-﻿using Caliburn.Micro;
-using NLog;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Data;
+﻿using NLog;
 
 namespace TickTrader.BotTerminal
 {
     internal class EventJournal : Journal<EventMessage>
     {
-        private Logger logger;
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public EventJournal() : this(500) { }
-        public EventJournal(int journalSize) : base(journalSize)
-        {
-            this.logger = NLog.LogManager.GetCurrentClassLogger();
-        }
+        public EventJournal(int journalSize) : base(journalSize) { }
 
         public void Info(string message)
         {
@@ -67,5 +56,5 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    
+
 }
