@@ -73,15 +73,19 @@ namespace MMBot
                     Print("Subscribing to " + currSymbol);
                     Symbols[currSymbol].Subscribe(0);
                 }
-                sellDigraph = new EdgeWeightedDigraph(currencies);
-                buyDigraph = new EdgeWeightedDigraph(currencies);
             }
+            IEnumerable<string> allCurrencies = Symbols.Select(o => o.BaseCurrency).Union<string>(Symbols.Select(o => o.CounterCurrency)).Distinct<string>();
+            sellDigraph = new EdgeWeightedDigraph(allCurrencies);
+            buyDigraph = new EdgeWeightedDigraph(allCurrencies);
+
             base.Status.WriteLine("MarkupinPercent is " + conf.MarkupInPercent);
         }
         protected override void OnQuote(Quote quote)
         {
             string from = Symbols[quote.Symbol].BaseCurrency;
             string to = Symbols[quote.Symbol].CounterCurrency;
+            if (to == "CNH")
+                base.Status.WriteLine("CNH is coming");
 
             sellDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.BidBook)));
             sellDigraph.AddEdge(new DirectEdge(to, from, new BookSide(quote.AskBook, true)));
