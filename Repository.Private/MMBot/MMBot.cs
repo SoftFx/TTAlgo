@@ -28,7 +28,6 @@ namespace MMBot
             }
         }
         public double MarkupInPercent { get; set; }
-
         public Dictionary<string[], double> ParsedSyntetics = new Dictionary<string[], double>();
 
         public MMBotTOMLConfiguration()
@@ -147,7 +146,8 @@ namespace MMBot
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
         {
-            IEnumerable<Order> orderList = this.Account.Orders.Where(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
+            IEnumerable<Order> orderList = this.Account.Orders.Where(p => p.Type == OrderType.Limit 
+                && p.Symbol == symbol && p.Side==side && p.Comment==orderTag);
 
             if (orderList.Count() > 1)
             {
@@ -161,7 +161,7 @@ namespace MMBot
 
             if (order == null)
             {
-                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price, null, null, orderTag);
                 return;
             }
             if ( order.RequestedAmount != order.RemainingAmount )
@@ -171,7 +171,7 @@ namespace MMBot
             if (volume != order.RemainingAmount)
             {
                 base.CancelOrder(order.Id);
-                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price, null, null, orderTag);
                 return;
             }
 
