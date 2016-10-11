@@ -7,9 +7,15 @@ using TickTrader.Algo.Api;
 
 namespace TestAlgoProject.Bots
 {
-    [TradeBot(DisplayName = "New Order Per Tick")]
+    [TradeBot(DisplayName = "Market Order Per Tick")]
     public class OnTickBot : TradeBot
     {
+        [Parameter(DefaultValue = 0.1D)]
+        public double Volume { get; set; }
+
+        [Parameter]
+        public OrderSide Side { get; set; }
+
         protected override void Init()
         {
             this.Symbol.Subscribe();
@@ -17,7 +23,7 @@ namespace TestAlgoProject.Bots
 
         protected override void OnQuote(Quote quote)
         {
-            OpenMarketOrder(OrderSide.Buy, 1);
+            OpenMarketOrder(Side, Volume);
         }
     }
 }

@@ -243,7 +243,8 @@ namespace TickTrader.BotTerminal
                 case RejectReason.UnknownSymbol: return OrderCmdResultCodes.SymbolNotFound;
                 case RejectReason.UnknownOrder: return OrderCmdResultCodes.OrderNotFound;
                 case RejectReason.IncorrectQuantity: return OrderCmdResultCodes.IncorrectVolume;
-                case RejectReason.OffQuotes: return OrderCmdResultCodes.Offquotes;
+                case RejectReason.OffQuotes: return OrderCmdResultCodes.OffQuotes;
+                case RejectReason.OrderExceedsLImit: return OrderCmdResultCodes.NotEnoughMoney;
                 default: return OrderCmdResultCodes.UnknownError;
             }
         }

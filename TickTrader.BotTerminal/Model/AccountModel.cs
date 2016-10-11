@@ -285,6 +285,8 @@ namespace TickTrader.BotTerminal
                     }
                     else if (report.OrderType == TradeRecordType.Position)
                     {
+                        Balance = report.Balance;
+
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Closed);
                         else

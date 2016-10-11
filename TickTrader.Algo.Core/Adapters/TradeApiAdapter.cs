@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
             if (result.ResultCode == OrderCmdResultCodes.Ok)
                 account.Orders.Add(result.NewOrder);
 
-            var resultEntity = new TradeResultEntity(code, result.NewOrder);
+            var resultEntity = new TradeResultEntity(result.ResultCode, result.NewOrder);
 
             LogOrderOpenResults(resultEntity);
 
