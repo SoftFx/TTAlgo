@@ -30,6 +30,11 @@ namespace MMBot
 
             }
         }
+        /// <summary>
+        /// Return vwap price for requested volume or if it is negatice coef to reduce requested volume
+        /// </summary>
+        /// <param name="requiredVolume"></param>
+        /// <returns></returns>
         public double GetPriceForVolume(double requiredVolume)
         {
             double leftVolume = requiredVolume;
@@ -47,6 +52,8 @@ namespace MMBot
                     leftVolume = 0;
                 }
             }
+            if (leftVolume > float.Epsilon)
+                return leftVolume / requiredVolume-1;
             return numerator / requiredVolume;
         }
 
@@ -86,7 +93,18 @@ namespace MMBot
                 this.Vertices.Add(currV, new Dictionary<string, DirectEdge>());
         }
 
-        public DirectEdge GetEdge(string from, string to){return Vertices[from][to];}
+        public DirectEdge GetEdge(string from, string to)
+        {
+            try
+            {
+                return Vertices[from][to];
+            }
+            catch(Exception exc)
+            {
+                throw new ApplicationException(string.Format("There is no {0}{1} symbol.", from, to));
+            }
+
+        }
 
         public void AddEdge(DirectEdge edge)
         {
