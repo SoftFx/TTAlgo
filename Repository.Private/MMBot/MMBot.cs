@@ -98,14 +98,15 @@ namespace MMBot
             {
                 string[] currencies = currPair.Key;
                 double reqVolume = currPair.Value;
-                double cumPrice = CalculateSynteticPrice(sellDigraph, currencies, reqVolume);
+                double availableVolume;
+                double cumPrice = CalculateSynteticVolumePrice(sellDigraph, currencies, reqVolume, out availableVolume);
                 string synteticSymbol = currencies[0] + currencies.Last();
 
                 cumPrice *= (100 - conf.MarkupInPercent) / 100;
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
-                Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + reqVolume);
+                Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
 
-                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Buy, currPair.Value, cumPrice);
+                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Buy, availableVolume, cumPrice);
             }
 
             Status.WriteLine("BUY (sell limit)");
@@ -116,33 +117,57 @@ namespace MMBot
                 double reqVolume = currPair.Value;
                 string synteticSymbol = currencies[0] + currencies.Last();
 
-                double cumPrice = CalculateSynteticPrice(buyDigraph, currencies, reqVolume);
+                double availableVolume;
+                double cumPrice = CalculateSynteticVolumePrice(buyDigraph, currencies, reqVolume, out availableVolume);
                 cumPrice *= (100 + conf.MarkupInPercent) / 100;
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
-                Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + reqVolume);
+                Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
 
-                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Sell, currPair.Value, cumPrice);
+                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Sell, availableVolume, cumPrice);
             }
         }
 
-        double CalculateSynteticPrice(EdgeWeightedDigraph digraph, string[] currencies, double reqVolume)
+        double CalculateSynteticVolumePrice(EdgeWeightedDigraph digraph, string[] currencies, double reqVolume, out double availableVolume)
         {
             double cumPrice = 1;
+            double convertedVolume = reqVolume;
             for (int i = 0; i < currencies.Length - 1; i++)
             {
-                double price = buyDigraph.GetEdge(currencies[i], currencies[i + 1]).Weight.GetPriceForVolume(reqVolume);
-                reqVolume *= price;
-                cumPrice *= price;
+                double priceOrVolume = digraph.GetEdge(currencies[i], currencies[i + 1]).Weight.GetPriceForVolume(convertedVolume);
+                if (priceOrVolume < 0) // not enough volume for cross pair. Lets reduce required Volume
+                {
+                    double newRequestedVolume = Math.Floor(reqVolume * -priceOrVolume * 10)/10;
+                    return CalculateSynteticVolumePrice(digraph, currencies, newRequestedVolume, out availableVolume);
+                }
+
+                convertedVolume *= priceOrVolume;
+                cumPrice *= priceOrVolume;
             }
+            availableVolume = reqVolume;
             return cumPrice;
         }
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
-        {   
+        {
             Order order = this.Account.Orders.SingleOrDefault(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
-            if ( order == null )
+
+            if (order == null)
+            {
                 base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
-            else
+                return;
+            }
+            if ( order.RequestedAmount != order.RemainingAmount )
+            {
+                int k = 9;
+            }
+            if (volume != order.RemainingAmount)
+            {
+                base.CancelOrder(order.Id);
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
+                return;
+            }
+
+            if (price != order.Price)
                 base.ModifyOrder(order.Id, price);
         }
     }
