@@ -84,8 +84,6 @@ namespace MMBot
         {
             string from = Symbols[quote.Symbol].BaseCurrency;
             string to = Symbols[quote.Symbol].CounterCurrency;
-            if (to == "CNH")
-                base.Status.WriteLine("CNH is coming");
 
             sellDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.BidBook)));
             sellDigraph.AddEdge(new DirectEdge(to, from, new BookSide(quote.AskBook, true)));
@@ -149,7 +147,17 @@ namespace MMBot
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
         {
-            Order order = this.Account.Orders.SingleOrDefault(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
+            IEnumerable<Order> orderList = this.Account.Orders.Where(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
+
+            if (orderList.Count() > 1)
+            {
+              //error case
+                foreach (Order o in orderList)
+                    base.CancelOrder(o.Id);
+                return;
+            }
+
+            Order order = orderList.FirstOrDefault();
 
             if (order == null)
             {
