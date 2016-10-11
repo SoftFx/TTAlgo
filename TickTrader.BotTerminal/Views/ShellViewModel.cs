@@ -197,16 +197,23 @@ namespace TickTrader.BotTerminal
         {
             await Task.Run(() =>
             {
-                var os = ComputerInfo.OperatingSystem;
-                var cpu = ComputerInfo.Processor;
-                var sign = TimeZoneInfo.Local.BaseUtcOffset < TimeSpan.Zero ? "-" : "+";
-                eventJournal.Info("{0} ({1}), {2}, RAM: {3} / {4} Mb, UTC{5}{6:hh\\:mm}",
-                    os.Name, os.Architecture,
-                    cpu.Name,
-                    os.FreePhysicalMemory / 1024,
-                    os.TotalVisibleMemorySize / 1024,
-                    sign,
-                    TimeZoneInfo.Local.BaseUtcOffset);
+                try
+                {
+                    var os = ComputerInfo.OperatingSystem;
+                    var cpu = ComputerInfo.Processor;
+                    var sign = TimeZoneInfo.Local.BaseUtcOffset < TimeSpan.Zero ? "-" : "+";
+                    eventJournal.Info("{0} ({1}), {2}, RAM: {3} / {4} Mb, UTC{5}{6:hh\\:mm}",
+                        os.Name, os.Architecture,
+                        cpu.Name,
+                        os.FreePhysicalMemory / 1024,
+                        os.TotalVisibleMemorySize / 1024,
+                        sign,
+                        TimeZoneInfo.Local.BaseUtcOffset);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "PrintSystemInfo() failed!");
+                }
             });
         }
 
