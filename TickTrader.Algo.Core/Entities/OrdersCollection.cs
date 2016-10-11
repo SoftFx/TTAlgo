@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core
             public void Replace(OrderEntity entity, bool fireEvent)
             {
                 var oldValue = this[entity.Id];
-                if (oldValue != null && oldValue.Modified >= entity.Modified)
+                if (oldValue != null && oldValue.Modified <= entity.Modified)
                     orders[entity.Id] = entity;
             }
 
