@@ -65,7 +65,7 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-    
+
     <!-- Cell Template-->
 
     <ControlTemplate x:Key="DataGrid_CellTemplate">
@@ -103,22 +103,37 @@
 
     <!-- Column Header Template -->
 
-    <ControlTemplate x:Key="DataGread_HeaderTemplate" TargetType="DataGridColumnHeader">
+    <ControlTemplate x:Key="DataGrid_HeaderTemplate" TargetType="DataGridColumnHeader">
         <ControlTemplate.Resources>
             <Style TargetType="TextBlock">
                 <Setter Property="FontWeight" Value="Bold"/>
             </Style>
         </ControlTemplate.Resources>
         <Grid>
-            <Grid>
-                <Rectangle x:Name="BackgroundRectangle" Grid.ColumnSpan="2" Fill="Transparent" Stretch="Fill" />
+            <Rectangle x:Name="BackgroundRectangle" Fill="Transparent" Stretch="Fill" />
+            <Grid  HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                   VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                   Margin="{TemplateBinding Control.Padding}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition ></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
                 <ContentPresenter Content="{TemplateBinding Content}"
                                   ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
                                   RecognizesAccessKey="True"
-                                  HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
-                                  VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
-                                  SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
-                                  Margin="{TemplateBinding Control.Padding}"/>
+                                  SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"/>
+                <Path Name="SortStateAscending" Grid.Column="1" Height="5" Margin="5 0 0 0"
+                      Stretch="UniformToFill" 
+                      Data="{DynamicResource UpArrow}"
+                      Fill="{DynamicResource Shell_SecondaryForeground}"
+                      VerticalAlignment="Stretch"
+                      Visibility="Collapsed"/>
+                <Path Name="SortStateDescending" Grid.Column="1" Height="5" Margin="5 0 0 0"
+                      Stretch="UniformToFill" 
+                      Data="{DynamicResource DownArrow}"
+                      Fill="{DynamicResource Shell_SecondaryForeground}"
+                      VerticalAlignment="Stretch"
+                      Visibility="Collapsed"/>
             </Grid>
             <Thumb Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource DataGrid_HeaderThumbStyle}"/>
             <Thumb Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource DataGrid_HeaderThumbStyle}"/>
@@ -130,6 +145,14 @@
                 <Setter TargetName="LeftMargin" Property="Fill" Value="{DynamicResource Shell_MediateForeground}"/>
                 <Setter TargetName="RightMargin" Property="Fill" Value="{DynamicResource Shell_MediateForeground}"/>
                 <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+            <Trigger Property="SortDirection" Value="Ascending">
+                <Setter TargetName="SortStateAscending" Property="Visibility" Value="Visible" />
+                <Setter TargetName="SortStateDescending" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="SortDirection" Value="Descending">
+                <Setter TargetName="SortStateAscending" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="SortStateDescending" Property="Visibility" Value="Visible" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -150,7 +173,7 @@
             <Style TargetType="DataGridColumnHeader">
                 <Setter Property="Padding" Value="4"/>
                 <Setter Property="SeparatorBrush" Value="#FFC9CACA"/>
-                <Setter Property="Template" Value="{StaticResource DataGread_HeaderTemplate}"/>
+                <Setter Property="Template" Value="{StaticResource DataGrid_HeaderTemplate}"/>
                 <Setter Property="Foreground" Value="{DynamicResource Shell_MediateForeground}"/>
                 <Setter Property="SeparatorBrush" Value="{DynamicResource Shell_MediateForeground}"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -170,7 +193,7 @@
                 <Setter Property="Template" Value="{StaticResource DataGrid_CellTemplate}"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
-            </Style.Resources>
+        </Style.Resources>
     </Style>
 
 </ResourceDictionary>
