@@ -89,7 +89,7 @@ namespace TickTrader.Toaster
 
         public static void Pop(object message, double duration = 10000)
         {
-            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal,
+            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,
                     new Action(() =>
                     {
                         IToast toast = new Toast(message, duration,
