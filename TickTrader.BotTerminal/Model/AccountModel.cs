@@ -183,8 +183,6 @@ namespace TickTrader.BotTerminal
             uiUpdater.SendAsync(() => ApplyReport(e.Report));
         }
 
-
-
         private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
             uiUpdater.SendAsync(() => ApplyReport(e.Report));

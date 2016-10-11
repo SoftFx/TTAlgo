@@ -32,16 +32,18 @@ namespace TickTrader.Algo.Core
 
             LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
-            var waitHandler = new TaskProxy<OrderCmdResult>();
+            var waitHandler = new TaskProxy<OpenModifyResult>();
             api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment);
             var result = await waitHandler.LocalTask;
 
-            if (result.IsCompleted)
-                account.Orders.Add((OrderEntity)result.ResultingOrder);
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
+                account.Orders.Add(result.NewOrder);
 
-            LogOrderOpenResults(result);
+            var resultEntity = new TradeResultEntity(code, result.NewOrder);
 
-            return result;
+            LogOrderOpenResults(resultEntity);
+
+            return resultEntity;
         }
 
         public async Task<OrderCmdResult> CancelOrder(string orderId)
@@ -52,11 +54,11 @@ namespace TickTrader.Algo.Core
 
             logger.PrintInfo("Canceling order #" + orderId);
 
-            var waitHandler = new TaskProxy<OrderCmdResult>();
+            var waitHandler = new TaskProxy<CancelResult>();
             api.CancelOrder(waitHandler, orderId, ((OrderEntity)orderToCancel).ClientOrderId, orderToCancel.Side);
             var result = await waitHandler.LocalTask;
 
-            if (result.IsCompleted)
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
                 account.Orders.Remove(orderId);
                 logger.PrintInfo("→ SUCCESS: Order #" + orderId + " canceled");
@@ -64,19 +66,19 @@ namespace TickTrader.Algo.Core
             else
                 logger.PrintInfo("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
-            return result;
+            return new TradeResultEntity(result.ResultCode, orderToCancel);
         }
 
         public async Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolumeLots)
         {            
             double? closeVolume = null;
 
+            Order orderToClose = account.Orders.GetOrderOrNull(orderId);
+            if (orderToClose == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+
             if (closeVolumeLots != null)
             {
-                Order orderToClose = account.Orders.GetOrderOrNull(orderId);
-                if (orderToClose == null)
-                    return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
-
                 OrderCmdResultCodes code;
                 closeVolume = ConvertVolume(closeVolumeLots.Value, orderToClose.Symbol, out code);
                 if (code != OrderCmdResultCodes.Ok)
@@ -85,23 +87,29 @@ namespace TickTrader.Algo.Core
 
             logger.PrintInfo("Closing order #" + orderId);
 
-            var waitHandler = new TaskProxy<OrderCmdResult>();
+            var waitHandler = new TaskProxy<CloseResult>();
             api.CloseOrder(waitHandler, orderId, closeVolume);
             var result = await waitHandler.LocalTask;
 
-            if (result.IsCompleted)
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
-                if (result.ResultingOrder.RemainingAmount == 0)
+                var orderClone = new OrderEntity(orderToClose);
+                orderClone.RemainingAmount -= result.ExecVolume;
+
+                if (orderClone.RemainingAmount <= 0)
                     account.Orders.Remove(orderId);
                 else
-                    account.Orders.Replace((OrderEntity)result.ResultingOrder);
+                    account.Orders.Replace(orderClone);
 
                 logger.PrintInfo("→ SUCCESS: Order #" + orderId + " closed");
+
+                return new TradeResultEntity(result.ResultCode, orderClone);
             }
             else
+            {
                 logger.PrintInfo("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-
-            return result;
+                return new TradeResultEntity(result.ResultCode, orderToClose);
+            }
         }
 
         public async Task<OrderCmdResult> ModifyOrder(string orderId, double price,  double? sl, double? tp, string comment)
@@ -112,21 +120,22 @@ namespace TickTrader.Algo.Core
 
             logger.PrintInfo("Modifying order #" + orderId);
 
-            var waitHandler = new TaskProxy<OrderCmdResult>();
+            var waitHandler = new TaskProxy<OpenModifyResult>();
             api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
                 price, orderToModify.RequestedAmount, tp, sl, comment);
             var result = await waitHandler.LocalTask;
 
-            if (result.IsCompleted)
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
-                account.Orders.Replace((OrderEntity)result.ResultingOrder);
+                account.Orders.Replace(result.NewOrder);
                 logger.PrintInfo("→ SUCCESS: Order #" + orderId + " modified");
+                return new TradeResultEntity(result.ResultCode, result.NewOrder);
             }
             else
+            {
                 logger.PrintInfo("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
-
-
-            return result;
+                return new TradeResultEntity(result.ResultCode, orderToModify);
+            }
         }
 
         private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)
