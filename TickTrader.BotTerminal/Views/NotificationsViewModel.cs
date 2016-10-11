@@ -22,7 +22,6 @@ namespace TickTrader.BotTerminal
             _connectionModel = connectionModel;
             _notificationCenter = notificationCenter;
 
-            NotificationsEnabled = true;
             SoundsEnabled = true;
         }
 
@@ -53,7 +52,6 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(NotificationsEnabled));
             }
         }
-
         public bool SoundsEnabled
         {
             get
@@ -66,17 +64,9 @@ namespace TickTrader.BotTerminal
                     return;
 
                 if (value)
-                {
                     _connectionModel.Connected += SoundNotificationOnConnected;
-                    _accountInfo.OrderUpdated += SoundNotificationOnOrderUpdated;
-                    _accountInfo.PositionUpdated += SoundNotificationOnPositionUpdated;
-                }
                 else
-                {
                     _connectionModel.Connected -= SoundNotificationOnConnected;
-                    _accountInfo.OrderUpdated -= SoundNotificationOnOrderUpdated;
-                    _accountInfo.PositionUpdated -= SoundNotificationOnPositionUpdated;
-                }
 
                 _notificationCenter.SoundNotification.Enabled = value;
 
@@ -84,14 +74,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void SoundNotificationOnPositionUpdated(PositionExecReport obj)
-        {
-            _notificationCenter.SoundNotification.Notify(AppSounds.Woosh);
-        }
-        private void SoundNotificationOnOrderUpdated(OrderExecReport obj)
-        {
-            _notificationCenter.SoundNotification.Notify(AppSounds.Woosh);
-        }
         private void SoundNotificationOnConnected()
         {
             _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
