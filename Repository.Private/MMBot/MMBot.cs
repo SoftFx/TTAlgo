@@ -133,7 +133,7 @@ namespace MMBot
                 double priceOrVolume = digraph.GetEdge(currencies[i], currencies[i + 1]).Weight.GetPriceForVolume(convertedVolume);
                 if (priceOrVolume < 0) // not enough volume for cross pair. Lets reduce required Volume
                 {
-                    double newRequestedVolume = Math.Floor(reqVolume * -priceOrVolume * 10)/10;
+                    double newRequestedVolume = Math.Floor(Math.Exp(Math.Floor( Math.Log(reqVolume * -priceOrVolume*100 ))))/100;
                     return CalculateSynteticVolumePrice(digraph, currencies, newRequestedVolume, out availableVolume);
                 }
 
