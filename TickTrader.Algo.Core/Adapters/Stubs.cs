@@ -103,14 +103,6 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public interface ITradeApi
-    {
-        void OpenOrder(TaskProxy<OrderCmdResult> waitHandler, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
-        void CancelOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string clientOrderId, OrderSide side);
-        void ModifyOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, string clientOrderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
-        void CloseOrder(TaskProxy<OrderCmdResult> waitHandler, string orderId, double? volume);
-    }
-
     internal class NullTradeApi : TradeCommands
     {
         private static Task<OrderCmdResult> rejectResult

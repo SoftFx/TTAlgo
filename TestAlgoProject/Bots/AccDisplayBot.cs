@@ -74,7 +74,7 @@ namespace TestAlgoProject
                 Status.WriteLine("{0} positions:", positions.Count);
                 foreach (var order in positions)
                 {
-                    Status.WriteLine("#{0} {1} {2} {3} {4} {5}", order.Id, order.Symbol, order.Side,
+                    Status.WriteLine("#{0} {1} {2} {3}/{4} {5}", order.Id, order.Symbol, order.Side,
                         order.RemainingAmount, order.RequestedAmount, order.Comment);
                 }
             }

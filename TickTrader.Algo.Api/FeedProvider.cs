@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Api
     public interface CustomFeedProvider
     {
         void Subscribe(string symbol, int depth = 1);
+        void Unsubscribe(string symbol);
         BarSeries GetBars(string symbol);
         BarSeries GetBars(string symbol, TimeFrames timeFrame);
         BarSeries GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);

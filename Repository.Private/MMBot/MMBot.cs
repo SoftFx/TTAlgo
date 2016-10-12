@@ -28,7 +28,6 @@ namespace MMBot
             }
         }
         public double MarkupInPercent { get; set; }
-
         public Dictionary<string[], double> ParsedSyntetics = new Dictionary<string[], double>();
 
         public MMBotTOMLConfiguration()
@@ -84,8 +83,6 @@ namespace MMBot
         {
             string from = Symbols[quote.Symbol].BaseCurrency;
             string to = Symbols[quote.Symbol].CounterCurrency;
-            if (to == "CNH")
-                base.Status.WriteLine("CNH is coming");
 
             sellDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.BidBook)));
             sellDigraph.AddEdge(new DirectEdge(to, from, new BookSide(quote.AskBook, true)));
@@ -136,7 +133,7 @@ namespace MMBot
                 double priceOrVolume = digraph.GetEdge(currencies[i], currencies[i + 1]).Weight.GetPriceForVolume(convertedVolume);
                 if (priceOrVolume < 0) // not enough volume for cross pair. Lets reduce required Volume
                 {
-                    double newRequestedVolume = Math.Floor(reqVolume * -priceOrVolume * 10)/10;
+                    double newRequestedVolume = Math.Floor(Math.Exp(Math.Floor( Math.Log(reqVolume * -priceOrVolume*100 ))))/100;
                     return CalculateSynteticVolumePrice(digraph, currencies, newRequestedVolume, out availableVolume);
                 }
 
@@ -149,11 +146,22 @@ namespace MMBot
 
         protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
         {
-            Order order = this.Account.Orders.SingleOrDefault(p => p.Type == OrderType.Limit && p.Symbol == symbol && p.Side==side);
+            IEnumerable<Order> orderList = this.Account.Orders.Where(p => p.Type == OrderType.Limit 
+                && p.Symbol == symbol && p.Side==side && p.Comment==orderTag);
+
+            if (orderList.Count() > 1)
+            {
+              //error case
+                foreach (Order o in orderList)
+                    base.CancelOrder(o.Id);
+                return;
+            }
+
+            Order order = orderList.FirstOrDefault();
 
             if (order == null)
             {
-                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price, null, null, orderTag);
                 return;
             }
             if ( order.RequestedAmount != order.RemainingAmount )
@@ -163,7 +171,7 @@ namespace MMBot
             if (volume != order.RemainingAmount)
             {
                 base.CancelOrder(order.Id);
-                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price);
+                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price, null, null, orderTag);
                 return;
             }
 

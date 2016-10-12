@@ -29,7 +29,8 @@ namespace TestAlgoProject.Bots
                 if (i >= Count)
                     break;
 
-                symbol.Subscribe(Depth);
+                //symbol.Subscribe(Depth);
+                Feed.Subscribe(symbol.Name, Depth);
                 snapshot.Add(symbol.Name, new QuoteStats(symbol));
                 Print("Subscribed for " + symbol.Name);
 

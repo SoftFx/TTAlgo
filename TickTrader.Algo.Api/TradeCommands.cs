@@ -34,6 +34,11 @@ namespace TickTrader.Algo.Api
         SymbolNotFound      = 102,
         OrderNotFound       = 103,
         IncorrectVolume     = 104,
-        Offquotes           = 105,
+        OffQuotes           = 105,
+        IncorrectOrderId    = 106,
+        IncorrectPrice      = 107,
+        IncorrectTp         = 108,
+        IncorrectSl         = 109,
+        NotEnoughMoney      = 110
     }
 }

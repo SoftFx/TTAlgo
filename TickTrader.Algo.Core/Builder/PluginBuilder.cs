@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
             Descriptor = descriptor;
-            marketData = new MarketDataImpl(this);
+            marketData = new MarketDataImpl(this, this);
             Account = new AccountEntity(this);
             Symbols = new SymbolsCollection(this);
 
@@ -267,10 +267,12 @@ namespace TickTrader.Algo.Core
         {
             private PluginBuilder builder;
             private BarSeriesProxy mainBars;
+            private IPluginSubscriptionHandler subscribeHandler;
 
-            public MarketDataImpl(PluginBuilder builder)
+            public MarketDataImpl(PluginBuilder builder, IPluginSubscriptionHandler subscribeHandler)
             {
                 this.builder = builder;
+                this.subscribeHandler = subscribeHandler;
             }
 
             public BarSeries Bars
@@ -339,6 +341,12 @@ namespace TickTrader.Algo.Core
 
             public void Subscribe(string symbol, int depth = 1)
             {
+                subscribeHandler.Subscribe(symbol, depth);
+            }
+
+            public void Unsubscribe(string symbol)
+            {
+                subscribeHandler.Unsubscribe(symbol);
             }
         }
 

@@ -183,8 +183,6 @@ namespace TickTrader.BotTerminal
             uiUpdater.SendAsync(() => ApplyReport(e.Report));
         }
 
-
-
         private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
             uiUpdater.SendAsync(() => ApplyReport(e.Report));
@@ -287,6 +285,8 @@ namespace TickTrader.BotTerminal
                     }
                     else if (report.OrderType == TradeRecordType.Position)
                     {
+                        Balance = report.Balance;
+
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Closed);
                         else

@@ -94,29 +94,29 @@ namespace TickTrader.Algo.Api
 
         #region Order Short Commands
 
-        public OrderCmdResult MarketSell(double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult MarketSell(double volume, double? sl = null, double? tp = null, string comment = "")
         {
-            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, 1, volume, tp, sl, comment);
+            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, volume, 1, tp, sl, comment);
         }
 
-        public OrderCmdResult MarketSell(string symbol, double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null,  string comment = "")
         {
-            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, 1, volume, tp, sl, comment);
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, 1, tp, sl, comment);
         }
 
         public OrderCmdResult MarketBuy(double volume, double? tp = null, double? sl = null, string comment = "")
         {
-            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, 1, volume, tp, sl, comment);
+            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, volume, 1, tp, sl, comment);
         }
 
         public OrderCmdResult MarketBuy(string symbol, double volume, double? tp = null, double? sl = null, string comment = "")
         {
-            return OpenOrder(symbol, OrderType.Market, OrderSide.Buy, 1, volume, tp, sl, comment);
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Buy, volume, 1, tp, sl, comment);
         }
 
         public OrderCmdResult OpenMarketOrder(OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
         {
-            return OpenOrder(Symbol.Name, OrderType.Market, side, 1, volume, tp, sl, comment);
+            return OpenOrder(Symbol.Name, OrderType.Market, side, volume, 1, tp, sl, comment);
         }
 
         public OrderCmdResult OpenMarketOrder(string symbol, OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")

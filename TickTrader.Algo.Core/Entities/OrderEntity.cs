@@ -15,6 +15,23 @@ namespace TickTrader.Algo.Core
             this.Id = orderId;
         }
 
+        public OrderEntity(Order src)
+        {
+            this.Id = src.Id;
+            this.ClientOrderId = ((OrderEntity)src).ClientOrderId;
+            this.RequestedAmount = src.RequestedAmount;
+            this.RemainingAmount = src.RemainingAmount;
+            this.Symbol = src.Symbol;
+            this.Type = src.Type;
+            this.Side = src.Side;
+            this.Price = src.Price;
+            this.StopLoss = src.StopLoss;
+            this.TakeProfit = src.TakeProfit;
+            this.Comment = src.Comment;
+            this.Created = src.Created;
+            this.Modified = src.Modified;
+        }
+
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
         public double RequestedAmount { get; set; }
