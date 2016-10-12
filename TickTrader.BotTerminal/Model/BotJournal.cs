@@ -7,6 +7,16 @@
         {
         }
 
+        public void Custom(string botName, string message)
+        {
+            Add(new BotMessage(botName, string.Format(message, new object[0]), JournalMessageType.Custom));
+        }
+
+        public void Custom(string botName, string message, params object[] args)
+        {
+            Add(new BotMessage(botName, string.Format(message, args), JournalMessageType.Custom));
+        }
+
         public void Info(string botName, string message)
         {
             Info(botName, message, new object[0]);
