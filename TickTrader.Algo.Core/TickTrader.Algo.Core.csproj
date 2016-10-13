@@ -102,7 +102,7 @@
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
-    <Compile Include="Lib\NoTimeoutByRefObject.cs" />
+    <Compile Include="Lib\CrossDomainObject.cs" />
     <Compile Include="Metadata\AlgoPluginDescriptor.cs" />
     <Compile Include="Metadata\AlgoPropertyDescriptor.cs" />
     <Compile Include="Metadata\InputDescriptor.cs" />

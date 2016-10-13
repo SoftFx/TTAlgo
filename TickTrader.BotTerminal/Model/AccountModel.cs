@@ -20,7 +20,7 @@ using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AccountModel : NoTimeoutByRefObject, IAccountInfoProvider
+    internal class AccountModel : CrossDomainObject, IAccountInfoProvider
     {
         private Logger logger;
         private DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();

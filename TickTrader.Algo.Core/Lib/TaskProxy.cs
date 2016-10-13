@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core.Lib
 {
-    public class TaskProxy<T> : NoTimeoutByRefObject
+    public class TaskProxy<T> : CrossDomainObject
     {
         private TaskCompletionSource<T> taskSrc = new TaskCompletionSource<T>();
 

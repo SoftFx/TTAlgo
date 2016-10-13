@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    internal abstract class PluginAdapter : NoTimeoutByRefObject, IPluginActivator
+    internal abstract class PluginAdapter : CrossDomainObject, IPluginActivator
     {
         private AlgoPlugin plugin;
         private IPluginContext provider;

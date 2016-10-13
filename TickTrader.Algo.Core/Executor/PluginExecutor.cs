@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginExecutor : NoTimeoutByRefObject, IFixtureContext, IPluginSetupTarget
+    public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget
     {
         public enum States { Idle, Running }
 

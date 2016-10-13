@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    internal class AlgoSandbox : NoTimeoutByRefObject
+    internal class AlgoSandbox : CrossDomainObject
     {
         public AlgoSandbox()
         {

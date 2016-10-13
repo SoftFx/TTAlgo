@@ -12,7 +12,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class PluginFeedProvider : NoTimeoutByRefObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
+    internal abstract class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
     {
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
         private SymbolCollectionModel symbols;
