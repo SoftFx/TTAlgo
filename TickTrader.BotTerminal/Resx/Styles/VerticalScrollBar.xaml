@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <Style x:Key="ScrollBar_UpArrowStyle" TargetType="RepeatButton">
         <Setter Property="Focusable" Value="False"/>
@@ -53,11 +54,10 @@
     <Style x:Key="ScrollBarThumbStyle" TargetType="Thumb">
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Focusable" Value="False"/>
-        <Setter Property="Margin" Value="0,4,0,4"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Rectangle x:Name="ThumbRect" Width="7" Fill="{TemplateBinding Foreground}" RadiusX="5" RadiusY="5"/>
+                    <Rectangle x:Name="ThumbRect" Fill="{TemplateBinding Foreground}" RadiusX="5" RadiusY="5"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="Control.IsMouseOver" Value="true">
                             <Setter TargetName="ThumbRect" Property="Fill" Value="{DynamicResource ShellPanel_ScrollBarHoverBrush}"/>
@@ -71,9 +71,9 @@
     <ControlTemplate x:Key="VerticalScrollBarTemplate" TargetType="ScrollBar">
         <Grid HorizontalAlignment="Center">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition MaxHeight="14"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition MaxHeight="14"/>
             </Grid.RowDefinitions>
 
             <RepeatButton Grid.Row="0"
@@ -83,13 +83,13 @@
             <Track Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
                 <Track.DecreaseRepeatButton>
                     <RepeatButton Command="ScrollBar.PageUpCommand"
-                                  Style="{StaticResource ScrollBarPageButtonStyle}"/>
+                                  Style="{StaticResource ScrollBarPageButtonStyle}" Height="14"/>
                 </Track.DecreaseRepeatButton>
                 <Track.Thumb>
                     <Thumb Style="{StaticResource ScrollBarThumbStyle}" Foreground="{TemplateBinding Foreground}"/>
                 </Track.Thumb>
                 <Track.IncreaseRepeatButton>
-                    <RepeatButton Command="ScrollBar.PageDownCommand" Style="{StaticResource ScrollBarPageButtonStyle}"/>
+                    <RepeatButton Command="ScrollBar.PageDownCommand" Style="{StaticResource ScrollBarPageButtonStyle}" Height="14"/>
                 </Track.IncreaseRepeatButton>
             </Track>
             <RepeatButton Grid.Row="3"

@@ -11,6 +11,8 @@
 
     <Window.Resources>
 
+        <Style BasedOn="{StaticResource DialogScrollViewer_Style}" TargetType="ScrollViewer"/>
+
         <Style x:Key="BotNameLabelStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
         </Style>
@@ -57,9 +59,9 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
+
     </Window.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -86,7 +88,14 @@
         <Label Content="Status:" FontSize="10" Grid.Row="1"/>
 
         <Border Background="{DynamicResource Dialog_PanelBackground}" Grid.Row="2" CornerRadius="4" Margin="2">
-            <TextBlock Text="{Binding CustomStatus}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="2 2 0 2">
+                <TextBox Text="{Binding CustomStatus}" 
+                     HorizontalAlignment="Stretch" 
+                     VerticalAlignment="Stretch" 
+                     IsReadOnly="True"
+                     TextWrapping="Wrap" 
+                     BorderThickness="0" />
+            </ScrollViewer>
         </Border>
 
     </Grid>

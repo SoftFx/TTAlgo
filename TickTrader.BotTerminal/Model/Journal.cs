@@ -60,6 +60,7 @@ namespace TickTrader.BotTerminal
     {
         Info,
         Trading,
-        Error
+        Error,
+        Custom
     }
 }

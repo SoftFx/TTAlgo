@@ -117,7 +117,9 @@ namespace TickTrader.BotTerminal
         [Description("All events")]
         All,
         Info,
-        Trading
+        Trading,
+        Error,
+        Custom
     }
 
     internal class BotMessageFilter
@@ -153,6 +155,8 @@ namespace TickTrader.BotTerminal
                 {
                     case MessageTypeFilter.Info: return JournalMessageType.Info;
                     case MessageTypeFilter.Trading: return JournalMessageType.Trading;
+                    case MessageTypeFilter.Error: return JournalMessageType.Error;
+                    case MessageTypeFilter.Custom: return JournalMessageType.Custom;
                     default: return null;
                 }
             }
