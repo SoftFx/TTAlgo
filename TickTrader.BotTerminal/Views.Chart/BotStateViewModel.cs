@@ -27,6 +27,8 @@ namespace TickTrader.BotTerminal
         public string CustomStatus { get; private set; }
         public bool IsStarted { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopping; } }
         public bool CanStartStop { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopped; } }
+        public string ParamsStr => string.Join(Environment.NewLine, Bot.Setup.Parameters.Select(x => x.ToString()).OrderBy(x=>x).ToArray());
+        public bool HasParams => Bot.Setup.Parameters.Any();
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
@@ -64,10 +66,12 @@ namespace TickTrader.BotTerminal
                 case BotModelStates.Running: ExecStatus = "Running"; break;
                 case BotModelStates.Stopped: ExecStatus = "Idle"; break;
             }
-           
+
             NotifyOfPropertyChange(nameof(ExecStatus));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(IsStarted));
+            NotifyOfPropertyChange(nameof(ParamsStr));
+            NotifyOfPropertyChange(nameof(HasParams));
         }
     }
 }
