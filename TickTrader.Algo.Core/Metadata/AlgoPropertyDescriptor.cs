@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core.Metadata
             propertyAccessor.Set(instance, value);
         }
 
-        private class ByRefAccessor : NoTimeoutByRefObject
+        private class ByRefAccessor : CrossDomainObject
         {
             private PropertyInfo info;
 

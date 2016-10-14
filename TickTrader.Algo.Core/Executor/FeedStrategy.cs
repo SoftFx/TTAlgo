@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal abstract class FeedStrategy : NoTimeoutByRefObject,  IFeedFixtureContext
+    internal abstract class FeedStrategy : CrossDomainObject,  IFeedFixtureContext
     {
         private SubscriptionManager dispenser;
         private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();

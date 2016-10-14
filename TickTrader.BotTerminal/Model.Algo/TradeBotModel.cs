@@ -81,7 +81,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private class LogAdapter : NoTimeoutByRefObject, IPluginLogger
+        private class LogAdapter : CrossDomainObject, IPluginLogger
         {
             private Action<string> statusChanged;
             private BotJournal journal;

@@ -17,7 +17,7 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginModel : NoTimeoutByRefObject
+    internal class PluginModel : CrossDomainObject
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 

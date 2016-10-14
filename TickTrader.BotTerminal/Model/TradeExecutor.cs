@@ -11,7 +11,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeExecutor : NoTimeoutByRefObject, ITradeApi
+    internal class TradeExecutor : CrossDomainObject, ITradeApi
     {
         private static readonly NLog.ILogger logger = NLog.LogManager.GetCurrentClassLogger();
 

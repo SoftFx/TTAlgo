@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class OutputFixture : NoTimeoutByRefObject
+    public abstract class OutputFixture : CrossDomainObject
     {
         internal abstract void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef);
         internal abstract void Unbind();

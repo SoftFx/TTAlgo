@@ -16,7 +16,7 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DoubleSeriesAdapter : NoTimeoutByRefObject
+    internal class DoubleSeriesAdapter : CrossDomainObject
     {
         private OutputFixture<double> buffer;
 
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    internal class MarkerSeriesAdapter : NoTimeoutByRefObject
+    internal class MarkerSeriesAdapter : CrossDomainObject
     {
         private OutputFixture<Marker> buffer;
 

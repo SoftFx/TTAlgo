@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class AccDataFixture : NoTimeoutByRefObject
+    internal class AccDataFixture : CrossDomainObject
     {
         private IFixtureContext context;
 
