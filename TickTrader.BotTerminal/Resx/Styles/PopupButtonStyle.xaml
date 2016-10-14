@@ -13,11 +13,6 @@
                             <ContentPresenter IsHitTestVisible="{TemplateBinding IsHitTestVisible}"/>
                         </Border>
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="PopupButtonBorder" Property="Background" Value="{DynamicResource ToolBarItem_BackgroundBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -31,7 +26,8 @@
                           Foreground="{TemplateBinding Foreground}"
                           Content="{TemplateBinding Content}"
                           Padding="{TemplateBinding Padding}"
-                          Margin="{TemplateBinding Margin}">
+                          Margin="{TemplateBinding Margin}"
+                          IsEnabled="{TemplateBinding IsEnabled}">
             </ToggleButton>
             <Popup Name="PART_Popup"
                    IsOpen="{Binding ElementName=PART_PopupButton, Path=IsChecked, Mode=TwoWay}"
@@ -56,12 +52,24 @@
             <DataTrigger Binding="{Binding ElementName=PART_Popup, Path=IsOpen}" Value="True">
                 <Setter TargetName="PART_PopupButton" Property="IsHitTestVisible" Value="False"/>
             </DataTrigger>
+            <DataTrigger Binding="{Binding ElementName=PART_PopupButton, Path=IsChecked}" Value="True">
+                <Setter TargetName="PART_PopupButton" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=CheckedBackground}"/>
+                <Setter TargetName="PART_PopupButton" Property="Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=CheckedForeground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ElementName=PART_PopupButton, Path=IsMouseOver}" Value="True">
+                <Setter TargetName="PART_PopupButton" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
+                <Setter TargetName="PART_PopupButton" Property="Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightForeground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ElementName=PART_PopupButton, Path=IsEnabled}" Value="False">
+                <Setter TargetName="PART_PopupButton" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=DisabledBackground}"/>
+                <Setter TargetName="PART_PopupButton" Property="Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=DisabledForeground}"/>
+            </DataTrigger>
             <Trigger Property="IsFocused" Value="True">
                 <Setter TargetName="PART_PopupButton" Property="BorderBrush" Value="{DynamicResource ControlFocusBorder}" />
             </Trigger>
-            <Trigger Property="IsEnabled" Value="False">
+            <!--<Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Foreground" Value="{DynamicResource ToolBarItem_DisabledBrush}"/>
-            </Trigger>
+            </Trigger>-->
         </ControlTemplate.Triggers>
     </ControlTemplate>
     <Style TargetType="l:PopupButton">
@@ -71,6 +79,12 @@
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="MinWidth" Value="19"></Setter>
+        <Setter Property="CheckedBackground" Value="{DynamicResource ToolBarItem_BackgroundBrush}"></Setter>
+        <Setter Property="CheckedForeground" Value="{DynamicResource ToolBarItem_ForegroundBrush}"></Setter>
+        <Setter Property="HighlightBackground" Value="{DynamicResource ShellPanel_BorderBrush}"></Setter>
+        <Setter Property="HighlightForeground" Value="{DynamicResource ToolBarItem_ForegroundBrush}"></Setter>
+        <Setter Property="DisabledBackground" Value="{DynamicResource ShellPanel_BorderBrush}"></Setter>
+        <Setter Property="DisabledForeground" Value="{DynamicResource ToolBarItem_DisabledBrush}"></Setter>
     </Style>
 
 </ResourceDictionary>
