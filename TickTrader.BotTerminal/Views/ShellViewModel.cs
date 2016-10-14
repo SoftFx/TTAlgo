@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
 
             TradeHistory = new TradeHistoryViewModel(clientModel);
 
-            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager.Connection);
+            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager);
 
             Charts = new ChartCollectionViewModel(clientModel, catalog, this, botJournal);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
@@ -55,8 +55,8 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
 
             UpdateCommandStates();
-            cManager.StateChanged += s => UpdateDisplayName();
-            cManager.StateChanged += s => UpdateCommandStates();
+            cManager.StateChanged += (o,n) => UpdateDisplayName();
+            cManager.StateChanged += (o, n) => UpdateCommandStates();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 

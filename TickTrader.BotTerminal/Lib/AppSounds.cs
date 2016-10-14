@@ -12,7 +12,8 @@ namespace TickTrader.BotTerminal
     {
         public static AppSound Blop { get { return new AppSound(Resx.Sounds.Sounds.Blop); } }
         public static AppSound Clinking { get { return new AppSound(Resx.Sounds.Sounds.Clinking); } }
-        public static AppSound Negative { get { return new AppSound(Resx.Sounds.Sounds.Negative); } }
+        public static AppSound NegativeShort { get { return new AppSound(Resx.Sounds.Sounds.Negative); } }
+        public static AppSound NegativeLong { get { return new AppSound(Resx.Sounds.Sounds.Negative1); } }
         public static AppSound Positive { get { return new AppSound(Resx.Sounds.Sounds.Positive); } }
         public static AppSound Save { get { return new AppSound(Resx.Sounds.Sounds.Save); } }
         public static AppSound SharpEcho { get { return new AppSound(Resx.Sounds.Sounds.SharpEcho); } }

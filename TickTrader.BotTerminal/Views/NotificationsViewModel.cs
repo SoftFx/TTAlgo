@@ -13,13 +13,13 @@ namespace TickTrader.BotTerminal
     internal class NotificationsViewModel : PropertyChangedBase
     {
         private IAccountInfoProvider _accountInfo;
-        private ConnectionModel _connectionModel;
+        private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
 
-        public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionModel connectionModel)
+        public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionManager connectionManager)
         {
             _accountInfo = accountInfo;
-            _connectionModel = connectionModel;
+            _connectionModel = connectionManager;
             _notificationCenter = notificationCenter;
 
             SoundsEnabled = true;
@@ -64,13 +64,25 @@ namespace TickTrader.BotTerminal
                     return;
 
                 if (value)
-                    _connectionModel.Connected += SoundNotificationOnConnected;
+                    _connectionModel.StateChanged += ConnectionStateChanged;
                 else
-                    _connectionModel.Connected -= SoundNotificationOnConnected;
+                    _connectionModel.StateChanged -= ConnectionStateChanged;
 
                 _notificationCenter.SoundNotification.Enabled = value;
 
                 NotifyOfPropertyChange(nameof(SoundsEnabled));
+            }
+        }
+
+        private void ConnectionStateChanged(ConnectionManager.States oldState, ConnectionManager.States newState)
+        {
+            if(newState == ConnectionManager.States.Online)
+            {
+                _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
+            }
+            else if(oldState == ConnectionManager.States.Online && newState == ConnectionManager.States.Offline)
+            {
+                _notificationCenter.SoundNotification.Notify(AppSounds.NegativeLong);
             }
         }
 
