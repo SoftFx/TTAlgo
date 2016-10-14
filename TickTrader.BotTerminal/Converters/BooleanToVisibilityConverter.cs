@@ -10,19 +10,22 @@ using System.Windows.Data;
 namespace TickTrader.BotTerminal
 {
     [ValueConversion(typeof(bool), typeof(Visibility))]
-    public class InvertableBooleanToVisibilityConverter : IValueConverter
+    public class BooleanToVisibilityConverter : IValueConverter, IMultiValueConverter
     {
-        enum Parameters
+        public enum Mode
         {
-            Normal,
-            Inverted
+            All,
+            LeastOne
         }
+
+        public bool Invert { get; set; }
+        public Mode ConversionMode { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var boolValue = (bool)value;
 
-            if(parameter != null && (Parameters)Enum.Parse(typeof(Parameters), (string)parameter) == Parameters.Inverted)
+            if(Invert)
                 return !boolValue ? Visibility.Visible : Visibility.Collapsed;
 
             return boolValue ? Visibility.Visible : Visibility.Collapsed;
@@ -32,10 +35,25 @@ namespace TickTrader.BotTerminal
         {
             var result = (value is Visibility) && (Visibility)value == Visibility.Visible;
 
-            if (parameter != null && (Parameters)Enum.Parse(typeof(Parameters), (string)parameter) == Parameters.Inverted)
+            if (Invert)
                 return !result;
 
             return result;
+        }
+
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var boolValue = ConversionMode == Mode.All ? !values.Any(v => !(bool)v) : values.Any(v => (bool)v);
+
+            if (Invert)
+                return !boolValue ? Visibility.Visible : Visibility.Collapsed;
+
+            return boolValue ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -25,7 +25,7 @@
             <DataGrid Name="Orders" Margin="5,0,0,0">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
-                    <DataGridTextColumn Header="Open Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
                     <DataGridTextColumn Header="Type" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding StringFormat="{}{0}" Converter="{StaticResource TradeSideTypeFormat}">
@@ -46,7 +46,14 @@
                     <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Order.Price}" />
                     <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
                     <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
-                    <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding Order.CurrentPrice}" />
+                    <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PriceConverter}" >
+                                <Binding Path="CurrentPrice.Rate"/>
+                                <Binding Path="CurrentPrice.Precision"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
                 </DataGrid.Columns>
             </DataGrid>

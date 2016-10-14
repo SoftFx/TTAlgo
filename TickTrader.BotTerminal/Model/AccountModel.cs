@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
 
             this.clientModel = clientModel;
             this.connection = clientModel.Connection;
-            TradeHistory = new TradeHistoryProvider(connection);
+            TradeHistory = new TradeHistoryProvider(clientModel);
 
             connection.State.StateChanged += State_StateChanged;
             //connection.SysInitalizing += Connection_Initalizing;
@@ -416,19 +416,17 @@ namespace TickTrader.BotTerminal
 
     internal class TradeHistoryProvider
     {
-        private Logger _logger;
-        private ConnectionModel _connectionModel;
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        private TraderClientModel _tradeClient;
 
         public event Action<TradeTransactionModel> OnTradeReport = delegate { };
 
-        public TradeHistoryProvider(ConnectionModel connectionModel)
+        public TradeHistoryProvider(TraderClientModel connectionModel)
         {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
+            _tradeClient = connectionModel;
 
-            _connectionModel = connectionModel;
-
-            _connectionModel.Connecting += () => { _connectionModel.TradeProxy.TradeTransactionReport += TradeTransactionReport; };
-            _connectionModel.Disconnecting += () => { _connectionModel.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
+            _tradeClient.Connection.Connecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport += TradeTransactionReport; };
+            _tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
         }
 
         public Task<TradeTransactionModel[]> DownloadHistoryAsync(DateTime from, DateTime to)
@@ -453,13 +451,13 @@ namespace TickTrader.BotTerminal
                     var tradesList = new List<TradeTransactionModel>();
                     token.ThrowIfCancellationRequested();
 
-                    var historyStream = _connectionModel.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to);
+                    var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to);
 
                     while (!historyStream.EndOfStream)
                     {
                         token.ThrowIfCancellationRequested();
 
-                        var historyItem = new TradeTransactionModel(historyStream.Item);
+                        var historyItem = new TradeTransactionModel(historyStream.Item, GetSymbol(historyStream.Item.Symbol));
                         tradesList.Add(historyItem);
                         progress?.Report(historyItem);
 
@@ -473,6 +471,20 @@ namespace TickTrader.BotTerminal
             }, token);
 
         }
+
+        private SymbolModel GetSymbol(string symbol)
+        {
+            try
+            {
+                return _tradeClient.Symbols[symbol];
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "GetSymbol()");
+            }
+            return null;
+        }
+
         private void TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
         {
             OnTradeReport(new TradeTransactionModel(e.Report));

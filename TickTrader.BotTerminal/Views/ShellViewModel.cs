@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
 
             Trade = new TradeInfoViewModel(clientModel);
 
-            TradeHistory = new TradeHistoryViewModel(clientModel.Account, cManager.Connection);
+            TradeHistory = new TradeHistoryViewModel(clientModel);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager.Connection);
 

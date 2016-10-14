@@ -12,10 +12,13 @@ namespace TickTrader.BotTerminal
     {
         public enum TradeSide { Deposit = -1, Buy = 1, Sell = 2 }
 
-        public TradeTransactionModel(TradeTransactionReport item)
-        {
-            this.TradeRecordSide = (TradeSide)item.TradeRecordSide;
+        public TradeTransactionModel(TradeTransactionReport item) : this(item, null) { }
 
+        public TradeTransactionModel(TradeTransactionReport item, SymbolModel symbol)
+        {
+            PriceDigits = symbol?.PriceDigits ?? 5;
+            ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
+            this.TradeRecordSide = (TradeSide)item.TradeRecordSide;
 
             if (this.TradeRecordSide != TradeSide.Deposit)
             {
@@ -62,9 +65,7 @@ namespace TickTrader.BotTerminal
             this.TransactionAmount = item.TransactionAmount;
             this.TransactionCurrency = item.TransactionCurrency;
             this.TransactionTime = item.TransactionTime;
-
         }
-
 
         public double AccountBalance { get; }
         public int ActionId { get; }
@@ -111,6 +112,8 @@ namespace TickTrader.BotTerminal
         public double TransactionAmount { get; }
         public string TransactionCurrency { get; }
         public DateTime TransactionTime { get; }
+        public int PriceDigits { get; private set; }
+        public int ProfitDigits { get; private set; }
 
         private DateTime? CheckIsNull(DateTime dateTime)
         {
