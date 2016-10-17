@@ -50,6 +50,13 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
+        <Grid.Visibility>
+            <MultiBinding Converter="{StaticResource LeastOneBoolToVisible}" >
+                <Binding Path="IsNetAccount"/>
+                <Binding Path="IsGrossAccount"/>
+                <Binding Path="IsCachAccount"/>
+            </MultiBinding>
+        </Grid.Visibility>
 
         <DockPanel Grid.Row="0" Style="{StaticResource DockPanelAsToolBarStyle}">
             <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TradeDirectionFilter,  Delay=500, UpdateSourceTrigger=PropertyChanged}"
@@ -97,9 +104,23 @@
                 <DataGridTextColumn Header="Close Price" Width="*" Binding="{Binding PositionClosePrice}" />
                 <DataGridTextColumn Header="Remaining Volume" Width="*" Binding="{Binding PositionLeavesQuantity}" />
                 <DataGridTextColumn Header="Gross P/L" Width="*" Binding="{Binding GrossPL}" />
-                <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Commission}" />
+                <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Commission"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Swap}" />
-                <DataGridTextColumn Header="Net P/L" Width="*" Binding="{Binding TransactionAmount}" />
+                <DataGridTextColumn Header="Net P/L" Width="*" SortMemberPath="TransactionAmount">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="TransactionAmount"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
             </DataGrid.Columns>
         </DataGrid>
@@ -125,9 +146,23 @@
                 <DataGridTextColumn Header="Close Price" Width="*" Binding="{Binding PositionClosePrice}" />
                 <DataGridTextColumn Header="Remaining Volume" Width="*" Binding="{Binding PositionLeavesQuantity}" />
                 <DataGridTextColumn Header="Gross P/L" Width="*" Binding="{Binding GrossPL}" />
-                <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Commission}" />
+                <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Commission"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Swap}" />
-                <DataGridTextColumn Header="Net P/L" Width="*" Binding="{Binding TransactionAmount}" />
+                <DataGridTextColumn Header="Net P/L" Width="*" SortMemberPath="TransactionAmount">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="TransactionAmount"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
             </DataGrid.Columns>
         </DataGrid>
@@ -151,7 +186,14 @@
                 <DataGridTextColumn Header="Fill Time" Width="Auto" Binding="{Binding TransactionTime, Converter={StaticResource FullDateTimeFormat}}" />
                 <DataGridTextColumn Header="Volume Filled" Width="*" Binding="{Binding OrderLastFillAmount}" />
                 <DataGridTextColumn Header="Price Filled" Width="*" Binding="{Binding OrderFillPrice}" />
-                <DataGridTextColumn Header="Commission" Width="*" Binding="{Binding Commission}" />
+                <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Commission"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Asset I" Width="*" Binding="{x:Null}" />
                 <DataGridTextColumn Header="Asset II" Width="*" Binding="{x:Null}" />
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />

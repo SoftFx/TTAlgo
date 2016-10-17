@@ -66,6 +66,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -85,18 +86,43 @@
             </Grid>
         </Border>
 
-        <Label Content="Status:" FontSize="10" Grid.Row="1"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
 
-        <Border Background="{DynamicResource Dialog_PanelBackground}" Grid.Row="2" CornerRadius="4" Margin="2">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="2 2 0 2">
+            <Label Content="Status:" FontSize="10" Grid.Column="0"/>
+            <l:PopupButton Grid.Column="1"  
+                           VerticalAlignment="Center" 
+                           Margin="0 0 1 0"  
+                           ToolTip="Settings"
+                           Background="Transparent"
+                           IsEnabled="{Binding HasParams}">
+                <l:PopupButton.Content>
+                    <Path Width="15" Height="15" Margin="4" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType=l:PopupButton}, Path=Foreground}" Data="{DynamicResource Cogwheel}"></Path>
+                </l:PopupButton.Content>
+                <l:PopupButton.PopupContent>
+                    <TextBox Text="{Binding Path=ParamsStr, Mode=OneWay}" 
+                             BorderThickness="0"
+                     HorizontalAlignment="Stretch" 
+                     VerticalAlignment="Stretch" 
+                     IsReadOnly="True"
+                     TextWrapping="NoWrap" 
+                     />
+                </l:PopupButton.PopupContent>
+            </l:PopupButton>
+        </Grid>
+
+        <Border Background="{DynamicResource Dialog_PanelBackground}" Grid.Row="3" CornerRadius="4" Margin="2">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="2 2 0 0">
                 <TextBox Text="{Binding CustomStatus}" 
                      HorizontalAlignment="Stretch" 
                      VerticalAlignment="Stretch" 
                      IsReadOnly="True"
-                     TextWrapping="Wrap" 
+                     TextWrapping="NoWrap" 
                      BorderThickness="0" />
             </ScrollViewer>
         </Border>
-
     </Grid>
 </Window>

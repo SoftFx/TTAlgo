@@ -15,13 +15,13 @@ namespace TickTrader.BotTerminal
            DependencyProperty.Register(nameof(CornerRadius), typeof(CornerRadius), typeof(FlatRadioButton), new FrameworkPropertyMetadata(default(CornerRadius)));
 
         public static DependencyProperty HighlightBackgroundProperty =
-           DependencyProperty.Register("HighlightBackground", typeof(Brush), typeof(FlatRadioButton));
+           DependencyProperty.Register(nameof(HighlightBackground), typeof(Brush), typeof(FlatRadioButton));
 
         public static DependencyProperty DisabledBackgroundProperty =
-            DependencyProperty.Register("DisabledBackground", typeof(Brush), typeof(FlatRadioButton));
+            DependencyProperty.Register(nameof(DisabledBackground), typeof(Brush), typeof(FlatRadioButton));
 
         public static DependencyProperty CheckedBackgroundProperty =
-            DependencyProperty.Register("CheckedBackground", typeof(Brush), typeof(FlatRadioButton));
+            DependencyProperty.Register(nameof(CheckedBackground), typeof(Brush), typeof(FlatRadioButton));
 
         public CornerRadius CornerRadius
         {

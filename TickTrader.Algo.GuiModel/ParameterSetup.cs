@@ -122,6 +122,11 @@ namespace TickTrader.Algo.GuiModel
         {
             SelectedValue = DefaultValue;
         }
+
+        public override string ToString()
+        {
+            return $"{DisplayName}: {SelectedValue.Name}";
+        }
     }
 
     public class FileParamSetup : ParameterSetup
@@ -194,6 +199,11 @@ namespace TickTrader.Algo.GuiModel
         public override object GetApplyValue()
         {
             return new FileEntity(FilePath);
+        }
+
+        public override string ToString()
+        {
+            return $"{DisplayName}: {FilePath}";
         }
     }
 
@@ -276,6 +286,11 @@ namespace TickTrader.Algo.GuiModel
             if (Converter == null)
                 throw new InvalidOperationException("This type of propety does not support string conversions.");
             return Converter;
+        }
+
+        public override string ToString()
+        {
+            return $"{DisplayName}: {Value}";
         }
     }
 

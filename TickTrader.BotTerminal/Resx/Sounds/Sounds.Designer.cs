@@ -90,6 +90,15 @@ namespace TickTrader.BotTerminal.Resx.Sounds {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
+        internal static System.IO.UnmanagedMemoryStream Negative1 {
+            get {
+                return ResourceManager.GetStream("Negative1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
         internal static System.IO.UnmanagedMemoryStream Positive {
             get {
                 return ResourceManager.GetStream("Positive", resourceCulture);

@@ -36,7 +36,6 @@ namespace TickTrader.BotTerminal
 
                 NotifyOfPropertyChange(nameof(Rate));
                 NotifyOfPropertyChange(nameof(Direction));
-                NotifyOfPropertyChange(nameof(RateString));
             }
         }
 
@@ -46,23 +45,10 @@ namespace TickTrader.BotTerminal
             set
             {
                 precision = value;
-                rateFormat = "{0:F" + value + "}";
-
                 NotifyOfPropertyChange(nameof(Precision));
-                NotifyOfPropertyChange(nameof(RateString));
             }
         }
 
-        public string RateString
-        {
-            get { return this.ToString(); }
-        }
-
         public RateChangeDirections Direction { get; private set; }
-
-        public override string ToString()
-        {
-            return Rate.HasValue ? string.Format(rateFormat, Rate) : "";
-        }
     }
 }

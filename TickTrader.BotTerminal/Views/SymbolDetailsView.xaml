@@ -7,7 +7,7 @@
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="220">
-    
+
     <UserControl.Resources>
 
         <ControlTemplate x:Key="SellButtonTemplate" TargetType="l:FlatButton" >
@@ -104,7 +104,7 @@
         </Style>
 
     </UserControl.Resources>
-    
+
     <Grid Margin="2.5" HorizontalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
@@ -118,11 +118,25 @@
         </Grid.RowDefinitions>
         <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource SellButtonStyle}"
                       cal:Message.Attach="Sell">
-            <TextBlock Text="{Binding SellTracker.RateString}"  HorizontalAlignment="Right" FontSize="18" />
+            <TextBlock HorizontalAlignment="Right" FontSize="18" >
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource PriceConverter}" >
+                        <Binding Path="SellTracker.Rate"/>
+                        <Binding Path="SellTracker.Precision"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
         </l:FlatButton>
         <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource BuyButtonStyle}"
                       cal:Message.Attach="Buy">
-            <TextBlock Text="{Binding BuyTracker.RateString}" HorizontalAlignment="Left" FontSize="18" />
+            <TextBlock HorizontalAlignment="Left" FontSize="18">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource PriceConverter}" >
+                        <Binding Path="BuyTracker.Rate"/>
+                        <Binding Path="BuyTracker.Precision"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
         </l:FlatButton>
         <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Margin="4,1,4,6" Focusable="False"
                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectedIndex="1">

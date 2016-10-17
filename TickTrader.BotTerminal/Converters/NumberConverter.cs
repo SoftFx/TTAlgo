@@ -37,9 +37,9 @@ namespace TickTrader.BotTerminal
             if (values == null || values.Length != 2)
                 return "";
 
-            if (values[0] is decimal && values[1] is int)
+            if ((values[0] is decimal || values[0] is double) && values[1] is int)
             {
-                decimal value = (decimal)values[0];
+                decimal value = values[0] is decimal ? (decimal)values[0] : (decimal)(double)values[0];
                 int precision = (int)values[1];
 
                 if (Type == NumberType.Currency)

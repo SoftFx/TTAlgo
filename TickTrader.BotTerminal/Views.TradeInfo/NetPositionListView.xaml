@@ -35,7 +35,14 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Current Price" Width="*" Binding="{Binding CurrentPrice.RateString}" />
+                <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <Binding Path="CurrentPrice.Rate"/>
+                            <Binding Path="CurrentPrice.Precision"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="P/L" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >

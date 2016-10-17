@@ -143,7 +143,7 @@ namespace TickTrader.BotTerminal
         public ObservableCollection<ServerAuthEntry> Servers { get; private set; }
 
         public event Action CredsChanged = delegate { };
-        public event Action<States> StateChanged = delegate { };
+        public event Action<States, States> StateChanged = delegate { };
 
         public AccountAuthEntry GetLast()
         {
@@ -263,8 +263,9 @@ namespace TickTrader.BotTerminal
             {
                 logger.Debug("PUBLIC STATE {0}", newState);
 
+                var oldState = State;
                 State = newState;
-                StateChanged(newState);
+                StateChanged(oldState, newState);
             }
         }
 

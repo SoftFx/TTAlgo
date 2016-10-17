@@ -4,7 +4,7 @@
     <!--Default TextBox Style/Template-->
     <ControlTemplate x:Key="TextBox_Template" TargetType="TextBox">
         <Border Name="border"
-                BorderThickness="1"
+                BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="3"
                 BorderBrush="Transparent"
                 Background="{TemplateBinding Panel.Background}"
@@ -22,6 +22,7 @@
         <Setter Property="Background" Value="{DynamicResource ShellPanel_BackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
         <Setter Property="Padding" Value="2"/>
+        <Setter Property="BorderThickness" Value="1"></Setter>
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Background" Value="{DynamicResource Dialog_ControlDisabledBackground}"/>

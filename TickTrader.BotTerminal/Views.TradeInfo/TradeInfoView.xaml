@@ -17,7 +17,7 @@
         <ContentControl Grid.Row="0" x:Name="Positions"></ContentControl>
         <ContentControl Grid.Row="0" x:Name="Assets" Visibility="{Binding Assets.IsEnabled, Converter={StaticResource BoolToVis}}"></ContentControl>
         <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="4" Background="Transparent" />
-        <ContentControl Grid.Row="2" x:Name="Orders" />
+        <ContentControl Grid.Row="2" x:Name="Orders" Visibility="{Binding Orders.IsEnabled, Converter={StaticResource BoolToVis}}"/>
         <ContentControl Grid.Row="3" x:Name="AccountStats" />
     </Grid>
 </UserControl>

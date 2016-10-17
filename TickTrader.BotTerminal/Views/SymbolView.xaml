@@ -7,9 +7,9 @@
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    
+
     <UserControl.Resources>
-    
+
         <Style x:Key="RateTextStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -39,7 +39,7 @@
         </Style>
 
     </UserControl.Resources>
-   
+
     <UserControl.ContextMenu>
         <ContextMenu Style="{StaticResource ContextMenu_Style}">
             <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
@@ -78,11 +78,25 @@
                        TextTrimming="CharacterEllipsis"
                        Margin="3, 0, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" />
 
-            <TextBlock Text="{Binding Bid.RateString}" Grid.Column="2" Style="{StaticResource BidTextStyle}"/>
-            <TextBlock Text="{Binding Ask.RateString}" Grid.Column="4" Style="{StaticResource AskTextStyle}"/>
+            <TextBlock Grid.Column="2" Style="{StaticResource BidTextStyle}">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource PriceConverter}" >
+                        <Binding Path="Bid.Rate"/>
+                        <Binding Path="Bid.Precision"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+            <TextBlock Grid.Column="4" Style="{StaticResource AskTextStyle}">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource PriceConverter}" >
+                        <Binding Path="Ask.Rate"/>
+                        <Binding Path="Ask.Precision"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
             <TextBlock Text="{Binding QuoteTime, Converter={StaticResource FullTimeFormat}}" Grid.Column="6" Style="{StaticResource RateTextStyle}" TextTrimming="CharacterEllipsis"/>
         </Grid>
-        
+
 
         <!-- Properties & Buttons -->
 
