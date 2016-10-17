@@ -12,6 +12,7 @@ namespace TickTrader.Algo.VS.Package
     public class CsProjectFactory : FlavoredProjectFactoryBase
     {
         public const string ProjectGuidString = "74F46FEE-74DF-49D2-A1A3-F634C4CE65AE";
+        public static readonly Guid ProjectGuid = new Guid(ProjectGuidString);
 
         private VSPackage package;
 

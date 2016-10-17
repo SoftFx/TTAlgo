@@ -159,6 +159,7 @@ namespace TickTrader.BotTerminal
                        feedCs.FixEventsFileName = "feed.events.log";
                        feedCs.FixMessagesFileName = "feed.messages.log";
                        feedCs.FixLogDirectory = LogPath;
+                       feedCs.ExcludeMessagesFromLogs = "y|0";
 
                        feedProxy.Initialize(feedCs.ToString());
 
@@ -270,8 +271,6 @@ namespace TickTrader.BotTerminal
                 default: return ConnectionErrorCodes.Unknown;
             }
         }
-
-
 
         void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
         {

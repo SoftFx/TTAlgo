@@ -8,10 +8,10 @@ namespace TickTrader.Algo.Api
 {
     internal interface TradeCommands
     {
-        Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> CancelOrder(string orderId);
-        Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> CloseOrder(string orderId, double? volume);
+        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment);
+        Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
+        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
+        Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
     }
 
     public interface OrderCmdResult

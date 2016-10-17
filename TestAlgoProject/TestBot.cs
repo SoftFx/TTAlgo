@@ -9,17 +9,36 @@ namespace TestAlgoProject
 {
     public enum Options { Option1, Option2 }
 
+    public enum ExitVariants { Init, OnStart, OnQuote, OnStop }
+
     [TradeBot(DisplayName = "Exit Bot")]
     public class ExitBot : TradeBot
     {
+        [Parameter(DisplayName = "Exit on")]
+        public ExitVariants ExitOn { get; set; }
+
+        protected override void Init()
+        {
+            if (ExitOn == ExitVariants.Init)
+                Exit();
+        }
+
         protected override void OnStart()
         {
-            Exit();
+            if (ExitOn == ExitVariants.OnStart)
+                Exit();
         }
 
         protected override void OnQuote(Quote quote)
         {
-            Exit();
+            if (ExitOn == ExitVariants.OnQuote)
+                Exit();
+        }
+
+        protected override void OnStop()
+        {
+            if (ExitOn == ExitVariants.OnStop)
+                Exit();
         }
     }
 }

@@ -108,22 +108,22 @@ namespace TickTrader.Algo.Core
         private static Task<OrderCmdResult> rejectResult
             = Task.FromResult<OrderCmdResult>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, OrderEntity.Null));
 
-        public Task<OrderCmdResult> CancelOrder(string orderId)
+        public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> CloseOrder(string orderId, double? volume)
+        public Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(string orderId, double price, double? tp, double? sl, string comment)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? tp, double? sl, string comment)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
+        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
             return rejectResult;
         }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.VS.Package
 {
-    public class CsProject : FlavoredProjectBase, IVsDeployableProjectCfg
+    public class CsProject : FlavoredProjectBase, IVsProjectFlavorCfgProvider
     {
         private VSPackage package;
         private IVsProjectFlavorCfgProvider innerVsProjectFlavorCfgProvider;
@@ -100,65 +100,27 @@ namespace TickTrader.Algo.VS.Package
             }
         }
 
-        #region IVsDeployableProjectCfg
+        #region IVsProjectFlavorCfgProvider Members
 
-        public int AdviseDeployStatusCallback(IVsDeployStatusCallback pIVsDeployStatusCallback, out uint pdwCookie)
+        public int CreateProjectFlavorCfg(IVsCfg pBaseProjectCfg,
+            out IVsProjectFlavorCfg ppFlavorCfg)
         {
-            pdwCookie = 111;
-            return VSConstants.S_OK;
-        }
+            IVsProjectFlavorCfg cfg = null;
 
-        public int UnadviseDeployStatusCallback(uint dwCookie)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int StartDeploy(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int QueryStatusDeploy(out int pfDeployDone)
-        {
-            pfDeployDone = 1;
-            return VSConstants.S_OK;
-        }
-
-        public int StopDeploy(int fSync)
-        {
-            if (fSync == 0)
+            if (innerVsProjectFlavorCfgProvider != null)
             {
-                 // Async Stop
-            }
-            else
-            {
-                // Sync Stop
+                innerVsProjectFlavorCfgProvider.
+                    CreateProjectFlavorCfg(pBaseProjectCfg, out cfg);
             }
 
+            var configuration = new CsProjectConfiguration();
+
+            configuration.Initialize(this, pBaseProjectCfg, cfg);
+            ppFlavorCfg = (IVsProjectFlavorCfg)configuration;
+
             return VSConstants.S_OK;
         }
 
-        public int WaitDeploy(uint dwMilliseconds, int fTickWhenMessageQNotEmpty)
-        {
-            // Obsolete method
-            return VSConstants.S_OK;
-        }
-
-        public int QueryStartDeploy(uint dwOptions, int[] pfSupported, int[] pfReady)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int Commit(uint dwReserved)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int Rollback(uint dwReserved)
-        {
-            return VSConstants.S_OK;
-        }
-
-        #endregion IVsDeployableProjectCfg
+        #endregion
     }
 }

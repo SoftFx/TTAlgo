@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
@@ -32,6 +33,7 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
         private string workingFolder;
+        private bool isExited;
 
         public PluginExecutor(string pluginId)
         {
@@ -212,6 +214,7 @@ namespace TickTrader.Algo.Core
                 Validate();
 
                 //isInitialized = true;
+                isExited = false;
 
                 stopTask = null;
 
@@ -223,10 +226,11 @@ namespace TickTrader.Algo.Core
                 builder.TradeApi = tradeApi;
                 if (logger != null)
                     builder.Logger = logger;
+                builder.OnAsyncAction = OnAsyncAction;
                 builder.OnSubscribe = fStrategy.OnUserSubscribe;
                 builder.OnUnsubscribe = fStrategy.OnUserUnsubscribe;
                 //builder.OnException = OnException;
-                builder.OnExit = Abort;
+                builder.OnExit = OnExit;
                 statusFixture.Start();
                 fStrategy.Init(this);
                 fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
@@ -255,10 +259,8 @@ namespace TickTrader.Algo.Core
                 if (!IsRunning)
                     return;
 
-                iStrategy.Abort();
-
                 if (stopTask == null)
-                    stopTask = DoStop();
+                    stopTask = iStrategy.Stop(b => DoStop(true));
 
                 taskToWait = stopTask;
             }
@@ -266,14 +268,13 @@ namespace TickTrader.Algo.Core
             taskToWait.Wait();
         }
 
-        private async Task DoStop()
+        private void DoStop(bool invokeOnStop)
         {
+            if (invokeOnStop)
+                builder.InvokeOnStop();
+
             fStrategy.Stop();
             accFixture.Stop();
-            await iStrategy.Stop();
-
-            await Task.Factory.StartNew(() => builder.InvokeOnStop());
-
             statusFixture.Stop();
 
             lock (_sync)
@@ -284,13 +285,16 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void Abort()
+        private void OnExit()
         {
             lock (_sync)
             {
-                iStrategy.Abort();
+                if (isExited)
+                    return;
+
+                isExited = true;
                 if (stopTask == null)
-                    stopTask = DoStop();
+                    stopTask = iStrategy.Stop(b => DoStop(false));
             }
         }
 
@@ -383,7 +387,7 @@ namespace TickTrader.Algo.Core
 
         private void OnException(Exception pluginError)
         {
-            Abort();
+            OnExit();
         }
 
         private void OnInternalException(ExecutorException ex)
@@ -394,6 +398,11 @@ namespace TickTrader.Algo.Core
         private void OnRuntimeException(Exception ex)
         {
             logger.OnError(ex);
+        }
+
+        private void OnAsyncAction(SendOrPostCallback callback, object state)
+        {
+            iStrategy.EnqueueCustomAction(b => callback(state));
         }
 
         private void OnFeedUpdate(FeedUpdate update)
