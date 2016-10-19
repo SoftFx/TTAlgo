@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Api
 
         internal IPluginContext Context { get { return context; } }
 
-        protected AccountDataProvider Account
+        public AccountDataProvider Account
         {
             get
             {
@@ -38,13 +38,13 @@ namespace TickTrader.Algo.Api
             }
         }
 
-        protected CustomFeedProvider Feed { get { return GetFeedProvider().CustomCommds; } }
-        protected EnvironmentInfo Enviroment { get { return GetEnvInfoProvider(); } }
-        protected SymbolList Symbols { get { return GetSymbolProvider().List; } }
-        protected Symbol Symbol { get { return GetSymbolProvider().MainSymbol; } }
-        protected BarSeries Bars { get { return GetFeedProvider().Bars; } }
-        protected double Bid { get { return Symbol.Bid; } }
-        protected double Ask { get { return Symbol.Ask; } }
+        public CustomFeedProvider Feed { get { return GetFeedProvider().CustomCommds; } }
+        public EnvironmentInfo Enviroment { get { return GetEnvInfoProvider(); } }
+        public SymbolList Symbols { get { return GetSymbolProvider().List; } }
+        public Symbol Symbol { get { return GetSymbolProvider().MainSymbol; } }
+        public BarSeries Bars { get { return GetFeedProvider().Bars; } }
+        public double Bid { get { return Symbol.Bid; } }
+        public double Ask { get { return Symbol.Ask; } }
 
         protected virtual void Init() { }
 

@@ -34,14 +34,14 @@ namespace TickTrader.Algo.Api
 
         #region Logger
 
-        protected StatusApi Status { get { return GetStatusApi(); } }
+        public StatusApi Status { get { return GetStatusApi(); } }
 
-        protected void Print(string msg, params object[] parameters)
+        public void Print(string msg, params object[] parameters)
         {
             GetLogger().Print(msg, parameters);
         }
 
-        protected void PrintError(string msg, params object[] parameters)
+        public void PrintError(string msg, params object[] parameters)
         {
             GetLogger().PrintError(msg, parameters);
         }
