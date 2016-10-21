@@ -23,6 +23,7 @@ namespace TickTrader.BotTerminal
                 var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
 
+                BotLogFolder = Path.Combine(appDocumentsFolder, "BotLogs");
                 LogFolder = Path.Combine(appDocumentsFolder, "Logs");
                 JournalFolder = Path.Combine(appDocumentsFolder, "Journals");
                 AlgoRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
@@ -37,6 +38,7 @@ namespace TickTrader.BotTerminal
 
                 string appDir = AppDomain.CurrentDomain.BaseDirectory;
 
+                BotLogFolder = Path.Combine(appDir, "BotLogs");
                 LogFolder = Path.Combine(appDir, "Logs");
                 JournalFolder = Path.Combine(appDir, "Journal");
                 AlgoRepositoryFolder = Path.Combine(appDir, "AlgoRepository");
@@ -44,9 +46,10 @@ namespace TickTrader.BotTerminal
                 FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");
                 AppDataFolder = Path.Combine(appDir, "Settings");
             }
-
+           
             EnsureFolder(AlgoRepositoryFolder);
             EnsureFolder(AlgoWorkingFolder);
+            EnsureFolder(BotLogFolder);
             EnsureFolder(LogFolder);
             EnsureFolder(JournalFolder);
             EnsureFolder(FeedHistoryCacheFolder);
@@ -64,6 +67,7 @@ namespace TickTrader.BotTerminal
 
         public string FeedHistoryCacheFolder { get; private set; }
         public string ApplicationName { get; private set; }
+        public string BotLogFolder { get; private set; }
         public string LogFolder { get; private set; }
         public string JournalFolder { get; private set; }
         public string AlgoRepositoryFolder { get; private set; }

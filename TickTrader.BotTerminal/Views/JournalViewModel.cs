@@ -20,14 +20,13 @@ namespace TickTrader.BotTerminal
     {
         private EventJournal eventJournal;
         private string filterString;
-        private Logger logger;
+        private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public JournalViewModel(EventJournal journal)
         {
             eventJournal = journal;
             Journal = CollectionViewSource.GetDefaultView(eventJournal.Records.AsObservable());
             Journal.Filter = new Predicate<object>(Filter);
-            logger = NLog.LogManager.GetCurrentClassLogger();
         }
 
         public ICollectionView Journal { get; private set; }
