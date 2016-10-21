@@ -11,7 +11,7 @@ using System.Xml;
 namespace TickTrader.Algo.VS.Package
 {
     [ComVisible(false)]
-    public class CsProjectConfiguration : IVsProjectFlavorCfg, IPersistXMLFragment, IVsDeployableProjectCfg
+    public class CsProjectConfiguration : IVsProjectFlavorCfg, IPersistXMLFragment
     {
         private static Dictionary<IVsCfg, CsProjectConfiguration> mapIVsCfgToProjectCfg = new Dictionary<IVsCfg, CsProjectConfiguration>();
 
@@ -20,6 +20,7 @@ namespace TickTrader.Algo.VS.Package
         private IVsHierarchy project;
         private IVsCfg baseConfiguration;
         private IVsProjectFlavorCfg innerConfiguration;
+        //private IVsBuildableProjectCfg innerBuildCfg;
 
         public void Initialize(CsProject project,
           IVsCfg baseConfiguration, IVsProjectFlavorCfg innerConfiguration)
@@ -27,6 +28,11 @@ namespace TickTrader.Algo.VS.Package
             this.project = project;
             this.baseConfiguration = baseConfiguration;
             this.innerConfiguration = innerConfiguration;
+
+            //IntPtr buildPpCfg;
+            //innerConfiguration.get_CfgType(typeof(IVsBuildableProjectCfg).GUID, out buildPpCfg);
+            //innerBuildCfg = (IVsBuildableProjectCfg)innerConfiguration;
+
             mapIVsCfgToProjectCfg.Add(baseConfiguration, this);
         }
 
@@ -63,11 +69,16 @@ namespace TickTrader.Algo.VS.Package
         {
             ppCfg = IntPtr.Zero;
 
-            if (iidCfg == typeof(IVsDeployableProjectCfg).GUID)
-            {
-                ppCfg = Marshal.GetComInterfaceForObject(this, typeof(IVsDeployableProjectCfg));
-                return VSConstants.S_OK;
-            }
+            //if (iidCfg == typeof(IVsDeployableProjectCfg).GUID)
+            //{
+            //    ppCfg = Marshal.GetComInterfaceForObject(this, typeof(IVsDeployableProjectCfg));
+            //    return VSConstants.S_OK;
+            //}
+            //else if (iidCfg == typeof(IVsBuildableProjectCfg).GUID)
+            //{
+            //    ppCfg = Marshal.GetComInterfaceForObject(this, typeof(IVsBuildableProjectCfg));
+            //    return VSConstants.S_OK;
+            //}
 
             if (innerConfiguration != null)
                 return innerConfiguration.get_CfgType(ref iidCfg, out ppCfg);
@@ -240,89 +251,173 @@ namespace TickTrader.Algo.VS.Package
 
         #endregion IPersistXMLFragment
 
-        #region IVsDeployableProjectCfg
+        //#region IVsDeployableProjectCfg
 
-        private Microsoft.VisualStudio.Shell.EventSinkCollection adviseSink = new Microsoft.VisualStudio.Shell.EventSinkCollection();
-        private Task deployTask;
+        //private Microsoft.VisualStudio.Shell.EventSinkCollection adviseSink = new Microsoft.VisualStudio.Shell.EventSinkCollection();
+        //private Task deployTask;
 
-        public int AdviseDeployStatusCallback(IVsDeployStatusCallback pIVsDeployStatusCallback, out uint pdwCookie)
+        //public int AdviseDeployStatusCallback(IVsDeployStatusCallback pIVsDeployStatusCallback, out uint pdwCookie)
+        //{
+        //    if (pIVsDeployStatusCallback == null)
+        //        throw new ArgumentNullException("pIVsDeployStatusCallback");
+
+        //    pdwCookie = adviseSink.Add(pIVsDeployStatusCallback);
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int UnadviseDeployStatusCallback(uint dwCookie)
+        //{
+        //    adviseSink.RemoveAt(dwCookie);
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int StartDeploy(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
+        //{
+        //    deployTask = Task.Factory.StartNew(() => Task.Delay(10000).Wait());
+
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int QueryStatusDeploy(out int pfDeployDone)
+        //{
+        //    if (deployTask != null && deployTask.IsFaulted)
+        //        pfDeployDone = 1;
+        //    else
+        //        pfDeployDone = 0;
+
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int StopDeploy(int fSync)
+        //{
+        //    if (fSync == 0)
+        //    {
+        //        // Async Stop
+        //    }
+        //    else
+        //    {
+        //        // Sync Stop
+        //        if (deployTask != null)
+        //            deployTask.Wait();
+        //    }
+
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int WaitDeploy(uint dwMilliseconds, int fTickWhenMessageQNotEmpty)
+        //{
+        //    // Obsolete method
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int QueryStartDeploy(uint dwOptions, int[] pfSupported, int[] pfReady)
+        //{
+        //    if (pfSupported != null && pfSupported.Length > 0)
+        //        pfSupported[0] = 1;
+        //    if (pfReady != null && pfReady.Length > 0)
+        //    {
+        //        //pfReady[0] = 0;
+        //        //if (deploymentThread != null && !deploymentThread.IsAlive)
+        //        pfReady[0] = 1;
+        //    }
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int Commit(uint dwReserved)
+        //{
+        //    return VSConstants.S_OK;
+        //}
+
+        //public int Rollback(uint dwReserved)
+        //{
+        //    return VSConstants.S_OK;
+        //}
+
+        //#endregion IVsDeployableProjectCfg
+
+        #region IVsBuildableProjectCfg
+
+        private Microsoft.VisualStudio.Shell.EventSinkCollection adviseBuildSink = new Microsoft.VisualStudio.Shell.EventSinkCollection();
+
+        public int get_ProjectCfg(out IVsProjectCfg ppIVsProjectCfg)
         {
-            if (pIVsDeployStatusCallback == null)
+            ppIVsProjectCfg = null;
+            return VSConstants.E_NOTIMPL;
+        }
+
+        public int AdviseBuildStatusCallback(IVsBuildStatusCallback pIVsBuildStatusCallback, out uint pdwCookie)
+        {
+            if (pIVsBuildStatusCallback == null)
                 throw new ArgumentNullException("pIVsDeployStatusCallback");
 
-            pdwCookie = adviseSink.Add(pIVsDeployStatusCallback);
+            pdwCookie = adviseBuildSink.Add(pIVsBuildStatusCallback);
             return VSConstants.S_OK;
         }
 
-        public int UnadviseDeployStatusCallback(uint dwCookie)
+        public int UnadviseBuildStatusCallback(uint dwCookie)
         {
-            adviseSink.RemoveAt(dwCookie);
+            adviseBuildSink.RemoveAt(dwCookie);
             return VSConstants.S_OK;
         }
 
-        public int StartDeploy(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
+        public int StartBuild(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
         {
-            deployTask = Task.Factory.StartNew(() => Task.Delay(10000).Wait());
-
             return VSConstants.S_OK;
         }
 
-        public int QueryStatusDeploy(out int pfDeployDone)
+        public int StartClean(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
         {
-            if (deployTask != null && deployTask.IsFaulted)
-                pfDeployDone = 1;
-            else
-                pfDeployDone = 0;
-
             return VSConstants.S_OK;
         }
 
-        public int StopDeploy(int fSync)
+        public int StartUpToDateCheck(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
         {
-            if (fSync == 0)
-            {
-                // Async Stop
-            }
-            else
-            {
-                // Sync Stop
-                if (deployTask != null)
-                    deployTask.Wait();
-            }
-
             return VSConstants.S_OK;
         }
 
-        public int WaitDeploy(uint dwMilliseconds, int fTickWhenMessageQNotEmpty)
+        public int QueryStatus(out int pfBuildDone)
         {
-            // Obsolete method
+            throw new NotImplementedException();
+        }
+
+        public int Stop(int fSync)
+        {
             return VSConstants.S_OK;
         }
 
-        public int QueryStartDeploy(uint dwOptions, int[] pfSupported, int[] pfReady)
+        public int Wait(uint dwMilliseconds, int fTickWhenMessageQNotEmpty)
+        {
+            return VSConstants.E_NOTIMPL;
+        }
+
+        public int QueryStartBuild(uint dwOptions, int[] pfSupported, int[] pfReady)
         {
             if (pfSupported != null && pfSupported.Length > 0)
                 pfSupported[0] = 1;
             if (pfReady != null && pfReady.Length > 0)
-            {
-                //pfReady[0] = 0;
-                //if (deploymentThread != null && !deploymentThread.IsAlive)
                 pfReady[0] = 1;
-            }
             return VSConstants.S_OK;
         }
 
-        public int Commit(uint dwReserved)
+        public int QueryStartClean(uint dwOptions, int[] pfSupported, int[] pfReady)
         {
+            if (pfSupported != null && pfSupported.Length > 0)
+                pfSupported[0] = 1;
+            if (pfReady != null && pfReady.Length > 0)
+                pfReady[0] = 1;
             return VSConstants.S_OK;
         }
 
-        public int Rollback(uint dwReserved)
+        public int QueryStartUpToDateCheck(uint dwOptions, int[] pfSupported, int[] pfReady)
         {
+            if (pfSupported != null && pfSupported.Length > 0)
+                pfSupported[0] = 1;
+            if (pfReady != null && pfReady.Length > 0)
+                pfReady[0] = 1;
             return VSConstants.S_OK;
         }
 
-        #endregion IVsDeployableProjectCfg
+        #endregion IVsBuildableProjectCfg
 
         private bool IsAlgoCsProj(ref Guid guidFlavor)
         {
