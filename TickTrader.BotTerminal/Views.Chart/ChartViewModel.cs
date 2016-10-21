@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
     class ChartViewModel : Screen, IDropHandler
     {
         private static int idSeed;
-        private readonly Logger logger;
+        private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly TraderClientModel clientModel;
         private readonly PluginCatalog catalog;
         private readonly BotJournal journal;
@@ -43,7 +43,6 @@ namespace TickTrader.BotTerminal
 
         public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, PluginCatalog catalog, BotJournal journal)
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.clientModel = clientModel;
@@ -325,15 +324,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateLabelFormat(SymbolModel smb)
         {
-            var digits = smb.Descriptor.Precision;
-
-            StringBuilder formatBuilder = new StringBuilder();
-            formatBuilder.Append("0.");
-
-            for (int i = 0; i < digits; i++)
-                formatBuilder.Append("0");
-
-            YAxisLabelFormat = formatBuilder.ToString();
+            YAxisLabelFormat = $"n{smb.Descriptor.Precision}";
             NotifyOfPropertyChange(nameof(YAxisLabelFormat));
         }
     }

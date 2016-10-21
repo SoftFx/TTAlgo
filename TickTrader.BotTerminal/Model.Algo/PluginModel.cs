@@ -1,14 +1,5 @@
-﻿using Caliburn.Micro;
-using Machinarium.Qnil;
-using NLog;
-using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.Annotations;
-using SciChart.Charting.Visuals.RenderableSeries;
+﻿using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -19,7 +10,7 @@ namespace TickTrader.BotTerminal
 {
     internal class PluginModel : CrossDomainObject
     {
-        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private PluginExecutor executor;
         private IAlgoPluginHost host;
