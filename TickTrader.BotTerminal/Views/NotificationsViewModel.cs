@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
             {
                 _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
             }
-            else if(oldState == ConnectionManager.States.Online && newState == ConnectionManager.States.Offline)
+            else if(newState == ConnectionManager.States.Offline)
             {
                 _notificationCenter.SoundNotification.Notify(AppSounds.NegativeLong);
             }
