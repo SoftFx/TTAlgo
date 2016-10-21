@@ -52,7 +52,14 @@
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" />
-                <DataGridTextColumn Header="Net P/L" Width="*" Binding="{Binding Position.NetProfit}"  />
+                <DataGridTextColumn Header="Net P/L" Width="*">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Position.NetProfit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

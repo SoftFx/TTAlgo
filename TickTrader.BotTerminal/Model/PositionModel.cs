@@ -66,6 +66,7 @@ namespace TickTrader.BotTerminal
         private void OnProfitUpdated()
         {
             NotifyOfPropertyChange(nameof(Profit));
+            NotifyOfPropertyChange(nameof(NetProfit));
         }
 
         private void OnMarginUpdated()
@@ -245,6 +246,8 @@ namespace TickTrader.BotTerminal
         }
 
         public decimal Profit { get { return Long.Profit + Short.Profit; } }
+        public decimal? NetProfit => Profit + Commission + Swap;
+                    
         public decimal Margin { get { return Long.Margin + Short.Margin; } }
         public OrderCalculator Calculator { get; set; }
         public PositionSide Long { get; private set; }
