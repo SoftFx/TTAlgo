@@ -186,8 +186,8 @@ namespace TickTrader.Algo.Core
         internal void InvokePluginMethod(Action invokeAction)
         {
             OnBeforeInvoke();
-            //var oldContext = SynchronizationContext.Current;
-            //SynchronizationContext.SetSynchronizationContext(syncContext);
+            var oldContext = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
                 invokeAction();
@@ -196,7 +196,7 @@ namespace TickTrader.Algo.Core
             {
                 OnPluginException(ex);
             }
-            //SynchronizationContext.SetSynchronizationContext(oldContext);
+            SynchronizationContext.SetSynchronizationContext(oldContext);
             OnAfterInvoke();
         }
 

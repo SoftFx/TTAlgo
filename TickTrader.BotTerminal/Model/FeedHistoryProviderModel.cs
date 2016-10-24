@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
         {
             fdkStorage = await Task.Factory.StartNew(
                 () => new DataFeedStorage(EnvService.Instance.FeedHistoryCacheFolder,
-                    StorageProvider.SQLite, 1, connection.FeedProxy, false, false));
+                    StorageProvider.Ntfs, 2, connection.FeedProxy, false, false));
             pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
         }
 

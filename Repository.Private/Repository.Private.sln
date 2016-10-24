@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMBot", "MMBot\MMBot.csproj", "{BB75BFD4-3AED-4282-B98E-36AF3002A656}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMBot2", "MMBot2\MMBot2.csproj", "{719D6548-C569-4444-8DA1-4D1649E36355}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{BB75BFD4-3AED-4282-B98E-36AF3002A656}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB75BFD4-3AED-4282-B98E-36AF3002A656}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB75BFD4-3AED-4282-B98E-36AF3002A656}.Release|Any CPU.Build.0 = Release|Any CPU
+		{719D6548-C569-4444-8DA1-4D1649E36355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{719D6548-C569-4444-8DA1-4D1649E36355}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{719D6548-C569-4444-8DA1-4D1649E36355}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{719D6548-C569-4444-8DA1-4D1649E36355}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core
             this.logger = logger;
         }
 
-        public async Task<OrderCmdResult> OpenOrder(string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment)
+        public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment)
         {
             OrderCmdResultCodes code;
             double volume = ConvertVolume(volumeLots, symbol, out code);
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core
             using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
                 api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment);
-                var result = await waitHandler.LocalTask;
+                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                     account.Orders.Add(result.NewOrder);
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public async Task<OrderCmdResult> CancelOrder(string orderId)
+        public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
             Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
             if (orderToCancel == null)
@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Core
             using (var waitHandler = new TaskProxy<CancelResult>())
             {
                 api.CancelOrder(waitHandler, orderId, ((OrderEntity)orderToCancel).ClientOrderId, orderToCancel.Side);
-                var result = await waitHandler.LocalTask;
+                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public async Task<OrderCmdResult> CloseOrder(string orderId, double? closeVolumeLots)
+        public async Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
         {            
             double? closeVolume = null;
 
@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
             using (var waitHandler = new TaskProxy<CloseResult>())
             {
                 api.CloseOrder(waitHandler, orderId, closeVolume);
-                var result = await waitHandler.LocalTask;
+                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(string orderId, double price,  double? sl, double? tp, string comment)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price,  double? sl, double? tp, string comment)
         {
             Order orderToModify = account.Orders.GetOrderOrNull(orderId);
             if (orderToModify == null)
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Core
             {
                 api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
                     price, orderToModify.RequestedAmount, tp, sl, comment);
-                var result = await waitHandler.LocalTask;
+                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {

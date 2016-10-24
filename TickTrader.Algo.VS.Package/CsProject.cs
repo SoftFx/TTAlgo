@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio;
+﻿using EnvDTE;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Flavor;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -10,10 +11,12 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.VS.Package
 {
-    public class CsProject : FlavoredProjectBase, IVsDeployableProjectCfg
+    public class CsProject : FlavoredProjectBase, IVsProjectFlavorCfgProvider, IVsBuildStatusCallback
     {
         private VSPackage package;
         private IVsProjectFlavorCfgProvider innerVsProjectFlavorCfgProvider;
+        private Project dteProject;
+        private DTE dteObj;
 
         internal void SetPackage(VSPackage package)
         {
@@ -28,7 +31,104 @@ namespace TickTrader.Algo.VS.Package
                 serviceProvider = package;
             base.SetInnerProject(innerIUnknown);
             innerVsProjectFlavorCfgProvider = objectForIUnknown as IVsProjectFlavorCfgProvider;
+
+            //var dte = serviceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+            //dte.Events.BuildEvents.OnBuildDone += BuildEvents_OnBuildDone;
+            //dte.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
+            
+            //var project = dte.Solution.Projects.Item(0);
         }
+
+        protected override void InitializeForOuter(string fileName, string location, string name, uint flags, ref Guid guidProject, out bool cancel)
+        {
+            base.InitializeForOuter(fileName, location, name, flags, ref guidProject, out cancel);
+
+            object extObject;
+            ErrorHandler.ThrowOnFailure(GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out extObject));
+            dteProject = (EnvDTE.Project)extObject;
+            dteObj = dteProject.DTE;
+
+            //StringBuilder builder = new StringBuilder();
+            //foreach (Property property in dteProject.Properties)
+            //builder.Append(property.Name).Append("=").AppendLine();
+
+            //dteObj.Events.BuildEvents.OnBuildDone += BuildEvents_OnBuildDone;
+            dteObj.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
+
+            //IVsSolutionBuildManager buildManager = ((System.IServiceProvider)this).GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager;
+
+            //IVsProjectCfg[] ppIVsProjectCfg = new IVsProjectCfg[1];
+            //buildManager.FindActiveProjectCfg(IntPtr.Zero, IntPtr.Zero, this, ppIVsProjectCfg);
+
+            //IVsBuildableProjectCfg ppIVsBuildableProjectCfg;
+            //ppIVsProjectCfg[0].get_BuildableProjectCfg(out ppIVsBuildableProjectCfg);
+
+            //uint pdwCookie;
+            //ppIVsBuildableProjectCfg.AdviseBuildStatusCallback(this, out pdwCookie);
+        }
+
+        private void BuildEvents_OnBuildProjConfigDone(string Project, string ProjectConfig, string Platform, string SolutionConfig, bool Success)
+        {
+            //var value = dteProject.Properties.OfType<Property>().FirstOrDefault(p => p.Name == 
+            //var aCfgProps = PrintProperties(dteProject.ConfigurationManager.ActiveConfiguration.Properties);
+            //var prjProps = PrintProperties(dteProject.Properties);
+            //var prjName = dteProject.UniqueName;
+
+            //var sManager = ((System.IServiceProvider)this).GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager;
+            //var builder = ((System.IServiceProvider)this).GetService(typeof(IVsBuildableProjectCfg)) as IVsBuildableProjectCfg;
+            //IVsProject p;
+
+            if (Project != dteProject.UniqueName) // filter out other projects
+                return;
+
+            try
+            {
+                var projectProps = dteProject.Properties;
+                var solutionProps = dteObj.Solution.Properties;
+                var buildProps = dteProject.ConfigurationManager.ActiveConfiguration.Properties;
+
+                PackageWriter package = new PackageWriter();
+                package.ProjectFile = projectProps.GetString("FileName");
+                package.ProjectFolder = projectProps.GetString("FullPath");
+                package.TargetFramework = projectProps.GetString("TargetFrameworkMoniker");
+                package.AssemblyName = projectProps.GetString("OutputFileName");
+                package.OutputPath = buildProps.GetString("OutputPath");
+                package.SolutionPath = solutionProps.GetString("Path");
+                package.VsVersion = dteObj.Version;
+                package.SaveToCommonRepository();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine("Failed to build algo package! " + ex.ToString());
+            }
+        }
+
+        private string PrintProperties(Properties props)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (Property property in props)
+            {
+                builder.Append(property.Name).Append("=");
+
+                try
+                {
+                    var value = property.Value;
+                    builder.Append(value);
+                }
+                catch (Exception)
+                {
+                    builder.Append("{ERROR}");
+                }
+
+                builder.AppendLine();
+            }
+            return builder.ToString();
+        }
+
+        //private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        //{
+        //    Task.Delay(10000).Wait();
+        //}
 
         protected override void Close()
         {
@@ -38,6 +138,11 @@ namespace TickTrader.Algo.VS.Package
                 if (Marshal.IsComObject(innerVsProjectFlavorCfgProvider))
                     Marshal.ReleaseComObject(innerVsProjectFlavorCfgProvider);
                 innerVsProjectFlavorCfgProvider = null;
+            }
+            if (dteObj != null)
+            {
+                dteObj.Events.BuildEvents.OnBuildProjConfigDone -= BuildEvents_OnBuildProjConfigDone;
+                dteObj = null;
             }
         }
 
@@ -100,65 +205,41 @@ namespace TickTrader.Algo.VS.Package
             }
         }
 
-        #region IVsDeployableProjectCfg
+        #region IVsProjectFlavorCfgProvider Members
 
-        public int AdviseDeployStatusCallback(IVsDeployStatusCallback pIVsDeployStatusCallback, out uint pdwCookie)
+        public int CreateProjectFlavorCfg(IVsCfg pBaseProjectCfg, out IVsProjectFlavorCfg ppFlavorCfg)
         {
-            pdwCookie = 111;
-            return VSConstants.S_OK;
-        }
+            IVsProjectFlavorCfg cfg = null;
 
-        public int UnadviseDeployStatusCallback(uint dwCookie)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int StartDeploy(IVsOutputWindowPane pIVsOutputWindowPane, uint dwOptions)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int QueryStatusDeploy(out int pfDeployDone)
-        {
-            pfDeployDone = 1;
-            return VSConstants.S_OK;
-        }
-
-        public int StopDeploy(int fSync)
-        {
-            if (fSync == 0)
+            if (innerVsProjectFlavorCfgProvider != null)
             {
-                 // Async Stop
-            }
-            else
-            {
-                // Sync Stop
+                innerVsProjectFlavorCfgProvider.
+                    CreateProjectFlavorCfg(pBaseProjectCfg, out cfg);
             }
 
+            var configuration = new CsProjectConfiguration();
+
+            configuration.Initialize(this, pBaseProjectCfg, cfg);
+            ppFlavorCfg = (IVsProjectFlavorCfg)configuration;
+
             return VSConstants.S_OK;
         }
 
-        public int WaitDeploy(uint dwMilliseconds, int fTickWhenMessageQNotEmpty)
-        {
-            // Obsolete method
-            return VSConstants.S_OK;
-        }
+        #endregion
 
-        public int QueryStartDeploy(uint dwOptions, int[] pfSupported, int[] pfReady)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int Commit(uint dwReserved)
+        public int BuildBegin(ref int pfContinue)
         {
             return VSConstants.S_OK;
         }
 
-        public int Rollback(uint dwReserved)
+        public int BuildEnd(int fSuccess)
         {
             return VSConstants.S_OK;
         }
 
-        #endregion IVsDeployableProjectCfg
+        public int Tick(ref int pfContinue)
+        {
+            return VSConstants.S_OK;
+        }
     }
 }

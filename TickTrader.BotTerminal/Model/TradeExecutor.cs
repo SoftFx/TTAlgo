@@ -82,7 +82,7 @@ namespace TickTrader.BotTerminal
                 {
                     ValidateOrderId(orderId);
 
-                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, clientOrderId, Convert(side));
+                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, Convert(side));
                     return new CancelResult(OrderCmdResultCodes.Ok);
                 }
                 catch (ValidatioException vex)
@@ -121,9 +121,11 @@ namespace TickTrader.BotTerminal
                 {
                     ValidateOrderId(orderId);
 
-                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, clientOrderId, symbol,
+                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
                         ToRecordType(orderType), Convert(side), volume, price, sl, tp, null, comment);
-                    return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result).ToAlgoOrder());
+                    if (!string.IsNullOrEmpty(result.OrderId)) // Ugly hack to make it work!
+                        return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result).ToAlgoOrder());
+                    return new OpenModifyResult(OrderCmdResultCodes.DealerReject, null);
                 }
                 catch (ValidatioException vex)
                 {

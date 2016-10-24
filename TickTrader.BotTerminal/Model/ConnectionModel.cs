@@ -156,9 +156,10 @@ namespace TickTrader.BotTerminal
                        feedCs.Address = address;
                        feedCs.Username = username;
                        feedCs.Password = password;
-                       feedCs.FixEventsFileName = "feed.events.log";
-                       feedCs.FixMessagesFileName = "feed.messages.log";
-                       feedCs.FixLogDirectory = LogPath;
+                       feedCs.FixEventsFileName = "";
+                       feedCs.FixMessagesFileName = "";
+                       feedCs.FixLogDirectory = "";
+                       feedCs.ExcludeMessagesFromLogs = "y|0";
 
                        feedProxy.Initialize(feedCs.ToString());
 
@@ -179,9 +180,9 @@ namespace TickTrader.BotTerminal
                        tradeCs.Address = address;
                        tradeCs.Username = username;
                        tradeCs.Password = password;
-                       tradeCs.FixEventsFileName = "trade.events.log";
-                       tradeCs.FixMessagesFileName = "trade.messages.log";
-                       tradeCs.FixLogDirectory = LogPath;
+                       tradeCs.FixEventsFileName = "";
+                       tradeCs.FixMessagesFileName = "";
+                       tradeCs.FixLogDirectory = "";
 
                        tradeProxy.Initialize(tradeCs.ToString());
 
@@ -270,8 +271,6 @@ namespace TickTrader.BotTerminal
                 default: return ConnectionErrorCodes.Unknown;
             }
         }
-
-
 
         void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
         {
