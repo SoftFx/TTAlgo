@@ -21,6 +21,7 @@ namespace TickTrader.BotTerminal
         {
             this.journalSize = journalSize;
         }
+
         public bool IsJournalFull { get { return items.Count >= journalSize; } }
         public IDynamicListSource<T> Records { get { return items; } }
 

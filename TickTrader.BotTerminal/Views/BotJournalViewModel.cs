@@ -34,15 +34,16 @@ namespace TickTrader.BotTerminal
                 else if (args.Action == DLinqAction.Remove)
                 {
                     var entry = _botNameFilterEntries.FirstOrDefault((e) => !e.IsEmpty && e.Name == args.OldItem.Name);
-                    if (entry != null)
-                        _botNameFilterEntries.Remove(entry);
 
                     if (selectedBotNameFilter == entry)
-                        SelectedBotNameFilter = _botNameFilterEntries[0];
+                        SelectedBotNameFilter = _botNameFilterEntries.First();
+
+                    if (entry != null)
+                        _botNameFilterEntries.Remove(entry);
                 }
             };
 
-            SelectedBotNameFilter = _botNameFilterEntries[0];
+            SelectedBotNameFilter = _botNameFilterEntries.First();
         }
 
         public ICollectionView Journal { get; private set; }
@@ -56,7 +57,7 @@ namespace TickTrader.BotTerminal
                 {
                     _botJournalFilter.MessageTypeFilter = value;
                     NotifyOfPropertyChange(nameof(TypeFilter));
-                    RefreshCollection();
+                    ApplyFilter();
                 }
             }
         }
@@ -69,7 +70,7 @@ namespace TickTrader.BotTerminal
                 {
                     _botJournalFilter.TextFilter = value;
                     NotifyOfPropertyChange(nameof(TextFilter));
-                    RefreshCollection();
+                    ApplyFilter();
                 }
             }
         }
@@ -80,14 +81,11 @@ namespace TickTrader.BotTerminal
             get { return selectedBotNameFilter; }
             set
             {
-                if (value.IsEmpty)
-                    _botJournalFilter.BotFilter = "";
-                else
-                    _botJournalFilter.BotFilter = value.Name;
+                _botJournalFilter.BotFilter = value.IsEmpty ? "" : value.Name;
 
                 selectedBotNameFilter = value;
                 NotifyOfPropertyChange(nameof(SelectedBotNameFilter));
-                RefreshCollection();
+                ApplyFilter();
             }
         }
 
@@ -110,10 +108,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void RefreshCollection()
+        private void ApplyFilter()
         {
             if (this.Journal != null)
-                Journal.Refresh();
+                Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
         }
     }
 

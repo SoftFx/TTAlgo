@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ObservableWrapper<T> : IObservableListSource<T>, IReadOnlyList<T>
+    internal class ObservableWrapper<T> : IObservableListSource<T>
     {
         private IDynamicListSource<T> src;
         private bool propogateDispose;
@@ -56,6 +52,7 @@ namespace Machinarium.Qnil
         {
             if (CollectionChanged != null)
                 CollectionChanged(this, e);
+
         }
 
         private void OnPropertyChanged(string name)
@@ -70,15 +67,14 @@ namespace Machinarium.Qnil
                 Dispose();
             else if (args.Action == DLinqAction.Insert)
             {
+                OnPropertyChanged(nameof(Count));
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Add, args.NewItem, args.Index));
-                OnPropertyChanged(nameof(Count));
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-                    NotifyCollectionChangedAction.Remove, args.OldItem, args.Index));
                 OnPropertyChanged(nameof(Count));
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, args.OldItem, args.Index));
             }
             else if (args.Action == DLinqAction.Replace)
             {

@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
 
             UpdateCommandStates();
-            cManager.StateChanged += (o,n) => UpdateDisplayName();
+            cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();

@@ -292,6 +292,7 @@
     <Compile Include="Model\PluginCatalogItem.cs" />
     <Compile Include="Model\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
+    <Compile Include="Model\UniqueNameGenerator.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>

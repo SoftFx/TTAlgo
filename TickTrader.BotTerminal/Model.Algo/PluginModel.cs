@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
         public AlgoPluginRef PluginRef { get; private set; }
         public PluginSetup Setup { get; private set; }
         public IAlgoPluginHost Host { get { return host; } }
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         protected virtual PluginExecutor CreateExecutor()
         {

@@ -9,6 +9,8 @@ namespace TickTrader.BotTerminal
 {
     internal class TradeBotModel2 : PluginModel
     {
+        private static readonly INameGenerator _uniqueNameGenerator = new UniqueNameGenerator();
+
         public TradeBotModel2(PluginSetup pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
@@ -53,6 +55,8 @@ namespace TickTrader.BotTerminal
 
         protected override PluginExecutor CreateExecutor()
         {
+            Name = _uniqueNameGenerator.GenerateFrom(Name); //Dirty Workaround
+
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
             executor.TradeApi = Host.GetTradeApi();

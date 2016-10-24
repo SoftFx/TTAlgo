@@ -95,8 +95,8 @@ namespace TickTrader.BotTerminal
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
             ruleForLogTarget.EnableLoggingForLevels(LogLevel.Trace, LogLevel.Fatal);
-            ruleForLogTarget.Targets.Add(logTarget);
             ruleForLogTarget.Targets.Add(debuggerTarget);
+            ruleForLogTarget.Targets.Add(logTarget);
 
             var config = new LoggingConfiguration();
 

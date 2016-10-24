@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
                     Statistics.UnRegister(args.OldItem);
             };
         }
-
+        
         public BotNameAggregator Statistics { get; private set; }
 
         public void Custom(string botName, string message)
