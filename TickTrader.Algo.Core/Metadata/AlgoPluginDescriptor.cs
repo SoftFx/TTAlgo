@@ -73,6 +73,9 @@ namespace TickTrader.Algo.Core.Metadata
             }
         }
 
+        [NonSerialized]
+        private Type reflectionInfo;
+
         private List<AlgoPropertyDescriptor> allProperties = new List<AlgoPropertyDescriptor>();
         private List<ParameterDescriptor> parameters = new List<ParameterDescriptor>();
         private List<InputDescriptor> inputs = new List<InputDescriptor>();
@@ -80,17 +83,17 @@ namespace TickTrader.Algo.Core.Metadata
 
         public AlgoPluginDescriptor(Type algoCustomType)
         {
-            this.AlgoClassType = algoCustomType;
+            this.reflectionInfo = algoCustomType;
 
             if (typeof(Indicator).IsAssignableFrom(algoCustomType))
             {
                 AlgoLogicType = AlgoTypes.Indicator;
-                InspectIndicatorAttr();
+                InspectIndicatorAttr(algoCustomType);
             }
             else if (typeof(TradeBot).IsAssignableFrom(algoCustomType))
             {
                 AlgoLogicType = AlgoTypes.Robot;
-                InspectBotAttr();
+                InspectBotAttr(algoCustomType);
             }
             else
             {
@@ -99,8 +102,8 @@ namespace TickTrader.Algo.Core.Metadata
                 return;
             }
 
-            InspectCopyrightAttr();
-            InspectProperties();
+            InspectCopyrightAttr(algoCustomType);
+            InspectProperties(algoCustomType);
 
             if (allProperties.Any(p => !p.IsValid))
                 Error = AlgoMetadataErrors.HasInvalidProperties;
@@ -108,7 +111,7 @@ namespace TickTrader.Algo.Core.Metadata
             if (string.IsNullOrWhiteSpace(DisplayName))
                 DisplayName = algoCustomType.Name;
 
-            this.Id = AlgoClassType.FullName;
+            this.Id = algoCustomType.FullName;
         }
 
         public void Validate()
@@ -117,9 +120,17 @@ namespace TickTrader.Algo.Core.Metadata
                 throw new AlgoMetadataException(Error.Value, allProperties.Where(p => !p.IsValid));
         }
 
-        private void InspectIndicatorAttr()
+        public object CreateInstance()
         {
-            IndicatorAttribute indicatorAttr = AlgoClassType.GetCustomAttribute<IndicatorAttribute>(false);
+            if (reflectionInfo == null)
+                throw new Exception("This descriptor does not belong to current AppDomain. Cannot set value!");
+
+            return Activator.CreateInstance(reflectionInfo);
+        }
+
+        private void InspectIndicatorAttr(Type algoCustomType)
+        {
+            IndicatorAttribute indicatorAttr = algoCustomType.GetCustomAttribute<IndicatorAttribute>(false);
             if (indicatorAttr != null)
             {
                 DisplayName = indicatorAttr.DisplayName;
@@ -128,23 +139,23 @@ namespace TickTrader.Algo.Core.Metadata
             }
         }
 
-        private void InspectCopyrightAttr()
+        private void InspectCopyrightAttr(Type algoCustomType)
         {
-            CopyrightAttribute copyrightAttr = AlgoClassType.GetCustomAttribute<CopyrightAttribute>(false);
+            CopyrightAttribute copyrightAttr = algoCustomType.GetCustomAttribute<CopyrightAttribute>(false);
             if (copyrightAttr != null)
                 Copyright = copyrightAttr.Text;
         }
 
-        private void InspectBotAttr()
+        private void InspectBotAttr(Type algoCustomType)
         {
-            TradeBotAttribute botAttr = AlgoClassType.GetCustomAttribute<TradeBotAttribute>(false);
+            TradeBotAttribute botAttr = algoCustomType.GetCustomAttribute<TradeBotAttribute>(false);
             if (botAttr != null)
                 DisplayName = botAttr.DisplayName;
         }
 
-        private void InspectProperties()
+        private void InspectProperties(Type algoCustomType)
         {
-            var properties = AlgoClassType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var properties = algoCustomType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var property in properties)
             {
                 var descriptor = BuildtPropertyDescriptor(property);
@@ -164,22 +175,22 @@ namespace TickTrader.Algo.Core.Metadata
             var algoAttribute = algoAttributes[0];
 
             if (algoAttributes.Count > 1)
-                return new AlgoPropertyDescriptor(this, property, AlgoPropertyErrors.MultipleAttributes);
+                return new AlgoPropertyDescriptor(property, AlgoPropertyErrors.MultipleAttributes);
             else if (algoAttribute is OutputAttribute)
             {
-                var descriptor = new OutputDescriptor(this, property, (OutputAttribute)algoAttribute);
+                var descriptor = new OutputDescriptor(property, (OutputAttribute)algoAttribute);
                 outputs.Add(descriptor);
                 return descriptor;
             }
             else if (algoAttribute is InputAttribute)
             {
-                var descriptor = new InputDescriptor(this, property, algoAttribute);
+                var descriptor = new InputDescriptor(property, algoAttribute);
                 inputs.Add(descriptor);
                 return descriptor;
             }
             else if (algoAttribute is ParameterAttribute)
             {
-                var descriptor = new ParameterDescriptor(this, property, (ParameterAttribute)algoAttribute);
+                var descriptor = new ParameterDescriptor(property, (ParameterAttribute)algoAttribute);
                 parameters.Add(descriptor);
                 return descriptor;
             }
@@ -188,7 +199,6 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public string Id { get; private set; }
-        public Type AlgoClassType { get; private set; }
         public string DisplayName { get; private set; }
         public string Category { get; private set; }
         public string Copyright { get; private set; }

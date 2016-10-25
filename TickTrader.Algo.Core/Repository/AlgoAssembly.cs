@@ -14,24 +14,26 @@ namespace TickTrader.Algo.Core.Repository
     internal class AlgoAssembly : IDisposable
     {
         public enum States { Created, Loading, WatingForRetry, Ready, Closing, Closed }
-        public enum Events { Start, Changed, Loaded, LoadFailed, NextRetry, CloseRequested, DoneClosing }
+        public enum Events { Start, Changed, DoneLoad, DoneLoadRetry, NextRetry, CloseRequested, DoneClosing }
 
-        public enum ScanStatuses { NotScanned, Scanned, UnknownFile }
+        //public enum ScanStatuses { NotScanned, Scanned, BadReferences, UnknownFile }
 
-        private Isolated<AlgoSandbox> isolatedSandbox;
+        private Isolated<ChildDomainProxy> currentSubdomain;
         private StateMachine<States> stateControl = new StateMachine<States>();
         private Dictionary<string, AlgoPluginRef> items = new Dictionary<string, AlgoPluginRef>();
         private bool isChanged;
         private Task scanTask;
+        private Action<Exception> onError;
 
-        public AlgoAssembly(string filePath)
+        public AlgoAssembly(string filePath, Action<Exception> onError)
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
+            this.onError = onError;
 
             stateControl.AddTransition(States.Created, Events.Start, States.Loading);
-            stateControl.AddTransition(States.Loading, Events.Loaded, States.Ready);
-            stateControl.AddTransition(States.Loading, Events.LoadFailed, States.WatingForRetry);
+            stateControl.AddTransition(States.Loading, Events.DoneLoad, States.Ready);
+            stateControl.AddTransition(States.Loading, Events.DoneLoadRetry, States.WatingForRetry);
             stateControl.AddTransition(States.Loading, Events.CloseRequested, States.Closing);
             stateControl.AddTransition(States.WatingForRetry, Events.NextRetry, States.Loading);
             stateControl.AddTransition(States.WatingForRetry, Events.CloseRequested, States.Closing);
@@ -44,7 +46,7 @@ namespace TickTrader.Algo.Core.Repository
         }
 
         public string FilePath { get; private set; }
-        public ScanStatuses ScanStatus { get; private set; }
+        //public ScanStatuses ScanStatus { get; private set; }
         public FileInfo FileInfo { get; private set; }
         public string FileName { get; private set; }
 
@@ -59,8 +61,8 @@ namespace TickTrader.Algo.Core.Repository
 
         public void Dispose()
         {
-            if (isolatedSandbox != null)
-                isolatedSandbox.Dispose();
+            if (currentSubdomain != null)
+                currentSubdomain.Dispose();
         }
 
         internal void CheckForChanges()
@@ -75,7 +77,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private void Load(string filePath)
         {
-            Isolated<AlgoSandbox> newSandbox = null;
+            Isolated<ChildDomainProxy> subDomain = null;
 
             try
             {
@@ -83,46 +85,55 @@ namespace TickTrader.Algo.Core.Repository
 
                 FileInfo info = new FileInfo(filePath);
 
-                if (this.ScanStatus != ScanStatuses.NotScanned
-                    || this.FileInfo == null
-                    || this.FileInfo.Length != info.Length
-                    || this.FileInfo.LastWriteTime != info.LastWriteTime)
-                {
-                    newSandbox = new Isolated<AlgoSandbox>();
-                    var metadata = newSandbox.Value.LoadAndInspect(filePath);
+                //if (this.ScanStatus != ScanStatuses.NotScanned
+                //    || this.FileInfo == null
+                //    || this.FileInfo.Length != info.Length
+                //    || this.FileInfo.LastWriteTime != info.LastWriteTime)
+                //{
+                    subDomain = new Isolated<ChildDomainProxy>();
+                    var sandbox = subDomain.Value.CreateSanbox(filePath);
 
-                    Merge(metadata, newSandbox.Value);
+                    Merge(sandbox.AlgoMetadata, sandbox);
 
                     this.FileInfo = info;
-                    if (isolatedSandbox != null)
-                        isolatedSandbox.Dispose();
 
-                    isolatedSandbox = newSandbox;
-                    ScanStatus = ScanStatuses.Scanned;
-                }
-                stateControl.PushEvent(Events.Loaded);
+                    if (currentSubdomain != null)
+                        currentSubdomain.Dispose();
+
+                    currentSubdomain = subDomain;
+                    //ScanStatus = ScanStatuses.Scanned;
+                //}
+                stateControl.PushEvent(Events.DoneLoad);
             }
-            catch (BadImageFormatException)
-            {
-                ScanStatus = ScanStatuses.UnknownFile;
-                stateControl.PushEvent(Events.Loaded);
-            }
-            catch (FileLoadException)
-            {
-                ScanStatus = ScanStatuses.NotScanned;
-                stateControl.PushEvent(Events.LoadFailed);
-            }
-            catch (FileNotFoundException fnfex)
-            {
-                Debug.WriteLine("ERROR: File not found: " + fnfex.FileName);
-                ScanStatus = ScanStatuses.NotScanned;
-                stateControl.PushEvent(Events.LoadFailed);
-            }
+            //catch (BadImageFormatException)
+            //{
+            //    if (subDomain != null)
+            //        subDomain.Dispose();
+            //    //ScanStatus = ScanStatuses.UnknownFile;
+            //    stateControl.PushEvent(Events.DoneLoad);
+            //}
+            //catch (FileLoadException)
+            //{
+            //    if (subDomain != null)
+            //        subDomain.Dispose();
+            //    //ScanStatus = ScanStatuses.NotScanned;
+            //    stateControl.PushEvent(Events.DoneLoad);
+            //}
+            //catch (FileNotFoundException fnfex)
+            //{
+            //    if (subDomain != null)
+            //        subDomain.Dispose();
+            //    //ScanStatus = ScanStatuses.NotScanned;
+            //    OnError(fnfex);
+            //    stateControl.PushEvent(Events.DoneLoad);
+            //}
             catch (Exception ex)
             {
-                ScanStatus = ScanStatuses.NotScanned;
-                stateControl.PushEvent(Events.LoadFailed);
-                Debug.WriteLine(ex);
+                if (subDomain != null)
+                    subDomain.Dispose();
+                //ScanStatus = ScanStatuses.NotScanned;
+                stateControl.PushEvent(Events.DoneLoad);
+                OnError(ex);
             }
         }
 
@@ -156,6 +167,19 @@ namespace TickTrader.Algo.Core.Repository
                     items.Remove(item.Descriptor.Id);
                     Removed(this, item);
                 }
+            }
+        }
+
+        private void OnError(Exception ex)
+        {
+            onError?.Invoke(ex);
+        }
+
+        internal class ChildDomainProxy : CrossDomainObject
+        {
+            public AlgoSandbox CreateSanbox(string dllPath)
+            {
+                return new AlgoSandbox(dllPath);
             }
         }
     }

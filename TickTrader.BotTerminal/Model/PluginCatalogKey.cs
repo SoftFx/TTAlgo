@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    public class PluginCatalogKey
+    public class PluginCatalogKey : IComparable
     {
         private int hash;
+        private string compositeField;
 
         public PluginCatalogKey(Guid repositoryId, string fileName, string className)
         {
@@ -16,10 +17,14 @@ namespace TickTrader.BotTerminal
             this.FileName = fileName;
             this.ClassName = className;
 
-            hash = 269;
-            hash = (hash * 47) + RepositoryId.GetHashCode();
-            hash = (hash * 47) + FileName.GetHashCode();
-            hash = (hash * 47) + ClassName.GetHashCode();
+            compositeField = repositoryId.ToString() + System.IO.Path.Combine(fileName + className);
+
+            hash = compositeField.GetHashCode();
+
+            //hash = 269;
+            //hash = (hash * 47) + RepositoryId.GetHashCode();
+            //hash = (hash * 47) + FileName.GetHashCode();
+            //hash = (hash * 47) + ClassName.GetHashCode();
         }
 
         public Guid RepositoryId { get; private set; }
@@ -35,9 +40,20 @@ namespace TickTrader.BotTerminal
                 && key.ClassName == ClassName;
         }
 
+        public override string ToString()
+        {
+            return compositeField;
+        }
+
         public override int GetHashCode()
         {
             return hash;
+        }
+
+        public int CompareTo(object obj)
+        {
+            var key = (PluginCatalogKey)obj;
+            return compositeField.CompareTo(key.compositeField);
         }
     }
 }

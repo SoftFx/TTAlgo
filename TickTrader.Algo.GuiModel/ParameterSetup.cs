@@ -72,9 +72,9 @@ namespace TickTrader.Algo.GuiModel
 
     public class EnumParamSetup : ParameterSetup
     {
-        private EnumValueDescriptor selected;
+        private string selected;
 
-        public EnumValueDescriptor SelectedValue
+        public string SelectedValue
         {
             get { return selected; }
             set
@@ -86,19 +86,16 @@ namespace TickTrader.Algo.GuiModel
             }
         }
 
-        public List<EnumValueDescriptor> EnumValues { get; private set; }   
-        public EnumValueDescriptor DefaultValue { get; private set; }
-        //public override object ValueObj { get; set; }
-        //public string ValueStr { get; set; }
+        public List<string> EnumValues { get; private set; }   
+        public string DefaultValue { get; private set; }
 
         public override void CopyFrom(PropertySetupBase srcProperty)
         {
             var typedSrcProperty = srcProperty as EnumParamSetup;
             if (typedSrcProperty != null)
             {
-                var upToDateValue = ((ParameterDescriptor)Descriptor).EnumValues.First(e => e.Value == typedSrcProperty.selected);
-                if (upToDateValue != null)
-                    SelectedValue = upToDateValue;
+                if (EnumValues.Contains(typedSrcProperty.selected))
+                    SelectedValue = typedSrcProperty.selected;
             }
         }
 
@@ -107,15 +104,15 @@ namespace TickTrader.Algo.GuiModel
             base.SetMetadata(descriptor);
 
             EnumValues = descriptor.EnumValues;
-            if (descriptor.DefaultValue != null)
-                DefaultValue = descriptor.EnumValues.FirstOrDefault(ev => ev.Name == descriptor.DefaultValue.ToString());
+            if (descriptor.DefaultValue != null && descriptor.DefaultValue is string)
+                DefaultValue = (string)descriptor.DefaultValue;
             if (DefaultValue == null)
                 DefaultValue = descriptor.EnumValues.FirstOrDefault();
         }
 
         public override object GetApplyValue()
         {
-            return selected.Value;
+            return selected;
         }
 
         public override void Reset()
@@ -125,7 +122,7 @@ namespace TickTrader.Algo.GuiModel
 
         public override string ToString()
         {
-            return $"{DisplayName}: {SelectedValue.Name}";
+            return $"{DisplayName}: {SelectedValue}";
         }
     }
 

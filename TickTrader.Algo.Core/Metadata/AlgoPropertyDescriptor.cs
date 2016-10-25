@@ -27,20 +27,19 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class AlgoPropertyDescriptor
     {
-        private ByRefAccessor propertyAccessor;
+        [NonSerialized]
+        protected PropertyInfo reflectioInfo;
 
-        public AlgoPropertyDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
+        public AlgoPropertyDescriptor(PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
         {
-            this.ClassMetadata = classMetadata;
             this.Error = error;
-            this.propertyAccessor = new ByRefAccessor(reflectioInfo);
+            this.reflectioInfo = reflectioInfo;
 
             this.Id = reflectioInfo.Name;
         }
 
         public string Id { get; private set; }
         public string DisplayName { get; private set; }
-        public AlgoPluginDescriptor ClassMetadata { get; private set; }
         public virtual AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Unknown; } }
         public AlgoPropertyErrors? Error { get; protected set; }
         public bool IsValid { get { return Error == null; } }
@@ -67,24 +66,16 @@ namespace TickTrader.Algo.Core.Metadata
                 this.Error = error;
         }
 
-        internal void Set(Api.AlgoPlugin instance, object value)
+        internal virtual void Set(Api.AlgoPlugin instance, object value)
         {
-            propertyAccessor.Set(instance, value);
+            ThrowIfNoAccessor();
+            reflectioInfo.SetValue(instance, value);
         }
 
-        private class ByRefAccessor : CrossDomainObject
+        protected void ThrowIfNoAccessor()
         {
-            private PropertyInfo info;
-
-            public ByRefAccessor(PropertyInfo info)
-            {
-                this.info = info;
-            }
-
-            public void Set(Api.AlgoPlugin instance, object value)
-            {
-                info.SetValue(instance, value);
-            }
+            if (reflectioInfo == null)
+                throw new Exception("This descriptor does not belong to current AppDomain. Cannot set value!");
         }
     } 
 }

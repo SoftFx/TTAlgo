@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
 
             var fdkOrdersArray = connection.TradeProxy.Cache.TradeRecords;
             foreach (var fdkOrder in fdkOrdersArray)
-                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder));
+                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, clientModel.Symbols));
 
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
@@ -304,7 +304,7 @@ namespace TickTrader.BotTerminal
 
         private OrderModel UpsertOrder(ExecutionReport report)
         {
-            OrderModel order = new OrderModel(report);
+            OrderModel order = new OrderModel(report, clientModel.Symbols);
             orders[order.Id] = order;
             return order;
         }

@@ -41,6 +41,7 @@ namespace TickTrader.BotTerminal
         public Quote LastQuote { get; private set; }
         public double? CurrentAsk { get; private set; }
         public double? CurrentBid { get; private set; }
+        public double LotSize { get { return Descriptor.RoundLot; } }
         public OrderAmountModel Amounts { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
 

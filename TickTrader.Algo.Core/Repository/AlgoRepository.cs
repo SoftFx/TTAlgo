@@ -53,6 +53,8 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoRepositoryEventArgs> Removed = delegate { };
         public event Action<AlgoRepositoryEventArgs> Replaced = delegate { };
 
+        public Action<Exception> OnError { get; set; }
+
         public void Start()
         {
             stateControl.PushEvent(Events.Start);
@@ -102,7 +104,7 @@ namespace TickTrader.Algo.Core.Repository
                         AlgoAssembly assemblyMetadata;
                         if (!assemblies.TryGetValue(file, out assemblyMetadata))
                         {
-                            assemblyMetadata = new AlgoAssembly(file);
+                            assemblyMetadata = new AlgoAssembly(file, OnError);
                             assemblyMetadata.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName));
                             assemblyMetadata.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName));
                             assemblyMetadata.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName));
@@ -145,7 +147,7 @@ namespace TickTrader.Algo.Core.Repository
                 }
                 else
                 {
-                    assembly = new AlgoAssembly(e.FullPath);
+                    assembly = new AlgoAssembly(e.FullPath, OnError);
                     assemblies.Add(e.FullPath, assembly);
                 }
             }
@@ -164,7 +166,7 @@ namespace TickTrader.Algo.Core.Repository
                     assembly.CheckForChanges();
                 else
                 {
-                    assembly = new AlgoAssembly(e.FullPath);
+                    assembly = new AlgoAssembly(e.FullPath, OnError);
                     assemblies.Add(e.FullPath, assembly);
                 }
             }

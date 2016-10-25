@@ -35,4 +35,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.2.0")]
 [assembly: AssemblyFileVersion("1.0.2.0")]
 
-[assembly: InternalsVisibleTo("TickTrader.Algo.Core")]
+[assembly: InternalsVisibleTo("TickTrader.Algo.Core,PublicKey=" +
+    "0024000004800000940000000602000000240000525341310004000001000100611d09dabddecd" +
+    "973dba6d97fb276568b7d789023977806ead97c9c2c83cbd21b62f6bd54bb64698668384cf0c08" +
+    "7628928fd4352ebbe28daaf1cc805891ff9a61f88ef6a51374c60e073d23339af9a12ff267383b" +
+    "7461e4918a4f2df85dbbb043a54cc7c1dcd9c77bcab2841be2447598cc7119743e46b14f8dc32f" +
+    "61bc48c6")]
+

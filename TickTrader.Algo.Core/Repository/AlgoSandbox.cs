@@ -12,9 +12,17 @@ namespace TickTrader.Algo.Core.Repository
 {
     internal class AlgoSandbox : CrossDomainObject
     {
-        public AlgoSandbox()
+        private string dllFolder;
+
+        public AlgoSandbox(string filePath)
         {
+            this.dllFolder = Path.GetDirectoryName(filePath);
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+            LoadAndInspect(filePath);
         }
+
+        public IEnumerable<AlgoPluginDescriptor> AlgoMetadata { get; private set; }
 
         internal T Activate<T>() where T : MarshalByRefObject, new()
         {
@@ -26,7 +34,13 @@ namespace TickTrader.Algo.Core.Repository
             return new PluginExecutor(pluginId);
         }
 
-        public IEnumerable<AlgoPluginDescriptor> LoadAndInspect(string filePath)
+        private void LoadAndInspect(string filePath)
+        {
+            Assembly algoAssembly = LoadFromDisk(filePath);
+            AlgoMetadata = AlgoPluginDescriptor.InspectAssembly(algoAssembly);
+        }
+
+        private Assembly LoadFromDisk(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath);
             string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
@@ -41,8 +55,25 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (FileNotFoundException) { }
 
-            Assembly algoAssembly = Assembly.Load(assemblyBytes, symbolsBytes);
-            return AlgoPluginDescriptor.InspectAssembly(algoAssembly);
+            return Assembly.Load(assemblyBytes, symbolsBytes);
+        }
+
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var name = new AssemblyName(args.Name);
+
+            // force plugins to use loaded Api
+            if (name.Name == "TickTrader.Algo.Api")
+                return typeof(TickTrader.Algo.Api.TradeBot).Assembly;
+
+            try
+            {
+                return LoadFromDisk(Path.Combine(dllFolder, name.Name + ".dll"));
+            }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
         }
     }
 }

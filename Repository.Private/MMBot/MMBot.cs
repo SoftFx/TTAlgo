@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BotCommon;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +29,9 @@ namespace MMBot
             }
         }
         public double MarkupInPercent { get; set; }
+        public bool DebugStatus{ get; set; }
         public Dictionary<string[], double> ParsedSyntetics = new Dictionary<string[], double>();
+        public string BotTag { get; set; }
 
         public MMBotTOMLConfiguration()
         {
@@ -46,6 +49,7 @@ namespace MMBot
         MMBotTOMLConfiguration conf = new MMBotTOMLConfiguration();
         EdgeWeightedDigraph sellDigraph;
         EdgeWeightedDigraph buyDigraph;
+        TradeAsync tradeAsync;
 
         [Parameter(DisplayName = "Config File", DefaultValue = "defaultConfig.tml")]
         [FileFilter("Toml Config (*.tml)", "*.tml")]
@@ -53,6 +57,8 @@ namespace MMBot
 
         protected override void OnStart()
         {
+            tradeAsync = new TradeAsync(this);
+
             this.Status.WriteLine("Input parameters");
             Nett.Toml.WriteFile<MMBotTOMLConfiguration>(new MMBotTOMLConfiguration(), FileConfig.FullPath + "2");
             conf = Nett.Toml.ReadFile<MMBotTOMLConfiguration>(FileConfig.FullPath);
@@ -84,13 +90,14 @@ namespace MMBot
             string from = Symbols[quote.Symbol].BaseCurrency;
             string to = Symbols[quote.Symbol].CounterCurrency;
 
-            sellDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.BidBook)));
+            sellDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.BidBook )));
             sellDigraph.AddEdge(new DirectEdge(to, from, new BookSide(quote.AskBook, true)));
             buyDigraph.AddEdge(new DirectEdge(from, to, new BookSide(quote.AskBook)));
             buyDigraph.AddEdge(new DirectEdge(to, from, new BookSide(quote.BidBook, true)));
 
             Status.WriteLine("SELL (buy limit)");
-            Status.WriteLine(sellDigraph.ToString());
+            if( conf.DebugStatus )
+                Status.WriteLine(sellDigraph.ToString());
             foreach (KeyValuePair<string[], double> currPair in conf.ParsedSyntetics)
             {
                 string[] currencies = currPair.Key;
@@ -103,11 +110,12 @@ namespace MMBot
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
 
-                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Buy, availableVolume, cumPrice);
+                tradeAsync.SetLimitOrderAsync(synteticSymbol, OrderSide.Buy, availableVolume, cumPrice, conf.BotTag + synteticSymbol, conf.BotTag + synteticSymbol);
             }
 
             Status.WriteLine("BUY (sell limit)");
-            Status.WriteLine(buyDigraph.ToString());
+            if (conf.DebugStatus)
+                Status.WriteLine(buyDigraph.ToString());
             foreach (KeyValuePair<string[], double> currPair in conf.ParsedSyntetics)
             {
                 string[] currencies = currPair.Key;
@@ -120,7 +128,7 @@ namespace MMBot
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
 
-                SetLimitOrder(synteticSymbol + reqVolume.ToString(), synteticSymbol, OrderSide.Sell, availableVolume, cumPrice);
+                tradeAsync.SetLimitOrderAsync(synteticSymbol, OrderSide.Sell, availableVolume, cumPrice, conf.BotTag+synteticSymbol, conf.BotTag + synteticSymbol);
             }
         }
 
@@ -133,7 +141,7 @@ namespace MMBot
                 double priceOrVolume = digraph.GetEdge(currencies[i], currencies[i + 1]).Weight.GetPriceForVolume(convertedVolume);
                 if (priceOrVolume < 0) // not enough volume for cross pair. Lets reduce required Volume
                 {
-                    double newRequestedVolume = Math.Floor(Math.Exp(Math.Floor( Math.Log(reqVolume * -priceOrVolume*100 ))))/100;
+                    double newRequestedVolume = Math.Floor(100*Math.Exp(Math.Floor( Math.Log(reqVolume * -priceOrVolume ))))/100;
                     return CalculateSynteticVolumePrice(digraph, currencies, newRequestedVolume, out availableVolume);
                 }
 
@@ -144,39 +152,5 @@ namespace MMBot
             return cumPrice;
         }
 
-        protected void SetLimitOrder(string orderTag, string symbol, OrderSide side, double volume, double price)
-        {
-            IEnumerable<Order> orderList = this.Account.Orders.Where(p => p.Type == OrderType.Limit 
-                && p.Symbol == symbol && p.Side==side && p.Comment==orderTag);
-
-            if (orderList.Count() > 1)
-            {
-              //error case
-                foreach (Order o in orderList)
-                    base.CancelOrder(o.Id);
-                return;
-            }
-
-            Order order = orderList.FirstOrDefault();
-
-            if (order == null)
-            {
-                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price, null, null, orderTag);
-                return;
-            }
-            if ( order.RequestedAmount != order.RemainingAmount )
-            {
-                int k = 9;
-            }
-            if (volume != order.RemainingAmount)
-            {
-                base.CancelOrder(order.Id);
-                base.OpenOrder(symbol, OrderType.Limit, side, volume / base.Symbols[symbol].ContractSize, price, null, null, orderTag);
-                return;
-            }
-
-            if (price != order.Price)
-                base.ModifyOrder(order.Id, price);
-        }
     }
 }

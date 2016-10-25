@@ -15,7 +15,7 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>
+    internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>, IOrderDependenciesResolver
     {
         private Logger logger;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
@@ -135,6 +135,11 @@ namespace TickTrader.BotTerminal
             SymbolModel result;
             this.symbols.TryGetValue(key, out result);
             return result;
+        }
+
+        SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
+        {
+            return GetOrDefault(name);
         }
 
         public SymbolModel this[string key]
