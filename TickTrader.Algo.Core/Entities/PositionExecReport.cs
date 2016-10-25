@@ -1,5 +1,8 @@
-﻿namespace TickTrader.Algo.Core
+﻿using System;
+
+namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class PositionExecReport
     {
 

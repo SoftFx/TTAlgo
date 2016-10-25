@@ -59,7 +59,7 @@
         </Grid.Visibility>
 
         <DockPanel Grid.Row="0" Style="{StaticResource DockPanelAsToolBarStyle}">
-            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TradeDirectionFilter,  Delay=500, UpdateSourceTrigger=PropertyChanged}"
+            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TradeDirectionFilter,  Delay=200, UpdateSourceTrigger=PropertyChanged}"
                       ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:TradeHistoryViewModel+TradeDirection}}}" IsEditable="False" SelectedIndex="0">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -67,7 +67,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding Period,  Delay=500, UpdateSourceTrigger=PropertyChanged}"
+            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding Period,  Delay=200, UpdateSourceTrigger=PropertyChanged}"
                       ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:TradeHistoryViewModel+TimePeriod}}}" IsEditable="False" SelectedIndex="0">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>

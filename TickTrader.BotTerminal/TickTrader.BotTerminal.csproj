@@ -264,8 +264,10 @@
     <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
+    <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
+    <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolRateObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
@@ -290,6 +292,7 @@
     <Compile Include="Model\PluginCatalogItem.cs" />
     <Compile Include="Model\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
+    <Compile Include="Model\UniqueNameGenerator.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>

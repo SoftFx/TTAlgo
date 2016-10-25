@@ -156,8 +156,8 @@ namespace TickTrader.BotTerminal
         }
         private void AddIfNeed(TradeTransactionModel tradeTransaction)
         {
-            if (_tradesList.GetOrDefault(tradeTransaction.Id) == null)
-                _tradesList.Add(tradeTransaction.Id, tradeTransaction);
+            if (_tradesList.GetOrDefault(tradeTransaction.UniqueKey) == null)
+                _tradesList.Add(tradeTransaction.UniqueKey, tradeTransaction);
         }
         private void UpdateDateTimePeriod()
         {
@@ -225,7 +225,7 @@ namespace TickTrader.BotTerminal
         }
         private void TradeTransactionReport(TradeTransactionModel tradeTransaction)
         {
-            if (tradeTransaction.TransactionTime.Between(From, To))
+            if (tradeTransaction.TransactionTime.ToLocalTime().Between(From, To))
                 Execute.OnUIThread(() => AddIfNeed(tradeTransaction));
         }
         private void AccountTypeChanged()

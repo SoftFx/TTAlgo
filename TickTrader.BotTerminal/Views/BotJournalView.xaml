@@ -25,11 +25,15 @@
         <DockPanel Grid.Row="0" Style="{StaticResource DockPanelAsToolBarStyle}">
             <TextBox DockPanel.Dock="Left" Text="{Binding TextFilter, Delay=500, UpdateSourceTrigger=PropertyChanged}" Width="200" Style="{StaticResource SearchTextBox_Style}"/>
 
-            <ComboBox Width="200" Margin="5 0 0 0" SelectedItem="{Binding SelectedBotNameFilter}"
+            <ComboBox Width="200" Margin="5 0 0 0" SelectedItem="{Binding SelectedBotNameFilter, Delay=200}"
                       DisplayMemberPath="Name" ItemsSource="{Binding BotNameFilterEntries}" IsEditable="False"/>
 
-            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TypeFilter}" ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False" SelectedIndex="0"></ComboBox>
+            <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TypeFilter, Delay=200}" ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False" SelectedIndex="0"></ComboBox>
 
+            <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
+                          Background="{DynamicResource ToolBarItem_DisabledBrush}"
+                          HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+                          cal:Message.Attach="Browse"/>
             <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0"
                           Background="{DynamicResource ToolBarItem_DisabledBrush}"
                           HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"

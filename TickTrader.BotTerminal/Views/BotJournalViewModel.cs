@@ -1,8 +1,11 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Data;
 
@@ -10,74 +13,64 @@ namespace TickTrader.BotTerminal
 {
     class BotJournalViewModel : PropertyChangedBase
     {
-        private BotJournal botJournal;
-        private BotMessageFilter botJournalFilter = new BotMessageFilter();
-        private BotNameAggregator botNames = new BotNameAggregator();
-        private ObservableCollection<BotNameFilterEntry> botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();
+        private BotJournal _botJournal;
+        private BotMessageFilter _botJournalFilter = new BotMessageFilter();
+        private ObservableCollection<BotNameFilterEntry> _botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         public BotJournalViewModel(BotJournal journal)
         {
-            botJournal = journal;
+            _botJournal = journal;
 
-            Journal = CollectionViewSource.GetDefaultView(botJournal.Records.AsObservable());
-            Journal.Filter = msg => botJournalFilter.Filter((BotMessage)msg);
+            Journal = CollectionViewSource.GetDefaultView(_botJournal.Records.AsObservable());
+            Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
 
-            botNameFilterEntries.Add(new BotNameFilterEntry("All", true));
+            _botNameFilterEntries.Add(new BotNameFilterEntry("All", true));
 
-            botNames.Items.Updated += args =>
+            _botJournal.Statistics.Items.Updated += args =>
             {
                 if (args.Action == DLinqAction.Insert)
-                    botNameFilterEntries.Add(new BotNameFilterEntry(args.NewItem.Name, false));
+                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.NewItem.Name, false));
                 else if (args.Action == DLinqAction.Remove)
                 {
-                    var entry = botNameFilterEntries.FirstOrDefault((e) => !e.IsEmpty && e.Name == args.OldItem.Name);
-                    if (entry != null)
-                        botNameFilterEntries.Remove(entry);
+                    var entry = _botNameFilterEntries.FirstOrDefault((e) => !e.IsEmpty && e.Name == args.OldItem.Name);
 
                     if (selectedBotNameFilter == entry)
-                        SelectedBotNameFilter = botNameFilterEntries[0];
+                        SelectedBotNameFilter = _botNameFilterEntries.First();
+
+                    if (entry != null)
+                        _botNameFilterEntries.Remove(entry);
                 }
             };
 
-            foreach (var item in journal.Records.Snapshot)
-                botNames.Register(item);
-
-            journal.Records.Updated += args =>
-            {
-                if (args.Action == DLinqAction.Insert)
-                    botNames.Register(args.NewItem);
-                else if (args.Action == DLinqAction.Remove)
-                    botNames.UnRegister(args.OldItem);
-            };
-
-            SelectedBotNameFilter = botNameFilterEntries[0];
+            SelectedBotNameFilter = _botNameFilterEntries.First();
         }
 
         public ICollectionView Journal { get; private set; }
-        public ObservableCollection<BotNameFilterEntry> BotNameFilterEntries { get { return botNameFilterEntries; } }
+        public ObservableCollection<BotNameFilterEntry> BotNameFilterEntries { get { return _botNameFilterEntries; } }
         public MessageTypeFilter TypeFilter
         {
-            get { return botJournalFilter.MessageTypeFilter; }
+            get { return _botJournalFilter.MessageTypeFilter; }
             set
             {
-                if (botJournalFilter.MessageTypeFilter != value)
+                if (_botJournalFilter.MessageTypeFilter != value)
                 {
-                    botJournalFilter.MessageTypeFilter = value;
+                    _botJournalFilter.MessageTypeFilter = value;
                     NotifyOfPropertyChange(nameof(TypeFilter));
-                    RefreshCollection();
+                    ApplyFilter();
                 }
             }
         }
         public string TextFilter
         {
-            get { return botJournalFilter.TextFilter; }
+            get { return _botJournalFilter.TextFilter; }
             set
             {
-                if (botJournalFilter.TextFilter != value)
+                if (_botJournalFilter.TextFilter != value)
                 {
-                    botJournalFilter.TextFilter = value;
+                    _botJournalFilter.TextFilter = value;
                     NotifyOfPropertyChange(nameof(TextFilter));
-                    RefreshCollection();
+                    ApplyFilter();
                 }
             }
         }
@@ -88,26 +81,37 @@ namespace TickTrader.BotTerminal
             get { return selectedBotNameFilter; }
             set
             {
-                if (value.IsEmpty)
-                    botJournalFilter.BotFilter = "";
-                else
-                    botJournalFilter.BotFilter = value.Name;
+                _botJournalFilter.BotFilter = value.IsEmpty ? "" : value.Name;
 
                 selectedBotNameFilter = value;
                 NotifyOfPropertyChange(nameof(SelectedBotNameFilter));
-                RefreshCollection();
+                ApplyFilter();
             }
         }
 
         public void Clear()
         {
-            botJournal.Clear();
+            _botJournal.Clear();
         }
 
-        private void RefreshCollection()
+        public void Browse()
+        {
+            try
+            {
+                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_botJournalFilter.BotFilter));
+                Directory.CreateDirectory(logDir);
+                Process.Start(logDir);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Failed to browse bot journal folder");
+            }
+        }
+
+        private void ApplyFilter()
         {
             if (this.Journal != null)
-                Journal.Refresh();
+                Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
         }
     }
 
@@ -173,59 +177,5 @@ namespace TickTrader.BotTerminal
 
         public string Name { get; private set; }
         public bool IsEmpty { get; private set; }
-    }
-
-    public class BotMsgCounter
-    {
-        public BotMsgCounter(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; private set; }
-        public int MessageCount { get; private set; }
-        public bool HasMessages { get { return MessageCount > 0; } }
-        public bool IsEmpty { get { return false; } }
-
-        public void Increment()
-        {
-            MessageCount++;
-        }
-
-        public void Decrement()
-        {
-            MessageCount--;
-        }
-    }
-
-    internal class BotNameAggregator
-    {
-        private DynamicDictionary<string, BotMsgCounter> botStats = new DynamicDictionary<string, BotMsgCounter>();
-
-        public IDynamicDictionarySource<string, BotMsgCounter> Items { get { return botStats; } }
-
-        public void Register(BotMessage msg)
-        {
-            BotMsgCounter item;
-            if (!botStats.TryGetValue(msg.Bot, out item))
-            {
-                item = new BotMsgCounter(msg.Bot);
-                botStats.Add(msg.Bot, item);
-            }
-            item.Increment();
-        }
-
-        public void UnRegister(BotMessage msg)
-        {
-            BotMsgCounter item;
-            if (botStats.TryGetValue(msg.Bot, out item))
-            {
-                item.Decrement();
-                if(!item.HasMessages)
-                {
-                    botStats.Remove(msg.Bot);
-                }
-            }
-        }
     }
 }

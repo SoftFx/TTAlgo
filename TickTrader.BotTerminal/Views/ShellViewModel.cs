@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,8 @@ namespace TickTrader.BotTerminal
         {
             DisplayName = EnvService.Instance.ApplicationName;
 
+            var botNameAggregator = new BotNameAggregator();
+
             notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
             botJournal = new BotJournal(1000);
@@ -55,7 +58,7 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
 
             UpdateCommandStates();
-            cManager.StateChanged += (o,n) => UpdateDisplayName();
+            cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();

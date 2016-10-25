@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
             {
                 Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "terminal-{#}.txt"),
+                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "terminal-{#}.log"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 ArchiveOldFileOnStartup = true,
@@ -69,17 +69,41 @@ namespace TickTrader.BotTerminal
                 Layout = "${longdate} | ${message}"
             };
 
+            var botInfoTarget = new FileTarget()
+            {
+                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}/Log.txt"),
+                Layout = "${longdate} | ${message}",
+                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}"), "Archives"), "Log-{#}.zip"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true
+            };
+
+            var botErrorTarget = new FileTarget()
+            {
+                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}/Error.txt"),
+                Layout = "${longdate} | ${message}",
+                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}"), "Archives"), "Error-{#}.zip"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true
+            };
+
             var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
-            var ruleForLogTarget = new LoggingRule("*", LogLevel.Debug, logTarget);
-            var ruleForDebuggerTarget = new LoggingRule("*", LogLevel.Debug, debuggerTarget);
+            var ruleForBotInfoTarget = new LoggingRule(string.Concat(nameof(BotJournal), ".*"), LogLevel.Debug, botInfoTarget) { Final = true };
+            var ruleForBotErrorTarget = new LoggingRule(string.Concat(nameof(BotJournal), ".*"), LogLevel.Error, botErrorTarget);
+            var ruleForLogTarget = new LoggingRule();
+            ruleForLogTarget.LoggerNamePattern = "*";
+            ruleForLogTarget.EnableLoggingForLevels(LogLevel.Trace, LogLevel.Fatal);
+            ruleForLogTarget.Targets.Add(debuggerTarget);
+            ruleForLogTarget.Targets.Add(logTarget);
 
             var config = new LoggingConfiguration();
-            config.AddTarget(nameof(logTarget), logTarget);
-            config.AddTarget(nameof(journalTarget), journalTarget);
-            config.AddTarget(nameof(debuggerTarget), debuggerTarget);
+
             config.LoggingRules.Add(ruleForJournalTarget);
+            config.LoggingRules.Add(ruleForBotErrorTarget);
+            config.LoggingRules.Add(ruleForBotInfoTarget);
             config.LoggingRules.Add(ruleForLogTarget);
-            config.LoggingRules.Add(ruleForDebuggerTarget);
 
             NLog.LogManager.Configuration = config;
         }

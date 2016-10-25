@@ -65,8 +65,10 @@ namespace TickTrader.BotTerminal
             this.TransactionAmount = item.TransactionAmount;
             this.TransactionCurrency = item.TransactionCurrency;
             this.TransactionTime = item.TransactionTime;
+            this.UniqueKey = $"{Id}{PositionId}{ActionId}";
         }
 
+        public string UniqueKey { get; }
         public double AccountBalance { get; }
         public int ActionId { get; }
         public double? ActualOpenPrice => PosOpenPrice == 0d ? Price : PosOpenPrice;

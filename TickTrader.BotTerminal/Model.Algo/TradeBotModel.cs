@@ -1,19 +1,16 @@
 ﻿using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
     internal class TradeBotModel2 : PluginModel
     {
+        private static readonly INameGenerator _uniqueNameGenerator = new UniqueNameGenerator();
+
         public TradeBotModel2(PluginSetup pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
@@ -58,6 +55,8 @@ namespace TickTrader.BotTerminal
 
         protected override PluginExecutor CreateExecutor()
         {
+            Name = _uniqueNameGenerator.GenerateFrom(Name); //Dirty Workaround
+
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
             executor.TradeApi = Host.GetTradeApi();

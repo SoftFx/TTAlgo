@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.GuiModel;
-using SciChart.Charting.Visuals.RenderableSeries;
-using Machinarium.State;
 using TickTrader.Algo.Api;
-using SciChart.Charting.Visuals.Annotations;
-using NLog;
-using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
