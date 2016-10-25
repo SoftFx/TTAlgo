@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BotCommon;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,21 +12,45 @@ namespace LMMBot
     public class LMMBot : TradeBot
     {
         bool isStopRequested;
+        LMMBotTOMLConfiguration configuration;
+        TradeAsync tradeManager;
+
+        [Parameter(DisplayName = "Config File", DefaultValue = "LMMBot.tml")]
+        [FileFilter("Toml Config (*.tml)", "*.tml")]
+        public File FileConfig { get; set; }
 
         protected override void OnStart()
         {
-            foreach (var symbol in Symbols)
-                MmLoop(symbol.Name);
-            
+            tradeManager = new TradeAsync(this);
+
+            this.Status.WriteLine("Input parameters");
+            Nett.Toml.WriteFile<LMMBotTOMLConfiguration>(new LMMBotTOMLConfiguration(), FileConfig.FullPath + "_sample");
+            configuration = Nett.Toml.ReadFile<LMMBotTOMLConfiguration>(FileConfig.FullPath);
+
+            base.Status.WriteLine(configuration.ToString());
+            foreach (KeyValuePair<string, double> symbol2Volume in configuration.LPSymbols)
+            {
+                base.Status.WriteLine("LP subscribing to " + symbol2Volume.Key);
+                MmLoop(LMMBotTOMLConfiguration.SymbolNameConvertor(symbol2Volume.Key), new LiveCoinFeeder(symbol2Volume.Key)
+                    , symbol2Volume.Value);
+           }
         }
 
-        private async void MmLoop(string smb)
+        private async void MmLoop(string symbol, LiveCoinFeeder feeder, double volume)
         {
             while (!isStopRequested)
             {
-                int quote = await Task.Factory.StartNew(() => 5);
-                await OpenOrderAsync(smb, OrderType.Limit, OrderSide.Buy, 5, quote);
-                await Task.Delay(100);
+                LiveCoinTicker quote = await feeder.GetLatestQuote();
+                double askPrice = quote.best_ask * (100 + configuration.MarkupInPercent) / 100;
+                double bidPrice = quote.best_bid * (100 - configuration.MarkupInPercent) / 100;
+                askPrice = Math.Round(askPrice, Symbols[symbol].Digits);
+                bidPrice = Math.Round(bidPrice, Symbols[symbol].Digits);
+
+                tradeManager.SetLimitOrderAsync(symbol, OrderSide.Sell, volume, askPrice, "", configuration.BotTag);
+                tradeManager.SetLimitOrderAsync(symbol, OrderSide.Buy, volume, bidPrice, "", configuration.BotTag);
+                Status.WriteLine("Rates from livecoin: " + quote.ToString());
+                await Task.Delay(1000);
+                Status.Flush();
             }
         }
 
