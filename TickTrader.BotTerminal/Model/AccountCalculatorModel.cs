@@ -117,6 +117,8 @@ namespace TickTrader.BotTerminal
             public void Dispose()
             {
                 this.acc.Orders.Updated -= Orders_Updated;
+                this.acc.Positions.Updated -= Positions_Updated;
+                this.acc.Assets.Updated -= Assets_Updated;
             }
 
             public AccountingTypes AccountingType

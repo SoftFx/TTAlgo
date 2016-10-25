@@ -457,7 +457,8 @@ namespace TickTrader.BotTerminal
                     {
                         token.ThrowIfCancellationRequested();
 
-                        var historyItem = new TradeTransactionModel(historyStream.Item, GetSymbol(historyStream.Item.Symbol));
+                        var symbolModel = IsBalanceOperation(historyStream.Item) ? null : GetSymbol(historyStream.Item.Symbol);
+                        var historyItem = new TradeTransactionModel(historyStream.Item, symbolModel);
                         tradesList.Add(historyItem);
                         progress?.Report(historyItem);
 
@@ -472,6 +473,11 @@ namespace TickTrader.BotTerminal
 
         }
 
+        private bool IsBalanceOperation(TradeTransactionReport item)
+        {
+            return (TradeTransactionModel.TradeSide)item.TradeRecordSide == TradeTransactionModel.TradeSide.Deposit;
+        }
+
         private SymbolModel GetSymbol(string symbol)
         {
             try
@@ -480,7 +486,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "GetSymbol()");
+                _logger.Warn(ex, "Symbol {0} not found", symbol);
             }
             return null;
         }
