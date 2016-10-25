@@ -17,6 +17,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
+using System.Diagnostics;
 
 namespace TickTrader.BotTerminal
 {
@@ -457,8 +458,7 @@ namespace TickTrader.BotTerminal
                     {
                         token.ThrowIfCancellationRequested();
 
-                        var symbolModel = IsBalanceOperation(historyStream.Item) ? null : GetSymbol(historyStream.Item.Symbol);
-                        var historyItem = new TradeTransactionModel(historyStream.Item, symbolModel);
+                        var historyItem = new TradeTransactionModel(historyStream.Item, GetSymbolFor(historyStream.Item));
                         tradesList.Add(historyItem);
                         progress?.Report(historyItem);
 
@@ -470,25 +470,29 @@ namespace TickTrader.BotTerminal
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex) { _logger.Error(ex, "DownloadHistoryAsync FAILED"); throw; }
             }, token);
+        }
 
+        private SymbolModel GetSymbolFor(TradeTransactionReport transaction)
+        {
+            SymbolModel symbolModel = null;
+            if (!IsBalanceOperation(transaction))
+            {
+                try
+                {
+                    symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
+                }
+                catch
+                {
+                    _logger.Warn("Symbol {0} not found for TradeTransactionID {1}.", transaction.Symbol, transaction.Id);
+                }
+            }
+
+            return symbolModel;
         }
 
         private bool IsBalanceOperation(TradeTransactionReport item)
         {
             return (TradeTransactionModel.TradeSide)item.TradeRecordSide == TradeTransactionModel.TradeSide.Deposit;
-        }
-
-        private SymbolModel GetSymbol(string symbol)
-        {
-            try
-            {
-                return _tradeClient.Symbols[symbol];
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Symbol {0} not found", symbol);
-            }
-            return null;
         }
 
         private void TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
