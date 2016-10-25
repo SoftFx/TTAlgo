@@ -11,8 +11,8 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class OutputDescriptor : AlgoPropertyDescriptor
     {
-        public OutputDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, OutputAttribute attribute)
-            : base(classMetadata, propertyInfo)
+        public OutputDescriptor(PropertyInfo propertyInfo, OutputAttribute attribute)
+            : base(propertyInfo)
         {
             Validate(propertyInfo);
 

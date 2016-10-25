@@ -5,18 +5,19 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Metadata
 {
     [Serializable]
     public class ParameterDescriptor : AlgoPropertyDescriptor
     {
-        private static readonly List<EnumValueDescriptor> emptyEnumValuesList = new List<EnumValueDescriptor>();
+        private static readonly List<string> emptyEnumValuesList = new List<string>();
 
         private bool isDefaultValueDirectlyAssignable;
 
-        public ParameterDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, ParameterAttribute attribute)
-            : base(classMetadata, propertyInfo)
+        public ParameterDescriptor(PropertyInfo propertyInfo, ParameterAttribute attribute)
+            : base(propertyInfo)
         {
             Validate(propertyInfo);
 
@@ -34,10 +35,16 @@ namespace TickTrader.Algo.Core.Metadata
             if (propertyInfo.PropertyType.IsEnum)
             {
                 IsEnum = true;
-                EnumValues = EnumValueDescriptor.MakeList(propertyInfo.PropertyType);
+                EnumValues = Enum.GetValues(propertyInfo.PropertyType)
+                    .Cast<object>().Select(o => o.ToString()).ToList();
 
                 if (EnumValues.Count == 0)
                     SetError(AlgoPropertyErrors.EmptyEnum);
+
+                if (DefaultValue != null && DefaultValue.GetType() == propertyInfo.PropertyType)
+                    DefaultValue = DefaultValue.ToString();
+                else
+                    DefaultValue = null;
             }
             else
                 EnumValues = emptyEnumValuesList;
@@ -56,11 +63,23 @@ namespace TickTrader.Algo.Core.Metadata
 
         public bool IsEnum { get; private set; }
         public bool IsRequired { get; private set; }
-        public List<EnumValueDescriptor> EnumValues { get; private set; }
+        public List<string> EnumValues { get; private set; }
         public List<FileFilterEntry> FileFilters { get; private set; }
         public string DataType { get; private set; }
         public object DefaultValue { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
+
+        internal override void Set(AlgoPlugin instance, object value)
+        {
+            if (IsEnum && value is string)
+            {
+                ThrowIfNoAccessor();
+                var actualValue = Enum.Parse(reflectioInfo.PropertyType, (string)value);
+                base.Set(instance, actualValue);
+            }
+            else
+                base.Set(instance, value);
+        }
 
         internal void ResetValue(Api.AlgoPlugin instance)
         {
@@ -69,26 +88,10 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
-    [Serializable]
-    public class EnumValueDescriptor
-    {
-        public EnumValueDescriptor(string name, object value)
-        {
-            this.Name = name;
-            this.Value = value;
-        }
-
-        public object Value { get; private set; }
-        public string Name { get; private set; }
-
-        public static List<EnumValueDescriptor> MakeList(Type enumType)
-        {
-            return Enum.GetValues(enumType)
-                .Cast<object>()
-                .Select(o => new EnumValueDescriptor(o.ToString(), o))
-                .ToList();
-        }
-    }
+    //public class EnumValueProxy : CrossDomainObject
+    //{
+    //    public object Value { get; set; }
+    //}
 
     [Serializable]
     public class FileFilterEntry

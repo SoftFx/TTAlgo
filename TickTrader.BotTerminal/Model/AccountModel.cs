@@ -474,14 +474,8 @@ namespace TickTrader.BotTerminal
 
         private SymbolModel GetSymbol(string symbol)
         {
-            try
-            {
-                return _tradeClient.Symbols[symbol];
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "GetSymbol()");
-            }
+            if (!string.IsNullOrEmpty(symbol))
+                return _tradeClient.Symbols.GetOrDefault(symbol);
             return null;
         }
 

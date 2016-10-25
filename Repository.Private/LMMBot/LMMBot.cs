@@ -16,6 +16,7 @@ namespace LMMBot
         {
             foreach (var symbol in Symbols)
                 MmLoop(symbol.Name);
+            
         }
 
         private async void MmLoop(string smb)

@@ -30,6 +30,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>algo.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -84,6 +90,7 @@
     <Compile Include="State\TimeEvent.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="algo.pfx" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
