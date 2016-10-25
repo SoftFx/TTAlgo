@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Api
         IncorrectPrice      = 107,
         IncorrectTp         = 108,
         IncorrectSl         = 109,
-        NotEnoughMoney      = 110
+        NotEnoughMoney      = 110,
+        TradeNotAllowed     = 111
     }
 }

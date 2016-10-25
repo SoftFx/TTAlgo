@@ -167,9 +167,9 @@ namespace TickTrader.Algo.Core
         public static PluginAdapter Create(AlgoPluginDescriptor descriptor, IPluginContext dataProvider)
         {
             if (descriptor.AlgoLogicType == AlgoTypes.Indicator)
-                return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+                return new IndicatorAdapter(() => (AlgoPlugin)descriptor.CreateInstance(), dataProvider);
             else if (descriptor.AlgoLogicType == AlgoTypes.Robot)
-                return new BotAdapter(() => (TradeBot)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
+                return new BotAdapter(() => (TradeBot)descriptor.CreateInstance(), dataProvider);
             else
                 throw new InvalidPluginType("Unsupported plugin type: " + descriptor.AlgoLogicType);
         }

@@ -11,8 +11,8 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class InputDescriptor : AlgoPropertyDescriptor
     {
-        public InputDescriptor(AlgoPluginDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
-            : base(classMetadata, propertyInfo)
+        public InputDescriptor(PropertyInfo propertyInfo, object attribute)
+            : base(propertyInfo)
         {
             Attribute = (InputAttribute)attribute;
             Validate(propertyInfo);

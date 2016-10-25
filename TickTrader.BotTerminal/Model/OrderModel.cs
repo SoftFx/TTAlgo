@@ -29,22 +29,25 @@ namespace TickTrader.BotTerminal
         private decimal? profit;
         private decimal? margin;
         private decimal? currentPrice;
+        private SymbolModel symbolModel;
 
-        public OrderModel(TradeRecord record)
+        public OrderModel(TradeRecord record, IOrderDependenciesResolver resolver)
         {
             this.Id = record.OrderId;
             this.clientOrderId = record.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = record.Symbol;
+            this.symbolModel = resolver.GetSymbolOrNull(record.Symbol);
             Update(record);
         }
 
-        public OrderModel(ExecutionReport report)
+        public OrderModel(ExecutionReport report, IOrderDependenciesResolver resolver)
         {
             this.Id = report.OrderId;
             this.clientOrderId = report.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = report.Symbol;
+            this.symbolModel = resolver.GetSymbolOrNull(report.Symbol);
 
             Update(report);
         }
@@ -64,10 +67,13 @@ namespace TickTrader.BotTerminal
                 if (this.amount != value)
                 {
                     this.amount = value;
+                    this.AmountLots = AmountToLost(value);
                     NotifyOfPropertyChange(nameof(Amount));
+                    NotifyOfPropertyChange(nameof(AmountLots));
                 }
             }
         }
+        public decimal? AmountLots { get; private set; }
         public decimal RemainingAmount
         {
             get { return amountRemaining; }
@@ -76,10 +82,13 @@ namespace TickTrader.BotTerminal
                 if (this.amountRemaining != value)
                 {
                     this.amountRemaining = value;
+                    this.RemainingAmountLots = AmountToLost(value);
                     NotifyOfPropertyChange(nameof(RemainingAmount));
+                    NotifyOfPropertyChange(nameof(RemainingAmountLots));
                 }
             }
         }
+        public decimal? RemainingAmountLots { get; private set; }
         public TradeRecordType OrderType
         {
             get { return orderType; }
@@ -287,8 +296,8 @@ namespace TickTrader.BotTerminal
             return new OrderEntity(Id)
             {
                 ClientOrderId = this.clientOrderId,
-                RemainingAmount = (double)RemainingAmount,
-                RequestedAmount = (double)Amount,
+                RemainingAmount = (double?)RemainingAmountLots ?? double.NaN,
+                RequestedAmount = (double?)AmountLots ?? double.NaN,
                 Symbol = Symbol,
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),
@@ -332,5 +341,18 @@ namespace TickTrader.BotTerminal
             this.Swap = (decimal)report.Swap;
             this.Commission = (decimal)report.Commission;
         }
+
+        private decimal? AmountToLost(decimal volume)
+        {
+            if (symbolModel == null)
+                return null;
+
+            return volume / (decimal)symbolModel.LotSize;
+        }
+    }
+
+    internal interface IOrderDependenciesResolver
+    {
+        SymbolModel GetSymbolOrNull(string name);
     }
 }
