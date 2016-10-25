@@ -18,10 +18,12 @@ namespace TickTrader.BotTerminal
         private BufferBlock<Task> orderQueue;
         private ActionBlock<Task> orderSender;
         private ConnectionModel conenction;
+        private IOrderDependenciesResolver resolver;
 
         public TradeExecutor(TraderClientModel trader)
         {
             this.conenction = trader.Connection;
+            this.resolver = trader.Symbols;
 
             orderQueue = new BufferBlock<Task>();
 
@@ -45,7 +47,7 @@ namespace TickTrader.BotTerminal
 
                     var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type), Convert(side),
                         price, volume, sl, tp, null, comment);
-                    return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record).ToAlgoOrder());
+                    return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
                 }
                 catch (ValidatioException vex)
                 {
@@ -53,7 +55,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new OpenModifyResult(Convert(rex.Reason), null);
+                    return new OpenModifyResult(Convert(rex.Reason, rex.Message), null);
                 }
                 catch (SoftFX.Extended.Errors.LogoutException)
                 {
@@ -91,7 +93,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new CancelResult(Convert(rex.Reason));
+                    return new CancelResult(Convert(rex.Reason, rex.Message));
                 }
                 catch (SoftFX.Extended.Errors.LogoutException)
                 {
@@ -124,7 +126,7 @@ namespace TickTrader.BotTerminal
                     var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
                         ToRecordType(orderType), Convert(side), volume, price, sl, tp, null, comment);
                     if (!string.IsNullOrEmpty(result.OrderId)) // Ugly hack to make it work!
-                        return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result).ToAlgoOrder());
+                        return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result, resolver).ToAlgoOrder());
                     return new OpenModifyResult(OrderCmdResultCodes.DealerReject, null);
                 }
                 catch (ValidatioException vex)
@@ -133,7 +135,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new OpenModifyResult(Convert(rex.Reason), null);
+                    return new OpenModifyResult(Convert(rex.Reason, rex.Message), null);
                 }
                 catch (SoftFX.Extended.Errors.LogoutException)
                 {
@@ -180,7 +182,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch (SoftFX.Extended.Errors.RejectException rex)
                 {
-                    return new CloseResult(Convert(rex.Reason));
+                    return new CloseResult(Convert(rex.Reason, rex.Message));
                 }
                 catch (SoftFX.Extended.Errors.LogoutException)
                 {
@@ -237,7 +239,7 @@ namespace TickTrader.BotTerminal
             throw new Exception("Not Supported: " + side);
         }
 
-        private OrderCmdResultCodes Convert(RejectReason reason)
+        private OrderCmdResultCodes Convert(RejectReason reason, string message)
         {
             switch (reason)
             {
@@ -247,8 +249,14 @@ namespace TickTrader.BotTerminal
                 case RejectReason.IncorrectQuantity: return OrderCmdResultCodes.IncorrectVolume;
                 case RejectReason.OffQuotes: return OrderCmdResultCodes.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return OrderCmdResultCodes.NotEnoughMoney;
-                default: return OrderCmdResultCodes.UnknownError;
+                case RejectReason.Other:
+                    {
+                        if (message == "Trade Not Allowed")
+                            return OrderCmdResultCodes.TradeNotAllowed;
+                        break;
+                    }
             }
+            return OrderCmdResultCodes.UnknownError;
         }
 
         private void ValidateVolume(double volume)

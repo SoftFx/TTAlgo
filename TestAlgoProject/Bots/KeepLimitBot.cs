@@ -16,7 +16,7 @@ namespace TestAlgoProject.Bots
         [Parameter(DefaultValue = 100)]
         public double PriceDelta { get; set; }
 
-        [Parameter]
+        [Parameter(DefaultValue = OrderSide.Sell)]
         public OrderSide Side { get; set; }
 
         protected override void OnQuote(Quote quote)
