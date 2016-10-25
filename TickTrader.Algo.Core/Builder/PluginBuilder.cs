@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler, EnvironmentInfo
+    public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler, EnvironmentInfo, IHelperApi
     {
         private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
         private MarketDataImpl marketData;
@@ -124,6 +124,8 @@ namespace TickTrader.Algo.Core
             OnException?.Invoke(ex);
         }
 
+        #region IPluginContext
+
         FeedProvider IPluginContext.GetFeed()
         {
             return marketData;
@@ -171,6 +173,19 @@ namespace TickTrader.Algo.Core
         {
             return this;
         }
+
+        IHelperApi IPluginContext.GetHelper()
+        {
+            return this;
+        }
+
+        void IPluginContext.OnExit()
+        {
+            Logger.OnExit();
+            OnExit?.Invoke();
+        }
+
+        #endregion IPluginContext
 
         #region Invoke
 
@@ -257,11 +272,53 @@ namespace TickTrader.Algo.Core
                 OnUnsubscribe(smbCode);
         }
 
-        void IPluginContext.OnExit()
+        #region IHelperApi
+
+        Quote IHelperApi.CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
         {
-            Logger.OnExit();
-            OnExit?.Invoke();
+            QuoteEntity entity = new QuoteEntity();
+            entity.Symbol = symbol;
+            entity.Time = time;
+
+            if (bids != null)
+            {
+                entity.BidList = bids.ToArray();
+                entity.Bid = bids.Max(e => e.Price);
+            }
+            else
+            {
+                entity.BidList = new BookEntry[0];
+                entity.Bid = double.NaN;
+            }
+
+            if (asks != null)
+            {
+                entity.AskList = asks.ToArray();
+                entity.Ask = asks.Min(e => e.Price);
+            }
+            else
+            {
+                entity.AskList = new BookEntry[0];
+                entity.Bid = double.NaN;
+            }
+
+            return entity;
         }
+
+        BookEntry IHelperApi.CreateBookEntry(double price, double volume)
+        {
+            return new BookEntryEntity() { Price = price, Volume = volume };
+        }
+
+        IEnumerable<BookEntry> IHelperApi.CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
+        {
+            if (prices == null || volumes == null)
+                return new BookEntry[0];
+
+            return prices.Zip(volumes, (p, v) => new BookEntryEntity() { Price = p, Volume = v });
+        }
+
+        #endregion
 
         private class MarketDataImpl : FeedProvider, CustomFeedProvider
         {
