@@ -15,7 +15,15 @@ namespace TickTrader.Algo.Api
         TradeCommands GetTradeApi();
         StatusApi GetStatusApi();
         EnvironmentInfo GetEnvironment();
+        IHelperApi GetHelper();
         void OnExit();
+    }
+
+    internal interface IHelperApi
+    {
+        Quote CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks);
+        BookEntry CreateBookEntry(double price, double volume);
+        IEnumerable<BookEntry> CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes);
     }
 
     internal interface IPluginMonitor

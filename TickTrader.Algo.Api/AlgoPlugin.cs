@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Api
         private TradeCommands tradeCmdApi;
         private StatusApi status;
         private EnvironmentInfo env;
+        private IHelperApi helper;
 
         internal AlgoPlugin()
         {
@@ -91,6 +92,13 @@ namespace TickTrader.Algo.Api
             return env;
         }
 
+        internal IHelperApi GetHelper()
+        {
+            if (helper == null)
+                helper = context.GetHelper();
+            return helper;
+        }
+
         //internal virtual void DoInit()
         //{
         //    currentInstance = this;
@@ -107,5 +115,20 @@ namespace TickTrader.Algo.Api
         //        currentInstance = null;
         //    }
         //}
+
+        public Quote CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
+        {
+            return GetHelper().CreateQuote(symbol, time, bids, asks);
+        }
+
+        public BookEntry CreateBookEntry(double price, double volume)
+        {
+            return GetHelper().CreateBookEntry(price, volume);
+        }
+
+        public IEnumerable<BookEntry> CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
+        {
+            return GetHelper().CreateBook(prices, volumes);
+        }
     }
 }
