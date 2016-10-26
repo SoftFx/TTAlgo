@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
             this.Bid = double.NaN;
         }
 
-        public string Name { get { return entity.Code; } }
+        public string Name { get { return entity.Name; } }
         public int Digits { get { return entity.Digits; } }
         public double ContractSize { get { return entity.LotSize; } }
         public double MaxTradeAmount { get { return entity.MaxAmount; } }

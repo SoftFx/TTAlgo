@@ -87,18 +87,18 @@ namespace BotCommon
             }
 
             Order order = orderList.FirstOrDefault();
-            bool isVolumeValid = volume / symbol.ContractSize - 0.01/*this.Symbols[symbol].MinTradeAmount*/ > -Double.Epsilon;
+            bool isVolumeValid = volume - symbol.MinTradeAmount > -Double.Epsilon;
 
             if (order == null)
             {
                 if (isVolumeValid)
-                    await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume / symbol.ContractSize, price, null, null, subBotTag);
+                    await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
                 return;
             }
             if (Math.Abs(volume - order.RemainingAmount) > Double.Epsilon)
             {
                 await tradeApi.CancelOrderAsync(order.Id);
-                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume / symbol.ContractSize, price, null, null, subBotTag);
+                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
             }
             if (Math.Abs(price - order.Price) > Double.Epsilon)
                 await tradeApi.ModifyOrderAsync(order.Id, price);

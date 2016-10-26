@@ -38,9 +38,9 @@ namespace TickTrader.Algo.Core
 
         public void Add(SymbolEntity symbol)
         {
-            fixture.InnerCollection.Add(symbol.Code, new SymbolAccessor(symbol, subscriptionHandler));
+            fixture.InnerCollection.Add(symbol.Name, new SymbolAccessor(symbol, subscriptionHandler));
 
-            if (symbol.Code == mainSymbolCode)
+            if (symbol.Name == mainSymbolCode)
                 InitCurrentSymbol();
         }
 
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
             if (symbols != null)
             {
                 foreach (var smb in symbols)
-                    fixture.InnerCollection.Add(smb.Code, new SymbolAccessor(smb, subscriptionHandler));
+                    fixture.InnerCollection.Add(smb.Name, new SymbolAccessor(smb, subscriptionHandler));
 
                 InitCurrentSymbol();
             }

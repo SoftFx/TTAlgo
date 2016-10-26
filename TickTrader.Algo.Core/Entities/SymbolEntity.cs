@@ -11,10 +11,10 @@ namespace TickTrader.Algo.Core
     {
         public SymbolEntity(string code)
         {
-            this.Code = code;
+            this.Name = code;
         }
 
-        public string Code { get; private set; }
+        public string Name { get; private set; }
         public int Digits { get; set; }
         public double LotSize { get; set; }
         public double MaxAmount { get; set; }
