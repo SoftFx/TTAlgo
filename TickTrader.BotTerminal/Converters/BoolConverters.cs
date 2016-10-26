@@ -31,4 +31,33 @@ namespace TickTrader.BotTerminal
         }
     }
 
+    public class BoolConverter : MarkupExtension, IMultiValueConverter
+    {
+        public enum Mode
+        {
+            All,
+            LeastOne
+        }
+        public Mode ConversionMode { get; set; }
+
+
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (!values.Any(v => !(v is bool)))
+                return ConversionMode == Mode.All ? !values.Any(v => !(bool)v) : values.Any(v => (bool)v);
+
+            return false;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
+        }
+    }
+
 }
