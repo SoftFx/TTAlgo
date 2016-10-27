@@ -110,7 +110,7 @@ namespace MMBot
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
 
-                tradeAsync.SetLimitOrderAsync(synteticSymbol, OrderSide.Buy, availableVolume / Symbols[synteticSymbol].ContractSize, cumPrice, conf.BotTag + synteticSymbol, conf.BotTag + synteticSymbol);
+                tradeAsync.SetLimitOrderAsync(synteticSymbol, OrderSide.Buy, availableVolume, cumPrice, conf.BotTag + synteticSymbol, conf.BotTag + synteticSymbol);
             }
 
             Status.WriteLine("BUY (sell limit)");
@@ -128,7 +128,7 @@ namespace MMBot
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
 
-                tradeAsync.SetLimitOrderAsync(synteticSymbol, OrderSide.Sell, availableVolume / Symbols[synteticSymbol].ContractSize, cumPrice, conf.BotTag+synteticSymbol, conf.BotTag + synteticSymbol);
+                tradeAsync.SetLimitOrderAsync(synteticSymbol, OrderSide.Sell, availableVolume, cumPrice, conf.BotTag+synteticSymbol, conf.BotTag + synteticSymbol);
             }
         }
 
