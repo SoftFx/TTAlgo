@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -14,6 +10,7 @@ namespace TickTrader.Algo.Core
         void OnPrintInfo(string info);
         void OnPrint(string entry, params object[] parameters);
         void OnPrintError(string entry, params object[] parameters);
+        void OnPrintTrade(string entry);
         void OnError(Exception ex);
         void OnInitialized();
         void OnStart();
@@ -62,6 +59,11 @@ namespace TickTrader.Algo.Core
         {
             logger.OnPrintInfo(entry);
         }
+
+        public void PrintTrade(string entry)
+        {
+            logger.OnPrintTrade(entry);
+        }
     }
 
     public class NullLogger : IPluginLogger
@@ -87,6 +89,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnPrintInfo(string info)
+        {
+        }
+
+        public void OnPrintTrade(string entry)
         {
         }
 

@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Core
             if (orderToCancel == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            logger.PrintInfo("Canceling order #" + orderId);
+            logger.PrintTrade("Canceling order #" + orderId);
 
             using (var waitHandler = new TaskProxy<CancelResult>())
             {
@@ -64,10 +64,10 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     account.Orders.Remove(orderId);
-                    logger.PrintInfo("→ SUCCESS: Order #" + orderId + " canceled");
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
                 }
                 else
-                    logger.PrintInfo("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
+                    logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
                 return new TradeResultEntity(result.ResultCode, orderToCancel);
             }
@@ -89,7 +89,7 @@ namespace TickTrader.Algo.Core
                     return new TradeResultEntity(code);
             }
 
-            logger.PrintInfo("Closing order #" + orderId);
+            logger.PrintTrade("Closing order #" + orderId);
 
             using (var waitHandler = new TaskProxy<CloseResult>())
             {
@@ -106,13 +106,13 @@ namespace TickTrader.Algo.Core
                     else
                         account.Orders.Replace(orderClone);
 
-                    logger.PrintInfo("→ SUCCESS: Order #" + orderId + " closed");
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
 
                     return new TradeResultEntity(result.ResultCode, orderClone);
                 }
                 else
                 {
-                    logger.PrintInfo("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                    logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
                     return new TradeResultEntity(result.ResultCode, orderToClose);
                 }
             }
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Core
 
             double orderVolume = orderToModify.RequestedVolume * smbMetatda.ContractSize;
 
-            logger.PrintInfo("Modifying order #" + orderId);
+            logger.PrintTrade("Modifying order #" + orderId);
 
             using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
@@ -141,12 +141,12 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     account.Orders.Replace(result.NewOrder);
-                    logger.PrintInfo("→ SUCCESS: Order #" + orderId + " modified");
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
                     return new TradeResultEntity(result.ResultCode, result.NewOrder);
                 }
                 else
                 {
-                    logger.PrintInfo("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
+                    logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
                     return new TradeResultEntity(result.ResultCode, orderToModify);
                 }
             }
@@ -179,7 +179,7 @@ namespace TickTrader.Algo.Core
             StringBuilder logEntry = new StringBuilder();
             logEntry.Append("Executing ");
             AppendOrderParams(logEntry, " Order to ", symbol, type, side, volumeLots, price, sl, tp);
-            logger.PrintInfo(logEntry.ToString());
+            logger.PrintTrade(logEntry.ToString());
         }
 
         private void LogOrderOpenResults(OrderCmdResult result)
@@ -212,7 +212,7 @@ namespace TickTrader.Algo.Core
                     logEntry.Append("Null Order");
             }
 
-            logger.PrintInfo(logEntry.ToString());
+            logger.PrintTrade(logEntry.ToString());
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string sufix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)
