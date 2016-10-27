@@ -17,6 +17,7 @@ namespace TickTrader.BotTerminal
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
         private SymbolCollectionModel symbols;
         private FeedHistoryProviderModel history;
+        private Dictionary<string, SymbolEntity> metadataCache;
 
         private BufferBlock<FeedUpdate> rxBuffer;
         private ActionBlock<FeedUpdate[]> txBlock;
@@ -27,6 +28,8 @@ namespace TickTrader.BotTerminal
         {
             this.symbols = symbols;
             this.history = history;
+
+            metadataCache = symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToDictionary(s => s.Name);
 
             rxBuffer = new BufferBlock<FeedUpdate>();
             txBlock = new ActionBlock<FeedUpdate[]>(uList =>
@@ -57,8 +60,10 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var smbDescriptor = metadataCache.GetOrDefault(symbolCode);
+
                 var result = history.GetTicks(symbolCode, from, to, depth).Result;
-                return FdkToAlgo.Convert(result).ToList();
+                return FdkToAlgo.Convert(result, smbDescriptor?.LotSize ?? 1).ToList();
             }
             catch (Exception ex)
             {
@@ -124,10 +129,15 @@ namespace TickTrader.BotTerminal
                 this.Depth = depth;
                 this.rxBuffer = rxBuffer;
 
-                symbols.GetOrDefault(symbolCode)?.Subscribe(this);
+                var smbModel = symbols.GetOrDefault(symbolCode);
+                smbModel?.Subscribe(this);
+                LotSize = smbModel?.LotSize ?? 1;
+                if (LotSize <= 0)
+                    LotSize = 1;
             }
 
             public string SymbolCode { get; private set; }
+            public double LotSize { get; private set; }
             public int Depth { get; private set; }
             public event Action DepthChanged = delegate { };
 
@@ -142,7 +152,7 @@ namespace TickTrader.BotTerminal
 
             public void OnRateUpdate(Quote tick)
             {
-                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkToAlgo.Convert(tick)));
+                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkToAlgo.Convert(tick, LotSize)));
             }
 
             public void Dispose()

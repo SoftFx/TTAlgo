@@ -124,12 +124,18 @@ namespace TickTrader.Algo.Core
             if (orderToModify == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
+            var smbMetatda = symbols.List[orderToModify.Symbol];
+            if (smbMetatda.IsNull)
+                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
+
+            double orderVolume = orderToModify.RequestedAmount * smbMetatda.ContractSize;
+
             logger.PrintTrade("Modifying order #" + orderId);
 
             using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
                 api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    price, orderToModify.RequestedAmount, tp, sl, comment);
+                    price, orderVolume, tp, sl, comment);
                 var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
