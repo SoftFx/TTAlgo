@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
                 }
                 catch { }
 
-                journal.Info(botName, msg);
+                journal.Custom(botName, msg);
             }
 
             public void OnPrintError(string entry, object[] parameters)
@@ -150,6 +150,11 @@ namespace TickTrader.BotTerminal
             public void OnExit()
             {
                 journal.Info(botName, "Bot exited");
+            }
+
+            public void OnPrintTrade(string entry)
+            {
+                journal.Trading(botName, entry);
             }
         }
     }
