@@ -10,8 +10,8 @@ namespace TickTrader.Algo.Api
     {
         string Id { get; }
         string Symbol { get; }
-        double RequestedAmount { get; }
-        double RemainingAmount { get; }
+        double RequestedVolume { get; }
+        double RemainingVolume { get; }
         OrderType Type { get; }
         OrderSide Side { get; }
         double Price { get; }

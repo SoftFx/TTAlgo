@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         public double LotSize { get; set; }
         public double MaxAmount { get; set; }
         public double MinAmount { get; set; }
+        public double AmountStep { get; set; }
         public string BaseCurrencyCode { get; set; }
         public string CounterCurrencyCode { get; set; }
     }

@@ -296,8 +296,8 @@ namespace TickTrader.BotTerminal
             return new OrderEntity(Id)
             {
                 ClientOrderId = this.clientOrderId,
-                RemainingAmount = (double?)RemainingAmountLots ?? double.NaN,
-                RequestedAmount = (double?)AmountLots ?? double.NaN,
+                RemainingVolume = (double?)RemainingAmountLots ?? double.NaN,
+                RequestedVolume = (double?)AmountLots ?? double.NaN,
                 Symbol = Symbol,
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),

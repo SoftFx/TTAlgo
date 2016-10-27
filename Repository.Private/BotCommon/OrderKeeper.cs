@@ -87,7 +87,7 @@ namespace BotCommon
             }
 
             Order order = orderList.FirstOrDefault();
-            bool isVolumeValid = volume - symbol.MinTradeAmount > -Double.Epsilon;
+            bool isVolumeValid = volume - symbol.MinTradeVolume > -Double.Epsilon;
 
             if (order == null)
             {
@@ -95,7 +95,7 @@ namespace BotCommon
                     await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
                 return;
             }
-            if (Math.Abs(volume - order.RemainingAmount) > Double.Epsilon)
+            if (Math.Abs(volume - order.RemainingVolume) > Double.Epsilon)
             {
                 await tradeApi.CancelOrderAsync(order.Id);
                 await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
