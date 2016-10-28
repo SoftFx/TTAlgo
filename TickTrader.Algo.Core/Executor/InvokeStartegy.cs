@@ -30,6 +30,8 @@ namespace TickTrader.Algo.Core
 
         protected PluginBuilder Builder { get; private set; }
 
+        public abstract int FeedQueueSize { get; }
+
         public abstract void Start();
         public abstract Task Stop(Action<PluginBuilder> finalAction);
         //public abstract void EnqueueInvoke(Action<PluginBuilder> a);
@@ -71,6 +73,8 @@ namespace TickTrader.Algo.Core
             feedQueue = new Queue<FeedUpdate>();
             defaultQueue = new Queue<Action<PluginBuilder>>();
         }
+
+        public override int FeedQueueSize { get { return feedQueue.Count; } }
 
         public override void Enqueue(FeedUpdate update)
         {

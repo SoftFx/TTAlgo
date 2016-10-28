@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Api
         StatusApi StatusApi { get; }
         EnvironmentInfo Environment { get; }
         IHelperApi Helper { get; }
+        DiagnosticInfo Diagnostics { get; }
         void OnExit();
     }
 

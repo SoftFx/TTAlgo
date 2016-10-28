@@ -29,6 +29,8 @@ namespace TickTrader.Algo.Core
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
 
+            Diagnostics = Null.Diagnostics;
+
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
 
@@ -41,6 +43,7 @@ namespace TickTrader.Algo.Core
         public AccountEntity Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
+        public DiagnosticInfo Diagnostics { get; set; }
         public ITradeApi TradeApi { get; set; }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
         public Action<string, int> OnSubscribe { get; set; }
@@ -245,6 +248,11 @@ namespace TickTrader.Algo.Core
         internal void InvokeOnQuote(QuoteEntity quote)
         {
             InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote));
+        }
+
+        internal void InvokeAsyncAction(SendOrPostCallback callback, object state)
+        {
+            InvokePluginMethod(() => callback(state));
         }
 
         #endregion

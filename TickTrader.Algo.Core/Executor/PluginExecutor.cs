@@ -11,7 +11,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget
+    public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget, DiagnosticInfo
     {
         public enum States { Idle, Running }
 
@@ -224,6 +224,7 @@ namespace TickTrader.Algo.Core
                 InitMetadata();
                 InitWorkingFolder();
                 builder.TradeApi = tradeApi;
+                builder.Diagnostics = this;
                 if (logger != null)
                     builder.Logger = logger;
                 builder.OnAsyncAction = OnAsyncAction;
@@ -402,7 +403,7 @@ namespace TickTrader.Algo.Core
 
         private void OnAsyncAction(SendOrPostCallback callback, object state)
         {
-            iStrategy.EnqueueCustomAction(b => callback(state));
+            iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(callback, state));
         }
 
         private void OnFeedUpdate(FeedUpdate update)
@@ -484,6 +485,12 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
+        #region DiagnosticInfo
+
+        int DiagnosticInfo.FeedQueueSize { get { return iStrategy.FeedQueueSize; } }
+
+        #endregion
+
         //#region IInvokeStrategyContext
 
         //IPluginInvoker IInvokeStrategyContext.Builder { get { return builder; } }
@@ -499,5 +506,5 @@ namespace TickTrader.Algo.Core
         //}
 
         //#endregion
-    } 
+    }
 }
