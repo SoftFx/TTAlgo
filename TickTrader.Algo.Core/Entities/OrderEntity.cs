@@ -19,8 +19,8 @@ namespace TickTrader.Algo.Core
         {
             this.Id = src.Id;
             this.ClientOrderId = ((OrderEntity)src).ClientOrderId;
-            this.RequestedAmount = src.RequestedAmount;
-            this.RemainingAmount = src.RemainingAmount;
+            this.RequestedVolume = src.RequestedVolume;
+            this.RemainingVolume = src.RemainingVolume;
             this.Symbol = src.Symbol;
             this.Type = src.Type;
             this.Side = src.Side;
@@ -34,8 +34,8 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public double RequestedAmount { get; set; }
-        public double RemainingAmount { get; set; }
+        public double RequestedVolume { get; set; }
+        public double RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
@@ -55,8 +55,8 @@ namespace TickTrader.Algo.Core
     public class NullOrder : Order
     {
         public string Id { get { return ""; } }
-        public double RequestedAmount { get { return double.NaN; } }
-        public double RemainingAmount { get { return double.NaN; } }
+        public double RequestedVolume { get { return double.NaN; } }
+        public double RemainingVolume { get { return double.NaN; } }
         public string Symbol { get { return ""; } }
         public OrderType Type { get { return OrderType.Market; } }
         public OrderSide Side { get { return OrderSide.Buy; } }

@@ -98,6 +98,7 @@ namespace TickTrader.BotTerminal
                 LotSize = info.RoundLot,
                 MinAmount = info.RoundLot != 0 ? info.MinTradeVolume / info.RoundLot : double.NaN,
                 MaxAmount = info.RoundLot != 0 ? info.MaxTradeVolume / info.RoundLot : double.NaN,
+                AmountStep = info.RoundLot != 0 ? info.TradeVolumeStep / info.RoundLot : double.NaN,
                 BaseCurrencyCode = info.Currency,
                 CounterCurrencyCode = info.SettlementCurrency,
             };

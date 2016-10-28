@@ -59,7 +59,7 @@ namespace TestAlgoProject
                 foreach (var order in pOrders)
                 {
                     Status.WriteLine("#{0} {1} {2}/{3} {4}", order.Symbol, order.Side,
-                        order.RemainingAmount, order.RequestedAmount, order.Comment);
+                        order.RequestedVolume, order.RequestedVolume, order.Comment);
                 }
             }
             else
@@ -75,7 +75,7 @@ namespace TestAlgoProject
                 foreach (var order in positions)
                 {
                     Status.WriteLine("#{0} {1} {2} {3}/{4} {5}", order.Id, order.Symbol, order.Side,
-                        order.RemainingAmount, order.RequestedAmount, order.Comment);
+                        order.RequestedVolume, order.RequestedVolume, order.Comment);
                 }
             }
             else

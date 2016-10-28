@@ -12,8 +12,9 @@ namespace TickTrader.Algo.Api
         int Digits { get; }
         double Point { get; }
         double ContractSize { get; }
-        double MaxTradeAmount { get; }
-        double MinTradeAmount { get; }
+        double MaxTradeVolume { get; }
+        double MinTradeVolume { get; }
+        double TradeVolumeStep { get; }
         bool IsNull { get; }
         string BaseCurrency { get; }
         string CounterCurrency { get; }

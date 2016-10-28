@@ -99,9 +99,9 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     var orderClone = new OrderEntity(orderToClose);
-                    orderClone.RemainingAmount -= result.ExecVolume;
+                    orderClone.RemainingVolume -= result.ExecVolume;
 
-                    if (orderClone.RemainingAmount <= 0)
+                    if (orderClone.RemainingVolume <= 0)
                         account.Orders.Remove(orderId);
                     else
                         account.Orders.Replace(orderClone);
@@ -128,7 +128,7 @@ namespace TickTrader.Algo.Core
             if (smbMetatda.IsNull)
                 return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
 
-            double orderVolume = orderToModify.RequestedAmount * smbMetatda.ContractSize;
+            double orderVolume = orderToModify.RequestedVolume * smbMetatda.ContractSize;
 
             logger.PrintTrade("Modifying order #" + orderId);
 
@@ -194,7 +194,7 @@ namespace TickTrader.Algo.Core
                 {
                     logEntry.Append("#").Append(order.Id).Append(" ");
                     AppendOrderParams(logEntry, " ", order.Symbol, order.Type, order.Side,
-                        order.RemainingAmount, order.Price, order.StopLoss, order.TakeProfit);
+                        order.RemainingVolume, order.Price, order.StopLoss, order.TakeProfit);
                 }
                 else
                     logEntry.Append("Null Order");
@@ -205,7 +205,7 @@ namespace TickTrader.Algo.Core
                 if (order != null)
                 {
                     AppendOrderParams(logEntry, " Order to ", order.Symbol, order.Type, order.Side,
-                        order.RemainingAmount, order.Price, order.StopLoss, order.TakeProfit);
+                        order.RemainingVolume, order.Price, order.StopLoss, order.TakeProfit);
                     logEntry.Append(" error=").Append(result.ResultCode);
                 }
                 else

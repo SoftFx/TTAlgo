@@ -8,19 +8,25 @@ namespace TickTrader.Algo.Api
 {
     internal interface IPluginContext
     {
-        FeedProvider GetFeed();
-        AccountDataProvider GetAccountDataProvider();
-        SymbolProvider GetSymbolProvider();
-        IPluginMonitor GetPluginLogger();
-        TradeCommands GetTradeApi();
-        StatusApi GetStatusApi();
-        EnvironmentInfo GetEnvironment();
-        IHelperApi GetHelper();
+        FeedProvider Feed { get; }
+        AccountDataProvider AccountData { get; }
+        SymbolProvider Symbols { get; }
+        IPluginMonitor Logger { get; }
+        TradeCommands TradeApi { get; }
+        StatusApi StatusApi { get; }
+        EnvironmentInfo Environment { get; }
+        IHelperApi Helper { get; }
         void OnExit();
     }
 
     internal interface IHelperApi
     {
+        string FormatPrice(double price, int digits);
+        string FormatPrice(double price, Symbol symbolInfo);
+
+        double RoundVolumeDown(double volume, Symbol symbolInfo);
+        double RoundVolumeUp(double volume, Symbol symbolInfo);
+
         Quote CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks);
         BookEntry CreateBookEntry(double price, double volume);
         IEnumerable<BookEntry> CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes);

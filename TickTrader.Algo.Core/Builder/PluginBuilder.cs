@@ -126,58 +126,49 @@ namespace TickTrader.Algo.Core
 
         #region IPluginContext
 
-        FeedProvider IPluginContext.GetFeed()
-        {
-            return marketData;
-        }
+        FeedProvider IPluginContext.Feed => marketData;
 
-        AccountDataProvider IPluginContext.GetAccountDataProvider()
+        AccountDataProvider IPluginContext.AccountData
         {
-            if (!isAccountInitialized)
+            get
             {
-                isAccountInitialized = true;
-                AccountDataRequested?.Invoke();
+                if (!isAccountInitialized)
+                {
+                    isAccountInitialized = true;
+                    AccountDataRequested?.Invoke();
+                }
+                return Account;
             }
-            return Account;
         }
 
-        SymbolProvider IPluginContext.GetSymbolProvider()
+        SymbolProvider IPluginContext.Symbols
         {
-            if (!isSymbolsInitialized)
+            get
             {
-                isSymbolsInitialized = true;
-                SymbolDataRequested?.Invoke();
-                Symbols.MainSymbolCode = MainSymbol;
+                if (!isSymbolsInitialized)
+                {
+                    isSymbolsInitialized = true;
+                    SymbolDataRequested?.Invoke();
+                    Symbols.MainSymbolCode = MainSymbol;
+                }
+                return Symbols.SymbolProviderImpl;
             }
-            return Symbols.SymbolProviderImpl;
         }
 
-        IPluginMonitor IPluginContext.GetPluginLogger()
+        TradeCommands IPluginContext.TradeApi
         {
-            return logAdapter;
+            get
+            {
+                if (TradeApi == null)
+                    return new NullTradeApi();
+                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter);
+            }
         }
 
-        TradeCommands IPluginContext.GetTradeApi()
-        {
-            if (TradeApi == null)
-                return new NullTradeApi();
-            return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter);
-        }
-
-        StatusApi IPluginContext.GetStatusApi()
-        {
-            return statusApi;
-        }
-
-        EnvironmentInfo IPluginContext.GetEnvironment()
-        {
-            return this;
-        }
-
-        IHelperApi IPluginContext.GetHelper()
-        {
-            return this;
-        }
+        IPluginMonitor IPluginContext.Logger => logAdapter;
+        StatusApi IPluginContext.StatusApi => statusApi;
+        EnvironmentInfo IPluginContext.Environment => this;
+        IHelperApi IPluginContext.Helper => this;
 
         void IPluginContext.OnExit()
         {
@@ -200,8 +191,18 @@ namespace TickTrader.Algo.Core
 
         internal void InvokePluginMethod(Action invokeAction)
         {
+            var ex = InvokeMethod(invokeAction);
+            if (ex != null)
+                OnPluginException(ex);
+        }
+
+        private Exception InvokeMethod(Action invokeAction)
+        {
+            Exception pluginException = null;
+
             OnBeforeInvoke();
             var oldContext = SynchronizationContext.Current;
+            AlgoPlugin.Context = this;
             SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
@@ -209,10 +210,13 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                OnPluginException(ex);
+                pluginException = ex;
             }
+            AlgoPlugin.Context = null;
             SynchronizationContext.SetSynchronizationContext(oldContext);
             OnAfterInvoke();
+
+            return pluginException;
         }
 
         internal void InvokeCalculate(bool isUpdate)
@@ -274,6 +278,16 @@ namespace TickTrader.Algo.Core
 
         #region IHelperApi
 
+        string IHelperApi.FormatPrice(double price, int digits)
+        {
+            return price.ToString("F" + digits);
+        }
+
+        string IHelperApi.FormatPrice(double price, Symbol symbolInfo)
+        {
+            return price.ToString("F" + symbolInfo.Digits);
+        }
+
         Quote IHelperApi.CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
         {
             QuoteEntity entity = new QuoteEntity();
@@ -316,6 +330,28 @@ namespace TickTrader.Algo.Core
                 return new BookEntry[0];
 
             return prices.Zip(volumes, (p, v) => new BookEntryEntity() { Price = p, Volume = v });
+        }
+
+        double IHelperApi.RoundVolumeDown(double volume, Symbol symbolInfo)
+        {
+            double step = symbolInfo.TradeVolumeStep;
+            double steps = System.Math.Truncate(volume / step);
+
+            if (steps < symbolInfo.MinTradeVolume)
+                return 0;
+
+            return steps * step;
+        }
+
+        double IHelperApi.RoundVolumeUp(double volume, Symbol symbolInfo)
+        {
+            double step = symbolInfo.TradeVolumeStep;
+            double steps = System.Math.Ceiling(volume / step);
+
+            if (steps < symbolInfo.MinTradeVolume)
+                return symbolInfo.MinTradeVolume;
+
+            return steps * step;
         }
 
         #endregion
