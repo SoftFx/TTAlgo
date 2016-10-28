@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Api
         internal static IPluginContext Context { get { return context; } set { context = value; } }
 
         public AccountDataProvider Account { get { return context.AccountData; } }
+        public DiagnosticInfo Diagnostics { get { return context.Diagnostics; } }
         public CustomFeedProvider Feed { get { return context.Feed.CustomCommds; } }
         public EnvironmentInfo Enviroment { get { return context.Environment; } }
         public SymbolList Symbols { get { return context.Symbols.List; } }

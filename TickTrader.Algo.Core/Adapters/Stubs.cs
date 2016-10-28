@@ -18,6 +18,13 @@ namespace TickTrader.Algo.Core
         void OnExit();
     }
 
+    internal static class Null
+    {
+        private static DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
+
+        public static DiagnosticInfo Diagnostics => nullDiagnostics;
+    }
+
     internal class PluginLoggerAdapter : IPluginMonitor
     {
         private static readonly IPluginLogger nullLogger = new NullLogger();
@@ -133,5 +140,10 @@ namespace TickTrader.Algo.Core
         {
             return rejectResult;
         }
+    }
+
+    internal class NullDiagnosticInfo : DiagnosticInfo
+    {
+        public int FeedQueueSize { get { return 0; } }
     }
 }

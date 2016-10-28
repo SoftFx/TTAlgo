@@ -50,6 +50,7 @@
     <Compile Include="Asset.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
+    <Compile Include="DiagnosticInfo.cs" />
     <Compile Include="EnvironmentInfo.cs" />
     <Compile Include="File.cs" />
     <Compile Include="Helper.cs" />

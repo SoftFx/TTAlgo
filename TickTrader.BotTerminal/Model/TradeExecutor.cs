@@ -255,6 +255,12 @@ namespace TickTrader.BotTerminal
                             return OrderCmdResultCodes.TradeNotAllowed;
                         break;
                     }
+                case RejectReason.None:
+                    {
+                        if (message.StartsWith("Order Not Found"))
+                            return OrderCmdResultCodes.OrderNotFound;
+                        break;
+                    }
             }
             return OrderCmdResultCodes.UnknownError;
         }
