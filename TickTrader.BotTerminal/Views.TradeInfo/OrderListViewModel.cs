@@ -28,9 +28,11 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
 
             Orders.CollectionChanged += OrdersCollectionChanged;
+            Account.AccountTypeChanged += () => NotifyOfPropertyChange(nameof(IsGrossAccount));
         }
 
         public IObservableListSource<OrderViewModel> Orders { get; private set; }
+        public bool IsGrossAccount => Account.Type == AccountType.Gross;
 
         private void OrdersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
