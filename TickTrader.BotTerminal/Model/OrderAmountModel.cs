@@ -14,9 +14,19 @@ namespace TickTrader.BotTerminal
         public OrderAmountModel(SymbolInfo symbolDescriptor)
         {
             LotSize = (decimal)symbolDescriptor.RoundLot;
-            MinAmount = (decimal)symbolDescriptor.MinTradeVolume / LotSize;
-            MaxAmount = (decimal)symbolDescriptor.MaxTradeVolume / LotSize;
-            AmountStep = (decimal)symbolDescriptor.TradeVolumeStep / LotSize;
+            if (LotSize != 0)
+            {
+                MinAmount = (decimal)symbolDescriptor.MinTradeVolume / LotSize;
+                MaxAmount = (decimal)symbolDescriptor.MaxTradeVolume / LotSize;
+                AmountStep = (decimal)symbolDescriptor.TradeVolumeStep / LotSize;
+            }
+            else
+            {
+                MinAmount = (decimal)symbolDescriptor.MinTradeVolume;
+                MaxAmount = (decimal)symbolDescriptor.MaxTradeVolume;
+                AmountStep = (decimal)symbolDescriptor.TradeVolumeStep;
+            }
+
         }
 
         public decimal MaxAmount { get; private set; }

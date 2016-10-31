@@ -94,6 +94,8 @@ namespace MMBot
         }
         protected override void OnQuote(Quote quote)
         {
+            Status.WriteLine("QueueSize: {0}", Diagnostics.FeedQueueSize);
+
             string from = Symbols[quote.Symbol].BaseCurrency;
             string to = Symbols[quote.Symbol].CounterCurrency;
 
