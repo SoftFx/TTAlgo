@@ -32,6 +32,8 @@ namespace MMBot
         public bool DebugStatus{ get; set; }
         public Dictionary<string[], double> ParsedSyntetics = new Dictionary<string[], double>();
         public string BotTag { get; set; }
+        public bool AutoAddVolume2PartialFill { get; set; }
+        public bool AutoUpdate2TradeEvent { get; set; }
 
         public MMBotTOMLConfiguration()
         {
@@ -57,7 +59,12 @@ namespace MMBot
 
         protected override void OnStart()
         {
-            tradeAsync = new TradeAsync(this);
+            OrderKeeperSettings okSettings = OrderKeeperSettings.None;
+            if (conf.AutoAddVolume2PartialFill)
+                okSettings |= OrderKeeperSettings.AutoAddVolume2PartialFill;
+            if (conf.AutoUpdate2TradeEvent)
+                okSettings |= OrderKeeperSettings.AutoUpdate2TradeEvent;
+            tradeAsync = new TradeAsync(this, okSettings);
 
             this.Status.WriteLine("Input parameters");
             Nett.Toml.WriteFile<MMBotTOMLConfiguration>(new MMBotTOMLConfiguration(), FileConfig.FullPath + "2");
@@ -101,11 +108,13 @@ namespace MMBot
             foreach (KeyValuePair<string[], double> currPair in conf.ParsedSyntetics)
             {
                 string[] currencies = currPair.Key;
-                double reqVolume = currPair.Value;
-                double availableVolume;
-                double cumPrice = CalculateSynteticVolumePrice(sellDigraph, currencies, reqVolume, out availableVolume);
                 string synteticSymbol = currencies[0] + currencies.Last();
+                double reqVolume = currPair.Value * this.Symbols[synteticSymbol].ContractSize;
+                double availableVolume;
 
+                double cumPrice = CalculateSynteticVolumePrice(sellDigraph, currencies, reqVolume, out availableVolume);
+                if (cumPrice == double.NaN)
+                    cumPrice = cumPrice*1;
                 cumPrice *= (100 - conf.MarkupInPercent) / 100;
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);
                 Status.WriteLine(synteticSymbol + "=" + cumPrice + " " + availableVolume);
@@ -119,10 +128,10 @@ namespace MMBot
             foreach (KeyValuePair<string[], double> currPair in conf.ParsedSyntetics)
             {
                 string[] currencies = currPair.Key;
-                double reqVolume = currPair.Value;
                 string synteticSymbol = currencies[0] + currencies.Last();
-
+                double reqVolume = currPair.Value * this.Symbols[synteticSymbol].ContractSize;
                 double availableVolume;
+
                 double cumPrice = CalculateSynteticVolumePrice(buyDigraph, currencies, reqVolume, out availableVolume);
                 cumPrice *= (100 + conf.MarkupInPercent) / 100;
                 cumPrice = Math.Round(cumPrice, Symbols[synteticSymbol].Digits);

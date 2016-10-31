@@ -75,13 +75,13 @@ namespace MMBot2
 
             if (order == null)
             {
-                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume / symbol.ContractSize, price, null, null, orderTag);
+                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, orderTag);
                 return;
             }
             else if (volume != order.RemainingVolume)
             {
                 await tradeApi.CancelOrderAsync(order.Id);
-                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume / symbol.ContractSize, price, null, null, orderTag);
+                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, orderTag);
             }
             else if (price != order.Price)
                 await tradeApi.ModifyOrderAsync(order.Id, price);
