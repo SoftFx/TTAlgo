@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TickTrader.Algo.VS.Templates.CsIndicator")]
+[assembly: AssemblyTitle("TickTrader.Algo.VS.Templates")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Company")]
-[assembly: AssemblyProduct("TickTrader.Algo.VS.Templates.CsIndicator")]
+[assembly: AssemblyProduct("TickTrader.Algo.VS.Templates")]
 [assembly: AssemblyCopyright("Copyright © Company 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("47b89018-6b85-4138-bcb3-0b90a24ae903")]
+[assembly: Guid("38b2d38c-9b81-4b12-8e0f-b3da9538c77f")]
 
 // Version information for an assembly consists of the following four values:
 //

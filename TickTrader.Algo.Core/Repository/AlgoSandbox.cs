@@ -12,14 +12,15 @@ namespace TickTrader.Algo.Core.Repository
 {
     internal class AlgoSandbox : CrossDomainObject
     {
-        private string dllFolder;
+        private IDotNetPluginPackage package;
 
-        public AlgoSandbox(string filePath)
+        public AlgoSandbox(IDotNetPluginPackage package)
         {
-            this.dllFolder = Path.GetDirectoryName(filePath);
+            this.package = package;
+            //this.dllFolder = Path.GetDirectoryName(filePath);
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            LoadAndInspect(filePath);
+            LoadAndInspect(package.MainAssemblyName);
         }
 
         public IEnumerable<AlgoPluginDescriptor> AlgoMetadata { get; private set; }
@@ -36,27 +37,40 @@ namespace TickTrader.Algo.Core.Repository
 
         private void LoadAndInspect(string filePath)
         {
-            Assembly algoAssembly = LoadFromDisk(filePath);
+            Assembly algoAssembly = LoadAssembly(filePath);
             AlgoMetadata = AlgoPluginDescriptor.InspectAssembly(algoAssembly);
         }
 
-        private Assembly LoadFromDisk(string filePath)
+        private Assembly LoadAssembly(string assemblyFileName)
         {
-            string directory = Path.GetDirectoryName(filePath);
-            string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
-            string pdbPath = Path.Combine(directory, pdbFileName);
+            string pdbFileName = Path.GetFileNameWithoutExtension(assemblyFileName) + ".pdb";
 
-            byte[] assemblyBytes = File.ReadAllBytes(filePath);
-            byte[] symbolsBytes = null;
+            byte[] assemblyBytes =  package.GetFileBytes(assemblyFileName);
+            byte[] symbolsBytes = package.GetFileBytes(pdbFileName);
 
-            try
-            {
-                symbolsBytes = File.ReadAllBytes(pdbPath);
-            }
-            catch (FileNotFoundException) { }
+            if (assemblyBytes == null)
+                throw new FileNotFoundException("Package is missing required file: " + assemblyFileName);
 
             return Assembly.Load(assemblyBytes, symbolsBytes);
         }
+
+        //private Assembly LoadFromDisk(string filePath)
+        //{
+        //    string directory = Path.GetDirectoryName(filePath);
+        //    string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
+        //    string pdbPath = Path.Combine(directory, pdbFileName);
+
+        //    byte[] assemblyBytes = File.ReadAllBytes(filePath);
+        //    byte[] symbolsBytes = null;
+
+        //    try
+        //    {
+        //        symbolsBytes = File.ReadAllBytes(pdbPath);
+        //    }
+        //    catch (FileNotFoundException) { }
+
+        //    return Assembly.Load(assemblyBytes, symbolsBytes);
+        //}
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
@@ -66,14 +80,13 @@ namespace TickTrader.Algo.Core.Repository
             if (name.Name == "TickTrader.Algo.Api")
                 return typeof(TickTrader.Algo.Api.TradeBot).Assembly;
 
-            try
-            {
-                return LoadFromDisk(Path.Combine(dllFolder, name.Name + ".dll"));
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
+            return LoadAssembly(name.Name + ".dll");
         }
+    }
+
+    internal interface IDotNetPluginPackage
+    {
+        string MainAssemblyName { get; }
+        byte[] GetFileBytes(string packageLocalPath);
     }
 }

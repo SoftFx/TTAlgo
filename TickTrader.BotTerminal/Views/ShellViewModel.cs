@@ -64,6 +64,8 @@ namespace TickTrader.BotTerminal
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
+            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
+                catalog.AddFolder(EnvService.Instance.AlgoCommonRepositoryFolder);
             catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
 
             clientModel.Connected += OpenDefaultChart;

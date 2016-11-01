@@ -49,6 +49,10 @@ namespace TickTrader.Algo.Core.Metadata
             else
                 EnumValues = emptyEnumValuesList;
 
+            // Filter out unknown objects from DefaultValue because they can cause cross-domain serialization problems
+            if (DefaultValue != null && !(DefaultValue is string) && !DefaultValue.GetType().IsPrimitive)
+                DefaultValue = null;
+
             InspectFileFilterAttr(propertyInfo);
         }
 

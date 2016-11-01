@@ -35,8 +35,22 @@ namespace TickTrader.Algo.Core
             if (path.ToLower() == MetadataFileName) // in case of random metadata file in output
                 return false;
 
-            files.Add(path, fileBytes);
+            AddFileEntry(path, fileBytes);
             return true;
+        }
+
+        public byte[] GetFile(string path)
+        {
+            var normalizedPath = path.ToLowerInvariant();
+            byte[] bytes;
+            files.TryGetValue(normalizedPath, out bytes);
+            return bytes;
+        }
+
+        private void AddFileEntry(string inPackagePath, byte[] bytes)
+        {
+            var normalizedPath = inPackagePath.ToLowerInvariant();
+            files.Add(normalizedPath, bytes);
         }
 
         public void Save(FileStream stream)
@@ -75,18 +89,20 @@ namespace TickTrader.Algo.Core
                 {
                     using (var entryStream = entry.Open())
                     {
-                        byte[] buffer = new byte[entryStream.Length];
+                        var entryNormalizedPath = entry.FullName.ToLowerInvariant();
+
+                        byte[] buffer = new byte[entry.Length];
                         using (MemoryStream bufferWrapper = new MemoryStream(buffer))
                         {
                             entryStream.CopyTo(bufferWrapper);
 
-                            if (entry.FullName.ToLowerInvariant() == MetadataFileName)
+                            if (entryNormalizedPath == MetadataFileName)
                             {
                                 bufferWrapper.Seek(0, SeekOrigin.Begin);
                                 metadata = FromXml<PackageMetadata>(bufferWrapper);
                             }
                             else
-                                files.Add(entry.FullName, buffer);
+                                files.Add(entryNormalizedPath, buffer);
                         }
                     }
                 }
