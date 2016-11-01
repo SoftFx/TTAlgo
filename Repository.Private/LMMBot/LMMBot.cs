@@ -30,24 +30,30 @@ namespace LMMBot
             base.Status.WriteLine(configuration.ToString());
             foreach (KeyValuePair<string, double> symbol2Volume in configuration.LPSymbols)
             {
-                base.Status.WriteLine("LP subscribing to " + symbol2Volume.Key);
-                MmLoop(LMMBotTOMLConfiguration.SymbolNameConvertor(symbol2Volume.Key), new LiveCoinFeeder(symbol2Volume.Key)
-                    , symbol2Volume.Value);
+                var localSymbolName = LMMBotTOMLConfiguration.SymbolNameConvertor(symbol2Volume.Key);
+                Symbol smbInfo = Symbols[localSymbolName];
+                if (smbInfo.IsNull)
+                    PrintError("Cannot find symbol: {0} ", localSymbolName);
+                else
+                {
+                    Print("LP subscribing to " + symbol2Volume.Key);
+                    MmLoop(smbInfo, new LiveCoinFeeder(symbol2Volume.Key), symbol2Volume.Value);
+                }
            }
         }
 
-        private async void MmLoop(string symbol, LiveCoinFeeder feeder, double volume)
+        private async void MmLoop(Symbol symbol, LiveCoinFeeder feeder, double volume)
         {
             while (!isStopRequested)
             {
                 LiveCoinTicker quote = await feeder.GetLatestQuote();
                 double askPrice = quote.best_ask * (100 + configuration.MarkupInPercent) / 100;
                 double bidPrice = quote.best_bid * (100 - configuration.MarkupInPercent) / 100;
-                askPrice = Math.Round(askPrice, Symbols[symbol].Digits);
-                bidPrice = Math.Round(bidPrice, Symbols[symbol].Digits);
+                askPrice = Math.Round(askPrice, symbol.Digits);
+                bidPrice = Math.Round(bidPrice, symbol.Digits);
 
-                tradeManager.SetLimitOrderAsync(symbol, OrderSide.Sell, volume, askPrice, "", configuration.BotTag);
-                tradeManager.SetLimitOrderAsync(symbol, OrderSide.Buy, volume, bidPrice, "", configuration.BotTag);
+                tradeManager.SetLimitOrderAsync(symbol.Name, OrderSide.Sell, volume, askPrice, "", configuration.BotTag);
+                tradeManager.SetLimitOrderAsync(symbol.Name, OrderSide.Buy, volume, bidPrice, "", configuration.BotTag);
                 Status.WriteLine("Rates from livecoin: " + quote.ToString());
                 await Task.Delay(1000);
                 Status.Flush();
