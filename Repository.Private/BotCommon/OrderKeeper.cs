@@ -7,6 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace BotCommon
 {
+
     internal class OrderKeeper :  IDisposable
     {
         private TradeBot tradeApi;
@@ -18,17 +19,22 @@ namespace BotCommon
         private bool isDisposed;
         private double targetVolume;
         private double targetPrice;
+        readonly private OrderKeeperSettings settings;
 
-        public OrderKeeper(TradeBot bot, Symbol symbol, OrderSide side, string subBotTag)
+        public OrderKeeper(TradeBot bot, Symbol symbol, OrderSide side, string subBotTag, OrderKeeperSettings reqSettings)
         {
             this.tradeApi = bot;
             this.symbol = symbol;
             this.side = side;
             this.subBotTag = subBotTag;
+            this.settings = reqSettings;
 
-            bot.Account.Orders.Filled += Orders_Filled;
-            bot.Account.Orders.Expired += Orders_Expired;
-            bot.Account.Orders.Canceled += Orders_Canceled;
+            if (settings == OrderKeeperSettings.AutoUpdate2TradeEvent)
+            {
+                bot.Account.Orders.Filled += Orders_Filled;
+                bot.Account.Orders.Expired += Orders_Expired;
+                bot.Account.Orders.Canceled += Orders_Canceled;
+            }
         }
 
         public void SetTarget(double volume, double price)
@@ -95,7 +101,7 @@ namespace BotCommon
                     await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
                 return;
             }
-            if (Math.Abs(volume - order.RemainingVolume) > Double.Epsilon)
+            if (OrderKeeperSettings.AutoAddVolume2PartialFill == settings &&  Math.Abs(volume - order.RemainingVolume) > Double.Epsilon)
             {
                 await tradeApi.CancelOrderAsync(order.Id);
                 await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
@@ -124,9 +130,12 @@ namespace BotCommon
             if (!isDisposed)
             {
                 isDisposed = true;
-                tradeApi.Account.Orders.Filled -= Orders_Filled;
-                tradeApi.Account.Orders.Expired -= Orders_Expired;
-                tradeApi.Account.Orders.Canceled -= Orders_Canceled;
+                if (settings == OrderKeeperSettings.AutoUpdate2TradeEvent)
+                {
+                    tradeApi.Account.Orders.Filled -= Orders_Filled;
+                    tradeApi.Account.Orders.Expired -= Orders_Expired;
+                    tradeApi.Account.Orders.Canceled -= Orders_Canceled;
+                }
             }
         }
     }
