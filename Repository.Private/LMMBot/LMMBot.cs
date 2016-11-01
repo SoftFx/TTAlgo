@@ -46,15 +46,22 @@ namespace LMMBot
         {
             while (!isStopRequested)
             {
-                LiveCoinTicker quote = await feeder.GetLatestQuote();
-                double askPrice = quote.best_ask * (100 + configuration.MarkupInPercent) / 100;
-                double bidPrice = quote.best_bid * (100 - configuration.MarkupInPercent) / 100;
-                askPrice = Math.Round(askPrice, symbol.Digits);
-                bidPrice = Math.Round(bidPrice, symbol.Digits);
+                try
+                {
+                    LiveCoinTicker quote = await feeder.GetLatestQuote();
+                    double askPrice = quote.best_ask * (100 + configuration.MarkupInPercent) / 100;
+                    double bidPrice = quote.best_bid * (100 - configuration.MarkupInPercent) / 100;
+                    askPrice = Math.Round(askPrice, symbol.Digits);
+                    bidPrice = Math.Round(bidPrice, symbol.Digits);
 
-                tradeManager.SetLimitOrderAsync(symbol.Name, OrderSide.Sell, volume, askPrice, "", configuration.BotTag);
-                tradeManager.SetLimitOrderAsync(symbol.Name, OrderSide.Buy, volume, bidPrice, "", configuration.BotTag);
-                Status.WriteLine("Rates from livecoin: " + quote.ToString());
+                    tradeManager.SetLimitOrderAsync(symbol.Name, OrderSide.Sell, volume, askPrice, "", configuration.BotTag);
+                    tradeManager.SetLimitOrderAsync(symbol.Name, OrderSide.Buy, volume, bidPrice, "", configuration.BotTag);
+                    Status.WriteLine("Rates from livecoin: " + quote.ToString());
+                }
+                catch (Exception ex)
+                {
+                    PrintError("Error on symbol {0}: {1}", symbol.Name, ex.Message);
+                }
                 await Task.Delay(1000);
                 Status.Flush();
             }
