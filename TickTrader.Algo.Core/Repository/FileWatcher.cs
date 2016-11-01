@@ -130,6 +130,7 @@ namespace TickTrader.Algo.Core.Repository
 
                 currentFileInfo = info;
                 Merge(item.Metadata);
+                stateControl.PushEvent(Events.DoneLoad);
             }
             catch (IOException ioEx)
             {
