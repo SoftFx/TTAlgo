@@ -131,9 +131,9 @@ namespace TickTrader.Algo.Core.Repository
                     if (!skipFileScan)
                     {
                         newItem = ItemFactory(filePath);
-                        item.Load(stream, filePath);
+                        newItem.Load(stream, filePath);
                         currentFileInfo = info;
-                        Merge(item.Metadata); // this will fire events
+                        Merge(newItem.Metadata); // this will fire events
                         DisposeSafe(item); // dispose old item after event firing, so all running plugins can be gracefuly stopped
                         item = newItem;
                     }
