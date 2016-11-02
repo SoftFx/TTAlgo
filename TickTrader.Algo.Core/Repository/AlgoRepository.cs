@@ -16,8 +16,6 @@ namespace TickTrader.Algo.Core.Repository
 {
     public class AlgoRepository : IDisposable
     {
-        private const string AlgoFilesPattern = "*.dll";
-
         public enum States { Created, Scanning, Waiting, Watching, Closing, Closed }
         public enum Events { Start, DoneScanning, ScanFailed, NextAttempt, CloseRequested, DoneClosing }
 
@@ -28,7 +26,7 @@ namespace TickTrader.Algo.Core.Repository
         private bool isWatcherFailed;
         private Task scanTask;
         private string repPath;
-        private Dictionary<string, AlgoAssembly> assemblies = new Dictionary<string, AlgoAssembly>();
+        private Dictionary<string, FileWatcher> assemblies = new Dictionary<string, FileWatcher>();
 
         public AlgoRepository(string repPath)
         {
@@ -84,7 +82,6 @@ namespace TickTrader.Algo.Core.Repository
                 watcher = new FileSystemWatcher(repPath);
                 watcher.Path = repPath;
                 watcher.IncludeSubdirectories = false;
-                watcher.Filter = AlgoFilesPattern;
 
                 watcher.Changed += watcher_Changed;
                 watcher.Created += watcher_Changed;
@@ -95,24 +92,20 @@ namespace TickTrader.Algo.Core.Repository
                 {
                     watcher.EnableRaisingEvents = true;
 
-                    string[] fileList = Directory.GetFiles(repPath, AlgoFilesPattern, SearchOption.AllDirectories);
+                    string[] fileList = Directory.GetFiles(repPath);
                     foreach (string file in fileList)
                     {
                         if (stateControl.Current == States.Closing)
                             break;
 
-                        AlgoAssembly assemblyMetadata;
-                        if (!assemblies.TryGetValue(file, out assemblyMetadata))
-                        {
-                            assemblyMetadata = new AlgoAssembly(file, OnError);
-                            assemblyMetadata.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName));
-                            assemblyMetadata.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName));
-                            assemblyMetadata.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName));
-                            assemblies.Add(file, assemblyMetadata);
-                            assemblyMetadata.Start();
-                        }
+                        if (!FileWatcher.IsFileSupported(file))
+                            continue;
+
+                        FileWatcher item;
+                        if (!assemblies.TryGetValue(file, out item))
+                            AddItem(file);
                         else
-                            assemblyMetadata.CheckForChanges();
+                            item.CheckForChanges();
                     }
                 }
 
@@ -125,6 +118,16 @@ namespace TickTrader.Algo.Core.Repository
             }
         }
 
+        private void AddItem(string file)
+        {
+            var item = new FileWatcher(file, OnError);
+            item.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName));
+            item.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName));
+            item.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName));
+            assemblies.Add(file, item);
+            item.Start();
+        }
+
         void watcher_Error(object sender, ErrorEventArgs e)
         {
             stateControl.ModifyConditions(() => isWatcherFailed = true);
@@ -134,23 +137,38 @@ namespace TickTrader.Algo.Core.Repository
         {
             lock (scanUpdateLockObj)
             {
-                AlgoAssembly assembly;
-                if (assemblies.TryGetValue(e.OldFullPath, out assembly))
-                {
-                    assemblies.Remove(e.OldFullPath);
-                    assemblies.Add(e.FullPath, assembly);
-                    assembly.Rename(e.FullPath);
-                }
-                else if (assemblies.TryGetValue(e.FullPath, out assembly))
-                {
-                    // I dunno
-                }
+                if (!FileWatcher.IsFileSupported(e.FullPath))
+                    return;
+
+                FileWatcher assembly;
+                if (assemblies.TryGetValue(e.FullPath, out assembly))
+                    assembly.CheckForChanges();
                 else
                 {
-                    assembly = new AlgoAssembly(e.FullPath, OnError);
+                    assembly = new FileWatcher(e.FullPath, OnError);
                     assemblies.Add(e.FullPath, assembly);
                 }
             }
+
+            //lock (scanUpdateLockObj)
+            //{
+            //    FileWatcher assembly;
+            //    if (assemblies.TryGetValue(e.OldFullPath, out assembly))
+            //    {
+            //        assemblies.Remove(e.OldFullPath);
+            //        assemblies.Add(e.FullPath, assembly);
+            //        assembly.Rename(e.FullPath);
+            //    }
+            //    else if (assemblies.TryGetValue(e.FullPath, out assembly))
+            //    {
+            //        // I dunno
+            //    }
+            //    else
+            //    {
+            //        assembly = new FileWatcher(e.FullPath, OnError);
+            //        assemblies.Add(e.FullPath, assembly);
+            //    }
+            //}
         }
 
         void watcher_Deleted(object sender, FileSystemEventArgs e)
@@ -161,14 +179,14 @@ namespace TickTrader.Algo.Core.Repository
         {
             lock (scanUpdateLockObj)
             {
-                AlgoAssembly assembly;
+                if (!FileWatcher.IsFileSupported(e.FullPath))
+                    return;
+
+                FileWatcher assembly;
                 if (assemblies.TryGetValue(e.FullPath, out assembly))
                     assembly.CheckForChanges();
                 else
-                {
-                    assembly = new AlgoAssembly(e.FullPath, OnError);
-                    assemblies.Add(e.FullPath, assembly);
-                }
+                    AddItem(e.FullPath);
             }
         }
 

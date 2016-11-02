@@ -4,7 +4,10 @@ using Microsoft.VisualStudio.Shell.Flavor;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +20,7 @@ namespace TickTrader.Algo.VS.Package
         private IVsProjectFlavorCfgProvider innerVsProjectFlavorCfgProvider;
         private Project dteProject;
         private DTE dteObj;
+        private string projectFolder;
 
         internal void SetPackage(VSPackage package)
         {
@@ -31,12 +35,6 @@ namespace TickTrader.Algo.VS.Package
                 serviceProvider = package;
             base.SetInnerProject(innerIUnknown);
             innerVsProjectFlavorCfgProvider = objectForIUnknown as IVsProjectFlavorCfgProvider;
-
-            //var dte = serviceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
-            //dte.Events.BuildEvents.OnBuildDone += BuildEvents_OnBuildDone;
-            //dte.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
-            
-            //var project = dte.Solution.Projects.Item(0);
         }
 
         protected override void InitializeForOuter(string fileName, string location, string name, uint flags, ref Guid guidProject, out bool cancel)
@@ -47,37 +45,15 @@ namespace TickTrader.Algo.VS.Package
             ErrorHandler.ThrowOnFailure(GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out extObject));
             dteProject = (EnvDTE.Project)extObject;
             dteObj = dteProject.DTE;
+            projectFolder = Path.GetDirectoryName(dteProject.FullName);
 
-            //StringBuilder builder = new StringBuilder();
-            //foreach (Property property in dteProject.Properties)
-            //builder.Append(property.Name).Append("=").AppendLine();
-
-            //dteObj.Events.BuildEvents.OnBuildDone += BuildEvents_OnBuildDone;
             dteObj.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
 
-            //IVsSolutionBuildManager buildManager = ((System.IServiceProvider)this).GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager;
-
-            //IVsProjectCfg[] ppIVsProjectCfg = new IVsProjectCfg[1];
-            //buildManager.FindActiveProjectCfg(IntPtr.Zero, IntPtr.Zero, this, ppIVsProjectCfg);
-
-            //IVsBuildableProjectCfg ppIVsBuildableProjectCfg;
-            //ppIVsProjectCfg[0].get_BuildableProjectCfg(out ppIVsBuildableProjectCfg);
-
-            //uint pdwCookie;
-            //ppIVsBuildableProjectCfg.AdviseBuildStatusCallback(this, out pdwCookie);
+            AdjustApiReference();
         }
 
         private void BuildEvents_OnBuildProjConfigDone(string Project, string ProjectConfig, string Platform, string SolutionConfig, bool Success)
         {
-            //var value = dteProject.Properties.OfType<Property>().FirstOrDefault(p => p.Name == 
-            //var aCfgProps = PrintProperties(dteProject.ConfigurationManager.ActiveConfiguration.Properties);
-            //var prjProps = PrintProperties(dteProject.Properties);
-            //var prjName = dteProject.UniqueName;
-
-            //var sManager = ((System.IServiceProvider)this).GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager;
-            //var builder = ((System.IServiceProvider)this).GetService(typeof(IVsBuildableProjectCfg)) as IVsBuildableProjectCfg;
-            //IVsProject p;
-
             if (Project != dteProject.UniqueName) // filter out other projects
                 return;
 
@@ -103,31 +79,26 @@ namespace TickTrader.Algo.VS.Package
             }
         }
 
-        private string PrintProperties(Properties props)
-        {
-            StringBuilder builder = new StringBuilder();
-            foreach (Property property in props)
-            {
-                builder.Append(property.Name).Append("=");
-
-                try
-                {
-                    var value = property.Value;
-                    builder.Append(value);
-                }
-                catch (Exception)
-                {
-                    builder.Append("{ERROR}");
-                }
-
-                builder.AppendLine();
-            }
-            return builder.ToString();
-        }
-
-        //private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        //private string PrintProperties(Properties props)
         //{
-        //    Task.Delay(10000).Wait();
+        //    StringBuilder builder = new StringBuilder();
+        //    foreach (Property property in props)
+        //    {
+        //        builder.Append(property.Name).Append("=");
+
+        //        try
+        //        {
+        //            var value = property.Value;
+        //            builder.Append(value);
+        //        }
+        //        catch (Exception)
+        //        {
+        //            builder.Append("{ERROR}");
+        //        }
+
+        //        builder.AppendLine();
+        //    }
+        //    return builder.ToString();
         //}
 
         protected override void Close()
@@ -178,32 +149,32 @@ namespace TickTrader.Algo.VS.Package
             return base.GetProperty(itemId, propId, out property);
         }
 
-        private void RemoveFromCLSIDList(ref string pageList, string pageGuidString)
-        {
-            // Remove the specified page guid from the string of guids.
-            int index = pageList.IndexOf(pageGuidString, StringComparison.OrdinalIgnoreCase);
+        //private void RemoveFromCLSIDList(ref string pageList, string pageGuidString)
+        //{
+        //    // Remove the specified page guid from the string of guids.
+        //    int index = pageList.IndexOf(pageGuidString, StringComparison.OrdinalIgnoreCase);
 
-            if (index != -1)
-            {
-                // Guids are separated by ';', so we need to ensure we remove the ';' 
-                // when removing the last guid in the list.
-                int index2 = index + pageGuidString.Length + 1;
-                if (index2 >= pageList.Length)
-                {
-                    pageList = pageList.Substring(0, index).TrimEnd(';');
-                }
-                else
-                {
-                    pageList = pageList.Substring(0, index) + pageList.Substring(index2);
-                }
-            }
-            else
-            {
-                throw new ArgumentException(
-                    string.Format("Cannot find the Page {0} in the Page List {1}",
-                    pageGuidString, pageList));
-            }
-        }
+        //    if (index != -1)
+        //    {
+        //        // Guids are separated by ';', so we need to ensure we remove the ';' 
+        //        // when removing the last guid in the list.
+        //        int index2 = index + pageGuidString.Length + 1;
+        //        if (index2 >= pageList.Length)
+        //        {
+        //            pageList = pageList.Substring(0, index).TrimEnd(';');
+        //        }
+        //        else
+        //        {
+        //            pageList = pageList.Substring(0, index) + pageList.Substring(index2);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        throw new ArgumentException(
+        //            string.Format("Cannot find the Page {0} in the Page List {1}",
+        //            pageGuidString, pageList));
+        //    }
+        //}
 
         #region IVsProjectFlavorCfgProvider Members
 
@@ -240,6 +211,98 @@ namespace TickTrader.Algo.VS.Package
         public int Tick(ref int pfContinue)
         {
             return VSConstants.S_OK;
+        }
+
+        private void AdjustApiReference()
+        {
+            VSLangProj.VSProject vsProject = (VSLangProj.VSProject)dteProject.Object;
+            var references = vsProject.References.Cast<VSLangProj.Reference>();
+            var apiRef = references.FirstOrDefault(r => r.Name == "TickTrader.Algo.Api");
+            var apiSrc = GetLatestApiCopy();
+            var apiProjectDefPath = Path.Combine(projectFolder, EnvService.ApiDllFileName);
+
+            if (apiSrc == null)
+                return; // TO DO : log
+
+            if (apiRef == null)
+            {
+                // add reference
+                try
+                {
+                    apiSrc.Save(apiProjectDefPath);
+                    var newRef = vsProject.References.Add(apiProjectDefPath);
+                    newRef.CopyLocal = false;
+                }
+                catch (Exception)
+                {
+                    // TO DO : log
+                }
+            }
+            else
+            {
+                // update reference if necessary
+                try
+                {
+                    // check location
+                    var existingApiRefPath = apiRef.Path;
+                    if (!ComparePaths(existingApiRefPath, apiProjectDefPath))
+                        return; // User has relocated API dll. Let's keep it as it is.
+
+                    // check version
+                    var refVersion = GetVersionOrNull(existingApiRefPath);
+                    if (refVersion == null || refVersion < apiSrc.Version)
+                        apiSrc.Save(existingApiRefPath);
+                }
+                catch (Exception)
+                {
+                    // TO DO : log
+                }
+            }
+        }
+
+        private Version GetVersionOrNull(string path)
+        {
+            try
+            {
+                var versionStr = FileVersionInfo.GetVersionInfo(path).FileVersion;
+                return new Version(versionStr);
+            }
+            catch (Exception)
+            {
+                // TO DO : log error
+                return null;
+            }
+        }
+
+        private AssemblyCopy GetLatestApiCopy()
+        {
+            var apiFromCommon = new AssemblyCopy(Path.Combine(EnvService.AlgoCommonApiFolder, EnvService.ApiDllFileName));
+
+            if (apiFromCommon.IsValid)
+                return apiFromCommon;
+
+            // TO DO : log error
+
+            var apiFromPackage = new AssemblyCopy(Path.Combine(EnvService.PackageFolder, EnvService.ApiDllFileName));
+
+            if (apiFromPackage.IsValid)
+                return apiFromPackage;
+
+            // TO DO : log error
+
+            return null;
+        }
+
+        public static bool ComparePaths(string path1, string path2)
+        {
+            return NormalizePath(path1) == NormalizePath(path2);
+        }
+
+        public static string NormalizePath(string path)
+        {
+            return Path.GetFullPath(new Uri(path).LocalPath)
+                       .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                       .ToUpperInvariant();
         }
     }
 }

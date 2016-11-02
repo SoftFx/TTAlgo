@@ -25,10 +25,7 @@ namespace TickTrader.Algo.VS.Package
 
         public void SaveToCommonRepository()
         {
-            string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string repFolder = Path.Combine(docFolder, "BotTrader\\AlgoRepository");
-
-            Save(repFolder);
+            Save(EnvService.AlgoCommonRepositoryFolder);
         }
 
         public void Save(string targetFolder, string pckgFileName = null)

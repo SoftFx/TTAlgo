@@ -11,17 +11,20 @@ namespace BotCommon
     {
         readonly TradeBot bot;
         Dictionary<string, OrderKeeper> dict = new Dictionary<string, OrderKeeper>();
+        OrderKeeperSettings okSettings { get; set; }
 
-        public TradeAsync(TradeBot bot)
+        public TradeAsync(TradeBot bot, OrderKeeperSettings orderKeeperSettings = OrderKeeperSettings.None)
         {
             this.bot = bot;
+            this.okSettings = orderKeeperSettings;
         }
 
-        public void SetLimitOrderAsync(string symbol, OrderSide side, double volume, double price, string comment, string subBotTag)
+        public void SetLimitOrderAsync(string symbol, OrderSide side, double volume, double price, 
+            string comment, string subBotTag)
         {
             string key = GetKey(symbol, side, subBotTag);
             if (!dict.ContainsKey(key))
-                dict.Add(key, new OrderKeeper(bot, bot.Symbols[symbol], side, subBotTag));
+                dict.Add(key, new OrderKeeper(bot, bot.Symbols[symbol], side, subBotTag, okSettings));
 
             dict[key].SetTarget(volume, price);
         }

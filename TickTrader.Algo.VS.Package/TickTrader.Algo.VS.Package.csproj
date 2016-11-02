@@ -57,6 +57,8 @@
     <Compile Include="..\TickTrader.Algo.Core\Package\PackageMetadata.cs">
       <Link>Algo.Core.Copy\PackageMetadata.cs</Link>
     </Compile>
+    <Compile Include="EnvService.cs" />
+    <Compile Include="AssemblyCopy.cs" />
     <Compile Include="PackageWriter.cs" />
     <Compile Include="CsProject.cs" />
     <Compile Include="CsProjectConfiguration.cs" />
@@ -176,6 +178,9 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="VSLangProj, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VSPackage.resx">
@@ -186,9 +191,15 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.Algo.VS.Templates.CsIndicator\TickTrader.Algo.VS.Templates.CsIndicator.csproj">
-      <Project>{47B89018-6B85-4138-BCB3-0B90A24AE903}</Project>
-      <Name>TickTrader.Algo.VS.Templates.CsIndicator</Name>
+    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{8901C84D-FB62-433C-A25F-4D24255B9453}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.VS.Templates\TickTrader.Algo.VS.Templates.csproj">
+      <Project>{38B2D38C-9B81-4B12-8E0F-B3DA9538C77F}</Project>
+      <Name>TickTrader.Algo.VS.Templates</Name>
       <VSIXSubPath>ProjectTemplates</VSIXSubPath>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <IncludeOutputGroupsInVSIX>TemplateProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>

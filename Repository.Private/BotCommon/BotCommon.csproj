@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OrderKeeper.cs" />
+    <Compile Include="OrderKeeperSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TradeAsync.cs" />
   </ItemGroup>

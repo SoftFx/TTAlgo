@@ -42,6 +42,8 @@ namespace TickTrader.Algo.VS.Package
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class VSPackage : Microsoft.VisualStudio.Shell.Package
     {
+        private IVsOutputWindow outputWnd;
+
         /// <summary>
         /// VSPackage GUID string.
         /// </summary>
@@ -57,6 +59,22 @@ namespace TickTrader.Algo.VS.Package
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
             Trace.WriteLine(string.Format("Entering constructor for: {0}", this));
+        }
+
+        public IVsOutputWindow OutputWnd
+        {
+            get
+            {
+                if (outputWnd == null)
+                    outputWnd = GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+                return outputWnd;
+                //Guid guidGeneral = Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid;
+                //IVsOutputWindowPane pane;
+                //int hr = outputWindow.CreatePane(guidGeneral, "General", 1, 0);
+                //hr = outputWindow.GetPane(guidGeneral, out pane);
+                //pane.Activate();
+                //pane.OutputString("Test");
+            }
         }
 
         #region Package Members

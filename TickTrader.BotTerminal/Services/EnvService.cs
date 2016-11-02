@@ -16,20 +16,20 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             ApplicationName = "BotTrader";
 
+            var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
+
             if (System.Deployment.Application.ApplicationDeployment.IsNetworkDeployed)
             {
                 // ------- Click Once Mode -------------
-
-                var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
 
                 BotLogFolder = Path.Combine(appDocumentsFolder, "BotLogs");
                 LogFolder = Path.Combine(appDocumentsFolder, "Logs");
                 JournalFolder = Path.Combine(appDocumentsFolder, "Journals");
                 AlgoRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
+                AlgoCommonRepositoryFolder = null;
                 AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
-
                 AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             }
             else
@@ -42,12 +42,14 @@ namespace TickTrader.BotTerminal
                 LogFolder = Path.Combine(appDir, "Logs");
                 JournalFolder = Path.Combine(appDir, "Journal");
                 AlgoRepositoryFolder = Path.Combine(appDir, "AlgoRepository");
+                AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
                 AlgoWorkingFolder = Path.Combine(appDir, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");
                 AppDataFolder = Path.Combine(appDir, "Settings");
             }
            
             EnsureFolder(AlgoRepositoryFolder);
+            EnsureFolder(AlgoCommonRepositoryFolder);
             EnsureFolder(AlgoWorkingFolder);
             EnsureFolder(BotLogFolder);
             EnsureFolder(LogFolder);
@@ -71,6 +73,7 @@ namespace TickTrader.BotTerminal
         public string LogFolder { get; private set; }
         public string JournalFolder { get; private set; }
         public string AlgoRepositoryFolder { get; private set; }
+        public string AlgoCommonRepositoryFolder { get; private set; }
         public string AlgoWorkingFolder { get; private set; }
         public string AppDataFolder { get; private set; }
         public IObjectStorage UserDataStorage { get; private set; }
@@ -78,6 +81,9 @@ namespace TickTrader.BotTerminal
 
         private void EnsureFolder(string folderPath)
         {
+            if (string.IsNullOrEmpty(folderPath))
+                return;
+
             try
             {
                 Directory.CreateDirectory(folderPath);
