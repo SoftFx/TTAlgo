@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -33,6 +34,9 @@ namespace TickTrader.BotTerminal
         public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> Indicators { get; private set; }
         public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> BotTraders { get; private set; }
         public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> AllPlugins { get { return plugins; } }
+
+        public event Action<PluginCatalogItem> PluginBeingReplaced;
+        public event Action<PluginCatalogItem> PluginBeingRemoved;
 
         public void AddFolder(string path)
         {

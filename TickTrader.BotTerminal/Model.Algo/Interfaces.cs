@@ -63,5 +63,8 @@ namespace TickTrader.BotTerminal
         event Action ParamsChanged;
         event Action StartEvent;
         event AsyncEventHandler StopEvent;
+
+        //event Action<PluginCatalogItem> PluginBeingReplaced; // fired on background thread!
+        //event Action<PluginCatalogItem> PluginBeingRemoved; // fired on background thread!
     }
 }

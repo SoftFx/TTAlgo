@@ -289,9 +289,9 @@
     <Compile Include="Model\FdkToAlgo.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
-    <Compile Include="Model\PluginCatalog.cs" />
-    <Compile Include="Model\PluginCatalogItem.cs" />
-    <Compile Include="Model\PluginCatalogKey.cs" />
+    <Compile Include="Model.Algo\PluginCatalog.cs" />
+    <Compile Include="Model.Algo\PluginCatalogItem.cs" />
+    <Compile Include="Model.Algo\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
     <Compile Include="Model\UniqueNameGenerator.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
