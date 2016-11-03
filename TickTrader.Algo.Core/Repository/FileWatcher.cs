@@ -33,14 +33,6 @@ namespace TickTrader.Algo.Core.Repository
             this.FileName = Path.GetFileName(filePath);
             this.onError = onError;
 
-            var ext = Path.GetExtension(filePath).ToLowerInvariant();
-
-            if (ext == ".ttalgo")
-                item = new AlgoPackageItem();
-            else if (ext == ".dll")
-                item = new NetAssemblyItem();
-            else
-                throw new ArgumentException("Unrecognized file type: " + ext);
 
             stateControl.AddTransition(States.Created, Events.Start, States.Loading);
             stateControl.AddTransition(States.Loading, Events.DoneLoad, States.Ready);
@@ -81,19 +73,32 @@ namespace TickTrader.Algo.Core.Repository
 
         public void Dispose()
         {
-            DisposeSafe();
+            if (item != null)
+                DisposeSafe(item);
         }
 
-        private void DisposeSafe()
+        private void DisposeSafe(AlgoRepositoryItem itemToDispose)
         {
             try
             {
-                item.Dispose();
+                itemToDispose.Dispose();
             }
             catch (Exception ex)
             {
                 OnError(ex);
             }
+        }
+
+        private static AlgoRepositoryItem ItemFactory(string filePath)
+        {
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+
+            if (ext == ".ttalgo")
+                return new AlgoPackageItem();
+            else if (ext == ".dll")
+                return new NetAssemblyItem();
+            else
+                throw new ArgumentException("Unrecognized file type: " + ext);
         }
 
         internal void CheckForChanges()
@@ -108,6 +113,8 @@ namespace TickTrader.Algo.Core.Repository
 
         private void Load(string filePath)
         {
+            AlgoRepositoryItem newItem = null;
+
             try
             {
                 FileInfo info;
@@ -123,32 +130,35 @@ namespace TickTrader.Algo.Core.Repository
 
                     if (!skipFileScan)
                     {
-                        DisposeSafe();
-                        item.Load(stream, filePath);
+                        newItem = ItemFactory(filePath);
+                        newItem.Load(stream, filePath);
+                        currentFileInfo = info;
+                        Merge(newItem.Metadata); // this will fire events
+                        DisposeSafe(item); // dispose old item after event firing, so all running plugins can be gracefuly stopped
+                        item = newItem;
                     }
                 }
 
-                currentFileInfo = info;
-                Merge(item.Metadata);
                 stateControl.PushEvent(Events.DoneLoad);
             }
             catch (IOException ioEx)
             {
+                if (newItem != null)
+                    DisposeSafe(newItem);
+
                 long win32ErrorCode = ioEx.HResult & 0xFFFF;
                 if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
-                {
-                    // file in use.
-                    stateControl.PushEvent(Events.DoneLoadRetry);
-                }
+                    stateControl.PushEvent(Events.DoneLoadRetry); // File is in use. We should retry loading.
                 else
-                {
-                    stateControl.PushEvent(Events.DoneLoad);
-                }
+                    stateControl.PushEvent(Events.DoneLoad); // other errors
             }
             catch (Exception ex)
             {
-                stateControl.PushEvent(Events.DoneLoad);
+                if (newItem != null)
+                    DisposeSafe(newItem);
+
                 OnError(ex);
+                stateControl.PushEvent(Events.DoneLoad);
             }
         }
 

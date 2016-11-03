@@ -22,9 +22,9 @@ namespace TickTrader.BotTerminal
             return fdkBarCollection.Select(Convert);
         }
 
-        public static IEnumerable<QuoteEntity> Convert(IEnumerable<Quote> fdkQuoteArray, double lotSize)
+        public static IEnumerable<QuoteEntity> Convert(IEnumerable<Quote> fdkQuoteArray)
         {
-            return fdkQuoteArray.Select(q => Convert(q, lotSize));
+            return fdkQuoteArray.Select(Convert);
         }
 
         public static BarEntity Convert(Bar fdkBar)
@@ -41,14 +41,14 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        public static QuoteEntity Convert(Quote fdkTick, double lotSize)
+        public static QuoteEntity Convert(Quote fdkTick)
         {
             var entity = new QuoteEntity();
 
             if (fdkTick.HasAsk)
             {
                 entity.Ask = fdkTick.Ask;
-                entity.AskList = ConvertLevel2(fdkTick.Asks, lotSize);
+                entity.AskList = ConvertLevel2(fdkTick.Asks);
             }
             else
             {
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             if (fdkTick.HasBid)
             {
                 entity.Bid = fdkTick.Bid;
-                entity.BidList = ConvertLevel2(fdkTick.Bids, lotSize);
+                entity.BidList = ConvertLevel2(fdkTick.Bids);
             }
             else
             {
@@ -73,20 +73,20 @@ namespace TickTrader.BotTerminal
             return entity;
         }
 
-        private static Api.BookEntry[] ConvertLevel2(QuoteEntry[] book, double lotSize)
+        private static Api.BookEntry[] ConvertLevel2(QuoteEntry[] book)
         {
             if (book == null || book.Length == 0)
                 return QuoteEntity.EmptyBook;
             else
-                return book.Select(b => Convert(b, lotSize)).ToArray();
+                return book.Select(b => Convert(b)).ToArray();
         }
 
-        public static BookEntryEntity Convert(QuoteEntry fdkEntry, double lotSize)
+        public static BookEntryEntity Convert(QuoteEntry fdkEntry)
         {
             return new BookEntryEntity()
             {
                 Price = fdkEntry.Price,
-                Volume = fdkEntry.Volume / lotSize
+                Volume = fdkEntry.Volume
             };
         }
 

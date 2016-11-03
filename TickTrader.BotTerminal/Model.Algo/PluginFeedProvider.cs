@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
         private SymbolCollectionModel symbols;
         private FeedHistoryProviderModel history;
-        private Dictionary<string, SymbolEntity> metadataCache;
+        //private Dictionary<string, SymbolEntity> metadataCache;
 
         private BufferBlock<FeedUpdate> rxBuffer;
         private ActionBlock<FeedUpdate[]> txBlock;
@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
             this.symbols = symbols;
             this.history = history;
 
-            metadataCache = symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToDictionary(s => s.Name);
+            //metadataCache = symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToDictionary(s => s.Name);
 
             rxBuffer = new BufferBlock<FeedUpdate>();
             txBlock = new ActionBlock<FeedUpdate[]>(uList =>
@@ -60,10 +60,8 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var smbDescriptor = metadataCache.GetOrDefault(symbolCode);
-
                 var result = history.GetTicks(symbolCode, from, to, depth).Result;
-                return FdkToAlgo.Convert(result, smbDescriptor?.LotSize ?? 1).ToList();
+                return FdkToAlgo.Convert(result).ToList();
             }
             catch (Exception ex)
             {
@@ -152,7 +150,7 @@ namespace TickTrader.BotTerminal
 
             public void OnRateUpdate(Quote tick)
             {
-                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkToAlgo.Convert(tick, LotSize)));
+                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkToAlgo.Convert(tick)));
             }
 
             public void Dispose()

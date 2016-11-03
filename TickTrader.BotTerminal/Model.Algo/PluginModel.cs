@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using Machinarium.State;
+using NLog;
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
@@ -10,8 +11,11 @@ namespace TickTrader.BotTerminal
 {
     internal class PluginModel : CrossDomainObject
     {
+        private enum States { Strating, Running, Stopping }
+
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        private StateMachine<States> stateControl = new StateMachine<States>();
         private PluginExecutor executor;
         private IAlgoPluginHost host;
 
@@ -21,6 +25,11 @@ namespace TickTrader.BotTerminal
             this.Setup = pSetup;
             this.PluginRef = pSetup.PluginRef;
             this.Name = pSetup.Descriptor.DisplayName;
+
+
+            //stateControl.AddTransition
+
+
             executor = CreateExecutor();
             Setup.Apply(executor);
         }
