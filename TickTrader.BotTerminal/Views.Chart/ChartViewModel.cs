@@ -172,7 +172,7 @@ namespace TickTrader.BotTerminal
                 else
                     OpenPlugin(model);
 
-                model.Closed += AlgoSetup_Closed;
+                model.Closed += AlgoSetupClosed;
             }
             catch (Exception ex)
             {
@@ -196,15 +196,15 @@ namespace TickTrader.BotTerminal
                 //bot.TimelineStart = Chart.TimelineStart;
                 //bot.TimelineEnd = DateTime.Now + TimeSpan.FromDays(100);
                 var viewModel = new BotControlViewModel(bot, shell.ToolWndManager);
-                viewModel.Closed += Bot_Closed;
+                viewModel.Closed += BotClosed;
                 bots.Add(viewModel);
                 //bot.StateChanged += Bot_StateChanged;
             }
         }
 
-        void AlgoSetup_Closed(PluginSetupViewModel setupModel, bool dlgResult)
+        void AlgoSetupClosed(PluginSetupViewModel setupModel, bool dlgResult)
         {
-            setupModel.Closed -= AlgoSetup_Closed;
+            setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
                 OpenPlugin(setupModel);
         }
@@ -233,11 +233,11 @@ namespace TickTrader.BotTerminal
         //    }
         //}
 
-        private void Bot_Closed(BotControlViewModel sender)
+        private void BotClosed(BotControlViewModel sender)
         {
             bots.Remove(sender);
             sender.Dispose();
-            sender.Closed -= Bot_Closed;
+            sender.Closed -= BotClosed;
             //sender.Model.StateChanged -= Bot_StateChanged;
         }
 

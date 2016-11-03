@@ -93,12 +93,10 @@ namespace BotCommon
             }
 
             Order order = orderList.FirstOrDefault();
-            bool isVolumeValid = volume - symbol.MinTradeVolume > -Double.Epsilon;
 
             if (order == null)
             {
-                if (isVolumeValid)
-                    await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
+                await tradeApi.OpenOrderAsync(symbol.Name, OrderType.Limit, side, volume, price, null, null, subBotTag);
                 return;
             }
             if (OrderKeeperSettings.AutoAddVolume2PartialFill == settings &&  Math.Abs(volume - order.RemainingVolume) > Double.Epsilon)
