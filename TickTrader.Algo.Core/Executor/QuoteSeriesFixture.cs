@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
     internal class QuoteSeriesFixture : FeedFixture, ITimeRef
     {
-        private InputBuffer<QuoteEntity> buffer;
+        private InputBuffer<Quote> buffer;
 
         public QuoteSeriesFixture(string symbolCode, IFeedFixtureContext context) : base(symbolCode, context)
         {
@@ -16,7 +17,7 @@ namespace TickTrader.Algo.Core
             var feed = context.Feed;
             var data = feed.QueryTicks(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, 1);
 
-            buffer = execContext.Builder.GetBuffer<QuoteEntity>(SymbolCode);
+            buffer = execContext.Builder.GetBuffer<Quote>(SymbolCode);
             if (data != null)
                 buffer.Append(data);
         }
@@ -30,10 +31,10 @@ namespace TickTrader.Algo.Core
             return buffer[index].Time;
         }
 
-        public override BufferUpdateResults Update(QuoteEntity quote)
+        public BufferUpdateResult Update(Api.Quote quote)
         {
             buffer.Append(quote);
-            return BufferUpdateResults.Extended;
+            return new BufferUpdateResult() { IsLastUpdated = true };
         }
     }
 

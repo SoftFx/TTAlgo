@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.Core
@@ -29,14 +30,14 @@ namespace TickTrader.Algo.Core
 
         public int Count { get { return buffer.Count; } }
 
-        public override BufferUpdateResults Update(QuoteEntity quote)
+        public BufferUpdateResult Update(Quote quote)
         {
             var barBoundaries = sampler.GetBar(quote.Time);
             var barOpenTime = barBoundaries.Open;
 
             // validate against time boundaries
             if (barOpenTime < Context.ExecContext.TimePeriodStart || barOpenTime >= Context.ExecContext.TimePeriodEnd)
-                return BufferUpdateResults.NotUpdated;
+                return new BufferUpdateResult();
 
             if (Count > 0)
             {
@@ -44,17 +45,17 @@ namespace TickTrader.Algo.Core
 
                 // validate agains last bar
                 if (barOpenTime < lastBar.OpenTime)
-                    return BufferUpdateResults.NotUpdated;
+                    return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
                     buffer.Last.Append(quote.Bid, 1);
-                    return BufferUpdateResults.LastItemUpdated;
+                    return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
 
             var newBar = new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1);
             buffer.Append(newBar);
-            return BufferUpdateResults.Extended;
+            return new BufferUpdateResult() { ExtendedBy = 1 };
         }
 
         public DateTime? GetTimeAtIndex(int index)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -17,9 +18,14 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        protected override BufferUpdateResults UpdateBuffers(FeedUpdate update)
+        protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
-            return mainSeries.Update(update.Quote);
+            BufferUpdateResult overallResult = new BufferUpdateResult();
+
+            foreach (var quote in update.LastQuotes)
+                overallResult += mainSeries.Update(quote);
+
+            return overallResult;
         }
 
         private void ThrowIfNotTickType<TSrc>()

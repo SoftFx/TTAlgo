@@ -3,10 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public enum BufferUpdateResults { Extended, LastItemUpdated, NotUpdated }
+    //public enum BufferUpdateResults { Extended = 2, LastItemUpdated = 1, NotUpdated = 0 }
+
+    public struct BufferUpdateResult
+    {
+        /// <summary>
+        /// True if last bar was updated. May be false event in case ExtendedBy > 0
+        /// </summary>
+        public bool IsLastUpdated { get; set; }
+        public int ExtendedBy { get; set; }
+
+        public static BufferUpdateResult operator +(BufferUpdateResult x, BufferUpdateResult y)
+        {
+            bool isLastUpdated = x.IsLastUpdated || (x.ExtendedBy == 0 && y.IsLastUpdated);
+
+            return new BufferUpdateResult()
+            {
+                IsLastUpdated = isLastUpdated,
+                ExtendedBy = x.ExtendedBy + y.ExtendedBy
+            };
+        }
+    }
 
     public interface IPluginMetadata
     {
@@ -21,7 +42,7 @@ namespace TickTrader.Algo.Core
         List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
         void Subscribe(string symbolCode, int depth);
         void Unsubscribe(string symbolCode);
-        event Action<FeedUpdate[]> FeedUpdated;
+        event Action<QuoteEntity[]> FeedUpdated;
     }
 
     public interface IBarBasedFeed : IPluginFeedProvider
@@ -64,7 +85,7 @@ namespace TickTrader.Algo.Core
         DateTime TimePeriodStart { get; }
         DateTime TimePeriodEnd { get; }
         IPluginLogger Logger { get; }
-        void Enqueue(FeedUpdate update);
+        void Enqueue(QuoteEntity update);
         void Enqueue(Action<PluginBuilder> action);
 
         //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
@@ -109,8 +130,8 @@ namespace TickTrader.Algo.Core
     {
         string SymbolCode { get; }
         int Depth { get; }
-        void OnBufferUpdated(QuoteEntity quote); // called always
-        void OnUpdateEvent(QuoteEntity quote); // events may be skipped by latency filter or optimizer
+        //void OnBufferUpdated(Quote quote); // called always
+        void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
     }
 
     public interface ITimeRef

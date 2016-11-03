@@ -6,7 +6,20 @@ namespace TickTrader.Algo.Api
     {
         protected virtual void OnStart() { }
         protected virtual void OnStop() { }
+
+        /// <summary>
+        /// Override this method to react on rate updates.
+        /// Note: Some outdated quotes may be skipped by the Algo framework to give you most relevant ones.
+        /// You can override OnRateUpdate() instead of OnQuote() to get all quotes.
+        /// </summary>
+        /// <param name="quote"></param>
         protected virtual void OnQuote(Quote quote) { }
+
+        /// <summary>
+        /// Extended version of OnQuote(). Provides additional information. Includes skipped quotes.
+        /// </summary>
+        /// <param name="update"></param>
+        protected virtual void OnRateUpdate(RateUpdate update) { }
 
         protected void Exit()
         {
@@ -26,6 +39,11 @@ namespace TickTrader.Algo.Api
         internal void InvokeOnQuote(Quote quote)
         {
             OnQuote(quote);
+        }
+
+        internal void InvokeRateUpdate(RateUpdate update)
+        {
+            OnRateUpdate(update);
         }
 
         #region Logger

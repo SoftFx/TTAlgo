@@ -69,7 +69,6 @@
     <Compile Include="Buffers\OutputBuffer.cs" />
     <Compile Include="Buffers\ProxyBuffer.cs" />
     <Compile Include="Entities\EventArgs.cs" />
-    <Compile Include="Entities\FeedUpdate.cs" />
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
@@ -87,6 +86,7 @@
     <Compile Include="Executor\BarStrategy.cs" />
     <Compile Include="Executor\Exceptions.cs" />
     <Compile Include="Executor\FeedFixture.cs" />
+    <Compile Include="Executor\FeedQueue.cs" />
     <Compile Include="Executor\FeedStrategy.cs" />
     <Compile Include="Executor\Interfaces.cs" />
     <Compile Include="Executor\InvokeStartegy.cs" />
