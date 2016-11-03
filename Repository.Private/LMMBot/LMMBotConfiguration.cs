@@ -26,14 +26,14 @@ namespace LMMBot
         {
             StringBuilder builder = new StringBuilder();
             foreach (KeyValuePair<string, double> pair in LPSymbols)
-                builder.AppendLine(SymbolNameConvertor(pair.Key) + " = " + pair.Value);
+                builder.AppendLine(ConvertToLocalSymbolName(pair.Key) + " = " + pair.Value);
             builder.AppendLine("MarkupInPercent = " + MarkupInPercent);
             builder.AppendLine("DebugStatus = " + DebugStatus);
             builder.AppendLine("BotTag = " + BotTag);
             return builder.ToString();
         }
 
-        static public string SymbolNameConvertor(string lpSymbolName)
+        static public string ConvertToLocalSymbolName(string lpSymbolName)
         {
             return lpSymbolName.Replace(@"/", "");
         }
