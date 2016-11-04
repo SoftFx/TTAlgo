@@ -69,13 +69,12 @@ namespace TickTrader.BotTerminal
             var paneIndicators = indicatorViewModels.Chain().Where(i => !i.Model.IsOverlay);
             var panes = paneIndicators.Chain().Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
 
-            Series = new ObservableCollection<IRenderableSeriesViewModel>();
-            allSeries.ConnectTo(Series); // Do not use ConnectTo method except in case of ugly hacks
+            Series = allSeries.AsObservable();
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
             Bots = bots.AsObservable();
-            
+
             periodActivatos.Add("MN1", () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add("W1", () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
             periodActivatos.Add("D1", () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
@@ -129,10 +128,10 @@ namespace TickTrader.BotTerminal
 
         public IViewportManager ViewPort { get; private set; }
 
-        public ObservableCollection<IRenderableSeriesViewModel> Series { get; private set; }
-        public IObservableListSource<IndicatorPaneViewModel> Panes { get; private set; }
-        public IObservableListSource<IndicatorViewModel> Indicators { get; private set; }
-        public IObservableListSource<BotControlViewModel> Bots { get; private set; }
+        public IReadOnlyList<IRenderableSeriesViewModel> Series { get; private set; }
+        public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
+        public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
+        public IReadOnlyList<BotControlViewModel> Bots { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
 

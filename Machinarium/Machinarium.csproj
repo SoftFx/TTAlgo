@@ -80,6 +80,7 @@
     <Compile Include="Qnil\ListSelector.cs" />
     <Compile Include="Qnil\ObservableWrapper.cs" />
     <Compile Include="Qnil\ListCopy.cs" />
+    <Compile Include="Qnil\ObservableWrapper2.cs" />
     <Compile Include="Qnil\OperatorBase.cs" />
     <Compile Include="Qnil\ListAdapter.cs" />
     <Compile Include="Qnil\UnitTests.cs" />

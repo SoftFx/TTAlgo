@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
 
         private void OpenDefaultChart()
         {
-            if (clientModel.Symbols.Snapshot.Any())
+            if (clientModel.Symbols.Snapshot.Count > 0 && Charts.Items.Count == 0)
             {
                 var defaultSymbol = string.Empty;
                 switch (clientModel.Account.Type)
@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
                 }
 
                 Charts.Open(clientModel.Symbols.GetOrDefault(defaultSymbol)?.Name ?? clientModel.Symbols.Snapshot.First().Key);
-                clientModel.Connected -= OpenDefaultChart;
+                //clientModel.Connected -= OpenDefaultChart;
             }
         }
 
