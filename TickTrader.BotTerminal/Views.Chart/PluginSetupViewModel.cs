@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
         public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.DisplayName = $"Add Indicator - {item.DisplayName}";
+            this.DisplayName = $"Settings - {item.DisplayName}";
             this.PluginItem = item;
             //this.host = host;
             this.setupFactory = setupFactory;
@@ -91,13 +91,13 @@ namespace TickTrader.BotTerminal
                  + Setup.Inputs.Count() + " inputs "
                  + Setup.Outputs.Count() + " outputs ");
 
-            NotifyOfPropertyChange("Setup");
+            NotifyOfPropertyChange(nameof(Setup));
         }
 
         private void Validate()
         {
             CanOk = Setup.IsValid;
-            NotifyOfPropertyChange("CanOk");
+            NotifyOfPropertyChange(nameof(CanOk));
         }
 
         private void AllPlugins_Updated(Machinarium.Qnil.DictionaryUpdateArgs<PluginCatalogKey, PluginCatalogItem> args)

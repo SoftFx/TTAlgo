@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
         private void Update(OutputFixture<double>.Point point)
         {
             if (point.TimeCoordinate != null)
-                Execute.OnUIThread(() => SeriesData.YValues[point.Index] = point.Value);
+                Execute.OnUIThread(() => SeriesData.Update(point.Index, point.Value));
         }
 
         private void CopyAll(OutputFixture<double>.Point[] points)

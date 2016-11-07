@@ -245,7 +245,7 @@ namespace TickTrader.Algo.Core
             Logger.OnInitialized();
         }
 
-        internal void InvokeOnQuote(QuoteEntity quote)
+        internal void InvokeOnQuote(Quote quote)
         {
             InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote));
         }

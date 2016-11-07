@@ -22,6 +22,10 @@
 
     <Grid>
         <Grid>
+            <Grid.Resources>
+                <l:BindingProxy x:Key="ProxyElement" Data="{Binding}"/>
+            </Grid.Resources>
+           
             <DataGrid Name="Orders" Margin="5,0,0,0">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
@@ -44,8 +48,8 @@
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" Binding="{Binding Order.Price}" />
-                    <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
-                    <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
+                    <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
+                    <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
                     <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -13,13 +14,14 @@ namespace TickTrader.Algo.Core
     {
         private Action<ExecutorException> onCoreError;
         private Action<Exception> onRuntimeError;
-        private Action<FeedUpdate> onFeedUpdate;
+        private Action<RateUpdate> onFeedUpdate;
+        private Action<RateUpdate> onRateUpdate;
 
         internal InvokeStartegy()
         {
         }
 
-        public void Init(PluginBuilder builder, Action<ExecutorException> onCoreError, Action<Exception> onRuntimeError, Action<FeedUpdate> onFeedUpdate)
+        public void Init(PluginBuilder builder, Action<ExecutorException> onCoreError, Action<Exception> onRuntimeError, Action<RateUpdate> onFeedUpdate)
         {
             this.Builder = builder;
             this.onCoreError = onCoreError;
@@ -36,14 +38,14 @@ namespace TickTrader.Algo.Core
         public abstract Task Stop(Action<PluginBuilder> finalAction);
         //public abstract void EnqueueInvoke(Action<PluginBuilder> a);
         //public abstract void EnqueueInvoke(Task t);
-        public abstract void Enqueue(FeedUpdate update);
+        public abstract void Enqueue(QuoteEntity update);
         public abstract void EnqueueCustomAction(Action<PluginBuilder> a);
         public abstract void Enqueue(Action<PluginBuilder> a);
-        public abstract FeedUpdate[] DequeueAllQuoteUpdates();
+        //public abstract QuoteEntity[] DequeueAllQuoteUpdates();
 
         protected virtual void OnInit() { }
 
-        protected void OnFeedUpdate(FeedUpdate update)
+        protected void OnFeedUpdate(RateUpdate update)
         {
             onFeedUpdate?.Invoke(update);
         }
@@ -64,19 +66,19 @@ namespace TickTrader.Algo.Core
     {
         private object syncObj = new object();
         private Task currentTask;
-        private Queue<FeedUpdate> feedQueue;
+        private FeedQueue feedQueue;
         private Queue<Action<PluginBuilder>> defaultQueue;
         private bool isStarted;
 
         protected override void OnInit()
         {
-            feedQueue = new Queue<FeedUpdate>();
+            feedQueue = new FeedQueue();
             defaultQueue = new Queue<Action<PluginBuilder>>();
         }
 
-        public override int FeedQueueSize { get { return feedQueue.Count; } }
+        public override int FeedQueueSize { get { return 0; } }
 
-        public override void Enqueue(FeedUpdate update)
+        public override void Enqueue(QuoteEntity update)
         {
             lock (syncObj)
             {
@@ -112,15 +114,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public override FeedUpdate[] DequeueAllQuoteUpdates()
-        {
-            lock (syncObj)
-            {
-                var snapshot = feedQueue.ToArray();
-                feedQueue.Clear();
-                return snapshot;
-            }
-        }
+        //public override QuoteEntity[] DequeueAllQuoteUpdates()
+        //{
+        //    lock (syncObj)
+        //    {
+        //        var snapshot = feedQueue.ToArray();
+        //        feedQueue.Clear();
+        //        return snapshot;
+        //    }
+        //}
 
         private void WakeUpWorker()
         {
@@ -148,8 +150,8 @@ namespace TickTrader.Algo.Core
 
                 try
                 {
-                    if (item is FeedUpdate)
-                        OnFeedUpdate((FeedUpdate)item);
+                    if (item is RateUpdate)
+                        OnFeedUpdate((RateUpdate)item);
                     else if (item is Action<PluginBuilder>)
                         ((Action<PluginBuilder>)item)(Builder);
                 }

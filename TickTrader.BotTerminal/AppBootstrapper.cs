@@ -10,6 +10,8 @@ namespace TickTrader.BotTerminal
 {
     public class AppBootstrapper : BootstrapperBase
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public AppBootstrapper()
         {
 #if DEBUG
@@ -17,8 +19,13 @@ namespace TickTrader.BotTerminal
 #endif
             Initialize();
 
+            ConfigureCaliburn();
             ConfigurateLogger();
+            ConfigureGlobalWpfExceptionHandling();
+        }
 
+        private void ConfigureCaliburn()
+        {
             MessageBinder.SpecialValues.Add("$password", context =>
             {
                 var view = (FrameworkElement)context.View;
@@ -46,6 +53,15 @@ namespace TickTrader.BotTerminal
 
                 return fe.DataContext;
             });
+        }
+
+        private void ConfigureGlobalWpfExceptionHandling()
+        {
+            Application.DispatcherUnhandledException += (s, e) =>
+            {
+                e.Handled = true;
+                logger.Error(e.Exception, "Unhandled Exception on Dispatcher level! Note to QA: this is definitly a bug!");
+            };
         }
 
         private void ConfigurateLogger()

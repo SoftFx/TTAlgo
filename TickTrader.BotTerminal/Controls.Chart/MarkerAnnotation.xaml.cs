@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
             CoordinateMode = SciChart.Charting.Visuals.Annotations.AnnotationCoordinateMode.Absolute;
             Y1 = marker.Y;
             X1 = x;
-            IsHidden = marker.Y == double.NaN;
+            IsHidden = double.IsNaN(marker.Y);
             ToolTip = marker.DisplayText;
 
             this.Icon.Data = (Geometry)FindResource(GetIconResxKey(marker.Icon));

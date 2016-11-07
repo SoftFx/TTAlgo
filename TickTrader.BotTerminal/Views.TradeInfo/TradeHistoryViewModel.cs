@@ -134,13 +134,17 @@ namespace TickTrader.BotTerminal
                 DownloadObserver = new ObservableTask<TradeTransactionModel[]>(downloadRequest);
                 var trades = await DownloadObserver.Task;
 
-                if (downloadRequest != DownloadObserver.Task)
-                    return;
-
-                UpdateTradeHistory(trades);
+                if (IsCurrentRequest(downloadRequest))
+                    UpdateTradeHistory(trades);
             }
             catch { }
         }
+
+        private bool IsCurrentRequest(Task<TradeTransactionModel[]> downloadRequest)
+        {
+            return downloadRequest == DownloadObserver.Task;
+        }
+
         public void Close()
         {
             _tradeClient.Account.AccountTypeChanged -= AccountTypeChanged;

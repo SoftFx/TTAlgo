@@ -44,9 +44,9 @@ namespace Machinarium.Qnil
             var chain = src as ListChainToken<T>;
 
             if (chain != null)
-                return new ObservableWrapper<T>(chain.Src, true);
+                return new ObservableWrapper2<T>(chain.Src, true);
 
-            return new ObservableWrapper<T>(src, false);
+            return new ObservableWrapper2<T>(src, false);
         }
 
         public static IDynamicListSource<T> Chain<T>(this IDynamicListSource<T> src)

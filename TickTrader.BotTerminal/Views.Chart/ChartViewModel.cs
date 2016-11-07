@@ -69,13 +69,12 @@ namespace TickTrader.BotTerminal
             var paneIndicators = indicatorViewModels.Chain().Where(i => !i.Model.IsOverlay);
             var panes = paneIndicators.Chain().Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
 
-            Series = new ObservableCollection<IRenderableSeriesViewModel>();
-            allSeries.ConnectTo(Series); // Do not use ConnectTo method except in case of ugly hacks
+            Series = allSeries.AsObservable();
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
             Bots = bots.AsObservable();
-            
+
             periodActivatos.Add("MN1", () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add("W1", () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
             periodActivatos.Add("D1", () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
@@ -129,10 +128,10 @@ namespace TickTrader.BotTerminal
 
         public IViewportManager ViewPort { get; private set; }
 
-        public ObservableCollection<IRenderableSeriesViewModel> Series { get; private set; }
-        public IObservableListSource<IndicatorPaneViewModel> Panes { get; private set; }
-        public IObservableListSource<IndicatorViewModel> Indicators { get; private set; }
-        public IObservableListSource<BotControlViewModel> Bots { get; private set; }
+        public IReadOnlyList<IRenderableSeriesViewModel> Series { get; private set; }
+        public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
+        public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
+        public IReadOnlyList<BotControlViewModel> Bots { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
 
@@ -172,7 +171,7 @@ namespace TickTrader.BotTerminal
                 else
                     OpenPlugin(model);
 
-                model.Closed += AlgoSetup_Closed;
+                model.Closed += AlgoSetupClosed;
             }
             catch (Exception ex)
             {
@@ -196,15 +195,15 @@ namespace TickTrader.BotTerminal
                 //bot.TimelineStart = Chart.TimelineStart;
                 //bot.TimelineEnd = DateTime.Now + TimeSpan.FromDays(100);
                 var viewModel = new BotControlViewModel(bot, shell.ToolWndManager);
-                viewModel.Closed += Bot_Closed;
+                viewModel.Closed += BotClosed;
                 bots.Add(viewModel);
                 //bot.StateChanged += Bot_StateChanged;
             }
         }
 
-        void AlgoSetup_Closed(PluginSetupViewModel setupModel, bool dlgResult)
+        void AlgoSetupClosed(PluginSetupViewModel setupModel, bool dlgResult)
         {
-            setupModel.Closed -= AlgoSetup_Closed;
+            setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
                 OpenPlugin(setupModel);
         }
@@ -233,11 +232,11 @@ namespace TickTrader.BotTerminal
         //    }
         //}
 
-        private void Bot_Closed(BotControlViewModel sender)
+        private void BotClosed(BotControlViewModel sender)
         {
             bots.Remove(sender);
             sender.Dispose();
-            sender.Closed -= Bot_Closed;
+            sender.Closed -= BotClosed;
             //sender.Model.StateChanged -= Bot_StateChanged;
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -46,14 +47,17 @@ namespace TickTrader.Algo.Core
             return fixture;
         }
 
-        protected override BufferUpdateResults UpdateBuffers(FeedUpdate update)
+        protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
-            var fixture = GetFixutre(update.SymbolCode);
+            var overallResult = new BufferUpdateResult();
+            var fixture = GetFixutre(update.Symbol);
 
-            if (fixture == null)
-                return BufferUpdateResults.NotUpdated;
-
-            return fixture.Update(update.Quote);
+            if (fixture != null)
+            {
+                foreach (var quote in update.LastQuotes)
+                    overallResult += fixture.Update(quote);
+            }
+            return overallResult;
         }
 
         private void ThrowIfNotbarType<TSrc>()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -28,7 +29,7 @@ namespace TickTrader.Algo.Core
         public abstract ITimeRef TimeRef { get; }
 
         internal abstract void OnInit();
-        protected abstract BufferUpdateResults UpdateBuffers(FeedUpdate update);
+        protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
         internal abstract void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector);
         internal abstract void Stop();
 
@@ -88,28 +89,26 @@ namespace TickTrader.Algo.Core
             builder.StopBatch();
         }
 
-        private void Feed_FeedUpdated(FeedUpdate[] updates)
+        private void Feed_FeedUpdated(QuoteEntity[] updates)
         {
             foreach (var update in updates)
                 ExecContext.Enqueue(update);
         }
 
-        internal void ApplyUpdate(FeedUpdate update)
+        internal void ApplyUpdate(RateUpdate update)
         {
             var result = UpdateBuffers(update);
-            if (result == BufferUpdateResults.Extended)
+
+            if (result.IsLastUpdated)
+                ExecContext.Builder.InvokeCalculate(true);
+
+            for (int i = 0; i < result.ExtendedBy; i++)
             {
                 ExecContext.Builder.IncreaseVirtualPosition();
                 ExecContext.Builder.InvokeCalculate(false);
-                dispenser.OnBufferUpdated(update.Quote);
-            }
-            else if (result == BufferUpdateResults.LastItemUpdated)
-            {
-                ExecContext.Builder.InvokeCalculate(true);
-                dispenser.OnBufferUpdated(update.Quote);
             }
 
-            dispenser.OnUpdateEvent(update.Quote);
+            dispenser.OnUpdateEvent(update.LastQuotes[0]);
         }
 
         #region IFeedStrategyContext

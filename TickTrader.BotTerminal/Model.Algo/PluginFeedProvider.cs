@@ -19,8 +19,8 @@ namespace TickTrader.BotTerminal
         private FeedHistoryProviderModel history;
         //private Dictionary<string, SymbolEntity> metadataCache;
 
-        private BufferBlock<FeedUpdate> rxBuffer;
-        private ActionBlock<FeedUpdate[]> txBlock;
+        private BufferBlock<QuoteEntity> rxBuffer;
+        private ActionBlock<QuoteEntity[]> txBlock;
 
         public ISynchronizationContext Sync { get { return this; } }
 
@@ -31,8 +31,8 @@ namespace TickTrader.BotTerminal
 
             //metadataCache = symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToDictionary(s => s.Name);
 
-            rxBuffer = new BufferBlock<FeedUpdate>();
-            txBlock = new ActionBlock<FeedUpdate[]>(uList =>
+            rxBuffer = new BufferBlock<QuoteEntity>();
+            txBlock = new ActionBlock<QuoteEntity[]>(uList =>
                 {
                     try
                     {
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             rxBuffer.BatchLinkTo(txBlock, 30);
         }
 
-        public event Action<FeedUpdate[]> FeedUpdated = delegate { };
+        public event Action<QuoteEntity[]> FeedUpdated = delegate { };
 
         public IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
@@ -118,9 +118,9 @@ namespace TickTrader.BotTerminal
         private class Subscription : IRateUpdatesListener
         {
             private SymbolCollectionModel symbols;
-            private BufferBlock<FeedUpdate> rxBuffer;
+            private BufferBlock<QuoteEntity> rxBuffer;
 
-            public Subscription(string symbolCode, int depth, SymbolCollectionModel symbols, BufferBlock<FeedUpdate> rxBuffer)
+            public Subscription(string symbolCode, int depth, SymbolCollectionModel symbols, BufferBlock<QuoteEntity> rxBuffer)
             {
                 this.symbols = symbols;
                 this.SymbolCode = symbolCode;
@@ -150,7 +150,7 @@ namespace TickTrader.BotTerminal
 
             public void OnRateUpdate(Quote tick)
             {
-                rxBuffer.Post(new FeedUpdate(tick.Symbol, FdkToAlgo.Convert(tick)));
+                rxBuffer.Post(FdkToAlgo.Convert(tick));
             }
 
             public void Dispose()
