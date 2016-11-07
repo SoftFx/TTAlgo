@@ -11,6 +11,7 @@
 *.userprefs
 
 # Build results
+[Aa]lgoRepository/
 [Dd]ebug/
 [Dd]ebug.x86/
 [Dd]ebug.x64/
