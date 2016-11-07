@@ -8,7 +8,7 @@
 
   <property name="SourcesDir"		    value="c:\platform.algo\"							      unless="${property::exists('SourcesDir')}" />
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
-  <property name="PrivateRepoSourcesDir"		    value="${SourcesDir}Repository.Private\"							      unless="${property::exists('SourcesDir')}" />
+  <property name="PrivateRepoSourcesDir"		    value="${SourcesDir}Repository.Private\"							      unless="${property::exists('PrivateRepoSourcesDir')}" />
   <property name="PrivateRepoSolutionFile"		  value="Repository.Private.sln"					                  unless="${property::exists('PrivateRepoSolutionFile')}" />
 
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
