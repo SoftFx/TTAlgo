@@ -59,6 +59,10 @@ namespace MMBot
 
         protected override void OnStart()
         {
+            this.Status.WriteLine("Input parameters");
+            Nett.Toml.WriteFile<MMBotTOMLConfiguration>(new MMBotTOMLConfiguration(), FileConfig.FullPath + "2");
+            conf = Nett.Toml.ReadFile<MMBotTOMLConfiguration>(FileConfig.FullPath);
+
             OrderKeeperSettings okSettings = OrderKeeperSettings.None;
             if (conf.AutoAddVolume2PartialFill)
                 okSettings |= OrderKeeperSettings.AutoAddVolume2PartialFill;
@@ -66,9 +70,6 @@ namespace MMBot
                 okSettings |= OrderKeeperSettings.AutoUpdate2TradeEvent;
             tradeAsync = new TradeAsync(this, okSettings);
 
-            this.Status.WriteLine("Input parameters");
-            Nett.Toml.WriteFile<MMBotTOMLConfiguration>(new MMBotTOMLConfiguration(), FileConfig.FullPath + "2");
-            conf = Nett.Toml.ReadFile<MMBotTOMLConfiguration>(FileConfig.FullPath);
             foreach (KeyValuePair<string[], double> currPair in conf.ParsedSyntetics)
             {
                 base.Status.WriteLine(String.Join<string>("-", currPair.Key) + " = " + currPair.Value);

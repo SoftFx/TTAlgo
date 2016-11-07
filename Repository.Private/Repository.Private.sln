@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMMBot", "LMMBot\LMMBot.csproj", "{05F7340C-B568-44FF-ACA7-E07904850E8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLP_Ind", "NLP_Ind\NLP_Ind.csproj", "{751C4F41-F6F8-48BE-9F5E-50472B789114}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{05F7340C-B568-44FF-ACA7-E07904850E8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05F7340C-B568-44FF-ACA7-E07904850E8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05F7340C-B568-44FF-ACA7-E07904850E8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{751C4F41-F6F8-48BE-9F5E-50472B789114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{751C4F41-F6F8-48BE-9F5E-50472B789114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{751C4F41-F6F8-48BE-9F5E-50472B789114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{751C4F41-F6F8-48BE-9F5E-50472B789114}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
