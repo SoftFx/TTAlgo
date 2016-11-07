@@ -12,6 +12,9 @@ namespace LMMBot
         public double MarkupInPercent { get; set; }
         public bool DebugStatus { get; set; }
         public string BotTag { get; set; }
+        public bool AutoAddVolume2PartialFill { get; set; }
+        public bool AutoUpdate2TradeEvent { get; set; }
+        public int MaxPriceRandomDiff { get; set; }
 
         public LMMBotTOMLConfiguration()
         {
@@ -21,6 +24,7 @@ namespace LMMBot
             MarkupInPercent = 1;
             DebugStatus = false;
             BotTag = "12345";
+
         }
         public override string ToString()
         {
@@ -30,6 +34,9 @@ namespace LMMBot
             builder.AppendLine("MarkupInPercent = " + MarkupInPercent);
             builder.AppendLine("DebugStatus = " + DebugStatus);
             builder.AppendLine("BotTag = " + BotTag);
+            builder.AppendLine("AutoAddVolume2PartialFill = " + AutoAddVolume2PartialFill);
+            builder.AppendLine("AutoUpdate2TradeEvent = " + AutoUpdate2TradeEvent);
+            builder.AppendLine("MaxPriceRandomDiff = " + MaxPriceRandomDiff);
             return builder.ToString();
         }
 

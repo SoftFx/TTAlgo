@@ -406,7 +406,7 @@ namespace TickTrader.Algo.Core
             iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(callback, state));
         }
 
-        private void OnFeedUpdate(FeedUpdate update)
+        private void OnFeedUpdate(RateUpdate update)
         {
             fStrategy.ApplyUpdate(update);
         }
@@ -448,7 +448,7 @@ namespace TickTrader.Algo.Core
             iStrategy.Enqueue(action);
         }
 
-        void IFixtureContext.Enqueue(FeedUpdate update)
+        void IFixtureContext.Enqueue(QuoteEntity update)
         {
             iStrategy.Enqueue(update);
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.Core
         public string SymbolCode { get; private set; }
         public int Depth { get { return 1; } }
 
-        public abstract BufferUpdateResults Update(QuoteEntity quote);
+        //public abstract BufferUpdateResults Update(Quote quote);
 
         //private void UpdateOverallSbscription(string symbol, List<IFeedConsumer> subscribers)
         //{
@@ -32,11 +33,11 @@ namespace TickTrader.Algo.Core
             Context.Remove(this);
         }
 
-        public void OnBufferUpdated(QuoteEntity quote)
+        public void OnBufferUpdated(Quote quote)
         {
         }
 
-        public void OnUpdateEvent(QuoteEntity quote)
+        public void OnUpdateEvent(Quote quote)
         {
         }
     }

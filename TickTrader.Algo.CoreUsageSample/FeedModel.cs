@@ -11,7 +11,7 @@ namespace TickTrader.Algo.CoreUsageSample
 {
     internal class FeedModel : IBarBasedFeed, ISynchronizationContext
     {
-        private event Action<FeedUpdate[]> FeedUpdated = delegate { };
+        private event Action<QuoteEntity[]> FeedUpdated = delegate { };
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
 
         public TimeFrames TimeFrame { get; private set; }
@@ -23,22 +23,18 @@ namespace TickTrader.Algo.CoreUsageSample
             this.TimeFrame = timeFrame;
         }
 
-        event Action<FeedUpdate[]> IPluginFeedProvider.FeedUpdated { add { FeedUpdated += value; } remove { FeedUpdated -= value; } }
+        event Action<QuoteEntity[]> IPluginFeedProvider.FeedUpdated { add { FeedUpdated += value; } remove { FeedUpdated -= value; } }
 
         public void Fill(string symbol, IEnumerable<BarEntity> data)
         {
             GetSymbolData(symbol).Fill(data);
         }
 
-        public void Update(string symbolCode, QuoteEntity quote)
-        {
-            Update(new FeedUpdate(symbolCode, quote));
-        }
 
-        public void Update(FeedUpdate update)
+        public void Update(QuoteEntity update)
         {
-            GetSymbolData(update.SymbolCode).Update(update.Quote);
-            FeedUpdated(new FeedUpdate[] { update });
+            GetSymbolData(update.Symbol).Update(update);
+            FeedUpdated(new QuoteEntity[] { update });
         }
 
         private SymbolDataModel GetSymbolData(string smbCode)

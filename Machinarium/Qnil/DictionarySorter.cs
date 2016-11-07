@@ -22,10 +22,7 @@ namespace Machinarium.Qnil
             list = new SortedList<Item>(new LocalComparer(comparer));
 
             foreach (var item in src.Snapshot)
-            {
-                var byProperty = bySelector(item.Key, item.Value);
-                list.Add(new Item(item.Key, item.Value, byProperty));
-            }
+                Add(item.Key, item.Value);
 
             src.Updated += Src_Updated;
         }

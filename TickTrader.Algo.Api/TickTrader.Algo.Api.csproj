@@ -54,6 +54,7 @@
     <Compile Include="EnvironmentInfo.cs" />
     <Compile Include="File.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="RateUpdate.cs" />
     <Compile Include="StatusApi.cs" />
     <Compile Include="TradeCommands.cs" />
     <Compile Include="Marker.cs" />

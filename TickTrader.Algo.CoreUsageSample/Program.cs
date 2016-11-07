@@ -67,9 +67,9 @@ namespace TickTrader.Algo.CoreUsageSample
 
             executor.Start();
 
-            dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:24"), Ask = 1.10145, Bid = 1.10145 });
-            dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:28"), Ask = 1.10148, Bid = 1.10151 });
-            dataModel.Update("EURUSD", new QuoteEntity() { Time = DateTime.Parse("2015.11.03 00:00:31"), Ask = 1.10149, Bid = 1.10149 });
+            dataModel.Update(new QuoteEntity() { Symbol = "EURUSD", Time = DateTime.Parse("2015.11.03 00:00:24"), Ask = 1.10145, Bid = 1.10145 });
+            dataModel.Update(new QuoteEntity() { Symbol = "EURUSD", Time = DateTime.Parse("2015.11.03 00:00:28"), Ask = 1.10148, Bid = 1.10151 });
+            dataModel.Update(new QuoteEntity() { Symbol = "EURUSD", Time = DateTime.Parse("2015.11.03 00:00:31"), Ask = 1.10149, Bid = 1.10149 });
 
             executor.Stop();
 

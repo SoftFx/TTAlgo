@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -17,13 +18,13 @@ namespace TickTrader.Algo.Core
             this.feed = feed;
         }
 
-        public void OnBufferUpdated(QuoteEntity quote)
-        {
-            var list =  GetOrAddList(quote.Symbol);
-            list.ForEach(s => s.OnBufferUpdated(quote));
-        }
+        //public void OnBufferUpdated(Quote quote)
+        //{
+        //    var list =  GetOrAddList(quote.Symbol);
+        //    list.ForEach(s => s.OnBufferUpdated(quote));
+        //}
 
-        public void OnUpdateEvent(QuoteEntity quote)
+        public void OnUpdateEvent(Quote quote)
         {
             var list = GetOrAddList(quote.Symbol);
             list.ForEach(s => s.OnUpdateEvent(quote));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -20,11 +21,11 @@ namespace TickTrader.Algo.Core
         public int Depth { get; private set; }
         public string SymbolCode { get; private set; }
 
-        public void OnBufferUpdated(QuoteEntity quote)
+        public void OnBufferUpdated(Quote quote)
         {
         }
 
-        public void OnUpdateEvent(QuoteEntity quote)
+        public void OnUpdateEvent(Quote quote)
         {
             context.ExecContext.Builder.InvokeOnQuote(quote);
         }

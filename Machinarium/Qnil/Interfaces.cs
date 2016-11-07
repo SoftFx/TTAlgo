@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -31,7 +32,7 @@ namespace Machinarium.Qnil
         TGroup GroupKey { get; }
     }
 
-    public interface IObservableListSource<T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged, IDisposable
+    public interface IObservableListSource<T> : IReadOnlyList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged, IDisposable
     {
     }
 
