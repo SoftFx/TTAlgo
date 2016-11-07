@@ -35,7 +35,7 @@ namespace LMMBot
             base.Status.WriteLine(configuration.ToString());
             foreach (KeyValuePair<string, double> symbol2Volume in configuration.LPSymbols)
             {
-                string localSymbolName = LMMBotTOMLConfiguration.SymbolNameConvertor(symbol2Volume.Key);
+                string localSymbolName = LMMBotTOMLConfiguration.ConvertToLocalSymbolName(symbol2Volume.Key);
                 Symbol smbInfo = Symbols[localSymbolName];
                 if (smbInfo.IsNull)
                     PrintError("Cannot find symbol: {0} ", localSymbolName);
