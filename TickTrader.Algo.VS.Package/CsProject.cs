@@ -21,6 +21,7 @@ namespace TickTrader.Algo.VS.Package
         private Project dteProject;
         private DTE dteObj;
         private string projectFolder;
+        private string projectName;
 
         internal void SetPackage(VSPackage package)
         {
@@ -46,6 +47,7 @@ namespace TickTrader.Algo.VS.Package
             dteProject = (EnvDTE.Project)extObject;
             dteObj = dteProject.DTE;
             projectFolder = Path.GetDirectoryName(dteProject.FullName);
+            projectName = dteProject.Name;
 
             dteObj.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
 
@@ -57,13 +59,16 @@ namespace TickTrader.Algo.VS.Package
             if (Project != dteProject.UniqueName) // filter out other projects
                 return;
 
+            if (!Success)
+                return;
+
             try
             {
                 var projectProps = dteProject.Properties;
                 var solutionProps = dteObj.Solution.Properties;
                 var buildProps = dteProject.ConfigurationManager.ActiveConfiguration.Properties;
 
-                PackageWriter package = new PackageWriter();
+                PackageWriter package = new PackageWriter(WriteLineToBuild);
                 package.ProjectFile = projectProps.GetString("FileName");
                 package.ProjectFolder = projectProps.GetString("FullPath");
                 package.TargetFramework = projectProps.GetString("TargetFrameworkMoniker");
@@ -73,9 +78,13 @@ namespace TickTrader.Algo.VS.Package
                 package.VsVersion = dteObj.Version;
                 package.SaveToCommonRepository();
             }
+            catch (System.IO.IOException ioex)
+            {
+                WriteLineToBuild("Failed to build algo package! " + ioex.Message);
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine("Failed to build algo package! " + ex.ToString());
+                WriteLineToBuild("Failed to build algo package! " + ex.ToString());
             }
         }
 
@@ -215,27 +224,37 @@ namespace TickTrader.Algo.VS.Package
 
         private void AdjustApiReference()
         {
+            WriteToGeneral("Loading project " + projectName + " ...\r\n");
+
             VSLangProj.VSProject vsProject = (VSLangProj.VSProject)dteProject.Object;
             var references = vsProject.References.Cast<VSLangProj.Reference>();
-            var apiRef = references.FirstOrDefault(r => r.Name == "TickTrader.Algo.Api");
+            var apiRef = references.FirstOrDefault(r => r.Name == EnvService.ApiAssemblyName);
             var apiSrc = GetLatestApiCopy();
-            var apiProjectDefPath = Path.Combine(projectFolder, EnvService.ApiDllFileName);
+            var apiProjectDefPath = Path.Combine(projectFolder, EnvService.ApiAssemblyFileName);
 
-            if (apiSrc == null)
-                return; // TO DO : log
+            if (apiSrc != null)
+                WriteToGeneral("Available Api version: " + apiSrc.Version + "\r\n");
+            else
+            {
+                WriteToGeneral("Cannot find/load API asembly! Reference update is not possible.\r\n");
+                return;
+            }
 
             if (apiRef == null)
             {
+                WriteToGeneral("Project has no API refenrece.\r\n");
+
                 // add reference
                 try
                 {
                     apiSrc.Save(apiProjectDefPath);
                     var newRef = vsProject.References.Add(apiProjectDefPath);
                     newRef.CopyLocal = false;
+                    WriteToGeneral("Added reference to API v." + apiSrc.Version + "\r\n");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // TO DO : log
+                    WriteToGeneral("Failed to add API reference! " + ex.Message + "\r\n");
                 }
             }
             else
@@ -250,12 +269,17 @@ namespace TickTrader.Algo.VS.Package
 
                     // check version
                     var refVersion = GetVersionOrNull(existingApiRefPath);
+                    if (refVersion != null)
+                        WriteToGeneral("Project Api version: " + refVersion + "\r\n");
                     if (refVersion == null || refVersion < apiSrc.Version)
+                    {
                         apiSrc.Save(existingApiRefPath);
+                        WriteToGeneral("Updated reference to API v." + apiSrc.Version + "\r\n");
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // TO DO : log
+                    WriteToGeneral("Failed to update API reference! " + ex.Message + "\r\n");
                 }
             }
         }
@@ -267,30 +291,49 @@ namespace TickTrader.Algo.VS.Package
                 var versionStr = FileVersionInfo.GetVersionInfo(path).FileVersion;
                 return new Version(versionStr);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TO DO : log error
+                WriteToGeneral("Error: " + ex.Message);
                 return null;
             }
         }
 
         private AssemblyCopy GetLatestApiCopy()
         {
-            var apiFromCommon = new AssemblyCopy(Path.Combine(EnvService.AlgoCommonApiFolder, EnvService.ApiDllFileName));
+            var commonApiPath = Path.Combine(EnvService.AlgoCommonApiFolder, EnvService.ApiAssemblyFileName);
+            var apiFromCommon = new AssemblyCopy(commonApiPath);
 
             if (apiFromCommon.IsValid)
                 return apiFromCommon;
 
-            // TO DO : log error
+            if (apiFromCommon.LoadErrorMessage != null)
+                WriteToGeneral("Error: " + apiFromCommon.LoadErrorMessage + "\r\n");
 
-            var apiFromPackage = new AssemblyCopy(Path.Combine(EnvService.PackageFolder, EnvService.ApiDllFileName));
+            string packageApiPath = Path.Combine(EnvService.PackageFolder, EnvService.ApiAssemblyFileName);
+            var apiFromPackage = new AssemblyCopy(packageApiPath);
 
             if (apiFromPackage.IsValid)
                 return apiFromPackage;
 
-            // TO DO : log error
+            if (apiFromPackage.LoadErrorMessage != null)
+                WriteToGeneral("Error: " + apiFromPackage.LoadErrorMessage + "\r\n");
 
             return null;
+        }
+
+        private void WriteToGeneral(string message)
+        {
+            package.OutputPane_General?.OutputString(message);
+        }
+
+        private void WriteLineToBuild(string message)
+        {
+            WriteToBuild(message + "\r\n");
+        }
+
+        private void WriteToBuild(string message)
+        {
+            package.OutputPane_Build?.OutputString(message);
         }
 
         public static bool ComparePaths(string path1, string path2)

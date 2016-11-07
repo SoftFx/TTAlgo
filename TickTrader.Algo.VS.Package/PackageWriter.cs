@@ -15,6 +15,8 @@ namespace TickTrader.Algo.VS.Package
         public const string MetadataFileName = "metadata.xml";
         public const string DefaultExtension = ".ttalgo";
 
+        private Action<string> trace;
+
         public string AssemblyName { get; set; }
         public string TargetFramework { get; set; }
         public string ProjectFolder { get; set; }
@@ -22,6 +24,16 @@ namespace TickTrader.Algo.VS.Package
         public string SolutionPath { get; set; }
         public string OutputPath { get; set; }
         public string VsVersion { get; set; }
+
+        public PackageWriter()
+        {
+            this.trace = t => System.Diagnostics.Debug.WriteLine(t);
+        }
+
+        public PackageWriter(Action<string> traceWriteAction)
+        {
+            this.trace = traceWriteAction;
+        }
 
         public void SaveToCommonRepository()
         {
@@ -48,10 +60,10 @@ namespace TickTrader.Algo.VS.Package
             string pckgPath = Path.Combine(targetFolder, pckgFileName);
             string pckgSrcFolder = Path.Combine(ProjectFolder, OutputPath).TrimEnd(Path.DirectorySeparatorChar);
 
-            Trace.WriteLine("Creating algo package...");
-            Console.WriteLine("\tPackage name = " + pckgFileName);
-            Console.WriteLine("\tSource folder = " + pckgSrcFolder);
-            Console.WriteLine("\tOutput file  = " + pckgPath);
+            trace("Creating algo package...");
+            trace("\tPackage name = " + pckgFileName);
+            trace("\tSource folder = " + pckgSrcFolder);
+            trace("\tOutput file  = " + pckgPath);
 
             var package = new Algo.Core.Package();
             var files = Directory.GetFiles(pckgSrcFolder);
@@ -71,6 +83,8 @@ namespace TickTrader.Algo.VS.Package
 
             using (var pckgFs = File.OpenWrite(pckgPath))
                 package.Save(pckgFs);
+
+            trace("Done.");
         }
     }
 }
