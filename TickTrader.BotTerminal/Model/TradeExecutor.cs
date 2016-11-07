@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
                     ValidateSl(sl);
 
                     var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type), Convert(side),
-                        price, volume, sl, tp, null, comment);
+                        price, volume, sl, tp, null, comment, "", null);
                     return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
                 }
                 catch (ValidatioException vex)
