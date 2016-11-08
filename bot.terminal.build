@@ -8,8 +8,11 @@
 
   <property name="SourcesDir"		    value="c:\platform.algo\"							      unless="${property::exists('SourcesDir')}" />
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
-  <property name="PrivateRepoSourcesDir"		    value="${SourcesDir}Repository.Private\"							      unless="${property::exists('PrivateRepoSourcesDir')}" />
+  
+  <property name="PrivateRepoOutputDir"		    value="${SourcesDir}AlgoRepository\"							      unless="${property::exists('PrivateRepoOutputDir')}" />
+  <property name="PrivateRepoSolutionDir"		    value="${SourcesDir}Repository.Private\"							      unless="${property::exists('PrivateRepoSolutionDir')}" />
   <property name="PrivateRepoSolutionFile"		  value="Repository.Private.sln"					                  unless="${property::exists('PrivateRepoSolutionFile')}" />
+  
 
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
 
@@ -25,9 +28,10 @@
   <target name="Build" >
     <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
-	<call target="RunMSBuildForPrivateRepo" />
-    <call target="CreateBinPackage" />
+	<call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
+	<call target="RunMSBuildForPrivateRepo" />
+	<call target="CreateBinPackageForPrivateRepo" />
   </target>
 
   <target name="Publish" >
@@ -78,10 +82,10 @@
   
   <target name="RunMSBuildForPrivateRepo">
 
-    <property name="MSBuild.SourcesDir" value="${PrivateRepoSourcesDir}" />
-    <property name="MSBuild.SolutionFile" value="${PrivateRepoSourcesDir}${PrivateRepoSolutionFile}" />
-    <property name="MSBuild.Target" value="${Build.Target}" />
-    <property name="MSBuild.Output" value="${PrivateRepoSourcesDir}PrivateRepository.build-${Configuration}.log" />
+    <property name="MSBuild.SourcesDir" value="${PrivateRepoSolutionDir}" />
+    <property name="MSBuild.SolutionFile" value="${PrivateRepoSolutionDir}${PrivateRepoSolutionFile}" />
+    <property name="MSBuild.Target" value="Rebuild" />
+    <property name="MSBuild.Output" value="${PrivateRepoSolutionDir}PrivateRepository.build-${Configuration}.log" />
     <property name="MSBuild.Configuration" value="${Configuration}" />
     <property name="MSBuild.Platform" value="Any CPU" />
 
@@ -124,6 +128,11 @@
         <include name="**/*" />
       </fileset>
     </delete>
+	<delete>
+      <fileset basedir="${PrivateRepoOutputDir}">
+        <include name="**/*" />
+      </fileset>
+    </delete>
   </target>
 
   <target name="CreateBinPackage">
@@ -134,8 +143,6 @@
     <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
     <property name="IndicatorsBinDir" value="${SourcesDir}TickTrader.Algo.Indicators\bin\${Configuration}" />
     <property name="IndicatorsDestArchive" value="${OutpuFolder}Indicators ${Build}.zip" />
-	<property name="AlgoRepositorySource" value="${SourcesDir}AlgoRepository" />
-	<property name="AlgoRepositoryDestArchive" value="${OutpuFolder}Algo ${Build}.zip" />
 
     <zip zipfile="${BotTerminalDestArchive}">
       <fileset basedir="${BotTerminalBinDir}">
@@ -158,6 +165,13 @@
       </fileset>
     </zip>
 	
+  </target>
+  
+  <target name="CreateBinPackageForPrivateRepo">
+  
+	<property name="AlgoRepositorySource" value="${PrivateRepoOutputDir}" />
+	<property name="AlgoRepositoryDestArchive" value="${OutpuFolder}Algo ${Build}.zip" />
+
 	<zip zipfile="${AlgoRepositoryDestArchive}">
       <fileset basedir="${AlgoRepositorySource}">
         <include name ="*.*" />
