@@ -240,3 +240,4 @@ _Pvt_Extensions
 .fake/
 algo.metadata
 /Repository.Public/API
+/TickTrader.BotTerminal/Redist

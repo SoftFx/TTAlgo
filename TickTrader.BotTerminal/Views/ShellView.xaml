@@ -76,6 +76,9 @@
                 <MenuItem Header="Sounds" IsChecked="{Binding Notifications.SoundsEnabled}" IsCheckable="True"></MenuItem>
                 <MenuItem Header="Notifications" IsChecked="{Binding Notifications.NotificationsEnabled}" IsCheckable="True"></MenuItem>
             </MenuItem>
+            <MenuItem Header="{l:Resx Menu_Tools}">
+                <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
+            </MenuItem>
         </Menu>
 
         <GridSplitter Grid.Column="2" Grid.Row="3" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>

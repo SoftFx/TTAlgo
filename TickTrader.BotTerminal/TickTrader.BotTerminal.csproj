@@ -173,6 +173,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
+    <Content Include="Redist\TickTrader.Algo.VS.Package.vsix" />
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -296,6 +297,7 @@
     <Compile Include="Model.Algo\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
     <Compile Include="Model\UniqueNameGenerator.cs" />
+    <Compile Include="Model\VsIntegration.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -901,7 +903,6 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -16,6 +16,7 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             ApplicationName = "BotTrader";
 
+            AppFolder = AppDomain.CurrentDomain.BaseDirectory;
             var myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var appDocumentsFolder = Path.Combine(myDocumentsFolder, ApplicationName);
 
@@ -36,16 +37,14 @@ namespace TickTrader.BotTerminal
             {
                 // ------- Portable Mode -------------
 
-                string appDir = AppDomain.CurrentDomain.BaseDirectory;
-
-                BotLogFolder = Path.Combine(appDir, "BotLogs");
-                LogFolder = Path.Combine(appDir, "Logs");
-                JournalFolder = Path.Combine(appDir, "Journal");
-                AlgoRepositoryFolder = Path.Combine(appDir, "AlgoRepository");
+                BotLogFolder = Path.Combine(AppFolder, "BotLogs");
+                LogFolder = Path.Combine(AppFolder, "Logs");
+                JournalFolder = Path.Combine(AppFolder, "Journal");
+                AlgoRepositoryFolder = Path.Combine(AppFolder, "AlgoRepository");
                 AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
-                AlgoWorkingFolder = Path.Combine(appDir, "AlgoData");
-                FeedHistoryCacheFolder = Path.Combine(appDir, "FeedCache");
-                AppDataFolder = Path.Combine(appDir, "Settings");
+                AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
+                FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
+                AppDataFolder = Path.Combine(AppFolder, "Settings");
             }
            
             EnsureFolder(AlgoRepositoryFolder);
@@ -67,6 +66,8 @@ namespace TickTrader.BotTerminal
         private static EnvService instance = new EnvService();
         public static EnvService Instance { get { return instance; } }
 
+        public string AppFolder { get; private set; }
+        public string RedistFolder { get { return Path.Combine(AppFolder, "Redist"); } }
         public string FeedHistoryCacheFolder { get; private set; }
         public string ApplicationName { get; private set; }
         public string BotLogFolder { get; private set; }

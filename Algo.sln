@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Core", "TickTrader.Algo.Core\TickTrader.Algo.Core.csproj", "{8BAB901C-10BB-4EB7-B81E-716FA05B6957}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotTerminal", "TickTrader.BotTerminal\TickTrader.BotTerminal.csproj", "{D5C53515-D7E3-476F-9119-3102FE30E425}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FB93507A-17D8-4C0C-90EB-7F439BF92840} = {FB93507A-17D8-4C0C-90EB-7F439BF92840}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Samples", "TickTrader.Algo.Samples\TickTrader.Algo.Samples.csproj", "{BD57B7B2-0B30-4616-A656-90BDA6B14EEB}"
 EndProject
