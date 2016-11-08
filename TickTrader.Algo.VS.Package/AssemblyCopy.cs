@@ -22,6 +22,10 @@ namespace TickTrader.Algo.VS.Package
                 bytes = File.ReadAllBytes(path);
                 IsValid = true;
             }
+            catch (System.IO.FileNotFoundException)
+            {
+                IsValid = false;
+            }
             catch (Exception ex)
             {
                 LoadErrorMessage = ex.Message;

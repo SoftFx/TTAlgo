@@ -10,7 +10,8 @@ namespace TickTrader.Algo.VS.Package
 {
     internal static class EnvService
     {
-        public const string ApiDllFileName = "TickTrader.Algo.Api.dll";
+        public const string ApiAssemblyName = "TickTrader.Algo.Api";
+        public const string ApiAssemblyFileName = "TickTrader.Algo.Api.dll";
 
         public static string AlgoCommonFolder
         {

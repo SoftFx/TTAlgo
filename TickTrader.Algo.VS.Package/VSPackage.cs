@@ -36,13 +36,15 @@ namespace TickTrader.Algo.VS.Package
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", "1.01", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideProjectFactory(typeof(CsProjectFactory), "TT Algo Project", null, null, null, @"..\Templates\Projects")]
     [Guid(VSPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class VSPackage : Microsoft.VisualStudio.Shell.Package
     {
         private IVsOutputWindow outputWnd;
+        private IVsOutputWindowPane generalOuputPane;
+        private IVsOutputWindowPane buildOutputPane;
 
         /// <summary>
         /// VSPackage GUID string.
@@ -68,12 +70,36 @@ namespace TickTrader.Algo.VS.Package
                 if (outputWnd == null)
                     outputWnd = GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
                 return outputWnd;
-                //Guid guidGeneral = Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid;
-                //IVsOutputWindowPane pane;
-                //int hr = outputWindow.CreatePane(guidGeneral, "General", 1, 0);
-                //hr = outputWindow.GetPane(guidGeneral, out pane);
-                //pane.Activate();
-                //pane.OutputString("Test");
+            }
+        }
+
+        public IVsOutputWindowPane OutputPane_General
+        {
+            get
+            {
+                if (generalOuputPane == null)
+                {
+                    Guid paneGuid = Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid;
+                    var outputWindow = OutputWnd;
+                    int hr = outputWindow.CreatePane(paneGuid, "General", 1, 0);
+                    hr = outputWindow.GetPane(paneGuid, out generalOuputPane);
+                }
+                return generalOuputPane;
+            }
+        }
+
+        public IVsOutputWindowPane OutputPane_Build
+        {
+            get
+            {
+                if (buildOutputPane == null)
+                {
+                    Guid paneGuid = Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.BuildOutputPane_guid;
+                    var outputWindow = OutputWnd;
+                    int hr = outputWindow.CreatePane(paneGuid, "Build", 1, 0);
+                    hr = outputWindow.GetPane(paneGuid, out buildOutputPane);
+                }
+                return buildOutputPane;
             }
         }
 
