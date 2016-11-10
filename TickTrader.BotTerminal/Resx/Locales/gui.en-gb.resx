@@ -333,4 +333,10 @@
   <data name="DownloadingTradeHistoryError" xml:space="preserve">
     <value>An error occurred while loading history</value>
   </data>
+  <data name="Menu_InstallVSPackage" xml:space="preserve">
+    <value>Install or update Visual Studio plug-in...</value>
+  </data>
+  <data name="Menu_Tools" xml:space="preserve">
+    <value>Tools</value>
+  </data>
 </root>

@@ -252,6 +252,18 @@ namespace TickTrader.BotTerminal
             builder.Append(name).Append(':').Append(state).Append(" ");
         }
 
+        public void InstallVSPackage()
+        {
+            try
+            {
+                VsIntegration.InstallVsPackage();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "InstallVSPackage() failed!");
+            }
+        }
+
         #region OrderUi implementation
 
         public void OpenMarkerOrder(string symbol)

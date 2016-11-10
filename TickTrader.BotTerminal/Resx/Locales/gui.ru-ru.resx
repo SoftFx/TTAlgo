@@ -121,10 +121,10 @@
     <value>Свеча</value>
   </data>
   <data name="ChartType_DigitalLine" xml:space="preserve">
-    <value>Цифровая линия?</value>
+    <value>Цифровая линия</value>
   </data>
   <data name="ChartType_DigitalMountain" xml:space="preserve">
-    <value>Цифровая область?</value>
+    <value>Цифровая область</value>
   </data>
   <data name="ChartType_Line" xml:space="preserve">
     <value>Линия</value>
@@ -205,7 +205,7 @@
     <value>Цена</value>
   </data>
   <data name="Order_Side" xml:space="preserve">
-    <value>Сторона?</value>
+    <value>Сторона</value>
   </data>
   <data name="Order_Symbol" xml:space="preserve">
     <value>Символ</value>
@@ -217,7 +217,7 @@
     <value>Сумма</value>
   </data>
   <data name="Position_Side" xml:space="preserve">
-    <value>Сторона?</value>
+    <value>Сторона</value>
   </data>
   <data name="Position_Symbol" xml:space="preserve">
     <value>Символ</value>
