@@ -289,6 +289,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public AggregatedOrderType AggregatedType
+        {
+            get
+            {
+                return side.Aggregate(orderType);
+            }
+        }
+
         #endregion
 
         public OrderEntity ToAlgoOrder()

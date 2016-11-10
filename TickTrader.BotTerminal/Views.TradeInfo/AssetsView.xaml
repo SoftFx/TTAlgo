@@ -25,7 +25,7 @@
         <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Asset.Currency}" />
-                <DataGridTextColumn Header="Volume" Width="*">
+                <DataGridTextColumn Header="Volume" Width="*" SortMemberPath="Asset.Amount">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Asset.Amount"/>
@@ -33,7 +33,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Locked Volume" Width="*">
+                <DataGridTextColumn Header="Locked Volume" Width="*" SortMemberPath="Asset.LockedAmount">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Asset.LockedAmount"/>
@@ -41,7 +41,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Available Volume" Width="*">
+                <DataGridTextColumn Header="Available Volume" Width="*" SortMemberPath="Asset.FreeAmount">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Asset.FreeAmount"/>

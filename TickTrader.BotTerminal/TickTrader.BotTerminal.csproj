@@ -242,7 +242,6 @@
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
-    <Compile Include="Converters\TradeSideTypeConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
@@ -270,6 +269,7 @@
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
+    <Compile Include="Model\OrderType.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolRateObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
@@ -279,6 +279,7 @@
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
     <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Model\TradeTransactionModel.cs" />
     <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\ObservableTask.cs" />
