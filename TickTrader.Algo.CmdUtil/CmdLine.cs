@@ -27,10 +27,10 @@ namespace TickTrader.Algo.CmdUtil
 
             parser.OnOption("runtime", p => Runtime = p);
             parser.OnOption("ide", p => Ide = p);
-            parser.OnOption("worksapce", p => Workspace = p);
+            parser.OnOption("workspace", p => Workspace = p);
             parser.OnOption("main", p => MainFile = p);
             parser.OnOption("path", p => FolderPath = p);
-            parser.OnOption("ouput", p => OutputFolder = p);
+            parser.OnOption("output", p => OutputFolder = p);
             parser.OnOption("project", p => ProjectPath = p);
             parser.OnOption("name", p => PckgName = p);
 

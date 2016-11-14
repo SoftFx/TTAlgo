@@ -26,7 +26,7 @@ namespace TickTrader.Algo.CmdUtil
                     if(string.IsNullOrEmpty(cfg.MainFile))
                         throw new Exception("Main file is not specified! Use 'main' option to specify main file!");
 
-                    PackageWriter writer = new PackageWriter();
+                    PackageWriter writer = new PackageWriter(t => Console.WriteLine(t));
                     writer.SrcFolder = cfg.FolderPath;
                     writer.Ide = cfg.Ide;
                     writer.MainFileName = cfg.MainFile;
@@ -48,14 +48,17 @@ namespace TickTrader.Algo.CmdUtil
             catch (CmdLineParseException cex)
             {
                 Console.WriteLine("Invalid usage. " + cex.Message);
+                Environment.ExitCode = 1;
             }
             catch (System.IO.IOException iox)
             {
                 Console.WriteLine(iox.Message);
+                Environment.ExitCode = 2;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Fatal error: " + ex);
+                Environment.ExitCode = 3;
             }
         }
     }
