@@ -8,121 +8,272 @@ using SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeTransactionModel
+    abstract class TransactionReport
     {
-        public enum TradeSide { Deposit = -1, Buy = 1, Sell = 2 }
+        public enum AggregatedTransactionType { Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal }
+        public enum TransactionSide { None = -1, Buy, Sell }
 
-        public TradeTransactionModel(TradeTransactionReport item) : this(item, null) { }
-
-        public TradeTransactionModel(TradeTransactionReport item, SymbolModel symbol)
+        public TransactionReport() { }
+        public TransactionReport(TradeTransactionReport transaction, SymbolModel symbol)
         {
             PriceDigits = symbol?.PriceDigits ?? 5;
             ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
-            this.TradeRecordSide = (TradeSide)item.TradeRecordSide;
 
-            if (this.TradeRecordSide != TradeSide.Deposit)
-            {
-                this.Quantity = item.Quantity;
-                this.PosOpenPrice = item.PosOpenPrice;
-                this.StopLoss = item.StopLoss;
-                this.TakeProfit = item.TakeProfit;
-                this.PositionLastQuantity = item.PositionLastQuantity;
-                this.PositionClosePrice = item.PositionClosePrice;
-                this.PositionLeavesQuantity = item.PositionLeavesQuantity;
-                this.Commission = item.Commission;
-                this.Swap = item.Swap;
-            }
+            IsPosition = transaction.TradeRecordType == TradeRecordType.Position;
+            IsMarket = transaction.TradeRecordType == TradeRecordType.Market;
+            IsPending = transaction.TradeRecordType == TradeRecordType.Limit || transaction.TradeRecordType == TradeRecordType.Stop;
+            IsBalanceTransaction = transaction.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
-            this.AccountBalance = item.AccountBalance;
-            this.ActionId = item.ActionId;
-            this.AgentCommission = item.AgentCommission;
-            this.ClientId = item.ClientId;
-            this.CloseConversionRate = item.CloseConversionRate;
-            this.CommCurrency = item.CommCurrency;
-            this.Comment = item.Comment;
-            this.Id = item.Id;
-            this.LeavesQuantity = item.LeavesQuantity;
-            this.OpenConversionRate = item.OpenConversionRate;
-            this.OrderCreated = CheckIsNull(item.OrderCreated);
-            this.OrderFillPrice = item.OrderFillPrice;
-            this.OrderLastFillAmount = item.OrderLastFillAmount;
-            this.OrderModified = CheckIsNull(item.OrderModified);
-            this.PositionClosed = CheckIsNull(item.PositionClosed);
-            this.PositionCloseRequestedPrice = item.PositionCloseRequestedPrice;
-            this.PositionId = item.PositionId;
-            this.PositionModified = CheckIsNull(item.PositionModified);
-            this.PositionOpened = CheckIsNull(item.PositionOpened);
-            this.PositionQuantity = item.PositionQuantity;
-            this.PosOpenReqPrice = item.PosOpenReqPrice;
-            this.PosRemainingPrice = item.PosRemainingPrice;
-            this.PosRemainingSide = item.PosRemainingSide;
-            this.Price = item.Price;
-            this.StopPrice = item.StopPrice;
-            this.Symbol = item.Symbol;
-            this.TradeRecordType = item.TradeRecordType;
-            this.TradeTransactionReason = item.TradeTransactionReason;
-            this.TradeTransactionReportType = item.TradeTransactionReportType;
-            this.TransactionAmount = item.TransactionAmount;
-            this.TransactionCurrency = item.TransactionCurrency;
-            this.TransactionTime = item.TransactionTime;
-            this.UniqueKey = $"{Id}{PositionId}{ActionId}";
+            OrderId = GetId(transaction);
+            OpenTime = GetOpenTime(transaction);
+            Type = GetTransactionType(transaction);
+            Side = GetTransactionSide(transaction);
+            ActionType = transaction.TradeTransactionReportType;
+            Symbol = GetSymbolOrCurrency(transaction);
+            OpenQuantity = GetOpenQuntity(transaction);
+            OpenPrice = GetOpenPrice(transaction);
+            CloseTime = GetCloseTime(transaction);
+            CloseQuantity = GetCloseQuantity(transaction);
+            ClosePrice = GetClosePrice(transaction);
+            RemainingQuantity = GetRemainingQuntity(transaction);
+            Swap = GetSwap(transaction);
+            Commission = GetCommission(transaction);
+            CommissionCurrency = GetCommissionCurrency(transaction);
+            Comment = transaction.Comment;
+            Balance = transaction.AccountBalance;
+            NetProfitLoss = GetNetProfiLoss(transaction);
+            GrossProfitLoss = GetGrossProfitLoss(transaction);
+            StopLoss = GetStopLoss(transaction);
+            TakeProfit = GetTakeProfit(transaction);
+            UniqueId = GetUniqueId(transaction);
         }
 
-        public string UniqueKey { get; }
-        public double AccountBalance { get; }
-        public int ActionId { get; }
-        public double? ActualOpenPrice => PosOpenPrice == 0d ? Price : PosOpenPrice;
-        public double GrossPL => TransactionAmount - (Swap ?? 0d) - (Commission ?? 0d);
-        public double AgentCommission { get; }
-        public string ClientId { get; }
-        public double? CloseConversionRate { get; }
-        public string CommCurrency { get; }
-        public string Comment { get; }
-        public double? Commission { get; }
-        public string Id { get; }
-        public double LeavesQuantity { get; }
-        public double? OpenConversionRate { get; }
-        public DateTime? OrderCreated { get; }
-        public double? OrderFillPrice { get; }
-        public double? OrderLastFillAmount { get; }
-        public DateTime? OrderModified { get; }
-        public DateTime? PositionClosed { get; }
-        public double? PositionClosePrice { get; }
-        public double PositionCloseRequestedPrice { get; }
-        public string PositionId { get; }
-        public double? PositionLastQuantity { get; }
-        public double? PositionLeavesQuantity { get; }
-        public DateTime? PositionModified { get; }
-        public DateTime? PositionOpened { get; }
-        public double PositionQuantity { get; }
-        public double? PosOpenPrice { get; }
-        public double PosOpenReqPrice { get; }
-        public double? PosRemainingPrice { get; }
-        public TradeRecordSide PosRemainingSide { get; }
-        public double Price { get; }
-        public double? Quantity { get; }
-        public double? StopLoss { get; }
-        public double StopPrice { get; }
-        public double? Swap { get; }
-        public string Symbol { get; }
-        public string SymbolOrTransactionCurrency => TradeRecordSide == TradeSide.Deposit ? TransactionCurrency : Symbol;
-        public double? TakeProfit { get; }
-        public TradeSide TradeRecordSide { get; }
-        public TradeRecordType TradeRecordType { get; }
-        public TradeTransactionReason TradeTransactionReason { get; }
-        public TradeTransactionReportType TradeTransactionReportType { get; }
-        public double TransactionAmount { get; }
-        public string TransactionCurrency { get; }
-        public DateTime TransactionTime { get; }
-        public int PriceDigits { get; private set; }
-        public int ProfitDigits { get; private set; }
+        public string UniqueId { get; protected set; }
+        public string OrderId { get; protected set; }
+        public DateTime OpenTime { get; protected set; }
+        public AggregatedTransactionType Type { get; protected set; }
+        public TransactionSide Side { get; protected set; }
+        public TradeTransactionReportType ActionType { get; protected set; }
+        public string Symbol { get; protected set; }
+        public double OpenQuantity { get; protected set; }
+        public double OpenPrice { get; protected set; }
+        public double StopLoss { get; protected set; }
+        public double TakeProfit { get; protected set; }
+        public DateTime CloseTime { get; protected set; }
+        public double CloseQuantity { get; protected set; }
+        public double ClosePrice { get; protected set; }
+        public double RemainingQuantity { get; protected set; }
+        public double Commission { get; protected set; }
+        public string CommissionCurrency { get; protected set; }
+        public double Swap { get; protected set; }
+        public double Balance { get; protected set; }
+        public string Comment { get; protected set; }
+        public int PriceDigits { get; protected set; }
+        public int ProfitDigits { get; protected set; }
+        public double GrossProfitLoss { get; protected set; }
+        public double NetProfitLoss { get; protected set; }
+        public bool IsPosition { get; protected set; }
+        public bool IsMarket { get; protected set; }
+        public bool IsPending { get; protected set; }
+        public bool IsBalanceTransaction { get; protected set; }
 
-        private DateTime? CheckIsNull(DateTime dateTime)
+        protected virtual AggregatedTransactionType GetTransactionType(TradeTransactionReport transaction)
+        {
+            if (transaction.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction)
+                return transaction.TransactionAmount > 0 ? AggregatedTransactionType.Deposit : AggregatedTransactionType.Withdrawal;
+
+            switch (transaction.TradeRecordType)
+            {
+                case TradeRecordType.Market:
+                case TradeRecordType.Position:
+                    return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                case TradeRecordType.Limit:
+                    return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
+                case TradeRecordType.Stop:
+                    return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
+                default: return AggregatedTransactionType.Unknown;
+            }
+        }
+        protected virtual string GetSymbolOrCurrency(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? transaction.TransactionCurrency : transaction.Symbol;
+        }
+        protected virtual DateTime? CheckIsNull(DateTime dateTime)
         {
             if (dateTime.Year == 1970 && dateTime.Month == 1 && dateTime.Day == 1)
                 return null;
 
             return dateTime;
+        }
+        protected virtual TransactionSide GetTransactionSide(TradeTransactionReport transaction)
+        {
+            switch (transaction.TradeRecordSide)
+            {
+                case TradeRecordSide.Buy: return TransactionSide.Buy;
+                case TradeRecordSide.Sell: return TransactionSide.Sell;
+                default: return TransactionSide.None;
+            }
+        }
+        protected virtual string GetUniqueId(TradeTransactionReport transaction)
+        {
+            return transaction.Id;
+        }
+        protected virtual string GetId(TradeTransactionReport transaction)
+        {
+            return transaction.Id;
+        }
+        protected virtual string GetCommissionCurrency(TradeTransactionReport transaction)
+        {
+            return transaction.TransactionCurrency;
+        }
+        protected virtual double GetRemainingQuntity(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.LeavesQuantity;
+        }
+        protected virtual double GetClosePrice(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.PositionClosePrice;
+        }
+        protected virtual double GetCloseQuantity(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.PositionLastQuantity;
+        }
+        protected virtual DateTime GetCloseTime(TradeTransactionReport transaction)
+        {
+            return transaction.TransactionTime;
+        }
+        protected virtual double GetOpenPrice(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.Price;
+        }
+        protected virtual double GetOpenQuntity(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.Quantity;
+        }
+        protected virtual DateTime GetOpenTime(TradeTransactionReport transaction)
+        {
+            return transaction.OrderCreated;
+        }
+        protected virtual double GetNetProfiLoss(TradeTransactionReport transaction)
+        {
+            return transaction.TransactionAmount;
+        }
+        protected virtual double GetGrossProfitLoss(TradeTransactionReport transaction)
+        {
+            return transaction.TransactionAmount - transaction.Swap - transaction.Commission;
+        }
+        protected virtual double GetSwap(TradeTransactionReport transaction)
+        {
+            return transaction.Swap;
+        }
+        protected virtual double GetCommission(TradeTransactionReport transaction)
+        {
+            return transaction.Commission;
+        }
+        protected virtual double GetStopLoss(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.StopLoss;
+        }
+        protected virtual double GetTakeProfit(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.TakeProfit;
+        }
+    }
+
+    class NetTransactionModel : TransactionReport
+    {
+        public NetTransactionModel(TradeTransactionReport transaction, SymbolModel model) : base(transaction, model) { }
+
+        protected override string GetUniqueId(TradeTransactionReport transaction)
+        {
+            return (transaction.TradeRecordType == TradeRecordType.Limit || transaction.TradeRecordType == TradeRecordType.Stop)
+                && (transaction.ActionId > 1
+                    || (GetRemainingQuntity(transaction) < GetOpenQuntity(transaction) && GetRemainingQuntity(transaction) > 0))
+                ? $"{GetId(transaction)} #{transaction.ActionId}" : GetId(transaction);
+        }
+        protected override double GetOpenPrice(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.TradeRecordType == TradeRecordType.Stop ? transaction.StopPrice : transaction.Price;
+        }
+    }
+
+    class GrossTransactionModel : TransactionReport
+    {
+        public GrossTransactionModel(TradeTransactionReport transaction, SymbolModel symbol) : base(transaction, symbol)
+        {
+            PositionId = GetPositionId(transaction);
+        }
+
+        public string PositionId { get; private set; }
+
+        private string GetPositionId(TradeTransactionReport transaction)
+        {
+            return IsPosition
+                && GetOpenQuntity(transaction) != GetCloseQuantity(transaction)
+                && GetCloseQuantity(transaction) > 0
+                ? $"{transaction.PositionId} #{transaction.ActionId}" : transaction.PositionId;
+        }
+        protected override string GetUniqueId(TradeTransactionReport transaction)
+        {
+            return $"{GetId(transaction)} {GetPositionId(transaction)} {transaction.ActionId}";
+        }
+        protected override DateTime GetOpenTime(TradeTransactionReport transaction)
+        {
+            return IsPosition ? transaction.PositionOpened : transaction.OrderCreated;
+        }
+        protected override double GetOpenQuntity(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : IsPosition ? transaction.PositionQuantity : transaction.Quantity;
+        }
+        protected override double GetOpenPrice(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN :
+                transaction.TradeRecordType == TradeRecordType.Stop ? transaction.StopPrice :
+                IsPosition ? transaction.PosOpenPrice : transaction.Price;
+        }
+        protected override double GetRemainingQuntity(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : IsPosition ? transaction.PositionLeavesQuantity : transaction.LeavesQuantity;
+        }
+    }
+
+    class CashTransactionModel : TransactionReport
+    {
+        public CashTransactionModel(TradeTransactionReport transaction, SymbolModel symbol) : base(transaction, symbol)
+        {
+            BuyingCurrency = IsBalanceTransaction ? transaction.TransactionCurrency : transaction.DstAssetCurrency;
+            BuyingAmount = IsBalanceTransaction ? transaction.TransactionAmount : transaction.DstAssetMovement ?? 0;
+            SellingCurrency = transaction.SrcAssetCurrency;
+            SellingAmount = -transaction.SrcAssetMovement ?? 0;
+        }
+
+        public double BuyingAmount { get; private set; }
+        public string BuyingCurrency { get; private set; }
+        public double SellingAmount { get; private set; }
+        public string SellingCurrency { get; private set; }
+
+        protected override string GetCommissionCurrency(TradeTransactionReport transaction)
+        {
+            switch (GetTransactionSide(transaction))
+            {
+                case TransactionSide.Sell: return transaction.DstAssetCurrency;
+                case TransactionSide.Buy: return transaction.SrcAssetCurrency;
+                case TransactionSide.None: return "";
+                default: throw new NotSupportedException(GetTransactionSide(transaction).ToString());
+            }
+        }
+        protected override double GetClosePrice(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.OrderFillPrice ?? 0;
+        }
+        protected override double GetCloseQuantity(TradeTransactionReport transaction)
+        {
+            return IsBalanceTransaction ? double.NaN : transaction.OrderLastFillAmount ?? 0;
+        }
+        protected override string GetUniqueId(TradeTransactionReport transaction)
+        {
+            return transaction.ActionId > 1 || GetCloseQuantity(transaction) < GetOpenQuntity(transaction) && GetCloseQuantity(transaction) > 0 ?
+                $"{GetId(transaction)} #{transaction.ActionId}" : GetId(transaction);
         }
     }
 }

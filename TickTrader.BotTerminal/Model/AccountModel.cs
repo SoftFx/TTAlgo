@@ -41,8 +41,6 @@ namespace TickTrader.BotTerminal
             TradeHistory = new TradeHistoryProvider(clientModel);
 
             connection.State.StateChanged += State_StateChanged;
-            //connection.SysInitalizing += Connection_Initalizing;
-            //connection.Connected += ConnectionConnected;
             connection.SysDeinitalizing += Connection_Deinitalizing;
 
             connection.Connecting += () =>
@@ -73,11 +71,6 @@ namespace TickTrader.BotTerminal
                 assets.Clear();
             }
         }
-
-        //private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
-        //{
-        //    return Init();
-        //}
 
         private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
@@ -413,91 +406,5 @@ namespace TickTrader.BotTerminal
         }
 
         #endregion
-    }
-
-    internal class TradeHistoryProvider
-    {
-        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-        private TraderClientModel _tradeClient;
-
-        public event Action<TradeTransactionModel> OnTradeReport = delegate { };
-
-        public TradeHistoryProvider(TraderClientModel connectionModel)
-        {
-            _tradeClient = connectionModel;
-
-            _tradeClient.Connection.Connecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport += TradeTransactionReport; };
-            _tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
-        }
-
-        public Task<TradeTransactionModel[]> DownloadHistoryAsync(DateTime from, DateTime to)
-        {
-            return DownloadHistoryAsync(from, to, CancellationToken.None);
-        }
-        public Task<TradeTransactionModel[]> DownloadHistoryAsync(DateTime from, DateTime to, CancellationToken token)
-        {
-            return DownloadHistoryAsync(from, to, CancellationToken.None, null);
-        }
-        public Task<TradeTransactionModel[]> DownloadHistoryAsync(DateTime from, DateTime to, CancellationToken token, IProgress<TradeTransactionModel> progress)
-        {
-            return StartDownloadingHistory(from, to, token, progress);
-        }
-
-        private Task<TradeTransactionModel[]> StartDownloadingHistory(DateTime from, DateTime to, CancellationToken token, IProgress<TradeTransactionModel> progress)
-        {
-            return Task.Run(() =>
-            {
-                try
-                {
-                    var tradesList = new List<TradeTransactionModel>();
-                    token.ThrowIfCancellationRequested();
-
-                    var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to);
-
-                    while (!historyStream.EndOfStream)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        var historyItem = new TradeTransactionModel(historyStream.Item, GetSymbolFor(historyStream.Item));
-                        tradesList.Add(historyItem);
-                        progress?.Report(historyItem);
-
-                        historyStream.Next();
-                    }
-
-                    return tradesList.ToArray();
-                }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex) { _logger.Error(ex, "DownloadHistoryAsync FAILED"); throw; }
-            }, token);
-        }
-
-        private SymbolModel GetSymbolFor(TradeTransactionReport transaction)
-        {
-            SymbolModel symbolModel = null;
-            if (!IsBalanceOperation(transaction))
-            {
-                try
-                {
-                    symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
-                }
-                catch
-                {
-                    _logger.Warn("Symbol {0} not found for TradeTransactionID {1}.", transaction.Symbol, transaction.Id);
-                }
-            }
-
-            return symbolModel;
-        }
-
-        private bool IsBalanceOperation(TradeTransactionReport item)
-        {
-            return (TradeTransactionModel.TradeSide)item.TradeRecordSide == TradeTransactionModel.TradeSide.Deposit;
-        }
-
-        private void TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
-        {
-            OnTradeReport(new TradeTransactionModel(e.Report));
-        }
     }
 }

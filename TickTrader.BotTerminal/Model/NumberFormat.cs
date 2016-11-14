@@ -47,5 +47,20 @@ namespace TickTrader.BotTerminal
         {
             return value.ToString("P" + precision, AmountNumberInfo);
         }
+
+        public static string FormatCurrency(double value, int precision, bool suppressNaN = true)
+        {
+            return suppressNaN && double.IsNaN(value) ? "" : value.ToString("N" + precision, AmountNumberInfo);
+        }
+
+        public static string FormatPrice(double value, int precision, bool suppressNaN = true)
+        {
+            return suppressNaN && double.IsNaN(value) ? "" : value.ToString("F" + precision);
+        }
+
+        public static string FormatPrecente(double value, int precision, bool suppressNaN = true)
+        {
+            return suppressNaN && double.IsNaN(value) ? "" : value.ToString("P" + precision, AmountNumberInfo);
+        }
     }
 }

@@ -22,10 +22,9 @@ namespace TickTrader.BotTerminal
         public enum TimePeriod { All, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
         public enum TradeDirection { All = 1, Buy, Sell }
 
-        private ObservableSrotedList<string, TradeTransactionModel> _tradesList;
-        private ObservableTask<TradeTransactionModel[]> _downloadObserver;
+        private ObservableSrotedList<string, TransactionReport> _tradesList;
+        private ObservableTask<TransactionReport[]> _downloadObserver;
         private TraderClientModel _tradeClient;
-        private ConnectionModel _connectionModel;
         private DateTime _from;
         private DateTime _to;
         private TimePeriod _period;
@@ -37,7 +36,7 @@ namespace TickTrader.BotTerminal
             UpdateDateTimePeriod();
             TradeDirectionFilter = TradeDirection.All;
 
-            _tradesList = new ObservableSrotedList<string, TradeTransactionModel>();
+            _tradesList = new ObservableSrotedList<string, TransactionReport>();
             TradesList = CollectionViewSource.GetDefaultView(_tradesList);
             TradesList.Filter = new Predicate<object>(FilterTradesList);
 
@@ -110,7 +109,7 @@ namespace TickTrader.BotTerminal
             }
         }
         public ICollectionView TradesList { get; private set; }
-        public ObservableTask<TradeTransactionModel[]> DownloadObserver
+        public ObservableTask<TransactionReport[]> DownloadObserver
         {
             get { return _downloadObserver; }
             set
@@ -131,7 +130,7 @@ namespace TickTrader.BotTerminal
                 _tradesList.Clear();
 
                 var downloadRequest = _tradeClient.Account.TradeHistory.DownloadHistoryAsync(From.ToUniversalTime(), To.ToUniversalTime());
-                DownloadObserver = new ObservableTask<TradeTransactionModel[]>(downloadRequest);
+                DownloadObserver = new ObservableTask<TransactionReport[]>(downloadRequest);
                 var trades = await DownloadObserver.Task;
 
                 if (IsCurrentRequest(downloadRequest))
@@ -140,7 +139,7 @@ namespace TickTrader.BotTerminal
             catch { }
         }
 
-        private bool IsCurrentRequest(Task<TradeTransactionModel[]> downloadRequest)
+        private bool IsCurrentRequest(Task<TransactionReport[]> downloadRequest)
         {
             return downloadRequest == DownloadObserver.Task;
         }
@@ -153,15 +152,15 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void UpdateTradeHistory(TradeTransactionModel[] trades)
+        private void UpdateTradeHistory(TransactionReport[] trades)
         {
             for (int i = 0; i < trades.Length; i++)
                 AddIfNeed(trades[i]);
         }
-        private void AddIfNeed(TradeTransactionModel tradeTransaction)
+        private void AddIfNeed(TransactionReport tradeTransaction)
         {
-            if (_tradesList.GetOrDefault(tradeTransaction.UniqueKey) == null)
-                _tradesList.Add(tradeTransaction.UniqueKey, tradeTransaction);
+            if (_tradesList.GetOrDefault(tradeTransaction.UniqueId) == null)
+                _tradesList.Add(tradeTransaction.UniqueId, tradeTransaction);
         }
         private void UpdateDateTimePeriod()
         {
@@ -213,23 +212,23 @@ namespace TickTrader.BotTerminal
         {
             if (o != null)
             {
-                var tradeT = (TradeTransactionModel)o;
-                return TradeDirectionFilter == TradeDirection.All || TradeDirectionFilter == Convert(tradeT.TradeRecordSide);
+                var tradeT = (TransactionReport)o;
+                return TradeDirectionFilter == TradeDirection.All || TradeDirectionFilter == Convert(tradeT.Side);
             }
             return false;
         }
-        private TradeDirection Convert(TradeTransactionModel.TradeSide side)
+        private TradeDirection Convert(TransactionReport.TransactionSide side)
         {
             switch (side)
             {
-                case TradeTransactionModel.TradeSide.Buy: return TradeDirection.Buy;
-                case TradeTransactionModel.TradeSide.Sell: return TradeDirection.Sell;
-                default: return default(TradeDirection);
+                case TransactionReport.TransactionSide.Buy: return TradeDirection.Buy;
+                case TransactionReport.TransactionSide.Sell: return TradeDirection.Sell;
+                default: return TradeDirection.All;
             }
         }
-        private void TradeTransactionReport(TradeTransactionModel tradeTransaction)
+        private void TradeTransactionReport(TransactionReport tradeTransaction)
         {
-            if (tradeTransaction.TransactionTime.ToLocalTime().Between(From, To))
+            if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To))
                 Execute.OnUIThread(() => AddIfNeed(tradeTransaction));
         }
         private void AccountTypeChanged()
