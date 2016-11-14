@@ -33,13 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NDesk.Options, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\NDesk.Options.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,13 +45,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\TickTrader.Algo.Core\Package\Package.cs">
+      <Link>Algo.Core.Copy\Package.cs</Link>
+    </Compile>
+    <Compile Include="..\TickTrader.Algo.Core\Package\PackageMetadata.cs">
+      <Link>Algo.Core.Copy\PackageMetadata.cs</Link>
+    </Compile>
+    <Compile Include="..\TickTrader.Algo.Core\Package\PackageWriter.cs">
+      <Link>Algo.Core.Copy\PackageWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\TickTrader.Algo.VS.Package\EnvService.cs">
+      <Link>EnvService.cs</Link>
+    </Compile>
     <Compile Include="AlgoPackageTool.cs" />
+    <Compile Include="CmdLine.cs" />
+    <Compile Include="CmdLineParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy  /Y $(TargetDir)*.*  ..\..\..\Repository.Public\API\</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

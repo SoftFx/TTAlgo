@@ -1,10 +1,12 @@
-﻿using NDesk.Options;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.VS.Package;
 
 namespace TickTrader.Algo.CmdUtil
 {
@@ -12,44 +14,48 @@ namespace TickTrader.Algo.CmdUtil
     {
         static void Main(string[] args)
         {
-            string name = null;
-            string path = null;
-
-            var set = new OptionSet()
-                .Add("n|name=", p => name = p)
-                .Add("p|path=", p => path = p);
-
             try
             {
-                var unparsed = set.Parse(args);
-                if (unparsed.Count == 0)
-                    throw new Exception("Command is not specified.");
-                if (unparsed.Count > 1)
-                    throw new Exception("Invalid usage. " + string.Concat(unparsed));
+                CmdLine cfg = new CmdLine(args);
 
-                var command = unparsed[0].ToLower();
+                if (cfg.Command == Commands.BuildPackage)
+                {
+                    if (string.IsNullOrEmpty(cfg.FolderPath))
+                        throw new Exception("Path is not specified! Use 'path' option to specify path.");
 
-                if (command == "package")
-                {
-                    if (string.IsNullOrEmpty(name))
-                        throw new Exception("Package name is not specified!");
-                    if (string.IsNullOrEmpty(path))
-                        throw new Exception("Path to binaries folder is not specified!");
-                    AlgoPackageTool.Package(name, path);
-                    Console.WriteLine("Package created.");
-                }
-                else if (command == "listenv")
-                {
-                    foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
-                        Console.WriteLine(entry.Key + " = " + entry.Value);
+                    if(string.IsNullOrEmpty(cfg.MainFile))
+                        throw new Exception("Main file is not specified! Use 'main' option to specify main file!");
+
+                    PackageWriter writer = new PackageWriter();
+                    writer.SrcFolder = cfg.FolderPath;
+                    writer.Ide = cfg.Ide;
+                    writer.MainFileName = cfg.MainFile;
+                    writer.Runtime = cfg.Runtime;
+                    writer.Workspace = cfg.Workspace;
+                    writer.ProjectFile = cfg.ProjectPath;
+
+                    string targetFolder = cfg.OutputFolder;
+                    string packageFileName = cfg.PckgName;
+
+                    if (string.IsNullOrEmpty(targetFolder))
+                        targetFolder = EnvService.AlgoCommonRepositoryFolder;
+
+                    writer.Save(targetFolder, packageFileName);
                 }
                 else
-                    throw new Exception("Invalid command: " + command);
+                    cfg.PrintUsage();
             }
-            catch (Exception e)
+            catch (CmdLineParseException cex)
             {
-                Console.WriteLine(e.ToString());
-                Environment.ExitCode = -1;
+                Console.WriteLine("Invalid usage. " + cex.Message);
+            }
+            catch (System.IO.IOException iox)
+            {
+                Console.WriteLine(iox.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fatal error: " + ex);
             }
         }
     }
