@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using SciChart.Charting.Visuals.Axes;
+using SciChart.Charting.Visuals.Axes.LabelProviders;
 using SciChart.Data.Model;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -51,7 +53,15 @@ namespace TickTrader.BotTerminal
 
         protected override AxisBase CreateAxisInternal()
         {
-            return new CategoryDateTimeAxis();
+            return new CategoryDateTimeAxis()
+            {
+                FontSize = 10,
+                LabelProvider = new DynamicLableProvider(),
+                AutoTicks = true,
+                MaxAutoTicks = 25,
+                MinorsPerMajor = 1,
+                GrowBy = new DoubleRange(1, 1)
+            };
         }
 
         public override void Init(int itemsCount, DateTime start, DateTime end)
@@ -119,6 +129,72 @@ namespace TickTrader.BotTerminal
                     VisibleRange = new DateRange(pageStart, end);
                 }
             }
+        }
+    }
+
+    public class DynamicLableProvider : TradeChartAxisLabelProvider
+    {
+        private DateTime _previousValue;
+        private bool _isFirstValue = true;
+        private const string _annualTemplate = "d MMM yyyy";
+        private const string _monthlyTemplate = "d MMM";
+        private const string _dailyTemplate = "d MMM HH:mm";
+        private const string _subDailyTemplate = "HH:mm";
+
+        public override void OnBeginAxisDraw()
+        {
+            base.OnBeginAxisDraw();
+            _previousValue = DateTime.MinValue;
+            _isFirstValue = true;
+        }
+
+
+        public override string FormatLabel(IComparable dataValue)
+        {
+            var currentValue = (DateTime)dataValue;
+            var range = ParentAxis.VisibleRange;
+            var template = "";
+
+            if (_isFirstValue)
+            {
+                template = _annualTemplate;
+                _isFirstValue = false;
+            }
+            else
+            {
+                if (DifferentYears(currentValue, _previousValue))
+                {
+                    template = _annualTemplate;
+                }
+                else if (DifferentMonths(currentValue, _previousValue) || DifferentDays(currentValue, _previousValue))
+                {
+                    template = IsBeginningOfDay(currentValue) ? _monthlyTemplate : _dailyTemplate;
+                }
+                else
+                {
+                    template = _subDailyTemplate;
+                }
+            }
+
+            _previousValue = (DateTime)dataValue;
+            return currentValue.ToString(template);
+        }
+
+        private bool DifferentDays(DateTime date1, DateTime date2)
+        {
+            return date1.DayOfYear != date2.DayOfYear;
+        }
+        private bool DifferentMonths(DateTime date1, DateTime date2)
+        {
+            return date1.Month != date2.Month;
+        }
+        private bool DifferentYears(DateTime date1, DateTime date2)
+        {
+            return date1.Year - date2.Year != 0;
+        }
+        private bool IsBeginningOfDay(DateTime dt)
+        {
+            return dt.TimeOfDay == TimeSpan.FromHours(0);
         }
     }
 }
