@@ -9,11 +9,6 @@
   <property name="SourcesDir"		    value="c:\platform.algo\"							      unless="${property::exists('SourcesDir')}" />
   <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
   
-  <property name="PrivateRepoOutputDir"		    value="${SourcesDir}AlgoRepository\"							      unless="${property::exists('PrivateRepoOutputDir')}" />
-  <property name="PrivateRepoSolutionDir"		    value="${SourcesDir}Repository.Private\"							      unless="${property::exists('PrivateRepoSolutionDir')}" />
-  <property name="PrivateRepoSolutionFile"		  value="Repository.Private.sln"					                  unless="${property::exists('PrivateRepoSolutionFile')}" />
-  
-
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
 
   <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
@@ -30,8 +25,6 @@
     <call target="RunMSBuild" />
 	<call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
-	<call target="RunMSBuildForPrivateRepo" />
-	<call target="CreateBinPackageForPrivateRepo" />
   </target>
 
   <target name="Publish" >
@@ -80,34 +73,7 @@
 
   </target>
   
-  <target name="RunMSBuildForPrivateRepo">
-
-    <property name="MSBuild.SourcesDir" value="${PrivateRepoSolutionDir}" />
-    <property name="MSBuild.SolutionFile" value="${PrivateRepoSolutionDir}${PrivateRepoSolutionFile}" />
-    <property name="MSBuild.Target" value="Rebuild" />
-    <property name="MSBuild.Output" value="${PrivateRepoSolutionDir}PrivateRepository.build-${Configuration}.log" />
-    <property name="MSBuild.Configuration" value="${Configuration}" />
-    <property name="MSBuild.Platform" value="Any CPU" />
-
-    <exec program="${MSBuildDir}msbuild.exe" >
-      <arg value="${MSBuild.SolutionFile}" />
-      <arg value="/t:${MSBuild.Target}" />
-      <arg value="/maxcpucount" />
-      <arg value="/fl" />
-      <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
-      <arg value="/clp:NoItemAndPropertyList" />
-      <arg value="/verbosity:n" />
-      <arg value="/nologo" />
-      <arg value="/p:Configuration=${MSBuild.Configuration}" />
-      <arg value="/p:Platform=${MSBuild.Platform}" />
-      <arg value="/p:SolutionDir=${MSBuild.SourcesDir}" />
-      <arg value="/p:InstallUrl=${InstallUrl}" />
-      <arg value="/p:ApplicationVersion=${Build}" />
-    </exec>
-
-  </target>
-
-  <target name="GenerateSetupHmtl">
+   <target name="GenerateSetupHmtl">
     <copy file="${SourcesDir}ClickOnce\BotTerminal.Setup.html" tofile="${PublishFolder}\setup.html">
       <filterchain>
         <replacetokens>
@@ -125,11 +91,6 @@
     </delete>
     <delete>
       <fileset basedir="${PublishFolder}">
-        <include name="**/*" />
-      </fileset>
-    </delete>
-	<delete>
-      <fileset basedir="${PrivateRepoOutputDir}">
         <include name="**/*" />
       </fileset>
     </delete>
@@ -166,20 +127,7 @@
     </zip>
 	
   </target>
-  
-  <target name="CreateBinPackageForPrivateRepo">
-  
-	<property name="AlgoRepositorySource" value="${PrivateRepoOutputDir}" />
-	<property name="AlgoRepositoryDestArchive" value="${OutpuFolder}Algo ${Build}.zip" />
-
-	<zip zipfile="${AlgoRepositoryDestArchive}">
-      <fileset basedir="${AlgoRepositorySource}">
-        <include name ="*.*" />
-        <include name ="**/*" />
-      </fileset>
-    </zip>
-
-  </target>
+   
 
   <target name="FtpPublish">
     <exec program="${WinScpPath}" verbose="true">
