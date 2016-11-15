@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.VS.Package
 {
@@ -68,15 +69,20 @@ namespace TickTrader.Algo.VS.Package
                 var solutionProps = dteObj.Solution.Properties;
                 var buildProps = dteProject.ConfigurationManager.ActiveConfiguration.Properties;
 
+                var projectFolderPath = projectProps.GetString("FullPath");
+                var projectFileName = projectProps.GetString("FileName");
+                var projectFilePath = Path.Combine(projectFolderPath, projectFileName);
+                var outputFolder = buildProps.GetString("OutputPath");
+                var outputFolderPath = Path.Combine(projectFolderPath, outputFolder);
+
                 PackageWriter package = new PackageWriter(WriteLineToBuild);
-                package.ProjectFile = projectProps.GetString("FileName");
-                package.ProjectFolder = projectProps.GetString("FullPath");
-                package.TargetFramework = projectProps.GetString("TargetFrameworkMoniker");
-                package.AssemblyName = projectProps.GetString("OutputFileName");
-                package.OutputPath = buildProps.GetString("OutputPath");
-                package.SolutionPath = solutionProps.GetString("Path");
-                package.VsVersion = dteObj.Version;
-                package.SaveToCommonRepository();
+                package.ProjectFile = projectFilePath;
+                package.Runtime = projectProps.GetString("TargetFrameworkMoniker");
+                package.MainFileName = projectProps.GetString("OutputFileName");
+                package.SrcFolder = outputFolderPath;
+                package.Workspace = solutionProps.GetString("Path");
+                package.Ide = "VS" + dteObj.Version;
+                package.Save(EnvService.AlgoCommonRepositoryFolder);
             }
             catch (System.IO.IOException ioex)
             {

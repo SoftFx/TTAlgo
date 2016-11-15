@@ -58,9 +58,11 @@
     <Compile Include="..\TickTrader.Algo.Core\Package\PackageMetadata.cs">
       <Link>Algo.Core.Copy\PackageMetadata.cs</Link>
     </Compile>
+    <Compile Include="..\TickTrader.Algo.Core\Package\PackageWriter.cs">
+      <Link>Algo.Core.Copy\PackageWriter.cs</Link>
+    </Compile>
     <Compile Include="EnvService.cs" />
     <Compile Include="AssemblyCopy.cs" />
-    <Compile Include="PackageWriter.cs" />
     <Compile Include="CsProject.cs" />
     <Compile Include="CsProjectConfiguration.cs" />
     <Compile Include="CsProjectFactory.cs" />

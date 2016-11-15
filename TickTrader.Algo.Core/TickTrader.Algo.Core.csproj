@@ -100,6 +100,7 @@
     <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />
+    <Compile Include="Package\PackageWriter.cs" />
     <Compile Include="Realtime\RealtimePluginSetup.cs" />
     <Compile Include="Math\BarSampler.cs" />
     <Compile Include="Metadata\ValueFactory.cs" />

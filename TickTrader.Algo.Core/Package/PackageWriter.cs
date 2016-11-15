@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.VS.Package
+namespace TickTrader.Algo.Core
 {
     public class PackageWriter
     {
@@ -17,13 +17,12 @@ namespace TickTrader.Algo.VS.Package
 
         private Action<string> trace;
 
-        public string AssemblyName { get; set; }
-        public string TargetFramework { get; set; }
-        public string ProjectFolder { get; set; }
+        public string MainFileName { get; set; }
+        public string Runtime { get; set; }
         public string ProjectFile { get; set; }
-        public string SolutionPath { get; set; }
-        public string OutputPath { get; set; }
-        public string VsVersion { get; set; }
+        public string Workspace { get; set; }
+        public string SrcFolder { get; set; }
+        public string Ide { get; set; }
 
         public PackageWriter()
         {
@@ -35,38 +34,29 @@ namespace TickTrader.Algo.VS.Package
             this.trace = traceWriteAction;
         }
 
-        public void SaveToCommonRepository()
-        {
-            Save(EnvService.AlgoCommonRepositoryFolder);
-        }
-
         public void Save(string targetFolder, string pckgFileName = null)
         {
             if (string.IsNullOrEmpty(targetFolder))
                 throw new ArgumentException("targetFolder is empty.");
 
-            if (string.IsNullOrEmpty(AssemblyName))
-                throw new Exception("AssemblyName is not set.");
+            if (string.IsNullOrEmpty(MainFileName))
+                throw new Exception("MainFileName is not set.");
 
-            if (string.IsNullOrEmpty(ProjectFolder))
-                throw new Exception("ProjectFolder is not set.");
-
-            if (string.IsNullOrEmpty(OutputPath))
-                throw new Exception("OutputPath is not set.");
+            if (string.IsNullOrEmpty(SrcFolder))
+                throw new Exception("SrcFolder is not set.");
 
             if (string.IsNullOrEmpty(pckgFileName))
-                pckgFileName = Path.GetFileNameWithoutExtension(AssemblyName) + DefaultExtension;
+                pckgFileName = Path.GetFileNameWithoutExtension(MainFileName) + DefaultExtension;
 
             string pckgPath = Path.Combine(targetFolder, pckgFileName);
-            string pckgSrcFolder = Path.Combine(ProjectFolder, OutputPath).TrimEnd(Path.DirectorySeparatorChar);
 
             trace("Creating algo package...");
             trace("\tPackage name = " + pckgFileName);
-            trace("\tSource folder = " + pckgSrcFolder);
+            trace("\tSource folder = " + SrcFolder);
             trace("\tOutput file  = " + pckgPath);
 
             var package = new Algo.Core.Package();
-            var files = Directory.GetFiles(pckgSrcFolder);
+            var files = Directory.GetFiles(SrcFolder);
 
             foreach (var filePath in files)
             {
@@ -75,11 +65,11 @@ namespace TickTrader.Algo.VS.Package
                 package.AddFile(fileName, fileBytes);
             }
 
-            package.Metadata.Runtime = TargetFramework;
-            package.Metadata.IDE = "VS" + VsVersion;
-            package.Metadata.ProjectFilePath = Path.Combine(ProjectFolder, ProjectFile).TrimEnd(Path.DirectorySeparatorChar);
-            package.Metadata.MainBinaryFile = AssemblyName;
-            package.Metadata.Workspace = SolutionPath;
+            package.Metadata.Runtime = Runtime;
+            package.Metadata.IDE = Ide;
+            package.Metadata.ProjectFilePath = ProjectFile;
+            package.Metadata.MainBinaryFile = MainFileName;
+            package.Metadata.Workspace = Workspace;
 
             using (var pckgFs = File.OpenWrite(pckgPath))
                 package.Save(pckgFs);

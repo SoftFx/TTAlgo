@@ -14,6 +14,15 @@ namespace TickTrader.BotTerminal
 
         public AppBootstrapper()
         {
+            try
+            {
+                QuoteCache.Storage.LmdbStorage storage = new QuoteCache.Storage.LmdbStorage();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
 #if DEBUG
             Machinarium.Qnil.UnitTests.Launch();
 #endif
