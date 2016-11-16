@@ -137,7 +137,7 @@ namespace TickTrader.BotTerminal
                 navigator = value;
                 TimeAxis = value.CreateAxis();
 
-                Binding cursorTextFormatBinding = new Binding("DateAxisLabelFormat");
+                Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
                 cursorTextFormatBinding.Source = this;
                 cursorTextFormatBinding.Mode = BindingMode.TwoWay;
                 TimeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
