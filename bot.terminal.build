@@ -144,12 +144,12 @@
   <target name="CreateAlgoPackage">
     <exec program="${ToolsFolder}CmdUtil.exe">
       <arg value="build" />
-      <arg value="path=${SolutionFolder}${Package.ProjectFolder}\bin\${Configuration}"/>
+      <arg value="path=${SourcesDir}${Package.ProjectFolder}\bin\${Configuration}"/>
       <arg value="main=${Package.ProjectFolder}.dll"/>
       <arg value="runtime=.NETFramework,Version=v4.5.2" />
       <arg value="ide=VS14.0" />
-      <arg value="project=${SolutionFolder}${Package.ProjectFolder}\${Package.ProjectFolder}.cs" />
-      <arg value="workspace=${SolutionFolder}${SolutionFile}" />
+      <arg value="project=${SourcesDir}${Package.ProjectFolder}\${Package.ProjectFolder}.cs" />
+      <arg value="workspace=${SourcesDir}${SolutionFile}" />
       <arg value="output=${OutpuFolder}" />
     </exec>
   </target>
