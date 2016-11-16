@@ -401,9 +401,9 @@ namespace TickTrader.Algo.Core
             logger.OnError(ex);
         }
 
-        private void OnAsyncAction(SendOrPostCallback callback, object state)
+        private void OnAsyncAction(Action asyncAction)
         {
-            iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(callback, state));
+            iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
         }
 
         private void OnFeedUpdate(RateUpdate update)

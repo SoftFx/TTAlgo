@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Api
 
         protected void Exit()
         {
-            Context.OnExit();
+            context.OnExit();
         }
 
         internal void InvokeStart()
@@ -48,16 +48,16 @@ namespace TickTrader.Algo.Api
 
         #region Logger
 
-        public StatusApi Status { get { return Context.StatusApi; } }
+        public StatusApi Status { get { return context.StatusApi; } }
 
         public void Print(string msg, params object[] parameters)
         {
-            Context.Logger.Print(msg, parameters);
+            context.Logger.Print(msg, parameters);
         }
 
         public void PrintError(string msg, params object[] parameters)
         {
-            Context.Logger.PrintError(msg, parameters);
+            context.Logger.PrintError(msg, parameters);
         }
 
         #endregion
@@ -66,42 +66,42 @@ namespace TickTrader.Algo.Api
 
         public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return Context.TradeApi.OpenOrder(false, symbol, type, side, volume, price, sl, tp, comment).Result;
+            return context.TradeApi.OpenOrder(false, symbol, type, side, volume, price, sl, tp, comment).Result;
         }
 
         public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return Context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment);
+            return context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment);
         }
 
         public OrderCmdResult CloseOrder(string orderId, double? volume = null)
         {
-            return Context.TradeApi.CloseOrder(false, orderId, volume).Result;
+            return context.TradeApi.CloseOrder(false, orderId, volume).Result;
         }
 
         public Task<OrderCmdResult> CloseOrderAsync(string orderId, double? volume = null)
         {
-            return Context.TradeApi.CloseOrder(true, orderId, volume);
+            return context.TradeApi.CloseOrder(true, orderId, volume);
         }
 
         public OrderCmdResult CancelOrder(string orderId)
         {
-            return Context.TradeApi.CancelOrder(false, orderId).Result;
+            return context.TradeApi.CancelOrder(false, orderId).Result;
         }
 
         public Task<OrderCmdResult> CancelOrderAsync(string orderId)
         {
-            return Context.TradeApi.CancelOrder(true, orderId);
+            return context.TradeApi.CancelOrder(true, orderId);
         }
 
         public OrderCmdResult ModifyOrder(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return Context.TradeApi.ModifyOrder(false, orderId, price, sl, tp, comment).Result;
+            return context.TradeApi.ModifyOrder(false, orderId, price, sl, tp, comment).Result;
         }
 
         public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
         {
-            return Context.TradeApi.ModifyOrder(true, orderId, price, sl, tp, comment);
+            return context.TradeApi.ModifyOrder(true, orderId, price, sl, tp, comment);
         }
 
         #endregion

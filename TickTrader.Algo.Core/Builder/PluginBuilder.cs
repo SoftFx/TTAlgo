@@ -31,6 +31,8 @@ namespace TickTrader.Algo.Core
 
             Diagnostics = Null.Diagnostics;
 
+            syncContext.OnAsyncAction = OnPluginThread;
+
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
 
@@ -49,7 +51,7 @@ namespace TickTrader.Algo.Core
         public Action<string, int> OnSubscribe { get; set; }
         public Action<string> OnUnsubscribe { get; set; }
         public Action<Exception> OnException { get; set; }
-        public Action<SendOrPostCallback, object> OnAsyncAction { get { return syncContext.OnAsyncAction; } set { syncContext.OnAsyncAction = value; } }
+        public Action<Action> OnAsyncAction { get; set; }
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
@@ -127,6 +129,29 @@ namespace TickTrader.Algo.Core
             OnException?.Invoke(ex);
         }
 
+        private void OnPluginThread(SendOrPostCallback callback, object state)
+        {
+            OnAsyncAction(() => callback(state));
+        }
+
+        private Task OnPluginThreadAsync(Action action)
+        {
+            TaskCompletionSource<object> waithandler = new TaskCompletionSource<object>();
+            OnAsyncAction(() =>
+            {
+                try
+                {
+                    action();
+                    waithandler.TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    waithandler.SetException(ex);
+                }
+            });
+            return waithandler.Task;
+        }
+
         #region IPluginContext
 
         FeedProvider IPluginContext.Feed => marketData;
@@ -179,6 +204,24 @@ namespace TickTrader.Algo.Core
             OnExit?.Invoke();
         }
 
+        void IPluginContext.OnPluginThread(Action action)
+        {
+            if (AlgoPlugin.staticContext != null) // we are already on plugin thread!
+                action();
+            else
+                OnPluginThreadAsync(action).Wait();
+        }
+
+        void IPluginContext.BeginOnPluginThread(Action action)
+        {
+            OnAsyncAction(action);
+        }
+
+        Task IPluginContext.OnPluginThreadAsync(Action action)
+        {
+            return OnPluginThreadAsync(action);
+        }
+
         #endregion IPluginContext
 
         #region Invoke
@@ -205,7 +248,7 @@ namespace TickTrader.Algo.Core
 
             OnBeforeInvoke();
             var oldContext = SynchronizationContext.Current;
-            AlgoPlugin.Context = this;
+            AlgoPlugin.staticContext = this;
             SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
@@ -215,7 +258,7 @@ namespace TickTrader.Algo.Core
             {
                 pluginException = ex;
             }
-            AlgoPlugin.Context = null;
+            AlgoPlugin.staticContext = null;
             SynchronizationContext.SetSynchronizationContext(oldContext);
             OnAfterInvoke();
 
@@ -250,9 +293,9 @@ namespace TickTrader.Algo.Core
             InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote));
         }
 
-        internal void InvokeAsyncAction(SendOrPostCallback callback, object state)
+        internal void InvokeAsyncAction(Action asyncAction)
         {
-            InvokePluginMethod(() => callback(state));
+            InvokePluginMethod(asyncAction);
         }
 
         #endregion

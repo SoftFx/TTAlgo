@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Api
         /// </returns>
         public static double RoundVolumeDown(double volume, Symbol symbolInfo)
         {
-            return AlgoPlugin.Context.Helper.RoundVolumeDown(volume, symbolInfo);
+            return AlgoPlugin.staticContext.Helper.RoundVolumeDown(volume, symbolInfo);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Api
         /// </returns>
         public static double RoundVolumeUp(double volume, Symbol symbolInfo)
         {
-            return AlgoPlugin.Context.Helper.RoundVolumeUp(volume, symbolInfo);
+            return AlgoPlugin.staticContext.Helper.RoundVolumeUp(volume, symbolInfo);
         }
 
         #endregion
@@ -44,12 +44,12 @@ namespace TickTrader.Algo.Api
 
         public static string FormatPrice(double price, int digits)
         {
-            return AlgoPlugin.Context.Helper.FormatPrice(price, digits);
+            return AlgoPlugin.staticContext.Helper.FormatPrice(price, digits);
         }
 
         public static string FormatPrice(double price, Symbol symbolInfo)
         {
-            return AlgoPlugin.Context.Helper.FormatPrice(price, symbolInfo);
+            return AlgoPlugin.staticContext.Helper.FormatPrice(price, symbolInfo);
         }
 
         #endregion
@@ -58,17 +58,17 @@ namespace TickTrader.Algo.Api
 
         public static Quote CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
         {
-            return AlgoPlugin.Context.Helper.CreateQuote(symbol, time, bids, asks);
+            return AlgoPlugin.staticContext.Helper.CreateQuote(symbol, time, bids, asks);
         }
 
         public static BookEntry CreateBookEntry(double price, double volume)
         {
-            return AlgoPlugin.Context.Helper.CreateBookEntry(price, volume);
+            return AlgoPlugin.staticContext.Helper.CreateBookEntry(price, volume);
         }
 
         public static IEnumerable<BookEntry> CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
         {
-            return AlgoPlugin.Context.Helper.CreateBook(prices, volumes);
+            return AlgoPlugin.staticContext.Helper.CreateBook(prices, volumes);
         }
 
         #endregion
@@ -78,17 +78,17 @@ namespace TickTrader.Algo.Api
     {
         public static string FormatPrice(this Symbol symbolInfo, double price)
         {
-            return AlgoPlugin.Context.Helper.FormatPrice(price, symbolInfo);
+            return AlgoPlugin.staticContext.Helper.FormatPrice(price, symbolInfo);
         }
 
         public static double RoundPriceDown(this Symbol symbolInfo, double price)
         {
-            return AlgoPlugin.Context.Helper.RoundVolumeDown(price, symbolInfo);
+            return AlgoPlugin.staticContext.Helper.RoundVolumeDown(price, symbolInfo);
         }
 
         public static double RoundPriceUp(this Symbol symbolInfo, double price)
         {
-            return AlgoPlugin.Context.Helper.RoundVolumeUp(price, symbolInfo);
+            return AlgoPlugin.staticContext.Helper.RoundVolumeUp(price, symbolInfo);
         }
     }
 }

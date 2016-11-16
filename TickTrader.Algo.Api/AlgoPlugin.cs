@@ -11,17 +11,17 @@ namespace TickTrader.Algo.Api
         [ThreadStatic]
         internal static IPluginActivator activator;
         [ThreadStatic]
-        private static IPluginContext context;
+        internal static IPluginContext staticContext;
+
+        internal IPluginContext context;
 
         internal AlgoPlugin()
         {
             if (activator == null)
                 throw new Exception("Context is missing!");
 
-            activator.Activate(this);
+            context = activator.Activate(this);
         }
-
-        internal static IPluginContext Context { get { return context; } set { context = value; } }
 
         public AccountDataProvider Account { get { return context.AccountData; } }
         public DiagnosticInfo Diagnostics { get { return context.Diagnostics; } }
@@ -38,6 +38,21 @@ namespace TickTrader.Algo.Api
         internal void InvokeInit()
         {
             Init();
+        }
+
+        public void OnMainThread(Action action)
+        {
+            context.OnPluginThread(action);
+        }
+
+        public void BeginOnMainThread(Action action)
+        {
+            context.OnPluginThread(action);
+        }
+
+        public Task OnMainThreadAsync(Action action)
+        {
+            return context.OnPluginThreadAsync(action);
         }
     }
 }

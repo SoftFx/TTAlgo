@@ -18,6 +18,9 @@ namespace TickTrader.Algo.Api
         IHelperApi Helper { get; }
         DiagnosticInfo Diagnostics { get; }
         void OnExit();
+        void OnPluginThread(Action action);
+        void BeginOnPluginThread(Action action);
+        Task OnPluginThreadAsync(Action action);
     }
 
     internal interface IHelperApi
