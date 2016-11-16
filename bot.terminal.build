@@ -15,6 +15,7 @@
 
   <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
+  <property name="ToolsFolder"	    value="${SourcesDir}tools\"  />
 
   <target name="help">
     <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Publish|Clean]"/>
@@ -23,8 +24,10 @@
   <target name="Build" >
     <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
-	<call target="CreateBinPackage" />
+	  <call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
+    <property name="Package.ProjectFolder" value="TickTrader.Algo.TestCollection" />
+    <call target="CreateAlgoPackage"/>
   </target>
 
   <target name="Publish" >
@@ -128,7 +131,6 @@
 	
   </target>
    
-
   <target name="FtpPublish">
     <exec program="${WinScpPath}" verbose="true">
       <arg value="/command" />
@@ -136,6 +138,19 @@
       <arg value='"put ""${PublishFolder}"""' />
       <arg value='"close"' />
       <arg value='"exit"' />
+    </exec>
+  </target>
+
+  <target name="CreateAlgoPackage">
+    <exec program="${ToolsFolder}CmdUtil.exe">
+      <arg value="build" />
+      <arg value="path=${SolutionFolder}${Package.ProjectFolder}\bin\${Configuration}"/>
+      <arg value="main=${Package.ProjectFolder}.dll"/>
+      <arg value="runtime=.NETFramework,Version=v4.5.2" />
+      <arg value="ide=VS14.0" />
+      <arg value="project=${SolutionFolder}${Package.ProjectFolder}\${Package.ProjectFolder}.cs" />
+      <arg value="workspace=${SolutionFolder}${SolutionFile}" />
+      <arg value="output=${OutpuFolder}" />
     </exec>
   </target>
 
