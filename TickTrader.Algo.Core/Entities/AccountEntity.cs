@@ -10,6 +10,9 @@ namespace TickTrader.Algo.Core
     public class AccountEntity : AccountDataProvider
     {
         private PluginBuilder builder;
+        private Dictionary<string, OrderFilteredCollection> bySymbolFilterCache;
+        private Dictionary<string, OrderFilteredCollection> byTagFilterCache;
+        private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
 
         public AccountEntity(PluginBuilder builder)
         {
@@ -34,12 +37,36 @@ namespace TickTrader.Algo.Core
 
         public OrderList OrdersByTag(string orderTag)
         {
-            return new OrderFilteredCollection(Orders.OrderListImpl, o => o.Comment == orderTag);
+            if (string.IsNullOrEmpty(orderTag))
+                throw new ArgumentException("Order tag cannot be null or empty string!");
+
+            if (byTagFilterCache == null)
+                byTagFilterCache = new Dictionary<string, OrderFilteredCollection>();
+
+            OrderFilteredCollection collection;
+            if (byTagFilterCache.TryGetValue(orderTag, out collection))
+                return collection;
+
+            collection = new OrderFilteredCollection(Orders.OrderListImpl, o => o.Comment == orderTag);
+            byTagFilterCache.Add(orderTag, collection);
+            return collection;
         }
 
         public OrderList OrdersBySymbol(string symbol)
         {
-            return new OrderFilteredCollection(Orders.OrderListImpl, o => o.Symbol == symbol);
+            if (string.IsNullOrEmpty(symbol))
+                throw new ArgumentException("Symbol cannot be null or empty string!");
+
+            if (bySymbolFilterCache == null)
+                bySymbolFilterCache = new Dictionary<string, OrderFilteredCollection>();
+
+            OrderFilteredCollection collection;
+            if (bySymbolFilterCache.TryGetValue(symbol, out collection))
+                return collection;
+
+            collection = new OrderFilteredCollection(Orders.OrderListImpl, o => o.Symbol == symbol);
+            bySymbolFilterCache.Add(symbol, collection);
+            return collection;
         }
 
         public OrderList OrdersBy(Predicate<Order> customCondition)
@@ -47,7 +74,16 @@ namespace TickTrader.Algo.Core
             if (customCondition == null)
                 throw new ArgumentNullException("customCondition");
 
-            return new OrderFilteredCollection(Orders.OrderListImpl, customCondition);
+            if (customFilterCache == null)
+                customFilterCache = new Dictionary<Predicate<Order>, OrderFilteredCollection>();
+
+            OrderFilteredCollection collection;
+            if (customFilterCache.TryGetValue(customCondition, out collection))
+                return collection;
+
+            collection = new OrderFilteredCollection(Orders.OrderListImpl, customCondition);
+            customFilterCache.Add(customCondition, collection);
+            return collection;
         }
 
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
