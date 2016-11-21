@@ -21,8 +21,10 @@ namespace TickTrader.Algo.Core
     internal static class Null
     {
         private static DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
+        private static Order order = new NullOrder();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
+        public static Order Order => order;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor

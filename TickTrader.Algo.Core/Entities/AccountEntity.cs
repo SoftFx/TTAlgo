@@ -32,16 +32,28 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => BalanceUpdated());
         }
 
+        public OrderList OrdersByTag(string orderTag)
+        {
+            return new OrderFilteredCollection(Orders.OrderListImpl, o => o.Comment == orderTag);
+        }
+
+        public OrderList OrdersBySymbol(string symbol)
+        {
+            return new OrderFilteredCollection(Orders.OrderListImpl, o => o.Symbol == symbol);
+        }
+
+        public OrderList OrdersBy(Predicate<Order> customCondition)
+        {
+            if (customCondition == null)
+                throw new ArgumentNullException("customCondition");
+
+            return new OrderFilteredCollection(Orders.OrderListImpl, customCondition);
+        }
+
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
 
-        public double Equity
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public double Equity { get; set; }
 
         public NetPositionList NetPositions
         {

@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Core
         public double Point { get; private set; }
         public double Bid { get; set; }
         public double Ask { get; set; }
+        public bool IsTradeAllowed { get { return entity.IsTradeAllowed; } }
 
         public void Subscribe(int depth = 1)
         {
@@ -65,6 +66,7 @@ namespace TickTrader.Algo.Core
         public double Point { get { return double.NaN; } }
         public double Bid { get { return double.NaN; } }
         public double Ask { get { return double.NaN; } }
+        public bool IsTradeAllowed { get { return false; } }
 
         public void Subscribe(int depth = 1)
         {

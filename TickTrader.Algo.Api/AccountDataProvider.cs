@@ -24,6 +24,10 @@ namespace TickTrader.Algo.Api
         NetPositionList NetPositions { get; }
         AssetList Assets { get; }
 
+        OrderList OrdersByTag(string orderTag);
+        OrderList OrdersBySymbol(string symbol);
+        OrderList OrdersBy(Predicate<Order> customCondition);
+
         event Action BalanceUpdated;
     }
 }

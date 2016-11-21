@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
         private MarketDataImpl marketData;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
+        private volatile bool isStopped;
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
         private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
@@ -118,6 +119,11 @@ namespace TickTrader.Algo.Core
             input.Buffer = buffer;
         }
 
+        public void SetStopped()
+        {
+            isStopped = true;
+        }
+
         //protected void InvokeCalculate(bool isUpdate)
         //{
 
@@ -197,6 +203,7 @@ namespace TickTrader.Algo.Core
         StatusApi IPluginContext.StatusApi => statusApi;
         EnvironmentInfo IPluginContext.Environment => this;
         IHelperApi IPluginContext.Helper => this;
+        bool IPluginContext.IsStopped => isStopped;
 
         void IPluginContext.OnExit()
         {

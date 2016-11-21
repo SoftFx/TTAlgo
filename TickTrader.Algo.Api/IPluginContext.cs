@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Api
         EnvironmentInfo Environment { get; }
         IHelperApi Helper { get; }
         DiagnosticInfo Diagnostics { get; }
+        bool IsStopped { get; }
         void OnExit();
         void OnPluginThread(Action action);
         void BeginOnPluginThread(Action action);

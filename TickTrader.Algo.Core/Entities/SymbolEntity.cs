@@ -22,5 +22,6 @@ namespace TickTrader.Algo.Core
         public double AmountStep { get; set; }
         public string BaseCurrencyCode { get; set; }
         public string CounterCurrencyCode { get; set; }
+        public bool IsTradeAllowed { get; set; }
     }
 }

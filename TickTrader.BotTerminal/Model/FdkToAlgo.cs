@@ -101,6 +101,7 @@ namespace TickTrader.BotTerminal
                 AmountStep = info.RoundLot != 0 ? info.TradeVolumeStep / info.RoundLot : double.NaN,
                 BaseCurrencyCode = info.Currency,
                 CounterCurrencyCode = info.SettlementCurrency,
+                IsTradeAllowed = info.IsTradeEnabled,
             };
         }
 

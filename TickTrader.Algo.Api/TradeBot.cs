@@ -21,6 +21,8 @@ namespace TickTrader.Algo.Api
         /// <param name="update"></param>
         protected virtual void OnRateUpdate(RateUpdate update) { }
 
+        protected bool IsStopped { get { return context.IsStopped; } }
+
         protected void Exit()
         {
             context.OnExit();

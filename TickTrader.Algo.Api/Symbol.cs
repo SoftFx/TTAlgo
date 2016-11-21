@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Api
         double MaxTradeVolume { get; }
         double MinTradeVolume { get; }
         double TradeVolumeStep { get; }
+        bool IsTradeAllowed { get; }
         bool IsNull { get; }
         string BaseCurrency { get; }
         string CounterCurrency { get; }

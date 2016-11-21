@@ -71,6 +71,7 @@
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
+    <Compile Include="Entities\OrderFilteredCollection.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrderExecReport.cs" />
