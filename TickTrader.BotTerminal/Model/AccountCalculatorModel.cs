@@ -13,6 +13,7 @@ namespace TickTrader.BotTerminal
     internal abstract class AccountCalculatorModel
     {
         private TraderClientModel feed;
+        private IFeedSubscription subscription;
 
         private AccountCalculatorModel(AccountModel acc, TraderClientModel feed)
         {
@@ -23,7 +24,8 @@ namespace TickTrader.BotTerminal
             MarketModel.Set(feed.Symbols.Snapshot.Values);
             MarketModel.Set(feed.Currencies.Values.Select(c => new CurrencyInfoAdapter(c)));
 
-            feed.Symbols.RateUpdated += Symbols_RateUpdated;
+            subscription = feed.Distributor.SubscribeAll();
+            subscription.NewQuote += Symbols_RateUpdated;
         }
 
         protected AccountAdapter Account { get; private set; }
@@ -54,7 +56,7 @@ namespace TickTrader.BotTerminal
         public virtual void Dispose()
         {
             Account.Dispose();
-            feed.Symbols.RateUpdated -= Symbols_RateUpdated;
+            subscription.Dispose();
         }
 
         private void Symbols_RateUpdated(SoftFX.Extended.Quote quote)

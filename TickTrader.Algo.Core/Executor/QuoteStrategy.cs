@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Core
 
         internal override void Stop()
         {
+            base.Stop();
             mainSeries.Dispose();
         }
     }

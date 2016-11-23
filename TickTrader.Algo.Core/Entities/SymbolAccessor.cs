@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
 
             this.Ask = double.NaN;
             this.Bid = double.NaN;
+            LastQuote = Null.Quote;
         }
 
         public string Name { get { return entity.Name; } }
@@ -34,6 +35,7 @@ namespace TickTrader.Algo.Core
         public double Point { get; private set; }
         public double Bid { get; set; }
         public double Ask { get; set; }
+        public Api.Quote LastQuote {get; set;}
         public bool IsTradeAllowed { get { return entity.IsTradeAllowed; } }
 
         public void Subscribe(int depth = 1)
@@ -44,6 +46,13 @@ namespace TickTrader.Algo.Core
         public void Unsubscribe()
         {
             handler.Unsubscribe(Name);
+        }
+
+        public void UpdateRate(Api.Quote quote)
+        {
+            Ask = quote.Ask;
+            Bid = quote.Bid;
+            LastQuote = quote;
         }
     }
 
@@ -67,6 +76,7 @@ namespace TickTrader.Algo.Core
         public double Bid { get { return double.NaN; } }
         public double Ask { get { return double.NaN; } }
         public bool IsTradeAllowed { get { return false; } }
+        public Api.Quote LastQuote { get { return Null.Quote; } }
 
         public void Subscribe(int depth = 1)
         {

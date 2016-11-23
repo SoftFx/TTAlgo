@@ -27,9 +27,6 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.connection = connection;
 
-            connection.SysInitalizing += Connection_Initalizing;
-            connection.SysDeinitalizing += Connection_Deinitalizing;
-
             requestProcessor = new ActionBlock<Task>(t => t.RunSynchronously(), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 });
         }
 
@@ -43,7 +40,7 @@ namespace TickTrader.BotTerminal
             return Deinit();
         }
 
-        private async Task Init()
+        public async Task Init()
         {
             fdkStorage = await Task.Factory.StartNew(
                 () => new DataFeedStorage(EnvService.Instance.FeedHistoryCacheFolder,
@@ -51,7 +48,7 @@ namespace TickTrader.BotTerminal
             pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
         }
 
-        private async Task Deinit()
+        public async Task Deinit()
         {
             try
             {

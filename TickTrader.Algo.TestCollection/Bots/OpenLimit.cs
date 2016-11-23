@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Open Limit Script")]
+    [TradeBot(DisplayName = "[T] Open Limit Script")]
     public class OpenLimit : TradeBot
     {
         [Parameter(DefaultValue = 1D)]

@@ -33,7 +33,6 @@ namespace TickTrader.Algo.Core.Repository
             this.FileName = Path.GetFileName(filePath);
             this.onError = onError;
 
-
             stateControl.AddTransition(States.Created, Events.Start, States.Loading);
             stateControl.AddTransition(States.Loading, Events.DoneLoad, States.Ready);
             stateControl.AddTransition(States.Loading, Events.DoneLoadRetry, States.WatingForRetry);
@@ -73,15 +72,15 @@ namespace TickTrader.Algo.Core.Repository
 
         public void Dispose()
         {
-            if (item != null)
-                DisposeSafe(item);
+            DisposeSafe(item);       
         }
 
         private void DisposeSafe(AlgoRepositoryItem itemToDispose)
         {
             try
             {
-                itemToDispose.Dispose();
+                if (item != null)
+                    itemToDispose.Dispose();
             }
             catch (Exception ex)
             {

@@ -21,8 +21,8 @@ namespace TickTrader.BotTerminal
             if (State != BotModelStates.Stopped)
                 return;
             Host.Lock();
-            StartExcecutor();
-            ChangeState(BotModelStates.Running);
+            if (StartExcecutor())
+                ChangeState(BotModelStates.Running);
         }
 
         public async Task Stop()

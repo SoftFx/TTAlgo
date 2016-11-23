@@ -58,7 +58,7 @@ namespace TickTrader.Algo.CoreUsageSample
             return null;
         }
 
-        void IPluginFeedProvider.Subscribe(string symbolCode, int depth)
+        void IPluginFeedProvider.SetSymbolDepth(string symbolCode, int depth)
         {
         }
 

@@ -11,23 +11,16 @@ namespace TickTrader.Algo.Core
     internal class SubscriptionManager
     {
         private IPluginFeedProvider feed;
-        private Dictionary<string, List<IFeedFixture>> subscribers = new Dictionary<string, List<IFeedFixture>>();
+        private Dictionary<string, SubscriptionSummary> subscribers = new Dictionary<string, SubscriptionSummary>();
 
         public SubscriptionManager(IPluginFeedProvider feed)
         {
             this.feed = feed;
         }
 
-        //public void OnBufferUpdated(Quote quote)
-        //{
-        //    var list =  GetOrAddList(quote.Symbol);
-        //    list.ForEach(s => s.OnBufferUpdated(quote));
-        //}
-
         public void OnUpdateEvent(Quote quote)
         {
-            var list = GetOrAddList(quote.Symbol);
-            list.ForEach(s => s.OnUpdateEvent(quote));
+            GetListOrNull(quote.Symbol)?.OnUpdate(quote);
         }
 
         public void Add(IFeedFixture fixture)
@@ -51,35 +44,42 @@ namespace TickTrader.Algo.Core
             public int Depth { get; set; }
             public IPluginFeedProvider Feed { get; set; }
 
-            public void Subscribe()
+            public void SetDepth()
             {
-                Feed.Subscribe(Symbol, Depth);
+                Feed.SetSymbolDepth(Symbol, Depth);
             }
 
-            public void Unsubscribe()
+            //public void Unsubscribe()
+            //{
+            //    Feed.Unsubscribe(Symbol);
+            //}
+        }
+
+        private void UpdateSubscription(string symbol, SubscriptionSummary subscribers)
+        {
+            int newDepth = subscribers.GetMaxDepth();
+            if (newDepth != subscribers.CurrentDepth)
             {
-                Feed.Unsubscribe(Symbol);
+                var request = new CrossdomainRequest() { Feed = feed, Symbol = symbol, Depth = newDepth };
+                feed.Sync.Invoke(request.SetDepth);
             }
         }
 
-        private void UpdateSubscription(string symbol, List<IFeedFixture> subscribers)
+        private SubscriptionSummary GetOrAddList(string symbolCode)
         {
-            var request = new CrossdomainRequest() { Feed = feed, Symbol = symbol, Depth = GetMaxDepth(subscribers) };
-
-            if (subscribers.Count > 0)
-                feed.Sync.Invoke(request.Subscribe);
-            else
-                feed.Sync.Invoke(request.Unsubscribe);
-        }
-
-        private List<IFeedFixture> GetOrAddList(string symbolCode)
-        {
-            List<IFeedFixture> list;
+            SubscriptionSummary list;
             if (!subscribers.TryGetValue(symbolCode, out list))
             {
-                list = new List<IFeedFixture>();
+                list = new SubscriptionSummary();
                 subscribers.Add(symbolCode, list);
             }
+            return list;
+        }
+
+        private SubscriptionSummary GetListOrNull(string symbolCode)
+        {
+            SubscriptionSummary list;
+            subscribers.TryGetValue(symbolCode, out list);
             return list;
         }
 
@@ -96,6 +96,48 @@ namespace TickTrader.Algo.Core
             }
 
             return max;
+        }
+
+        private class SubscriptionSummary
+        {
+            public SubscriptionSummary()
+            {
+                Subscribers = new List<IFeedFixture>();
+                CurrentDepth = 1;
+            }
+
+            public List<IFeedFixture> Subscribers { get; private set; }
+            public int CurrentDepth { get; private set; }
+
+            public void Add(IFeedFixture fixture)
+            {
+                Subscribers.Add(fixture);
+            }
+
+            public void Remove(IFeedFixture fixture)
+            {
+                Subscribers.Remove(fixture);
+            }
+
+            public void OnUpdate(Quote quote)
+            {
+                Subscribers.ForEach(s => s.OnUpdateEvent(quote));
+            }
+
+            public int GetMaxDepth()
+            {
+                int max = 1;
+
+                foreach (var s in Subscribers)
+                {
+                    if (s.Depth == 0)
+                        return 0;
+                    if (s.Depth > max)
+                        max = s.Depth;
+                }
+
+                return max;
+            }
         }
     }
 }

@@ -31,7 +31,6 @@ namespace TickTrader.Algo.Core
         internal abstract void OnInit();
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
         internal abstract void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector);
-        internal abstract void Stop();
 
         public void OnUserSubscribe(string symbolCode, int depth)
         {
@@ -68,10 +67,24 @@ namespace TickTrader.Algo.Core
             Feed.Sync.Invoke(StartStrategy);
         }
 
+        internal virtual void Stop()
+        {
+            Feed.Sync.Invoke(StopStrategy);
+        }
+
         private void StartStrategy()
         {
+            Feed.Subscribe(Feed_FeedUpdated);
             ExecContext.Enqueue(b => BatchBuild(BufferSize));
-            Feed.FeedUpdated += Feed_FeedUpdated;
+
+            // apply snapshot
+            foreach(var quote in Feed.GetSnapshot())
+                ExecContext.Builder.Symbols.SetRate(quote);
+        }
+
+        private void StopStrategy()
+        {
+            Feed.Unsubscribe();
         }
 
         private void BatchBuild(int x)
@@ -97,6 +110,10 @@ namespace TickTrader.Algo.Core
 
         internal void ApplyUpdate(RateUpdate update)
         {
+            var lastQuote = update.LastQuotes[0];
+
+            ExecContext.Builder.Symbols.SetRate(lastQuote);
+
             var result = UpdateBuffers(update);
 
             if (result.IsLastUpdated)
@@ -108,7 +125,7 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.InvokeCalculate(false);
             }
 
-            dispenser.OnUpdateEvent(update.LastQuotes[0]);
+            dispenser.OnUpdateEvent(lastQuote);
         }
 
         #region IFeedStrategyContext

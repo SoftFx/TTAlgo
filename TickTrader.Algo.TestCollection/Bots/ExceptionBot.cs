@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Exception Bot")]
+    [TradeBot(DisplayName = "[T] Exception Bot")]
     public class ExceptionBot : TradeBot
     {
         protected override void Init()

@@ -20,73 +20,28 @@ namespace TickTrader.BotTerminal
         private Logger logger;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
         private IDictionary<string, CurrencyInfo> currencies;
-        private ConnectionModel connection;
-        private ActionBlock<Quote> rateUpdater;
-        private List<Algo.Core.SymbolEntity> algoSymbolCache = new List<Algo.Core.SymbolEntity>();
-        private ActionBlock<Task> requestQueue;
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
         public SymbolCollectionModel(ConnectionModel connection)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.connection = connection;
-
-            connection.Connecting += () => connection.FeedProxy.Tick += FeedProxy_Tick;
-            connection.Disconnecting += () => connection.FeedProxy.Tick -= FeedProxy_Tick;
-            connection.Deinitalizing += (s, c) => Stop();
-
-            rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
+            Distributor = new QuoteDistributor(connection);
         }
 
-        public IEnumerable<Algo.Core.SymbolEntity> AlgoSymbolCache { get { return algoSymbolCache; } }
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
-        public event Action<Quote> RateUpdated = delegate { };
-
-        private void UpdateRate(Quote tick)
-        {
-            SymbolModel symbol;
-            if (symbols.TryGetValue(tick.Symbol, out symbol))
-                symbol.CastNewTick(tick);
-            RateUpdated(tick);
-        }
+        public QuoteDistributor Distributor { get; private set; }
 
         public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {
             this.currencies = currencySnapshot;
-            algoSymbolCache = symbolSnapshot.Select(FdkToAlgo.Convert).ToList();
-
             Merge(symbolSnapshot);
-            Reset();
-            requestQueue = new ActionBlock<Task>(t => t.RunSynchronously());
-            EnqueuBatchSubscription();
+            Distributor.Init();
         }
 
-        private void Reset()
+        public IFeedSubscription SubscribeAll()
         {
-            foreach (var smb in symbols.Values)
-                smb.Reset();
-        }
-
-        private void EnqueuBatchSubscription()
-        {
-            foreach (var group in symbols.Values.GroupBy(s => s.Depth))
-            {
-                var depth = group.Key;
-                var symbols = group.Select(s => s.Name).ToArray();
-                EnqueueSubscriptionRequest(depth, symbols);
-            }
-        }
-
-        private async Task Stop()
-        {
-            requestQueue.Complete();
-            await requestQueue.Completion;
-        }
-
-        void FeedProxy_Tick(object sender, SoftFX.Extended.Events.TickEventArgs e)
-        {
-            rateUpdater.SendAsync(e.Tick).Wait();
+            return Distributor.SubscribeAll();
         }
 
         private void Merge(IEnumerable<SymbolInfo> freshSnashot)
@@ -101,7 +56,8 @@ namespace TickTrader.BotTerminal
                     model.Update(info);
                 else
                 {
-                    model = new SymbolModel(this, info, currencies);
+                    Distributor.AddSymbol(info.Name);
+                    model = new SymbolModel(Distributor, info, currencies);
                     symbols.Add(info.Name, model);
                 }
             }
@@ -115,19 +71,20 @@ namespace TickTrader.BotTerminal
             }
 
             foreach (var model in toRemove)
+            {
                 symbols.Remove(model.Name);
+                model.Close();
+                Distributor.RemoveSymbol(model.Name);
+            }
+        }
+
+        public Task Deinit()
+        {
+            return Distributor.Stop();
         }
 
         public void Dispose()
         {
-        }
-
-        public Task EnqueueSubscriptionRequest(int depth, params string[] symbols)
-        {
-            var subscribeTask = new Task(() => connection.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
-            requestQueue.Post(subscribeTask);
-            return subscribeTask;
-            
         }
 
         public SymbolModel GetOrDefault(string key)

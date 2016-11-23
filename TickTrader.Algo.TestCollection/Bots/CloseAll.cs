@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Close All Positions Script")]
+    [TradeBot(DisplayName = "[T] Close All Positions Script")]
     public class CloseAll : TradeBot
     {
         protected override void OnStart()

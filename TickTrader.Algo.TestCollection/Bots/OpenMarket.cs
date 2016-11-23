@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Open Market Script")]
+    [TradeBot(DisplayName = "[T] Open Market Script")]
     public class OpenMarket : TradeBot
     {
         [Parameter(DefaultValue = 0.1)]

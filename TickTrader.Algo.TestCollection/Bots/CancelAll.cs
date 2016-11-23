@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Cancel All Limits/Stops Script")]
+    [TradeBot(DisplayName = "[T] Cancel All Limits/Stops Script")]
     public class CancelAll : TradeBot
     {
         protected override void OnStart()

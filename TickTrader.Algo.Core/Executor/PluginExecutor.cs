@@ -208,17 +208,19 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
+                // Validate
+
                 if (IsRunning)
                     throw new InvalidOperationException("Executor has been already started!");
-
                 Validate();
 
-                //isInitialized = true;
-                isExited = false;
+                // Update state
 
+                isExited = false;
                 stopTask = null;
 
                 // Setup builder
+
                 builder = new PluginBuilder(descriptor);
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
@@ -230,21 +232,29 @@ namespace TickTrader.Algo.Core
                 builder.OnAsyncAction = OnAsyncAction;
                 builder.OnSubscribe = fStrategy.OnUserSubscribe;
                 builder.OnUnsubscribe = fStrategy.OnUserUnsubscribe;
-                //builder.OnException = OnException;
                 builder.OnExit = OnExit;
-                statusFixture.Start();
+                //builder.OnException = OnException;
+
+                // Setup strategy
+
+                iStrategy.Init(builder, OnInternalException, OnRuntimeException, OnFeedUpdate);
                 fStrategy.Init(this);
                 fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
-                iStrategy.Init(builder, OnInternalException, OnRuntimeException, OnFeedUpdate);
+                iStrategy.Enqueue(b => b.InvokeInit()); // enqueue init
 
                 // Start
+
+                statusFixture.Start();
                 accFixture.Start();
-                iStrategy.Start();
-                iStrategy.Enqueue(b => b.InvokeInit());
-                fStrategy.Start();
+                fStrategy.Start(); // enqueue build action
+
                 iStrategy.Enqueue(b => b.InvokeOnStart());
+
+                iStrategy.Start(); // Must be last action! It starts queue processing.
+
+                // Update state
 
                 IsRunning = true;
                 IsRunningChanged(this);
@@ -274,9 +284,16 @@ namespace TickTrader.Algo.Core
             if (invokeOnStop)
                 builder.InvokeOnStop();
 
-            fStrategy.Stop();
-            accFixture.Stop();
-            statusFixture.Stop();
+            try
+            {
+                fStrategy.Stop();
+                accFixture.Stop();
+                statusFixture.Stop();
+            }
+            catch (Exception ex)
+            {
+                OnException(ex);
+            }
 
             lock (_sync)
             {
@@ -403,7 +420,13 @@ namespace TickTrader.Algo.Core
 
         private void OnAsyncAction(Action asyncAction)
         {
-            iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
+            lock (_sync)
+            {
+                if (!IsRunning || stopTask != null)
+                    throw new InvalidOperationException("Execution has been stopped!");
+
+                iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
+            }
         }
 
         private void OnFeedUpdate(RateUpdate update)

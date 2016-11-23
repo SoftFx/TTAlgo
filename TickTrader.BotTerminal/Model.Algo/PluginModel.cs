@@ -34,16 +34,18 @@ namespace TickTrader.BotTerminal
             Setup.Apply(executor);
         }
 
-        protected void StartExcecutor()
+        protected bool StartExcecutor()
         {
             try
             {
                 ConfigureExecutor(executor);
                 executor.Start();
+                return true;
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "StartExcecutor() failed!");
+                return false;
             }
         }
 

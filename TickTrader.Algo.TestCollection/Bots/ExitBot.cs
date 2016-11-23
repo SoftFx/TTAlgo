@@ -9,7 +9,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 {
     public enum ExitVariants { Init, OnStart, OnQuote, OnStop }
 
-    [TradeBot(DisplayName = "Exit Bot")]
+    [TradeBot(DisplayName = "[T] Exit Bot")]
     public class ExitBot : TradeBot
     {
         [Parameter(DisplayName = "Exit on")]

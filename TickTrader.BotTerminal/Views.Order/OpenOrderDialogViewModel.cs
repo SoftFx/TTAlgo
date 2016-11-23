@@ -10,7 +10,7 @@ using SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
-    internal class OpenOrderDialogViewModel: Conductor<IOpenOrderDialogPage>.Collection.OneActive, IRateUpdatesListener, IDisposable
+    internal class OpenOrderDialogViewModel: Conductor<IOpenOrderDialogPage>.Collection.OneActive, IDisposable
     {        
         private MarketOrderPageViewModel marketOrderPage;
         private PendingOrderPageViewModel pendingOrderPage;

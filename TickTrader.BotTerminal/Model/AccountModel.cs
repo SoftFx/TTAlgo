@@ -40,8 +40,7 @@ namespace TickTrader.BotTerminal
             this.connection = clientModel.Connection;
             TradeHistory = new TradeHistoryProvider(clientModel);
 
-            connection.State.StateChanged += State_StateChanged;
-            connection.SysDeinitalizing += Connection_Deinitalizing;
+            clientModel.IsConnectingChanged += UpdateConnectingState;
 
             connection.Connecting += () =>
             {
@@ -62,9 +61,9 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
+        private void UpdateConnectingState()
         {
-            if (newState == ConnectionModel.States.Connecting)
+            if (clientModel.IsConnecting)
             {
                 positions.Clear();
                 orders.Clear();

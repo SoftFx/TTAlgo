@@ -37,12 +37,12 @@ namespace TickTrader.Algo.Core
     public interface IPluginFeedProvider
     {
         ISynchronizationContext Sync { get; }
-
+        IEnumerable<QuoteEntity> GetSnapshot();
         List<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
-        void Subscribe(string symbolCode, int depth);
-        void Unsubscribe(string symbolCode);
-        event Action<QuoteEntity[]> FeedUpdated;
+        void Subscribe(Action<QuoteEntity[]> FeedUpdated);
+        void Unsubscribe();
+        void SetSymbolDepth(string symbolCode, int depth);
     }
 
     public interface IBarBasedFeed : IPluginFeedProvider

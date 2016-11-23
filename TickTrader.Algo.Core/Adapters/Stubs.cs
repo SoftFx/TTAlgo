@@ -22,9 +22,13 @@ namespace TickTrader.Algo.Core
     {
         private static DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
         private static Order order = new NullOrder();
+        private static BookEntry[] book = new BookEntry[0];
+        private static Quote quote = new NullQuote();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
+        public static BookEntry[] Book => book;
+        public static Quote Quote => quote;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
@@ -147,5 +151,17 @@ namespace TickTrader.Algo.Core
     internal class NullDiagnosticInfo : DiagnosticInfo
     {
         public int FeedQueueSize { get { return 0; } }
+    }
+
+    internal class NullQuote : Quote
+    {
+        public double Ask { get { return double.NaN; } }
+        public double Bid { get { return double.NaN; } }
+        public BookEntry[] AskBook { get { return Null.Book; } }
+        public BookEntry[] BidBook { get { return Null.Book; } }
+        public string Symbol { get { return ""; } }
+        public DateTime Time { get { return DateTime.MinValue; } }
+
+        public override string ToString() { return "{null}"; }
     }
 }

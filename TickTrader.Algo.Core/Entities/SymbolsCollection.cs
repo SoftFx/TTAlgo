@@ -57,6 +57,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void SetRate(Quote quote)
+        {
+            (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
+        }
+
         private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
         {
             private Dictionary<string, Api.Symbol> symbols = new Dictionary<string, Api.Symbol>();
@@ -79,6 +84,13 @@ namespace TickTrader.Algo.Core
             public Dictionary<string, Api.Symbol> InnerCollection { get { return symbols; } }
 
             public SymbolList List { get { return this; } }
+
+            public Symbol GetOrDefault(string symbol)
+            {
+                Symbol entity;
+                symbols.TryGetValue(symbol, out entity);
+                return entity;
+            }
 
             public IEnumerator<Symbol> GetEnumerator()
             {

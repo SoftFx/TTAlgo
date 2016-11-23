@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Api
         string CounterCurrency { get; }
         double Bid { get; }
         double Ask { get; }
+        Quote LastQuote { get; }
 
         void Subscribe(int depth = 1);
         void Unsubscribe();

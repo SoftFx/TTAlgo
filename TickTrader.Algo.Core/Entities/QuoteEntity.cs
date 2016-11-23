@@ -22,6 +22,12 @@ namespace TickTrader.Algo.Core
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
+
+        public override string ToString()
+        {
+            var bookDepth = System.Math.Max(BidList?.Length ?? 0, AskList?.Length ?? 0);
+            return "{ " + Bid + "/" + Ask + " " + Time + " d" + bookDepth + "}";
+        }
     }
 
     [Serializable]

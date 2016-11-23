@@ -84,14 +84,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public event Action Connecting = delegate { }; // background thread event
-        public event Action Connected = delegate { }; // main thread event
-        public event Action Disconnecting = delegate { }; // background thread event
-        public event Action Disconnected = delegate { }; // main thread event
-        public event AsyncEventHandler SysInitalizing; // main thread event (called after before Initalizing)
+        public event Action Connecting = delegate { };
+        public event Action Connected = delegate { };
+        public event Action Disconnecting = delegate { };
+        public event Action Disconnected = delegate { };
+        //public event AsyncEventHandler SysInitalizing; // main thread event (called after before Initalizing)
         public event AsyncEventHandler Initalizing; // main thread event
         public event AsyncEventHandler Deinitalizing; // background thread event
-        public event AsyncEventHandler SysDeinitalizing; // background thread event (called after Deinitalizing)
+        //public event AsyncEventHandler SysDeinitalizing; // background thread event (called after Deinitalizing)
 
         public async Task<ConnectionErrorCodes> Connect(string username, string password, string address, CancellationToken cToken)
         {
@@ -207,7 +207,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 var cToken = connectCancelSrc.Token;
-                await SysInitalizing.InvokeAsync(this, cToken);
+                //await SysInitalizing.InvokeAsync(this, cToken);
                 await Initalizing.InvokeAsync(this, cToken);
             }
             catch (Exception ex)
@@ -229,22 +229,32 @@ namespace TickTrader.BotTerminal
             stateControl.ModifyConditions(() => isFeedLoggedIn = true);
         }
 
+        void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
+        {
+            logger.Debug("EVENT Trade.Logon");
+            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+        }
+
         private void FeedProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
         {
-            logger.Debug("EVENT Trade.CacheInitialized");
+            logger.Debug("EVENT Feed.CacheInitialized");
             stateControl.ModifyConditions(() => isFeedCacheLoaded = true);
         }
 
         private void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
         {
-            logger.Debug("EVENT Feed.CacheInitialized");
+            logger.Debug("EVENT Trade.CacheInitialized");
             stateControl.ModifyConditions(() => isTradeCacheLoaded = true);
         }
 
-        void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
+        void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
         {
-            logger.Debug("EVENT Trade.Logon");
-            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
+            stateControl.SyncContext.Synchronized(() =>
+            {
+                if (LastError == ConnectionErrorCodes.None)
+                    LastError = Convert(e.Reason);
+                stateControl.PushEvent(Events.OnLogout);
+            });
         }
 
         void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
@@ -272,16 +282,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
-        {
-            stateControl.SyncContext.Synchronized(() =>
-            {
-                if (LastError == ConnectionErrorCodes.None)
-                    LastError = Convert(e.Reason);
-                stateControl.PushEvent(Events.OnLogout);
-            });
-        }
-
         private async void Deinit()
         {
             try
@@ -294,7 +294,6 @@ namespace TickTrader.BotTerminal
                 // fire events and wait all handlers
                 logger.Debug("Deinit. Invoking Deinitalizing event...");
                 await Deinitalizing.InvokeAsync(this, CancellationToken.None);
-                await SysDeinitalizing.InvokeAsync(this, CancellationToken.None);
             }
             catch (Exception ex) { logger.Error(ex); }
             stateControl.PushEvent(Events.DoneDeinit);

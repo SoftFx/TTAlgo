@@ -14,10 +14,10 @@ namespace TickTrader.BotTerminal
 {
     internal abstract class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
     {
-        private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
+        private IFeedSubscription subscription;
         private SymbolCollectionModel symbols;
         private FeedHistoryProviderModel history;
-        //private Dictionary<string, SymbolEntity> metadataCache;
+        private Action<QuoteEntity[]> feedUpdateHandler;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
@@ -29,14 +29,12 @@ namespace TickTrader.BotTerminal
             this.symbols = symbols;
             this.history = history;
 
-            //metadataCache = symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToDictionary(s => s.Name);
-
             rxBuffer = new BufferBlock<QuoteEntity>();
             txBlock = new ActionBlock<QuoteEntity[]>(uList =>
                 {
                     try
                     {
-                        FeedUpdated(uList);
+                        feedUpdateHandler?.Invoke(uList);
                     }
                     catch (Exception ex)
                     {
@@ -46,8 +44,6 @@ namespace TickTrader.BotTerminal
 
             rxBuffer.BatchLinkTo(txBlock, 30);
         }
-
-        public event Action<QuoteEntity[]> FeedUpdated = delegate { };
 
         public IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
@@ -63,26 +59,39 @@ namespace TickTrader.BotTerminal
                 var result = history.GetTicks(symbolCode, from, to, depth).Result;
                 return FdkToAlgo.Convert(result).ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                // TO DO : return corresponding error code
                 return Enumerable.Empty<QuoteEntity>();
             }
         }
 
-        public void Subscribe(string symbolCode, int depth)
+        public void Subscribe(Action<QuoteEntity[]> handler)
         {
-            Subscription s;
-            if (subscriptions.TryGetValue(symbolCode, out s))
-                s.ChangeDepth(depth);
-            else
-                subscriptions.Add(symbolCode, new Subscription(symbolCode, depth, symbols, rxBuffer));
+            if (subscription != null)
+                throw new InvalidOperationException("Already subscribed!");
+
+            feedUpdateHandler = handler;
+
+            subscription = symbols.SubscribeAll();
+            subscription.NewQuote += q => rxBuffer.Post(FdkToAlgo.Convert(q));
         }
 
-        public void Unsubscribe(string symbolCode)
+        public void Unsubscribe()
         {
-            Subscription s;
-            if (subscriptions.TryGetValue(symbolCode, out s))
-                s.Dispose();
+            if (subscription != null)
+            {
+                subscription.Dispose();
+                subscription = null;
+            }
+        }
+
+        public void SetSymbolDepth(string symbolCode, int depth)
+        {
+            if (subscription != null)
+                throw new InvalidOperationException("No subscription to change! You must call Subscribe() prior to calling SetSymbolDepth()!");
+
+            subscription.Add(symbolCode, depth);
         }
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
@@ -115,48 +124,12 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException();
         }
 
-        private class Subscription : IRateUpdatesListener
+        public IEnumerable<QuoteEntity> GetSnapshot()
         {
-            private SymbolCollectionModel symbols;
-            private BufferBlock<QuoteEntity> rxBuffer;
-
-            public Subscription(string symbolCode, int depth, SymbolCollectionModel symbols, BufferBlock<QuoteEntity> rxBuffer)
-            {
-                this.symbols = symbols;
-                this.SymbolCode = symbolCode;
-                this.Depth = depth;
-                this.rxBuffer = rxBuffer;
-
-                var smbModel = symbols.GetOrDefault(symbolCode);
-                smbModel?.Subscribe(this);
-                LotSize = smbModel?.LotSize ?? 1;
-                if (LotSize <= 0)
-                    LotSize = 1;
-            }
-
-            public string SymbolCode { get; private set; }
-            public double LotSize { get; private set; }
-            public int Depth { get; private set; }
-            public event Action DepthChanged = delegate { };
-
-            public void ChangeDepth(int newDepth)
-            {
-                if (Depth != newDepth)
-                {
-                    Depth = newDepth;
-                    DepthChanged();
-                }
-            }
-
-            public void OnRateUpdate(Quote tick)
-            {
-                rxBuffer.Post(FdkToAlgo.Convert(tick));
-            }
-
-            public void Dispose()
-            {
-                symbols.GetOrDefault(SymbolCode)?.Unsubscribe(this);
-            }
+            return symbols.Snapshot
+                .Where(s => s.Value.LastQuote != null)
+                .Select(s => FdkToAlgo.Convert(s.Value.LastQuote))
+                .ToList();
         }
     }
 

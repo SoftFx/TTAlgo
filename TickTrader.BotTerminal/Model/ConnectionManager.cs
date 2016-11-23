@@ -283,11 +283,9 @@ namespace TickTrader.BotTerminal
 
         private async void DoDisconnect()
         {
-            await connectTask;
-            await Connection.DisconnectAsync();
+            await Task.WhenAll(connectTask, Connection.DisconnectAsync());
 
             internalStateControl.PushEvent(InEvents.DoneDisconnecting);
-
         }
 
         private void CancelRequest()

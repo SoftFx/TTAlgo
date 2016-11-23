@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace TickTrader.BotTerminal
 {
-    class SymbolViewModel : PropertyChangedBase, IRateUpdatesListener
+    class SymbolViewModel : PropertyChangedBase
     {
         public enum States { Collapsed, Expanded, ExpandedWithLevel2 }
 
@@ -18,11 +18,13 @@ namespace TickTrader.BotTerminal
         private States currentState;
         private iOrderUi _orderUi;
         private DateTime _quoteTime;
+        private IFeedSubscription subscription;
 
         public SymbolViewModel(SymbolModel model, iOrderUi orderUi)
         {
             this.model = model;
-            this.model.Subscribe(this);
+            subscription = model.Subscribe();
+            subscription.NewQuote += OnRateUpdate;
             this.model.InfoUpdated += ModelInfoUpdated;
             this._orderUi = orderUi;
 
@@ -103,8 +105,6 @@ namespace TickTrader.BotTerminal
         public bool IsExpanded { get { return (State == States.Expanded || State == States.ExpandedWithLevel2); } }
         public bool IsLevel2Visible { get { return State == States.ExpandedWithLevel2; } }
 
-        public event System.Action DepthChanged = delegate { };
-
         public void TriggerState()
         {
             if (!isSelected)
@@ -120,7 +120,7 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        public void OnRateUpdate(Quote tick)
+        private void OnRateUpdate(Quote tick)
         {
             if (tick.HasBid)
                 Bid.Rate = tick.Bid;
@@ -145,7 +145,7 @@ namespace TickTrader.BotTerminal
 
         public void Close()
         {
-            this.model.Unsubscribe(this);
+            subscription.Dispose();
             this.model.InfoUpdated -= ModelInfoUpdated;
         }
     }

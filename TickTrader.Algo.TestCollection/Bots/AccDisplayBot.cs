@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Account Info Display Bot")]
+    [TradeBot(DisplayName = "[T] Account Info Display Bot")]
     public class AccDisplayBot : TradeBot
     {
         protected override void OnStart()

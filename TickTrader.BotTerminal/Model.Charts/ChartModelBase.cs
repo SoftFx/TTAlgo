@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
     public enum SelectableChartTypes { Candle, OHLC, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
     public enum TimelineTypes { Real, Uniform }
 
-    internal abstract class ChartModelBase : PropertyChangedBase, IAlgoSetupFactory, IDisposable, IRateUpdatesListener, IAlgoPluginHost
+    internal abstract class ChartModelBase : PropertyChangedBase, IAlgoSetupFactory, IDisposable, IAlgoPluginHost
     {
         private Logger logger;
         private enum States { Idle, LoadingData, Online, Stopping, Closed }
@@ -51,6 +51,7 @@ namespace TickTrader.BotTerminal
         private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
         private List<Quote> updateQueue;
+        private IFeedSubscription subscription;
 
         public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, TraderClientModel client, BotJournal journal)
         {
@@ -62,11 +63,12 @@ namespace TickTrader.BotTerminal
 
             this.AvailableIndicators = catalog.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
-            this.isConnected = client.Connection.State.Current == ConnectionModel.States.Online;
-            client.Connection.Connected += Connection_Connected;
-            client.Connection.Disconnected += Connection_Disconnected1;
+            this.isConnected = client.IsConnected;
+            client.Connected += Connection_Connected;
+            client.Disconnected += Connection_Disconnected;
 
-            symbol.Subscribe(this);
+            subscription = symbol.Subscribe();
+            subscription.NewQuote += OnRateUpdate;
 
             CurrentAsk = symbol.CurrentAsk;
             CurrentBid = symbol.CurrentBid;
@@ -263,7 +265,7 @@ namespace TickTrader.BotTerminal
             Navigator.Extend(count, endDate);
         }
 
-        private void Connection_Disconnected1()
+        private void Connection_Disconnected()
         {
             stateController.ModifyConditions(() => isConnected = false);
         }
@@ -276,11 +278,10 @@ namespace TickTrader.BotTerminal
         public void Dispose()
         {
             AvailableIndicators.Dispose();
-
-            Model.Unsubscribe(this);
+            subscription.Dispose();
         }
 
-        public virtual void OnRateUpdate(Quote tick)
+        protected virtual void OnRateUpdate(Quote tick)
         {
             if (stateController.Current == States.LoadingData)
                 updateQueue.Add(tick);

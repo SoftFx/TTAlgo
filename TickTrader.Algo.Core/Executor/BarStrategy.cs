@@ -75,6 +75,8 @@ namespace TickTrader.Algo.Core
 
         internal override void Stop()
         {
+            base.Stop();
+
             foreach (var fixture in fixtures.Values)
                 fixture.Dispose();
         }

@@ -7,10 +7,10 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Subscription Test Bot")]
+    [TradeBot(DisplayName = "[T] Subscription Test Bot")]
     public class SubscriptionTestBot : TradeBot
     {
-        private Dictionary<string, QuoteStats> snapshot = new Dictionary<string, QuoteStats>();
+        private Dictionary<string, QuoteStats> snapshot;
 
         [Parameter(DefaultValue = 1)]
         public int Depth { get; set; }
@@ -22,33 +22,23 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             Symbol.Unsubscribe();
 
-            int i = 0;
+            snapshot = Symbols
+                .Take(Count)
+                .Select(s => new QuoteStats(s))
+                .ToDictionary(s => s.Symbol);
 
-            foreach (var symbol in Symbols)
-            {
-                if (i >= Count)
-                    break;
-
-                Feed.Subscribe(symbol.Name, Depth);
-                snapshot.Add(symbol.Name, new QuoteStats(symbol));
-                Print("Subscribed for " + symbol.Name);
-
-                i++;
-            }
+            foreach (var stats in snapshot.Values)
+                Feed.Subscribe(stats.Symbol, Depth);
 
             PrintSnapshot();
         }
 
         protected override void OnQuote(Quote quote)
         {
-            base.OnQuote(quote);
-
-            QuoteStats targetStats;
-            if (snapshot.TryGetValue(quote.Symbol, out targetStats))
+            QuoteStats stats;
+            if (snapshot.TryGetValue(quote.Symbol, out stats))
             {
-                targetStats.Count++;
-                targetStats.LastDepth = Math.Max(quote.BidBook.Length, quote.AskBook.Length);
-                targetStats.LastTime = quote.Time;
+                stats.Count++;
                 PrintSnapshot();
             }
         }
@@ -56,21 +46,31 @@ namespace TickTrader.Algo.TestCollection.Bots
         private void PrintSnapshot()
         {
             foreach (var stats in snapshot.Values)
-                Status.WriteLine("{0} c{3} d{2} {1}", stats.Symbol, (object)stats.LastTime ?? "", stats.LastDepth, stats.Count);
+                stats.Print(Status);
         }
 
         private class QuoteStats
         {
             public QuoteStats(Symbol descriptor)
             {
-                this.Descriptor = descriptor;
+                this.Info = descriptor;
             }
 
-            public string Symbol { get { return Descriptor.Name; } }
+            public string Symbol { get { return Info.Name; } }
             public int Count { get; set; }
-            public int LastDepth { get; set; }
-            public DateTime? LastTime { get; set; }
-            public Symbol Descriptor { get; set; }
+            public Symbol Info { get; set; }
+
+            public void Print(StatusApi status)
+            {
+                if (double.IsNaN(Info.Ask) && double.IsNaN(Info.Bid))
+                    status.WriteLine("{0} - off quote", Symbol);
+                else
+                {
+                    var lastQuote = Info.LastQuote;
+                    var depth = Math.Max(lastQuote.BidBook.Length, lastQuote.AskBook.Length);
+                    status.WriteLine("{0} {1} depth={2} count={3}", Symbol, lastQuote.Time, depth, Count);
+                }
+            }
         }
     }
 }

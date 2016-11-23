@@ -64,8 +64,7 @@ namespace TickTrader.BotTerminal
         {
             if (!IsRunning)
             {
-                IsRunning = true;
-                StartExcecutor();
+                IsRunning = StartExcecutor();
             }
         }
 

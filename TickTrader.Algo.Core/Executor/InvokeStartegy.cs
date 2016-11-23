@@ -36,12 +36,9 @@ namespace TickTrader.Algo.Core
 
         public abstract void Start();
         public abstract Task Stop(Action<PluginBuilder> finalAction);
-        //public abstract void EnqueueInvoke(Action<PluginBuilder> a);
-        //public abstract void EnqueueInvoke(Task t);
         public abstract void Enqueue(QuoteEntity update);
         public abstract void EnqueueCustomAction(Action<PluginBuilder> a);
         public abstract void Enqueue(Action<PluginBuilder> a);
-        //public abstract QuoteEntity[] DequeueAllQuoteUpdates();
 
         protected virtual void OnInit() { }
 
@@ -82,11 +79,8 @@ namespace TickTrader.Algo.Core
         {
             lock (syncObj)
             {
-                if (isStarted)
-                {
-                    feedQueue.Enqueue(update);
-                    WakeUpWorker();
-                }
+                feedQueue.Enqueue(update);
+                WakeUpWorker();
             }
         }
 
@@ -94,11 +88,8 @@ namespace TickTrader.Algo.Core
         {
             lock (syncObj)
             {
-                if (isStarted)
-                {
-                    defaultQueue.Enqueue(a);
-                    WakeUpWorker();
-                }
+                defaultQueue.Enqueue(a);
+                WakeUpWorker();
             }
         }
 
@@ -106,26 +97,16 @@ namespace TickTrader.Algo.Core
         {
             lock (syncObj)
             {
-                if (isStarted)
-                {
-                    defaultQueue.Enqueue(a);
-                    WakeUpWorker();
-                }
+                defaultQueue.Enqueue(a);
+                WakeUpWorker();
             }
         }
 
-        //public override QuoteEntity[] DequeueAllQuoteUpdates()
-        //{
-        //    lock (syncObj)
-        //    {
-        //        var snapshot = feedQueue.ToArray();
-        //        feedQueue.Clear();
-        //        return snapshot;
-        //    }
-        //}
-
         private void WakeUpWorker()
         {
+            if (!isStarted)
+                return;
+
             if (currentTask != null)
                 return;
 
@@ -168,18 +149,12 @@ namespace TickTrader.Algo.Core
 
         public override void Start()
         {
-            lock (syncObj) isStarted = true;
+            lock (syncObj)
+            {
+                isStarted = true;
+                WakeUpWorker();
+            }
         }
-
-        //public override void Abort()
-        //{
-        //    lock (syncObj)
-        //    {
-        //        isStarted = false;
-        //        feedQueue.Clear();
-        //        defaultQueue.Clear();
-        //    }
-        //}
 
         public override async Task Stop(Action<PluginBuilder> finalAction)
         {
@@ -187,11 +162,11 @@ namespace TickTrader.Algo.Core
 
             lock (syncObj)
             {
-                isStarted = false;
                 feedQueue.Clear();
                 defaultQueue.Clear();
                 defaultQueue.Enqueue(finalAction);
                 WakeUpWorker();
+                isStarted = false;
                 toWait = currentTask;
             }
 

@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Market Order Per Tick Bot")]
+    [TradeBot(DisplayName = "[T] Market Order Per Tick Bot")]
     public class OnTickBot : TradeBot
     {
         [Parameter(DefaultValue = 0.1D)]

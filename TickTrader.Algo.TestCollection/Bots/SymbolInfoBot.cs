@@ -8,25 +8,30 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "Symbol Info Bot")]
+    [TradeBot(DisplayName = "[T] Symbol Info Bot")]
     public class SymbolInfoBot : TradeBot
     {
         protected override void Init()
         {
-            foreach (var symbol in Symbols)
-            {
-                Status.WriteLine();
-                Status.WriteLine(" ------------ {0} ------------", symbol.Name);
+            PrintSymbol("Current", Symbol);
 
-                foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(symbol))
-                {
-                    string name = descriptor.Name;
-                    object value = descriptor.GetValue(symbol);
-                    Status.WriteLine("{0}={1}", name, value);
-                }
-            }
+            foreach (var symbol in Symbols)
+                PrintSymbol(symbol.Name, symbol);
 
             Exit();
+        }
+
+        private void PrintSymbol(string name, Symbol symbol)
+        {
+            Status.WriteLine();
+            Status.WriteLine(" ------------ {0} ------------", name);
+
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(symbol))
+            {
+                string pNname = descriptor.Name;
+                object pValue = descriptor.GetValue(symbol);
+                Status.WriteLine("{0}={1}", pNname, pValue);
+            }
         }
     }
 }
