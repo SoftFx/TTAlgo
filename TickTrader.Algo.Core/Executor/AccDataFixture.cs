@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Core
             if (eReport.ExecAction == OrderExecAction.Opened)
             {
                 ApplyOrderEntity(eReport, orderCollection);
-                orderCollection.FireOrderOpened(new OrderOpenedEventArgsImpl(null));
+                orderCollection.FireOrderOpened(new OrderOpenedEventArgsImpl(eReport.OrderCopy));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {

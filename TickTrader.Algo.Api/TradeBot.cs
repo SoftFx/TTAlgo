@@ -6,6 +6,7 @@ namespace TickTrader.Algo.Api
     {
         protected virtual void OnStart() { }
         protected virtual void OnStop() { }
+        protected virtual Task AsyncStop() { return Task.FromResult(this); }
 
         /// <summary>
         /// Override this method to react on rate updates.
@@ -36,6 +37,11 @@ namespace TickTrader.Algo.Api
         internal void InvokeStop()
         {
             OnStop();
+        }
+
+        internal Task InvokeAsyncStop()
+        {
+            return AsyncStop();
         }
 
         internal void InvokeOnQuote(Quote quote)

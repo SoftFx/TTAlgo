@@ -41,6 +41,12 @@ namespace TickTrader.Algo.Core
             // Do nothing. Indicators does not have OnStop() method
         }
 
+        public override Task InvokeAsyncStop()
+        {
+            // Do nothing. Indicators does not have OnStop() method
+            return Task.FromResult(this);
+        }
+
         public override void InvokeOnQuote(Quote quote)
         {
             // Do nothing. Indicators does not have OnQuote() method

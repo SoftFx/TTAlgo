@@ -68,6 +68,9 @@ namespace TickTrader.BotTerminal
 
         public void Subscribe(Action<QuoteEntity[]> handler)
         {
+
+            System.Diagnostics.Debug.WriteLine("SUBSCRIBED!");
+
             if (subscription != null)
                 throw new InvalidOperationException("Already subscribed!");
 
@@ -79,6 +82,8 @@ namespace TickTrader.BotTerminal
 
         public void Unsubscribe()
         {
+            System.Diagnostics.Debug.WriteLine("UNSUBSCRIBED!");
+
             if (subscription != null)
             {
                 subscription.Dispose();

@@ -11,7 +11,7 @@ namespace TickTrader.Algo.CoreUsageSample
 {
     internal class FeedModel : IBarBasedFeed, ISynchronizationContext
     {
-        private event Action<QuoteEntity[]> FeedUpdated = delegate { };
+        private Action<QuoteEntity[]> FeedUpdated;
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
 
         public TimeFrames TimeFrame { get; private set; }
@@ -23,8 +23,6 @@ namespace TickTrader.Algo.CoreUsageSample
             this.TimeFrame = timeFrame;
         }
 
-        event Action<QuoteEntity[]> IPluginFeedProvider.FeedUpdated { add { FeedUpdated += value; } remove { FeedUpdated -= value; } }
-
         public void Fill(string symbol, IEnumerable<BarEntity> data)
         {
             GetSymbolData(symbol).Fill(data);
@@ -34,7 +32,7 @@ namespace TickTrader.Algo.CoreUsageSample
         public void Update(QuoteEntity update)
         {
             GetSymbolData(update.Symbol).Update(update);
-            FeedUpdated(new QuoteEntity[] { update });
+            FeedUpdated?.Invoke(new QuoteEntity[] { update });
         }
 
         private SymbolDataModel GetSymbolData(string smbCode)
@@ -58,12 +56,23 @@ namespace TickTrader.Algo.CoreUsageSample
             return null;
         }
 
+        IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
+        {
+            return dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList();
+        }
+
         void IPluginFeedProvider.SetSymbolDepth(string symbolCode, int depth)
         {
         }
 
-        void IPluginFeedProvider.Unsubscribe(string symbolCode)
+        void IPluginFeedProvider.Subscribe(Action<QuoteEntity[]> FeedUpdated)
         {
+            this.FeedUpdated = FeedUpdated;
+        }
+
+        void IPluginFeedProvider.Unsubscribe()
+        {
+            this.FeedUpdated = null;
         }
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
@@ -91,6 +100,8 @@ namespace TickTrader.Algo.CoreUsageSample
                 this.timeFrame = timeFrame;
                 sampler = BarSampler.Get(timeFrame);
             }
+
+            public QuoteEntity LastQuote { get; private set; }
 
             public void Fill(IEnumerable<BarEntity> data)
             {
@@ -120,6 +131,8 @@ namespace TickTrader.Algo.CoreUsageSample
                 }
 
                 data.Add(new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1));
+
+                LastQuote = quote;
             }
 
             public IEnumerable<BarEntity> QueryBars(DateTime from, DateTime to, TimeFrames timeFrame)

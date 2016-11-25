@@ -305,6 +305,13 @@ namespace TickTrader.Algo.Core
             InvokePluginMethod(asyncAction);
         }
 
+        internal Task InvokeAsyncStop()
+        {
+            Task result = null;
+            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop());
+            return result;
+        }
+
         #endregion
 
         internal void StartBatch()

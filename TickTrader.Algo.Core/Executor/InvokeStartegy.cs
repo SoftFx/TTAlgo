@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core
         public abstract int FeedQueueSize { get; }
 
         public abstract void Start();
-        public abstract Task Stop(Action<PluginBuilder> finalAction);
+        public abstract Task Stop(bool quick);
         public abstract void Enqueue(QuoteEntity update);
         public abstract void EnqueueCustomAction(Action<PluginBuilder> a);
         public abstract void Enqueue(Action<PluginBuilder> a);
@@ -63,9 +63,11 @@ namespace TickTrader.Algo.Core
     {
         private object syncObj = new object();
         private Task currentTask;
+        private Task stopTask;
         private FeedQueue feedQueue;
         private Queue<Action<PluginBuilder>> defaultQueue;
         private bool isStarted;
+        private bool execStopFlag;
 
         protected override void OnInit()
         {
@@ -121,6 +123,11 @@ namespace TickTrader.Algo.Core
 
                 lock (syncObj)
                 {
+                    if (execStopFlag)
+                    {
+                        currentTask = null;
+                        break;
+                    }
                     item = DequeueNext();
                     if (item == null)
                     {
@@ -151,27 +158,72 @@ namespace TickTrader.Algo.Core
         {
             lock (syncObj)
             {
+                System.Diagnostics.Debug.WriteLine("STRATEGY START!");
+
+                if (isStarted )
+                    throw new InvalidOperationException("Cannot start: Strategy is already running!");
+
                 isStarted = true;
+                execStopFlag = false;
+                stopTask = null;
                 WakeUpWorker();
             }
         }
 
-        public override async Task Stop(Action<PluginBuilder> finalAction)
+        public override Task Stop(bool quick)
         {
-            Task toWait;
-
             lock (syncObj)
             {
-                feedQueue.Clear();
-                defaultQueue.Clear();
-                defaultQueue.Enqueue(finalAction);
-                WakeUpWorker();
-                isStarted = false;
+                System.Diagnostics.Debug.WriteLine("STRATEGY STOP! qucik=" + quick);
+
+                if (stopTask == null)
+                    stopTask = DoStop(quick);
+                return stopTask;
+            }
+        }
+
+        private async Task DoStop(bool quick)
+        {
+            if (!quick)
+            {
+                System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
+
+                Task stopEvent = null;
+                defaultQueue.Enqueue(b => stopEvent = b.InvokeAsyncStop()); // invoke async stop
+
+                if (stopEvent != null)
+                    await stopEvent.ConfigureAwait(false); // wait async stop to end
+
+                System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP DONE!");
+            }
+
+            Task toWait = null;
+            lock (syncObj)
+            {
+                execStopFlag = true; //  stop queue processing
                 toWait = currentTask;
             }
 
             if (toWait != null)
-                await toWait.ConfigureAwait(false);
+            {
+                System.Diagnostics.Debug.WriteLine("STRATEGY WAIT!");
+                await toWait.ConfigureAwait(false); // wait current invoke to end
+                System.Diagnostics.Debug.WriteLine("STRATEGY DONE WAIT!");
+            }
+
+            if (!quick)
+            {
+                System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
+                Builder.InvokeOnStop(); // Invoke OnStop(). This is last invoke. No more invokes are possible after this point.
+            }
+
+            lock (syncObj)
+            {
+                isStarted = false;
+                stopTask = null;
+
+                System.Diagnostics.Debug.WriteLine("STRATEGY STOP COMPLETED!");
+            }
         }
 
         private object DequeueNext()

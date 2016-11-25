@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
 {
     public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget, DiagnosticInfo
     {
-        public enum States { Idle, Running }
+        public enum States { Idle, Running, Stopping }
 
         private object _sync = new object();
         private IPluginLogger logger;
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
         private string workingFolder;
-        private bool isExited;
+        private States state;
 
         public PluginExecutor(string pluginId)
         {
@@ -208,16 +208,9 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                // Validate
+                System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
 
-                if (IsRunning)
-                    throw new InvalidOperationException("Executor has been already started!");
                 Validate();
-
-                // Update state
-
-                isExited = false;
-                stopTask = null;
 
                 // Setup builder
 
@@ -256,8 +249,7 @@ namespace TickTrader.Algo.Core
 
                 // Update state
 
-                IsRunning = true;
-                IsRunningChanged(this);
+                ChangeState(States.Running);
             }
         }
 
@@ -267,11 +259,15 @@ namespace TickTrader.Algo.Core
 
             lock (_sync)
             {
-                if (!IsRunning)
-                    return;
+                System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
 
-                if (stopTask == null)
-                    stopTask = iStrategy.Stop(b => DoStop(true));
+                if (state == States.Idle)
+                    return;
+                else if (state != States.Stopping)
+                {
+                    ChangeState(States.Stopping);
+                    stopTask = DoStop(false);
+                }   
 
                 taskToWait = stopTask;
             }
@@ -279,13 +275,14 @@ namespace TickTrader.Algo.Core
             taskToWait.Wait();
         }
 
-        private void DoStop(bool invokeOnStop)
+        private async Task DoStop(bool qucik)
         {
-            if (invokeOnStop)
-                builder.InvokeOnStop();
-
             try
             {
+                await iStrategy.Stop(qucik).ConfigureAwait(false);
+
+                System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
+
                 fStrategy.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
@@ -295,24 +292,20 @@ namespace TickTrader.Algo.Core
                 OnException(ex);
             }
 
-            lock (_sync)
-            {
-                IsRunning = false;
-                stopTask = null;
-                IsRunningChanged(this);
-            }
+            lock (_sync) ChangeState(States.Idle);
         }
 
         private void OnExit()
         {
             lock (_sync)
             {
-                if (isExited)
+                System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
+
+                if (state != States.Running)
                     return;
 
-                isExited = true;
-                if (stopTask == null)
-                    stopTask = iStrategy.Stop(b => DoStop(false));
+                ChangeState(States.Stopping);
+                stopTask = DoStop(true);
             }
         }
 
@@ -376,8 +369,10 @@ namespace TickTrader.Algo.Core
 
         private void Validate()
         {
-            if (IsRunning)
-                throw new ExecutorException("Executor has been already started!");
+            if (state == States.Running)
+                throw new InvalidOperationException("Executor has been already started!");
+            else if (state == States.Stopping)
+                throw new InvalidOperationException("Executor has not been stopped yet!");
 
             //if (feed == null)
             //    throw new InvalidOperationException("Feed provider is not specified!");
@@ -394,8 +389,24 @@ namespace TickTrader.Algo.Core
 
         private void ThrowIfRunning()
         {
-            if (IsRunning)
+            if (state != States.Idle)
                 throw new InvalidOperationException("Executor parameters cannot be changed after start!");
+        }
+
+        private void ChangeState(States newState)
+        {
+            state = newState;
+
+            if (newState == States.Idle)
+            {
+                IsRunning = false;
+                IsRunningChanged(this);
+            }
+            else if (newState == States.Running)
+            {
+                IsRunning = true;
+                IsRunningChanged(this);
+            }
         }
 
         //private void Feed_FeedUpdated(FeedUpdate[] updates)
@@ -422,10 +433,10 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                if (!IsRunning || stopTask != null)
-                    throw new InvalidOperationException("Execution has been stopped!");
+                System.Diagnostics.Debug.WriteLine("ASYNC ACTION!");
 
-                iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
+                if (state != States.Idle)
+                    iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
             }
         }
 

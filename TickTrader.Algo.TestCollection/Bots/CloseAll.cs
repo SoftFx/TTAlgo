@@ -10,19 +10,21 @@ namespace TickTrader.Algo.TestCollection.Bots
     [TradeBot(DisplayName = "[T] Close All Positions Script")]
     public class CloseAll : TradeBot
     {
-        protected override void OnStart()
+        protected async override void OnStart()
         {
             if (Account.Type == AccountTypes.Gross)
             {
                 var positions = Account.Orders.Where(o => o.Type == OrderType.Position).ToList();
 
                 foreach (var pos in positions)
-                    CloseOrder(pos.Id);
+                    await CloseOrderAsync(pos.Id);
             }
-            else if (Account.Type == AccountTypes.Cash)
+            else if (Account.Type == AccountTypes.Net)
             {
-                var positions = this.Account.NetPositions;
+                // TO DO : open opposite positions to close existing
             }
+            else
+                Print("This script works only for Net or Gross accounts!");
 
             Exit();
         }

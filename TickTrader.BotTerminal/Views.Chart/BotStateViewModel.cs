@@ -45,6 +45,8 @@ namespace TickTrader.BotTerminal
                 await Bot.Stop();
             else if (Bot.State == BotModelStates.Stopped)
                 Bot.Start();
+            else if (Bot.State == BotModelStates.Stopping)
+                throw new Exception("StartStop() cannot be called when Bot is stopping!");
         }
 
         private void Bot_Removed(TradeBotModel2 bot)

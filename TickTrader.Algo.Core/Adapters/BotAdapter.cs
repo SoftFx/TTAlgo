@@ -36,5 +36,10 @@ namespace TickTrader.Algo.Core
         {
             ((TradeBot)PluginInstance).InvokeStop();
         }
+
+        public override Task InvokeAsyncStop()
+        {
+            return ((TradeBot)PluginInstance).InvokeAsyncStop();
+        }
     }
 }
