@@ -309,7 +309,9 @@ namespace TickTrader.BotTerminal
                 Symbol = Symbol,
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),
-                Price = (double)Price,
+                Price = (double?)Price ?? double.NaN,
+                StopLoss = stopLoss ?? double.NaN,
+                TakeProfit = takeProfit ?? double.NaN,
                 Comment = this.Comment,
                 Created = this.Created ?? DateTime.MinValue,
                 Modified = this.Modified ?? DateTime.MinValue

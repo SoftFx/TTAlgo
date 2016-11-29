@@ -433,8 +433,6 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("ASYNC ACTION!");
-
                 if (state != States.Idle)
                     iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
             }
