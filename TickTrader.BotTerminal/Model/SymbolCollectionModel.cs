@@ -32,10 +32,10 @@ namespace TickTrader.BotTerminal
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
         public QuoteDistributor Distributor { get; private set; }
 
-        public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
+        public async Task Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {
             this.currencies = currencySnapshot;
-            Merge(symbolSnapshot);
+            await Merge(symbolSnapshot);
             Distributor.Init();
         }
 
@@ -44,22 +44,25 @@ namespace TickTrader.BotTerminal
             return Distributor.SubscribeAll();
         }
 
-        private void Merge(IEnumerable<SymbolInfo> freshSnashot)
+        private async Task Merge(IEnumerable<SymbolInfo> freshSnashot)
         {
             var freshSnapshotDic = freshSnashot.ToDictionary(i => i.Name);
 
             // upsert
             foreach (var info in freshSnashot)
             {
-                SymbolModel model;
-                if (symbols.TryGetValue(info.Name, out model))
-                    model.Update(info);
-                else
+                await App.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Distributor.AddSymbol(info.Name);
-                    model = new SymbolModel(Distributor, info, currencies);
-                    symbols.Add(info.Name, model);
-                }
+                    SymbolModel model;
+                    if (symbols.TryGetValue(info.Name, out model))
+                        model.Update(info);
+                    else
+                    {
+                        Distributor.AddSymbol(info.Name);
+                        model = new SymbolModel(Distributor, info, currencies);
+                        symbols.Add(info.Name, model);
+                    }
+                });
             }
 
             // delete

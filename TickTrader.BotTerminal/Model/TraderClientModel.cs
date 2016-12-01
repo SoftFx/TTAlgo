@@ -82,7 +82,7 @@ namespace TickTrader.BotTerminal
                 Currencies.Clear();
                 foreach (var c in cache.Currencies)
                     Currencies.Add(c.Name, c);
-                Symbols.Initialize(cache.Symbols, Currencies);
+                await Symbols.Initialize(cache.Symbols, Currencies);
                 Account.Init(Currencies);
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
