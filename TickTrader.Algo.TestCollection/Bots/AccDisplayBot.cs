@@ -59,7 +59,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 foreach (var order in pOrders)
                 {
                     Status.WriteLine("#{0} {1} {2}/{3} {4}", order.Symbol, order.Side,
-                        order.RequestedVolume, order.RequestedVolume, order.Comment);
+                        order.RemainingVolume, order.RequestedVolume, order.Comment);
                 }
             }
             else
@@ -75,7 +75,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 foreach (var order in positions)
                 {
                     Status.WriteLine("#{0} {1} {2} {3}/{4} {5}", order.Id, order.Symbol, order.Side,
-                        order.RequestedVolume, order.RequestedVolume, order.Comment);
+                        order.RemainingVolume, order.RequestedVolume, order.Comment);
                 }
             }
             else
