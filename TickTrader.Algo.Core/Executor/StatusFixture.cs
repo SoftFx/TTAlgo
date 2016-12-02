@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
         {
             context.Builder.StatusUpdated = OnStatusUpdate;
             logger = context.Logger;
+            logger.UpdateStatus("");
         }
 
         public void Stop()
