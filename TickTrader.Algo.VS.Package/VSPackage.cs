@@ -36,7 +36,7 @@ namespace TickTrader.Algo.VS.Package
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.01", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", "1.03", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideProjectFactory(typeof(CsProjectFactory), "TT Algo Project", null, null, null, @"..\Templates\Projects")]
     [Guid(VSPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]

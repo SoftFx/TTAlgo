@@ -6,7 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -71,10 +73,50 @@ namespace TickTrader.Algo.Core
             package.Metadata.MainBinaryFile = MainFileName;
             package.Metadata.Workspace = Workspace;
 
-            using (var pckgFs = File.OpenWrite(pckgPath))
-                package.Save(pckgFs);
+            Save(package, pckgPath);
 
             trace("Done.");
+        }
+
+
+        private void Save(Package pckg, string path)
+        {
+            int retry = 1;
+            while(true)
+            {
+                FileStream stream;
+                if (TryOpenWrite(path, out stream))
+                {
+                    using (stream) pckg.Save(stream);
+                    break;
+                }
+
+                trace("File is locked! Retry " + retry + " ...");
+
+                if (++retry <= 10)
+                    Thread.Sleep(200);
+                else
+                    break;
+            }
+        }
+
+        private bool TryOpenWrite(string path, out FileStream stream)
+        {
+            try
+            {
+                stream = File.Open(path, FileMode.Truncate, FileAccess.Write, FileShare.None);
+                return true;
+            }
+            catch (IOException ex)
+            {
+                if (ex.IsLockExcpetion())
+                {
+                    stream = null;
+                    return false;
+                }
+
+                throw;
+            }
         }
     }
 }

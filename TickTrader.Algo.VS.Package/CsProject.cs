@@ -86,11 +86,11 @@ namespace TickTrader.Algo.VS.Package
             }
             catch (System.IO.IOException ioex)
             {
-                WriteLineToBuild("Failed to build algo package! " + ioex.Message);
+                WriteLineToBuild("error: Failed to build algo package! " + ioex.Message);
             }
             catch (Exception ex)
             {
-                WriteLineToBuild("Failed to build algo package! " + ex.ToString());
+                WriteLineToBuild("error:Failed to build algo package! " + ex.ToString());
             }
         }
 

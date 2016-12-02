@@ -16,9 +16,6 @@ namespace TickTrader.Algo.Core.Repository
         public enum States { Created, Loading, WatingForRetry, Ready, Closing, Closed }
         public enum Events { Start, Changed, DoneLoad, DoneLoadRetry, NextRetry, CloseRequested, DoneClosing }
 
-        const long ERROR_SHARING_VIOLATION = 0x20;
-        const long ERROR_LOCK_VIOLATION = 0x21;
-
         private StateMachine<States> stateControl = new StateMachine<States>();
         private Dictionary<string, AlgoPluginRef> items = new Dictionary<string, AlgoPluginRef>();
         private FileInfo currentFileInfo;
@@ -118,7 +115,7 @@ namespace TickTrader.Algo.Core.Repository
             {
                 FileInfo info;
 
-                using (var stream = File.OpenRead(filePath))
+                using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.None))
                 {
                     info = new FileInfo(filePath);
 
@@ -145,8 +142,7 @@ namespace TickTrader.Algo.Core.Repository
                 if (newItem != null)
                     DisposeSafe(newItem);
 
-                long win32ErrorCode = ioEx.HResult & 0xFFFF;
-                if (win32ErrorCode == ERROR_SHARING_VIOLATION || win32ErrorCode == ERROR_LOCK_VIOLATION)
+                if (ioEx.IsLockExcpetion())
                     stateControl.PushEvent(Events.DoneLoadRetry); // File is in use. We should retry loading.
                 else
                     stateControl.PushEvent(Events.DoneLoad); // other errors

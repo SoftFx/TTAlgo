@@ -98,6 +98,7 @@
     <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Executor\QuoteStrategy.cs" />
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
+    <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />
