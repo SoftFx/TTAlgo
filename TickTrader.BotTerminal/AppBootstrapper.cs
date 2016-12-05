@@ -11,7 +11,8 @@ namespace TickTrader.BotTerminal
     public class AppBootstrapper : BootstrapperBase
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
+        private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
+        
         public AppBootstrapper()
         {
             try
@@ -33,8 +34,20 @@ namespace TickTrader.BotTerminal
             ConfigureGlobalWpfExceptionHandling();
         }
 
+        public static AutoViewManager AutoViewLocator => autoViewLocator;
+
         private void ConfigureCaliburn()
         {
+            ViewLocator.LocateForModelType = (modelType, displayLocation, context) =>
+            {
+                var viewType = ViewLocator.LocateTypeForModelType(modelType, displayLocation, context);
+
+                if (viewType == null)
+                    return autoViewLocator.CreateView(modelType, context);
+
+                return ViewLocator.GetOrCreateViewType(viewType);
+            };
+
             MessageBinder.SpecialValues.Add("$password", context =>
             {
                 var view = (FrameworkElement)context.View;

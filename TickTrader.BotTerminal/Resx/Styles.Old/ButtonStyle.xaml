@@ -1,0 +1,147 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <!--Base Button Template/Style-->
+    <ControlTemplate x:Key="FlatButton_Template" TargetType="{x:Type ButtonBase}">
+        <Border Name="Border" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=CornerRadius}"
+                IsHitTestVisible="{TemplateBinding IsHitTestVisible}"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter TargetName="Border" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
+            </Trigger>
+            <Trigger Property="Control.IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=DisabledBackground}"/>
+                <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    
+    <Style x:Key="ButtonBaseStyle" TargetType="ButtonBase" >
+        <Setter Property="Template" Value="{StaticResource FlatButton_Template}"></Setter>
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+
+    <!--FlatButton-->
+    
+    <Style x:Key="FlatButtonMainStyle" TargetType="l:FlatButton" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="HighlightBackground" Value="Red" />
+        <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3"></Setter>
+    </Style>
+    
+    <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}"/>
+
+    <!--Icon Button -->
+
+    <ControlTemplate x:Key="IconButton_Template" TargetType="Button">
+        <Border Name="Border" CornerRadius="2"
+                IsHitTestVisible="True"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter Property="Control.Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="IconButton_Style" TargetType="Button" >
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}" />
+        <Setter Property="Template" Value="{StaticResource IconButton_Template}" />
+        <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=DisabledBackground}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--FlatToggleButton-->
+    <Style x:Key="FlatToggleButtonMainStyle" TargetType="l:FlatToggleButton" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
+        <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+        <Setter Property="CheckedBackground" Value="{DynamicResource Dialog_OkButtonBackground}"/>
+        <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3"/>
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=CheckedBackground}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="l:FlatToggleButton" BasedOn="{StaticResource FlatToggleButtonMainStyle}"/>
+
+    <!--FlatRadioButton-->
+    <Style x:Key="FlatRadioButtonMainStyle" TargetType="l:FlatRadioButton" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
+        <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+        <Setter Property="CheckedBackground" Value="{DynamicResource Dialog_OkButtonBackground}"/>
+        <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3"/>
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=CheckedBackground}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Mode=OneWay, Path=DisabledBackground}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="l:FlatRadioButton" BasedOn="{StaticResource FlatRadioButtonMainStyle}"></Style>
+    
+    <Style x:Key="BuyFlatRadioButtonStyle" TargetType="l:FlatRadioButton" BasedOn="{StaticResource FlatRadioButtonMainStyle}">
+        <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
+        <Setter Property="CheckedBackground" Value="{DynamicResource RateUpColor}"/>
+    </Style>
+    <Style x:Key="SellFlatRadioButtonStyle" TargetType="l:FlatRadioButton" BasedOn="{StaticResource FlatRadioButtonMainStyle}">
+        <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
+        <Setter Property="CheckedBackground" Value="{DynamicResource RateDownColor}"/>
+    </Style>
+
+    <!-- Auto Color Flat Button -->
+    <ControlTemplate x:Key="AutoColorFlatButton_Template" TargetType="Button">
+        <Border Name="Border" CornerRadius="2"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              RecognizesAccessKey="True" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="False">
+                <Setter Property="Opacity" Value="0.75" />
+            </Trigger>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="1" />
+            </Trigger>
+            <Trigger Property="Control.IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.3"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    
+    <Style x:Key="AutoColorFlatButton_Style" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource AutoColorFlatButton_Template}" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+    </Style>
+
+</ResourceDictionary>

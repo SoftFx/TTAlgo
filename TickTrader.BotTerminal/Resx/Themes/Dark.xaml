@@ -58,5 +58,5 @@
     
     <SolidColorBrush x:Key="SellColor" Color="#009344"/>
     <SolidColorBrush x:Key="BuyColor" Color="#F15923"/>
-    
+
 </ResourceDictionary>

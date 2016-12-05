@@ -208,6 +208,7 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
+    <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
@@ -254,6 +255,7 @@
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
+    <Compile Include="Infrustructure\AutoViewManager.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Interfaces.cs" />
@@ -582,135 +584,135 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DockPanelStyle.xaml">
+    <Page Include="Resx\Styles.Old\DockPanelStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\DragDropStyle.xaml">
+    <Page Include="Resx\Styles.Old\DragDropStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\SeparatorStyle.xaml">
+    <Page Include="Resx\Styles.Old\SeparatorStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\Calendar.xaml">
+    <Page Include="Resx\Styles.Old\Calendar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\ColorPickerStyle.xaml">
+    <Page Include="Resx\Styles.Old\ColorPickerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\CoordinatePickerStyle.xaml">
+    <Page Include="Resx\Styles.Old\CoordinatePickerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DateTimePicker.xaml">
+    <Page Include="Resx\Styles.Old\DateTimePicker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\PopupButtonStyle.xaml">
+    <Page Include="Resx\Styles.Old\PopupButtonStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\HoverComboBox.xaml">
+    <Page Include="Resx\Styles.Old\HoverComboBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\NumericUpDownStyle.xaml">
+    <Page Include="Resx\Styles.Old\NumericUpDownStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\ButtonStyle.xaml">
+    <Page Include="Resx\Styles.Old\ButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\Charts.xaml">
+    <Page Include="Resx\Styles.Old\Charts.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\CheckBox.xaml">
+    <Page Include="Resx\Styles.Old\CheckBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ComboBox.xaml">
+    <Page Include="Resx\Styles.Old\ComboBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ContextMenu.xaml">
+    <Page Include="Resx\Styles.Old\ContextMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DataGrid.xaml">
+    <Page Include="Resx\Styles.Old\DataGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DialogPageControl.xaml">
+    <Page Include="Resx\Styles.Old\DialogPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DialogStyle.xaml">
+    <Page Include="Resx\Styles.Old\DialogStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\Expander.xaml">
+    <Page Include="Resx\Styles.Old\Expander.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\LabelStyle.xaml">
+    <Page Include="Resx\Styles.Old\LabelStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\MenuItem.xaml">
+    <Page Include="Resx\Styles.Old\MenuItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\Menu.xaml">
+    <Page Include="Resx\Styles.Old\Menu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\PasswordBox.xaml">
+    <Page Include="Resx\Styles.Old\PasswordBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ScrollViewer.xaml">
+    <Page Include="Resx\Styles.Old\ScrollViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ShadowPortal.xaml">
+    <Page Include="Resx\Styles.Old\ShadowPortal.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ShellPanel.xaml">
+    <Page Include="Resx\Styles.Old\ShellPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ShellTabControl.xaml">
+    <Page Include="Resx\Styles.Old\ShellTabControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\AlgoListBox.xaml">
+    <Page Include="Resx\Styles.Old\AlgoListBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\SymbolListBox.xaml">
+    <Page Include="Resx\Styles.Old\SymbolListBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\TextBox.xaml">
+    <Page Include="Resx\Styles.Old\TextBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\ToastStyle.xaml">
+    <Page Include="Resx\Styles.Old\ToastStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ToolBar.xaml">
+    <Page Include="Resx\Styles.Old\ToolBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\VerticalScrollBar.xaml">
+    <Page Include="Resx\Styles.Old\VerticalScrollBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -911,7 +913,9 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resx\Syles.Classic\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
