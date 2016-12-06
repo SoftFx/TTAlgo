@@ -10,21 +10,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
-
-        <Style TargetType="Button" BasedOn="{StaticResource IconButton_Style}">
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="MinHeight" Value="17"/>
-            <Setter Property="MinWidth" Value="17"/>
-            <Setter Property="Padding" Value="0"></Setter>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="{StaticResource Shell_PrimaryForeground}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
+        
         <CollectionViewSource x:Key="AlgoGroupViewSrc" Source="{Binding Plugins}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Group" />
@@ -53,13 +39,15 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <DockPanel LastChildFill="True" Margin="3" VerticalAlignment="Center">
-                        <Button x:Name="btnArrowDown" DockPanel.Dock="Right">
+                        <Button x:Name="btnArrowDown" DockPanel.Dock="Right"
+                                Style="{DynamicResource ListItemActionButton_Style}">
                             <Button.Content>
                                 <Path Width="6" Height="6" Stretch="Fill" 
                                       Data="{DynamicResource DownArrow}" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
                             </Button.Content>
                         </Button>
-                        <Button x:Name="btnPlus" DockPanel.Dock="Right" Margin="0 0 5 0">
+                        <Button x:Name="btnPlus" DockPanel.Dock="Right" Margin="0 0 5 0"
+                                Style="{DynamicResource ListItemActionButton_Style}">
                             <Path Width="10" Height="10"  Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" StrokeThickness="1" Stretch="Fill"
                                   Data="{DynamicResource Plus}"/>
                         </Button>

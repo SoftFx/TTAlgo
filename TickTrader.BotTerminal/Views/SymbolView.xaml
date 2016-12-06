@@ -14,6 +14,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
         </Style>
 
         <Style x:Key="BidTextStyle" TargetType="TextBlock" BasedOn="{StaticResource RateTextStyle}">
@@ -41,7 +42,7 @@
     </UserControl.Resources>
 
     <UserControl.ContextMenu>
-        <ContextMenu Style="{StaticResource ContextMenu_Style}">
+        <ContextMenu Style="{DynamicResource ContextMenu_Style}">
             <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
             <MenuItem Header="{l:Resx ContextMenu_OpenOrder}" cal:Message.Attach="OpenOrder"/>
         </ContextMenu>

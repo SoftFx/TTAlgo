@@ -9,6 +9,6 @@
         ResizeMode="NoResize"
         Background="{DynamicResource Dialog_Background}">
     <Grid>
-        <l:DialogPageControl x:Name="Items" Style="{StaticResource DialogPageControl_Style}" Margin="5"/>
+        <l:DialogPageControl x:Name="Items" Style="{DynamicResource DialogPageControl_Style}" Margin="5"/>
     </Grid>
 </Window>

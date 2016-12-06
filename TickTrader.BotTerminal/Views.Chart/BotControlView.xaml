@@ -15,49 +15,7 @@
             <MenuItem Header="View state" cal:Message.Attach="OpenState" />
         </ContextMenu>
 
-        <Style x:Key="CloseButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-            <Setter Property="Width" Value="15"/>
-            <Setter Property="Height" Value="15"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="2 0 2 0"/>
-            <Setter Property="Content">
-                <Setter.Value>
-                    <Path Width="7" Height="7" Stretch="Uniform" 
-                          StrokeThickness="1"
-                          Data="{StaticResource Cross}"
-                          Stroke="{DynamicResource Shell_PrimaryForeground}"/>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Background" Value="{DynamicResource Chart_BotControl_Background}"/>
-            <Setter Property="HighlightBackground" Value="{DynamicResource Chart_BotControl_HighlightBackground}" />
-        </Style>
-
-        <Style x:Key="StartStopButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource AutoColorFlatButton_Style}">
-            <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StartBackground}"/>
-            <Setter Property="Width" Value="15"/>
-            <Setter Property="Height" Value="15"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="2 0 0 0"/>
-            <Setter Property="Content">
-                <Setter.Value>
-                    <Path Width="7" Height="7" Stretch="Uniform" StrokeThickness="0" SnapsToDevicePixels="True"
-                          Data="{StaticResource RightArrow}"
-                          Fill="{DynamicResource Shell_PrimaryForeground}"/>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsStarted}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StopBackground}"/>
-                    <Setter Property="Content">
-                        <Setter.Value>
-                            <Path Width="7" Height="7" Stretch="Uniform" StrokeThickness="0" SnapsToDevicePixels="True"
-                                  Data="{StaticResource Square}"
-                                  Fill="{DynamicResource Shell_PrimaryForeground}"/>
-                        </Setter.Value>
-                    </Setter>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
+        
 
         <Style TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -71,8 +29,8 @@
         <StackPanel Orientation="Horizontal">
             <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>
             <TextBlock Text="{Binding Model.Name}" Width="180"/>
-            <l:FlatButton x:Name="StartStop" Style="{StaticResource StartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
-            <l:FlatButton x:Name="Close" Style="{StaticResource CloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
+            <l:FlatButton x:Name="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+            <l:FlatButton x:Name="Close" Style="{StaticResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
         </StackPanel>
     </Border>
     

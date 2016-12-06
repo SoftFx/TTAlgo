@@ -22,9 +22,9 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Style="{StaticResource DockPanelAsToolBarStyle}">
+        <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
             <TextBox DockPanel.Dock="Left" Text="{Binding FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}"
-                     Width="200" Style="{StaticResource SearchTextBox_Style}"/>
+                     Width="200" Style="{DynamicResource SearchTextBox_Style}"/>
             <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
                           Background="{DynamicResource ToolBarItem_DisabledBrush}"
                           HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
@@ -35,7 +35,7 @@
                           cal:Message.Attach="Clear"/>
         </DockPanel>
 
-        <DataGrid Name="Orders" Grid.Row="1" Style="{StaticResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
+        <DataGrid Name="Orders" Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 

@@ -49,10 +49,6 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
-        <Style BasedOn="{StaticResource IconButton_Style}" TargetType="Button">
-            <Setter Property="Focusable" Value="False" />
-        </Style>
-
         <l:ComboBoxItemTemplateSelector x:Key="comboboxItemTemplateSelector">
             <l:ComboBoxItemTemplateSelector.ItemTemplate>
                 <DataTemplate>
@@ -91,6 +87,8 @@
             </ComboBox>
 
             <Button Grid.Column="1" 
+                    Style="{DynamicResource IconButton_Style}"
+                    Focusable="False"
                     Height="30" Width="30" 
                     VerticalContentAlignment="Center" HorizontalContentAlignment="Center" 
                     Margin="5,0,0,0"

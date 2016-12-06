@@ -306,4 +306,7 @@
   <data name="DownloadingTradeHistoryError" xml:space="preserve">
     <value>Произошла ошибка при загрузке истории</value>
   </data>
+  <data name="Theme_Classic" xml:space="preserve">
+    <value>Классическая</value>
+  </data>
 </root>

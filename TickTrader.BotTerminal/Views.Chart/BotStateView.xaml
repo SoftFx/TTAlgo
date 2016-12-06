@@ -6,12 +6,10 @@
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         mc:Ignorable="d"
         ShowInTaskbar="False"
-        Style="{StaticResource Dialog_Style}"
+        Style="{DynamicResource Dialog_Style}"
         Title="{Binding DisplayName}" Height="300" Width="300">
 
     <Window.Resources>
-
-        <Style BasedOn="{StaticResource DialogScrollViewer_Style}" TargetType="ScrollViewer"/>
 
         <Style x:Key="BotNameLabelStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
@@ -29,33 +27,6 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
                     <Setter Property="Foreground" Value="LightGreen"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="StartStopButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource AutoColorFlatButton_Style}">
-            <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StartBackground}"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="4"/>
-            <Setter Property="Content">
-                <Setter.Value>
-                    <Path Width="14" Height="14" Stretch="Uniform" StrokeThickness="0" SnapsToDevicePixels="True"
-                          Data="{StaticResource RightArrow}"
-                          Fill="{DynamicResource Shell_PrimaryForeground}"/>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsStarted}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StopBackground}"/>
-                    <Setter Property="Content">
-                        <Setter.Value>
-                            <Path Width="14" Height="14" Stretch="Uniform" StrokeThickness="0" SnapsToDevicePixels="True"
-                                  Data="{StaticResource Square}"
-                                  Fill="{DynamicResource Shell_PrimaryForeground}"/>
-                        </Setter.Value>
-                    </Setter>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -80,7 +51,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <l:FlatButton x:Name="StartStop" Style="{StaticResource StartStopButtonStyle}" IsEnabled="{Binding CanStartStop}" Grid.RowSpan="2"/>
+                <l:FlatButton x:Name="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}" Grid.RowSpan="2"/>
                 <TextBlock Style="{StaticResource BotNameLabelStyle}" Text="{Binding BotName}" Grid.Column="1" Grid.Row="0" />
                 <TextBlock Style="{StaticResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" Grid.Row="1" />
             </Grid>
@@ -115,7 +86,8 @@
         </Grid>
 
         <Border Background="{DynamicResource Dialog_PanelBackground}" Grid.Row="3" CornerRadius="4" Margin="2">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="2 2 0 0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="2 2 0 0"
+                          Style="{DynamicResource DialogScrollViewer_Style}">
                 <TextBox Text="{Binding CustomStatus}" 
                      HorizontalAlignment="Stretch" 
                      VerticalAlignment="Stretch" 

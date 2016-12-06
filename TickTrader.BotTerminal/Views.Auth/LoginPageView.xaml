@@ -12,26 +12,6 @@
 
     <UserControl.Resources>
         
-        <Style BasedOn="{StaticResource FlatButtonMainStyle}" TargetType="l:FlatButton">
-        </Style>
-
-        <Style BasedOn="{StaticResource {x:Type CheckBox}}" TargetType="CheckBox" >
-            <Setter Property="Margin" Value="5"/>
-        </Style>
-
-        <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
-            <Setter Property="Margin" Value="5,0,5,0"/>
-        </Style>
-
-        <Style BasedOn="{StaticResource {x:Type PasswordBox}}" TargetType="PasswordBox">
-            <Setter Property="Margin" Value="5,0,5,0"/>
-        </Style>
-
-        <Style TargetType="Label" BasedOn="{StaticResource DialogLabel_Style}">
-            <Setter Property="Margin" Value="5,4,5,1" />
-            <Setter Property="Padding" Value="0"/>
-        </Style>
-
         <Style TargetType="TextBlock">
             <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="SnapsToDevicePixels" Value="False"/>
@@ -71,7 +51,7 @@
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Label Grid.Row="0" Grid.ColumnSpan="2" Content="Log In" FontSize="26" VerticalAlignment="Center" Style="{StaticResource DialogPageTitleLabelStyle}"/>
+        <Label Grid.Row="0" Grid.ColumnSpan="2" Content="Log In" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
         <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Account number"/>
         <ComboBox Grid.Row="2" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"

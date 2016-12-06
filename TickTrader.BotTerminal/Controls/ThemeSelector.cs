@@ -37,9 +37,19 @@ namespace TickTrader.BotTerminal
         private void Activate(Theme theme)
         {
             int toRemove = MergedDictionaries.Count;
+
+            // add new resources
             theme.Dictionaries.ForEach(MergedDictionaries.Add);
+
+            // switch styles
+            var locator = AppBootstrapper.AutoViewLocator;
+            if (locator.StylePostfix != theme.StylePrefix)
+                locator.StylePostfix = theme.StylePrefix; 
+
+            // remove old resources
             for (int i = 0; i < toRemove; i++) MergedDictionaries.RemoveAt(0);
 
+            // remember selected theme
             selectedTheme = theme;
         }
 
@@ -48,12 +58,7 @@ namespace TickTrader.BotTerminal
 
         public string SelectedTheme
         {
-            get
-            {
-                if (selectedTheme == null)
-                    return null;
-                return selectedTheme.ThemeName;
-            }
+            get { return selectedTheme?.ThemeName; }
             set
             {
                 if (selectedTheme == null || selectedTheme.ThemeName != value)
@@ -76,6 +81,7 @@ namespace TickTrader.BotTerminal
         }
 
         public string ThemeName { get; set; }
+        public string StylePrefix { get; set; }
         public List<ResourceDictionary> Dictionaries { get; set; }
     }
 }

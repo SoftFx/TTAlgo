@@ -57,12 +57,6 @@ namespace TickTrader.BotTerminal
             BotJournal = new BotJournalViewModel(botJournal);
             CanConnect = true;
 
-            SkinSelector = new SkinSwitcher(AppBootstrapper.AutoViewLocator, ThemeSelector.Instance);
-            SkinSelector.Add("Dark", null, "Dark");
-            SkinSelector.Add("Light", null, "Light");
-            SkinSelector.Add("Classic", "Classic", "Light");
-            SkinSelector.SelectedSkin = "Dark";
-
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
@@ -181,7 +175,6 @@ namespace TickTrader.BotTerminal
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public ToolWindowsManager ToolWndManager { get { return this; } }
-        public SkinSwitcher SkinSelector { get; private set; }
 
         public NotificationsViewModel Notifications { get; private set; }
 

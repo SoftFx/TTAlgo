@@ -339,4 +339,7 @@
   <data name="Menu_Tools" xml:space="preserve">
     <value>Tools</value>
   </data>
+  <data name="Theme_Classic" xml:space="preserve">
+    <value>Classic</value>
+  </data>
 </root>

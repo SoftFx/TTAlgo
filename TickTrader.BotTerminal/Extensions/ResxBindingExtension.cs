@@ -48,6 +48,9 @@ namespace TickTrader.BotTerminal
 
         object IMultiValueConverter.Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values[1] == null)
+                return null;
+
             string resxKey = values[1].ToString();
             if (parameter != null)
                 resxKey = (string)parameter + resxKey;

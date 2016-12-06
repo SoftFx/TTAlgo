@@ -6,27 +6,10 @@
         xmlns:am="clr-namespace:TickTrader.Algo.GuiModel;assembly=TickTrader.Algo.GuiModel"
         Title="IndicatorSetupView"
         Height="300" Width="340"
-        Style="{StaticResource Dialog_Style}"
+        Style="{DynamicResource Dialog_Style}"
         ResizeMode="NoResize">
 
     <Window.Resources>
-
-        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-            <Setter Property="MinWidth" Value="75" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Margin" Value="5,7" />
-            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}" />
-            <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}" />
-        </Style>
-
-        <Style x:Key="ParamUtilityButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-            <Setter Property="Margin" Value="0"/>
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Background" Value="{DynamicResource Dialog_ButtonBackground}"/>
-            <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}"/>
-            <Setter Property="Margin" Value="3,0,0,0"/>
-        </Style>
 
         <Style x:Key="ControlImitationBorder" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource Dialog_ControlBackground}"/>
@@ -47,13 +30,7 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Padding" Value="2,0,2,0"/>
         </Style>
-
-        <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxMainStyle}">
-            <Setter Property="Height" Value="22"/>
-            <Setter Property="Margin" Value="2,0,2,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-        </Style>
-
+        
         <Style TargetType="CheckBox">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Padding" Value="0"/>
@@ -246,7 +223,7 @@
                                Foreground="{DynamicResource Shell_PrimaryForeground}"
                                Padding="4,0,4,0" TextTrimming="CharacterEllipsis"/>
                 </Border>
-                <l:FlatButton Grid.Column="1" Content="..." Style="{StaticResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
+                <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
                     <i:Interaction.Behaviors>
                         <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" Filter="{Binding Filter}"/>
                     </i:Interaction.Behaviors>
@@ -337,7 +314,7 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False"
-                      Style="{StaticResource DialogScrollViewer_Style}">
+                      Style="{DynamicResource DialogScrollViewer_Style}">
             <StackPanel>
 
                 <ItemsControl IsTabStop="False" ItemsSource="{StaticResource inputsAndParamsComposite}"
@@ -361,15 +338,15 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
-                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <l:FlatButton x:Name="Ok" Content="Ok" Grid.Column="1"
+            <l:FlatButton x:Name="Ok" Content="Ok" Grid.Column="0"
+                          Style="{DynamicResource PluginSetupPage_ButtonStyle}"
                           Background="{DynamicResource Dialog_OkButtonBackground}"
                           HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
             <l:FlatButton x:Name="Cancel" Content="Cancel"
-                          Grid.Column="2"/>
-            <l:FlatButton x:Name="Reset" Content="Reset"
-                          Grid.Column="0"/>
+                          Grid.Column="1" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>
+            <!--<l:FlatButton x:Name="Reset" Content="Reset"
+                          Grid.Column="0" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>-->
         </Grid>
     </Grid>
 </Window>

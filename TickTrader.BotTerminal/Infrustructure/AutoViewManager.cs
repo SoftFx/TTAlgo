@@ -48,6 +48,7 @@ namespace TickTrader.BotTerminal
             styleBinding.ConverterParameter = MakeStyleName(modelType, context);
             styleBinding.Bindings.Add(new Binding() { RelativeSource = new RelativeSource(RelativeSourceMode.Self) });
             styleBinding.Bindings.Add(new Binding("StylePostfix") { Source = this });
+            styleBinding.Mode = BindingMode.OneWay;
             BindingOperations.SetBinding(view, FrameworkElement.StyleProperty, styleBinding);
         }
 

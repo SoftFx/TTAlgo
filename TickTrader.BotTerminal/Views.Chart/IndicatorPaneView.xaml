@@ -17,7 +17,7 @@
                         <s:XAxisDragModifier/>
                         <s:CursorModifier ShowTooltipOn="Always"
                                           ShowTooltip="True"
-                                          TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
+                                          TooltipContainerStyle="{DynamicResource SymbolChartCursorTooltip_Style}"
                                           IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
                         <s:MouseWheelZoomModifier/>
                         <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>

@@ -20,12 +20,6 @@
             <Setter Property="RolloverMarkerTemplate" Value="{StaticResource IndicatorOutputRolloverTooltipTemplate}"/>
         </Style>
 
-        <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-            <Setter Property="HighlightBackground" Value="{DynamicResource Menu_BackgroundBrush}"/>
-            <Setter Property="Margin" Value="5,0,0,0"/>
-            <Setter Property="Padding" Value="3,2,3,2"/>
-        </Style>
-
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
 
         <ContextMenu x:Key="MainChartPanelContextMenu" Style="{StaticResource ContextMenu_Style}">

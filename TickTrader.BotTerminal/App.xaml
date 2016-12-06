@@ -18,21 +18,23 @@
                 <!-- Images -->
                 <ResourceDictionary Source="Resx/Images/Images.xaml"/>
 
-                <!-- Control Styles -->
-                <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
-                
-                <!-- Views (temp!) -->
-                <ResourceDictionary Source="Views/ShellView.xaml" />
-
                 <!-- Themes -->
                 <l:ThemeSelector>
                     <l:Theme ThemeName="Dark">
                         <ResourceDictionary Source="Resx/Themes/Dark.xaml"/>
+                        <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
                     </l:Theme>
                     <l:Theme ThemeName="Light">
                         <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
+                        <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
+                    </l:Theme>
+                    <l:Theme ThemeName="Classic" StylePrefix="Classic">
+                        <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
                     </l:Theme>
                 </l:ThemeSelector>
+
+                <!-- Views (temp!) -->
+                <ResourceDictionary Source="Views/ShellView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

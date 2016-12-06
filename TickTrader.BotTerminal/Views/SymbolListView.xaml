@@ -7,7 +7,7 @@
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
+    <!--<UserControl.Resources>
 
         <CollectionViewSource x:Key="SymbolGroupViewSrc" Source="{Binding Symbols}">
             <CollectionViewSource.SortDescriptions>
@@ -19,7 +19,7 @@
             </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
 
-    </UserControl.Resources>
+    </UserControl.Resources>-->
 
     <Grid>
         <Grid.RowDefinitions>
@@ -29,13 +29,13 @@
 
         <ListBox Name="Symbols"
                  Grid.Row="1"
-                 Style="{StaticResource SymbolListBox_Style}"
-                 ItemsSource="{Binding Source={StaticResource SymbolGroupViewSrc}}"
+                 Style="{DynamicResource SymbolListBox_Style}"
+                 ItemsSource="{Binding Symbols}"
                  SelectedItem="{Binding SelectedSymbol}"
                  PreviewMouseDown="Symbols_PreviewMouseDown">
-            <ListBox.GroupStyle>
-                <GroupStyle ContainerStyle="{StaticResource SymbolListBox_GroupStyle}" Panel="{StaticResource SymbolListBox_PanelTemplate}"/>
-            </ListBox.GroupStyle>
+            <!--<ListBox.GroupStyle>
+                <GroupStyle ContainerStyle="{DynamicResource SymbolListBox_GroupStyle}" Panel="{DynamicResource SymbolListBox_PanelTemplate}"/>
+            </ListBox.GroupStyle>-->
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
