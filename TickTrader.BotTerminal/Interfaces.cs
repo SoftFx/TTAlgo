@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
         void CloseWindow(object wndKey);
     }
 
-    internal interface IShell
+    internal interface IShell : IWindowModel
     {
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }

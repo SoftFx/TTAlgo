@@ -174,7 +174,7 @@ namespace TickTrader.Algo.Core
         {
             lock (syncObj)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY STOP! qucik=" + quick);
+                //System.Diagnostics.Debug.WriteLine("STRATEGY STOP! qucik=" + quick);
 
                 if (stopTask == null)
                     stopTask = DoStop(quick);
@@ -186,7 +186,7 @@ namespace TickTrader.Algo.Core
         {
             if (!quick)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
+                //System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
 
                 Task stopEvent = null;
                 defaultQueue.Enqueue(b => stopEvent = b.InvokeAsyncStop()); // invoke async stop
@@ -194,7 +194,7 @@ namespace TickTrader.Algo.Core
                 if (stopEvent != null)
                     await stopEvent.ConfigureAwait(false); // wait async stop to end
 
-                System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP DONE!");
+                //System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP DONE!");
             }
 
             Task toWait = null;
@@ -206,14 +206,14 @@ namespace TickTrader.Algo.Core
 
             if (toWait != null)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY WAIT!");
+                //System.Diagnostics.Debug.WriteLine("STRATEGY WAIT!");
                 await toWait.ConfigureAwait(false); // wait current invoke to end
-                System.Diagnostics.Debug.WriteLine("STRATEGY DONE WAIT!");
+                //System.Diagnostics.Debug.WriteLine("STRATEGY DONE WAIT!");
             }
 
             if (!quick)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
+                //System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
                 Builder.InvokeOnStop(); // Invoke OnStop(). This is last invoke. No more invokes are possible after this point.
             }
 
@@ -222,7 +222,7 @@ namespace TickTrader.Algo.Core
                 isStarted = false;
                 stopTask = null;
 
-                System.Diagnostics.Debug.WriteLine("STRATEGY STOP COMPLETED!");
+                //System.Diagnostics.Debug.WriteLine("STRATEGY STOP COMPLETED!");
             }
         }
 

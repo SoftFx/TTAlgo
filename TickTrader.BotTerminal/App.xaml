@@ -21,6 +21,9 @@
                 <!-- Control Styles -->
                 <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
                 
+                <!-- Views (temp!) -->
+                <ResourceDictionary Source="Views/ShellView.xaml" />
+
                 <!-- Themes -->
                 <l:ThemeSelector>
                     <l:Theme ThemeName="Dark">

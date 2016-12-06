@@ -258,6 +258,7 @@
     <Compile Include="Infrustructure\AutoViewManager.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
+    <Compile Include="Infrustructure\SkinSwitcher.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\ValidationGroup.cs" />
@@ -458,9 +459,6 @@
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\NotificationsViewModel.cs" />
-    <Compile Include="Views\ShellView.xaml.cs">
-      <DependentUpon>ShellView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\SymbolDetailsView.xaml.cs">
       <DependentUpon>SymbolDetailsView.xaml</DependentUpon>
