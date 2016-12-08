@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    public class AutoView : Control { }
+    public class AutoView : UserControl { }
     public class AutoWindowView : Window { }
     public interface IWindowModel { }
 }

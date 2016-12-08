@@ -7,7 +7,7 @@
     xmlns:dkctrl="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <Menu x:Key="ShellMenu">
+    <Menu x:Key="ShellMenu" x:Shared="False">
         <MenuItem Header="{l:Resx Menu_BotTrader}" >
             <MenuItem Header="{l:Resx Menu_NewOrder}" IsEnabled="False"/>
             <MenuItem Header="{l:Resx Menu_NewChart}" IsEnabled="False"/>
@@ -150,163 +150,69 @@
         </Grid>
     </ControlTemplate>
 
-    <ControlTemplate x:Key="ShellViewTemplate.Classic" TargetType="Window">
+    <Grid x:Key="ShellViewTemplate.Classic">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <ContentControl Content="{StaticResource ShellMenu}" />
 
-            <ContentControl Content="{StaticResource ShellMenu}" />
+        <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}">
 
-            <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}">
-
-                <dk:DockingManager.LayoutItemContainerStyle>
-                    <!-- you can add additional bindings from the layoutitem to the DockWindowViewModel -->
-                    <Style TargetType="{x:Type dkctrl:LayoutItem}">
-                        <Setter Property="Title" Value="{Binding Model.Symbol}" />
-                        <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
-                        <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
-                    </Style>
-                </dk:DockingManager.LayoutItemContainerStyle>
-
-                <!--<dk:DockingManager.LayoutItemTemplate>
+            <!--<dk:DockingManager.DocumentHeaderTemplate>
                     <DataTemplate>
-                        <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
+                        <TextBlock Text="{Binding Title}" />
                     </DataTemplate>
-                </dk:DockingManager.LayoutItemTemplate>-->
+                </dk:DockingManager.DocumentHeaderTemplate>-->
 
-                <!--<dk:DockingManager.LayoutItemTemplateSelector>
-                    <dk:AutobinderTemplateSelector>
-                        <avalon:AutobinderTemplateSelector.Template>
-                            <DataTemplate>
-                                <ContentControl cal:View.Model="{Binding . }" IsTabStop="False" />
-                            </DataTemplate>
-                        </avalon:AutobinderTemplateSelector.Template>
-                    </dk:AutobinderTemplateSelector>
-                </dk:DockingManager.LayoutItemTemplateSelector>-->
-                
-                <dk:LayoutRoot>
-                    
-                </dk:LayoutRoot>
-                
-            </dk:DockingManager>
+            <dk:DockingManager.LayoutItemContainerStyle>
+                <Style TargetType="{x:Type dkctrl:LayoutItem}">
+                    <Setter Property="Title" Value="{Binding Model.Symbol}" />
+                    <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
+                    <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
+                </Style>
+            </dk:DockingManager.LayoutItemContainerStyle>
 
-        </Grid>
-        
-        
+            <!--<dk:DockingManager.LayoutItemTemplate>
+                <DataTemplate>
+                    <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
+                </DataTemplate>
 
-        <!--<Grid Background="{TemplateBinding Background}">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" MinWidth="250" MaxWidth="400"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*" MinHeight="150"/>
-            </Grid.RowDefinitions>
-
-            <ContentControl cal:View.Model="{Binding AccountPane}" Grid.Column="0" Grid.Row="1" Margin="5,0,0,0" />
-
-            <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Style="{StaticResource ShellTabControl_Style}" Margin="5,5,0,5">
-                <TabItem Header="{l:Resx Tab_Symbols}">
-                    <ContentControl cal:View.Model="{Binding SymbolList}"/>
-                </TabItem>
-                <TabItem Header="{l:Resx Tab_Algo}">
-                    <ContentControl  cal:View.Model="{Binding AlgoList}"/>
-                </TabItem>
-            </l:TabControl>
-
-            <ContentControl cal:View.Model="{Binding Charts}" Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
-                <i:Interaction.Behaviors>
-                    <l:DropBehavior/>
-                </i:Interaction.Behaviors>
-            </ContentControl>
-            <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="4" Width="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent"/>
-
-            <ContentControl Content="{StaticResource ShellMenu}"  Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Margin="3"/>
-
-            <GridSplitter Grid.Column="2" Grid.Row="3" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
-
-            <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="4" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5" SelectedIndex="4">
-                <TabItem Header="{Binding}" Visibility="{Binding Trade.IsEnabled, Converter={StaticResource BoolToVis}}">
-                    <TabItem.HeaderTemplate>
+            </dk:DockingManager.LayoutItemTemplate>-->
+            
+            <dk:DockingManager.LayoutItemTemplateSelector>
+                <l:AvalonDockTemplateSelector>
+                    <l:AvalonDockTemplateSelector.DocumentTemplate>
                         <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{l:Resx Tab_Trade}"></TextBlock>
-                                <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="PositionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <Grid>
-                                        <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Net.Positions.Count}" Visibility="{Binding Trade.Positions.Net.IsEnabled, Converter={StaticResource BoolToVis}}"/>
-                                        <TextBlock Margin="5 0" Text="{Binding Trade.Positions.Gross.Positions.Count}" Visibility="{Binding Trade.Positions.Gross.IsEnabled, Converter={StaticResource BoolToVis}}"/>
-                                    </Grid>
-                                </Border>
-                                <Border Grid.Column="2" Margin="2 0 0 0" CornerRadius="4" Name="OrderCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <TextBlock Margin="5 0" Text="{Binding Trade.Orders.Orders.Count}"/>
-                                </Border>
-                            </Grid>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Value="True">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{l:BoolConverter ConversionMode=LeastOne}">
-                                            <Binding Path="Trade.Positions.Net.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
-                                            <Binding Path="Trade.Positions.Gross.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
-                                            <Binding Path="Trade.Assets.Assets.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
-                                    <Setter TargetName="PositionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Trade.Orders.Orders.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
-                                    <Setter TargetName="OrderCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
+                            <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
                         </DataTemplate>
-                    </TabItem.HeaderTemplate>
-                    <ContentControl cal:View.Model="{Binding Trade}"/>
-                </TabItem>
-                <TabItem Name="TabHistory" Header="{Binding}">
-                    <TabItem.HeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{l:Resx Tab_History}"></TextBlock>
-                                <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="TransactionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.TradesList.Count}"></TextBlock>
-                                </Border>
-                            </Grid>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding TradeHistory.TradesList.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
-                                    <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </TabItem.HeaderTemplate>
-                    <ContentControl cal:View.Model="{Binding TradeHistory}"/>
-                </TabItem>
-                <TabItem Header="{l:Resx Tab_Journal}" IsSelected="True">
-                    <ContentControl  cal:View.Model="{Binding Journal}"/>
-                </TabItem>
-                <TabItem Header="{l:Resx Tab_BotJournal}">
-                    <ContentControl  cal:View.Model="{Binding BotJournal}"/>
-                </TabItem>
-            </l:TabControl>
+                    </l:AvalonDockTemplateSelector.DocumentTemplate>
+                </l:AvalonDockTemplateSelector>
+            </dk:DockingManager.LayoutItemTemplateSelector>
 
-        </Grid>-->
-    </ControlTemplate>
+            <dk:DockingManager.Theme>
+                <dk:AeroTheme/>
+            </dk:DockingManager.Theme>
+
+            <dk:LayoutRoot>
+                <dk:LayoutPanel Orientation="Horizontal">
+                    <dk:LayoutAnchorablePane DockMinWidth="200" DockWidth="250">
+                        <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="False">
+                            <ContentControl cal:View.Model="{Binding SymbolList}" />
+                        </dk:LayoutAnchorable>
+                        <!--<dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" >
+                        </dk:LayoutAnchorable>-->
+                    </dk:LayoutAnchorablePane>
+                    <dk:LayoutDocumentPaneGroup>
+                        <dk:LayoutDocumentPane />
+                    </dk:LayoutDocumentPaneGroup>
+                </dk:LayoutPanel>
+            </dk:LayoutRoot>
+
+        </dk:DockingManager>
+
+    </Grid>
 
     <Style x:Key="ShellViewStyle" TargetType="Window">
         <Setter Property="Template" Value="{StaticResource ShellViewTemplate.Old}"/>
@@ -321,7 +227,6 @@
     </Style>
 
     <Style x:Key="ShellViewStyle.Classic" TargetType="Window">
-        <Setter Property="Template" Value="{StaticResource ShellViewTemplate.Classic}"/>
         <Setter Property="Height" Value="800"/>
         <Setter Property="Width" Value="1100"/>
         <Setter Property="MinWidth" Value="500"/>
@@ -329,6 +234,11 @@
         <Setter Property="Icon" Value="{StaticResource MainAppIcon}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="Content">
+            <Setter.Value>
+                <StaticResource ResourceKey="ShellViewTemplate.Classic"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

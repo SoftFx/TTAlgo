@@ -1,48 +1,97 @@
-﻿<UserControl x:Class="TickTrader.BotTerminal.SymbolListView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-             xmlns:cal="http://www.caliburnproject.org"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <!--<UserControl.Resources>
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-        <CollectionViewSource x:Key="SymbolGroupViewSrc" Source="{Binding Symbols}">
-            <CollectionViewSource.SortDescriptions>
-                <scm:SortDescription PropertyName="Group" />
-                <scm:SortDescription PropertyName="SymbolName" />
-            </CollectionViewSource.SortDescriptions>
-            <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="Group" />
-            </CollectionViewSource.GroupDescriptions>
-        </CollectionViewSource>
+    <ControlTemplate x:Key="SymbolListView.Old">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition/>
+            </Grid.RowDefinitions>
 
-    </UserControl.Resources>-->
-
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-
-        <ListBox Name="Symbols"
+            <ListBox Name="Symbols"
                  Grid.Row="1"
                  Style="{DynamicResource SymbolListBox_Style}"
                  ItemsSource="{Binding Symbols}"
-                 SelectedItem="{Binding SelectedSymbol}"
-                 PreviewMouseDown="Symbols_PreviewMouseDown">
-            <!--<ListBox.GroupStyle>
-                <GroupStyle ContainerStyle="{DynamicResource SymbolListBox_GroupStyle}" Panel="{DynamicResource SymbolListBox_PanelTemplate}"/>
-            </ListBox.GroupStyle>-->
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                 SelectedItem="{Binding SelectedSymbol}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
 
-    </Grid>
+        </Grid>
+    </ControlTemplate>
 
-</UserControl>
+    <Style x:Key="DataGridCell.Classic" TargetType="TextBlock">
+        <Setter Property="Margin" Value="10,3,10,3"/>
+    </Style>
+
+    <Style x:Key="BidTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Classic}">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
+                <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
+                <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="AskTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Classic}">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
+                <Setter Property="Foreground" Value="{DynamicResource RateUpColor}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
+                <Setter Property="Foreground" Value="{DynamicResource RateDownColor}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
+    <ControlTemplate x:Key="SymbolListView.Classic">
+        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}"
+                  AutoGenerateColumns="False"
+                  VerticalGridLinesBrush="LightGray"
+                  HorizontalGridLinesBrush="LightGray"
+                  RowHeaderWidth="0"
+                  SelectionMode="Single" SelectionUnit="FullRow"
+                  IsReadOnly="True" Margin="2" FontSize="11">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.Classic}" CanUserResize="False" />
+                <DataGridTextColumn Header="Bid" Width="Auto" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <Binding Path="Bid.Rate"/>
+                            <Binding Path="Bid.Precision"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Ask" Width="Auto" ElementStyle="{StaticResource AskTextStyle.Classic}" CanUserResize="False">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <Binding Path="Ask.Rate"/>
+                            <Binding Path="Ask.Precision"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding QuoteTime, Converter={StaticResource FullTimeFormat}}" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Classic}" CanUserResize="False" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </ControlTemplate>
+
+    <Style x:Key="SymbolListViewStyle" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource SymbolListView.Old}"/>
+    </Style>
+
+    <Style x:Key="SymbolListViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource SymbolListView.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

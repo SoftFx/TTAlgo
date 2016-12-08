@@ -20,21 +20,21 @@
 
                 <!-- Themes -->
                 <l:ThemeSelector>
+                    <l:Theme ThemeName="Classic" StylePrefix="Classic">
+                        <ResourceDictionary Source="Resx/Themes/Classic.xaml"/>
+                    </l:Theme>
                     <l:Theme ThemeName="Dark">
                         <ResourceDictionary Source="Resx/Themes/Dark.xaml"/>
-                        <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
                     </l:Theme>
-                    <l:Theme ThemeName="Light">
+                    <!--<l:Theme ThemeName="Light">
                         <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
-                        <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
-                    </l:Theme>
-                    <l:Theme ThemeName="Classic" StylePrefix="Classic">
-                        <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
-                    </l:Theme>
+                    </l:Theme>-->
                 </l:ThemeSelector>
 
                 <!-- Views (temp!) -->
                 <ResourceDictionary Source="Views/ShellView.xaml" />
+                <ResourceDictionary Source="Views/SymbolListView.xaml" />
+                <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

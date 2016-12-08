@@ -167,6 +167,9 @@
     <Reference Include="Xceed.Wpf.AvalonDock">
       <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
+      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\lib\SQLite\x64\SQLite.Interop.dll">
@@ -212,7 +215,9 @@
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
+    <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
+    <Compile Include="Controls\FallbackSetting.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
@@ -242,6 +247,7 @@
     <Compile Include="Converters\BoolConverters.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\FallbackConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
@@ -418,9 +424,6 @@
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ChartCollectionViewModel.cs" />
-    <Compile Include="Views.Chart\ChartView.xaml.cs">
-      <DependentUpon>ChartView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.Chart\ChartViewModel.cs" />
     <Compile Include="Views.Chart\PluginSetupView.xaml.cs">
       <DependentUpon>PluginSetupView.xaml</DependentUpon>
@@ -470,9 +473,6 @@
       <DependentUpon>SymbolLevel2View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SymbolLevel2ViewModel.cs" />
-    <Compile Include="Views\SymbolListView.xaml.cs">
-      <DependentUpon>SymbolListView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\SymbolListViewModel.cs" />
     <Compile Include="Views\SymbolView.xaml.cs">
       <DependentUpon>SymbolView.xaml</DependentUpon>
@@ -716,6 +716,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles.Classic\Charts.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ContextMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Themes\Classic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Themes\Dark.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -913,9 +925,7 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resx\Syles.Classic\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

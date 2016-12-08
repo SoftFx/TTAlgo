@@ -37,6 +37,7 @@ namespace TickTrader.BotTerminal
             rangeBinding.Source = this;
             rangeBinding.Mode = BindingMode.TwoWay;
             axis.SetBinding(AxisBase.VisibleRangeProperty, rangeBinding);
+            axis.DrawMajorBands = false;
             return axis;
         }
 

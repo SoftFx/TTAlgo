@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace TickTrader.BotTerminal
+{
+    public class AvalonDockTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate DocumentTemplate { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (item is ContentPresenter || item is ContentControl)
+                return null;
+
+            return DocumentTemplate;
+        }
+    }
+}

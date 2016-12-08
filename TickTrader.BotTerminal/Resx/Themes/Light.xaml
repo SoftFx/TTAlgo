@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
     
     <SolidColorBrush x:Key="SoftFxLogo_BackgroundBrush" Color="#FFCFD641"/>
     <SolidColorBrush x:Key="Shell_BackgroundBrush" Color="#FFFFFF"/>
@@ -24,5 +25,9 @@
 
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>
+
+    <ResourceDictionary.MergedDictionaries>
+        <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>
