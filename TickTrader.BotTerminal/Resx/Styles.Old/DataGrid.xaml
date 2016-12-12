@@ -165,7 +165,7 @@
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource ShellPanel_BorderBrush}"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-        <Setter Property="Margin" Value="5,8,0,5"/>
+        <Setter Property="Margin" Value="0"/>
         <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"/>
         <Setter Property="GridLinesVisibility" Value="None"/>
         <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
@@ -194,6 +194,18 @@
                 <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
         </Style.Resources>
+    </Style>
+
+    <Style x:Key="DataGridWithBusyIndicatorStyle" TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                <Setter Property="l:OverlayControl.Content">
+                    <Setter.Value>
+                        <l:BusyIndicator/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>

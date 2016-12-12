@@ -32,9 +32,11 @@
                 </l:ThemeSelector>
 
                 <!-- Views (temp!) -->
+                <ResourceDictionary Source="Views/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
+                <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

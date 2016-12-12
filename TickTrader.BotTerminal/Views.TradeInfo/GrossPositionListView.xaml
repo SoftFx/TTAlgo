@@ -7,22 +7,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     
-    <UserControl.Resources>
-        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                    <Setter Property="l:OverlayControl.Content">
-                        <Setter.Value>
-                            <l:BusyIndicator/>
-                        </Setter.Value>
-                    </Setter>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
-    
     <Grid>
-        <DataGrid Name="Positions">
+        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
                 <DataGridTextColumn Header="Exec Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />

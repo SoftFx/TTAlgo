@@ -44,26 +44,13 @@
             <ItemsPresenter/>
         </Expander>
     </ControlTemplate>
-
-    <!-- Grouping Panel Template -->
-
-    <ItemsPanelTemplate x:Key="AlgoListBox_PanelTemplate">
-        <VirtualizingStackPanel/>
-    </ItemsPanelTemplate>
-
+    
     <!-- Item Style -->
 
     <Style x:Key="AlgoListBox_ItemStyle" TargetType="ListBoxItem">
         <Setter Property="Template" Value="{StaticResource AlgoListBox_ItemTemplate}"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Margin" Value="2"/>
-    </Style>
-
-    <!-- Grouping Container Style -->
-
-    <Style x:Key="AlgoListBox_GroupStyle" TargetType="GroupItem">
-        <Setter Property="Template" Value="{StaticResource AlgoListBox_GroupTemplate}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
     </Style>
 
     <!-- ListBox Style -->

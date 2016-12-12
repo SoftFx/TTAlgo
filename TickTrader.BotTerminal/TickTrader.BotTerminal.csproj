@@ -214,10 +214,10 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
+    <Compile Include="Controls.Chart\SciChartBehavior.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
-    <Compile Include="Controls\FallbackSetting.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
@@ -408,13 +408,7 @@
     <Compile Include="Views.TradeInfo\AssetViewModel.cs" />
     <Compile Include="Views.TradeInfo\OrderViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionViewModel.cs" />
-    <Compile Include="Views.TradeInfo\TradeHistoryView.xaml.cs">
-      <DependentUpon>TradeHistoryView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.TradeInfo\TradeHistoryViewModel.cs" />
-    <Compile Include="Views\AlgoListView.xaml.cs">
-      <DependentUpon>AlgoListView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\AlgoListViewModel.cs" />
     <Compile Include="Views.TradeInfo\AssetsView.xaml.cs">
       <DependentUpon>AssetsView.xaml</DependentUpon>
@@ -583,6 +577,26 @@
     <Page Include="Resx\Images\Images.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DataGrid.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DockPanelStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DragDropStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ListBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\TextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles.Old\DockPanelStyle.xaml">
       <Generator>MSBuild:Compile</Generator>

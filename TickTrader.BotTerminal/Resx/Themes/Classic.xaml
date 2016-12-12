@@ -2,6 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
+    <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="Black"/>
+    <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="Gray"/>
+    <SolidColorBrush x:Key="Shell_MediateForeground" Color="LightGray"/>
+    <SolidColorBrush x:Key="Shell_WarningForeground" Color="#DA5A3A"/>
+
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateUpHighlightColor" Color="#006836"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>
@@ -11,6 +16,9 @@
 
     <SolidColorBrush x:Key="SellColor" Color="#009344"/>
     <SolidColorBrush x:Key="BuyColor" Color="#F15923"/>
+
+    <SolidColorBrush x:Key="ChartBackground" Color="White" />
+    <SolidColorBrush x:Key="ChartGridLinesColor" Color="LightGray" />
 
     <ResourceDictionary.MergedDictionaries>
         <l:AutoDictionary Source="Resx/Styles.Classic/*.xaml"/>

@@ -22,8 +22,8 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Style="{StaticResource DockPanelAsToolBarStyle}">
-            <TextBox DockPanel.Dock="Left" Text="{Binding TextFilter, Delay=500, UpdateSourceTrigger=PropertyChanged}" Width="200" Style="{StaticResource SearchTextBox_Style}"/>
+        <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
+            <TextBox DockPanel.Dock="Left" Text="{Binding TextFilter, Delay=500, UpdateSourceTrigger=PropertyChanged}" Width="200" Style="{DynamicResource SearchTextBox_Style}"/>
 
             <ComboBox Width="200" Margin="5 0 0 0" SelectedItem="{Binding SelectedBotNameFilter, Delay=200}"
                       DisplayMemberPath="Name" ItemsSource="{Binding BotNameFilterEntries}" IsEditable="False"/>
@@ -40,7 +40,7 @@
                           cal:Message.Attach="Clear"/>
         </DockPanel>
 
-        <DataGrid Name="Orders" Grid.Row="1" Style="{StaticResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
+        <DataGrid Name="Orders" Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 

@@ -60,6 +60,8 @@
     <SolidColorBrush x:Key="SellColor" Color="#009344"/>
     <SolidColorBrush x:Key="BuyColor" Color="#F15923"/>
 
+    <SolidColorBrush x:Key="ChartBackground" Color="#292929" />
+    <SolidColorBrush x:Key="ChartGridLinesColor" Color="#323539" />
 
     <ResourceDictionary.MergedDictionaries>
         <l:AutoDictionary Source="Resx/Styles.Old/*.xaml"/>

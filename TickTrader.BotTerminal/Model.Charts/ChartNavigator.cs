@@ -54,15 +54,7 @@ namespace TickTrader.BotTerminal
 
         protected override AxisBase CreateAxisInternal()
         {
-            return new CategoryDateTimeAxis()
-            {
-                FontSize = 10,
-                LabelProvider = new DynamicLableProvider(),
-                AutoTicks = true,
-                MaxAutoTicks = 25,
-                MinorsPerMajor = 1,
-                GrowBy = new DoubleRange(1, 1)
-            };
+            return new CategoryDateTimeAxis();
         }
 
         public override void Init(int itemsCount, DateTime start, DateTime end)

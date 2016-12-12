@@ -87,6 +87,4 @@
         <Setter Property="Padding" Value="0,0,5,0" />
     </Style>
 
-    <SolidColorBrush x:Key="ChartBackground" Color="White" />
-
 </ResourceDictionary>

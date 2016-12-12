@@ -20,4 +20,20 @@ namespace TickTrader.BotTerminal
             return DocumentTemplate;
         }
     }
+
+    public class AvalonDockStyleSelector : StyleSelector
+    {
+        public Style DocumentStyle { get; set; }
+
+        public override Style SelectStyle(object item, DependencyObject container)
+        {
+            if (item == null)
+                return null;
+
+            if (item is ContentPresenter || item is ContentControl)
+                return null;
+
+            return DocumentStyle;
+        }
+    }
 }

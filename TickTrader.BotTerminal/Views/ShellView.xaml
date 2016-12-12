@@ -57,7 +57,7 @@
 
             <ContentControl cal:View.Model="{Binding AccountPane}" Grid.Column="0" Grid.Row="1" Margin="5,0,0,0" />
 
-            <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Style="{StaticResource ShellTabControl_Style}" Margin="5,5,0,5">
+            <l:TabControl x:Name="LeftPanel" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Style="{DynamicResource ShellTabControl_Style}" Margin="5,5,0,5">
                 <TabItem Header="{l:Resx Tab_Symbols}">
                     <ContentControl cal:View.Model="{Binding SymbolList}"/>
                 </TabItem>
@@ -77,7 +77,7 @@
 
             <GridSplitter Grid.Column="2" Grid.Row="3" Height="5" Width="Auto" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-            <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="4" Style="{StaticResource ShellTabControl_Style}" Margin="0,0,5,5" SelectedIndex="4">
+            <l:TabControl x:Name="BottomPanel" Grid.Column="2" Grid.Row="4" Style="{DynamicResource ShellTabControl_Style}" Margin="0,0,5,5" SelectedIndex="4">
                 <TabItem Header="{Binding}" Visibility="{Binding Trade.IsEnabled, Converter={StaticResource BoolToVis}}">
                     <TabItem.HeaderTemplate>
                         <DataTemplate>
@@ -159,27 +159,19 @@
         <ContentControl Content="{StaticResource ShellMenu}" />
 
         <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}">
+            
+            <dk:DockingManager.LayoutItemContainerStyleSelector>
+                <l:AvalonDockStyleSelector>
+                    <l:AvalonDockStyleSelector.DocumentStyle>
+                        <Style TargetType="{x:Type dkctrl:LayoutItem}">
+                            <Setter Property="Title" Value="{Binding Model.Symbol}" />
+                            <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
+                            <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
+                        </Style>
+                    </l:AvalonDockStyleSelector.DocumentStyle>
 
-            <!--<dk:DockingManager.DocumentHeaderTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Title}" />
-                    </DataTemplate>
-                </dk:DockingManager.DocumentHeaderTemplate>-->
-
-            <dk:DockingManager.LayoutItemContainerStyle>
-                <Style TargetType="{x:Type dkctrl:LayoutItem}">
-                    <Setter Property="Title" Value="{Binding Model.Symbol}" />
-                    <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
-                    <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
-                </Style>
-            </dk:DockingManager.LayoutItemContainerStyle>
-
-            <!--<dk:DockingManager.LayoutItemTemplate>
-                <DataTemplate>
-                    <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
-                </DataTemplate>
-
-            </dk:DockingManager.LayoutItemTemplate>-->
+                </l:AvalonDockStyleSelector>
+            </dk:DockingManager.LayoutItemContainerStyleSelector>
             
             <dk:DockingManager.LayoutItemTemplateSelector>
                 <l:AvalonDockTemplateSelector>
@@ -197,19 +189,39 @@
 
             <dk:LayoutRoot>
                 <dk:LayoutPanel Orientation="Horizontal">
-                    <dk:LayoutAnchorablePane DockMinWidth="200" DockWidth="250">
-                        <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="False">
-                            <ContentControl cal:View.Model="{Binding SymbolList}" />
-                        </dk:LayoutAnchorable>
-                        <!--<dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" >
-                        </dk:LayoutAnchorable>-->
-                    </dk:LayoutAnchorablePane>
-                    <dk:LayoutDocumentPaneGroup>
-                        <dk:LayoutDocumentPane />
-                    </dk:LayoutDocumentPaneGroup>
+                    <dk:LayoutPanel DockMinWidth="200" DockWidth="290" Orientation="Vertical">
+                        <dk:LayoutAnchorablePane>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="False">
+                                <ContentControl cal:View.Model="{Binding SymbolList}" />
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                        <dk:LayoutAnchorablePane>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" >
+                                <ContentControl cal:View.Model="{Binding AlgoList}" />
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                    </dk:LayoutPanel>
+                    <dk:LayoutPanel Orientation="Vertical">
+                        <dk:LayoutDocumentPaneGroup>
+                            <dk:LayoutDocumentPane />
+                        </dk:LayoutDocumentPaneGroup>
+                        <dk:LayoutAnchorablePane DockHeight="300" DockMinHeight="150">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Trade}">
+                                <ContentControl cal:View.Model="{Binding Trade}"/>
+                            </dk:LayoutAnchorable>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_History}">
+                                <ContentControl cal:View.Model="{Binding TradeHistory}"/>
+                            </dk:LayoutAnchorable>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Journal}">
+                                <ContentControl cal:View.Model="{Binding Journal}"/>
+                            </dk:LayoutAnchorable>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}">
+                                <ContentControl cal:View.Model="{Binding BotJournal}"/>
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                    </dk:LayoutPanel>
                 </dk:LayoutPanel>
             </dk:LayoutRoot>
-
         </dk:DockingManager>
 
     </Grid>

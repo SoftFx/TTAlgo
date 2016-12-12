@@ -28,6 +28,10 @@
     </ControlTemplate>
 
     <Style x:Key="DataGridCell.Classic" TargetType="TextBlock">
+        <Setter Property="Margin" Value="3"/>
+    </Style>
+
+    <Style x:Key="DataGridCell.SymbolName.Classic" TargetType="TextBlock">
         <Setter Property="Margin" Value="10,3,10,3"/>
     </Style>
 
@@ -56,15 +60,9 @@
     </Style>
     
     <ControlTemplate x:Key="SymbolListView.Classic">
-        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}"
-                  AutoGenerateColumns="False"
-                  VerticalGridLinesBrush="LightGray"
-                  HorizontalGridLinesBrush="LightGray"
-                  RowHeaderWidth="0"
-                  SelectionMode="Single" SelectionUnit="FullRow"
-                  IsReadOnly="True" Margin="2" FontSize="11">
+        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.Classic}" CanUserResize="False" />
+                <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
                 <DataGridTextColumn Header="Bid" Width="Auto" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >

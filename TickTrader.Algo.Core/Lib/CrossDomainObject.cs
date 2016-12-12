@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core.Lib
                 RemotingServices.Disconnect(nestedObj);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             GC.SuppressFinalize(this);
             Dispose(true);

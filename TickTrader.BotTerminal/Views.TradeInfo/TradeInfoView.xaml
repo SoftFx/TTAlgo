@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             Padding="5,8,0,5">
     <Grid Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVis}}">
         <Grid.RowDefinitions>
             <RowDefinition MinHeight="50"></RowDefinition>
