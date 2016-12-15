@@ -212,30 +212,6 @@ namespace TickTrader.BotTerminal
                 OpenPlugin(setupModel);
         }
 
-        //private void AddIndicator(IndicatorModel2 i)
-        //{
-        //    indicatorCollections.Values.Add(i);
-        //}
-
-        //private void RemoveIndicator(IndicatorModel2 i)
-        //{
-        //    indicatorCollections.Values.Remove(i);
-        //}
-
-        //private void Bot_StateChanged(TradeBotModel bot)
-        //{
-        //    if (!bot.IsStarted && bot.IsBusy) // strating
-        //    {
-        //        shell.ConnectionLock.Lock();
-        //        UiLock.Lock();
-        //    }
-        //    else if (!bot.IsStarted && !bot.IsBusy) // stopped
-        //    {
-        //        shell.ConnectionLock.Release();
-        //        UiLock.Release();
-        //    }
-        //}
-
         private void BotClosed(BotControlViewModel sender)
         {
             bots.Remove(sender);
@@ -262,7 +238,6 @@ namespace TickTrader.BotTerminal
             barChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = barChart;
             barChart.Activate(timeFrame);
-            //tickChart.Deactivate();
         }
 
         private void ActivateTickChart()
