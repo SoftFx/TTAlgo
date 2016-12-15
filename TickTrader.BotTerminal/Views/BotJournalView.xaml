@@ -8,12 +8,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="300">
     <UserControl.Resources>
-        <Style TargetType="DataGridCell" x:Key="DataGridCellStyle_RightAligned">
-            <Setter Property="Template" Value="{StaticResource DataGrid_CellTemplate}"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="8 0 0 0"/>
-        </Style>
-
         <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"></l:MessageTypeToBrushConverter>
     </UserControl.Resources>
     <Grid>
@@ -31,12 +25,10 @@
             <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TypeFilter, Delay=200}" ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False" SelectedIndex="0"></ComboBox>
 
             <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
-                          Background="{DynamicResource ToolBarItem_DisabledBrush}"
-                          HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+                          Style="{DynamicResource PanelActionButtonStyle}"
                           cal:Message.Attach="Browse"/>
             <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0"
-                          Background="{DynamicResource ToolBarItem_DisabledBrush}"
-                          HighlightBackground="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+                          Style="{DynamicResource PanelActionButtonStyle}"
                           cal:Message.Attach="Clear"/>
         </DockPanel>
 
@@ -44,15 +36,19 @@
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 
-                  SelectionMode="Single"
-                  RowHeaderWidth="100">
+                  SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTemplateColumn SortMemberPath="Time" SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto">
+                <DataGridTextColumn SortMemberPath="Time" 
+                                    Binding="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"
+                                    SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
+                <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding Bot}"
+                                    CellStyle="{DynamicResource DataGridCellStyle_RightAligned}"/>
+                <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"></ColumnDefinition>
+                                    <ColumnDefinition Width="20"/>
                                     <ColumnDefinition></ColumnDefinition>
                                 </Grid.ColumnDefinitions>
                                 <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10" Background="{Binding Type, Converter={StaticResource MsgTypeToBrush}}" BorderBrush="Black" BorderThickness="1">
@@ -65,13 +61,11 @@
                                         </Border.Background>
                                     </Border>
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Message}"/>
                             </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding Bot}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
-                <DataGridTextColumn Header="{l:Resx Journal_Message}" Width="*" Binding="{Binding Message}" CellStyle="{StaticResource DataGridCellStyle_RightAligned}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

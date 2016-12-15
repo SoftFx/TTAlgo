@@ -10,6 +10,7 @@
 
     <UserControl.Resources>
         <Style TargetType="s:SciChartSurface">
+            <Setter Property="Background" Value="{DynamicResource ChartBackground}"/>
             <Setter Property="ChartModifier">
                 <Setter.Value>
                     <s:ModifierGroup s:MouseManager.MouseEventGroup="SymbolChartSharedMouse">
@@ -25,17 +26,43 @@
                     </s:ModifierGroup>
                 </Setter.Value>
             </Setter>
+            <Setter Property="l:SciChartBehavior.XAxisStyle">
+                <Setter.Value>
+                    <Style TargetType="s:AxisBase">
+                        <Setter Property="DrawMinorGridLines" Value="False"/>
+                        <Setter Property="DrawMajorTicks" Value="False"/>
+                        <Setter Property="DrawMinorTicks" Value="False"/>
+                        <Setter Property="DrawMajorBands" Value="False"/>
+                        <Setter Property="MajorGridLineStyle">
+                            <Setter.Value>
+                                <Style TargetType="Line">
+                                    <Setter Property="Stroke" Value="{DynamicResource ChartGridLinesColor}"/>
+                                    <Setter Property="StrokeThickness" Value="1"/>
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
         </Style>
-
     </UserControl.Resources>
     
     <Grid>
         <s:SciChartSurface RenderableSeries="{s:SeriesBinding Series}"
-                           XAxis="{Binding TimeAxis}"
+                           l:SciChartBehavior.XAxis="{Binding TimeAxis}"
                            Annotations="{Binding Annotations}"
                            s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis GrowBy="0.0001, 0.00001" AutoRange="Always"/>
+                <s:NumericAxis GrowBy="0.0001, 0.00001" AutoRange="Always"
+                               DrawMajorBands="False" DrawMajorTicks="False"
+                               DrawMinorTicks="False" DrawMinorGridLines="False">
+                    <s:NumericAxis.MajorGridLineStyle>
+                        <Style TargetType="Line">
+                            <Setter Property="Stroke" Value="{DynamicResource ChartGridLinesColor}"/>
+                            <Setter Property="StrokeThickness" Value="1"/>
+                        </Style>
+                    </s:NumericAxis.MajorGridLineStyle>
+                </s:NumericAxis>
             </s:SciChartSurface.YAxis>
             <s:SciChartSurface.Resources>
                 <ResourceDictionary Source="SeriesView.xaml"/>

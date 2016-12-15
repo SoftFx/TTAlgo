@@ -71,6 +71,10 @@ namespace TickTrader.Algo.GuiModel
         public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
         public IEnumerable<InputSetup> Inputs { get { return inputs; } }
         public IEnumerable<PropertySetupBase> Outputs { get { return outputs; } }
+        public bool HasInputsOrParams { get { return HasParams || HasInputs; } }
+        public bool HasParams { get { return parameters.Count > 0; } }
+        public bool HasInputs { get { return inputs.Count > 0; } }
+        public bool HasOutputs { get { return outputs.Count > 0; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
         public AlgoPluginRef PluginRef { get; private set; }
 

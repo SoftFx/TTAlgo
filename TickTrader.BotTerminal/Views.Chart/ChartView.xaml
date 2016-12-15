@@ -123,7 +123,6 @@
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            
             <ItemsControl Visibility="{Binding Chart.IsReady, Converter={StaticResource boolToVisibilityConverter}}">
                 <ItemsControl.Resources>
                     <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding Panes}"/>
@@ -161,7 +160,7 @@
                                                    AutoRange="Always">
                                     </s:NumericAxis>
                                 </s:SciChartSurface.YAxis>
-                                
+
                                 <s:SciChartSurface.Annotations>
                                     <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
                                                             Stroke="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
@@ -172,18 +171,17 @@
                                     <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
                                                         Background="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
                                 </s:SciChartSurface.Annotations>
-                                
+
                                 <s:SciChartSurface.Resources>
                                     <ResourceDictionary Source="SeriesView.xaml"/>
                                 </s:SciChartSurface.Resources>
-                                
+
                             </s:SciChartSurface>
                             <ItemsControl ItemsSource="{Binding Bots}" Style="{StaticResource BotPanelStyle}"/>
                         </Grid>
                         <CollectionContainer Collection="{Binding Source={StaticResource indicatorPanesViewSrc}}"/>
                     </CompositeCollection>
                 </ItemsControl.ItemsSource>
-                
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <l:SplitterPanel NewElementSizeRatio="0.2" />
@@ -191,7 +189,7 @@
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
             <Border Visibility="{Binding Path=Chart.IsLoading, Converter={StaticResource boolToVisibilityConverter}}"
-                Background="Black">
+                Background="{DynamicResource ChartBackground}">
                 <l:BusyIndicator/>
             </Border>
             <!--<ScrollBar Grid.Row="1" Orientation="Horizontal" Minimum="{Binding ElementName=MainChartControl, Path=}" />-->

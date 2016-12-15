@@ -264,6 +264,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void CloseChart(object chart)
+        {
+        }
+
         #region OrderUi implementation
 
         public void OpenMarkerOrder(string symbol)

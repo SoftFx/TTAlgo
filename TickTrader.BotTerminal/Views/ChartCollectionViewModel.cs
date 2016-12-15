@@ -37,6 +37,23 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public override void ActivateItem(ChartViewModel item)
+        {
+            base.ActivateItem(item);
+            NotifyOfPropertyChange(nameof(SelectedChartProxy));
+        }
+
+        public object SelectedChartProxy
+        {
+            get { return this.ActiveItem; }
+            set
+            {
+                var chart = value as ChartViewModel;
+                if (chart != null)
+                    this.ActiveItem = chart;
+            }
+        }
+
         public void Open(string symbol)
         {
             ActivateItem(new ChartViewModel(symbol, shell, clientModel, catalog, pluginJournal));

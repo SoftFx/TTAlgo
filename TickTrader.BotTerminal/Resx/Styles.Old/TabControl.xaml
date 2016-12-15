@@ -60,5 +60,8 @@
             </Style>
         </Style.Resources>
     </Style>
+
+    <Style x:Key="DialogTabStyle" BasedOn="{StaticResource ShellTabControl_Style}" TargetType="l:TabControl">
+    </Style>
     
 </ResourceDictionary>

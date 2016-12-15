@@ -38,6 +38,8 @@
         </MenuItem>
     </Menu>
 
+    <!-- Old Template -->
+
     <ControlTemplate x:Key="ShellViewTemplate.Old" TargetType="Window">
         <Grid Background="{TemplateBinding Background}">
 
@@ -149,8 +151,10 @@
 
         </Grid>
     </ControlTemplate>
+    
+    <!-- Classic Template -->
 
-    <Grid x:Key="ShellViewTemplate.Classic">
+    <Grid x:Key="ShellViewTemplate.Classic" Margin="5,0,5,4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -158,15 +162,16 @@
 
         <ContentControl Content="{StaticResource ShellMenu}" />
 
-        <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}">
-            
+        <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}"
+                           ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" >
+
             <dk:DockingManager.LayoutItemContainerStyleSelector>
                 <l:AvalonDockStyleSelector>
                     <l:AvalonDockStyleSelector.DocumentStyle>
                         <Style TargetType="{x:Type dkctrl:LayoutItem}">
                             <Setter Property="Title" Value="{Binding Model.Symbol}" />
                             <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
-                            <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
+                            <!--<Setter Property="CanClose" Value="{Binding Model.CanClose}" />-->
                         </Style>
                     </l:AvalonDockStyleSelector.DocumentStyle>
 
@@ -183,9 +188,9 @@
                 </l:AvalonDockTemplateSelector>
             </dk:DockingManager.LayoutItemTemplateSelector>
 
-            <dk:DockingManager.Theme>
+            <!--<dk:DockingManager.Theme>
                 <dk:AeroTheme/>
-            </dk:DockingManager.Theme>
+            </dk:DockingManager.Theme>-->
 
             <dk:LayoutRoot>
                 <dk:LayoutPanel Orientation="Horizontal">

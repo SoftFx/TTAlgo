@@ -58,7 +58,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
     <ControlTemplate x:Key="SymbolListView.Classic">
         <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}">
             <DataGrid.Columns>
@@ -90,6 +90,17 @@
 
     <Style x:Key="SymbolListViewStyle.Classic" TargetType="UserControl">
         <Setter Property="Template" Value="{StaticResource SymbolListView.Classic}"/>
+        <Style.Resources>
+            <Style TargetType="{x:Type DataGridRow}">
+                <Setter Property="ContextMenu">
+                    <Setter.Value>
+                        <ContextMenu>
+                            <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
+                        </ContextMenu>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
     </Style>
 
 </ResourceDictionary>

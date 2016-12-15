@@ -12,7 +12,7 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginSetupViewModel : Screen
+    internal class PluginSetupViewModel : Screen, IWindowModel
     {
         private Logger logger;
         //private IIndicatorSetup cfg;

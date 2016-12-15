@@ -24,6 +24,7 @@ using NLog;
 using Machinarium.Qnil;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
+using System.Windows.Input;
 
 namespace TickTrader.BotTerminal
 {
@@ -91,6 +92,8 @@ namespace TickTrader.BotTerminal
             SelectedPeriod = periodActivatos.ElementAt(8);
             
             ViewPort = new CustomViewPortManager();
+
+            CloseCommand = new GenericCommand(o => TryClose());
         }
 
         #region Bindable Properties
@@ -132,6 +135,7 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
         public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
         public IReadOnlyList<BotControlViewModel> Bots { get; private set; }
+        public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
 
