@@ -253,7 +253,7 @@ namespace TickTrader.BotTerminal
         public PositionSide Long { get; private set; }
         public PositionSide Short { get; private set; }
         IPositionSide IPositionModel.Long { get { return Long; } }
-        IPositionSide IPositionModel.Short { get { return Long; } }
+        IPositionSide IPositionModel.Short { get { return Short; } }
 
         #endregion
 
