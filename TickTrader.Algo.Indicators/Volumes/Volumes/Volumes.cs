@@ -8,10 +8,10 @@ namespace TickTrader.Algo.Indicators.Volumes.Volumes
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Value Up", DefaultColor = Colors.Green)]
+        [Output(DisplayName = "Value Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries ValueUp { get; set; }
 
-        [Output(DisplayName = "Value Down", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Value Down", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
         public DataSeries ValueDown { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
