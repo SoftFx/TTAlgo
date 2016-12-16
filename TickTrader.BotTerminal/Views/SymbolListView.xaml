@@ -88,17 +88,16 @@
         <Setter Property="Template" Value="{StaticResource SymbolListView.Old}"/>
     </Style>
 
+    <ContextMenu x:Key="RowContextmenu.Classic" 
+                 cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}">
+        <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
+    </ContextMenu>
+
     <Style x:Key="SymbolListViewStyle.Classic" TargetType="UserControl">
         <Setter Property="Template" Value="{StaticResource SymbolListView.Classic}"/>
         <Style.Resources>
             <Style TargetType="{x:Type DataGridRow}">
-                <Setter Property="ContextMenu">
-                    <Setter.Value>
-                        <ContextMenu>
-                            <MenuItem Header="{l:Resx ContextMenu_NewChart}" cal:Message.Attach="OpenChart"/>
-                        </ContextMenu>
-                    </Setter.Value>
-                </Setter>
+                <Setter Property="ContextMenu" Value="{StaticResource RowContextmenu.Classic}"/>
             </Style>
         </Style.Resources>
     </Style>

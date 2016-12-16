@@ -4,7 +4,7 @@
 
     <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="Black"/>
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="Gray"/>
-    <SolidColorBrush x:Key="Shell_MediateForeground" Color="LightGray"/>
+    <SolidColorBrush x:Key="Shell_MediateForeground" Color="Gray"/>
     <SolidColorBrush x:Key="Shell_WarningForeground" Color="#DA5A3A"/>
 
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>

@@ -34,6 +34,7 @@ namespace TickTrader.BotTerminal
         public decimal Equity { get; protected set; }
         public decimal Margin { get; protected set; }
         public decimal Profit { get; protected set; }
+        public decimal Floating { get; protected set; }
         public decimal MarginLevel { get; protected set; }
 
         public event Action<AccountCalculatorModel> Updated;
@@ -195,6 +196,7 @@ namespace TickTrader.BotTerminal
                     Equity = calc.Equity;
                     Margin = calc.Margin;
                     Profit = calc.Profit;
+                    Floating = calc.Profit + calc.Commission + calc.Swap;
                     MarginLevel = calc.MarginLevel;
                     OnUpdate();
                 };

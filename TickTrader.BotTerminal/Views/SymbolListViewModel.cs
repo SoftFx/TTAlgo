@@ -35,6 +35,10 @@ namespace TickTrader.BotTerminal
             NewChartRequested(symbol);
         }
 
+        public void OpenChart(object context)
+        {
+        }
+
         public event Action<string> NewChartRequested = delegate { };
 
         public IObservableListSource<SymbolViewModel> Symbols { get; private set; }
