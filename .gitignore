@@ -241,3 +241,9 @@ _Pvt_Extensions
 algo.metadata
 /Repository.Public/API
 /TickTrader.BotTerminal/Redist
+
+
+node_modules/
+wwwroot/
+[C]lient/**/*.js
+[C]lient/**/*.map
