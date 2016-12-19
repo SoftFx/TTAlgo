@@ -49,7 +49,6 @@
   "publishOptions": {
     "include": [
       "appsettings.json",
-      "node_modules",
       "Views",
       "web.config",
       "wwwroot"
