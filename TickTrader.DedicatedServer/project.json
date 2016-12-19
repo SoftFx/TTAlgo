@@ -58,7 +58,8 @@
 
   "scripts": {
     "postcompile": [
-      //"npm run build_dev_vendor"
+      "npm run clean_dist",
+      "npm run build_dev_vendor"
     ],
     "prepublish": [
       "npm install",
