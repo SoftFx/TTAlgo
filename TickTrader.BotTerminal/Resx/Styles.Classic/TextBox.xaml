@@ -32,6 +32,16 @@
     </Style>
     <!--SearchTextBox StyleTemplate-->
 
+    <Style TargetType="PasswordBox">
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="Height" Value="22"/>
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="Height" Value="22"/>
+    </Style>
+
     <Style TargetType="DatePickerTextBox" BasedOn="{StaticResource {x:Type TextBox}}"></Style>
 
 </ResourceDictionary>

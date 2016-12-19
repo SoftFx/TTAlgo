@@ -374,13 +374,7 @@
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
-    <Compile Include="Views.Chart\BotControlView.xaml.cs">
-      <DependentUpon>BotControlView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.Chart\BotControlViewModel.cs" />
-    <Compile Include="Views.Chart\BotStateView.xaml.cs">
-      <DependentUpon>BotStateView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
     <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
@@ -419,9 +413,6 @@
     </Compile>
     <Compile Include="Views\ChartCollectionViewModel.cs" />
     <Compile Include="Views.Chart\ChartViewModel.cs" />
-    <Compile Include="Views.Chart\PluginSetupView.xaml.cs">
-      <DependentUpon>PluginSetupView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.Chart\PluginSetupViewModel.cs" />
     <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
@@ -434,9 +425,6 @@
       <DependentUpon>GrossPositionListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.TradeInfo\GrossPositionListViewModel.cs" />
-    <Compile Include="Views\JournalView.xaml.cs">
-      <DependentUpon>JournalView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\BotJournalViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
     <Compile Include="Views\ExitDialogView.xaml.cs">
@@ -578,7 +566,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resx\Styles.Classic\Button.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ComboBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles.Classic\DataGrid.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DialogPageControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -591,6 +591,18 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles.Classic\ListBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\Menu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\MenuItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\TabControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -702,7 +714,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles.Old\ShellTabControl.xaml">
+    <Page Include="Resx\Styles.Old\TabControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

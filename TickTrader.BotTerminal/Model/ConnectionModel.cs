@@ -185,6 +185,7 @@ namespace TickTrader.BotTerminal
                        tradeCs.FixLogDirectory = "";
 
                        tradeProxy.Initialize(tradeCs.ToString());
+                       TradeProxy.SynchOperationTimeout = 5 * 60 * 1000;
 
                        Connecting();
 

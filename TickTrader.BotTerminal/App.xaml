@@ -35,7 +35,11 @@
                 <ResourceDictionary Source="Views/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
+                <ResourceDictionary Source="Views/JournalView.xaml" />
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
+                <ResourceDictionary Source="Views.Chart/BotControlView.xaml" />
+                <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
+                <ResourceDictionary Source="Views.Chart/PluginSetupView.xaml" />
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>

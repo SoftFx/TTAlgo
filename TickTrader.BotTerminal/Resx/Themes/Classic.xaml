@@ -4,7 +4,7 @@
 
     <SolidColorBrush x:Key="Shell_PrimaryForeground" Color="Black"/>
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="Gray"/>
-    <SolidColorBrush x:Key="Shell_MediateForeground" Color="LightGray"/>
+    <SolidColorBrush x:Key="Shell_MediateForeground" Color="Gray"/>
     <SolidColorBrush x:Key="Shell_WarningForeground" Color="#DA5A3A"/>
 
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
@@ -13,6 +13,14 @@
     <SolidColorBrush x:Key="RateDownHighlightColor" Color="#F03E00"/>
     <SolidColorBrush x:Key="RateUnknownColor" Color="#808080"/>
     <SolidColorBrush x:Key="RateUnknownHighlightColor" Color="#6E6E6E"/>
+
+    <SolidColorBrush x:Key="Dialog_Background" Color="White"/>
+    <SolidColorBrush x:Key="Dialog_ErrorBackground" Color="#FCB1B2"/>
+
+    <SolidColorBrush x:Key="Chart_BotControl_Background" Color="#3B3B3B" />
+    <SolidColorBrush x:Key="Chart_BotControl_HighlightBackground" Color="#292929" />
+    <SolidColorBrush x:Key="Chart_BotControl_StartBackground" Color="#29ABE2" />
+    <SolidColorBrush x:Key="Chart_BotControl_StopBackground" Color="Red" />
 
     <SolidColorBrush x:Key="SellColor" Color="#009344"/>
     <SolidColorBrush x:Key="BuyColor" Color="#F15923"/>

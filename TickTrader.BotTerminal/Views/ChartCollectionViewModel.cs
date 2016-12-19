@@ -29,11 +29,27 @@ namespace TickTrader.BotTerminal
         {
             if (args.Action == DLinqAction.Remove)
             {
-                foreach (var chart in Items)
-                {
-                    if (chart.Symbol == args.OldItem.Name)
-                        CloseItem(chart);
-                }
+                var toRemove = Items.Where(i => i.Symbol == args.OldItem.Name).ToList();
+
+                foreach (var chart in toRemove)
+                    CloseItem(chart);
+            }
+        }
+
+        public override void ActivateItem(ChartViewModel item)
+        {
+            base.ActivateItem(item);
+            NotifyOfPropertyChange(nameof(SelectedChartProxy));
+        }
+
+        public object SelectedChartProxy
+        {
+            get { return this.ActiveItem; }
+            set
+            {
+                var chart = value as ChartViewModel;
+                if (chart != null)
+                    this.ActiveItem = chart;
             }
         }
 

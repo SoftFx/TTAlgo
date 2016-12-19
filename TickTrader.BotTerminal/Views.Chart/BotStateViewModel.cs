@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotStateViewModel : Screen
+    internal class BotStateViewModel : Screen, IWindowModel
     {
         public BotStateViewModel(TradeBotModel2 bot)
         {

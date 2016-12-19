@@ -35,15 +35,19 @@ namespace TickTrader.BotTerminal
             Equity = FormatNumber(calc.Equity);
             Margin = FormatNumber(calc.Margin);
             Profit = FormatNumber(calc.Profit);
+            Floating = FormatNumber(calc.Floating);
             MarginLevel = FormatPrecent(calc.MarginLevel);
             FreeMargin = FormatNumber(calc.Equity - calc.Margin);
+            IsFloatingLoss = calc.Floating < 0;
 
             NotifyOfPropertyChange(nameof(Balance));
             NotifyOfPropertyChange(nameof(Equity));
             NotifyOfPropertyChange(nameof(Margin));
             NotifyOfPropertyChange(nameof(Profit));
+            NotifyOfPropertyChange(nameof(Floating));
             NotifyOfPropertyChange(nameof(FreeMargin));
             NotifyOfPropertyChange(nameof(MarginLevel));
+            NotifyOfPropertyChange(nameof(IsFloatingLoss));
         }
 
         private string FormatNumber(double number)
@@ -62,10 +66,12 @@ namespace TickTrader.BotTerminal
         }
 
         public bool IsStatsVisible { get; private set; }
+        public bool IsFloatingLoss { get; private set; }
         public string Balance { get; private set; }
         public string Equity { get; private set; }
         public string Margin { get; private set; }
         public string Profit { get; private set; }
+        public string Floating { get; private set; }
         public string FreeMargin { get; private set; }
         public string MarginLevel { get; private set; }
     }

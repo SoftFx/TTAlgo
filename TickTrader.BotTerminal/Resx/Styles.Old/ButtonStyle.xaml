@@ -339,4 +339,9 @@
         <Setter Property="Margin" Value="3,0,0,0"/>
     </Style>
 
+    <Style x:Key="PanelActionButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
+        <Setter Property="Background" Value="{DynamicResource ToolBarItem_DisabledBrush}"/>
+        <Setter Property="HighlightBackground" Value="{DynamicResource ShellPanel_ItemBackgroundBrush}"/>
+    </Style>
+
 </ResourceDictionary>

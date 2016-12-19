@@ -24,6 +24,7 @@ using NLog;
 using Machinarium.Qnil;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
+using System.Windows.Input;
 
 namespace TickTrader.BotTerminal
 {
@@ -91,6 +92,8 @@ namespace TickTrader.BotTerminal
             SelectedPeriod = periodActivatos.ElementAt(8);
             
             ViewPort = new CustomViewPortManager();
+
+            CloseCommand = new GenericCommand(o => TryClose());
         }
 
         #region Bindable Properties
@@ -132,6 +135,7 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
         public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
         public IReadOnlyList<BotControlViewModel> Bots { get; private set; }
+        public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
 
@@ -208,30 +212,6 @@ namespace TickTrader.BotTerminal
                 OpenPlugin(setupModel);
         }
 
-        //private void AddIndicator(IndicatorModel2 i)
-        //{
-        //    indicatorCollections.Values.Add(i);
-        //}
-
-        //private void RemoveIndicator(IndicatorModel2 i)
-        //{
-        //    indicatorCollections.Values.Remove(i);
-        //}
-
-        //private void Bot_StateChanged(TradeBotModel bot)
-        //{
-        //    if (!bot.IsStarted && bot.IsBusy) // strating
-        //    {
-        //        shell.ConnectionLock.Lock();
-        //        UiLock.Lock();
-        //    }
-        //    else if (!bot.IsStarted && !bot.IsBusy) // stopped
-        //    {
-        //        shell.ConnectionLock.Release();
-        //        UiLock.Release();
-        //    }
-        //}
-
         private void BotClosed(BotControlViewModel sender)
         {
             bots.Remove(sender);
@@ -258,7 +238,6 @@ namespace TickTrader.BotTerminal
             barChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = barChart;
             barChart.Activate(timeFrame);
-            //tickChart.Deactivate();
         }
 
         private void ActivateTickChart()

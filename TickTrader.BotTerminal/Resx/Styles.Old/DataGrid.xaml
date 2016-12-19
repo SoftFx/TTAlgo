@@ -75,6 +75,15 @@
                           SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"/>
     </ControlTemplate>
 
+    <!-- Cell Template (Right aligned)-->
+
+    <Style TargetType="DataGridCell" x:Key="DataGridCellStyle_RightAligned">
+        <Setter Property="Template" Value="{StaticResource DataGrid_CellTemplate}"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="8 0 0 0"/>
+    </Style>
+
+
     <!-- DataGrid Template -->
 
     <ControlTemplate x:Key="DataGrid_Template" TargetType="DataGrid">
