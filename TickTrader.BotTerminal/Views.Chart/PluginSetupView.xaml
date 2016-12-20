@@ -190,11 +190,8 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Border Name="input" Style="{StaticResource ControlImitationBorder}">
-                <TextBlock Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Shell_PrimaryForeground}"
-                               Padding="4,0,4,0" TextTrimming="CharacterEllipsis"/>
-            </Border>
+            <TextBox Name="input" Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Shell_PrimaryForeground}"/>
             <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
                 <i:Interaction.Behaviors>
                     <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" Filter="{Binding Filter}"/>
