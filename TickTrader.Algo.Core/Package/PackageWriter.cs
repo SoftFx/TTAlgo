@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+                stream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None);
                 return true;
             }
             catch (IOException ex)
