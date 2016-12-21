@@ -18,7 +18,7 @@ var sharedConfig = {
         loaders: [
             { test: /\.ts$/, include: /Client/, loader: 'ts', query: { silent: true } },
             { test: /\.html$/, loader: 'raw' },
-            { test: /\.css$/, loader: 'to-string!css' },
+            { test: /\.css$/, loader: 'css-to-string!css' },
             { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
         ]
     }
