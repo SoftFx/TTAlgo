@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace TickTrader.DedicatedServer.Server.Controllers
+namespace TickTrader.DedicatedServer.Web.Server.Controllers
 {
     public class HomeController : Controller
     {

@@ -49,7 +49,7 @@
   "publishOptions": {
     "include": [
       "appsettings.json",
-      "Views",
+      "Server/Views",
       "web.config",
       "wwwroot"
     ]
@@ -57,13 +57,11 @@
 
   "scripts": {
     "postcompile": [
-      "npm run clean_dist",
-      "npm run build_dev_vendor"
+      "npm run build_dev"
     ],
     "prepublish": [
       "npm install",
-      "node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js --env.prod",
-      "node node_modules/webpack/bin/webpack.js --env.prod"
+      "npm run build_prod"
     ],
     "postpublish": []
   },

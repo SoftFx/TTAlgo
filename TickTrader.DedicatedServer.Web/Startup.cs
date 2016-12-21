@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TickTrader.DedicatedServer.Server.Core;
 
-namespace TickTrader.DedicatedServer
+namespace TickTrader.DedicatedServer.Web
 {
     public class Startup
     {

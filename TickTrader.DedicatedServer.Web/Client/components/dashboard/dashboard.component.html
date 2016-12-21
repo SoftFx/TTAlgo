@@ -3,7 +3,7 @@
 <p *ngIf="!dashboardBots"><em>Loading...</em></p>
 
 <div class="form-group">
-    <div class="input-group">
+    <div >
         <select [(ngModel)]="selectedBot" class="form-control">
             <option *ngFor="let bot of (allBots | orderBy: ['name'])" [ngValue]="bot">{{bot.name}}</option>
         </select>
