@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
         }
 
         public void OpenOrder(TaskProxy<OpenModifyResult> waitHandler, string symbol,
-            OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
+            OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
         {
             var task = new Task<OpenModifyResult>(() =>
             {
@@ -45,8 +45,8 @@ namespace TickTrader.BotTerminal
                     ValidateTp(tp);
                     ValidateSl(sl);
 
-                    var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type), Convert(side),
-                        price, volume, sl, tp, null, comment, "", null);
+                    var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type, options), Convert(side),
+                        price, volume, sl, tp, null, comment, tag, null);
                     return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
                 }
                 catch (ValidatioException vex)
@@ -203,11 +203,15 @@ namespace TickTrader.BotTerminal
             orderQueue.Post(task);
         }
 
-        private TradeCommand Convert(OrderType type)
+        private TradeCommand Convert(OrderType type, OrderExecOptions options)
         {
             switch (type)
             {
-                case OrderType.Limit: return TradeCommand.Limit;
+                case OrderType.Limit:
+                    if (options.IsFlagSet(OrderExecOptions.ImmediateOrCancel))
+                        return TradeCommand.IoC;
+                    else
+                        return TradeCommand.Limit;
                 case OrderType.Market: return TradeCommand.Market;
                 case OrderType.Stop: return TradeCommand.Stop;
             }

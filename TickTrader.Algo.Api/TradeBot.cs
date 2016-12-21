@@ -72,14 +72,14 @@ namespace TickTrader.Algo.Api
 
         #region Order Commands
 
-        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "")
+        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
-            return context.TradeApi.OpenOrder(false, symbol, type, side, volume, price, sl, tp, comment).Result;
+            return context.TradeApi.OpenOrder(false, symbol, type, side, volume, price, sl, tp, comment, options, tag).Result;
         }
 
-        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "")
+        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
-            return context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment);
+            return context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment, options, tag);
         }
 
         public OrderCmdResult CloseOrder(string orderId, double? volume = null)
@@ -123,7 +123,7 @@ namespace TickTrader.Algo.Api
 
         public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null,  string comment = "")
         {
-            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, 1, tp, sl, comment);
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, 1, sl, tp, comment);
         }
 
         public OrderCmdResult MarketBuy(double volume, double? tp = null, double? sl = null, string comment = "")
@@ -144,6 +144,16 @@ namespace TickTrader.Algo.Api
         public OrderCmdResult OpenMarketOrder(string symbol, OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
         {
             return OpenOrder(symbol, OrderType.Market, side, volume, 1, tp, sl, comment);
+        }
+
+        public OrderCmdResult OpenLimitIoC(string symbol, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenOrder(symbol, OrderType.Limit, side, volume, price, sl, tp, comment, OrderExecOptions.ImmediateOrCancel, tag);
+        }
+
+        public Task<OrderCmdResult> OpenLimitIoCAsync(string symbol, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenOrderAsync(symbol, OrderType.Limit, side, volume, price, sl, tp, comment, OrderExecOptions.ImmediateOrCancel, tag);
         }
 
         #endregion

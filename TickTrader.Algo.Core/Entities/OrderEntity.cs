@@ -43,6 +43,7 @@ namespace TickTrader.Algo.Core
         public double StopLoss { get; set; }
         public double TakeProfit { get; set; }
         public string Comment { get; set; }
+        public string Tag { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
         public bool IsNull { get { return false; } }
@@ -64,6 +65,7 @@ namespace TickTrader.Algo.Core
         public double StopLoss { get { return double.NaN; } }
         public double TakeProfit { get { return double.NaN; } }
         public string Comment { get { return ""; } }
+        public string Tag { get { return ""; } }
         public DateTime Created { get { return DateTime.MinValue; } }
         public DateTime Modified { get { return DateTime.MinValue; } }
         public bool IsNull { get { return true; } }

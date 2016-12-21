@@ -185,6 +185,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+        public string Tag { get; private set; }
         public double? TakeProfit
         {
             get { return takeProfit; }
@@ -313,6 +314,7 @@ namespace TickTrader.BotTerminal
                 StopLoss = stopLoss ?? double.NaN,
                 TakeProfit = takeProfit ?? double.NaN,
                 Comment = this.Comment,
+                Tag = this.Tag,
                 Created = this.Created ?? DateTime.MinValue,
                 Modified = this.Modified ?? DateTime.MinValue
             };
@@ -329,6 +331,7 @@ namespace TickTrader.BotTerminal
             this.Modified = record.Modified;
             this.Expiration = record.Expiration;
             this.Comment = record.Comment;
+            this.Tag = record.Tag;
             this.StopLoss = record.StopLoss;
             this.TakeProfit = record.TakeProfit;
             this.Swap = (decimal)record.Swap;
@@ -346,6 +349,7 @@ namespace TickTrader.BotTerminal
             this.Modified = report.Modified;
             this.Expiration = report.Expiration;
             this.Comment = report.Comment;
+            this.Tag = report.Tag;
             this.StopLoss = report.StopLoss;
             this.TakeProfit = report.TakeProfit;
             this.Swap = (decimal)report.Swap;

@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Api
 {
     internal interface TradeCommands
     {
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment);
+        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
         Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
         Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
         Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
@@ -20,6 +20,13 @@ namespace TickTrader.Algo.Api
         bool IsCompleted { get; }
         bool IsFaulted { get; }
         Order ResultingOrder { get; }
+    }
+
+    [Flags]
+    public enum OrderExecOptions
+    {
+        None                = 0,
+        ImmediateOrCancel   = 1,
     }
 
     public enum OrderCmdResultCodes

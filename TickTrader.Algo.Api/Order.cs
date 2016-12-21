@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Api
         double TakeProfit { get; }
         bool IsNull { get; }
         string Comment { get; }
+        string Tag { get; }
         DateTime Modified { get; }
         DateTime Created { get; }
     }

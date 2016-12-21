@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeApi
     {
-        void OpenOrder(TaskProxy<OpenModifyResult> waitHandler, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
+        void OpenOrder(TaskProxy<OpenModifyResult> waitHandler, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag);
         void CancelOrder(TaskProxy<CancelResult> waitHandler, string orderId, string clientOrderId, OrderSide side);
         void ModifyOrder(TaskProxy<OpenModifyResult> waitHandler, string orderId, string clientOrderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
         void CloseOrder(TaskProxy<CloseResult> waitHandler, string orderId, double? volume);

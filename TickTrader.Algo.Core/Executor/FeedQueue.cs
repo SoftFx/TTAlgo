@@ -93,6 +93,7 @@ namespace TickTrader.Algo.Core
             public void Close()
             {
                 LastQuotes = quotes.ToArray();
+                Array.Reverse(LastQuotes);
                 quotes = null;
             }
         }

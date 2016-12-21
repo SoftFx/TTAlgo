@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core
             this.logger = logger;
         }
 
-        public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment)
+        public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
             OrderCmdResultCodes code;
             double volume = ConvertVolume(volumeLots, symbol, out code);
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
 
             using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
-                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment);
+                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, tag);
                 var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
