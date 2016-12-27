@@ -32,7 +32,15 @@
   "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true,
-    "xmlDoc": false
+    "xmlDoc": false,
+    "embed": {
+      "include": [
+        "appsettings.json",
+        "Server/Views",
+        "web.config",
+        "wwwroot"
+      ]
+    }
   },
 
   "runtimeOptions": {
@@ -46,16 +54,11 @@
     "win7-x86": {}
   },
 
-  "publishOptions": {
-    "include": [
-      "appsettings.json",
-      "Server/Views",
-      "web.config",
-      "wwwroot"
-    ]
-  },
-
   "scripts": {
+    "precompile": [
+      "npm install",
+      "npm run build_prod"
+    ],
     "postcompile": [
       "npm run build_dev"
     ],

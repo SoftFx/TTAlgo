@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
             var ruleForBotErrorTarget = new LoggingRule(string.Concat(nameof(BotJournal), ".*"), LogLevel.Error, botErrorTarget);
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
-            ruleForLogTarget.EnableLoggingForLevels(LogLevel.Trace, LogLevel.Fatal);
+            ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);
             ruleForLogTarget.Targets.Add(debuggerTarget);
             ruleForLogTarget.Targets.Add(logTarget);
 

@@ -9,12 +9,7 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
-            Web.WebHost host = new Web.WebHost();
-            host.Start();
-
-            Console.Read();
-
-            host.Stop();
+            TickTrader.DedicatedServer.Web.Program.Main(args);
         }
     }
 }

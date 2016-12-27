@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.TestCollect
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TickTrader.DedicatedServer.Web", "TickTrader.DedicatedServer.Web\TickTrader.DedicatedServer.Web.xproj", "{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TickTrader.DedicatedServer", "TickTrader.DedicatedServer\TickTrader.DedicatedServer.xproj", "{E5112D48-726A-46C2-9096-0C9A91047296}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -128,6 +130,10 @@ Global
 		{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5112D48-726A-46C2-9096-0C9A91047296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5112D48-726A-46C2-9096-0C9A91047296}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5112D48-726A-46C2-9096-0C9A91047296}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5112D48-726A-46C2-9096-0C9A91047296}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -150,5 +156,6 @@ Global
 		{D12E86D0-7DED-4555-A87C-759A2ABDCA0F} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{3AE398F5-5506-4375-B29B-DCC43AC58F24} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 		{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
+		{E5112D48-726A-46C2-9096-0C9A91047296} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
 	EndGlobalSection
 EndGlobal

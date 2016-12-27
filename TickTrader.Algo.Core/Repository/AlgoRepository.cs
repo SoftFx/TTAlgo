@@ -23,14 +23,16 @@ namespace TickTrader.Algo.Core.Repository
         private object scanUpdateLockObj = new object();
         private object globalLockObj = new object();
         private FileSystemWatcher watcher;
+        private IAlgoCoreLogger logger;
         private bool isWatcherFailed;
         private Task scanTask;
         private string repPath;
         private Dictionary<string, FileWatcher> assemblies = new Dictionary<string, FileWatcher>();
 
-        public AlgoRepository(string repPath)
+        public AlgoRepository(string repPath, IAlgoCoreLogger logger = null)
         {
             this.repPath = repPath;
+            this.logger = logger;
 
             stateControl.AddTransition(States.Created, Events.Start, States.Scanning);
             stateControl.AddTransition(States.Scanning, Events.DoneScanning, States.Watching);
@@ -50,8 +52,6 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoRepositoryEventArgs> Added = delegate { };
         public event Action<AlgoRepositoryEventArgs> Removed = delegate { };
         public event Action<AlgoRepositoryEventArgs> Replaced = delegate { };
-
-        public Action<Exception> OnError { get; set; }
 
         public void Start()
         {
@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private void AddItem(string file)
         {
-            var item = new FileWatcher(file, OnError);
+            var item = new FileWatcher(file, logger);
             item.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName));
             item.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName));
             item.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName));
@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Core.Repository
                     assembly.CheckForChanges();
                 else
                 {
-                    assembly = new FileWatcher(e.FullPath, OnError);
+                    assembly = new FileWatcher(e.FullPath, logger);
                     assemblies.Add(e.FullPath, assembly);
                 }
             }

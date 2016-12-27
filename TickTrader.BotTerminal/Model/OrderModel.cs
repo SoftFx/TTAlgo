@@ -11,7 +11,7 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.BotTerminal
 {
-    internal class OrderModel : PropertyChangedBase, TickTrader.BusinessLogic.IOrderModel
+    internal class OrderModel : ObservableObject, TickTrader.BusinessLogic.IOrderModel
     {
         private string clientOrderId;
         private TradeRecordType orderType;

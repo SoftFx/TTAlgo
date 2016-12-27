@@ -1,6 +1,8 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
 
 namespace TickTrader.DedicatedServer.Web
 {
@@ -8,14 +10,9 @@ namespace TickTrader.DedicatedServer.Web
     {
         public static void Main(string[] args)
         {
-            var config = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: true)
-               .Build();
-
             var host = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseKestrel()
+                .UseUrls("https://localhost:2016/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();

@@ -18,9 +18,16 @@ namespace TickTrader.Algo.Core.Repository
         {
             this.package = package;
             //this.dllFolder = Path.GetDirectoryName(filePath);
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            LoadAndInspect(package.MainAssemblyName);
+            try
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+                LoadAndInspect(package.MainAssemblyName);
+            }
+            catch
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+                throw;
+            }
         }
 
         public IEnumerable<AlgoPluginDescriptor> AlgoMetadata { get; private set; }
@@ -45,7 +52,7 @@ namespace TickTrader.Algo.Core.Repository
         {
             string pdbFileName = Path.GetFileNameWithoutExtension(assemblyFileName) + ".pdb";
 
-            byte[] assemblyBytes =  package.GetFileBytes(assemblyFileName);
+            byte[] assemblyBytes = package.GetFileBytes(assemblyFileName);
             byte[] symbolsBytes = package.GetFileBytes(pdbFileName);
 
             if (assemblyBytes == null)
@@ -54,23 +61,12 @@ namespace TickTrader.Algo.Core.Repository
             return Assembly.Load(assemblyBytes, symbolsBytes);
         }
 
-        //private Assembly LoadFromDisk(string filePath)
-        //{
-        //    string directory = Path.GetDirectoryName(filePath);
-        //    string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
-        //    string pdbPath = Path.Combine(directory, pdbFileName);
+        public override void Dispose()
+        {
+            base.Dispose();
 
-        //    byte[] assemblyBytes = File.ReadAllBytes(filePath);
-        //    byte[] symbolsBytes = null;
-
-        //    try
-        //    {
-        //        symbolsBytes = File.ReadAllBytes(pdbPath);
-        //    }
-        //    catch (FileNotFoundException) { }
-
-        //    return Assembly.Load(assemblyBytes, symbolsBytes);
-        //}
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+        }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {

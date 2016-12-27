@@ -6,26 +6,31 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TickTrader.DedicatedServer.Server.Core;
+using Microsoft.Extensions.FileProviders;
 
 namespace TickTrader.DedicatedServer.Web
 {
     public class Startup
     {
+        IFileProvider fileProvider = new EmbeddedFileProvider(typeof(Startup).Assembly, "TickTrader.DedicatedServer.Web");
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
+                //.SetBasePath(env.ContentRootPath)
+                .SetFileProvider(fileProvider)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfigurationRoot Configuration { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<RazorViewEngineOptions>(options => {
+                options.FileProviders.Add(fileProvider);
                 options.ViewLocationExpanders.Add(new ViewLocationExpander());
             });
 

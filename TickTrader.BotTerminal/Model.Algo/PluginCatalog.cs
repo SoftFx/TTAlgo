@@ -40,8 +40,7 @@ namespace TickTrader.BotTerminal
 
         public void AddFolder(string path)
         {
-            AlgoRepository rep = new AlgoRepository(path);
-            rep.OnError = ex => logger.Error(ex, "Cannot load package!");
+            AlgoRepository rep = new AlgoRepository(path, new AlgoLogAdapter("AlgoRepository"));
             repositories.Add(rep);
 
             repositoryToIdMap.Add(rep, Guid.NewGuid());

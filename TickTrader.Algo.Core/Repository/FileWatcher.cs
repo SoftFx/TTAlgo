@@ -21,14 +21,14 @@ namespace TickTrader.Algo.Core.Repository
         private FileInfo currentFileInfo;
         private bool isRescanRequested;
         private Task scanTask;
-        private Action<Exception> onError;
+        private IAlgoCoreLogger logger;
         private AlgoRepositoryItem item;
 
-        public FileWatcher(string filePath, Action<Exception> onError)
+        public FileWatcher(string filePath, IAlgoCoreLogger logger)
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
-            this.onError = onError;
+            this.logger = logger;
 
             stateControl.AddTransition(States.Created, Events.Start, States.Loading);
             stateControl.AddTransition(States.Loading, Events.DoneLoad, States.Ready);
@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                OnError(ex);
+                logger?.Debug("Failed to unload child domain: " + ex.Message);
             }
         }
 
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Core.Repository
             {
                 FileInfo info;
 
-                using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.None))
+                using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     info = new FileInfo(filePath);
 
@@ -127,8 +127,10 @@ namespace TickTrader.Algo.Core.Repository
                     if (!skipFileScan)
                     {
                         newItem = ItemFactory(filePath);
+                        newItem.Logger = logger;
                         newItem.Load(stream, filePath);
                         currentFileInfo = info;
+                        logger.Info("Loaded package " + FileName);
                         Merge(newItem.Metadata); // this will fire events
                         DisposeSafe(item); // dispose old item after event firing, so all running plugins can be gracefuly stopped
                         item = newItem;
@@ -143,16 +145,22 @@ namespace TickTrader.Algo.Core.Repository
                     DisposeSafe(newItem);
 
                 if (ioEx.IsLockExcpetion())
+                {
+                    logger?.Debug("File is locked: " + FileName);
                     stateControl.PushEvent(Events.DoneLoadRetry); // File is in use. We should retry loading.
+                }
                 else
+                {
+                    logger?.Info("Cannot open file: " + FileName + " " + ioEx.Message);
                     stateControl.PushEvent(Events.DoneLoad); // other errors
+                }
             }
             catch (Exception ex)
             {
                 if (newItem != null)
                     DisposeSafe(newItem);
 
-                OnError(ex);
+                logger?.Info("Cannot open file: " + FileName + " " + ex.Message);
                 stateControl.PushEvent(Events.DoneLoad);
             }
         }
@@ -187,15 +195,11 @@ namespace TickTrader.Algo.Core.Repository
                 }
             }
         }
-
-        private void OnError(Exception ex)
-        {
-            onError?.Invoke(ex);
-        }
     }
 
     internal abstract class AlgoRepositoryItem : CrossDomainObject
     {
+        public IAlgoCoreLogger Logger { get; set; }
         public IEnumerable<AlgoPluginRef> Metadata { get; protected set; }
         public abstract void Load(FileStream stream, string filePath);
 
@@ -219,9 +223,17 @@ namespace TickTrader.Algo.Core.Repository
         {
             dllFolderPath = Path.GetDirectoryName(filePath);
             MainAssemblyName = Path.GetFileName(filePath);
-            subDomain = new Isolated<ChildDomainProxy>();
-            var sandbox = subDomain.Value.CreateDotNetSanbox(this);
-            Metadata = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
+            try
+            {
+                subDomain = new Isolated<ChildDomainProxy>();
+                var sandbox = subDomain.Value.CreateDotNetSanbox(this);
+                Metadata = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
+            }
+            catch (Exception)
+            {
+                Dispose(true);
+                throw;
+            }
         }
 
         public byte[] GetFileBytes(string packageLocalPath)
@@ -240,8 +252,15 @@ namespace TickTrader.Algo.Core.Repository
 
         protected override void Dispose(bool disposing)
         {
-            if (subDomain != null)
-                subDomain.Dispose();
+            try
+            {
+                if (subDomain != null)
+                    subDomain.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger?.Debug("Failed to unload child domain: " + ex.Message);
+            }
 
             base.Dispose(disposing);
         }
@@ -256,9 +275,17 @@ namespace TickTrader.Algo.Core.Repository
         {
             algoPackage = Package.Load(stream);
             MainAssemblyName = algoPackage.Metadata.MainBinaryFile;
-            subDomain = new Isolated<ChildDomainProxy>();
-            var sandbox = subDomain.Value.CreateDotNetSanbox(this);
-            Metadata = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
+            try
+            {
+                subDomain = new Isolated<ChildDomainProxy>();
+                var sandbox = subDomain.Value.CreateDotNetSanbox(this);
+                Metadata = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
+            }
+            catch (Exception)
+            {
+                Dispose(true);
+                throw;
+            }
         }
 
         public string MainAssemblyName { get; private set; }
@@ -270,8 +297,15 @@ namespace TickTrader.Algo.Core.Repository
 
         protected override void Dispose(bool disposing)
         {
-            if (subDomain != null)
-                subDomain.Dispose();
+            try
+            {
+                if (subDomain != null)
+                    subDomain.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger?.Debug("Failed to unload child domain: " + ex.Message);
+            }
 
             base.Dispose(disposing);
         }

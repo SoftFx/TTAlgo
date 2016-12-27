@@ -4,7 +4,7 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    public class ResxCore : ObservableObject
+    public class ResxCore :  ObservableObject
     {
         private readonly static ResourceManager _resxmanager;
         private static ResxCore _localeCore;
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
             private set
             {
                 _currentCulture = value;
-                NotifyPropertyChanged("CurrentCulture");
+                NotifyOfPropertyChange("CurrentCulture");
             }
         }
 
