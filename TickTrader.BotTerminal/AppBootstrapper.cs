@@ -94,11 +94,10 @@ namespace TickTrader.BotTerminal
             {
                 Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "terminal-{#}.log"),
+                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "terminal-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
-                ArchiveOldFileOnStartup = true,
-                MaxArchiveFiles = 30
+                EnableArchiveFileCompression = true,
             };
 
             var journalTarget = new FileTarget()
