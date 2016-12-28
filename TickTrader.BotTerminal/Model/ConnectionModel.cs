@@ -129,8 +129,13 @@ namespace TickTrader.BotTerminal
                {
                    try
                    {
-                       if (!Directory.Exists(LogPath))
-                           Directory.CreateDirectory(LogPath);
+                       bool logsEnabled = BotTerminal.Properties.Settings.Default.EnableFixLogs;
+
+                       if (logsEnabled)
+                       {
+                           if (!Directory.Exists(LogPath))
+                               Directory.CreateDirectory(LogPath);
+                       }
 
                        isFeedLoggedIn = false;
                        isTradeLoggedIn = false;
@@ -156,10 +161,13 @@ namespace TickTrader.BotTerminal
                        feedCs.Address = address;
                        feedCs.Username = username;
                        feedCs.Password = password;
-                       feedCs.FixEventsFileName = "";
-                       feedCs.FixMessagesFileName = "";
-                       feedCs.FixLogDirectory = "";
-                       feedCs.ExcludeMessagesFromLogs = "y|0";
+                       if (logsEnabled)
+                       {
+                           feedCs.FixEventsFileName = "feed.events.log";
+                           feedCs.FixMessagesFileName = "feed.messages.log";
+                           feedCs.FixLogDirectory = LogPath;
+                       }
+                       //feedCs.ExcludeMessagesFromLogs = "y|0";
 
                        feedProxy.Initialize(feedCs.ToString());
 
@@ -180,9 +188,12 @@ namespace TickTrader.BotTerminal
                        tradeCs.Address = address;
                        tradeCs.Username = username;
                        tradeCs.Password = password;
-                       tradeCs.FixEventsFileName = "";
-                       tradeCs.FixMessagesFileName = "";
-                       tradeCs.FixLogDirectory = "";
+                       if (logsEnabled)
+                       {
+                           tradeCs.FixEventsFileName = "trade.events.log";
+                           tradeCs.FixMessagesFileName = "trade.messages.log";
+                           tradeCs.FixLogDirectory = LogPath;
+                       }
 
                        tradeProxy.Initialize(tradeCs.ToString());
                        TradeProxy.SynchOperationTimeout = 5 * 60 * 1000;
