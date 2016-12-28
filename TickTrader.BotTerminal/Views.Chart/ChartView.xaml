@@ -44,7 +44,8 @@
         </l:MenuItemSelector>
 
         <MenuItem Header="Add Indicator" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
-                              cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
 
         <MenuItem Header="Indicators" ItemsSource="{Binding Indicators}"
                       Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=HasIndicators}">
@@ -137,14 +138,13 @@
                                            l:SciChartBehavior.XAxis="{Binding Chart.TimeAxis}"
                                            l:SciChartBehavior.XAxisStyle="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
                                            ContextMenu="{StaticResource MainChartPanelContextMenu}"
-                                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}"
-                                           ViewportManager="{Binding ViewPort}">
+                                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">
 
                                 <s:SciChartSurface.ChartModifier>
-                                    <s:ModifierGroup s:MouseManager.MouseEventGroup="SymbolChartSharedMouse">
+                                    <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId}">
                                         <s:YAxisDragModifier/>
                                         <s:XAxisDragModifier/>
-                                        <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
+                                        <!--<s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>-->
                                         <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
                                         <s:TooltipModifier ShowTooltipOn="Always"/>
                                         <s:CursorModifier ShowTooltipOn="Always"
@@ -153,6 +153,10 @@
                                           IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
                                     </s:ModifierGroup>
                                 </s:SciChartSurface.ChartModifier>
+
+                                <s:SciChartSurface.ViewportManager>
+                                    <l:CustomViewPortManager/>
+                                </s:SciChartSurface.ViewportManager>
 
                                 <s:SciChartSurface.YAxis>
                                     <s:NumericAxis Style="{TemplateBinding l:SciChartBehavior.XAxisStyle}"

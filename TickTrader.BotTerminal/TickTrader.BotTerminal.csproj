@@ -214,6 +214,7 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
+    <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
