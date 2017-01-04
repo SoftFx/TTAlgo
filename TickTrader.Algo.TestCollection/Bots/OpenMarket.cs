@@ -16,13 +16,16 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public OrderSide Side { get; set; }
 
+        [Parameter]
+        public string Tag { get; set; }
+
         protected override void Init()
         {
         }
 
         protected override void OnStart()
         {
-            OpenMarketOrder(Symbol.Name, Side, Volume, null, null, "Open Market Bot " + DateTime.Now);
+            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, Symbol.Ask, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
             Exit();
         }
     }
