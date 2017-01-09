@@ -29,6 +29,8 @@
     <SolidColorBrush x:Key="ChartBackground" Color="White" />
     <SolidColorBrush x:Key="ChartGridLinesColor" Color="LightGray" />
 
+    <SolidColorBrush x:Key="SoftFxLogo_BackgroundBrush" Color="#FFCFD641"/>
+
     <ResourceDictionary.MergedDictionaries>
         <l:AutoDictionary Source="Resx/Styles.Classic/*.xaml"/>
     </ResourceDictionary.MergedDictionaries>
