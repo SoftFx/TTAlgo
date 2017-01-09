@@ -10,7 +10,18 @@
     <Grid>
         <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
+                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
+                    <DataGridTextColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Order.HasError}" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
+                                    <Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Exec Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
                 <DataGridTextColumn Header="Side" Width="*" Binding="{Binding Order.Side}"/>
                 <DataGridTextColumn Header="{l:Resx Order_Volume}" Binding="{Binding Order.Amount}"/>
@@ -28,7 +39,7 @@
                 <DataGridTextColumn Header="Current Price" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
-                            <Binding Path="Order.CurrentPrice"/>
+                            <Binding Path="CurrentPrice.Rate"/>
                             <Binding Path="PriceDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>

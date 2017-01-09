@@ -8,7 +8,7 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.BotTerminal
 {
-    enum AggregatedOrderType { Unknown, Buy, BuyLimit, BuyStop, Sell, SellLimit, SellStop }
+    enum AggregatedOrderType { Unknown, Buy, BuyLimit, BuyStop, BuyStopLimit, Sell, SellLimit, SellStop, SellStopLimit }
 
     static class OrderCommontExtensions
     {
@@ -23,23 +23,15 @@ namespace TickTrader.BotTerminal
                     return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit;
                 case TradeRecordType.Stop:
                     return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop;
+                case TradeRecordType.StopLimit:
+                    return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyStopLimit : AggregatedOrderType.SellStopLimit;
                 default: return AggregatedOrderType.Unknown;
             }
         }
 
         public static AggregatedOrderType Aggregate(this TradeRecordType type, TradeRecordSide side)
         {
-            switch (type)
-            {
-                case TradeRecordType.Market:
-                case TradeRecordType.Position:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.Buy : AggregatedOrderType.Sell;
-                case TradeRecordType.Limit:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit;
-                case TradeRecordType.Stop:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop;
-                default: return AggregatedOrderType.Unknown;
-            }
+            return Aggregate(side, type);
         }
     }
 }

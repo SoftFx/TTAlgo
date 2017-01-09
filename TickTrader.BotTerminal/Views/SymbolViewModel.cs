@@ -25,11 +25,10 @@ namespace TickTrader.BotTerminal
             this.model = model;
             subscription = model.Subscribe();
             subscription.NewQuote += OnRateUpdate;
-            this.model.InfoUpdated += ModelInfoUpdated;
             this._orderUi = orderUi;
 
-            this.Bid = new RateDirectionTracker();
-            this.Ask = new RateDirectionTracker();
+            this.Bid = model.BidTracker;
+            this.Ask = model.AskTracker;
 
             Bid.Precision = model.Descriptor.Precision;
             Ask.Precision = model.Descriptor.Precision;
@@ -41,12 +40,6 @@ namespace TickTrader.BotTerminal
 
             this.DetailsPanel.OnBuyClick = () => _orderUi.OpenMarkerOrder(model.Name);
             this.DetailsPanel.OnSellClick = () => _orderUi.OpenMarkerOrder(model.Name);
-        }
-
-        private void ModelInfoUpdated(SymbolInfo obj)
-        {
-            Bid.Precision = obj.Precision;
-            Ask.Precision = obj.Precision;
         }
 
         public string SymbolName { get { return model.Name; } }
@@ -146,7 +139,6 @@ namespace TickTrader.BotTerminal
         public void Close()
         {
             subscription.Dispose();
-            this.model.InfoUpdated -= ModelInfoUpdated;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
         public PositionModel Position { get; private set; }
         public SymbolModel Symbol { get; private set; }
 
-        //public RateDirectionTracker CurrentPrice => Position.Side == TradeRecordSide.Buy ? Symbol?. : Symbol?.CurrentAsk;
+        public RateDirectionTracker CurrentPrice => Position.Side == TradeRecordSide.Buy ? Symbol?.BidTracker : Symbol?.AskTracker;
 
         public void Dispose()
         {

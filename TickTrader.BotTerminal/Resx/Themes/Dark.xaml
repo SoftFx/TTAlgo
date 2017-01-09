@@ -35,6 +35,7 @@
     <SolidColorBrush x:Key="Shell_SecondaryForeground" Color="#747474"/>
     <SolidColorBrush x:Key="Shell_MediateForeground" Color="#B5B5B5"/>
     <SolidColorBrush x:Key="Shell_WarningForeground" Color="#DA5A3A"/>
+    <SolidColorBrush x:Key="Shell_ErrorForeground" Color="#FCB1B2"/>
 
     <SolidColorBrush x:Key="Dialog_Background" Color="#666666"/>
     <SolidColorBrush x:Key="Dialog_PageControlPanelBackground" Color="#003A5C"/>

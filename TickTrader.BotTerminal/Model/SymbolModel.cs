@@ -30,6 +30,12 @@ namespace TickTrader.BotTerminal
 
             BaseCurrencyDigits = BaseCurrency?.Precision ?? 2;
             QuoteCurrencyDigits = QuoteCurrency?.Precision ?? 2;
+
+            BidTracker = new RateDirectionTracker();
+            AskTracker = new RateDirectionTracker();
+
+            BidTracker.Precision = info.Precision;
+            AskTracker.Precision = info.Precision;
         }
 
         public string Name { get { return Descriptor.Name; } }
@@ -46,6 +52,8 @@ namespace TickTrader.BotTerminal
         public double? CurrentBid { get; private set; }
         public double LotSize { get { return Descriptor.RoundLot; } }
         public OrderAmountModel Amounts { get; private set; }
+        public RateDirectionTracker BidTracker { get; private set; }
+        public RateDirectionTracker AskTracker { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
 
         #region ISymbolInfo
@@ -82,6 +90,7 @@ namespace TickTrader.BotTerminal
         #endregion
 
         public event Action<SymbolInfo> InfoUpdated = delegate { };
+        public event Action<SymbolModel> RateUpdated = delegate { };
 
         public void Close()
         {
@@ -97,6 +106,9 @@ namespace TickTrader.BotTerminal
         {
             this.Descriptor = newInfo;
             InfoUpdated(newInfo);
+
+            BidTracker.Precision = newInfo.Precision;
+            AskTracker.Precision = newInfo.Precision;
         }
 
         private void OnNewTick(Quote tick)
@@ -105,6 +117,14 @@ namespace TickTrader.BotTerminal
 
             CurrentBid = LastQuote.HasBid ? LastQuote.Bid : (double?)null;
             CurrentAsk = LastQuote.HasAsk ? LastQuote.Ask : (double?)null;
+
+            if (tick.HasBid)
+                BidTracker.Rate = tick.Bid;
+
+            if (tick.HasAsk)
+                AskTracker.Rate = tick.Ask;
+
+            RateUpdated(this);
         }
 
         public bool ValidateAmmount(decimal amount, decimal minVolume, decimal maxVolume, decimal step)
