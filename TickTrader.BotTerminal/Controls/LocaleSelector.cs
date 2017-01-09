@@ -7,14 +7,12 @@ namespace TickTrader.BotTerminal
     public class LocaleSelector
     {
         private Locale _selectedLocale;
-        private static LocaleSelector _localeSelector;
+        private static LocaleSelector instance = new LocaleSelector();
 
         public ObservableCollection<Locale> Locales { get; set; }
 
-        public static LocaleSelector Instance
-        {
-            get { return _localeSelector ?? (_localeSelector = new LocaleSelector()); }
-        }
+        public static LocaleSelector Instance { get { return instance; } }
+
         public Locale SelectedLocale
         {
             get
@@ -42,6 +40,11 @@ namespace TickTrader.BotTerminal
                 new Locale() { Code="ru-ru", Name="Русский" }
             };
 
+            Activate(Locales.First());
+        }
+
+        public void ActivateDefault()
+        {
             Activate(Locales.First());
         }
 

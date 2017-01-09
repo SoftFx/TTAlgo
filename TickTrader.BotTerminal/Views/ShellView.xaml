@@ -18,9 +18,9 @@
             <MenuItem Header="{l:Resx Menu_ExitBotTrader}"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Preferences}">
-            <l:MenuItemSelector Header="{l:Resx Menu_Language}"
+            <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
-                                        SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>
+                                        SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>-->
             <l:MenuItemSelector Header="{l:Resx Menu_Theme}"
                                         ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
                                         SelectedItem="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=SelectedTheme, Mode=TwoWay}">

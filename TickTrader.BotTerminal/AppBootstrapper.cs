@@ -24,6 +24,8 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex);
             }
 
+            LocaleSelector.Instance.ActivateDefault();
+
 #if DEBUG
             Machinarium.Qnil.UnitTests.Launch();
 #endif
