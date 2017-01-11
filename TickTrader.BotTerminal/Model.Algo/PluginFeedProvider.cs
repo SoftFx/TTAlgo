@@ -68,7 +68,6 @@ namespace TickTrader.BotTerminal
 
         public void Subscribe(Action<QuoteEntity[]> handler)
         {
-
             System.Diagnostics.Debug.WriteLine("SUBSCRIBED!");
 
             if (subscription != null)
@@ -93,7 +92,7 @@ namespace TickTrader.BotTerminal
 
         public void SetSymbolDepth(string symbolCode, int depth)
         {
-            if (subscription != null)
+            if (subscription == null)
                 throw new InvalidOperationException("No subscription to change! You must call Subscribe() prior to calling SetSymbolDepth()!");
 
             subscription.Add(symbolCode, depth);
