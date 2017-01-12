@@ -73,6 +73,8 @@ namespace TickTrader.Algo.Core
             package.Metadata.MainBinaryFile = MainFileName;
             package.Metadata.Workspace = Workspace;
 
+            Directory.CreateDirectory(targetFolder);
+
             Save(package, pckgPath);
 
             trace("Done.");
