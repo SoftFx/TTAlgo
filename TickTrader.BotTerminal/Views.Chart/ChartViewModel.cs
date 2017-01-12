@@ -170,7 +170,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 var model = new PluginSetupViewModel(catalog, item, Chart);
-                if (!model.IsEmpty)
+                if (!model.SetupCanBeSkipped)
                     shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
                 else
                     OpenPlugin(model);

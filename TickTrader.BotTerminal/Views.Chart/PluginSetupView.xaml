@@ -277,12 +277,16 @@
                 </CompositeCollection>
             </Grid.Resources>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
+            <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Setup.Descriptor.Error, Prefix=PluginError_}"
+                       Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                      IsTabStop="False"
+                      IsTabStop="False" Grid.Row="1"
                       Style="{DynamicResource DialogScrollViewer_Style}">
                 <StackPanel>
 
@@ -303,7 +307,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <Grid Name="ButtonsPanel" Grid.Row="1">
+            <Grid Name="ButtonsPanel" Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -342,11 +346,16 @@
                 </CompositeCollection>
             </Grid.Resources>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
+            <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Setup.Descriptor.Error, Prefix=PluginError_}"
+                       Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
                 <StackPanel>
                     <GroupBox Header="Parameters" Margin="4">
                         <ItemsControl IsTabStop="False" ItemsSource="{StaticResource inputsAndParamsComposite}"
@@ -364,7 +373,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <Grid Name="ButtonsPanel" Grid.Row="1">
+            <Grid Name="ButtonsPanel" Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>

@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
 
         public PluginSetup Setup { get; private set; }
         public PluginCatalogItem PluginItem { get; private set; }
-        public bool IsEmpty { get { return Setup.IsEmpty; } }
+        public bool SetupCanBeSkipped { get { return Setup.IsEmpty && Setup.Descriptor.IsValid; } }
 
         public void Reset()
         {

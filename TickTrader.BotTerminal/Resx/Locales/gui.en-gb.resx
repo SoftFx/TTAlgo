@@ -342,4 +342,10 @@
   <data name="Theme_Classic" xml:space="preserve">
     <value>Classic</value>
   </data>
+  <data name="PluginError_IncompatibleApiVersion" xml:space="preserve">
+    <value>This indicator or bot uses incompatible (newer) API version. Please update Bot Terminal to be able to run this indicator/bot.</value>
+  </data>
+  <data name="PluginError_HasInvalidProperties" xml:space="preserve">
+    <value />
+  </data>
 </root>

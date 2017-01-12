@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Metadata
 {
     [Serializable]
-    public class AlgoPluginDescriptor
+    public class AlgoPluginDescriptor : IDeserializationCallback
     {
         private static Dictionary<Type, AlgoPluginDescriptor> cacheByType = new Dictionary<Type, AlgoPluginDescriptor>();
         private static Dictionary<string, AlgoPluginDescriptor> cacheByName = new Dictionary<string, AlgoPluginDescriptor>();
-        private static Dictionary<Assembly, List<AlgoPluginDescriptor>> cacheByAssembly = new Dictionary<Assembly, List<AlgoPluginDescriptor>>();
 
         public static AlgoPluginDescriptor Get(Type algoCustomType)
         {
@@ -37,44 +37,37 @@ namespace TickTrader.Algo.Core.Metadata
 
         public static IEnumerable<AlgoPluginDescriptor> InspectAssembly(Assembly targetAssembly)
         {
-            lock (cacheByAssembly)
+            List<AlgoPluginDescriptor> descriptors = new List<AlgoPluginDescriptor>();
+
+            foreach (Type t in targetAssembly.GetTypes())
             {
-                if (cacheByAssembly.ContainsKey(targetAssembly))
-                    return cacheByAssembly[targetAssembly];
-                else
+                IndicatorAttribute indicatorAttr = t.GetCustomAttribute<IndicatorAttribute>(false);
+                TradeBotAttribute botAttr = t.GetCustomAttribute<TradeBotAttribute>(false);
+
+                if (indicatorAttr != null && botAttr != null)
+                    continue;
+
+                if (indicatorAttr != null)
                 {
-                    List<AlgoPluginDescriptor> descriptors = new List<AlgoPluginDescriptor>();
-
-                    foreach (Type t in targetAssembly.GetTypes())
-                    {
-                        IndicatorAttribute indicatorAttr = t.GetCustomAttribute<IndicatorAttribute>(false);
-                        TradeBotAttribute botAttr = t.GetCustomAttribute<TradeBotAttribute>(false);
-
-                        if (indicatorAttr != null && botAttr != null)
-                            continue;
-
-                        if (indicatorAttr != null)
-                        {
-                            var meta = AlgoPluginDescriptor.Get(t);
-                            if (meta.AlgoLogicType == AlgoTypes.Indicator)
-                                descriptors.Add(meta);
-                        }
-                        else if (botAttr != null)
-                        {
-                            var meta = AlgoPluginDescriptor.Get(t);
-                            if (meta.AlgoLogicType == AlgoTypes.Robot)
-                                descriptors.Add(meta);
-                        }
-                    }
-
-                    cacheByAssembly.Add(targetAssembly, descriptors);
-                    return descriptors;
+                    var meta = AlgoPluginDescriptor.Get(t);
+                    if (meta.AlgoLogicType == AlgoTypes.Indicator)
+                        descriptors.Add(meta);
+                }
+                else if (botAttr != null)
+                {
+                    var meta = AlgoPluginDescriptor.Get(t);
+                    if (meta.AlgoLogicType == AlgoTypes.Robot)
+                        descriptors.Add(meta);
                 }
             }
+
+            return descriptors;
         }
 
         [NonSerialized]
         private Type reflectionInfo;
+        [NonSerialized]
+        private Version apiVersion;
 
         private List<AlgoPropertyDescriptor> allProperties = new List<AlgoPropertyDescriptor>();
         private List<ParameterDescriptor> parameters = new List<ParameterDescriptor>();
@@ -84,6 +77,11 @@ namespace TickTrader.Algo.Core.Metadata
         public AlgoPluginDescriptor(Type algoCustomType)
         {
             this.reflectionInfo = algoCustomType;
+
+            var refs = algoCustomType.Assembly.GetReferencedAssemblies();
+            var apiref = refs.FirstOrDefault(a => a.Name == "TickTrader.Algo.Api");
+            apiVersion = apiref?.Version;
+            ApiVersionStr = apiref?.Version.ToString();
 
             if (typeof(Indicator).IsAssignableFrom(algoCustomType))
             {
@@ -112,6 +110,11 @@ namespace TickTrader.Algo.Core.Metadata
                 DisplayName = algoCustomType.Name;
 
             this.Id = algoCustomType.FullName;
+
+            var currentApiVersion = typeof(Indicator).Assembly.GetName().Version;
+
+            if (apiVersion > currentApiVersion)
+                Error = AlgoMetadataErrors.IncompatibleApiVersion;
         }
 
         public void Validate()
@@ -198,6 +201,14 @@ namespace TickTrader.Algo.Core.Metadata
             throw new Exception("Unknwon property attribute!");
         }
 
+        void IDeserializationCallback.OnDeserialization(object sender)
+        {
+            if (ApiVersionStr != null)
+                apiVersion = new Version(ApiVersionStr);
+        }
+
+        public string ApiVersionStr { get; private set; }
+        public Version ApiVersion { get { return apiVersion; } }
         public string Id { get; private set; }
         public string DisplayName { get; private set; }
         public string Category { get; private set; }
@@ -213,5 +224,5 @@ namespace TickTrader.Algo.Core.Metadata
     }
 
     public enum AlgoTypes { Indicator, Robot, Unknown }
-    public enum AlgoMetadataErrors { HasInvalidProperties, UnknwonBaseType }
+    public enum AlgoMetadataErrors { HasInvalidProperties, UnknwonBaseType, IncompatibleApiVersion  }
 }
