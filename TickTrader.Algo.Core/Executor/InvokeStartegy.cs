@@ -189,7 +189,7 @@ namespace TickTrader.Algo.Core
                 System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
 
                 TaskCompletionSource<object> asyncStopDoneEvent = new TaskCompletionSource<object>();
-                defaultQueue.Enqueue(async b =>
+                Enqueue(async b =>
                 {
                     await b.InvokeAsyncStop();
                     asyncStopDoneEvent.TrySetResult(this);
