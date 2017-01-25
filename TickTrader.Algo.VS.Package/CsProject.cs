@@ -23,6 +23,7 @@ namespace TickTrader.Algo.VS.Package
         private DTE dteObj;
         private string projectFolder;
         private string projectName;
+        private BuildEvents buildEvents;
 
         internal void SetPackage(VSPackage package)
         {
@@ -49,8 +50,9 @@ namespace TickTrader.Algo.VS.Package
             dteObj = dteProject.DTE;
             projectFolder = Path.GetDirectoryName(dteProject.FullName);
             projectName = dteProject.Name;
+            this.buildEvents = dteObj.Events.BuildEvents;
 
-            dteObj.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
+            buildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
 
             AdjustApiReference();
         }

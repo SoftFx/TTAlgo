@@ -13,15 +13,15 @@
             <Setter Property="Background" Value="{DynamicResource ChartBackground}"/>
             <Setter Property="ChartModifier">
                 <Setter.Value>
-                    <s:ModifierGroup s:MouseManager.MouseEventGroup="SymbolChartSharedMouse">
+                    <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId}">
                         <s:YAxisDragModifier/>
                         <s:XAxisDragModifier/>
                         <s:CursorModifier ShowTooltipOn="Always"
                                           ShowTooltip="True"
                                           TooltipContainerStyle="{DynamicResource SymbolChartCursorTooltip_Style}"
                                           IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
-                        <s:MouseWheelZoomModifier/>
-                        <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
+                        <!--<s:MouseWheelZoomModifier/>-->
+                        <s:ZoomPanModifier ClipModeX="None" XyDirection="XDirection"/>
                         <s:TooltipModifier ShowTooltipOn="Always"/>
                     </s:ModifierGroup>
                 </Setter.Value>

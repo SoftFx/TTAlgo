@@ -58,8 +58,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Status.WriteLine("{0}  orders:", pOrders.Count);
                 foreach (var order in pOrders)
                 {
-                    Status.WriteLine("#{0} {1} {2}/{3} {4}", order.Symbol, order.Side,
-                        order.RemainingVolume, order.RequestedVolume, order.Comment);
+                    var tag = string.IsNullOrEmpty(order.Tag) ?"" : "[" + order.Tag + "]";
+
+                    Status.WriteLine("#{0} {1} {2}/{3} {4} {5}", order.Symbol, order.Side,
+                        order.RemainingVolume, order.RequestedVolume, order.Comment, tag);
                 }
             }
             else
@@ -74,8 +76,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Status.WriteLine("{0} positions:", positions.Count);
                 foreach (var order in positions)
                 {
-                    Status.WriteLine("#{0} {1} {2} {3}/{4} {5}", order.Id, order.Symbol, order.Side,
-                        order.RemainingVolume, order.RequestedVolume, order.Comment);
+                    var tag = string.IsNullOrEmpty(order.Tag) ? "" : "[" + order.Tag + "]";
+
+                    Status.WriteLine("#{0} {1} {2} {3}/{4} {5} {6}", order.Id, order.Symbol, order.Side,
+                        order.RemainingVolume, order.RequestedVolume, order.Comment, tag);
                 }
             }
             else

@@ -21,7 +21,9 @@ namespace TickTrader.BotTerminal
 
             IsPosition = transaction.TradeRecordType == TradeRecordType.Position;
             IsMarket = transaction.TradeRecordType == TradeRecordType.Market;
-            IsPending = transaction.TradeRecordType == TradeRecordType.Limit || transaction.TradeRecordType == TradeRecordType.Stop;
+            IsPending = transaction.TradeRecordType == TradeRecordType.Limit
+                || transaction.TradeRecordType == TradeRecordType.Stop
+                || transaction.TradeRecordType == TradeRecordType.StopLimit;
             IsBalanceTransaction = transaction.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
             OrderId = GetId(transaction);

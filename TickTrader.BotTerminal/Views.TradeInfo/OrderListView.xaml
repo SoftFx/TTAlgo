@@ -15,7 +15,19 @@
 
             <DataGrid Name="Orders" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}"/>
+                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Order.HasError}" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
+                                        <Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
                     <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
@@ -27,7 +39,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
-                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*" >
+                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="Order.Price"/>
@@ -40,7 +52,7 @@
                     <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="Order.CurrentPrice"/>
+                                <Binding Path="CurrentPrice.Rate"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>

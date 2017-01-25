@@ -59,6 +59,8 @@ namespace TickTrader.Algo.Core
         internal void Init(IFixtureContext executor)
         {
             ExecContext = executor;
+            userSubscriptions.Clear();
+            dispenser.Reset();
             OnInit();
         }
 

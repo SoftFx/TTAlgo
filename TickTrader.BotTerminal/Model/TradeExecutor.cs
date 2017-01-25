@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
                     ValidateSl(sl);
 
                     var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type, options), Convert(side),
-                        price, volume, sl, tp, null, comment, tag, null);
+                        price, volume, null, null, sl, tp, null, comment, tag, null);
                     return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
                 }
                 catch (ValidatioException vex)
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
                     ValidateOrderId(orderId);
 
                     var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
-                        ToRecordType(orderType), Convert(side), volume, price, sl, tp, null, comment);
+                        ToRecordType(orderType), Convert(side), volume, null, null, price, sl, tp, null, comment, null, null);
                     if (!string.IsNullOrEmpty(result.OrderId)) // Ugly hack to make it work!
                         return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result, resolver).ToAlgoOrder());
                     return new OpenModifyResult(OrderCmdResultCodes.DealerReject, null);
@@ -214,6 +214,7 @@ namespace TickTrader.BotTerminal
                         return TradeCommand.Limit;
                 case OrderType.Market: return TradeCommand.Market;
                 case OrderType.Stop: return TradeCommand.Stop;
+                case OrderType.StopLimit: return TradeCommand.StopLimit;
             }
 
             throw new Exception("Not Supported: " + type);
@@ -226,6 +227,7 @@ namespace TickTrader.BotTerminal
                 case OrderType.Limit: return TradeRecordType.Limit;
                 case OrderType.Market: return TradeRecordType.Market;
                 case OrderType.Stop: return TradeRecordType.Stop;
+                case OrderType.StopLimit: return TradeRecordType.StopLimit;
                 case OrderType.Position: return TradeRecordType.Position;
             }
 

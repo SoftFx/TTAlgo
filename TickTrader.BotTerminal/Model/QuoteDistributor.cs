@@ -122,9 +122,13 @@ namespace TickTrader.BotTerminal
 
         private Task EnqueueSubscriptionRequest(int depth, params string[] symbols)
         {
-            var subscribeTask = new Task(() => connection.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
-            requestQueue.Post(subscribeTask);
-            return subscribeTask;
+            if (requestQueue != null) // online
+            {
+                var subscribeTask = new Task(() => connection.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
+                requestQueue.Post(subscribeTask);
+                return subscribeTask;
+            }
+            return Task.FromResult<object>(this);
         }
 
         private class Subscription : IFeedSubscription
@@ -170,7 +174,11 @@ namespace TickTrader.BotTerminal
             protected void AddModifier(string symbol, int depth)
             {
                 var modifier = parent.GetGroup(symbol);
-                modifier?.Add(this, depth);
+                if (modifier != null)
+                {
+                    modifier.Add(this, depth);
+                    parent.AdjustSubscription(symbol);
+                }
                 bySymbol[symbol] = depth;
             }
 
@@ -179,7 +187,11 @@ namespace TickTrader.BotTerminal
                 if (bySymbol.Remove(symbol))
                 {
                     var modifier = parent.GetGroup(symbol);
-                    modifier?.Subscriptions.Remove(this);
+                    if (modifier != null)
+                    {
+                        modifier.Subscriptions.Remove(this);
+                        parent.AdjustSubscription(symbol);
+                    }
                 }
             }
         }

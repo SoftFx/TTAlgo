@@ -51,6 +51,7 @@
     <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\ExceptionBot.cs" />
     <Compile Include="Bots\ExitBot.cs" />
+    <Compile Include="Bots\InvalidPropertiesBot.cs" />
     <Compile Include="Bots\OnTickBot.cs" />
     <Compile Include="Bots\OpenLimit.cs" />
     <Compile Include="Bots\OpenMarket.cs" />

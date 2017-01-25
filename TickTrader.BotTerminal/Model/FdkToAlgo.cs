@@ -125,6 +125,7 @@ namespace TickTrader.BotTerminal
                 case TradeRecordType.Market: return Algo.Api.OrderType.Market;
                 case TradeRecordType.Position: return Algo.Api.OrderType.Position;
                 case TradeRecordType.Stop: return Algo.Api.OrderType.Stop;
+                case TradeRecordType.StopLimit: return Algo.Api.OrderType.StopLimit;
 
                 default: throw new ArgumentException("Unsupported order type: " + fdkType);
             }

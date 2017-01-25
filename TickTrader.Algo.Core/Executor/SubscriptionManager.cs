@@ -18,6 +18,11 @@ namespace TickTrader.Algo.Core
             this.feed = feed;
         }
 
+        public void Reset()
+        {
+            subscribers.Clear();
+        }
+
         public void OnUpdateEvent(Quote quote)
         {
             GetListOrNull(quote.Symbol)?.OnUpdate(quote);

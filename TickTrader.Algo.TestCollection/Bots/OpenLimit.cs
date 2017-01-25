@@ -22,6 +22,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public OrderExecOptions Option { get; set; }
 
+        [Parameter]
+        public string Tag { get; set; }
+
         protected override void Init()
         {
             double ordPrice = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
@@ -29,7 +32,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ordPrice -= Symbol.Point * PriceDelta;
             else
                 ordPrice += Symbol.Point * PriceDelta;
-            OpenOrder(Symbol.Name, OrderType.Limit, Side, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, Option);
+            OpenOrder(Symbol.Name, OrderType.Limit, Side, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, Option, Tag);
             Exit();
         }
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1" Version="1.05" Language="en-US" Publisher="Soft-FX" />
+    <Identity Id="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1" Version="1.06" Language="en-US" Publisher="Soft-FX" />
     <DisplayName>TT Algo Visual Studio Extension</DisplayName>
     <Description xml:space="preserve">Visual Studio Extension for TT Algo developers. Provides tools for developing custom indicators and automatic traders on C# or Visual Basic.</Description>
     <Icon>softfx.ico</Icon>

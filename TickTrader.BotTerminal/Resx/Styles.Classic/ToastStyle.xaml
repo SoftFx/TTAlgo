@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:toast="clr-namespace:TickTrader.Toaster.Messages;assembly=TickTrader.Toaster">
+
+    <DataTemplate DataType="{x:Type toast:InfoMessage}">
+        <Border BorderThickness="1" Width="350" Height="36" Margin="1" Background="{DynamicResource Dialog_Background}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Border Background="{DynamicResource SoftFxLogo_BackgroundBrush}" Width="32" Height="32" BorderThickness="0" Margin="2">
+                    <Image Source="{DynamicResource PagedControlImage}" Stretch="Fill" Grid.Column="0" />
+                </Border>
+                <TextBlock Margin="5 2" Grid.Column="1" Text="{Binding Body}" TextWrapping="Wrap" Foreground="{DynamicResource Shell_PrimaryForeground}"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+</ResourceDictionary>

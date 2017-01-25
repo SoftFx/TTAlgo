@@ -25,6 +25,13 @@ namespace TickTrader.BotTerminal
             MarketModel.Set(feed.Currencies.Values.Select(c => new CurrencyInfoAdapter(c)));
 
             subscription = feed.Distributor.SubscribeAll();
+
+            foreach (var smb in feed.Symbols.Snapshot.Values)
+            {
+                if (smb.LastQuote != null)
+                    MarketModel.Update(new RateAdapter(smb.LastQuote));
+            }
+
             subscription.NewQuote += Symbols_RateUpdated;
         }
 
@@ -69,6 +76,11 @@ namespace TickTrader.BotTerminal
         {
             public RateAdapter(SoftFX.Extended.Quote quote)
             {
+                //if (quote.Symbol == "ETHRUB")
+                //{
+                //    System.Diagnostics.Debug.WriteLine("ETHRUB!111111 ololo!");
+                //}
+
                 if (quote.HasAsk)
                 {
                     Ask = (decimal)quote.Ask;

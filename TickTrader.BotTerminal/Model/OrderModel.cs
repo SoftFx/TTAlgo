@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
         private decimal? margin;
         private decimal? currentPrice;
         private SymbolModel symbolModel;
+        private OrderError error;
 
         public OrderModel(TradeRecord record, IOrderDependenciesResolver resolver)
         {
@@ -256,8 +257,18 @@ namespace TickTrader.BotTerminal
 
         #region IOrderModel
 
+        public bool HasError { get { return CalculationError != null; } }
         public decimal? AgentCommision { get { return 0; } }
-        public OrderError CalculationError { get; set; }
+        public OrderError CalculationError
+        {
+            get { return error; }
+            set
+            {
+                error = value;
+                NotifyOfPropertyChange(nameof(CalculationError));
+                NotifyOfPropertyChange(nameof(HasError));
+            }
+        }
         public OrderCalculator Calculator { get; set; }
         bool IOrderModel.IsCalculated { get { return CalculationError == null; } }
         decimal? IOrderModel.MarginRateCurrent { get; set; }
@@ -269,6 +280,7 @@ namespace TickTrader.BotTerminal
                 switch (orderType)
                 {
                     case TradeRecordType.Limit: return OrderTypes.Limit;
+                    case TradeRecordType.StopLimit: return OrderTypes.StopLimit;
                     case TradeRecordType.Market: return OrderTypes.Market;
                     case TradeRecordType.Stop: return OrderTypes.Stop;
                     case TradeRecordType.Position: return OrderTypes.Position;

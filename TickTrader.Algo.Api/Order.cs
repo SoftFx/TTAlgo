@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Api
         DateTime Created { get; }
     }
 
-    public enum OrderType { Market, Limit, Stop, Position }
+    public enum OrderType { Market, Limit, Stop, StopLimit, Position }
     public enum OrderSide { Buy, Sell }
 
     public interface OrderList : IEnumerable<Order>

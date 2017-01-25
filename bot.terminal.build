@@ -28,6 +28,8 @@
     <call target="GenerateSetupHmtl" />
     <property name="Package.ProjectFolder" value="TickTrader.Algo.TestCollection" />
     <call target="CreateAlgoPackage"/>
+    <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
+    <call target="CreateAlgoPackage"/>
   </target>
 
   <target name="Publish" >
