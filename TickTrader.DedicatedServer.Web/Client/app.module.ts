@@ -1,13 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UniversalModule } from 'angular2-universal';
-import { AppComponent } from './components/app/app.component'
-import { NavMenuComponent } from './components/navmenu/navmenu.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { LoginComponent } from './components/login/login.component';
-import { BotsRepositoryComponent } from './components/bots-repository/bots-repository.component';
+import {
+    AppComponent,
+    BotsRepositoryComponent,
+    BotAddComponent, BotDetailComponent, DashboardComponent,
+    LoginComponent,
+    NavMenuComponent
+} from './components/index'
 import { AuthService, AuthGuard, ApiService } from './services/index';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { OrderBy, FilterByPipe } from './pipes/index';
 
 @NgModule({
@@ -17,6 +19,8 @@ import { OrderBy, FilterByPipe } from './pipes/index';
         NavMenuComponent,
         BotsRepositoryComponent,
         DashboardComponent,
+        BotDetailComponent,
+        BotAddComponent,
         LoginComponent,
         OrderBy,
         FilterByPipe
@@ -29,11 +33,14 @@ import { OrderBy, FilterByPipe } from './pipes/index';
     imports: [
         UniversalModule, // Must be first import. This automatically imports BrowserModule, HttpModule, and JsonpModule too.
         FormsModule,
+        ReactiveFormsModule,
         RouterModule.forRoot([
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-            { path: 'login', component: LoginComponent },
             { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+            { path: 'bot-detail/:id', component: BotDetailComponent, canActivate: [AuthGuard] },
+            { path: 'bot-add', component: BotAddComponent, canActivate: [AuthGuard] },
+            { path: 'login', component: LoginComponent },
             { path: 'bots-repository', component: BotsRepositoryComponent, canActivate: [AuthGuard] },
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: '**', redirectTo: 'dashboard' }
         ])
     ]

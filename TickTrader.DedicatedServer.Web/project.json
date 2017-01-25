@@ -55,10 +55,6 @@
   },
 
   "scripts": {
-    "precompile": [
-      "npm install",
-      "npm run build_prod"
-    ],
     "postcompile": [
       "npm run build_dev"
     ],
