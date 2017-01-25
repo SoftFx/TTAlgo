@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
             data.Add(rec);
         }
 
-        public void Append(IEnumerable<T> recRange)
+        public void AppendRange(IEnumerable<T> recRange)
         {
             data.AddRange(recRange);
         }

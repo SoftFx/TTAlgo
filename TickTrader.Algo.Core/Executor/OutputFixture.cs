@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
         {
             if (!isBatch)
             {
-                var timeCoordinate = timeRef.GetTimeAtIndex(index);
+                var timeCoordinate = timeRef[index];
                 Appended(new Point(timeCoordinate, index, data));
             }
         }
@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
         {
             if (!isBatch)
             {
-                var timeCoordinate = timeRef.GetTimeAtIndex(index);
+                var timeCoordinate = timeRef[index];
                 Updated(new Point(timeCoordinate, index, data));
             }
         }
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Core
 
             for (int i = 0; i < count; i++)
             {
-                var timeCoordinate = timeRef.GetTimeAtIndex(i);
+                var timeCoordinate = timeRef[i];
                 list[i] = new Point(timeCoordinate, i, buffer[i]);
             }
 

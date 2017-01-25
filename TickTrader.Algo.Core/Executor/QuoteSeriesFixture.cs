@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class QuoteSeriesFixture : FeedFixture, ITimeRef
+    internal class QuoteSeriesFixture : FeedFixture
     {
         private InputBuffer<Quote> buffer;
 
@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
 
             buffer = execContext.Builder.GetBuffer<Quote>(SymbolCode);
             if (data != null)
-                buffer.Append(data);
+                buffer.AppendRange(data);
         }
 
         public int Count { get { return buffer.Count; } }
