@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { ExtBotModel, BotModel, BotState } from '../../models/index';
+import { ExtBotModel, BotModel, BotState, ParameterType } from '../../models/index';
 import { ApiService } from '../../services/index';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 
 
 @Component({
@@ -10,14 +11,19 @@ import { ApiService } from '../../services/index';
     styles: [require('../app/app.component.css')],
 })
 export class DashboardComponent implements OnInit {
+    botStateType = BotState;
+    parameterType = ParameterType;
+
     allBots: BotModel[];
     dashboardBots: Observable<ExtBotModel[]>;
-    botStateType = BotState;
-    BotModel: BotModel;
-    selectedBot: BotModel = new BotModel(-1, '');
 
-    constructor(private api: ApiService) {
-    }
+    selectedBot: BotModel = null;
+    selectedExtBot: ExtBotModel = null;
+
+    constructor(private api: ApiService,
+        private route: ActivatedRoute,
+        private router: Router
+    ) { }
 
     ngOnInit() {
         this.dashboardBots = this.api.dasboardBots;
@@ -28,15 +34,23 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    runBot(bot: ExtBotModel) {
+    run(bot: ExtBotModel) {
         this.api.runBot(bot);
     }
 
-    stopBot(bot: ExtBotModel) {
+    stop(bot: ExtBotModel) {
         this.api.stopBot(bot);
     }
 
-    removeBot(bot: ExtBotModel) {
+    configurate(bot: ExtBotModel) {
+
+    }
+
+    remove(bot: ExtBotModel) {
         this.api.removeBotFromDashboard(bot);
+    }
+
+    gotoDetails(bot: ExtBotModel) {
+        this.router.navigate(['/bot-detail', bot.instanceId]);
     }
 }

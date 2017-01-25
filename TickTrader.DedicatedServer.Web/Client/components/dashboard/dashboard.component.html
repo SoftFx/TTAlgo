@@ -1,23 +1,67 @@
-<h1>Dashboard</h1>
+<div class="page-header">
+    <div class="btn-toolbar pull-right">
+        <div class="btn-group">
+            <button [routerLink]="['/bot-add']" class="btn btn-sm btn-default">
+                <span class="fa fa-plus"></span> Add
+            </button>
+        </div>
 
-<p *ngIf="!dashboardBots"><em>Loading...</em></p>
+    </div>
+    <h3 class="truncate">Dashboard</h3>
+</div>
 
-<div class="form-group">
-    <div >
-        <select [(ngModel)]="selectedBot" class="form-control">
-            <option *ngFor="let bot of (allBots | orderBy: ['name'])" [ngValue]="bot">{{bot.name}}</option>
-        </select>
-        <input (click)="runBot(selectedBot)" type="button" class="btn btn-primary form-control" value="Run" />
+<div class="panel">
+    <div class="row">
+        <div *ngFor="let bot of dashboardBots | async | orderBy: ['-isActive', 'name'] " class="col-sm-3">
+            <div class="card">
+                <div (click)="gotoDetails(bot)" [ngSwitch]="bot.isActive" class="card-header">
+                    <div class="truncate">
+                        <i *ngSwitchCase="true" class="fa fa-arrow-up online"></i>
+                        <i *ngSwitchCase="false" class="fa fa-arrow-down offline"></i>
+                        {{bot.instanceId}}
+                    </div>
+                </div>
+                <div class="card-block ">
+                    <ul class="list-unstyled">
+                        <li>Account: ...</li>
+                        <li>Server: ...</li>
+                        <li>Symbol: ...</li>
+                    </ul>
+
+                    <div>
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="btn-group btn-group-sm btn-group-justified">
+                                <a (click)="run(bot)" [class.disabled]="!(bot.state === botStateType.Stopped)" class="btn btn-default"><span class="fa fa-play"></span></a>
+                                <a (click)="stop(bot)" [class.disabled]="!(bot.state === botStateType.Runned)" class="btn btn-default"><span class="fa fa-stop"></span></a>
+                                <a (click)="configurate(bot)" [class.disabled]="!(bot.state === botStateType.Stopped)" class="btn btn-default"><span class="fa fa-cogs"></span></a>
+                                <a (click)="remove(bot)" [class.disabled]="!(bot.state === botStateType.Stopped)" class="btn btn-default"><span class="fa fa-remove"></span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="bot.state === botStateType.Running || bot.state === botStateType.Stopping" class="overlay">
+                    <div class="overlay-content">
+                        <span class="fa fa-circle-o-notch fa-spin black"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-
-<table class='table' *ngIf="dashboardBots">
+<!--<div>
+    <div class="form-group">
+        <button [routerLink]="['/bot-add']" class="btn btn-primary col-xs-12 col-md-offset-10 col-md-2">
+            <span class="fa fa-plus"></span> Add
+        </button>
+    </div>
+</div>-->
+<!--<table class='table table-striped .table-condensed' *ngIf="dashboardBots">
     <thead>
         <tr>
-            <th>State</th>
-            <th>Name</th>
-            <th></th>
+            <th class="col-sm-1 col-md-1">State</th>
+            <th class="col-sm-10 col-md-10">Instance ID</th>
+            <th class="col-sm-1 col-md-1" style="min-width:60px"></th>
         </tr>
     </thead>
     <tbody>
@@ -26,45 +70,23 @@
                 <i *ngSwitchCase="true" class="glyphicon glyphicon-circle-arrow-up" style="color: green"></i>
                 <i *ngSwitchCase="false" class="glyphicon glyphicon-circle-arrow-down" style="color: red"></i>
             </td>
-            <td>{{ bot.name }}</td>
+            <td><a (click)="gotoBot(bot)" class="black btn-block"><span>{{ bot.alias }}</span></a></td>
             <td [ngSwitch]="true">
-                <div *ngSwitchCase="bot.state === botStateType.Stopped || bot.state === botStateType.Runned">
-                    <a (click)="runBot(bot)" *ngIf="bot.state === botStateType.Stopped" href="javascript:;"><span class="fa fa-play" style="color: green"></span></a>
-                    <a (click)="stopBot(bot)" *ngIf="bot.state === botStateType.Runned" href="javascript:;"><span class="fa fa-stop" style="color: red"></span></a>
-                    <a (click)="removeBot(bot)" *ngIf="bot.state === botStateType.Runned || bot.state == botStateType.Stopped" href="javascript:;"><span class="fa fa-times"></span></a>
+                <div *ngSwitchCase="bot.state === botStateType.Stopped || bot.state === botStateType.Runned" class="btn-group pull-right">
+                    <button (click)="runBot(bot)" *ngIf="bot.state === botStateType.Stopped" class="btn-xs btn btn-default">
+                        <span class="fa fa-play"></span>
+                    </button>
+                    <button (click)="stopBot(bot)" *ngIf="bot.state === botStateType.Runned" class="btn-xs btn btn-default">
+                        <span class="fa fa-stop"></span>
+                    </button>
+                    <button (click)="removeBot(bot)" *ngIf="bot.state === botStateType.Runned || bot.state == botStateType.Stopped" class="btn-xs btn btn-default">
+                        <span class="fa fa-remove"></span>
+                    </button>
                 </div>
-                <i *ngSwitchDefault class="fa fa-circle-o-notch fa-spin"></i>
+                <div *ngSwitchDefault class="pull-right">
+                    <span class="fa fa-circle-o-notch fa-spin"></span>
+                </div>
             </td>
         </tr>
     </tbody>
-</table>
-
-
-
-<!--<h2>Active</h2>
-<hr>
-<div class="row">
-    <div *ngFor="let bot of bots | filterBy: {isActive: true } | orderBy: ['name']"  class="col-sm-3">
-        <div class="card card-block" style="height: 11rem;">
-            <h4 class="card-title">{{bot.name}}</h4>
-            <h6 class="card-subtitle">{{bot | BotActiveToString}}</h6>
-            <p class="card-text">{{bot.status}}</p>
-            <a class="card-link">Edit</a>
-            <a class="card-link">Stop</a>
-        </div>
-    </div>
-</div>
-
-<h2>Paused</h2>
-<hr>
-<div class="row">
-    <div *ngFor="let bot of bots | filterBy: {isActive: false } | orderBy: ['name']" class="col-sm-3">
-        <div class="card card-block" style="height: 11rem;">
-            <h4 class="card-title">{{bot.name}}</h4>
-            <h6 class="card-subtitle">{{bot | BotActiveToString}}</h6>
-            <p class="card-text">{{bot.status}}</p>
-            <a class="card-link">Edit</a>
-            <a class="card-link">Run</a>
-        </div>
-    </div>
-</div>-->
+</table>-->
