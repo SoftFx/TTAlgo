@@ -2,33 +2,45 @@
 import { Guid } from './guid';
 
 export class FakeData {
+
+    private static numberParams: models.Parameter[] = [
+        models.Parameter.CreateNumberParameter("NumParameter1"),
+        models.Parameter.CreateNumberParameter("NumParameter2", 200, "Num Parameter Two"),
+        models.Parameter.CreateNumberParameter("NumParameter3", 1.1351, "Num Parameter Three"),
+        models.Parameter.CreateNumberParameter("NumParameter4", 0.8542, "Num Parameter Three"),
+        models.Parameter.CreateNumberParameter("NumParameter5", 1.1132),
+        models.Parameter.CreateNumberParameter("NumParameter7", 1.1132, "Num Parameter Seven"),
+    ];
+
+    private static stringParams: models.Parameter[] = [
+        models.Parameter.CreateStringParameter("StrParameter"),
+        models.Parameter.CreateStringParameter("StrParameter2", "str param 2", "Parameter Two"),
+        models.Parameter.CreateStringParameter("StrParameter3", "str param 3", "Parameter Three"),
+        models.Parameter.CreateStringParameter("StrParameter4"),
+        models.Parameter.CreateStringParameter("StrParameter5"),
+        models.Parameter.CreateStringParameter("StrParameter7"),
+    ];
+
+    private static enumParametrs: models.Parameter[] = [
+        models.Parameter.CreateEnumParametr("EnumParameter1", JSON.parse('{"EnumValue1": 1, "EnumValue2": 2, "EnumValue3": 3}')),
+        models.Parameter.CreateEnumParametr("EnumParameter2", JSON.parse('{"AnotherEnumValue1": 1, "AnotherEnumValue2": 2, "AnotherEnumValue3": 3}'))
+    ];
+
     static readonly bots: models.BotModel[] = [
-        new models.BotModel(1, "Advanced Take Profi"),
-        new models.BotModel(2, "MMA"),
-        new models.BotModel(3, "Trade Tweeter"),
-        new models.BotModel(4, "cMuti"),
-        new models.BotModel(5, "News Robot"),
-        new models.BotModel(6, "RSI bot"),
-        new models.BotModel(7, "SAR Tralling"),
-        new models.BotModel(8, "Trend"),
-        new models.BotModel(9, "Robot_Forex"),
-        new models.BotModel(10, "Close Profitable Positions"),
-        new models.BotModel(11, "Macd Bot"),
-        new models.BotModel(12, "Black Corvette"),
-        new models.BotModel(13, "Jingle Bells"),
-        new models.BotModel(14, "Skyfall Bot"),
-        new models.BotModel(15, "Grinch Bot"),
-        new models.BotModel(16, "Fake Bot"),
-        new models.BotModel(17, "Super Fake Bot"),
-        new models.BotModel(18, "ABAW Bot"),
-        new models.BotModel(19, "Nutolf Bot"),
-        new models.BotModel(20, "Albolia Bot"),
-        new models.BotModel(21, "Gizigo Bot")
+        new models.BotModel("Bot with one parameters",
+            new models.BotSetup(FakeData.numberParams[0])),
+        new models.BotModel("Bot with two parameters",
+            new models.BotSetup(FakeData.numberParams[1], FakeData.stringParams[2])),
+        new models.BotModel("Bot with three parameters",
+            new models.BotSetup(FakeData.numberParams[0], FakeData.numberParams[3], FakeData.stringParams[0])),
+        new models.BotModel("Bot with four parameters",
+            new models.BotSetup(FakeData.numberParams[0], FakeData.numberParams[3], FakeData.stringParams[0], FakeData.stringParams[3])),
+        new models.BotModel("Bot with five parameters",
+            new models.BotSetup(FakeData.stringParams[1], FakeData.stringParams[2], FakeData.stringParams[3], FakeData.numberParams[0], FakeData.numberParams[1])),
     ];
 
     static readonly extBots: models.ExtBotModel[] = [
-        new models.ExtBotModel(1, "Advanced Take Profi", Guid.new(), true),
-        new models.ExtBotModel(2, "MMA", Guid.new(), true),
-        new models.ExtBotModel(3, "Trade Tweeter", Guid.new())
+        new models.ExtBotModel(FakeData.bots[0].name, FakeData.bots[0].setup),
+        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[3].setup, "", true)
     ];
 }

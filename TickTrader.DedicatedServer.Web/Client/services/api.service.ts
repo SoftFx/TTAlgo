@@ -28,6 +28,10 @@ export class ApiService {
         }, error => console.log('Could not load bots.'));
     }
 
+    getBot(id: string): Observable<ExtBotModel> {
+        return Observable.of(this.dataStore.bots.find(bot => bot.instanceId == id));
+    }
+
     removeBotFromDashboard(bot: ExtBotModel) {
         Observable.of(true).delay(150).subscribe(response => {
             this.dataStore.bots.forEach((b, i) => {
@@ -38,17 +42,23 @@ export class ApiService {
         }, error => console.log('Could not delete bot.'));
     }
 
+    addBot(bot: ExtBotModel) {
+        return Observable
+            .of(true)
+            .delay(150)
+            .do(response => {
+                this.dataStore.bots.push(bot);
+            },
+            err => { },
+            () => { });
+    }
+
     runBot(bot: ExtBotModel) {
-        Observable.from([BotState.Running, BotState.Runned])
+        return Observable.from([BotState.Running, BotState.Runned])
             .map(function (value) { return Observable.of(value).delay(value == BotState.Running ? 0 : 1500); })
             .concatAll()
-            .subscribe(
-            response => {
-                if (!this.updateBotState(bot, response)) {
-                    bot = new ExtBotModel(bot.id, bot.name, Guid.new());
-                    bot.state = response;
-                    this.dataStore.bots.push(bot);
-                }
+            .subscribe(response => {
+                this.updateBotState(bot, response);
             },
             err => { },
             () => { });
@@ -67,7 +77,7 @@ export class ApiService {
 
     private updateBotState(bot: ExtBotModel, state: BotState): boolean {
         for (let cBot of this.dataStore.bots) {
-            if (cBot.executionId == bot.executionId) {
+            if (cBot.instanceId == bot.instanceId) {
                 cBot.state = state;
                 return true;
             }
