@@ -1,0 +1,54 @@
+﻿<div class="page-header">
+    <h3>Add new bot</h3>
+</div>
+
+<div>
+    <div class="row">
+        <div class="form-group form-group-sm col-md-4">
+            <span>Bot</span>
+            <select [ngModel]="selectedBot" (ngModelChange)="onBotSelected($event)" class="form-control">
+                <option *ngFor="let bot of (allBots | orderBy: ['name'])" [ngValue]="bot">{{bot.name}}</option>
+            </select>
+        </div>
+        <div class="form-group form-group-sm col-md-4">
+            <span>Account</span>
+            <select class="form-control">
+                <option></option>
+                <option>111011 - [Server]</option>
+                <option>62421 - [Server]</option>
+                <option>827131 - [Server]</option>
+            </select>
+        </div>
+        <div class="form-group form-group-sm col-md-4">
+            <span>Symbol</span>
+            <select class="form-control">
+                <option></option>
+                <option>EURUSD</option>
+                <option>CADUSD</option>
+                <option>BITUSD</option>
+            </select>
+        </div>
+    </div>
+
+    <div name="bot-configuration" *ngIf="selectedExtBot">
+        <div class="form-group form-group-sm">
+            <span>Instance ID</span>
+            <input [(ngModel)]="selectedExtBot.instanceId" type="text" class="form-control" />
+        </div>
+        <div class="row">
+            <div *ngFor="let param of selectedExtBot.setup.parameters" [ngSwitch]="param.type" class="form-group form-group-sm col-md-3">
+                <span>{{param.displayName}}</span>
+                <input *ngSwitchCase="parameterType.String" type="text" class="form-control" [(ngModel)]="param.value" />
+                <input *ngSwitchCase="parameterType.Number" type="number" class="form-control" [(ngModel)]="param.value" />
+            </div>
+        </div>
+        <div class="panel row">
+            <div class="col-xs-6 col-md-6">
+                <button (click)="addBot(selectedExtBot)" class="btn btn-sm btn-default btn-block">Add</button>
+            </div>
+            <div class="col-xs-6 col-md-6">
+                <button (click)="cancel()" class="btn btn-sm btn-default btn-block">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
