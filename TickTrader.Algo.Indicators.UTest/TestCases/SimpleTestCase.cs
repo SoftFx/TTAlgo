@@ -49,7 +49,8 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual TAns ReadAnswer(string answerPath)
         {
             var metaAnswer = CreateAnswerBuffer();
-            using (var file = File.Open(answerPath, FileMode.Open, FileAccess.Read))
+            var assembly = typeof(SimpleTestCase).Assembly;
+            using (var file = assembly.GetManifestResourceStream(answerPath))
             {
                 if (file.Length != Quotes.Count*AnswerUnitSize)
                 {
