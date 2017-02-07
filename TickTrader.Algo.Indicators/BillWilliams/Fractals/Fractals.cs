@@ -14,11 +14,6 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
         [Output(DisplayName = "Fractals Down", DefaultColor = Colors.Gray)]
         public DataSeries<Marker> FractalsDown { get; set; }
 
-        public int LastPositionChanged
-        {
-            get { return 2; }
-        }
-
         public Fractals()
         {
         }
@@ -140,21 +135,31 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
 
         protected override void Calculate()
         {
-            var i = LastPositionChanged;
+            var i = 2;
 
             if (IsFractalsUp(i))
                 SetMarker(i, Bars[i].High, true);
+            else if(IsUpdate)
+                ClearMarker(i, true);
 
             if (IsFractalsDown(i))
                 SetMarker(i, Bars[i].Low, false);
+            else if (IsUpdate)
+                ClearMarker(i, false);
         }
 
         private void SetMarker(int pos, double level, bool up)
         {
-            var marker = FractalsUp[pos];
+            var marker = up ? FractalsUp[pos] : FractalsDown[pos];
             marker.Y = level;
             marker.Icon = up ? MarkerIcons.UpTriangle : MarkerIcons.DownTriangle;
             marker.DisplayText = (up ? "Fractal Up " : "Fractal Down ") + level;
+        }
+
+        private void ClearMarker(int pos, bool up)
+        {
+            var marker = up ? FractalsUp[pos] : FractalsDown[pos];
+            marker.Clear();
         }
     }
 }

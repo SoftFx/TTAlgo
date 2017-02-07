@@ -14,9 +14,10 @@ namespace TickTrader.Algo.Indicators.UTest.Utility
         public static List<BarEntity> ReadQuotes(string path)
         {
             var result = new List<BarEntity>();
-            using (var file = File.Open(path, FileMode.Open, FileAccess.Read))
+            var assembly = typeof(TTQuoteBinaryFileReader).Assembly;
+            using (var file = assembly.GetManifestResourceStream(path))
             {
-                if (file.Length%QuoteParamsSize != 0)
+                if (file.Length % QuoteParamsSize != 0)
                 {
                     throw new ArgumentException("Invalid file format.");
                 }

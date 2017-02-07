@@ -63,9 +63,9 @@ namespace TickTrader.Algo.Core.Math
 
         public override BarBoundaries GetBar(DateTime timepoint)
         {
-            var delta = (spTicks - (timepoint.Ticks % spTicks)) % spTicks;
-            var startTicks = timepoint.Ticks + delta;
-            var endTicks = startTicks + spTicks;
+            var delta = spTicks - (timepoint.Ticks % spTicks);
+            var endTicks = timepoint.Ticks + delta;
+            var startTicks = endTicks - spTicks;
             return new BarBoundaries(new DateTime(startTicks, timepoint.Kind), new DateTime(endTicks, timepoint.Kind));
         }
 
@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core.Math
     {
         public override BarBoundaries GetBar(DateTime timepoint)
         {
-            int diff = timepoint.DayOfWeek - DayOfWeek.Sunday;
+            int diff = timepoint.DayOfWeek - DayOfWeek.Monday;
             if (diff < 0)
                 diff += 7;
             var weekStart =  timepoint.AddDays(-diff).Date;

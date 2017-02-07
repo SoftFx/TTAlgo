@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TickTrader.Algo.Indicators.UTest.Utility;
 
@@ -48,7 +49,8 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual TAns ReadAnswer(string answerPath)
         {
             var metaAnswer = CreateAnswerBuffer();
-            using (var file = File.Open(answerPath, FileMode.Open, FileAccess.Read))
+            var assembly = typeof(SimpleTestCase).Assembly;
+            using (var file = assembly.GetManifestResourceStream(answerPath))
             {
                 if (file.Length != Quotes.Count*AnswerUnitSize)
                 {
@@ -98,6 +100,12 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
             AnswerBuffer[bufferIndex] = new List<double>(Builder.GetOutput<double>(outputName));
         }
 
+        protected void PutOutputToBuffer<T>(string outputName, int bufferIndex, Func<T, double> converter)
+        {
+            var convertedBuffer = Builder.GetOutput<T>(outputName).Select(converter);
+            AnswerBuffer[bufferIndex] = new List<double>(convertedBuffer);
+        }
+
         protected override List<double>[] CreateAnswerBuffer()
         {
             var res = new List<double>[AnswerUnitSize / 8];
@@ -123,7 +131,10 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
                 AnswerBuffer[k][index] = double.IsNaN(AnswerBuffer[k][index])
                     ? 0
                     : AnswerBuffer[k][index];
-                AssertX.Greater(Epsilon, Math.Abs(metaAnswer[k][index] - AnswerBuffer[k][index]));
+                var metaVal = metaAnswer[k][index];
+                var answerVal = AnswerBuffer[k][index];
+                AssertX.Greater(Epsilon, Math.Abs(metaVal - answerVal),
+                    "Value " + answerVal + " at index " + index + " differs from Meta value " + metaVal);
             }
         }
     }

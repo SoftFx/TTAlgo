@@ -136,6 +136,8 @@ namespace TickTrader.Algo.Core
 
     public interface ITimeRef
     {
-        DateTime? GetTimeAtIndex(int index);
+        int LastIndex { get; }
+        DateTime this[int index] { get; }
+        event Action Appended;
     }
 }

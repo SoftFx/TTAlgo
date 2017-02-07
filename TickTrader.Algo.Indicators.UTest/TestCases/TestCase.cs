@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected virtual void RunFullBuild()
         {
-            Builder.GetBarBuffer(Symbol).Append(Quotes);
+            Builder.GetBarBuffer(Symbol).AppendRange(Quotes);
             Builder.BuildNext(Quotes.Count);
             GetOutput();
         }
