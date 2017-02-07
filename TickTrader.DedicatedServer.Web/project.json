@@ -29,6 +29,15 @@
     }
   },
 
+  "publishOptions": {
+    "include": [
+      "appsettings.json",
+      "Server/Views",
+      "web.config",
+      "wwwroot"
+    ]
+  },
+
   "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true,

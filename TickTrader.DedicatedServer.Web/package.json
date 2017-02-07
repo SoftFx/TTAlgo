@@ -11,23 +11,29 @@
     "build_prod": "npm run build_prod_vendor && npm run build_prod_main"
   },
   "dependencies": {
-    "@angular/common": "2.1.1",
-    "@angular/compiler": "2.1.1",
-    "@angular/core": "2.1.1",
-    "@angular/forms": "2.1.1",
-    "@angular/http": "2.1.1",
-    "@angular/platform-browser": "2.1.1",
-    "@angular/platform-browser-dynamic": "2.1.1",
-    "@angular/router": "3.1.1",
-    "@angular/upgrade": "2.1.1",
+    "@angular/common": "~2.2.2",
+    "@angular/compiler": "~2.2.2",
+    "@angular/core": "~2.2.2",
+    "@angular/forms": "~2.2.2",
+    "@angular/http": "~2.2.2",
+    "@angular/platform-browser": "~2.2.2",
+    "@angular/platform-browser-dynamic": "~2.2.2",
+    "@angular/router": "~3.2.2",
+    "@angular/upgrade": "~2.2.2",
+
+    "@types/node": "^6.0.62",
     "angular-in-memory-web-api": "^0.2.0",
-    "angular2-jwt": "0.1.25",
+    "angular2-jwt": "0.1.28",
+    "aspnet-webpack": "^1.0.27",
     "bootstrap": "^3.3.7",
-    "es6-shim": "^0.35.1",
+    "es6-shim": "^0.35.3",
     "font-awesome": "4.7.0",
     "jquery": "^2.2.1",
-    "rxjs": "5.0.1",
-    "zone.js": "^0.6.21"
+    "ng2-bootstrap": "~1.1.16",
+    "rxjs": "5.0.0-beta.12",
+    "typescript": "^2.1.5",
+    "webpack-hot-middleware": "^2.16.1",
+    "zone.js": "^0.6.26"
   },
   "devDependencies": {
     "@angular/platform-server": "2.0.0",
@@ -55,6 +61,7 @@
     "webpack-externals-plugin": "^1.0.0",
     "webpack-hot-middleware": "^2.10.0",
     "webpack-merge": "^0.14.1",
-    "webpack-node-externals": "^1.4.3"
+    "webpack-node-externals": "^1.4.3",
+    "copy-webpack-plugin": "4.0.1"
   }
 }

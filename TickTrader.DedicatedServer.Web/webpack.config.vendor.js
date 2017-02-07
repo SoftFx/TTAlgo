@@ -35,7 +35,8 @@ module.exports = {
             'jquery',
             'zone.js',
             'rxjs',
-            'font-awesome/css/font-awesome.css'
+            'font-awesome/css/font-awesome.css',
+            './assets/css/light-bootstrap.css'
         ]
     },
     output: {

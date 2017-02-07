@@ -4,12 +4,13 @@ var isDevBuild = environment === "development";
 var path = require('path');
 var webpack = require('webpack');
 var nodeExternals = require('webpack-node-externals');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 var merge = require('webpack-merge');
 var allFilenamesExceptJavaScript = /\.(?!js(\?|$))([^.]+(\?|$))/;
 
 // Configuration in common to both client-side and server-side bundles
 var sharedConfig = {
-    resolve: { extensions: [ '', '.js', '.ts' ] },
+    resolve: { extensions: ['', '.js', '.ts'] },
     output: {
         filename: '[name].js',
         publicPath: '/dist/' // Webpack dev middleware, if enabled, handles requests for this URL prefix
@@ -33,7 +34,14 @@ var clientBundleConfig = merge(sharedConfig, {
         new webpack.DllReferencePlugin({
             context: __dirname,
             manifest: require('./wwwroot/dist/vendor-manifest.json')
-        })
+        }),
+        new CopyWebpackPlugin([
+             { from: 'assets/img/**', to: path.join(__dirname, './wwwroot/') },
+             { from: 'assets/js/**', to: path.join(__dirname, './wwwroot/') }]),
+        new webpack.ProvidePlugin({
+                 $: "jquery",
+                 jQuery: "jquery"
+             })
     ].concat(isDevBuild ? [] : [
         // Plugins that apply in production builds only
         new webpack.optimize.OccurenceOrderPlugin(),

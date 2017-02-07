@@ -1,0 +1,18 @@
+<div class="sidebar-wrapper">
+    <div class="logo">
+        <a [routerLink]="[menuItems[0].path]" href="javascript:;" class="simple-text">
+            <!--<div class="logo-img">
+                <img src="/assets/img/angular2-logo-white.png"/>
+            </div>-->
+            Dedicated Server
+        </a>
+    </div>
+        <ul class="nav">
+            <li *ngFor="let mItem of menuItems" (click)="isCollapsed = true" class="nav-item" routerLinkActive="active" [ngClass]="getMenuItemClasses(menuItems)">
+                <a class="nav-item nav-link" [routerLink]="[mItem.path]">
+                    <i class="{{mItem.icon}}"></i>
+                    <p>{{mItem.title}}</p>
+                </a>
+            </li>
+        </ul>
+</div>

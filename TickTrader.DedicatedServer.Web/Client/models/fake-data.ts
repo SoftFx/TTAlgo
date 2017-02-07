@@ -41,6 +41,13 @@ export class FakeData {
 
     static readonly extBots: models.ExtBotModel[] = [
         new models.ExtBotModel(FakeData.bots[0].name, FakeData.bots[0].setup),
-        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[3].setup, "", true)
+        new models.ExtBotModel(FakeData.bots[1].name, FakeData.bots[1].setup, "", true),
+        new models.ExtBotModel(FakeData.bots[2].name, FakeData.bots[2].setup, "", false),
+        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[3].setup, "", true),
+        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[4].setup, "", true),
+        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[4].setup, "", true),
+        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[4].setup, "", true),
+        new models.ExtBotModel(FakeData.bots[3].name, FakeData.bots[1].setup, "", true),
+        new models.ExtBotModel(FakeData.bots[4].name, FakeData.bots[0].setup, "", true)
     ];
 }
