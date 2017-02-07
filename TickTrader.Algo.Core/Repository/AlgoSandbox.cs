@@ -10,35 +10,79 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    internal class AlgoSandbox : NoTimeoutByRefObject
+    internal class AlgoSandbox : CrossDomainObject
     {
-        public AlgoSandbox()
+        private IDotNetPluginPackage package;
+
+        public AlgoSandbox(IDotNetPluginPackage package)
         {
-        }
-
-        public IEnumerable<AlgoInfo> LoadAndInspect(string filePath)
-        {
-            string directory = Path.GetDirectoryName(filePath);
-            string pdbFileName = Path.GetFileNameWithoutExtension(filePath) + ".pdb";
-            string pdbPath = Path.Combine(directory, pdbFileName);
-
-            byte[] assemblyBytes = File.ReadAllBytes(filePath);
-            byte[] symbolsBytes = null;
-
+            this.package = package;
+            //this.dllFolder = Path.GetDirectoryName(filePath);
             try
             {
-                symbolsBytes = File.ReadAllBytes(pdbPath);
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+                LoadAndInspect(package.MainAssemblyName);
             }
-            catch (FileNotFoundException) { }
-
-            Assembly algoAssembly = Assembly.Load(assemblyBytes, symbolsBytes);
-            var metadata = AlgoDescriptor.InspectAssembly(algoAssembly);
-            return metadata.Select(d => d.GetInteropCopy()).ToList();
+            catch
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+                throw;
+            }
         }
 
-        public IndicatorProxy CreateIndicator(string algoId, IAlgoContext context)
+        public IEnumerable<AlgoPluginDescriptor> AlgoMetadata { get; private set; }
+
+        internal T Activate<T>() where T : MarshalByRefObject, new()
         {
-            return new IndicatorProxy(algoId, context);
+            return new T();
         }
+
+        public PluginExecutor CreateExecutor(string pluginId)
+        {
+            return new PluginExecutor(pluginId);
+        }
+
+        private void LoadAndInspect(string filePath)
+        {
+            Assembly algoAssembly = LoadAssembly(filePath);
+            AlgoMetadata = AlgoPluginDescriptor.InspectAssembly(algoAssembly);
+        }
+
+        private Assembly LoadAssembly(string assemblyFileName)
+        {
+            string pdbFileName = Path.GetFileNameWithoutExtension(assemblyFileName) + ".pdb";
+
+            byte[] assemblyBytes = package.GetFileBytes(assemblyFileName);
+            byte[] symbolsBytes = package.GetFileBytes(pdbFileName);
+
+            if (assemblyBytes == null)
+                throw new FileNotFoundException("Package is missing required file: " + assemblyFileName);
+
+            return Assembly.Load(assemblyBytes, symbolsBytes);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+        }
+
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var name = new AssemblyName(args.Name);
+
+            // force plugins to use loaded Api
+            if (name.Name == "TickTrader.Algo.Api")
+                return typeof(TickTrader.Algo.Api.TradeBot).Assembly;
+
+            return LoadAssembly(name.Name + ".dll");
+        }
+    }
+
+    internal interface IDotNetPluginPackage
+    {
+        string MainAssemblyName { get; }
+        byte[] GetFileBytes(string packageLocalPath);
     }
 }

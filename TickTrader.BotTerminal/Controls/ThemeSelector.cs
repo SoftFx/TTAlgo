@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -22,41 +23,47 @@ namespace TickTrader.BotTerminal
 
         public ThemeSelector()
         {
-            Themes = new ObservableCollection<Theme>();
-            Themes.CollectionChanged += (s, a) => EnsureDefaultTheme();
+            var collection = new ObservableCollection<Theme>();
+            collection.CollectionChanged += (s, a) => EnsureDefaultTheme();
+            Themes = collection;
         }
 
         private void EnsureDefaultTheme()
         {
             if (selectedTheme == null && Themes.Count > 0)
-                Activate(Themes[0]);
+                Activate((Theme)Themes[0]);
         }
 
         private void Activate(Theme theme)
         {
             int toRemove = MergedDictionaries.Count;
+
+            // add new resources
             theme.Dictionaries.ForEach(MergedDictionaries.Add);
+
+            // switch styles
+            var locator = AppBootstrapper.AutoViewLocator;
+            if (locator.StylePostfix != theme.StylePrefix)
+                locator.StylePostfix = theme.StylePrefix; 
+
+            // remove old resources
             for (int i = 0; i < toRemove; i++) MergedDictionaries.RemoveAt(0);
 
+            // remember selected theme
             selectedTheme = theme;
         }
 
-        public ObservableCollection<Theme> Themes { get; set; }
-        public IEnumerable<string> ThemeNames { get { return Themes.Select(t => t.Name); } }
+        public IList Themes { get; set; }
+        public IEnumerable<string> ThemeNames { get { return Themes.OfType<Theme>().Select(t => t.ThemeName); } }
 
         public string SelectedTheme
         {
-            get
-            {
-                if (selectedTheme == null)
-                    return null;
-                return selectedTheme.Name;
-            }
+            get { return selectedTheme?.ThemeName; }
             set
             {
-                if (selectedTheme == null || selectedTheme.Name != value)
+                if (selectedTheme == null || selectedTheme.ThemeName != value)
                 {
-                    Theme toApply = Themes.FirstOrDefault(t => t.Name == value);
+                    Theme toApply = Themes.OfType<Theme>().FirstOrDefault(t => t.ThemeName == value);
                     if (toApply == null)
                         throw new ArgumentException("Theme not found: " + value);
                     Activate(toApply);
@@ -73,7 +80,8 @@ namespace TickTrader.BotTerminal
             Dictionaries = new List<ResourceDictionary>();
         }
 
-        public string Name { get; set; }
+        public string ThemeName { get; set; }
+        public string StylePrefix { get; set; }
         public List<ResourceDictionary> Dictionaries { get; set; }
     }
 }

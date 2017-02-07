@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.OrderListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <Grid>
+        <Grid>
+            <Grid.Resources>
+                <l:BindingProxy x:Key="ProxyElement" Data="{Binding}"/>
+            </Grid.Resources>
+
+            <DataGrid Name="Orders" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Order.HasError}" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
+                                        <Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType}"/>
+                    <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Order.RemainingAmount" />
+                                <Binding Path="Order.Amount" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
+                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PriceConverter}" >
+                                <Binding Path="Order.Price"/>
+                                <Binding Path="PriceDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
+                    <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
+                    <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PriceConverter}" >
+                                <Binding Path="CurrentPrice.Rate"/>
+                                <Binding Path="PriceDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</UserControl>

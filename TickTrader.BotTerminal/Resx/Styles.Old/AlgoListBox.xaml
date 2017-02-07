@@ -1,0 +1,69 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:local="clr-namespace:TickTrader.BotTerminal">
+
+    <!-- ListBox Template -->
+
+    <ControlTemplate x:Key="AlgoListBox_Template" TargetType="ListBox">
+        <ScrollViewer Margin="0" Focusable="False"
+                      Template="{DynamicResource SymbolListBox_ScrollViewerTemplate}"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsPresenter/>
+        </ScrollViewer>
+    </ControlTemplate>
+
+    <!-- Item Template -->
+
+    <ControlTemplate x:Key="AlgoListBox_ItemTemplate" TargetType="ListBoxItem">
+        <Border x:Name="Border"
+            BorderBrush="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+            Background="{DynamicResource ShellPanel_ItemBackgroundBrush}"
+            BorderThickness="0"
+            CornerRadius="2">
+            <ContentPresenter VerticalAlignment="Center"/>
+            <i:Interaction.Behaviors>
+                <local:DragBehavior/>
+            </i:Interaction.Behaviors>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="true">
+                <Setter TargetName="Border" Property="Background"
+                    Value="{DynamicResource ShellPanel_ItemHoverBackgroundBrush}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- Grouping Container Template -->
+
+    <ControlTemplate x:Key="AlgoListBox_GroupTemplate" TargetType="GroupItem">
+        <Expander Header="{Binding Name}"
+                  Style="{DynamicResource Expander_Style}"
+                  Margin="1"
+                  Foreground="{DynamicResource Shell_SecondaryForeground}" IsExpanded="True">
+            <ItemsPresenter/>
+        </Expander>
+    </ControlTemplate>
+    
+    <!-- Item Style -->
+
+    <Style x:Key="AlgoListBox_ItemStyle" TargetType="ListBoxItem">
+        <Setter Property="Template" Value="{StaticResource AlgoListBox_ItemTemplate}"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Margin" Value="2"/>
+    </Style>
+
+    <!-- ListBox Style -->
+
+    <Style x:Key="AlgoListBox_Style" TargetType="ListBox">
+        <Setter Property="Template" Value="{StaticResource AlgoListBox_Template}"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource AlgoListBox_ItemStyle}"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Margin" Value="5,5,0,5"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
+    </Style>
+
+</ResourceDictionary>

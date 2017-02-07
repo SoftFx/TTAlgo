@@ -29,11 +29,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Properties\algo.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Abt.Controls.SciChart.Wpf, Version=3.42.0.6778, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
-      <HintPath>..\packages\SciChart.3.4.2.6778\lib\net40\Abt.Controls.SciChart.Wpf.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,17 +45,43 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algo.cs" />
+    <Compile Include="AccountDataProvider.cs" />
+    <Compile Include="AlgoPlugin.cs" />
+    <Compile Include="Asset.cs" />
     <Compile Include="Attributes.cs" />
     <Compile Include="Bar.cs" />
+    <Compile Include="DiagnosticInfo.cs" />
+    <Compile Include="EnvironmentInfo.cs" />
+    <Compile Include="File.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="RateUpdate.cs" />
+    <Compile Include="StatusApi.cs" />
+    <Compile Include="TradeCommands.cs" />
+    <Compile Include="Marker.cs" />
+    <Compile Include="NetPosition.cs" />
+    <Compile Include="TradeBot.cs" />
+    <Compile Include="Colors.cs" />
     <Compile Include="DataSeries.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="IPluginContext.cs" />
     <Compile Include="Indicator.cs" />
+    <Compile Include="LineStyles.cs" />
+    <Compile Include="FeedProvider.cs" />
+    <Compile Include="Order.cs" />
+    <Compile Include="PlotType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Quote.cs" />
+    <Compile Include="Symbol.cs" />
+    <Compile Include="TimeFrames.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\algo.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy  /Y $(TargetDir)*.*  ..\..\..\Repository.Public\API\</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

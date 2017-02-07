@@ -1,0 +1,101 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.AccountPaneView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             mc:Ignorable="d" 
+             d:DesignWidth="300">
+
+    <UserControl.Resources>
+
+        <DataTemplate x:Key="AccountAuthEntryTemplate" DataType="{x:Type l:AccountAuthEntry}">
+            <StackPanel Orientation="Horizontal" Margin="2">
+                <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="10 0 5 0"/>
+                <TextBlock x:Name="txtReconnect" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login, StringFormat=Reconnecting to a/c {0}}"/>
+                <TextBlock x:Name="txtDisconnect" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login, StringFormat=Disconnecting from a/c {0}}"/>
+                <Border x:Name="serverShortName" Background="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Server.Color, Converter={StaticResource ColorToBrushConverter}}" CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Server.ShortName}" TextTrimming="CharacterEllipsis" Width="70" TextAlignment="Center" FontSize="12" />
+                </Border>
+                <TextBlock x:Name="txtLogin" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.DisplayedAccount.Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Connecting}">
+                    <Setter TargetName="statusCircle" Property="Fill" Value="Yellow"/>
+                    <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
+                    <Setter TargetName="txtReconnect" Property="Visibility" Value="Visible"/>
+                    <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
+                    <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Online}">
+                    <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
+                    <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
+                    <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Disconnecting}">
+                    <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
+                    <Setter TargetName="serverShortName" Property="Visibility" Value="Collapsed"/>
+                    <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
+                    <Setter TargetName="txtDisconnect" Property="Visibility" Value="Visible"/>
+                    <Setter TargetName="txtLogin" Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ConnectionState}" Value="{x:Static l:ConnectionManager+States.Offline}">
+                    <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
+                    <Setter TargetName="txtReconnect" Property="Visibility" Value="Collapsed"/>
+                    <Setter TargetName="txtDisconnect" Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <l:ComboBoxItemTemplateSelector x:Key="comboboxItemTemplateSelector">
+            <l:ComboBoxItemTemplateSelector.ItemTemplate>
+                <DataTemplate>
+                    <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
+                </DataTemplate>
+            </l:ComboBoxItemTemplateSelector.ItemTemplate>
+
+            <l:ComboBoxItemTemplateSelector.SelectedItemTemplate>
+                <DataTemplate>
+                </DataTemplate>
+            </l:ComboBoxItemTemplateSelector.SelectedItemTemplate>
+        </l:ComboBoxItemTemplateSelector>
+    </UserControl.Resources>
+
+
+    <Border Grid.Row="1" CornerRadius="4" Background="{DynamicResource ShellPanel_BorderBrush}" Padding="5" IsEnabled="{Binding ConnectionLock.IsNotLocked}">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" 
+                      Height="32" 
+                      VerticalAlignment="Center" 
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Margin="-1"
+                      Focusable="False"
+                      ItemsSource="{Binding Accounts}"
+                      ItemTemplateSelector="{StaticResource comboboxItemTemplateSelector}"
+                      IsDropDownOpen="{Binding IsDropDownOpen, Mode=TwoWay}"
+                      l:OverlayControl.Content="{Binding DisplayedAccount}"
+                      l:OverlayControl.ContentTemplate="{StaticResource AccountAuthEntryTemplate}">
+            </ComboBox>
+
+            <Button Grid.Column="1" 
+                    Style="{DynamicResource IconButton_Style}"
+                    Focusable="False"
+                    Height="30" Width="30" 
+                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center" 
+                    Margin="5,0,0,0"
+                    cal:Message.Attach="Connect">
+                <Path Width="15" Height="15" Stretch="Fill" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" Data="{DynamicResource User}" ></Path>
+            </Button>
+
+        </Grid>
+    </Border>
+</UserControl>

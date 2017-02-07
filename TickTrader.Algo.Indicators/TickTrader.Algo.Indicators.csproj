@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{127406A9-5D62-4FE7-9680-1D2DEED7564F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TickTrader.Algo.Indicators</RootNamespace>
+    <AssemblyName>TickTrader.Algo.Indicators</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>3</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ATCFMethod\DigitalIndicatorBase.cs" />
+    <Compile Include="ATCFMethod\FastAdaptiveTrendLine\FastAdaptiveTrendLine.cs" />
+    <Compile Include="ATCFMethod\FastTrendLineMomentum\FastTrendLineMomentum.cs" />
+    <Compile Include="ATCFMethod\FATLSignal\FATLSignal.cs" />
+    <Compile Include="ATCFMethod\FTLMSTLM\FTLMSTLM.cs" />
+    <Compile Include="ATCFMethod\PerfectCommodityChannelIndex\PerfectCommodityChannelIndex.cs" />
+    <Compile Include="ATCFMethod\RangeBoundChannelIndex\RangeBoundChannelIndex.cs" />
+    <Compile Include="ATCFMethod\ReferenceFastTrendLine\ReferenceFastTrendLine.cs" />
+    <Compile Include="ATCFMethod\ReferenceSlowTrendLine\ReferenceSlowTrendLine.cs" />
+    <Compile Include="ATCFMethod\SlowAdaptiveTrendLine\SlowAdaptiveTrendLine.cs" />
+    <Compile Include="ATCFMethod\SlowTrendLineMomentum\SlowTrendLineMomentum.cs" />
+    <Compile Include="BillWilliams\AcceleratorOscillator\AcceleratorOscillator.cs" />
+    <Compile Include="BillWilliams\Alligator\Alligator.cs" />
+    <Compile Include="BillWilliams\AwesomeOscillator\AwesomeOscillator.cs" />
+    <Compile Include="BillWilliams\Fractals\Fractals.cs" />
+    <Compile Include="BillWilliams\GatorOscillator\GatorOscillator.cs" />
+    <Compile Include="BillWilliams\MarketFacilitationIndex\MarketFacilitationIndex.cs" />
+    <Compile Include="Oscillators\AverageTrueRange\AverageTrueRange.cs" />
+    <Compile Include="Oscillators\BearsPower\BearsPower.cs" />
+    <Compile Include="Oscillators\BullsPower\BullsPower.cs" />
+    <Compile Include="Oscillators\CommodityChannelIndex\CommodityChannelIndex.cs" />
+    <Compile Include="Oscillators\DeMarker\DeMarker.cs" />
+    <Compile Include="Oscillators\ForceIndex\ForceIndex.cs" />
+    <Compile Include="Oscillators\MACD\MACD.cs" />
+    <Compile Include="Oscillators\Momentum\Momentum.cs" />
+    <Compile Include="Oscillators\MovingAverageOscillator\MovingAverageOscillator.cs" />
+    <Compile Include="Oscillators\RelativeStrengthIndex\RelativeStrengthIndex.cs" />
+    <Compile Include="Oscillators\RelativeVigorIndex\RelativeVigorIndex.cs" />
+    <Compile Include="Oscillators\StochasticOscillator\StochasticOscillator.cs" />
+    <Compile Include="Oscillators\WilliamsPercentRange\WilliamsPercentRange.cs" />
+    <Compile Include="Other\News\News.cs" />
+    <Compile Include="Other\News\NewsBase.cs" />
+    <Compile Include="Other\News\NewsMarkersOverlay.cs" />
+    <Compile Include="Trend\AverageDirectionalMovementIndex\AverageDirectionalMovementIndex.cs" />
+    <Compile Include="Trend\BollingerBands\BollingerBands.cs" />
+    <Compile Include="Trend\Envelopes\Envelopes.cs" />
+    <Compile Include="Trend\IchimokuKinkoHyo\IchimokuKinkoHyo.cs" />
+    <Compile Include="Trend\ParabolicSAR\ParabolicSAR.cs" />
+    <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
+    <Compile Include="Utility\AppliedPrice.cs" />
+    <Compile Include="Other\HeikenAshi\HeikenAshi.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Trend\MovingAverage\CustomEMA.cs" />
+    <Compile Include="Trend\MovingAverage\EMA.cs" />
+    <Compile Include="Trend\MovingAverage\IMA.cs" />
+    <Compile Include="Trend\MovingAverage\LWMA.cs" />
+    <Compile Include="Trend\MovingAverage\MABase.cs" />
+    <Compile Include="Trend\MovingAverage\MovingAverage.cs" />
+    <Compile Include="Trend\MovingAverage\SMA.cs" />
+    <Compile Include="Trend\MovingAverage\SMMA.cs" />
+    <Compile Include="Trend\MovingAverage\TriMA.cs" />
+    <Compile Include="Utility\IShift.cs" />
+    <Compile Include="Utility\PeriodHelper.cs" />
+    <Compile Include="Utility\RevertableDataSeries.cs" />
+    <Compile Include="Utility\RevertableList.cs" />
+    <Compile Include="Utility\ShifterBase.cs" />
+    <Compile Include="Utility\SimpleShifter.cs" />
+    <Compile Include="Volumes\AccumulationDistribution\AccumulationDistribution.cs" />
+    <Compile Include="Volumes\MoneyFlowIndex\MoneyFlowIndex.cs" />
+    <Compile Include="Volumes\OnBalanceVolume\OnBalanceVolume.cs" />
+    <Compile Include="Volumes\Volumes\Volumes.cs" />
+    <Compile Include="Other\ZigZag\ZigZag.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SoftFx.FxCalendar\SoftFx.FxCalendar.csproj">
+      <Project>{546b0a8d-6964-40df-b539-c988f8241d56}</Project>
+      <Name>SoftFx.FxCalendar</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{8BAB901C-10BB-4EB7-B81E-716FA05B6957}</Project>
+      <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

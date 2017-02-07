@@ -5,37 +5,108 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class ParameterDescriptor : AlgoPropertyDescriptor
     {
-        public ParameterDescriptor(AlgoDescriptor classMetadata, PropertyInfo propertyInfo, object attribute)
-            : base(classMetadata, propertyInfo)
-        {
-            Attribute = (ParameterAttribute)attribute;
-            Validate();
+        private static readonly List<string> emptyEnumValuesList = new List<string>();
 
-            if (Attribute.DefaultValue != null)
+        private bool isDefaultValueDirectlyAssignable;
+
+        public ParameterDescriptor(PropertyInfo propertyInfo, ParameterAttribute attribute)
+            : base(propertyInfo)
+        {
+            Validate(propertyInfo);
+
+            DefaultValue = attribute.DefaultValue;
+
+            isDefaultValueDirectlyAssignable = DefaultValue != null
+                && DefaultValue.GetType() == propertyInfo.PropertyType;
+
+            InitDisplayName(attribute.DisplayName);
+
+            this.DataType = propertyInfo.PropertyType.FullName;
+
+            this.IsRequired = attribute.IsRequired;
+
+            if (propertyInfo.PropertyType.IsEnum)
             {
-                if (Attribute.DefaultValue.GetType() != propertyInfo.PropertyType)
-                    SetError(AlgoPropertyErrors.DefaultValueTypeMismatch);
+                IsEnum = true;
+                EnumValues = Enum.GetValues(propertyInfo.PropertyType)
+                    .Cast<object>().Select(o => o.ToString()).ToList();
+
+                if (EnumValues.Count == 0)
+                    SetError(AlgoPropertyErrors.EmptyEnum);
+
+                if (DefaultValue != null && DefaultValue.GetType() == propertyInfo.PropertyType)
+                    DefaultValue = DefaultValue.ToString();
                 else
-                    DefaultValue = Attribute.DefaultValue;
+                    DefaultValue = null;
             }
+            else
+                EnumValues = emptyEnumValuesList;
+
+            // Filter out unknown objects from DefaultValue because they can cause cross-domain serialization problems
+            if (DefaultValue != null && !(DefaultValue is string) && !DefaultValue.GetType().IsPrimitive)
+                DefaultValue = null;
+
+            InspectFileFilterAttr(propertyInfo);
         }
 
-        public override AlgoPropertyInfo GetInteropCopy()
+        private void InspectFileFilterAttr(PropertyInfo propertyInfo)
         {
-            ParameterInfo copy = new ParameterInfo();
-            FillCommonProperties(copy);
-            copy.DataType = Info.PropertyType.FullName;
-            copy.DefaultValue = DefaultValue;
-            return copy;
+            var filterEntries = propertyInfo.GetCustomAttributes<FileFilterAttribute>(false);
+            if (filterEntries != null)
+                FileFilters = filterEntries.Select(e => new FileFilterEntry(e.Name, e.Mask)).ToList();
+            else
+                FileFilters = new List<FileFilterEntry>();
         }
 
-        public ParameterAttribute Attribute { get; private set; }
+        public bool IsEnum { get; private set; }
+        public bool IsRequired { get; private set; }
+        public List<string> EnumValues { get; private set; }
+        public List<FileFilterEntry> FileFilters { get; private set; }
+        public string DataType { get; private set; }
         public object DefaultValue { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Parameter; } }
+
+        internal override void Set(AlgoPlugin instance, object value)
+        {
+            if (IsEnum && value is string)
+            {
+                ThrowIfNoAccessor();
+                var actualValue = Enum.Parse(reflectioInfo.PropertyType, (string)value);
+                base.Set(instance, actualValue);
+            }
+            else
+                base.Set(instance, value);
+        }
+
+        internal void ResetValue(Api.AlgoPlugin instance)
+        {
+            if (isDefaultValueDirectlyAssignable)
+                Set(instance, DefaultValue);
+        }
+    }
+
+    //public class EnumValueProxy : CrossDomainObject
+    //{
+    //    public object Value { get; set; }
+    //}
+
+    [Serializable]
+    public class FileFilterEntry
+    {
+        public FileFilterEntry(string name, string mask)
+        {
+            this.FileTypeName = name;
+            this.FileMask = mask;
+        }
+
+        public string FileTypeName { get; }
+        public string FileMask { get; }
     }
 }

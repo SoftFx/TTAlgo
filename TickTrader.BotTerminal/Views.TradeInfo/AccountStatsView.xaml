@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.AccountStatsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" Margin="2"
+             MinHeight="1"
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <UserControl.Resources>
+        
+        <ControlTemplate x:Key="StatRecordTemplate" TargetType="l:KeyValueLabel">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{TemplateBinding Key}" Margin="12,0,4,0"
+                           FontSize="11"
+                           Foreground="{DynamicResource Shell_MediateForeground}"/>
+                <TextBlock Text="{TemplateBinding Value}" Foreground="{DynamicResource Shell_PrimaryForeground}"
+                           FontSize="11" />
+            </StackPanel>
+        </ControlTemplate>
+
+        <Style TargetType="l:KeyValueLabel">
+            <Setter Property="Template" Value="{StaticResource StatRecordTemplate}"/>
+        </Style>
+
+        <l:NumericalComparative x:Key="NegativeComaprer" ComparisonOption="LessOrEqualZero"/>
+
+        <DataTemplate x:Key="ProfitEntryTemplate">
+            <l:KeyValueLabel Key="Net Profit:" Value="{Binding Floating}" x:Name="ProfitKeyValue"/>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsFloatingLoss}" Value="True">
+                    <Setter TargetName="ProfitKeyValue" Property="Key" Value="Net Loss:"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <Grid Visibility="{Binding IsStatsVisible, Converter={StaticResource BoolToVis}}">
+        <StackPanel Orientation="Horizontal">
+            <l:KeyValueLabel Key="Balance:" Value="{Binding Balance, Mode=OneWay}" />
+            <l:KeyValueLabel Key="Equity:" Value="{Binding Equity}" />
+            <l:KeyValueLabel Key="Margin Used:" Value="{Binding Margin}" />
+            <l:KeyValueLabel Key="Free Margin:" Value="{Binding FreeMargin}" />
+            <l:KeyValueLabel Key="Margin Level:" Value="{Binding MarginLevel}" />
+            <ContentControl ContentTemplate="{StaticResource ProfitEntryTemplate}" Content="{Binding}" />
+        </StackPanel>
+    </Grid>
+    
+</UserControl>

@@ -1,0 +1,102 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <Style x:Key="BotNameLabelStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+    </Style>
+
+    <ControlTemplate x:Key="BotStateView">
+        <Grid Background="{TemplateBinding Background}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}" Grid.RowSpan="2"/>
+                <TextBlock Style="{StaticResource BotNameLabelStyle}" Text="{Binding BotName}" Grid.Column="1" Grid.Row="0" />
+                <TextBlock Style="{DynamicResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" Grid.Row="1" />
+            </Grid>
+
+            <l:TabControl Grid.Row="2" Style="{DynamicResource DialogTabStyle}" Margin="5"
+                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <TabItem Header="Status">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <TextBlock Text="{Binding CustomStatus}" TextWrapping="NoWrap" VerticalAlignment="Stretch"
+                                   Margin="4"/>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="Config">
+                    <TextBlock Text="{Binding Path=ParamsStr, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch"
+                               Margin="4"/>
+                </TabItem>
+            </l:TabControl>
+        </Grid>
+
+    </ControlTemplate>
+
+    <Style x:Key="BotStateViewStyle.Common" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+        <Setter Property="WindowStyle" Value="ToolWindow" />
+        <Setter Property="ResizeMode" Value="CanResize" />
+        <Setter Property="Width" Value="300"/>
+        <Setter Property="Height" Value="300"/>
+    </Style>
+
+    <Style x:Key="BotStateViewStyle" TargetType="Window" BasedOn="{StaticResource BotStateViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource BotStateView}"/>
+        <Style.Resources>
+            <Style x:Key="StatusLabelStyle" TargetType="TextBlock">
+                <Setter Property="FontStyle" Value="Italic" />
+                <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
+                        <Setter Property="Foreground" Value="Yellow"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
+                        <Setter Property="Foreground" Value="Yellow"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
+                        <Setter Property="Foreground" Value="LightGreen"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style x:Key="BotStateViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BotStateViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource BotStateView}"/>
+        <Style.Resources>
+            <Style x:Key="StatusLabelStyle" TargetType="TextBlock">
+                <Setter Property="FontStyle" Value="Italic" />
+                <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
+                        <Setter Property="Foreground" Value="Orange"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
+                        <Setter Property="Foreground" Value="Orange"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
+                        <Setter Property="Foreground" Value="DarkGreen"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+</ResourceDictionary>

@@ -13,6 +13,29 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <PublishDir>..\bt.publish\</PublishDir>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>1</UpdateInterval>
+    <UpdateIntervalUnits>Hours</UpdateIntervalUnits>
+    <UpdatePeriodically>true</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://tp.dev.soft-fx.eu/bt.setup/</InstallUrl>
+    <ProductName>Soft-FX Bot Terminal</ProductName>
+    <PublisherName>Soft-FX</PublisherName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>setup.html</WebPage>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.4.0</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,7 +45,8 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,11 +56,35 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>Internet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>E3AFC7B3BE7EF208D294785AF3648714CF2CF202</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>softfx.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Abt.Controls.SciChart.Wpf, Version=3.5.0.7128, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
-      <HintPath>..\packages\SciChart.3.5.0.7128\lib\net45\Abt.Controls.SciChart.Wpf.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="BusinessLogic">
+      <HintPath>..\lib\BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="BusinessObjects">
+      <HintPath>..\lib\BusinessObjects.dll</HintPath>
     </Reference>
     <Reference Include="Caliburn.Micro, Version=2.0.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.Core.3.0.0-beta1\lib\net45\Caliburn.Micro.dll</HintPath>
@@ -50,8 +98,34 @@
       <HintPath>..\packages\Caliburn.Micro.3.0.0-beta1\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Common">
+      <HintPath>..\lib\Common.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\lib\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="ParallelExtensionsExtras">
       <HintPath>..\lib\ParallelExtensionsExtras.dll</HintPath>
+    </Reference>
+    <Reference Include="SciChart.Charting, Version=4.0.3.8066, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SciChart.Charting.dll</HintPath>
+    </Reference>
+    <Reference Include="SciChart.Core, Version=4.0.3.8066, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SciChart.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SciChart.Data, Version=4.0.3.8066, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SciChart.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="SciChart.Drawing, Version=4.0.3.8066, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SciChart.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="SciChart.Drawing.DirectX, Version=4.0.3.8066, Culture=neutral, PublicKeyToken=b55dd9efe817e823, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
     <Reference Include="SoftFX.Extended.Net">
       <HintPath>..\lib\SoftFX.Extended.Net.dll</HintPath>
@@ -60,11 +134,21 @@
       <HintPath>..\lib\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Tpl.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Data.SQLite.EF6">
+      <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security" />
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\System.Threading.Tasks.Dataflow.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.0.0-beta1\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -80,26 +164,31 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\AvalonDock.2.0.2000\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.AvalonDock">
+      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\AvalonDock.2.0.2000\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
+      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Expression, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\AvalonDock.2.0.2000\lib\net40\Xceed.Wpf.AvalonDock.Themes.Expression.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\AvalonDock.2.0.2000\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\AvalonDock.2.0.2000\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\lib\SQLite\x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\lib\SQLite\x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resx\Sounds\Negative1.wav" />
+    <Content Include="Redist\TickTrader.Algo.VS.Package.vsix">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resx\Sounds\Woosh.wav" />
+    <None Include="Resx\Sounds\SharpEcho.wav" />
+    <None Include="Resx\Sounds\Save.wav" />
+    <None Include="Resx\Sounds\Positive.wav" />
+    <None Include="Resx\Sounds\Negative.wav" />
+    <None Include="Resx\Sounds\Blop.wav" />
+    <None Include="Resx\Sounds\Clinking.wav" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -111,17 +200,137 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Behaviors\BindingsManager.cs" />
+    <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DragSource.cs" />
+    <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
+    <Compile Include="Behaviors\DragDrop\DropState.cs" />
+    <Compile Include="Behaviors\DragDrop\IDragAdorner.cs" />
+    <Compile Include="Behaviors\DragDrop\IDropHandler.cs" />
+    <Compile Include="Behaviors\DragDrop\PlatformProxy.cs" />
+    <Compile Include="Behaviors\DragDrop\TransparentContainer.xaml.cs">
+      <DependentUpon>TransparentContainer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
+    <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
+    <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
+    <Compile Include="Controls.Chart\SciChartBehavior.cs" />
+    <Compile Include="Controls\AutoDictionary.cs" />
+    <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
+    <Compile Include="Controls\BindingProxy.cs" />
+    <Compile Include="Controls\ColorPicker.cs" />
+    <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
+    <Compile Include="Controls\CoordinatePicker.cs" />
+    <Compile Include="Controls\DialogPageControl.cs" />
+    <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\FlatButton.cs" />
+    <Compile Include="Controls\HoverComboBox.cs" />
+    <Compile Include="Controls\KeyValueLabel.cs" />
+    <Compile Include="Controls\LocaleSelector.cs" />
+    <Compile Include="Controls.Chart\MarkerAnnotation.xaml.cs">
+      <DependentUpon>MarkerAnnotation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\MenuItemSelector.cs" />
+    <Compile Include="Controls\NoParentPanel.cs" />
+    <Compile Include="Controls\NumericUpDown.cs" />
     <Compile Include="Controls\OverlayControl.cs" />
     <Compile Include="Controls\BusyIndicator.xaml.cs">
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\FlatRadioButton.cs" />
+    <Compile Include="Controls\PopupButton.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
+    <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
+    <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Converters\BoolConverters.cs" />
+    <Compile Include="Converters\DateTimeConverters.cs" />
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\FallbackConverter.cs" />
+    <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColorToHexConverter.cs" />
+    <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
+    <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
+    <Compile Include="Converters\NumberConverter.cs" />
+    <Compile Include="Extensions\DateTimeExtension.cs" />
+    <Compile Include="Extensions\EnumToItemSource.cs" />
+    <Compile Include="Extensions\LineStyleExtension.cs" />
+    <Compile Include="Extensions\ResxCore.cs" />
+    <Compile Include="Extensions\ResxExtension.cs" />
+    <Compile Include="Extensions\ResxBindingExtension.cs" />
+    <Compile Include="Extensions\ResxFormatExtension.cs" />
+    <Compile Include="Extensions\SettingExtension.cs" />
+    <Compile Include="Infrustructure\AutoViewManager.cs" />
+    <Compile Include="Infrustructure\ObjectPersistController.cs" />
+    <Compile Include="Infrustructure\ObjectStorage.cs" />
+    <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Interfaces.cs" />
+    <Compile Include="Lib\GenericCommand.cs" />
+    <Compile Include="Lib\ValidationGroup.cs" />
+    <Compile Include="Lib\AppSounds.cs" />
+    <Compile Include="Lib\HsvColor.cs" />
+    <Compile Include="Lib\ObservableComposer.cs" />
+    <Compile Include="Lib\ListIndexer.cs" />
+    <Compile Include="Lib\ComputerInfo.cs" />
+    <Compile Include="Lib\TaskExtensions.cs" />
+    <Compile Include="Model.Algo\Adapters.cs" />
+    <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
+    <Compile Include="Model.Algo\PluginFeedProvider.cs" />
+    <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model\AccountCalculatorModel.cs" />
+    <Compile Include="Model\BotNameAggregator.cs" />
+    <Compile Include="Model\NotificationCenter.cs" />
+    <Compile Include="Model\NumberFormat.cs" />
+    <Compile Include="Model\OrderType.cs" />
+    <Compile Include="Model\PathHelper.cs" />
+    <Compile Include="Model\QuoteDistributor.cs" />
+    <Compile Include="Model\SymbolObserver.cs" />
+    <Compile Include="Model\TradeExecutor.cs" />
+    <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
+    <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
+    <Compile Include="Model.Algo\TradeBotModel.cs" />
+    <Compile Include="Model.Auth\AuthConfigSection.cs" />
+    <Compile Include="Model.Charts\BarVector.cs" />
+    <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Model\TradeHistoryProvider.cs" />
+    <Compile Include="Model\TradeTransactionModel.cs" />
+    <Compile Include="Model\Journal.cs" />
+    <Compile Include="Model\ObservableTask.cs" />
+    <Compile Include="Model\OrderAmountModel.cs" />
+    <Compile Include="Model\ConnectionManager.cs" />
+    <Compile Include="Model.Auth\AuthEntry.cs" />
+    <Compile Include="Model.Auth\AuthStorageModel.cs" />
+    <Compile Include="Model.Charts\ChartModelBase.cs" />
+    <Compile Include="Model\BotJournal.cs" />
+    <Compile Include="Model\FdkToAlgo.cs" />
+    <Compile Include="Model\PersistModel.cs" />
+    <Compile Include="Model\EventJournal.cs" />
+    <Compile Include="Model.Algo\PluginCatalog.cs" />
+    <Compile Include="Model.Algo\PluginCatalogItem.cs" />
+    <Compile Include="Model.Algo\PluginCatalogKey.cs" />
+    <Compile Include="Model\UiLock.cs" />
+    <Compile Include="Model\UniqueNameGenerator.cs" />
+    <Compile Include="Model\VsIntegration.cs" />
+    <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
+      <DependentUpon>gui.en-gb.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resx\Locales\gui.Designer.cs">
+      <DependentUpon>gui.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resx\Locales\gui.ru-ru.Designer.cs">
+      <DependentUpon>gui.ru-ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Infrustructure\MdiWindowManager.cs" />
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
@@ -131,11 +340,17 @@
     <Compile Include="Lib\ObservableDictionary.cs" />
     <Compile Include="Lib\ObservableSrotedList.cs" />
     <Compile Include="Lib\UiTaskScheduler.cs" />
+    <Compile Include="Model.Charts\BarChatModel.cs" />
+    <Compile Include="Model.Charts\ChartNavigator.cs" />
+    <Compile Include="Model.Algo\BarBasedPluginSetup.cs" />
+    <Compile Include="Model.Algo\IndicatorModel.cs" />
+    <Compile Include="Model.Algo\IndicatorsCollection.cs" />
+    <Compile Include="Model.Charts\TickChartModel.cs" />
+    <Compile Include="Model.Charts\TimelineModel.cs" />
+    <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\AccountModel.cs" />
-    <Compile Include="Model\AlgoRepositoryModel.cs" />
-    <Compile Include="Model\ChartDataModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
-    <Compile Include="Model\IndicatorBuilderModel.cs" />
+    <Compile Include="Model\FeedHistoryProviderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />
@@ -143,30 +358,97 @@
     <Compile Include="Model\RateSplitModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\SymbolModel.cs" />
-    <Compile Include="Model\TraderModel.cs" />
+    <Compile Include="Model\TraderClientModel.cs" />
+    <Compile Include="Resx\Sounds\Sounds.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Sounds.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Auth\AccountView.xaml.cs">
+      <DependentUpon>AccountView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\AccountViewModel.cs" />
+    <Compile Include="Views.Auth\AccountPaneView.xaml.cs">
+      <DependentUpon>AccountPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\AccountPaneViewModel.cs" />
+    <Compile Include="Views.Auth\LoginPageView.xaml.cs">
+      <DependentUpon>LoginPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Auth\LoginPageViewModel.cs" />
+    <Compile Include="Views.Chart\BotControlViewModel.cs" />
+    <Compile Include="Views.Chart\BotStateViewModel.cs" />
+    <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
+      <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Chart\IndicatorPaneViewModel.cs" />
+    <Compile Include="Views.Chart\IndicatorViewModel.cs" />
+    <Compile Include="Views.Chart\SeriesViewModel.cs" />
+    <Compile Include="Views.Order\PendingOrderPageView.xaml.cs">
+      <DependentUpon>PendingOrderPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\MarketOrderPageView.xaml.cs">
+      <DependentUpon>MarketOrderPageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\PendingOrderPageViewModel.cs" />
+    <Compile Include="Views.Order\MarketOrderPageViewModel.cs" />
+    <Compile Include="Views.Order\OpenOrderDialogView.xaml.cs">
+      <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
+      <DependentUpon>AccountStatsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\AccountBasedViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AccountStatsViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AssetViewModel.cs" />
+    <Compile Include="Views.TradeInfo\OrderViewModel.cs" />
+    <Compile Include="Views.TradeInfo\PositionViewModel.cs" />
+    <Compile Include="Views.TradeInfo\TradeHistoryViewModel.cs" />
+    <Compile Include="Views\AlgoListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\AssetsView.xaml.cs">
+      <DependentUpon>AssetsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ChartCollectionViewModel.cs" />
-    <Compile Include="Views\ChartView.xaml.cs">
-      <DependentUpon>ChartView.xaml</DependentUpon>
+    <Compile Include="Views.Chart\ChartViewModel.cs" />
+    <Compile Include="Views.Chart\PluginSetupViewModel.cs" />
+    <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
+      <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ChartViewModel.cs" />
-    <Compile Include="Views\IndicatorSetupView.xaml.cs">
-      <DependentUpon>IndicatorSetupView.xaml</DependentUpon>
+    <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
+    <Compile Include="Views\BotJournalView.xaml.cs">
+      <DependentUpon>BotJournalView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\IndicatorSetupViewModel.cs" />
-    <Compile Include="Views\OrderListView.xaml.cs">
-      <DependentUpon>OrderListView.xaml</DependentUpon>
+    <Compile Include="Views.TradeInfo\GrossPositionListView.xaml.cs">
+      <DependentUpon>GrossPositionListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OrderListViewModel.cs" />
-    <Compile Include="Views\PositionListView.xaml.cs">
+    <Compile Include="Views.TradeInfo\GrossPositionListViewModel.cs" />
+    <Compile Include="Views\BotJournalViewModel.cs" />
+    <Compile Include="Views\JournalViewModel.cs" />
+    <Compile Include="Views\ExitDialogView.xaml.cs">
+      <DependentUpon>ExitDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\TradeInfoView.xaml.cs">
+      <DependentUpon>TradeInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\PositionListView.xaml.cs">
       <DependentUpon>PositionListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PositionListViewModel.cs" />
-    <Compile Include="Views\ShellView.xaml.cs">
-      <DependentUpon>ShellView.xaml</DependentUpon>
+    <Compile Include="Views.TradeInfo\NetPositionListView.xaml.cs">
+      <DependentUpon>NetPositionListView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views.TradeInfo\NetPositionListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\OrderListView.xaml.cs">
+      <DependentUpon>OrderListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
+    <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
+    <Compile Include="Views\NotificationsViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\SymbolDetailsView.xaml.cs">
       <DependentUpon>SymbolDetailsView.xaml</DependentUpon>
@@ -176,14 +458,13 @@
       <DependentUpon>SymbolLevel2View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SymbolLevel2ViewModel.cs" />
-    <Compile Include="Views\SymbolListView.xaml.cs">
-      <DependentUpon>SymbolListView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\SymbolListViewModel.cs" />
     <Compile Include="Views\SymbolView.xaml.cs">
       <DependentUpon>SymbolView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ExitDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
+    <Compile Include="Views.TradeInfo\TradeInfoViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -199,21 +480,43 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Resx\Locales\gui.en-gb.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.en-gb.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Locales\gui.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Locales\gui.ru-ru.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gui.ru-ru.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resx\Sounds\Sounds.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Sounds.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Behaviors\DragDrop\TransparentContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\BusyIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -254,71 +557,207 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Include="Controls.Chart\MarkerAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Converters.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ButtonStyle.xaml">
+    <Page Include="Resx\Images\Images.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ComboBox.xaml">
+    <Page Include="Resx\Styles.Classic\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\ContextMenu.xaml">
+    <Page Include="Resx\Styles.Classic\ComboBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Styles\DataGrid.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\DialogStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\Expander.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\LabelStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\MenuItem.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\Menu.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\ScrollViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\ShadowPortal.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\ShellPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\ShellTabControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\SymbolListBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resx\Styles\TextBox.xaml">
+    <Page Include="Resx\Styles.Classic\DataGrid.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resx\Styles\VerticalScrollBar.xaml">
+    <Page Include="Resx\Styles.Classic\DialogPageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DockPanelStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DragDropStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ListBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\Menu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\MenuItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\TabControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\TextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ToastStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\DockPanelStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\DragDropStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\SeparatorStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\Calendar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\ColorPickerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\CoordinatePickerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\DateTimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\PopupButtonStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\HoverComboBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\NumericUpDownStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\ButtonStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\Charts.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\CheckBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\ComboBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\ContextMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\DataGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\DialogPageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\DialogStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\Expander.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\LabelStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\MenuItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\Menu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\PasswordBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\ScrollViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\ShadowPortal.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\ShellPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\TabControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\AlgoListBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\SymbolListBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\TextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Old\ToastStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\ToolBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Old\VerticalScrollBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\Charts.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ContextMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Themes\Classic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -330,23 +769,107 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Auth\AccountPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Auth\AccountView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Auth\LoginPageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\BotControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\BotStateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\IndicatorPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\SeriesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Order\PendingOrderPageView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.Order\MarketOrderPageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Order\OpenOrderDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.TradeInfo\AccountStatsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.TradeInfo\TradeHistoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\AlgoListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.TradeInfo\AssetsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ChartView.xaml">
+    <Page Include="Views.Chart\ChartView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\IndicatorSetupView.xaml">
+    <Page Include="Views.Chart\PluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\OrderListView.xaml">
+    <Page Include="Views.Auth\LoginDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PositionListView.xaml">
+    <Page Include="Views\BotJournalView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\GrossPositionListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\JournalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExitDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\TradeInfoView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\PositionListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\NetPositionListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.TradeInfo\OrderListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -372,9 +895,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\StateMachinarium\StateMachinarium.csproj">
-      <Project>{9771258d-f820-482e-b945-310d5b4e182c}</Project>
-      <Name>StateMachinarium</Name>
+    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
+      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
+      <Name>Machinarium</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
@@ -388,6 +911,52 @@
       <Project>{c29222d6-e27c-4d1a-970f-a54851e0647e}</Project>
       <Name>TickTrader.Algo.GuiModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.QuoteCache\TickTrader.QuoteCache.csproj">
+      <Project>{d12e86d0-7ded-4555-a87c-759a2abdca0f}</Project>
+      <Name>TickTrader.QuoteCache</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
+      <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>
+      <Name>TickTrader.Toaster</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resx\Images\fxopen.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Visual.C++.14.0.x64">
+      <Visible>False</Visible>
+      <ProductName>Visual C++ "14" Runtime Libraries %28x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Visual.C++.14.0.x86">
+      <Visible>False</Visible>
+      <ProductName>Visual C++ "14" Runtime Libraries %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="softfx.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resx\Images\softfx.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

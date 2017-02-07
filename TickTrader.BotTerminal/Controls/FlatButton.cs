@@ -11,11 +11,20 @@ namespace TickTrader.BotTerminal
 {
     public class FlatButton : Button
     {
+        public static readonly DependencyProperty CornerRadiusProperty =
+            DependencyProperty.Register(nameof(CornerRadius), typeof(CornerRadius), typeof(FlatButton), new FrameworkPropertyMetadata(default(CornerRadius)));
+
         public static DependencyProperty HighlightBackgroundProperty =
-            DependencyProperty.Register("HighlightBackground", typeof(Brush), typeof(FlatButton));
+            DependencyProperty.Register(nameof(HighlightBackground), typeof(Brush), typeof(FlatButton));
 
         public static DependencyProperty DisabledBackgroundProperty =
-            DependencyProperty.Register("DisabledBackground", typeof(Brush), typeof(FlatButton));
+            DependencyProperty.Register(nameof(DisabledBackground), typeof(Brush), typeof(FlatButton));
+
+        public CornerRadius CornerRadius
+        {
+            get { return (CornerRadius)GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
+        }
 
         public Brush HighlightBackground
         {

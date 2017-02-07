@@ -2,58 +2,69 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IDataSeriesBuffer
+    public interface IPluginSubscriptionHandler
     {
-        void IncrementVirtualSize();
+        void Subscribe(string smbCode, int depth);
+        void Unsubscribe(string smbCode);
     }
 
-    public interface IAlgoDataReader<TRow>
+    public interface IPluginSetupTarget
     {
-        IEnumerable<TRow> ReadNext();
-        TRow ReRead();
-        void ExtendVirtual();
-        IDataSeriesBuffer BindInput(string id, InputFactory factory);
+        void SetParameter(string id, object value);
+        void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector);
     }
 
-    public interface IAlgoDataWriter<TRow>
+    public interface ITradeApi
     {
-        void Init(IList<TRow> inputCache);
-        void Extend(TRow row);
-        IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
+        void OpenOrder(TaskProxy<OpenModifyResult> waitHandler, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag);
+        void CancelOrder(TaskProxy<CancelResult> waitHandler, string orderId, string clientOrderId, OrderSide side);
+        void ModifyOrder(TaskProxy<OpenModifyResult> waitHandler, string orderId, string clientOrderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
+        void CloseOrder(TaskProxy<CloseResult> waitHandler, string orderId, double? volume);
     }
 
-    public interface InputStream<TRow>
+    [Serializable]
+    public struct OpenModifyResult
     {
-        bool ReadNext(out TRow rec);
+        public OpenModifyResult(OrderCmdResultCodes code, OrderEntity order)
+        {
+            this.ResultCode = code;
+            this.NewOrder = order;
+        }
+
+        public OrderCmdResultCodes ResultCode { get; private set; }
+        public OrderEntity NewOrder { get; private set; }
     }
 
-    public interface CollectionWriter<T, TRow>
+    [Serializable]
+    public struct CancelResult
     {
-        void Append(TRow row, T data);
-        void WriteAt(int index, T data, TRow row);
+        public CancelResult(OrderCmdResultCodes code)
+        {
+            this.ResultCode = code;
+        }
+
+        public OrderCmdResultCodes ResultCode { get; private set; }
     }
 
-    public interface IAlgoContext
+    [Serializable]
+    public struct CloseResult
     {
-        void Init();
-        IDataSeriesBuffer BindInput(string id, InputFactory factory);
-        IDataSeriesBuffer BindOutput(string id, OutputFactory factory);
-        object GetParameter(string id);
-        int Read();
-        void MoveNext();
-    }
+        public CloseResult(OrderCmdResultCodes code, double execPrice = double.NaN, double execVolume = 0)
+        {
+            this.ResultCode = code;
+            this.ExecPrice = execPrice;
+            this.ExecVolume = execVolume;
+        }
 
-    public interface InputFactory
-    {
-        InputDataSeries<T> CreateInput<T>();
-    }
-
-    public interface OutputFactory
-    {
-        OutputDataSeries<T> CreateOutput<T>();
+        public OrderCmdResultCodes ResultCode { get; private set; }
+        public double ExecPrice { get; private set; }
+        public double ExecVolume { get; private set; }
     }
 }

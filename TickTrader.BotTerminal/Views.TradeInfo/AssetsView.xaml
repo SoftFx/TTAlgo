@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="TickTrader.BotTerminal.AssetsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:l="clr-namespace:TickTrader.BotTerminal"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    
+    <UserControl.Resources>
+        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                    <Setter Property="l:OverlayControl.Content">
+                        <Setter.Value>
+                            <l:BusyIndicator/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid>
+        <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Asset.Currency}" />
+                <DataGridTextColumn Header="Volume" Width="*" SortMemberPath="Asset.Amount">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Asset.Amount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Locked Volume" Width="*" SortMemberPath="Asset.LockedAmount">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Asset.LockedAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Available Volume" Width="*" SortMemberPath="Asset.FreeAmount">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource AmountConverter}" >
+                            <Binding Path="Asset.FreeAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

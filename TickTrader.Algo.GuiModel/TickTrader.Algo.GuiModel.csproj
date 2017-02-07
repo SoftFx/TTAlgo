@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,12 +40,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlgoParameter.cs" />
-    <Compile Include="AlgoProperty.cs" />
-    <Compile Include="IndicatorSetupModel.cs" />
-    <Compile Include="LocMsg.cs" />
+    <Compile Include="BarInputSetup.cs" />
+    <Compile Include="Convert.cs" />
+    <Compile Include="InputSetup.cs" />
+    <Compile Include="OutputSetup.cs" />
+    <Compile Include="ParameterSetup.cs" />
+    <Compile Include="PropertySetupBase.cs" />
+    <Compile Include="PluginSetup.cs" />
+    <Compile Include="GuiModelMsg.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuoteInputSetup.cs" />
     <Compile Include="UiConverter.cs" />
   </ItemGroup>
   <ItemGroup>

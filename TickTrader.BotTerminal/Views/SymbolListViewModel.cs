@@ -5,37 +5,29 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
     internal class SymbolListViewModel : PropertyChangedBase
     {
-        private SymbolCollectionModel model;
         private SymbolViewModel selected;
+        private IDynamicListSource<SymbolViewModel> viewModelCollection;
 
-        public SymbolListViewModel(SymbolCollectionModel symbolCollection)
+        public SymbolListViewModel(SymbolCollectionModel symbolCollection, iOrderUi orderUi)
         {
-            this.model = symbolCollection;
-            this.Symbols = new ObservableCollection<SymbolViewModel>();
+            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel(v, orderUi)).OrderBy((k, v) => k);
 
-            foreach (var symbol in model)
+            Symbols = viewModelCollection.AsObservable();
+
+            viewModelCollection.Updated += args =>
             {
-                Symbols.Add(new SymbolViewModel(symbol));
-            }
+                if(args.Action == DLinqAction.Remove || args.Action == DLinqAction.Replace)
+                    args.OldItem.NewChartRequested -= symbolViewModel_NewChartRequested;
 
-            model.Added += m =>
-                {
-                    var symbolViewModel = new SymbolViewModel(m);
-                    symbolViewModel.NewChartRequested += symbolViewModel_NewChartRequested;
-                    Symbols.Add(symbolViewModel);
-                };
-            model.Removed += m =>
-                {
-                    var toRemove = Symbols.FirstOrDefault(s => s.Name == m.Name);
-                    toRemove.NewChartRequested -= symbolViewModel_NewChartRequested;
-                    if (toRemove != null)
-                        Symbols.Remove(toRemove);
-                };
+                if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
+                    args.NewItem.NewChartRequested += symbolViewModel_NewChartRequested;
+            };
         }
 
         void symbolViewModel_NewChartRequested(string symbol)
@@ -43,9 +35,13 @@ namespace TickTrader.BotTerminal
             NewChartRequested(symbol);
         }
 
+        public void OpenChart(object context)
+        {
+        }
+
         public event Action<string> NewChartRequested = delegate { };
 
-        public ObservableCollection<SymbolViewModel> Symbols { get; private set; }
+        public IObservableListSource<SymbolViewModel> Symbols { get; private set; }
 
         public SymbolViewModel SelectedSymbol
         {

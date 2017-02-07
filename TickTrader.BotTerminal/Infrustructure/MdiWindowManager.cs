@@ -22,7 +22,19 @@ namespace TickTrader.BotTerminal
             var wnd = base.CreateWindow(rootModel, isDialog, context, settings);
             var parentWnd = containerModel.GetView() as Window;
             if (parentWnd != null)
+            {
                 wnd.Owner = parentWnd;
+                wnd.Closing += (s, e) =>
+                {
+                    if (!System.Windows.Interop.ComponentDispatcher.IsThreadModal)
+                    {
+                        var window = s as Window;
+                        window.Owner?.Activate();
+                        window.Owner = null;
+                    }
+                };
+            }
+
             wnd.ShowInTaskbar = false;
             wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             return wnd;

@@ -2,7 +2,15 @@
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    <l:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    <l:BooleanToVisibilityConverter x:Key="LeastOneBoolToVisible" ConversionMode="LeastOne"/>
     <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
-    
+    <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+    <l:ColorToHexConverter x:Key="ColorToHexConverter" />
+    <l:BoolInverter x:Key="BoolInverter" />
+    <l:FullDateTimeConverter x:Key="FullDateTimeFormat" />
+    <l:FullTimeConverter x:Key="FullTimeFormat" />
+    <l:NumberConverter x:Key="PriceConverter" Type="Price" />
+    <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
+
 </ResourceDictionary>

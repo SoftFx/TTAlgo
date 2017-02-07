@@ -1,5 +1,7 @@
-﻿using SoftFX.Extended;
-using StateMachinarium;
+﻿using Machinarium.Qnil;
+using Machinarium.State;
+using NLog;
+using SoftFX.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,126 +15,54 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolCollectionModel : IEnumerable<SymbolModel>
+    internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>, IOrderDependenciesResolver
     {
-        public enum States { Offline, Online,  UpdatingSubscription, Stopping }
-        public enum Events { Disconnected, SybmolsArrived, DoneUpdating, DoneStopping }
+        private Logger logger;
+        private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
+        private IDictionary<string, CurrencyInfo> currencies;
 
-        private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
-        private Dictionary<string, SymbolModel> symbols = new Dictionary<string, SymbolModel>();
-        private ConnectionModel connection;
-        private IEnumerable<SymbolInfo> snapshot;
-        private bool pendingSubscribe;
-        private TriggeredActivity updateSubscriptionActivity;
-        private ActionBlock<Quote> rateUpdater;
+        public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
         public SymbolCollectionModel(ConnectionModel connection)
         {
-            this.connection = connection;
-
-            updateSubscriptionActivity = new TriggeredActivity(UpdateSubscription);
-
-            stateControl.AddTransition(States.Offline, Events.SybmolsArrived, States.UpdatingSubscription);
-            stateControl.AddTransition(States.UpdatingSubscription, Events.Disconnected, States.Stopping);
-            stateControl.AddTransition(States.UpdatingSubscription, Events.DoneUpdating, States.Online);
-            stateControl.AddTransition(States.Online, () => pendingSubscribe, States.UpdatingSubscription);
-            stateControl.AddTransition(States.Online, Events.Disconnected, States.Stopping);
-            stateControl.AddTransition(States.Stopping, Events.DoneStopping, States.Offline);
-
-            stateControl.OnEnter(States.UpdatingSubscription, () => updateSubscriptionActivity.Trigger());
-            stateControl.OnEnter(States.Stopping, Stop);
-            stateControl.OnEnter(States.Offline, ResetSubscription);
-            stateControl.OnExit(States.Offline, () => Merge(snapshot));
-
-            connection.Initialized += connection_Initialized;
-            connection.Deinitialized += connection_Deinitialized;
-            connection.Disconnected += s => stateControl.PushEventAndAsyncWait(Events.Disconnected, States.Offline);
-
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("SymbolListModel STATE " + from + " => " + to);
-
-            rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
+            logger = NLog.LogManager.GetCurrentClassLogger();
+            Distributor = new QuoteDistributor(connection);
         }
 
-        private void UpdateRate(Quote tick)
+        public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
+        public QuoteDistributor Distributor { get; private set; }
+
+        public async Task Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {
-            SymbolModel symbol;
-            if (symbols.TryGetValue(tick.Symbol, out symbol))
-                symbol.CastNewTick(tick);
+            this.currencies = currencySnapshot;
+            await Merge(symbolSnapshot);
+            Distributor.Init();
         }
 
-        private void connection_Deinitialized()
+        public IFeedSubscription SubscribeAll()
         {
-            connection.FeedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-            connection.FeedProxy.Tick += FeedProxy_Tick;
+            return Distributor.SubscribeAll();
         }
 
-        private void connection_Initialized()
-        {
-            connection.FeedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-            connection.FeedProxy.Tick += FeedProxy_Tick;
-        }
-
-        private async Task UpdateSubscription(CancellationToken cToken)
-        {
-            try
-            {
-                List<string> toSubscribe = new List<string>();
-                int depth = -1;
-                pendingSubscribe = false;
-                foreach (SymbolModel symbol in symbols.Values)
-                {
-                    if (symbol.RequestedSubscription != symbol.CurrentSubscription)
-                    {
-                        if (depth == -1 || depth == symbol.RequestedSubscription.Depth)
-                        {
-                            toSubscribe.Add(symbol.Name);
-                            symbol.CurrentSubscription = symbol.RequestedSubscription;
-                        }
-                        else
-                            pendingSubscribe = true;
-                    }
-                }
-
-                //await Task.Delay(1000);
-                await Task.Factory.StartNew(() => connection.FeedProxy.Server.SubscribeToQuotes(toSubscribe, 1));
-            }
-            catch (Exception ex) { Debug.WriteLine("SymbolListModel.UpdateSubscription() ERROR: " + ex.Message); }
-            stateControl.PushEvent(Events.DoneUpdating);
-        }
-
-        private async void Stop()
-        {
-            await updateSubscriptionActivity.Stop();            
-            stateControl.PushEvent(Events.DoneStopping);
-        }
-
-        void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
-        {
-            snapshot = e.Information;
-            stateControl.PushEvent(Events.SybmolsArrived);
-        }
-
-        void FeedProxy_Tick(object sender, SoftFX.Extended.Events.TickEventArgs e)
-        {
-            rateUpdater.SendAsync(e.Tick).Wait();
-        }
-
-        private void Merge(IEnumerable<SymbolInfo> freshSnashot)
+        private async Task Merge(IEnumerable<SymbolInfo> freshSnashot)
         {
             var freshSnapshotDic = freshSnashot.ToDictionary(i => i.Name);
 
             // upsert
             foreach (var info in freshSnashot)
             {
-                SymbolModel model;
-                if (symbols.TryGetValue(info.Name, out model))
-                    model.Update(info);
-                else
+                await App.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    model = new SymbolModel(this, info);
-                    symbols.Add(info.Name, model);
-                    Added(model);
-                }
+                    SymbolModel model;
+                    if (symbols.TryGetValue(info.Name, out model))
+                        model.Update(info);
+                    else
+                    {
+                        Distributor.AddSymbol(info.Name);
+                        model = new SymbolModel(Distributor, info, currencies);
+                        symbols.Add(info.Name, model);
+                    }
+                });
             }
 
             // delete
@@ -143,29 +73,44 @@ namespace TickTrader.BotTerminal
                     toRemove.Add(symbolModel);
             }
 
-            foreach(var model in toRemove)
+            foreach (var model in toRemove)
             {
-                if(symbols.Remove(model.Name))
-                    Removed(model);
+                symbols.Remove(model.Name);
+                model.Close();
+                Distributor.RemoveSymbol(model.Name);
             }
         }
 
-        private void ResetSubscription()
+        public Task Deinit()
         {
-            foreach (var smb in symbols.Values) smb.CurrentSubscription = new SubscriptionInfo();
+            return Distributor.Stop();
         }
 
-        public event Action<SymbolModel> Added = delegate { };
-        public event Action<SymbolModel> Removed = delegate { };
-
-        public IEnumerator<SymbolModel> GetEnumerator()
+        public void Dispose()
         {
-            return symbols.Values.GetEnumerator();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public SymbolModel GetOrDefault(string key)
         {
-            return symbols.Values.GetEnumerator();
+            SymbolModel result;
+            this.symbols.TryGetValue(key, out result);
+            return result;
+        }
+
+        SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
+        {
+            return GetOrDefault(name);
+        }
+
+        public SymbolModel this[string key]
+        {
+            get
+            {
+                SymbolModel result;
+                if (!this.symbols.TryGetValue(key, out result))
+                    throw new ArgumentException("Symbol Not Found: " + key);
+                return result;
+            }
         }
     }
 }

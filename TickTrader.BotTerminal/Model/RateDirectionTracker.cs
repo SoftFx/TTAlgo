@@ -17,6 +17,8 @@ namespace TickTrader.BotTerminal
     internal class RateDirectionTracker : PropertyChangedBase
     {
         private double? rate;
+        private int precision;
+        private string rateFormat;
 
         public double? Rate
         {
@@ -27,13 +29,23 @@ namespace TickTrader.BotTerminal
                     Direction = RateChangeDirections.Unknown;
                 else if (rate.Value < value)
                     Direction = RateChangeDirections.Up;
-                else if(rate.Value > value)
+                else if (rate.Value > value)
                     Direction = RateChangeDirections.Down;
 
                 this.rate = value;
 
-                NotifyOfPropertyChange("Rate");
-                NotifyOfPropertyChange("Direction");
+                NotifyOfPropertyChange(nameof(Rate));
+                NotifyOfPropertyChange(nameof(Direction));
+            }
+        }
+
+        public int Precision
+        {
+            get { return precision; }
+            set
+            {
+                precision = value;
+                NotifyOfPropertyChange(nameof(Precision));
             }
         }
 

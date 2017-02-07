@@ -1,145 +1,409 @@
-﻿using SoftFX.Extended;
-using StateMachinarium;
+using Caliburn.Micro;
+using Machinarium.State;
+using NLog;
+using SoftFX.Extended;
+using SoftFX.Extended.Reports;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Api;
+using Machinarium.Qnil;
+using System.Diagnostics;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AccountModel
+    internal class AccountModel : CrossDomainObject, IAccountInfoProvider
     {
-        public enum States { Offline, WaitingData, Online, Deinitializing}
-        public enum Events { Connected, CacheInitialized, Diconnected, DoneInit, DoneDeinit }
-
-        private StateMachine<States> stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
-        private ObservableDictionary<string, PositionModel> positions = new ObservableDictionary<string, PositionModel>();
-        private ObservableDictionary<string, OrderModel> orders = new ObservableDictionary<string, OrderModel>();
+        private Logger logger;
+        private DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
+        private DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
+        private DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
+        private TraderClientModel clientModel;
         private ConnectionModel connection;
-        private ActionBlock<Action> uiUpdater;
-        //private RepeatableActivity initActivity;
+        private ActionBlock<System.Action> uiUpdater;
+        private AccountType? accType;
 
-        public AccountModel(ConnectionModel connection)
+        public AccountModel(TraderClientModel clientModel)
         {
-            this.connection = connection;
-            this.Positions = positions.AsReadonly();
-            this.Orders = orders.AsReadonly();
-            //this.initActivity = new RepeatableActivity(Init);
+            logger = NLog.LogManager.GetCurrentClassLogger();
 
-            stateControl.AddTransition(States.Offline, Events.Connected, States.WaitingData);
-            stateControl.AddTransition(States.WaitingData, Events.CacheInitialized, States.Online);
-            stateControl.AddTransition(States.WaitingData, Events.Diconnected, States.Offline);
-            stateControl.AddTransition(States.Online, Events.Diconnected, States.Deinitializing);
-            stateControl.AddTransition(States.Deinitializing, Events.DoneDeinit, States.Offline);
+            this.clientModel = clientModel;
+            this.connection = clientModel.Connection;
+            TradeHistory = new TradeHistoryProvider(clientModel);
 
-            stateControl.OnEnter(States.WaitingData, Init);
-            stateControl.OnEnter(States.Online, UpdateSnapshots);
-            stateControl.OnEnter(States.Deinitializing, Deinit);
+            clientModel.IsConnectingChanged += UpdateConnectingState;
 
-            connection.Initialized += () =>
-                {
-                    connection.TradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
-                    connection.TradeProxy.AccountInfo += TradeProxy_AccountInfo;
-                    connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
-                    connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
-                };
-
-            connection.Deinitialized += () =>
+            connection.Connecting += () =>
             {
-                connection.TradeProxy.CacheInitialized -= TradeProxy_CacheInitialized;
-                connection.TradeProxy.AccountInfo -= TradeProxy_AccountInfo;
-                connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
-                connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
+                connection.TradeProxy.AccountInfo += AccountInfoChanged;
+                connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
+                connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
+                connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
+                connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
             };
 
-            connection.Connected += () => stateControl.PushEvent(Events.Connected);
-            connection.Disconnected += s => stateControl.PushEventAndAsyncWait(Events.Diconnected, States.Offline);
-
-            stateControl.StateChanged += (from, to) => System.Diagnostics.Debug.WriteLine("AccountModel STATE " + from + " => " + to);
-            stateControl.EventFired += e => System.Diagnostics.Debug.WriteLine("AccountModel EVENT " + e);
+            connection.Disconnecting += () =>
+            {
+                connection.TradeProxy.AccountInfo -= AccountInfoChanged;
+                connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
+                connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
+                connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
+                connection.TradeProxy.BalanceOperation -= TradeProxy_BalanceOperation;
+            };
         }
 
-        public ReadonlyDictionaryObserver<string, PositionModel> Positions { get; private set; }
-        public ReadonlyDictionaryObserver<string, OrderModel> Orders { get; private set; }
-        public IStateProvider<States> State { get { return stateControl; } }
-
-        public void Init()
+        private void UpdateConnectingState()
         {
-            this.uiUpdater = DataflowHelper.CreateUiActionBlock<Action>(a => a(), 100, 100, CancellationToken.None);
-            positions.Clear();
-            orders.Clear();
+            if (clientModel.IsConnecting)
+            {
+                positions.Clear();
+                orders.Clear();
+                assets.Clear();
+            }
         }
 
-        public void UpdateSnapshots()
+        private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
+            return Deinit();
+        }
+
+        public event System.Action AccountTypeChanged = delegate { };
+        public IDynamicDictionarySource<string, PositionModel> Positions { get { return positions; } }
+        public IDynamicDictionarySource<string, OrderModel> Orders { get { return orders; } }
+        public IDynamicDictionarySource<string, AssetModel> Assets { get { return assets; } }
+        public ConnectionModel Connection { get { return connection; } }
+        public TradeHistoryProvider TradeHistory { get; private set; }
+        public AccountType? Type
+        {
+            get { return accType; }
+            private set
+            {
+                if (accType != value)
+                {
+                    accType = value;
+                    AccountTypeChanged();
+                }
+            }
+        }
+        public AccountCalculatorModel Calc { get; private set; }
+
+        public double Balance { get; private set; }
+        public string BalanceCurrency { get; private set; }
+        public int BalanceDigits { get; private set; }
+        public string Account { get; private set; }
+        public int Leverage { get; private set; }
+
+        public void Init(IDictionary<string, CurrencyInfo> currencies)
+        {
+            Action<System.Action> uiActionhandler = (a) =>
+            {
+                try
+                {
+                    a();
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Ui Action failed.");
+                }
+            };
+
+            try
+            {
+                this.uiUpdater = DataflowHelper.CreateUiActionBlock<System.Action>(uiActionhandler, 100, 100, CancellationToken.None);
+                UpdateData(currencies);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Init() failed.");
+            }
+        }
+
+        public void UpdateData(IDictionary<string, CurrencyInfo> currencies)
+        {
+            var accInfo = connection.TradeProxy.Cache.AccountInfo;
+            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+
+            Account = accInfo.AccountId;
+            Type = accInfo.Type;
+            Balance = accInfo.Balance;
+            BalanceCurrency = accInfo.Currency;
+            Leverage = accInfo.Leverage;
+            BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
+
             var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
             foreach (var fdkPosition in fdkPositionsArray)
-                positions.Add(fdkPosition.Symbol, new PositionModel());
+                positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition));
 
             var fdkOrdersArray = connection.TradeProxy.Cache.TradeRecords;
             foreach (var fdkOrder in fdkOrdersArray)
-                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder));
-            
-            stateControl.PushEvent(Events.DoneInit);
+                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, clientModel.Symbols));
+
+            var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
+            foreach (var fdkAsset in fdkAssetsArray)
+                assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
+
+            Calc = AccountCalculatorModel.Create(this, clientModel);
+            Calc.Recalculate();
         }
 
-        public async void Deinit()
+        public async Task Deinit()
         {
+            Calc.Dispose();
+
             await Task.Factory.StartNew(() =>
                 {
                     uiUpdater.Complete();
                     uiUpdater.Completion.Wait();
                 });
-            stateControl.PushEvent(Events.DoneDeinit);
         }
 
-        private void UpsertOrder(ExecutionReport report)
+        private void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
         {
-            OrderModel order;
-            if (orders.TryGetValue(report.OrderId, out order))
-                order.Update(report);
+            // TO DO: save updates in a buffer and apply them on Init()
+            var uiUpdaterCopy = this.uiUpdater;
+            if (uiUpdaterCopy == null)
+                return;
+
+            uiUpdater.SendAsync(() => ApplyReport(e.Report));
+        }
+
+        private void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
+        {
+            uiUpdater.SendAsync(() => ApplyReport(e.Report));
+        }
+
+        private void TradeProxy_BalanceOperation(object sender, SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
+        {
+            uiUpdater.SendAsync(() =>
+            {
+                if (Type == AccountType.Gross || Type == AccountType.Net)
+                {
+                    Balance = e.Data.Balance;
+                    // TO DO : Calc should listen to BalanceUpdated event and recalculate iteself
+                    Calc.Recalculate();
+                }
+                else if (Type == AccountType.Cash)
+                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency);
+
+                AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency));
+            });
+        }
+
+        private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
+        {
+            var a = e.Report;
+        }
+
+        private void ApplyReport(Position report)
+        {
+            if (IsEmpty(report))
+                OnPositionRemoved(report);
+            else if (!positions.ContainsKey(report.Symbol))
+                OnPositionAdded(report);
             else
-                orders.Add(report.OrderId, new OrderModel(report));
+                OnPositionUpdated(report);
         }
 
-        void TradeProxy_PositionReport(object sender, SoftFX.Extended.Events.PositionReportEventArgs e)
+        private void OnPositionUpdated(Position report)
         {
-            //uiUpdater.SendAsync(()=>e.
+            var position = UpsertPosition(report);
+            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Modified, position.ToAlgoPosition()));
         }
 
-        void TradeProxy_ExecutionReport(object sender, SoftFX.Extended.Events.ExecutionReportEventArgs e)
+        private void OnPositionAdded(Position report)
         {
-            var execType = e.Report.ExecutionType;
+            var position = UpsertPosition(report);
+            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Opened, position.ToAlgoPosition()));
+        }
 
-            if (execType == ExecutionType.Canceled
-                || execType == ExecutionType.Expired
-                || execType == ExecutionType.Replace
-                || execType == ExecutionType.Rejected
-                || e.Report.LeavesVolume == 0)
+        private void OnPositionRemoved(Position report)
+        {
+            PositionModel position;
+
+            if (!positions.TryGetValue(report.Symbol, out position))
+                return;
+
+            positions.Remove(report.Symbol);
+            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Closed, position.ToAlgoPosition()));
+        }
+
+        private PositionModel UpsertPosition(Position position)
+        {
+            var positionModel = new PositionModel(position);
+            positions[position.Symbol] = positionModel;
+
+            return positionModel;
+        }
+
+        private void ApplyReport(ExecutionReport report)
+        {
+            switch (report.ExecutionType)
             {
-                uiUpdater.SendAsync(() => orders.Remove(e.Report.OrderId));
+                case ExecutionType.Calculated:
+                    if (orders.ContainsKey(report.OrderId))
+                        OnOrderUpdated(report, OrderExecAction.Opened);
+                    else
+                        OnOrderAdded(report, OrderExecAction.Opened);
+                    break;
+
+                case ExecutionType.Replace:
+                    OnOrderUpdated(report, OrderExecAction.Modified);
+                    break;
+
+                case ExecutionType.Expired:
+                    OnOrderRemoved(report, OrderExecAction.Expired);
+                    break;
+
+                case ExecutionType.Canceled:
+                    OnOrderRemoved(report, OrderExecAction.Canceled);
+                    break;
+
+                case ExecutionType.Trade:
+                    if (report.OrderType == TradeRecordType.Limit
+                        || report.OrderType == TradeRecordType.Stop)
+                    {
+                        if (report.LeavesVolume != 0)
+                            OnOrderUpdated(report, OrderExecAction.Filled);
+                        else if (Type != AccountType.Gross)
+                            OnOrderRemoved(report, OrderExecAction.Filled);
+                    }
+                    else if (report.OrderType == TradeRecordType.Position)
+                    {
+                        Balance = report.Balance;
+
+                        if (report.LeavesVolume != 0)
+                            OnOrderUpdated(report, OrderExecAction.Closed);
+                        else
+                            OnOrderRemoved(report, OrderExecAction.Closed);
+                    }
+                    break;
             }
-            else if (execType == ExecutionType.Calculated
-                || execType == ExecutionType.Replace
-                || execType == ExecutionType.Trade
-                || execType == ExecutionType.PendingCancel
-                || execType == ExecutionType.PendingReplace)
+
+            if (Type == AccountType.Cash)
             {
-                uiUpdater.SendAsync(() => UpsertOrder(e.Report));
+                foreach (var asset in report.Assets)
+                    UpdateAsset(asset);
             }
         }
 
-        void TradeProxy_AccountInfo(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
+        private OrderModel UpsertOrder(ExecutionReport report)
         {
+            OrderModel order = new OrderModel(report, clientModel.Symbols);
+            orders[order.Id] = order;
+            return order;
         }
 
-        void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
+        private void OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
-            stateControl.PushEvent(Events.CacheInitialized);
+            var order = UpsertOrder(report);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
         }
+
+        private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
+        {
+            var orderCopy = orders[report.OrderId];
+            orders.Remove(report.OrderId);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, orderCopy);
+        }
+
+        private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
+        {
+            var order = UpsertOrder(report);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
+        }
+
+        private void UpdateAsset(AssetInfo assetInfo)
+        {
+            if (IsEmpty(assetInfo))
+                assets.Remove(assetInfo.Currency);
+            else
+                assets[assetInfo.Currency] = new AssetModel(assetInfo);
+        }
+
+        void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
+        {
+            Type = e.Information.Type;
+        }
+
+        private bool IsEmpty(Position position)
+        {
+            return position.BuyAmount == 0
+               && position.SellAmount == 0;
+        }
+
+        private bool IsEmpty(AssetInfo assetInfo)
+        {
+            return assetInfo.Balance == 0;
+        }
+
+        #region IAccountInfoProvider
+
+        private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
+        private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
+        private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
+
+        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
+        {
+            OrderExecReport algoReport = new OrderExecReport();
+            if (newOrder != null)
+                algoReport.OrderCopy = newOrder.ToAlgoOrder();
+            algoReport.OrderId = report.OrderId;
+            algoReport.ExecAction = action;
+            algoReport.Action = entityAction;
+            if (!double.IsNaN(report.Balance))
+                algoReport.NewBalance = report.Balance;
+            AlgoEvent_OrderUpdated(algoReport);
+        }
+
+        AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
+
+        void IAccountInfoProvider.SyncInvoke(System.Action action)
+        {
+            Caliburn.Micro.Execute.OnUIThread(action);
+        }
+
+        List<OrderEntity> IAccountInfoProvider.GetOrders()
+        {
+            return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
+        }
+
+        IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
+        {
+            return Assets.Snapshot.Select(pair => pair.Value.ToAlgoAsset()).ToList();
+        }
+
+        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
+        {
+            add { AlgoEvent_OrderUpdated += value; }
+            remove { AlgoEvent_OrderUpdated -= value; }
+        }
+
+        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated
+        {
+            add { AlgoEvent_PositionUpdated += value; }
+            remove { AlgoEvent_PositionUpdated -= value; }
+        }
+
+        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated
+        {
+            add { AlgoEvent_BalanceUpdated += value; }
+            remove { AlgoEvent_BalanceUpdated -= value; }
+        }
+
+        #endregion
     }
 }

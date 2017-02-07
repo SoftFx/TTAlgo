@@ -20,45 +20,43 @@ namespace TickTrader.Algo.Core.Metadata
         InputIsOnlyForIndicators,
         InputIsNotDataSeries,
         OutputIsNotDataSeries,
-        DefaultValueTypeMismatch
+        //DefaultValueTypeMismatch,
+        EmptyEnum
     }
 
-    public class AlgoPropertyDescriptor : NoTimeoutByRefObject
+    [Serializable]
+    public class AlgoPropertyDescriptor
     {
-        public AlgoPropertyDescriptor(AlgoDescriptor classMetadata, PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
+        [NonSerialized]
+        protected PropertyInfo reflectioInfo;
+
+        public AlgoPropertyDescriptor(PropertyInfo reflectioInfo, AlgoPropertyErrors? error = null)
         {
-            this.ClassMetadata = classMetadata;
-            this.Info = reflectioInfo;
             this.Error = error;
+            this.reflectioInfo = reflectioInfo;
+
+            this.Id = reflectioInfo.Name;
         }
 
-        public string Id { get { return Info.Name; } }
-        public AlgoDescriptor ClassMetadata { get; private set; }
-        public PropertyInfo Info { get; private set; }
+        public string Id { get; private set; }
+        public string DisplayName { get; private set; }
         public virtual AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.Unknown; } }
         public AlgoPropertyErrors? Error { get; protected set; }
         public bool IsValid { get { return Error == null; } }
 
-        public virtual AlgoPropertyInfo GetInteropCopy()
+        protected void InitDisplayName(string displayName)
         {
-            AlgoPropertyInfo info = new AlgoPropertyInfo();
-            FillCommonProperties(info);
-            return info;
+            if (string.IsNullOrWhiteSpace(displayName))
+                DisplayName = Id;
+            else
+                DisplayName = displayName;
         }
 
-        protected void FillCommonProperties(AlgoPropertyInfo info)
+        protected void Validate(PropertyInfo info)
         {
-            info.Id = this.Id;
-            info.DisplayName = this.Info.Name;
-            info.PropertyType = this.PropertyType;
-            info.Error = this.Error;
-        }
-
-        protected void Validate()
-        {
-            if (!Info.SetMethod.IsPublic)
+            if (!info.SetMethod.IsPublic)
                 SetError(AlgoPropertyErrors.SetIsNotPublic);
-            else if (!Info.GetMethod.IsPublic)
+            else if (!info.GetMethod.IsPublic)
                 SetError(AlgoPropertyErrors.GetIsNotPublic);
         }
 
@@ -68,9 +66,16 @@ namespace TickTrader.Algo.Core.Metadata
                 this.Error = error;
         }
 
-        internal void Set(Api.Algo instance, object value)
+        internal virtual void Set(Api.AlgoPlugin instance, object value)
         {
-            Info.SetValue(instance, value);
+            ThrowIfNoAccessor();
+            reflectioInfo.SetValue(instance, value);
+        }
+
+        protected void ThrowIfNoAccessor()
+        {
+            if (reflectioInfo == null)
+                throw new Exception("This descriptor does not belong to current AppDomain. Cannot set value!");
         }
     } 
 }

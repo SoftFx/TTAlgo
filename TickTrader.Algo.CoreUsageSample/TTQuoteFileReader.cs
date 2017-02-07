@@ -3,23 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
-    class TTQuoteFileReader : InputStream<Bar>
+    class TTQuoteFileReader
     {
-        private System.IO.StreamReader reader;
-
-        public TTQuoteFileReader(System.IO.StreamReader reader)
+        public static List<BarEntity> ReadFile(string path)
         {
-            this.reader = reader;
+            using (var file = System.IO.File.OpenText(path))
+            {
+                List<BarEntity> result = new List<BarEntity>();
+
+                while (true)
+                {
+                    BarEntity nextBar;
+                    if (!ReadNext(out nextBar, file))
+                        break;
+                    result.Add(nextBar);
+                }
+
+                return result;
+            }
         }
 
-        public bool ReadNext(out Bar bar)
+        private static bool ReadNext(out BarEntity bar, System.IO.StreamReader reader)
         {
-            bar = new Bar();
+            bar = new BarEntity();
 
             string line = reader.ReadLine();
             if (line == null)

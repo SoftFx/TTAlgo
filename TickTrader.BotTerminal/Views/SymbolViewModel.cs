@@ -9,34 +9,57 @@ using System.Windows.Media;
 
 namespace TickTrader.BotTerminal
 {
-    class SymbolViewModel : PropertyChangedBase, IRateUpdatesListener
+    class SymbolViewModel : PropertyChangedBase
     {
         public enum States { Collapsed, Expanded, ExpandedWithLevel2 }
 
         private SymbolModel model;
         private bool isSelected;
         private States currentState;
+        private iOrderUi _orderUi;
+        private DateTime _quoteTime;
+        private IFeedSubscription subscription;
 
-        public SymbolViewModel(SymbolModel model)
+        public SymbolViewModel(SymbolModel model, iOrderUi orderUi)
         {
             this.model = model;
-            this.model.Subscribe(this);
+            subscription = model.Subscribe();
+            subscription.NewQuote += OnRateUpdate;
+            this._orderUi = orderUi;
 
-            this.Bid = new RateDirectionTracker();
-            this.Ask = new RateDirectionTracker();
+            this.Bid = model.BidTracker;
+            this.Ask = model.AskTracker;
 
-            this.DetailsPanel = new SymbolDetailsViewModel(Bid, Ask);
+            Bid.Precision = model.Descriptor.Precision;
+            Ask.Precision = model.Descriptor.Precision;
+
+            this.DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
             this.Level2Panel = new SymbolLevel2ViewModel();
             if (model.Descriptor.Features.IsColorSupported)
                 Color = model.Descriptor.Color;
+
+            this.DetailsPanel.OnBuyClick = () => _orderUi.OpenMarkerOrder(model.Name);
+            this.DetailsPanel.OnSellClick = () => _orderUi.OpenMarkerOrder(model.Name);
         }
 
-        public string Name { get { return model.Name; } }
+        public string SymbolName { get { return model.Name; } }
         public string Group { get { return "Forex"; } }
         public int Color { get; private set; }
 
         public RateDirectionTracker Bid { get; private set; }
         public RateDirectionTracker Ask { get; private set; }
+        public DateTime QuoteTime
+        {
+            get { return _quoteTime; }
+            private set
+            {
+                if (_quoteTime != value)
+                {
+                    _quoteTime = value;
+                    NotifyOfPropertyChange(nameof(QuoteTime));
+                }
+            }
+        }
         public int Depth { get; private set; }
         public SymbolDetailsViewModel DetailsPanel { get; private set; }
         public SymbolLevel2ViewModel Level2Panel { get; private set; }
@@ -75,8 +98,6 @@ namespace TickTrader.BotTerminal
         public bool IsExpanded { get { return (State == States.Expanded || State == States.ExpandedWithLevel2); } }
         public bool IsLevel2Visible { get { return State == States.ExpandedWithLevel2; } }
 
-        public event System.Action DepthChanged = delegate { };
-
         public void TriggerState()
         {
             if (!isSelected)
@@ -92,13 +113,20 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        public void OnRateUpdate(Quote tick)
+        private void OnRateUpdate(Quote tick)
         {
             if (tick.HasBid)
                 Bid.Rate = tick.Bid;
 
             if (tick.HasAsk)
                 Ask.Rate = tick.Ask;
+
+            QuoteTime = tick.CreatingTime;
+        }
+
+        public void OpenOrder()
+        {
+            _orderUi.OpenMarkerOrder(model.Name);
         }
 
         public void OpenChart()
@@ -110,7 +138,7 @@ namespace TickTrader.BotTerminal
 
         public void Close()
         {
-            this.model.Unsubscribe(this);
+            subscription.Dispose();
         }
     }
 }

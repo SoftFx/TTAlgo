@@ -7,104 +7,7 @@
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="220">
-    
-    <UserControl.Resources>
 
-        <ControlTemplate x:Key="SellButtonTemplate" TargetType="l:FlatButton" >
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="2*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="25" />
-                    <RowDefinition Height="32" />
-                </Grid.RowDefinitions>
-                <Rectangle Name="Part1" Fill="{TemplateBinding Background}" RadiusX="3" RadiusY="3" Grid.Row="1" Grid.ColumnSpan="2" />
-                <Rectangle Name="Part2" Fill="{TemplateBinding Background}" RadiusX="3" RadiusY="3" Grid.RowSpan="2" />
-                <Border Name="Part3" Background="Transparent" BorderThickness="5,0,0,5" BorderBrush="{TemplateBinding Background}" Margin="-5,5,5,-5" 
-                        Grid.Column="1" Grid.Row="0" CornerRadius="0,0,0,7" />
-                <TextBlock Text="Sell" FontSize="14" Margin="5,0,0,5" VerticalAlignment="Stretch" TextAlignment="Left" />
-                <ContentPresenter Margin="{TemplateBinding Padding}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" 
-                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-            </Grid>
-            <ControlTemplate.Triggers>
-                <Trigger Property="Control.IsMouseOver" Value="True">
-                    <Setter TargetName="Part1" Property="Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
-                    <Setter TargetName="Part2" Property="Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
-                    <Setter TargetName="Part3" Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
-                </Trigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
-
-        <ControlTemplate x:Key="BuyButtonTemplate" TargetType="l:FlatButton">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
-                    <ColumnDefinition Width="3*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="25" />
-                    <RowDefinition Height="32" />
-                </Grid.RowDefinitions>
-                <Rectangle Name="Part1" Fill="{TemplateBinding Background}" RadiusX="3" RadiusY="3" Grid.Row="1" Grid.ColumnSpan="2"/>
-                <Rectangle Name="Part2" Fill="{TemplateBinding Background}" RadiusX="3" RadiusY="3" Grid.RowSpan="2" Grid.Column="1" />
-                <Border Name="Part3" Background="Transparent" BorderThickness="0,0,5,5" BorderBrush="{TemplateBinding Background}" Margin="5,5,-5,-5" 
-                        Grid.Column="0" Grid.Row="0" CornerRadius="0,0,7,0" />
-                <TextBlock Text="Buy" FontSize="14" Margin="0,0,5,5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Right" />
-                <ContentPresenter Margin="{TemplateBinding Padding}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
-                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            </Grid>
-            <ControlTemplate.Triggers>
-                <Trigger Property="Control.IsMouseOver" Value="True">
-                    <Setter TargetName="Part1" Property="Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
-                    <Setter TargetName="Part2" Property="Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
-                    <Setter TargetName="Part3" Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
-                </Trigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
-
-        <Style x:Key="TrickyButton" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButton_Style}">
-            <Setter Property="Margin" Value="2.5,2.5,2.5,2.5" />
-            <Setter Property="Height" Value="Auto" />
-            <Setter Property="Padding" Value="5,0,5,0" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Bottom" />
-            <Setter Property="Background" Value="{DynamicResource RateUnknownColor}" />
-            <Setter Property="HighlightBackground" Value="{DynamicResource RateUnknownHighlightColor}" />
-        </Style>
-
-        <Style x:Key="SellButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
-            <Setter Property="Template" Value="{StaticResource SellButtonTemplate}"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Sell.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
-                    <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
-                    <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Sell.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
-                    <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
-                    <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="BuyButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
-            <Setter Property="Template" Value="{StaticResource BuyButtonTemplate}"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Buy.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
-                    <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
-                    <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Buy.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
-                    <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
-                    <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-    </UserControl.Resources>
-    
     <Grid Margin="2.5" HorizontalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
@@ -116,11 +19,27 @@
             <RowDefinition Height="30" />
             <RowDefinition Height="32" />
         </Grid.RowDefinitions>
-        <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource SellButtonStyle}" >
-            <TextBlock Text="{Binding Sell.Rate}"  HorizontalAlignment="Right" FontSize="18" />
+        <l:FlatButton Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{DynamicResource SellButtonStyle}"
+                      cal:Message.Attach="Sell">
+            <TextBlock HorizontalAlignment="Right" FontSize="18" >
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource PriceConverter}" >
+                        <Binding Path="SellTracker.Rate"/>
+                        <Binding Path="SellTracker.Precision"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
         </l:FlatButton>
-        <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{StaticResource BuyButtonStyle}" >
-            <TextBlock Text="{Binding Buy.Rate}" HorizontalAlignment="Left" FontSize="18" />
+        <l:FlatButton Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Style="{DynamicResource BuyButtonStyle}"
+                      cal:Message.Attach="Buy">
+            <TextBlock HorizontalAlignment="Left" FontSize="18">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource PriceConverter}" >
+                        <Binding Path="BuyTracker.Rate"/>
+                        <Binding Path="BuyTracker.Precision"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
         </l:FlatButton>
         <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Margin="4,1,4,6" Focusable="False"
                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectedIndex="1">

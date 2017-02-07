@@ -7,15 +7,16 @@
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <l:TabControl x:Name="Items" Style="{StaticResource ShellTabControl_Style}"
+    <l:TabControl x:Name="Items" Style="{DynamicResource ShellTabControl_Style}"
                   TabHeaderPadding="10,2,1,2">
         <TabControl.ItemTemplate>
             <DataTemplate>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                     <l:FlatButton Content="x"
-                                  Style="{StaticResource FlatButton_Style}"
+                                  Style="{DynamicResource FlatButtonMainStyle}"
                                   cal:Message.Attach="CloseItem($dataContext)"
+                                  IsEnabled="{Binding UiLock.IsNotLocked}"
                                   Padding="2"
                                   Margin="5,0,3,0"
                                   Background="Transparent"

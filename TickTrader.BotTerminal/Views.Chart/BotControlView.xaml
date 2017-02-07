@@ -1,0 +1,66 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ContextMenu x:Key="ContextMenu">
+        <MenuItem Header="View state" cal:Message.Attach="OpenState" />
+    </ContextMenu>
+
+    <ControlTemplate x:Key="BotControlView.Old">
+        <Border CornerRadius="3" Background="{DynamicResource Chart_BotControl_Background}"
+                Padding="2"
+                ContextMenu="{StaticResource ContextMenu}">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>
+                <TextBlock Text="{Binding Model.Name}" Width="180"/>
+                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+                <l:FlatButton cal:Message.Attach="Close" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
+            </StackPanel>
+        </Border>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="BotControlView.Classic">
+        <Border BorderThickness="1" Padding="2"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                ContextMenu="{StaticResource ContextMenu}">
+            <Border.Background>
+                <SolidColorBrush Color="White" Opacity="0.7" />
+            </Border.Background>
+            <StackPanel Orientation="Horizontal">
+                <!--<Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>-->
+                <TextBlock Text="{Binding Model.Name}" Width="180"/>
+                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+                <l:FlatButton cal:Message.Attach="Close" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
+            </StackPanel>
+        </Border>
+    </ControlTemplate>
+
+    <Style x:Key="BotControlViewStyle" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BotControlView.Old}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+        <Setter Property="Padding" Value="2"/>
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style x:Key="BotControlViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BotControlView.Classic}"/>
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+</ResourceDictionary>

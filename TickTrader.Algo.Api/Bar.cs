@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
-    public struct Bar
+    public interface Bar
     {
-        public double Open { get; set; }
-        public double Close { get; set; }
-        public double High { get; set; }
-        public double Low { get; set; }
-        public double Volume { get; set; }
-        public DateTime OpenTime { get; set; }
+        double Open { get; }
+        double Close { get; }
+        double High { get; }
+        double Low { get; }
+        double Volume { get; }
+        DateTime OpenTime { get; }
+        DateTime CloseTime { get; }
+        bool IsNull { get; }
     }
 }
