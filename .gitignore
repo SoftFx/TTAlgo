@@ -36,6 +36,7 @@ LRP/lib/
 # Visual Studio 2015 cache/options directory
 .vs/
 /wwwroot/
+wwwroot/
 node_modules/
 /[C]lient/*.js
 /[C]lient/*.map
