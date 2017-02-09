@@ -10,6 +10,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>TickTrader.Algo.Api</description>
         <copyright>Copyright ©  2017</copyright>
+        <tags>SoftFX TickTrader</tags>
     </metadata>
     <files />
 </package>
