@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>TickTrader.Algo.Api</id>
+        <version>1.0.0</version>
+        <title>TickTrader.Algo.Api</title>
+        <authors>SoftFX</authors>
+        <owners>SoftFX</owners>
+        <iconUrl>https://www.soft-fx.com/favicon2.ico</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>TickTrader.Algo.Api</description>
+        <copyright>Copyright ©  2017</copyright>
+    </metadata>
+    <files />
+</package>
