@@ -13,18 +13,25 @@ namespace TickTrader.Algo.Core
         private BarSampler sampler;
         private List<BarEntity> futureBarCache;
         private ITimeRef refTimeline;
+        private BarPriceType priceType;
 
         public BarSeriesFixture(string symbolCode, IFeedFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
+            : this(symbolCode, BarPriceType.Bid, context, data, refTimeline)
+        {
+        }
+
+        public BarSeriesFixture(string symbolCode, BarPriceType priceType, IFeedFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
             : base(symbolCode, context)
         {
             this.refTimeline = refTimeline;
+            this.priceType = priceType;
 
             var execContext = context.ExecContext;
 
             sampler = BarSampler.Get(execContext.TimeFrame);
 
             if (data == null)
-                data = context.Feed.QueryBars(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, execContext.TimeFrame);
+                data = context.Feed.QueryBars(SymbolCode, priceType, execContext.TimePeriodStart, execContext.TimePeriodEnd, execContext.TimeFrame);
 
             if (refTimeline != null)
             {
@@ -32,9 +39,17 @@ namespace TickTrader.Algo.Core
                 refTimeline.Appended += RefTimeline_Appended;
             }
 
-            Buffer = execContext.Builder.GetBarBuffer(SymbolCode);
+            var key = BarStrategy.GetKey(SymbolCode, priceType);
+            Buffer = execContext.Builder.GetBarBuffer(key);
             if (data != null)
                 data.ForEach(AppendBar);
+
+            if (refTimeline != null)
+            {
+                // fill end of buffer
+                for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
+                    Buffer.Append(CreateEmptyBar(refTimeline[i]));
+            }
         }
 
         internal InputBuffer<BarEntity> Buffer { get; private set; }
@@ -58,6 +73,7 @@ namespace TickTrader.Algo.Core
         {
             var barBoundaries = sampler.GetBar(quote.Time);
             var barOpenTime = barBoundaries.Open;
+            var price = priceType == BarPriceType.Ask ? quote.Ask : quote.Bid;
 
             // validate against time boundaries
             if (barOpenTime < Context.ExecContext.TimePeriodStart || barOpenTime >= Context.ExecContext.TimePeriodEnd)
@@ -72,12 +88,12 @@ namespace TickTrader.Algo.Core
                     return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    lastBar.Append(quote.Bid, 1);
+                    lastBar.Append(price, 1);
                     return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
 
-            var newBar = new BarEntity(barOpenTime, barBoundaries.Close, quote.Bid, 1);
+            var newBar = new BarEntity(barOpenTime, barBoundaries.Close, price, 1);
             AppendBar(newBar);
             return new BufferUpdateResult() { ExtendedBy = 1 };
         }
@@ -116,7 +132,7 @@ namespace TickTrader.Algo.Core
                     else if (timeCoordinate > bar.OpenTime) // place not found - throw out
                         return;
 
-                    Buffer.Append(null); // fill empty spaces
+                    Buffer.Append(CreateEmptyBar(timeCoordinate)); // fill empty spaces
                 }
 
                 futureBarCache.Add(bar); // place not found - add to future cache
@@ -127,13 +143,19 @@ namespace TickTrader.Algo.Core
                 Appended?.Invoke();
             }
         }
-    }
 
-    internal class TimeSyncBarSeriesFixture : BarSeriesFixture
-    {
-        public TimeSyncBarSeriesFixture(string symbolCode, IFeedFixtureContext context, ITimeRef syncRef)
-            : base(symbolCode, context)
+        private BarEntity CreateEmptyBar(DateTime openTime)
         {
+            var boundaries = sampler.GetBar(openTime);
+            return new BarEntity(boundaries.Open, boundaries.Close, double.NaN, double.NaN);
         }
     }
+
+    //internal class TimeSyncBarSeriesFixture : BarSeriesFixture
+    //{
+    //    public TimeSyncBarSeriesFixture(string symbolCode, IFeedFixtureContext context, ITimeRef syncRef)
+    //        : base(symbolCode, context)
+    //    {
+    //    }
+    //}
 }

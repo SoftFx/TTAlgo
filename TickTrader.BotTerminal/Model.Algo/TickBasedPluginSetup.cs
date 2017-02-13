@@ -10,7 +10,7 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    public class TickBasedPluginSetup : PluginSetup, IPluginSetup
+    public class TickBasedPluginSetup : PluginSetup
     {
         private string mainSymbol;
 
@@ -22,19 +22,6 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public PluginBuilder CreateBuilder()
-        {
-            var builder = new IndicatorBuilder(Descriptor);
-
-            foreach (var input in Inputs)
-                input.Configure(builder);
-
-            foreach (var parameter in Parameters)
-                builder.SetParameter(parameter.Id, parameter.GetApplyValue());
-
-            return builder;
-        }
-
         protected override InputSetup CreateInput(InputDescriptor descriptor)
         {
             if (!descriptor.IsValid)
@@ -43,7 +30,7 @@ namespace TickTrader.BotTerminal
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
                 case "System.Double": return new QuoteToDoubleInput(descriptor, mainSymbol);
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInput(descriptor, mainSymbol);
+                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInput(descriptor, mainSymbol, Algo.Api.BarPriceType.Bid);
                 case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInput(descriptor, mainSymbol, false);
                 case "TickTrader.Algo.Api.QuoteL2": return new QuoteToQuoteInput(descriptor, mainSymbol, true);
                 default: return new InputSetup.Invalid(descriptor, "UnsupportedInputType");

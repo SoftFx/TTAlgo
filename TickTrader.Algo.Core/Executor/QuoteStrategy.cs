@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class QuoteStrategy : FeedStrategy
+    public class QuoteStrategy : FeedStrategy
     {
         private QuoteSeriesFixture mainSeries;
 
@@ -28,20 +28,15 @@ namespace TickTrader.Algo.Core
             return overallResult;
         }
 
-        private void ThrowIfNotTickType<TSrc>()
+        public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)
         {
-            if (!typeof(TSrc).Equals(typeof(QuoteEntity)))
-                throw new InvalidOperationException("Wrong data type! TickStrategy only works with QuoteEntity data!");
-        }
+            AddSetupAction(() =>
+            {
+                if (symbolCode != mainSeries.SymbolCode)
+                    throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
 
-        internal override void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector)
-        {
-            ThrowIfNotTickType<TSrc>();
-
-            if(symbolCode != mainSeries.SymbolCode)
-                throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
-
-            ExecContext.Builder.MapInput(inputName, symbolCode, selector);
+                ExecContext.Builder.MapInput(inputName, symbolCode, selector);
+            });
         }
 
         internal override void OnInit()

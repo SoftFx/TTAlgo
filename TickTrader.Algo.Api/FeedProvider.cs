@@ -14,6 +14,12 @@ namespace TickTrader.Algo.Api
         //QuoteSeries Level2 { get; }
     }
 
+    public enum BarPriceType
+    {
+        Bid     = 1,
+        Ask     = 2
+    }
+
     public interface CustomFeedProvider
     {
         void Subscribe(string symbol, int depth = 1);

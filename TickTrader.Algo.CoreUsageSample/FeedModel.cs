@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
-    internal class FeedModel : IBarBasedFeed, ISynchronizationContext
+    internal class FeedModel : IPluginFeedProvider, ISynchronizationContext
     {
         private Action<QuoteEntity[]> FeedUpdated;
         private Dictionary<string, SymbolDataModel> dataBySymbol = new Dictionary<string, SymbolDataModel>();
@@ -28,7 +28,6 @@ namespace TickTrader.Algo.CoreUsageSample
             GetSymbolData(symbol).Fill(data);
         }
 
-
         public void Update(QuoteEntity update)
         {
             GetSymbolData(update.Symbol).Update(update);
@@ -46,7 +45,7 @@ namespace TickTrader.Algo.CoreUsageSample
             return data;
         }
 
-        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
+        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {
             return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame).ToList();
         }

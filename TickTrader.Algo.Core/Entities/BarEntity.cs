@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class BarEntity : Api.Bar
+    public class BarEntity : Api.Bar, Api.Ext.IBarWriter
     {
         public static readonly BarEntity Empty = new BarEntity() { IsNull = true, Open = double.NaN, Close = double.NaN, High = double.NaN , Low = double.NaN, Volume = double.NaN };
 
@@ -67,5 +67,15 @@ namespace TickTrader.Algo.Core
             clone.Append(price, volume);
             return clone;
         }
+    }
+
+    public class FullBar
+    {
+        public FullBar(Bar bid, Bar ask)
+        {
+        }
+
+        public Bar Bid { get; private set; }
+        public Bar Ask { get; private set; }
     }
 }

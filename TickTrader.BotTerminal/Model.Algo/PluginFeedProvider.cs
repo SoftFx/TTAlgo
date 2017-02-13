@@ -12,7 +12,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
+    internal class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
     {
         private IFeedSubscription subscription;
         private SymbolCollectionModel symbols;
@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             rxBuffer.BatchLinkTo(txBlock, 30);
         }
 
-        public IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
+        public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
             BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
             var result = history.GetBars(symbolCode, PriceType.Ask, period, from, to).Result;
@@ -118,11 +118,6 @@ namespace TickTrader.BotTerminal
             Caliburn.Micro.Execute.OnUIThread(action);
         }
 
-        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame)
-        {
-            throw new NotImplementedException();
-        }
-
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             throw new NotImplementedException();
@@ -134,44 +129,6 @@ namespace TickTrader.BotTerminal
                 .Where(s => s.Value.LastQuote != null)
                 .Select(s => FdkToAlgo.Convert(s.Value.LastQuote))
                 .ToList();
-        }
-    }
-
-    internal class BarBasedFeedProvider : PluginFeedProvider, IBarBasedFeed
-    {
-        private Func<List<BarEntity>> mainSeriesProvider;
-
-        public BarBasedFeedProvider(TraderClientModel feed, Func<List<BarEntity>> mainSeriesProvider)
-            : base(feed.Symbols, feed.History)
-        {
-            if (mainSeriesProvider == null)
-                throw new ArgumentNullException("mainSeriesProvider");
-
-            this.mainSeriesProvider = mainSeriesProvider;
-        }
-
-        public List<BarEntity> GetMainSeries()
-        {
-            return mainSeriesProvider();
-        }
-    }
-
-    internal class QuoteBasedFeedProvider : PluginFeedProvider, IQuoteBasedFeed
-    {
-        private Func<List<QuoteEntity>> mainSeriesProvider;
-
-        public QuoteBasedFeedProvider(TraderClientModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
-            : base(feed.Symbols, feed.History)
-        {
-            if (mainSeriesProvider == null)
-                throw new ArgumentNullException("mainSeriesProvider");
-
-            this.mainSeriesProvider = mainSeriesProvider;
-        }
-
-        public List<QuoteEntity> GetMainSeries()
-        {
-            return mainSeriesProvider();
         }
     }
 }

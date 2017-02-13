@@ -40,6 +40,7 @@ namespace TickTrader.Algo.Core
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
             this.accFixture = new AccDataFixture(this);
             this.statusFixture = new StatusFixture(this);
+            this.logger = Null.Logger;
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -201,6 +202,7 @@ namespace TickTrader.Algo.Core
         }
 
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
+        public event Action<Exception> OnRuntimeError = delegate { };
 
         #endregion
 
@@ -311,43 +313,49 @@ namespace TickTrader.Algo.Core
 
         #region Setup Methods
 
-        public void InitBarStartegy(IBarBasedFeed feed)
+        public void SetStrategy(FeedStrategy strategy)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
-                fStrategy = new BarStrategy(feed);
+                fStrategy = strategy;
             }
         }
 
-        public void InitQuoteStartegy(IQuoteBasedFeed feed)
+        public T GetFeedStrategy<T>()
+            where T: FeedStrategy
         {
-            lock (_sync)
-            {
-                ThrowIfRunning();
-                fStrategy = new QuoteStrategy(feed);
-            }
+            return (T)fStrategy;
         }
 
-        public void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector)
-        {
-            MapBarInput<double>(id, symbolCode, selector);
-        }
+        //public void InitQuoteStartegy(IQuoteBasedFeed feed)
+        //{
+        //    lock (_sync)
+        //    {
+        //        ThrowIfRunning();
+        //        fStrategy = new QuoteStrategy(feed);
+        //    }
+        //}
 
-        public void MapBarInput<TVal>(string inputName, string symbolCode, Func<BarEntity, TVal> selector)
-        {
-            setupActions.Add(() => fStrategy.MapInput(inputName, symbolCode, selector));
-        }
+        //public void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector)
+        //{
+        //    MapBarInput<double>(id, symbolCode, selector);
+        //}
 
-        public void MapBarInput(string inputName, string symbolCode)
-        {
-            setupActions.Add(() => fStrategy.MapInput<BarEntity, Api.Bar>(inputName, symbolCode, b => b));
-        }
+        //public void MapBarInput<TVal>(string inputName, string symbolCode, Func<BarEntity, TVal> selector)
+        //{
+        //    setupActions.Add(() => fStrategy.MapInput(inputName, symbolCode, selector));
+        //}
 
-        public void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector)
-        {
-            setupActions.Add(() => fStrategy.MapInput<TEntity, TData>(inputName, symbolCode, selector));
-        }
+        //public void MapBarInput(string inputName, string symbolCode)
+        //{
+        //    setupActions.Add(() => fStrategy.MapInput<BarEntity, Api.Bar>(inputName, symbolCode, b => b));
+        //}
+
+        //public void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector)
+        //{
+        //    setupActions.Add(() => fStrategy.MapInput<TEntity, TData>(inputName, symbolCode, selector));
+        //}
 
         public void SetParameter(string name, object value)
         {
@@ -421,12 +429,12 @@ namespace TickTrader.Algo.Core
 
         private void OnInternalException(ExecutorException ex)
         {
-            logger.OnError(ex);
+            OnRuntimeError?.Invoke(ex);
         }
 
         private void OnRuntimeException(Exception ex)
         {
-            logger.OnError(ex);
+            OnRuntimeError?.Invoke(ex);
         }
 
         private void OnAsyncAction(Action asyncAction)
@@ -484,6 +492,11 @@ namespace TickTrader.Algo.Core
         {
             iStrategy.Enqueue(update);
         }
+
+        //void IFixtureContext.AddSetupAction(Action setupAction)
+        //{
+        //    setupActions.Add(setupAction);
+        //}
 
         //IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
         //{

@@ -11,16 +11,14 @@ namespace TickTrader.BotTerminal
     internal class ChartCollectionViewModel : Conductor<ChartViewModel>.Collection.OneActive
     {
         private TraderClientModel clientModel;
-        private PluginCatalog catalog;
         private IShell shell;
-        private BotJournal pluginJournal;
+        private readonly AlgoEnvironment algoEnv;
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, PluginCatalog catalog, IShell shell, BotJournal pluginJournal)
+        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv)
         {
             this.clientModel = clientModel;
-            this.catalog = catalog;
+            this.algoEnv = algoEnv;
             this.shell = shell;
-            this.pluginJournal = pluginJournal;
 
             clientModel.Symbols.Updated += Symbols_Updated;
         }
@@ -55,7 +53,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, shell, clientModel, catalog, pluginJournal));
+            ActivateItem(new ChartViewModel(symbol, shell, clientModel, algoEnv));
         }
 
         public void CloseItem(ChartViewModel chart)

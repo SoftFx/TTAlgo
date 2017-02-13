@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.BotTerminal.Lib;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,6 +25,7 @@ namespace TickTrader.BotTerminal
             connection.Deinitalizing += Connection_Deinitalizing;
 
             this.Symbols = new SymbolCollectionModel(connection);
+            this.ObservableSymbolList = Symbols.OrderBy((k, v) => k).AsObservable();
             this.History = new FeedHistoryProviderModel(connection);
             this.TradeApi = new TradeExecutor(this);
             this.Account = new AccountModel(this);
@@ -126,6 +128,7 @@ namespace TickTrader.BotTerminal
         public TradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
         public SymbolCollectionModel Symbols { get; private set; }
+        public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
         public Dictionary<string, CurrencyInfo> Currencies { get; private set; }

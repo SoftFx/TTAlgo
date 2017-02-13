@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core
     public interface IPluginSetupTarget
     {
         void SetParameter(string id, object value);
-        void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector);
+        T GetFeedStrategy<T>() where T : FeedStrategy;
     }
 
     public interface ITradeApi

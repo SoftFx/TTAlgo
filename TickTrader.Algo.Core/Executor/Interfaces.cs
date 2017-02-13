@@ -38,21 +38,11 @@ namespace TickTrader.Algo.Core
     {
         ISynchronizationContext Sync { get; }
         IEnumerable<QuoteEntity> GetSnapshot();
-        List<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
         void Subscribe(Action<QuoteEntity[]> FeedUpdated);
         void Unsubscribe();
         void SetSymbolDepth(string symbolCode, int depth);
-    }
-
-    public interface IBarBasedFeed : IPluginFeedProvider
-    {
-        List<BarEntity> GetMainSeries();
-    }
-
-    public interface IQuoteBasedFeed : IPluginFeedProvider
-    {
-        List<QuoteEntity> GetMainSeries();
     }
 
     public interface ISynchronizationContext
@@ -87,6 +77,7 @@ namespace TickTrader.Algo.Core
         IPluginLogger Logger { get; }
         void Enqueue(QuoteEntity update);
         void Enqueue(Action<PluginBuilder> action);
+        //void AddSetupAction(Action setupAction);
 
         //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         //IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to);

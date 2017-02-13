@@ -33,8 +33,7 @@ namespace TickTrader.BotTerminal
         private static int idSeed;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly TraderClientModel clientModel;
-        private readonly PluginCatalog catalog;
-        private readonly BotJournal journal;
+        private readonly AlgoEnvironment algoEnv;
         private ChartModelBase activeChart;
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
@@ -42,14 +41,13 @@ namespace TickTrader.BotTerminal
         private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
 
-        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, PluginCatalog catalog, BotJournal journal)
+        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.clientModel = clientModel;
-            this.catalog = catalog;
+            this.algoEnv = algoEnv;
             this.shell = shell;
-            this.journal = journal;
 
             ChartWindowId = "Chart" + ++idSeed;
 
@@ -57,8 +55,8 @@ namespace TickTrader.BotTerminal
 
             UpdateLabelFormat(smb);
 
-            this.barChart = new BarChartModel(smb, catalog, clientModel, journal);
-            this.tickChart = new TickChartModel(smb, catalog, clientModel, journal);
+            this.barChart = new BarChartModel(smb, algoEnv, clientModel);
+            this.tickChart = new TickChartModel(smb, algoEnv, clientModel);
             this.UiLock = new UiLock();
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
@@ -169,7 +167,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new PluginSetupViewModel(catalog, item, Chart);
+                var model = new PluginSetupViewModel(algoEnv.Repo, item, Chart);
                 if (!model.SetupCanBeSkipped)
                     shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
                 else

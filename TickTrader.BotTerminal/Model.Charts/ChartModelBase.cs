@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
         private DynamicList<IndicatorModel> indicators = new DynamicList<IndicatorModel>();
-        private PluginCatalog catalog;
+        private readonly AlgoEnvironment algoEnv;
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
         private bool isLoading;
@@ -53,15 +53,15 @@ namespace TickTrader.BotTerminal
         private List<Quote> updateQueue;
         private IFeedSubscription subscription;
 
-        public ChartModelBase(SymbolModel symbol, PluginCatalog catalog, TraderClientModel client, BotJournal journal)
+        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel client)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.ClientModel = client;
             this.Model = symbol;
-            this.catalog = catalog;
-            this.Journal = journal;
+            this.algoEnv = algoEnv;
+            this.Journal = algoEnv.BotJournal;
 
-            this.AvailableIndicators = catalog.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+            this.AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
             this.isConnected = client.IsConnected;
             client.Connected += Connection_Connected;
@@ -88,6 +88,7 @@ namespace TickTrader.BotTerminal
 
         protected SymbolModel Model { get; private set; }
         protected TraderClientModel ClientModel { get; private set; }
+        protected AlgoEnvironment AlgoEnv => algoEnv;
         protected ConnectionModel Connection { get { return ClientModel.Connection; } }
         protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 

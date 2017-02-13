@@ -29,8 +29,6 @@ namespace TickTrader.Algo.Core
 
         int IPluginDataBuffer<TDst>.VirtualPos { get { return srcBuffer.VirtualPos; } }
 
-        int VirtualPost { get { return srcBuffer.VirtualPos; } }
-
         public TDst this[int index]
         {
             get { return readTransform(srcBuffer[index]); }
