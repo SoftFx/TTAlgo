@@ -8,10 +8,11 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal abstract class FeedStrategy : CrossDomainObject,  IFeedFixtureContext
+    public abstract class FeedStrategy : CrossDomainObject,  IFeedFixtureContext
     {
         private SubscriptionManager dispenser;
         private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
+        private List<Action> setupActions = new List<Action>();
 
         public FeedStrategy(IPluginFeedProvider feed)
         {
@@ -30,7 +31,6 @@ namespace TickTrader.Algo.Core
 
         internal abstract void OnInit();
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
-        internal abstract void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector);
 
         public void OnUserSubscribe(string symbolCode, int depth)
         {
@@ -62,6 +62,7 @@ namespace TickTrader.Algo.Core
             userSubscriptions.Clear();
             dispenser.Reset();
             OnInit();
+            setupActions.ForEach(a => a());
         }
 
         internal virtual void Start()
@@ -72,6 +73,11 @@ namespace TickTrader.Algo.Core
         internal virtual void Stop()
         {
             Feed.Sync.Invoke(StopStrategy);
+        }
+
+        protected void AddSetupAction(Action setupAction)
+        {
+            setupActions.Add(setupAction);
         }
 
         private void StartStrategy()

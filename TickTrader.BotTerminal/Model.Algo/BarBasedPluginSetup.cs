@@ -11,29 +11,20 @@ using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal
 {
-    public class BarBasedPluginSetup : PluginSetup, IPluginSetup
+    internal class BarBasedPluginSetup : PluginSetup
     {
         private string mainSymbol;
+        private BarPriceType priceType;
+        private AlgoEnvironment algoEnv;
 
-        public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol)
+        public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol, BarPriceType priceType, AlgoEnvironment algoEnv)
             : base(pRef)
         {
             this.mainSymbol = mainSymbol;
+            this.priceType = priceType;
+            this.algoEnv = algoEnv;
 
             Init();
-        }
-
-        public PluginBuilder CreateBuilder()
-        {
-            var builder = new IndicatorBuilder(Descriptor);
-
-            foreach (var input in Inputs)
-                input.Configure(builder);
-
-            foreach (var parameter in Parameters)
-                builder.SetParameter(parameter.Id, parameter.GetApplyValue());
-
-            return builder;
         }
 
         protected override InputSetup CreateInput(InputDescriptor descriptor)
@@ -43,8 +34,8 @@ namespace TickTrader.BotTerminal
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInput(descriptor, mainSymbol);
-                case "TickTrader.Algo.Api.Bar": return new BarToBarInput(descriptor, mainSymbol);
+                case "System.Double": return new BarToDoubleInput(descriptor, mainSymbol, priceType, algoEnv);
+                case "TickTrader.Algo.Api.Bar": return new BarToBarInput(descriptor, mainSymbol, priceType, algoEnv);
                 //case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInput(descriptor, mainSymbol, false);
                 //case "TickTrader.Algo.Api.QuoteL2": return new QuoteToQuoteInput(descriptor, mainSymbol, true);
                 default: return new InputSetup.Invalid(descriptor, "UnsupportedInputType");

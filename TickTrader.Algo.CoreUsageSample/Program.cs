@@ -57,13 +57,14 @@ namespace TickTrader.Algo.CoreUsageSample
             var descriptor = AlgoPluginDescriptor.Get(typeof(Alligator));
             var executor = new PluginExecutor(descriptor.Id);
             executor.MainSymbolCode = "EURUSD";
-            //executor.FeedProvider = dataModel;
-            executor.InitBarStartegy(dataModel);
             executor.InvokeStrategy = new PriorityInvokeStartegy();
             executor.TimeFrame = dataModel.TimeFrame;
             executor.TimePeriodStart = DateTime.Parse("2015.11.02 00:25:00");
             executor.TimePeriodEnd = DateTime.Parse("2015.11.03 3:00:00");
-            executor.MapBarInput("Input", "EURUSD");
+
+            var feedCfg = new BarStrategy(dataModel, BarPriceType.Bid);
+            feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);
+            executor.SetStrategy(feedCfg);
 
             executor.Start();
 

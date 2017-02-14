@@ -13,7 +13,7 @@ namespace TickTrader.Algo.GuiModel
         private bool useL2;
 
         public QuoteToQuoteInput(InputDescriptor descriptor, string symbolCode, bool useL2)
-            : base(descriptor, symbolCode)
+            : base(descriptor, symbolCode, null)
         {
             this.useL2 = useL2;
 
@@ -25,18 +25,13 @@ namespace TickTrader.Algo.GuiModel
             //if (useL2)
             //    target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
             //else
-                target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
-        }
-
-        public override void Configure(IndicatorBuilder builder)
-        {
-            builder.MapBarInput(Descriptor.Id, SymbolCode);
+                target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Descriptor.Id, SelectedSymbol.Name, b => b);
         }
 
         public override void CopyFrom(PropertySetupBase srcProperty)
         {
             var otherInput = srcProperty as BarToBarInput;
-            SymbolCode = otherInput.SymbolCode;
+            SelectedSymbol = otherInput.SelectedSymbol;
         }
     }
 
@@ -70,7 +65,7 @@ namespace TickTrader.Algo.GuiModel
         private QuoteToDoubleMappings mapping;
 
         public QuoteToDoubleInput(InputDescriptor descriptor, string symbolCode)
-            : base(descriptor, symbolCode)
+            : base(descriptor, symbolCode, null)
         {
             SetMetadata(descriptor);
 
@@ -91,12 +86,7 @@ namespace TickTrader.Algo.GuiModel
 
         public override void Apply(IPluginSetupTarget target)
         {
-            target.MapInput<QuoteEntity, double>(Descriptor.Id, SymbolCode, GetSelector());
-        }
-
-        public override void Configure(IndicatorBuilder builder)
-        {
-            builder.MapInput<QuoteEntity, double>(Descriptor.Id, SymbolCode, GetSelector());
+            target.GetFeedStrategy<QuoteStrategy>(). MapInput<double>(Descriptor.Id, SelectedSymbol.Name, GetSelector());
         }
 
         public override void Reset()
@@ -118,7 +108,7 @@ namespace TickTrader.Algo.GuiModel
         public override void CopyFrom(PropertySetupBase srcProperty)
         {
             var otherInput = srcProperty as QuoteToDoubleInput;
-            SymbolCode = otherInput.SymbolCode;
+            SelectedSymbol = otherInput.SelectedSymbol;
             Mapping = otherInput.Mapping;
         }
     }

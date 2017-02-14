@@ -56,6 +56,7 @@
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
+    <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AssetEntity.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Metadata\ReductionDescriptor.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />
     <Compile Include="Package\PackageWriter.cs" />
@@ -125,6 +127,7 @@
     <Compile Include="Metadata\ParameterDescriptor.cs" />
     <Compile Include="Realtime\NullProvider.cs" />
     <Compile Include="Realtime\RealtimePluginExecutor.cs" />
+    <Compile Include="Repository\ExtCollection.cs" />
     <Compile Include="Repository\FileWatcher.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Repository\AlgoSandbox.cs" />

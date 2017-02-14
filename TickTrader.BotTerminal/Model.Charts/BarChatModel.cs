@@ -26,8 +26,8 @@ namespace TickTrader.BotTerminal
         private Api.TimeFrames timeframe;
         private readonly BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, PluginCatalog catalog, TraderClientModel clientModel, BotJournal journal)
-            : base(symbol, catalog, clientModel, journal)
+        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel clientModel)
+            : base(symbol, algoEnv, clientModel)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
         {
-            return new BarBasedPluginSetup(catalogItem, SymbolCode);
+            return new BarBasedPluginSetup(catalogItem, SymbolCode, Algo.Api.BarPriceType.Bid, AlgoEnv);
         }
 
         protected override IndicatorModel CreateIndicator(PluginSetup setup)
@@ -98,8 +98,10 @@ namespace TickTrader.BotTerminal
 
         protected override void InitPluign(PluginExecutor plugin)
         {
-            var feed = new BarBasedFeedProvider(ClientModel, () => barCollection.Snapshot.ToList());
-            plugin.InitBarStartegy(feed);
+            var mainSeries = barCollection.Snapshot.ToList();
+            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History);
+            var strategy = new BarStrategy(feed, Algo.Api.BarPriceType.Bid, mainSeries);
+            plugin.SetStrategy(strategy);
             plugin.Metadata = feed;
         }
 

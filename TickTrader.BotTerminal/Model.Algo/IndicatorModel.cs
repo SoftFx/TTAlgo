@@ -81,8 +81,10 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            base.Dispose();
+
             Host.StartEvent -= Host_StartEvent;
             Host.StopEvent -= Host_StopEvent;
             if (IsRunning)

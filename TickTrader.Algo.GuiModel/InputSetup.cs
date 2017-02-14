@@ -17,42 +17,41 @@ namespace TickTrader.Algo.GuiModel
 
     public abstract class InputSetup : PropertySetupBase
     {
-        private string selectedSymbol;
+        private ISymbolInfo selectedSymbol;
         private string defaultSymbolCode;
 
-        public InputSetup(InputDescriptor descriptor, string defaultSymbolCode)
+        public InputSetup(InputDescriptor descriptor, string defaultSymbolCode, IReadOnlyList<ISymbolInfo> symbols)
         {
             this.defaultSymbolCode = defaultSymbolCode;
 
             SetMetadata(descriptor);
-            AvailableSymbols = new string[] { defaultSymbolCode };
-
-            selectedSymbol = defaultSymbolCode;
+            if (symbols == null)
+                AvailableSymbols = new ISymbolInfo[] { new DummySymbolInfo(defaultSymbolCode) };
+            else
+                AvailableSymbols = symbols;
         }
 
-        public string SymbolCode
+        public ISymbolInfo SelectedSymbol
         {
             get { return selectedSymbol; }
             set
             {
                 selectedSymbol = value;
-                NotifyPropertyChanged(nameof(SymbolCode));
+                NotifyPropertyChanged(nameof(SelectedSymbol));
             }
         }
 
-        public IEnumerable<string> AvailableSymbols { get; private set; }
-
-        public abstract void Configure(IndicatorBuilder builder);
+        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
         public override void Reset()
         {
-            SymbolCode = defaultSymbolCode;
+            SelectedSymbol = AvailableSymbols.First(s => s.Name == defaultSymbolCode);
         }
 
         public class Invalid : InputSetup
         {
             public Invalid(InputDescriptor descriptor, object error = null)
-                : base(descriptor, null)
+                : base(descriptor, null, null)
             {
                 if (error == null)
                     this.Error = new GuiModelMsg(descriptor.Error.Value);
@@ -61,7 +60,7 @@ namespace TickTrader.Algo.GuiModel
             }
 
             public Invalid(InputDescriptor descriptor, string symbol, GuiModelMsg error)
-                : base(descriptor, symbol)
+                : base(descriptor, symbol, null)
             {
                 this.Error = error;
             }
@@ -71,17 +70,21 @@ namespace TickTrader.Algo.GuiModel
                 throw new Exception("Cannot configure invalid input!");
             }
 
-            public override void Configure(IndicatorBuilder builder)
-            {
-                throw new Exception("Cannot configure invalid input!");
-            }
-
             public override void CopyFrom(PropertySetupBase srcProperty)
             {
             }
         }
 
-        public enum BarToDoubleMappings { Open, Close, High, Low, Median, Typical, Weighted, Move, Range }
         public enum QuoteToDoubleMappings { Ask, Bid, Median }
+    }
+
+    internal class DummySymbolInfo : ISymbolInfo
+    {
+        public DummySymbolInfo(string symbol)
+        {
+            this.Name = symbol;
+        }
+
+        public string Name { get; private set; }
     }
 }

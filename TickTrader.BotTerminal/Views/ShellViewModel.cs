@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,12 +19,11 @@ namespace TickTrader.BotTerminal
         private ConnectionManager cManager;
         private TraderClientModel clientModel;
         private WindowManager wndManager;
-        private PluginCatalog catalog = new PluginCatalog();
         private PersistModel storage;
         private EventJournal eventJournal;
-        private BotJournal botJournal;
         private bool isClosed;
         private INotificationCenter notificationCenter;
+        private AlgoEnvironment algoEnv;
 
         public ShellViewModel()
         {
@@ -33,16 +33,16 @@ namespace TickTrader.BotTerminal
 
             notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
-            botJournal = new BotJournal(1000);
             storage = new PersistModel();
 
             wndManager = new MdiWindowManager(this);
 
             cManager = new ConnectionManager(storage, eventJournal);
             clientModel = new TraderClientModel(cManager.Connection);
+            algoEnv = new AlgoEnvironment(clientModel.ObservableSymbolList);
 
             ConnectionLock = new UiLock();
-            AlgoList = new AlgoListViewModel(catalog);
+            AlgoList = new AlgoListViewModel(algoEnv.Repo);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
 
             Trade = new TradeInfoViewModel(clientModel);
@@ -51,10 +51,10 @@ namespace TickTrader.BotTerminal
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager);
 
-            Charts = new ChartCollectionViewModel(clientModel, catalog, this, botJournal);
+            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
-            BotJournal = new BotJournalViewModel(botJournal);
+            BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
             CanConnect = true;
 
             UpdateCommandStates();
@@ -62,11 +62,6 @@ namespace TickTrader.BotTerminal
             cManager.StateChanged += (o, n) => UpdateCommandStates();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
-
-            catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
-            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                catalog.AddFolder(EnvService.Instance.AlgoCommonRepositoryFolder);
-            catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
 
             clientModel.Connected += OpenDefaultChart;
 
