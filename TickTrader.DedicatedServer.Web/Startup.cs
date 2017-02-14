@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TickTrader.DedicatedServer.Server.Core;
 using Microsoft.Extensions.FileProviders;
+using TickTrader.DedicatedServer.Server.Models;
+using TickTrader.DedicatedServer.Server.DS;
 
 namespace TickTrader.DedicatedServer.Web
 {
@@ -29,7 +31,11 @@ namespace TickTrader.DedicatedServer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<RazorViewEngineOptions>(options => {
+            services.AddTransient<IPackageStorage, FakePackageStorage>();
+            services.AddSingleton<IDedicatedServer, FakeDedicatedServer>();
+
+            services.Configure<RazorViewEngineOptions>(options =>
+            {
                 options.FileProviders.Add(fileProvider);
                 options.ViewLocationExpanders.Add(new ViewLocationExpander());
             });

@@ -4,9 +4,57 @@
             <div class="col-md-4">
                 <div class="card max_height_600">
                     <div class="header">
+                        <div class="btn-toolbar pull-right">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#uploadPanel" aria-expanded="true">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                    <i class="fa fa-chevron-down"></i>
+                                    <i class="fa fa-chevron-up"></i>
+                                </button>
+                            </div>
+                        </div>
+
                         <h4 class="title truncate">
-                            This page is under development....
+                            Upload Algo Package
                         </h4>
+
+                    </div>
+                    <div id="uploadPanel" class="content vertical-autoscroll_600 collapse in">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input [ngModel]="selectedFile.name" type="text" class="form-control" readonly placeholder="Select the file">
+                                <label class="input-group-btn">
+                                    <span class="btn btn-primary btn-fill">
+                                        <i class="fa fa-folder-o"></i>
+                                        <input (change)="onFileInputChange($event)" type="file" style="display: none;" accept=".dll, .ttalgo">
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="pull-right">
+                            <button (click)="uploadFile()" class="btn btn-primary" type="submit">Upload</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="row">
+                    <div *ngFor="let package of packages |  orderBy: ['name'] " class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="header">
+                                <h4 class="title truncate">
+                                    <i class="fa fa-bomb"></i>
+                                    {{package.name}}
+                                </h4>
+                            </div>
+                            <div class="content">
+                                <div *ngFor="let bot of package.bots |  orderBy: ['name']">
+                                    <span >{{bot.name}}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
