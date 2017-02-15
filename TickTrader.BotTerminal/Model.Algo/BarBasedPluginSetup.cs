@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Realtime;
 using TickTrader.Algo.GuiModel;
 
 namespace TickTrader.BotTerminal

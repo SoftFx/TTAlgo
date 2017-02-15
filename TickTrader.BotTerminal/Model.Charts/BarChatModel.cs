@@ -100,8 +100,7 @@ namespace TickTrader.BotTerminal
         {
             var mainSeries = barCollection.Snapshot.ToList();
             var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History);
-            var strategy = new BarStrategy(feed, Algo.Api.BarPriceType.Bid, mainSeries);
-            plugin.SetStrategy(strategy);
+            plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid, mainSeries);
             plugin.Metadata = feed;
         }
 

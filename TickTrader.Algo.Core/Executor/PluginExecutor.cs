@@ -313,53 +313,43 @@ namespace TickTrader.Algo.Core
 
         #region Setup Methods
 
-        public void SetStrategy(FeedStrategy strategy)
-        {
-            lock (_sync)
-            {
-                ThrowIfRunning();
-                fStrategy = strategy;
-            }
-        }
-
         public T GetFeedStrategy<T>()
             where T: FeedStrategy
         {
             return (T)fStrategy;
         }
 
-        //public void InitQuoteStartegy(IQuoteBasedFeed feed)
-        //{
-        //    lock (_sync)
-        //    {
-        //        ThrowIfRunning();
-        //        fStrategy = new QuoteStrategy(feed);
-        //    }
-        //}
+        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe, List<BarEntity> mainSeries = null)
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                ThrowIfAlreadyHasFStrategy();
+                var strategy = new BarStrategy(feed, mainPirceTipe, mainSeries);
+                this.fStrategy = strategy;
+                return strategy;
+            }
+        }
 
-        //public void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector)
-        //{
-        //    MapBarInput<double>(id, symbolCode, selector);
-        //}
-
-        //public void MapBarInput<TVal>(string inputName, string symbolCode, Func<BarEntity, TVal> selector)
-        //{
-        //    setupActions.Add(() => fStrategy.MapInput(inputName, symbolCode, selector));
-        //}
-
-        //public void MapBarInput(string inputName, string symbolCode)
-        //{
-        //    setupActions.Add(() => fStrategy.MapInput<BarEntity, Api.Bar>(inputName, symbolCode, b => b));
-        //}
-
-        //public void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector)
-        //{
-        //    setupActions.Add(() => fStrategy.MapInput<TEntity, TData>(inputName, symbolCode, selector));
-        //}
+        public QuoteStrategy InitQuoteStrategy(IPluginFeedProvider feed)
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                ThrowIfAlreadyHasFStrategy();
+                var strategy = new QuoteStrategy(feed);
+                this.fStrategy = strategy;
+                return strategy;
+            }
+        }
 
         public void SetParameter(string name, object value)
         {
-            setupActions.Add(() => builder.SetParameter(name, value));
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                setupActions.Add(() => builder.SetParameter(name, value));
+            }
         }
 
         public OutputFixture<T> GetOutput<T>(string id)
@@ -399,6 +389,12 @@ namespace TickTrader.Algo.Core
         {
             if (state != States.Idle)
                 throw new InvalidOperationException("Executor parameters cannot be changed after start!");
+        }
+
+        private void ThrowIfAlreadyHasFStrategy()
+        {
+            if (state != States.Idle)
+                throw new InvalidOperationException("Feed has beed already initialized!");
         }
 
         private void ChangeState(States newState)

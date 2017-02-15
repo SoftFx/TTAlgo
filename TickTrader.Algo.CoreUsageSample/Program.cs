@@ -62,9 +62,8 @@ namespace TickTrader.Algo.CoreUsageSample
             executor.TimePeriodStart = DateTime.Parse("2015.11.02 00:25:00");
             executor.TimePeriodEnd = DateTime.Parse("2015.11.03 3:00:00");
 
-            var feedCfg = new BarStrategy(dataModel, BarPriceType.Bid);
+            var feedCfg = executor.InitBarStrategy(dataModel, BarPriceType.Bid);
             feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);
-            executor.SetStrategy(feedCfg);
 
             executor.Start();
 

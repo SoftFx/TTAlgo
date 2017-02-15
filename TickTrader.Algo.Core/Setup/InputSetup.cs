@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Realtime;
 using TickTrader.Algo.Core.Setup.Serialization;
 
 namespace TickTrader.Algo.Core.Setup
