@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.DataSeries;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.PluginSetup;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal

@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
             foreach (Point center in centers)
             {
                 var pointMetadata = metadata[dataPointIndexes[i++]] as AlgoMarkerMetadata;
-                var fillColor = Algo.GuiModel.Convert.ToWindowsColor(pointMetadata.MarkerEntity.Color, Stroke);
+                var fillColor = Algo.Common.PluginSetup.Convert.ToWindowsColor(pointMetadata.MarkerEntity.Color, Stroke);
                 var newCenter = center;
 
                 //var newCenter = Shift(center, pointMetadata.MarkerEntity.Alignment);

@@ -9,7 +9,7 @@ using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolModel : ISymbolInfo, TickTrader.Algo.GuiModel.ISymbolInfo
+    internal class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.PluginSetup.ISymbolInfo
     {
         private object lockObj = new object();
         private QuoteDistributor distributor;

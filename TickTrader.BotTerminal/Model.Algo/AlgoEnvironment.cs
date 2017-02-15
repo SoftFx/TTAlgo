@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.PluginSetup;
 
 namespace TickTrader.BotTerminal
 {

@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.GuiModel
+namespace TickTrader.Algo.Common.PluginSetup
 {
     public class QuoteToBarInput : SingleBarInputBase
     {

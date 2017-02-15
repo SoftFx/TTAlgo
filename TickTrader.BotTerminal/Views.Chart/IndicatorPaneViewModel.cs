@@ -12,7 +12,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.PluginSetup;
 
 namespace TickTrader.BotTerminal
 {

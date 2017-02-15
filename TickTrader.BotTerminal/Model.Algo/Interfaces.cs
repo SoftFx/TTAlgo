@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.PluginSetup;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal

@@ -8,7 +8,7 @@ using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.GuiModel
+namespace TickTrader.Algo.Common.PluginSetup
 {
     public class BarToDoubleInput : BarInputBase
     {

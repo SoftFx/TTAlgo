@@ -8,7 +8,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using Api = TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.GuiModel
+namespace TickTrader.Algo.Common.PluginSetup
 {
     public abstract class PluginSetup : ObservableObject
     {

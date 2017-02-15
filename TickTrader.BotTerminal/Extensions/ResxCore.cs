@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Resources;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.PluginSetup;
 
 namespace TickTrader.BotTerminal
 {

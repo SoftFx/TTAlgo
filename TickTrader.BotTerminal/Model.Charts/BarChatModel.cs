@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.PluginSetup;
 using TickTrader.Algo.Core;
 using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
