@@ -117,7 +117,7 @@ namespace TickTrader.BotTerminal
         protected override void InitPluign(PluginExecutor plugin)
         {
             var feedProvider = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History);
-            var strategy = new QuoteStrategy(feedProvider);
+            plugin.InitQuoteStrategy(feedProvider);
             plugin.Metadata = feedProvider;
         }
 

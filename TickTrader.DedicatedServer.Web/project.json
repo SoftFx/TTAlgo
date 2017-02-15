@@ -26,6 +26,14 @@
 
   "frameworks": {
     "net452": {
+      "dependencies": {
+        "TickTrader.Algo.Api": {
+          "target": "project"
+        },
+        "TickTrader.Algo.Core": {
+          "target": "project"
+        }
+      }
     }
   },
 
