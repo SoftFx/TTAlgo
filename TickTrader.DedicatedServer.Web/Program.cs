@@ -1,8 +1,6 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Logging;
 
 namespace TickTrader.DedicatedServer.Web
 {
@@ -14,7 +12,7 @@ namespace TickTrader.DedicatedServer.Web
                 .UseKestrel()
                 .UseUrls("https://localhost:2016/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
+                .UseStartup<WebAdminStartup>()
                 .Build();
 
             host.Run();

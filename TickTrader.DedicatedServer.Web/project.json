@@ -31,10 +31,10 @@
 
   "publishOptions": {
     "include": [
-      "appsettings.json",
-      "Server/Views",
-      "web.config",
-      "wwwroot"
+      "WebAdmin/appsettings.json",
+      "WebAdmin/Server/Views",
+      "WebAdmin/web.config",
+      "WebAdmin/wwwroot"
     ]
   },
 
@@ -42,14 +42,14 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true,
     "xmlDoc": false,
-    "embed": {
-      "include": [
-        "appsettings.json",
-        "Server/Views",
-        "web.config",
-        "wwwroot"
-      ]
-    }
+    //"compile": {
+    //  "include": [
+    //    "WebAdmin/appsettings.json",
+    //    "WebAdmin/Server/Views",
+    //    "WebAdmin/web.config",
+    //    "WebAdmin/wwwroot"
+    //  ]
+    //}
   },
 
   "runtimeOptions": {

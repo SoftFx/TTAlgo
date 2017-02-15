@@ -6,23 +6,20 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TickTrader.DedicatedServer.Server.Core;
-using Microsoft.Extensions.FileProviders;
-using TickTrader.DedicatedServer.Server.Models;
 using TickTrader.DedicatedServer.Server.DS;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
 
 namespace TickTrader.DedicatedServer.Web
 {
-    public class Startup
+    public class WebAdminStartup
     {
-        IFileProvider fileProvider = new EmbeddedFileProvider(typeof(Startup).Assembly, "TickTrader.DedicatedServer.Web");
-
-        public Startup(IHostingEnvironment env)
+        public WebAdminStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
-                //.SetBasePath(env.ContentRootPath)
-                .SetFileProvider(fileProvider)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"WebAdmin/appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -34,11 +31,7 @@ namespace TickTrader.DedicatedServer.Web
             services.AddTransient<IPackageStorage, FakePackageStorage>();
             services.AddSingleton<IDedicatedServer, FakeDedicatedServer>();
 
-            services.Configure<RazorViewEngineOptions>(options =>
-            {
-                options.FileProviders.Add(fileProvider);
-                options.ViewLocationExpanders.Add(new ViewLocationExpander());
-            });
+            services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
 
             services.AddMvc().AddJsonOptions(jsonOptions =>
             {
@@ -57,7 +50,8 @@ namespace TickTrader.DedicatedServer.Web
                 app.UseDeveloperExceptionPage();
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
                 {
-                    HotModuleReplacement = true
+                    HotModuleReplacement = true,
+                    ConfigFile = "./WebAdmin/webpack.config"
                 });
             }
             else
@@ -66,6 +60,10 @@ namespace TickTrader.DedicatedServer.Web
             }
 
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"WebAdmin/wwwroot")),
+            });
 
             app.UseSwagger();
             app.UseSwaggerUi();

@@ -27,8 +27,8 @@ var sharedConfig = {
 
 // Configuration for client-side bundle suitable for running in browsers
 var clientBundleConfig = merge(sharedConfig, {
-    entry: { 'main': './Client/boot-client.ts' },
-    output: { path: path.join(__dirname, './wwwroot/dist') },
+    entry: { 'main': path.join(__dirname, '/Client/boot-client.ts') },
+    output: { path: path.join(__dirname, '/wwwroot/dist') },
     devtool: isDevBuild ? 'source-map' : null,
     plugins: [
         new webpack.DllReferencePlugin({
@@ -36,12 +36,12 @@ var clientBundleConfig = merge(sharedConfig, {
             manifest: require('./wwwroot/dist/vendor-manifest.json')
         }),
         new CopyWebpackPlugin([
-             { from: 'assets/img/**', to: path.join(__dirname, './wwwroot/') },
-             { from: 'assets/js/**', to: path.join(__dirname, './wwwroot/') }]),
+             { context: path.join(__dirname, '/assets'), from: 'img/**', to: path.join(__dirname, '/wwwroot/assets/') },
+             { context: path.join(__dirname, '/assets'), from: 'js/**', to: path.join(__dirname, '/wwwroot/assets/') }]),
         new webpack.ProvidePlugin({
-                 $: "jquery",
-                 jQuery: "jquery"
-             })
+            $: "jquery",
+            jQuery: "jquery"
+        })
     ].concat(isDevBuild ? [] : [
         // Plugins that apply in production builds only
         new webpack.optimize.OccurenceOrderPlugin(),

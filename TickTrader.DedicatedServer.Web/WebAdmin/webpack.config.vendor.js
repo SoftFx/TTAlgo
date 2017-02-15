@@ -36,7 +36,7 @@ module.exports = {
             'zone.js',
             'rxjs',
             'font-awesome/css/font-awesome.css',
-            './assets/css/light-bootstrap.css'
+            './WebAdmin/assets/css/light-bootstrap.css'
         ]
     },
     output: {

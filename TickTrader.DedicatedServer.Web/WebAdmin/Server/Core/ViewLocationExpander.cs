@@ -8,7 +8,7 @@ namespace TickTrader.DedicatedServer.Server.Core
     {
         public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
         {
-            string[] locations = new string[] { "/Server/Views/{1}/{0}.cshtml", "/Server/Views/Shared/{0}.cshtml" };
+            string[] locations = new string[] { "/WebAdmin/Server/Views/{1}/{0}.cshtml", "/WebAdmin/Server/Views/Shared/{0}.cshtml" };
             return locations.Union(viewLocations);
         }
 
