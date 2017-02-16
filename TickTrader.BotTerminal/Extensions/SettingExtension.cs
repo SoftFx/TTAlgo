@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
-using TickTrader.Algo.Common.PluginSetup;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {

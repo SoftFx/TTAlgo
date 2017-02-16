@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Common.PluginSetup
+namespace TickTrader.Algo.Common.Model.Setup
 {
     //public abstract class InputSetup : PropertySetupBase
     //{

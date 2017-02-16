@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Common.PluginSetup
+namespace TickTrader.Algo.Common.Model.Setup
 {
     public class BarInputBase : InputSetup
     {

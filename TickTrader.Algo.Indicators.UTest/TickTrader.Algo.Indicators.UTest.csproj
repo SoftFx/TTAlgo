@@ -126,7 +126,6 @@
     <Compile Include="TrendTests\ParabolicSAR\ParabolicSARTest.cs" />
     <Compile Include="TrendTests\ParabolicSAR\ParabolicSARTestCase.cs" />
     <Compile Include="Utility\BarInputHelper.cs" />
-    <Compile Include="Utility\SetupMetadata.cs" />
     <Compile Include="TestCases\SimpleTestCase.cs" />
     <Compile Include="Utility\AssertX.cs" />
     <Compile Include="BillWilliamsTests\Alligator\AlligatorTest.cs" />

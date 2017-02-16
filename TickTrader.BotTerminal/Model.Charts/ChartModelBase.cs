@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.PluginSetup;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
 using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;

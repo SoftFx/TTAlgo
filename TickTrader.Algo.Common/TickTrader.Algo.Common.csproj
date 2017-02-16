@@ -31,7 +31,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BusinessLogic">
+      <HintPath>..\lib\BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="BusinessObjects">
+      <HintPath>..\lib\BusinessObjects.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
+    <Reference Include="SoftFX.Extended.Net">
+      <HintPath>..\lib\SoftFX.Extended.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="SoftFX.Lrp">
+      <HintPath>..\lib\SoftFX.Lrp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,24 +54,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PluginSetup\Convert.cs" />
-    <Compile Include="PluginSetup\GuiModelMsg.cs" />
-    <Compile Include="PluginSetup\InputSetup.cs" />
-    <Compile Include="PluginSetup\Inputs\BarInputBase.cs" />
-    <Compile Include="PluginSetup\Inputs\BarToBarInput.cs" />
-    <Compile Include="PluginSetup\Inputs\BarToDoubleInput.cs" />
-    <Compile Include="PluginSetup\Inputs\QuoteToBarInput.cs" />
-    <Compile Include="PluginSetup\Interfaces.cs" />
-    <Compile Include="PluginSetup\ObservableObject.cs" />
-    <Compile Include="PluginSetup\OutputSetup.cs" />
-    <Compile Include="PluginSetup\ParameterSetup.cs" />
-    <Compile Include="PluginSetup\PluginSetup.cs" />
-    <Compile Include="PluginSetup\PropertySetupBase.cs" />
-    <Compile Include="PluginSetup\QuoteInputSetup.cs" />
-    <Compile Include="PluginSetup\UiConverter.cs" />
+    <Compile Include="Lib\AsyncEvent.cs" />
+    <Compile Include="Lib\CollectionExtentions.cs" />
+    <Compile Include="Model.Setup\Serialization.cs" />
+    <Compile Include="Model\AccountModel.cs" />
+    <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Model\ConnectionModel.cs" />
+    <Compile Include="Model\FdkToAlgo.cs" />
+    <Compile Include="Model\Interfaces.cs" />
+    <Compile Include="Model.Setup\Convert.cs" />
+    <Compile Include="Model.Setup\GuiModelMsg.cs" />
+    <Compile Include="Model.Setup\InputSetup.cs" />
+    <Compile Include="Model.Setup\Inputs\BarInputBase.cs" />
+    <Compile Include="Model.Setup\Inputs\BarToBarInput.cs" />
+    <Compile Include="Model.Setup\Inputs\BarToDoubleInput.cs" />
+    <Compile Include="Model.Setup\Inputs\QuoteToBarInput.cs" />
+    <Compile Include="Model.Setup\Interfaces.cs" />
+    <Compile Include="Lib\ObservableObject.cs" />
+    <Compile Include="Model.Setup\OutputSetup.cs" />
+    <Compile Include="Model.Setup\ParameterSetup.cs" />
+    <Compile Include="Model.Setup\PluginSetup.cs" />
+    <Compile Include="Model.Setup\PropertySetupBase.cs" />
+    <Compile Include="Model.Setup\QuoteInputSetup.cs" />
+    <Compile Include="Model.Setup\UiConverter.cs" />
+    <Compile Include="Model\OrderModel.cs" />
+    <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
+      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
+      <Name>Machinarium</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>

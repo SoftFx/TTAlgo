@@ -134,12 +134,6 @@
     <Compile Include="Buffers\DataSeriesProxy.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\RepositoryKey.cs" />
-    <Compile Include="Setup\InputSetup.cs" />
-    <Compile Include="Setup\Interfaces.cs" />
-    <Compile Include="Setup\ParameterSetup.cs" />
-    <Compile Include="Setup\PluginSetup.cs" />
-    <Compile Include="Setup\PropertySetupBase.cs" />
-    <Compile Include="Setup\Serialization.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

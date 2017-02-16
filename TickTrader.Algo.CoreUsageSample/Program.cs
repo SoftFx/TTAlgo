@@ -7,7 +7,6 @@ using System.Xml.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Setup;
 
 namespace TickTrader.Algo.CoreUsageSample
 {
@@ -87,24 +86,6 @@ namespace TickTrader.Algo.CoreUsageSample
 
             using (var stream = System.IO.File.Open(fileName, System.IO.FileMode.Create))
                 serializer.Serialize(stream, obj);
-        }
-
-        public class SetupMetadata : ISetupMetadata
-        {
-            private HashSet<string> symbols = new HashSet<string>();
-
-            public SetupMetadata()
-            {
-                symbols.Add(MainSymbol);
-                symbols.Add("EURJPY");
-            }
-
-            public string MainSymbol { get { return "EURUSD"; } }
-
-            public bool SymbolExist(string symbolCode)
-            {
-                return symbols.Contains(symbolCode);
-            }
         }
     }
 }

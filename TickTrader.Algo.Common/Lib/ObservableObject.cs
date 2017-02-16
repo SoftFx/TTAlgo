@@ -5,11 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.Common.PluginSetup
+namespace TickTrader.Algo.Common.Lib
 {
     public class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+
+        protected void NotifyOfPropertyChange(string propertyName)
+        {
+            NotifyPropertyChanged(propertyName);
+        }
 
         protected void NotifyPropertyChanged(string propertyName)
         {

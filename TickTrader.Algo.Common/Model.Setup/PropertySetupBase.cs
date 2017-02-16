@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Common.PluginSetup
+namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class PropertySetupBase : ObservableObject
     {

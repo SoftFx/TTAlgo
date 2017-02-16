@@ -9,7 +9,7 @@ using TickTrader.Algo.Api;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Common.PluginSetup
+namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class OutputSetup : PropertySetupBase
     {

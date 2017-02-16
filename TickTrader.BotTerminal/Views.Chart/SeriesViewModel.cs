@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using TickTrader.Algo.Core;
 using Caliburn.Micro;
-using TickTrader.Algo.Common.PluginSetup;
+using TickTrader.Algo.Common.Model.Setup;
 using SciChart.Charting.Visuals.RenderableSeries;
 using TickTrader.Algo.Api;
 using SciChart.Charting.Visuals.PointMarkers;

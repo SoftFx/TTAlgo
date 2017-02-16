@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Setup;
 using TickTrader.Algo.Indicators.UTest.Utility;
 
 namespace TickTrader.Algo.Indicators.UTest.TestCases
@@ -12,7 +11,6 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         public double Epsilon = 1e-9;
 
         protected List<BarEntity> Quotes;
-        protected BarBasedPluginSetup PluginSetup;
         protected IndicatorBuilder Builder; 
 
         public Type IndicatorType { get; protected set; }
@@ -35,7 +33,7 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
 
         protected virtual void SetParameter(string paramName, object value)
         {
-            PluginSetup.SetParam(paramName, value);
+            Builder.SetParameter(paramName, value);
         }
 
         protected abstract void SetupInput();
@@ -46,9 +44,8 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual void Setup()
         {
             ReadQuotes();
-            PluginSetup = new BarBasedPluginSetup(new AlgoPluginRef(AlgoPluginDescriptor.Get(IndicatorType)), new SetupMetadata(Symbol));
             SetupParameters();
-            Builder = PluginSetup.CreateIndicatorBuilder();
+            Builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(IndicatorType));
             SetupInput();
         }
 

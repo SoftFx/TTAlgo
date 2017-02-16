@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.PluginSetup;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {
@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             else if (descriptor.DataSeriesBaseTypeFullName == "TickTrader.Algo.Api.Marker")
                 return new MarkerSeriesOutputSetup(descriptor);
             else
-                return new ColoredLineOutputSetup(descriptor, Algo.Common.PluginSetup.MsgCodes.UnsupportedPropertyType);
+                return new ColoredLineOutputSetup(descriptor, Algo.Common.Model.Setup.MsgCodes.UnsupportedPropertyType);
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.PluginSetup
+namespace TickTrader.Algo.Common.Model.Setup
 {
     public interface IAlgoGuiMetadata
     {
