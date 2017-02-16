@@ -7,13 +7,14 @@ namespace TickTrader.BotTerminal.Lib
 {
     public static class DataflowHelper
     {
-        private static UiTaskScheduler dispatcherScheduler = new UiTaskScheduler(App.Current.Dispatcher, DispatcherPriority.Input);
+        public static readonly UiTaskScheduler UiDispatcherInput = new UiTaskScheduler(App.Current.Dispatcher, DispatcherPriority.Input);
+        public static readonly UiTaskScheduler UiDispatcherBacground = new UiTaskScheduler(App.Current.Dispatcher, DispatcherPriority.Background);
 
         public static ActionBlock<T> CreateUiActionBlock<T>(Action<T> action, int queueSize, int msgPerTask, CancellationToken cToken)
         {
             var options = new ExecutionDataflowBlockOptions()
             {
-                TaskScheduler = dispatcherScheduler,
+                TaskScheduler = UiDispatcherInput,
                 MaxDegreeOfParallelism = 1,
                 BoundedCapacity = queueSize,
                 MaxMessagesPerTask = msgPerTask,
@@ -27,7 +28,7 @@ namespace TickTrader.BotTerminal.Lib
         {
             var options = new GroupingDataflowBlockOptions()
             {
-                TaskScheduler = dispatcherScheduler,
+                TaskScheduler = UiDispatcherInput,
                 BoundedCapacity = queueSize,
                 CancellationToken = cToken
             };
