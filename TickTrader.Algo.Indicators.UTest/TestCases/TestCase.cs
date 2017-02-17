@@ -44,8 +44,8 @@ namespace TickTrader.Algo.Indicators.UTest.TestCases
         protected virtual void Setup()
         {
             ReadQuotes();
-            SetupParameters();
             Builder = new IndicatorBuilder(AlgoPluginDescriptor.Get(IndicatorType));
+            SetupParameters();
             SetupInput();
         }
 
