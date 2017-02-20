@@ -290,6 +290,7 @@
     <Compile Include="Model\OrderType.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
+    <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\SymbolObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
@@ -297,7 +298,6 @@
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
-    <Compile Include="Model\AssetModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Model\TradeTransactionModel.cs" />
     <Compile Include="Model\Journal.cs" />
@@ -353,12 +353,9 @@
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\FeedHistoryProviderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
-    <Compile Include="Model\OrderModel.cs" />
-    <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\RateSplitModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />
-    <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -904,13 +901,13 @@
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj">
+      <Project>{bffe802c-bcb0-4376-9551-977fe8c277d2}</Project>
+      <Name>TickTrader.Algo.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj">
-      <Project>{c29222d6-e27c-4d1a-970f-a54851e0647e}</Project>
-      <Name>TickTrader.Algo.GuiModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>

@@ -11,7 +11,7 @@ using System.Windows.Media;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using Fdk = SoftFX.Extended;

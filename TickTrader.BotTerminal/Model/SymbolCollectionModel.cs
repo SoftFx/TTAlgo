@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -97,7 +98,7 @@ namespace TickTrader.BotTerminal
             return result;
         }
 
-        SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
+        Algo.Common.Model.SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
         {
             return GetOrDefault(name);
         }

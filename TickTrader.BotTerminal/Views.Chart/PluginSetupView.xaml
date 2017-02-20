@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:cal="http://www.caliburnproject.org"
-    xmlns:am="clr-namespace:TickTrader.Algo.GuiModel;assembly=TickTrader.Algo.GuiModel"
+    xmlns:am="clr-namespace:TickTrader.Algo.Common.Model.Setup;assembly=TickTrader.Algo.Common"
     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
