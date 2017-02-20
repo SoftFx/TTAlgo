@@ -1,9 +1,4 @@
-﻿{
-  "version": "1.0.0-*",
-  "buildOptions": {
-    "emitEntryPoint": true
-  },
-
+{
   "dependencies": {
     "Microsoft.AspNetCore.AngularServices": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Tools": {
@@ -21,15 +16,65 @@
     "Microsoft.Extensions.Logging": "1.1.0",
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
-    "Swashbuckle": "6.0.0-beta901",
-    "TickTrader.DedicatedServer.Web": {
-      "version": "1.0.0-*",
-      "include": "all"
-    }
+    "Swashbuckle": "6.0.0-beta901"
+  },
+
+  "tools": {
+    "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview2-final",
+    "Microsoft.DotNet.Watcher.Tools": "1.0.0-preview2-final"
   },
 
   "frameworks": {
     "net452": {
+      "dependencies": {
+        "TickTrader.Algo.Api": {
+          "target": "project"
+        },
+        "TickTrader.Algo.Core": {
+          "target": "project"
+        }
+      }
     }
+  },
+
+  "publishOptions": {
+    "include": [
+      "WebAdmin/appsettings.json",
+      "WebAdmin/Server/Views",
+      "WebAdmin/web.config",
+      "WebAdmin/wwwroot"
+    ]
+  },
+
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true,
+    "xmlDoc": false
+  },
+
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  },
+
+  "runtimes": {
+    "win7-x64": {},
+    "win7-x86": {}
+  },
+
+  "scripts": {
+    "postcompile": [
+      "npm run build_dev"
+    ],
+    "prepublish": [
+      "npm install",
+      "npm run build_prod"
+    ],
+    "postpublish": []
+  },
+
+  "tooling": {
+    "defaultNamespace": "TickTrader.DedicatedServer"
   }
 }

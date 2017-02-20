@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using TickTrader.DedicatedServer.WebAdmin;
 
 namespace TickTrader.DedicatedServer
 {
@@ -9,7 +9,14 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
-            TickTrader.DedicatedServer.Web.Program.Main(args);
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls("https://localhost:2016/")
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<WebAdminStartup>()
+                .Build();
+
+            host.Run();
         }
     }
 }
