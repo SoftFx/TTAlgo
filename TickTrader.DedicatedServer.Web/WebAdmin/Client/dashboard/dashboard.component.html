@@ -21,7 +21,7 @@
 
                     </div>
                     <div id="quickRunPanel" class="content vertical-autoscroll_600 collapse in">
-                       <bot-run-cmp></bot-run-cmp>
+                        <bot-run-cmp></bot-run-cmp>
                     </div>
                 </div>
             </div>
@@ -55,11 +55,13 @@
                                 </div>
                             </div>
                             <div *ngIf="bot.state === botStateType.Running || bot.state === botStateType.Stopping" class="overlay">
-                                <div class="overlay-content">
+                                <div class="blur"></div>
+                                <div class="content">
                                     <span class="fa fa-circle-o-notch fa-spin black"></span>
                                 </div>
                             </div>
                         </div>
+                       
                     </div>
                 </div>
             </div>

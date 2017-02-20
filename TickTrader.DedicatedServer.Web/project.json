@@ -49,15 +49,7 @@
   "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true,
-    "xmlDoc": false,
-    //"compile": {
-    //  "include": [
-    //    "WebAdmin/appsettings.json",
-    //    "WebAdmin/Server/Views",
-    //    "WebAdmin/web.config",
-    //    "WebAdmin/wwwroot"
-    //  ]
-    //}
+    "xmlDoc": false
   },
 
   "runtimeOptions": {

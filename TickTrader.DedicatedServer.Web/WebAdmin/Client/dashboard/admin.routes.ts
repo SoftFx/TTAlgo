@@ -1,7 +1,8 @@
 import { Route } from '@angular/router';
 import { AdminComponent } from './admin.component';
 import { DashboardComponent } from './dashboard.component';
-import { RepositoryComponent } from './repository.component';
+import { OverlayComponent } from './overlay.component';
+import { RepositoryComponent, PackageCardComponent } from './repository/index';
 import { TradeAccountsComponent } from './trade-accounts.component';
 import { BotRunComponent } from './bot-run.component';
 import { BotSettingsComponent } from './bot-settings.component';
@@ -26,8 +27,10 @@ export const MODULE_COMPONENTS = [
     AdminComponent,
     DashboardComponent,
     RepositoryComponent,
+    PackageCardComponent,
     TradeAccountsComponent,
     BotDetailComponent,
     BotRunComponent,
-    BotSettingsComponent
+    BotSettingsComponent,
+    OverlayComponent
 ]

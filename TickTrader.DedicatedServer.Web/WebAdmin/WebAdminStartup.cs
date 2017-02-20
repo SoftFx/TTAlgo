@@ -5,12 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
-using TickTrader.DedicatedServer.Server.Core;
-using TickTrader.DedicatedServer.Server.DS;
+using TickTrader.DedicatedServer.DS;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
+using TickTrader.DedicatedServer.WebAdmin.Server.Core;
 
-namespace TickTrader.DedicatedServer.Web
+namespace TickTrader.DedicatedServer.WebAdmin
 {
     public class WebAdminStartup
     {
@@ -28,8 +28,11 @@ namespace TickTrader.DedicatedServer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IPackageStorage, FakePackageStorage>();
-            services.AddSingleton<IDedicatedServer, FakeDedicatedServer>();
+            services.AddOptions();
+            services.Configure<PackageStorageSettings>(Configuration.GetSection("PackageStorage"));
+
+            services.AddTransient<IPackageStorage, PackageStorage>();
+            services.AddSingleton<IDedicatedServer, DedicatedServerProvider>();
 
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
 

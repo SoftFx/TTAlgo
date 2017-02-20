@@ -1,17 +1,22 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { ExtBotModel, BotModel, FakeData, BotState, Guid } from "../models/index";
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid } from "../models/index";
+import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
 
 @Injectable()
 export class ApiService {
+    private headers: Headers = new Headers({ 'Content-Type': 'application/json' });
+    private repositoryUrl: string = '/api/Repository';
+
+
     dasboardBots: Observable<ExtBotModel[]>;
     private _bots: BehaviorSubject<ExtBotModel[]>;
     private dataStore: {
         bots: ExtBotModel[]
     };
 
-    constructor() {
+    constructor(private http: Http) {
         this.dataStore = { bots: [] };
         this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
@@ -74,6 +79,29 @@ export class ApiService {
             err => { },
             () => { });
     }
+
+    /* strart API Repository*/
+
+    uploadAlgoPackage(file: any) {
+        let input = new FormData();
+        input.append("file", file);
+
+        return this.http
+            .post(this.repositoryUrl, input);
+    }
+
+    deleteAlgoPackage(name: string) {
+        return this.http
+            .delete(`${this.repositoryUrl}/${name}`, { headers: this.headers });
+    }
+
+    getAlgoPackages(): Observable<PackageModel[]> {
+        return this.http
+            .get(this.repositoryUrl)
+            .map(res => res.json().map(i => new PackageModel().deserialize(i)));
+    }
+
+    /* end API Repository*/
 
     private updateBotState(bot: ExtBotModel, state: BotState): boolean {
         for (let cBot of this.dataStore.bots) {

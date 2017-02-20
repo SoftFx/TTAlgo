@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TickTrader.DedicatedServer.Server.Core
+namespace TickTrader.DedicatedServer.WebAdmin.Server.Core
 {
     public class ViewLocationExpander: IViewLocationExpander
     {

@@ -1,0 +1,46 @@
+﻿<div class="card" [ngClass]="{'blur': showConfirm }">
+    <div class="header">
+        <div class="btn-toolbar pull-right">
+            <div class="btn-group btn-group-sm">
+                <button (click)="showConfirm=true" type="button" class="btn btn-simple">
+                    <i class="fa fa-remove"></i>
+                </button>
+            </div>
+        </div>
+        <h4 class="title truncate">
+            <i class="{{package.icon}}"></i>
+            {{package.name}}
+        </h4>
+    </div>
+    <div class="content">
+        <ul *ngIf="package.isValid" class="list-unstyled">
+            <li *ngFor="let plugin of package.plugins |  orderBy: ['displayName']" class="card-text">
+                <strong [innerHTML]="plugin.icon"></strong>
+                {{plugin.displayName}}
+            </li>
+        </ul>
+        <p *ngIf="!package.isValid"><span class="text-error">Invalid package format</span></p>
+        <div class="footer">
+            <hr>
+            <div class="stats">
+                <i class="fa fa-clock-o"></i> Uploaded: {{package.created | date:'short'}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<overlay-cmp *ngIf="showConfirm">
+    <div class="row text-center">
+        <div class="form-group">
+            <p>Delete?</p>
+        </div>
+        <div class="row">
+            <div class="form-group col-xs-6 col-sm-6 col-md-6">
+                <button (click)="delete()" class="btn btn-success btn-fill">Delete</button>
+            </div>
+            <div class="form-group col-xs-6 col-sm-6 col-md-6">
+                <button (click)="showConfirm=false" class="btn btn-danger btn-fill ">Cancel</button>
+            </div>
+        </div>
+    </div>
+</overlay-cmp>

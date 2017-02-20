@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace TickTrader.DedicatedServer.Server.DS
+namespace TickTrader.DedicatedServer.DS
 {
     public interface IStorageWatcher
     {

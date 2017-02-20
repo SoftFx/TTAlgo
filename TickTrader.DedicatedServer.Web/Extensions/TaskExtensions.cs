@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace TickTrader.DedicatedServer.Server.DS
+namespace TickTrader.DedicatedServer.Extensions
 {
     public static class TaskExtensions
     {

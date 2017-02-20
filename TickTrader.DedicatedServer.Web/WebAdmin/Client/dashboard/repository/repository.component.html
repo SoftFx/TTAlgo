@@ -22,18 +22,22 @@
                     <div id="uploadPanel" class="content vertical-autoscroll_600 collapse in">
                         <div class="form-group">
                             <div class="input-group">
-                                <input [ngModel]="selectedFile.name" type="text" class="form-control" readonly placeholder="Select the file">
+                                <input [ngModel]="selectedFileName" type="text" class="form-control" readonly placeholder="Select the file">
                                 <label class="input-group-btn">
                                     <span class="btn btn-primary btn-fill">
                                         <i class="fa fa-folder-o"></i>
-                                        <input (change)="onFileInputChange($event)" type="file" style="display: none;" accept=".dll, .ttalgo">
+                                        <input (change)="onFileInputChange($event)" type="file" style="display: none;" accept=".ttalgo">
                                     </span>
                                 </label>
                             </div>
+
+                        </div>
+                        <div *ngIf="uploadStatus" class="form-group">
+                            <span class="text-error">{{uploadStatus.message}}</span>
                         </div>
 
                         <div class="pull-right">
-                            <button (click)="uploadFile()" class="btn btn-primary" type="submit">Upload</button>
+                            <button [disabled]="!canUpload" (click)="uploadPackage()" class="btn btn-primary">Upload</button>
                         </div>
                     </div>
                 </div>
@@ -41,20 +45,8 @@
 
             <div class="col-md-8">
                 <div class="row">
-                    <div *ngFor="let package of packages |  orderBy: ['name'] " class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title truncate">
-                                    <i class="fa fa-bomb"></i>
-                                    {{package.name}}
-                                </h4>
-                            </div>
-                            <div class="content">
-                                <div *ngFor="let bot of package.bots |  orderBy: ['name']">
-                                    <span >{{bot.name}}</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div *ngFor="let package of packages |  orderBy: ['name']; let pIndex = index;" class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+                        <package-card-cmp [package]="package" (onDelete)="deletePackage($event)"></package-card-cmp>
                     </div>
                 </div>
             </div>

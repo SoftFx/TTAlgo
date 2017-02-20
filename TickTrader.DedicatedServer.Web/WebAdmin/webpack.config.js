@@ -36,8 +36,8 @@ var clientBundleConfig = merge(sharedConfig, {
             manifest: require('./wwwroot/dist/vendor-manifest.json')
         }),
         new CopyWebpackPlugin([
-             { context: path.join(__dirname, '/assets'), from: 'img/**', to: path.join(__dirname, '/wwwroot/assets/') },
-             { context: path.join(__dirname, '/assets'), from: 'js/**', to: path.join(__dirname, '/wwwroot/assets/') }]),
+             { context: path.join(__dirname, '/Assets'), from: 'img/**', to: path.join(__dirname, '/wwwroot/assets/') },
+             { context: path.join(__dirname, '/Assets'), from: 'js/**', to: path.join(__dirname, '/wwwroot/assets/') }]),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"

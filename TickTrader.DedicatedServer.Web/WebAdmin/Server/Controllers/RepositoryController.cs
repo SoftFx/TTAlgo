@@ -1,31 +1,38 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using System.Threading.Tasks;
-using TickTrader.DedicatedServer.Server.DS;
-using TickTrader.DedicatedServer.Server.Models;
+using System.Linq;
+using TickTrader.DedicatedServer.DS;
+using TickTrader.DedicatedServer.DS.Exceptions;
+using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
+using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 
-namespace TickTrader.DedicatedServer.Server.Controllers
+namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class RepositoryController: Controller
+    public class RepositoryController : Controller
     {
-        private IDedicatedServer _dedicatedServer;
+        private readonly ILogger<RepositoryController> _logger;
+        private readonly IDedicatedServer _dedicatedServer;
 
-        public RepositoryController(IDedicatedServer ddServer)
+        public RepositoryController(IDedicatedServer ddServer, ILogger<RepositoryController> logger)
         {
-            this._dedicatedServer = ddServer;
+            _dedicatedServer = ddServer;
+            _logger = logger;
         }
 
         [HttpGet]
-        public async Task<PackageModel[]> Get()
+        public PackageDto[] Get()
         {
-            return await _dedicatedServer.GetPackagesAsync();
+            var packages = _dedicatedServer.GetPackages();
+
+            return packages.Select(p => p.ToPackageDto()).ToArray();
         }
 
         [HttpPost]
-        public async Task Post(IFormFile file)
+        public IActionResult Post(IFormFile file)
         {
             if (file == null) throw new ArgumentNullException("File is null");
             if (file.Length == 0) throw new ArgumentException("File is empty");
@@ -35,15 +42,25 @@ namespace TickTrader.DedicatedServer.Server.Controllers
                 using (var binaryReader = new BinaryReader(stream))
                 {
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
-                    await _dedicatedServer.AddPackageAsync(fileContent, file.FileName);
+                    try
+                    {
+                        _dedicatedServer.AddPackage(fileContent, file.FileName);
+                    }
+                    catch (DuplicatePackageException dpe)
+                    {
+                        _logger.LogError(dpe.Message);
+                        return BadRequest(new { code = dpe.Code, message = dpe.Message });
+                    }
                 }
             }
+
+            return Ok();
         }
 
-        [HttpDelete("{package}")]
-        public async Task Delete(string package)
+        [HttpDelete("{name}")]
+        public void Delete(string name)
         {
-            await _dedicatedServer.RemovePackageAsync(package);
+            _dedicatedServer.RemovePackage(name);
         }
     }
 }
