@@ -12,7 +12,7 @@ using Fdk = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model
 {
-    internal class OrderModel : ObservableObject, TickTrader.BusinessLogic.IOrderModel
+    public class OrderModel : ObservableObject, TickTrader.BusinessLogic.IOrderModel
     {
         private string clientOrderId;
         private TradeRecordType orderType;
@@ -30,26 +30,26 @@ namespace TickTrader.Algo.Common.Model
         private decimal? profit;
         private decimal? margin;
         private decimal? currentPrice;
-        private Fdk.SymbolInfo symbolModel;
+        private SymbolModel symbolModel;
         private OrderError error;
 
-        public OrderModel(TradeRecord record, IDictionary<string, Fdk. SymbolInfo> symbols)
+        public OrderModel(TradeRecord record, IOrderDependenciesResolver resolver)
         {
             this.Id = record.OrderId;
             this.clientOrderId = record.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = record.Symbol;
-            this.symbolModel = symbols.GetOrDefault(record.Symbol);
+            this.symbolModel = resolver.GetSymbolOrNull(record.Symbol);
             Update(record);
         }
 
-        public OrderModel(ExecutionReport report, IDictionary<string, Fdk.SymbolInfo> symbols)
+        public OrderModel(ExecutionReport report, IOrderDependenciesResolver resolver)
         {
             this.Id = report.OrderId;
             this.clientOrderId = report.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = report.Symbol;
-            this.symbolModel = symbols.GetOrDefault(report.Symbol);
+            this.symbolModel = resolver.GetSymbolOrNull(report.Symbol);
             Update(report);
         }
 
@@ -373,12 +373,12 @@ namespace TickTrader.Algo.Common.Model
             if (symbolModel == null)
                 return null;
 
-            return volume / (decimal)symbolModel.RoundLot;
+            return volume / (decimal)symbolModel.LotSize;
         }
     }
 
-    internal interface IOrderDependenciesResolver
+    public interface IOrderDependenciesResolver
     {
-        SymbolEntity GetSymbolOrNull(string name);
+        SymbolModel GetSymbolOrNull(string name);
     }
 }

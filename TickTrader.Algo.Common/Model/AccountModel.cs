@@ -18,13 +18,13 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    internal abstract class AccountModel : CrossDomainObject, IAccountInfoProvider
+    public abstract class AccountModel : CrossDomainObject, IAccountInfoProvider
     {
         private readonly DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
         private readonly DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
         private readonly DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private AccountType? accType;
-        private IDictionary<string, SymbolInfo> symbols;
+        private IOrderDependenciesResolver orderResolver;
 
         public AccountModel()
         {
@@ -54,13 +54,9 @@ namespace TickTrader.Algo.Common.Model
         public string Account { get; private set; }
         public int Leverage { get; private set; }
 
-        public void Init(IDictionary<string, CurrencyInfo> currencies, SymbolInfo symbols)
-        {
-        }
-
         public void Init(AccountInfo accInfo,
             IDictionary<string, CurrencyInfo> currencies,
-            IDictionary<string, SymbolInfo> symbols,
+            IOrderDependenciesResolver orderResolver,
             IEnumerable<TradeRecord> orders,
             IEnumerable<Position> positions, 
             IEnumerable<AssetInfo> assets)
@@ -69,7 +65,7 @@ namespace TickTrader.Algo.Common.Model
             this.orders.Clear();
             this.assets.Clear();
 
-            this.symbols = symbols;
+            this.orderResolver = orderResolver;
 
             var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
 
@@ -84,7 +80,7 @@ namespace TickTrader.Algo.Common.Model
                 this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition));
 
             foreach (var fdkOrder in orders)
-                this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, symbols));
+                this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, orderResolver));
 
             foreach (var fdkAsset in assets)
                 this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
@@ -204,7 +200,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderModel UpsertOrder(ExecutionReport report)
         {
-            OrderModel order = new OrderModel(report, symbols);
+            OrderModel order = new OrderModel(report, orderResolver);
             orders[order.Id] = order;
             return order;
         }

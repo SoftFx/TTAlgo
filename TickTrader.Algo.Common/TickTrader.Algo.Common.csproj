@@ -79,6 +79,7 @@
     <Compile Include="Model.Setup\UiConverter.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\PositionModel.cs" />
+    <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

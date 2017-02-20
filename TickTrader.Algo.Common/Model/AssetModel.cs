@@ -8,7 +8,7 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    internal class AssetModel : ObservableObject, TickTrader.BusinessLogic.IAssetModel
+    public class AssetModel : ObservableObject, TickTrader.BusinessLogic.IAssetModel
     {
         private string currency;
         private decimal amount;

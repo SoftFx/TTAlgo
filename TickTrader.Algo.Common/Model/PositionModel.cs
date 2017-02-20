@@ -10,7 +10,7 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    internal class PositionModel : ObservableObject, TickTrader.BusinessLogic.IPositionModel
+    public class PositionModel : ObservableObject, TickTrader.BusinessLogic.IPositionModel
     {
         private decimal commission;
         private decimal agentCommission;
