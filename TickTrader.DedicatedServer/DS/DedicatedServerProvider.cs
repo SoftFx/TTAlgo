@@ -1,5 +1,6 @@
 ﻿
 using TickTrader.DedicatedServer.DS.Models;
+using TickTrader.DedicatedServer.DS.Repository;
 
 namespace TickTrader.DedicatedServer.DS
 {

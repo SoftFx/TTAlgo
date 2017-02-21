@@ -11,7 +11,7 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace TickTrader.DedicatedServer.DS
+namespace TickTrader.DedicatedServer.DS.Repository
 {
     public class PackageStorage : IPackageStorage
     {
@@ -48,6 +48,8 @@ namespace TickTrader.DedicatedServer.DS
             try
             {
                 Validate(packageName);
+
+                EnsureStorageDirectoryCreated();
 
                 var packageFileInfo = SavePackage(packageName, packageContent);
                 var package = ReadPackage(packageFileInfo);
@@ -148,7 +150,7 @@ namespace TickTrader.DedicatedServer.DS
                     return new PackageModel(fileInfo.Name, fileInfo.CreationTime, container);
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 _logger.LogWarning($"PACKAGE_STORAGE: Failed to read package {fileInfo.Name}");
 
