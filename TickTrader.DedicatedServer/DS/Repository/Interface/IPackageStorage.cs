@@ -1,12 +1,11 @@
 ﻿using TickTrader.DedicatedServer.DS.Models;
 
-namespace TickTrader.DedicatedServer.DS.Repository
+namespace TickTrader.DedicatedServer.DS.Repository.Interface
 {
     public interface IPackageStorage
     {
         PackageModel Add(byte[] fileContent, string fileName);
         PackageModel[] GetAll();
         void Remove(string package);
-
     }
 }

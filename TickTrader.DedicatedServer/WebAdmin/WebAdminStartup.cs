@@ -10,6 +10,7 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using TickTrader.DedicatedServer.WebAdmin.Server.Core;
 using TickTrader.DedicatedServer.DS.Repository;
+using TickTrader.DedicatedServer.DS.Repository.Interface;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {

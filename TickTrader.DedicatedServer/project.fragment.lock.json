@@ -5,13 +5,13 @@
       "type": "project",
       "framework": ".NETFramework,Version=v4.5",
       "compile": {
-        "bin/Debug/TickTrader.Algo.Api.dll": {}
+        "bin/Release/TickTrader.Algo.Api.dll": {}
       },
       "runtime": {
-        "bin/Debug/TickTrader.Algo.Api.dll": {}
+        "bin/Release/TickTrader.Algo.Api.dll": {}
       },
       "contentFiles": {
-        "bin/Debug/TickTrader.Algo.Api.pdb": {
+        "bin/Release/TickTrader.Algo.Api.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true
@@ -22,14 +22,14 @@
       "type": "project",
       "framework": ".NETFramework,Version=v4.5",
       "compile": {
-        "bin/Debug/TickTrader.Algo.Core.dll": {}
+        "bin/Release/TickTrader.Algo.Core.dll": {}
       },
       "runtime": {
         "../packages/Microsoft.Tpl.Dataflow.4.5.24/lib/portable-net45+win8+wpa81/System.Threading.Tasks.Dataflow.dll": {},
-        "bin/Debug/TickTrader.Algo.Core.dll": {}
+        "bin/Release/TickTrader.Algo.Core.dll": {}
       },
       "contentFiles": {
-        "bin/Debug/TickTrader.Algo.Core.pdb": {
+        "bin/Release/TickTrader.Algo.Core.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true
@@ -40,14 +40,14 @@
       "type": "project",
       "framework": ".NETFramework,Version=v4.5",
       "compile": {
-        "bin/Debug/Machinarium.dll": {}
+        "bin/Release/Machinarium.dll": {}
       },
       "runtime": {
         "../packages/Microsoft.Tpl.Dataflow.4.5.24/lib/portable-net45+win8+wpa81/System.Threading.Tasks.Dataflow.dll": {},
-        "bin/Debug/Machinarium.dll": {}
+        "bin/Release/Machinarium.dll": {}
       },
       "contentFiles": {
-        "bin/Debug/Machinarium.pdb": {
+        "bin/Release/Machinarium.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true

@@ -18,7 +18,7 @@
     "Console": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:2016/",
+      "launchUrl": "http://localhost:2017/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

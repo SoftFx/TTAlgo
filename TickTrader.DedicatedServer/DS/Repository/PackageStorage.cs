@@ -4,12 +4,12 @@ using System.Linq;
 using System.Reflection;
 using TickTrader.Algo.Core;
 using TickTrader.DedicatedServer.Extensions;
-using System;
 using Microsoft.Extensions.Logging;
 using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading;
 using System.Collections.Generic;
+using TickTrader.DedicatedServer.DS.Repository.Interface;
 
 namespace TickTrader.DedicatedServer.DS.Repository
 {

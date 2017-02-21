@@ -1,4 +1,4 @@
-﻿namespace TickTrader.DedicatedServer.DS
+﻿namespace TickTrader.DedicatedServer.DS.Repository
 {
     public class PackageStorageSettings
     {

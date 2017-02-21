@@ -2,6 +2,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using TickTrader.DedicatedServer.WebAdmin;
+using Microsoft.Extensions.Configuration;
 
 namespace TickTrader.DedicatedServer
 {
@@ -9,9 +10,16 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("WebAdmin/appsettings.json", optional: true)
+                .AddEnvironmentVariables();
+            var config = builder.Build();
+
+
             var host = new WebHostBuilder()
+                .UseConfiguration(config)
                 .UseKestrel()
-                .UseUrls("https://localhost:2016/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<WebAdminStartup>()
                 .Build();
