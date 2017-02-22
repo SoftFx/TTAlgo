@@ -1,0 +1,5 @@
+#:TickTrader.DedicatedServer.xproj
+TickTrader.DedicatedServer.xproj|..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj
+TickTrader.DedicatedServer.xproj|..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj
+..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj|..\Machinarium\Machinarium.csproj
+..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj|..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj
