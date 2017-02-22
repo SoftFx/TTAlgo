@@ -22,6 +22,9 @@
   </target>
 
   <target name="Build" >
+	<call target="DSRestore"/>
+	<call target="DSBuild"/>
+	<call target="DSPublish"/>
     <property name="Build.Target" value="Publish" />
     <call target="RunMSBuild" />
 	  <call target="CreateBinPackage" />
@@ -30,9 +33,6 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
-	<call target="DSRestore"/>
-	<call target="DSBuild"/>
-	<call target="DSPublish"/>
   </target>
 
   <target name="Publish" >
