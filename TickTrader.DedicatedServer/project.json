@@ -65,11 +65,13 @@
 
   "scripts": {
     "postcompile": [
-      "npm run build_dev"
+      //"npm run build_dev",
     ],
     "prepublish": [
+      "echo '--PREBULISH STARTED--'",
       "npm install",
-      "npm run build_prod"
+      "npm run build_prod",
+      "echo '--PREBULISH ENDED--'"
     ],
     "postpublish": []
   },
