@@ -30,9 +30,9 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
-	<call target="DSBRestore"/>
-	<call target="DSBBuild"/>
-	<call target="DSBPublish"/>
+	<call target="DSRestore"/>
+	<call target="DSBuild"/>
+	<call target="DSPublish"/>
   </target>
 
   <target name="Publish" >
@@ -175,7 +175,7 @@
     </exec>
   </target>
   
-  <target name="DSBPublish">
+  <target name="DSPublish">
     <exec program="dotnet" workingdir="${SourcesDir}TickTrader.DedicatedServer">
       <arg value="publish" />
       <arg value="--configuration"/>
