@@ -1,0 +1,58 @@
+{
+  "version": 2,
+  "exports": {
+    "TickTrader.Algo.Api/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5",
+      "compile": {
+        "bin/Release/TickTrader.Algo.Api.dll": {}
+      },
+      "runtime": {
+        "bin/Release/TickTrader.Algo.Api.dll": {}
+      },
+      "contentFiles": {
+        "bin/Release/TickTrader.Algo.Api.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "TickTrader.Algo.Core/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5",
+      "compile": {
+        "bin/Release/TickTrader.Algo.Core.dll": {}
+      },
+      "runtime": {
+        "../packages/Microsoft.Tpl.Dataflow.4.5.24/lib/portable-net45+win8+wpa81/System.Threading.Tasks.Dataflow.dll": {},
+        "bin/Release/TickTrader.Algo.Core.dll": {}
+      },
+      "contentFiles": {
+        "bin/Release/TickTrader.Algo.Core.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "Machinarium/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.5",
+      "compile": {
+        "bin/Release/Machinarium.dll": {}
+      },
+      "runtime": {
+        "../packages/Microsoft.Tpl.Dataflow.4.5.24/lib/portable-net45+win8+wpa81/System.Threading.Tasks.Dataflow.dll": {},
+        "bin/Release/Machinarium.dll": {}
+      },
+      "contentFiles": {
+        "bin/Release/Machinarium.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    }
+  }
+}
