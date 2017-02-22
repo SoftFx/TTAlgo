@@ -30,6 +30,9 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
+	<call target="DSBRestore"/>
+	<call target="DSBBuild"/>
+	<call target="DSBPublish"/>
   </target>
 
   <target name="Publish" >
@@ -153,6 +156,31 @@
       <arg value="project=${SourcesDir}${Package.ProjectFolder}\${Package.ProjectFolder}.cs" />
       <arg value="workspace=${SourcesDir}${SolutionFile}" />
       <arg value="output=${OutpuFolder}" />
+    </exec>
+  </target>
+  
+  <target name="DSRestore">
+    <exec program="dotnet" workingdir="${SourcesDir}TickTrader.DedicatedServer">
+      <arg value="restore"/>
+      <arg value="restore.dg"/>
+    </exec>
+  </target>
+  
+  <target name="DSBuild">
+    <exec program="dotnet" workingdir="${SourcesDir}TickTrader.DedicatedServer">
+      <arg value="build" />
+      <arg value="--configuration"/>
+	  <arg value="Release"/>
+	  <arg value="--no-dependencies"/>
+    </exec>
+  </target>
+  
+  <target name="DSBPublish">
+    <exec program="dotnet" workingdir="${SourcesDir}TickTrader.DedicatedServer">
+      <arg value="publish" />
+      <arg value="--configuration"/>
+	  <arg value="Release"/>
+	  <arg value="--no-build"/>
     </exec>
   </target>
 
