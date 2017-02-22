@@ -68,10 +68,8 @@
       //"npm run build_dev",
     ],
     "prepublish": [
-      "echo '--PREBULISH STARTED--'",
       "npm install",
-      "npm run build_prod",
-      "echo '--PREBULISH ENDED--'"
+      "npm run build_prod"
     ],
     "postpublish": []
   },
