@@ -96,13 +96,18 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(setup, this);
         }
 
-        protected override void InitPluign(PluginExecutor plugin)
+        public override void InitializePlugin(PluginExecutor plugin)
         {
-            var mainSeries = barCollection.Snapshot.ToList();
+            base.InitializePlugin(plugin);
             var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History);
-            var strategy = new BarStrategy(feed, Algo.Api.BarPriceType.Bid, mainSeries);
-            plugin.SetStrategy(strategy);
+            plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
+        }
+
+        public override void UpdatePlugin(PluginExecutor plugin)
+        {
+            base.UpdatePlugin(plugin);
+            plugin.GetFeedStrategy<BarStrategy>().SetMainSeries(barCollection.Snapshot.ToList());
         }
 
         protected override void ApplyUpdate(Quote quote)

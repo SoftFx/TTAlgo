@@ -11,11 +11,12 @@ namespace TickTrader.Algo.Core
     {
         private InputBuffer<Quote> buffer;
 
-        public QuoteSeriesFixture(string symbolCode, IFeedFixtureContext context) : base(symbolCode, context)
+        public QuoteSeriesFixture(string symbolCode, IFeedFixtureContext context, List<QuoteEntity> data = null) : base(symbolCode, context)
         {
             var execContext = context.ExecContext;
             var feed = context.Feed;
-            var data = feed.QueryTicks(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, 1);
+            if (data != null)
+                data = feed.QueryTicks(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, 1);
 
             buffer = execContext.Builder.GetBuffer<Quote>(SymbolCode);
             if (data != null)

@@ -47,18 +47,11 @@ namespace TickTrader.BotTerminal
         void Unlock();
 
         bool IsStarted { get; }
-        string SymbolCode { get; }
-        TimeFrames TimeFrame { get; }
-        DateTime TimelineStart { get; }
-        BotJournal Journal { get; }
-
-        //BotJournal Journal { get; }
-        //FeedModel Feed { get; }
-        //TraderModel Trade { get; }
-
-        IAccountInfoProvider GetAccInfoProvider();
         void InitializePlugin(PluginExecutor plugin);
+        void UpdatePlugin(PluginExecutor plugin);
+
         ITradeApi GetTradeApi();
+        BotJournal Journal { get; }
 
         event Action ParamsChanged;
         event Action StartEvent;
