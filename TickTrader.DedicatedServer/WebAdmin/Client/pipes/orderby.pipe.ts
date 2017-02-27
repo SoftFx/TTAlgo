@@ -4,11 +4,11 @@
     name: 'orderBy',
     pure: false
 })
-export class OrderBy implements PipeTransform {
+export class OrderByPipe implements PipeTransform {
 
     static _orderByComparator(a: any, b: any): number {
 
-        if (OrderBy.isBoolean(a) && OrderBy.isBoolean(b)) {
+        if (OrderByPipe.isBoolean(a) && OrderByPipe.isBoolean(b)) {
             a = +a;
             b = +b;
         }
@@ -43,8 +43,8 @@ export class OrderBy implements PipeTransform {
                     : propertyToCheck;
 
                 return input.sort(function (a: any, b: any) {
-                    return !desc ? OrderBy._orderByComparator(a[property], b[property])
-                        : -OrderBy._orderByComparator(a[property], b[property]);
+                    return !desc ? OrderByPipe._orderByComparator(a[property], b[property])
+                        : -OrderByPipe._orderByComparator(a[property], b[property]);
                 });
             }
         }
@@ -56,8 +56,8 @@ export class OrderBy implements PipeTransform {
                         ? config[i].substr(1)
                         : config[i];
 
-                    var comparison = !desc ? OrderBy._orderByComparator(a[property], b[property])
-                        : -OrderBy._orderByComparator(a[property], b[property]);
+                    var comparison = !desc ? OrderByPipe._orderByComparator(a[property], b[property])
+                        : -OrderByPipe._orderByComparator(a[property], b[property]);
 
                     if (comparison != 0) return comparison;
                 }

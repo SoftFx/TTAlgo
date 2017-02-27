@@ -29,6 +29,7 @@ module.exports = {
             'angular2-universal',
             'angular2-universal-polyfills',
             'bootstrap',
+            'bootstrap-notify',
             'bootstrap/dist/css/bootstrap.css',
             'es6-shim',
             'es6-promise',

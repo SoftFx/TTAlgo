@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UniversalModule } from 'angular2-universal';
-import { AuthService, AuthGuard, ApiService } from './services/index';
+import { AuthService, AuthGuard, ApiService, ResourceService, ToastrService } from './services/index';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ExpressionTrue } from './directives/expression-true.directive';
 
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
@@ -16,11 +17,14 @@ import { FooterModule } from './shared/footer/footer.module';
     declarations: [
         AppComponent,
         LoginComponent,
+        ExpressionTrue
     ],
     providers: [
         AuthService,
         AuthGuard,
-        ApiService
+        ApiService,
+        ResourceService,
+        ToastrService
     ],
     imports: [
         UniversalModule, // Must be first import. This automatically imports BrowserModule, HttpModule, and JsonpModule too.

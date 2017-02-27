@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { OrderBy, FilterByPipe } from '../pipes/index';
+import { OrderByPipe, FilterByPipe, ResourcePipe } from '../pipes/index';
 import { UniversalModule } from 'angular2-universal';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarModule } from '../shared/navbar/navbar.module';
@@ -20,8 +20,9 @@ import { MODULE_COMPONENTS, MODULE_ROUTES } from './admin.routes';
         RouterModule.forChild(MODULE_ROUTES)
     ],
     declarations: [
-        OrderBy,
+        OrderByPipe,
         FilterByPipe,
+        ResourcePipe,
         MODULE_COMPONENTS,
     ]
 })
