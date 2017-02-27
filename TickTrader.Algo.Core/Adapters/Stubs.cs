@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Core
         public override string ToString() { return "{null}"; }
     }
 
-    internal class NullCurrency : Currency
+    public class NullCurrency : Currency
     {
         public NullCurrency() : this("")
         {
