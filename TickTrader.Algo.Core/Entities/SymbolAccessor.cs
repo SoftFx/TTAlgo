@@ -22,8 +22,8 @@ namespace TickTrader.Algo.Core
             this.Ask = double.NaN;
             this.Bid = double.NaN;
             LastQuote = Null.Quote;
-            BaseCurrencyInfo = currencies.GetOrDefault(BaseCurrency) ?? Null.Currency; 
-            CounterCurrencyInfo = currencies.GetOrDefault(CounterCurrency) ?? Null.Currency; 
+            BaseCurrencyInfo = currencies.ContainsKey(BaseCurrency) ? currencies[BaseCurrency] : Null.Currency; 
+            CounterCurrencyInfo = currencies.ContainsKey(CounterCurrency) ? currencies[CounterCurrency] : Null.Currency; 
         }
 
         public string Name { get { return entity.Name; } }
