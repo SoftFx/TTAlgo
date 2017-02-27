@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
         private MarketDataImpl marketData;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
+        private bool isCurrenciesInitialized;
         private volatile bool isStopped;
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
@@ -27,6 +28,7 @@ namespace TickTrader.Algo.Core
             marketData = new MarketDataImpl(this, this);
             Account = new AccountEntity(this);
             Symbols = new SymbolsCollection(this);
+            Currencies = new CurrenciesCollection();
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
 
@@ -41,11 +43,13 @@ namespace TickTrader.Algo.Core
 
         public string MainSymbol { get; set; }
         public SymbolsCollection Symbols { get; private set; }
+        public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
         public AccountEntity Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
+        public Action CurrencyDataRequested { get; set; }
         public DiagnosticInfo Diagnostics { get; set; }
         public ITradeApi TradeApi { get; set; }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
@@ -186,6 +190,19 @@ namespace TickTrader.Algo.Core
                     Symbols.MainSymbolCode = MainSymbol;
                 }
                 return Symbols.SymbolProviderImpl;
+            }
+        }
+
+        CurrencyList IPluginContext.Currencies
+        {
+            get
+            {
+                if (!isCurrenciesInitialized)
+                {
+                    isCurrenciesInitialized = true;
+                    CurrencyDataRequested?.Invoke();
+                }
+                return Currencies.CurrencyListImp;
             }
         }
 

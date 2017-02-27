@@ -18,14 +18,43 @@ namespace TickTrader.Algo.Api
         bool IsTradeAllowed { get; }
         bool IsNull { get; }
         string BaseCurrency { get; }
+        Currency BaseCurrencyInfo { get; }
         string CounterCurrency { get; }
+        Currency CounterCurrencyInfo { get; }
         double Bid { get; }
         double Ask { get; }
         Quote LastQuote { get; }
+        double Commission { get; }
+        double LimitsCommission { get; }
+        CommissionChargeMethod CommissionChargeMethod { get; }
+        CommissionChargeType CommissionChargeType { get; }
+        CommissionType CommissionType { get; }
 
         void Subscribe(int depth = 1);
         void Unsubscribe();
     }
+
+    public enum CommissionChargeMethod
+    {
+        OneWay,
+        RoundTurn
+    };
+
+    public enum CommissionChargeType
+    {
+        PerTrade,
+        PerLot
+    };
+
+    public enum CommissionType
+    {
+        PerUnit,
+        Percent,
+        Absolute,
+        PercentageWaivedCash,
+        PercentageWaivedEnhanced,
+        PerBond
+    };
 
     public interface SymbolProvider
     {

@@ -36,6 +36,9 @@
     <AssemblyOriginatorKeyFile>Properties\algo.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Common">
+      <HintPath>..\lib\Common.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
@@ -68,6 +71,8 @@
     <Compile Include="Buffers\Interfaces.cs" />
     <Compile Include="Buffers\OutputBuffer.cs" />
     <Compile Include="Buffers\ProxyBuffer.cs" />
+    <Compile Include="Entities\CurrenciesCollection.cs" />
+    <Compile Include="Entities\CurrencyEntity.cs" />
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
