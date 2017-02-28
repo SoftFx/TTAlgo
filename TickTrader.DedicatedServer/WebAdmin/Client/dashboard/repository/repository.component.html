@@ -19,7 +19,7 @@
                         </h4>
 
                     </div>
-                    <div id="uploadPanel" class="content vertical-autoscroll_600 collapse in">
+                    <div class="content vertical-autoscroll_600 collapse in">
                         <div class="form-group">
                             <div class="input-group">
                                 <input [ngModel]="selectedFileName" type="text" class="form-control" placeholder="Select the file" readonly>
@@ -38,21 +38,24 @@
                         </div>
 
                         <div class="pull-right">
-                            <button [disabled]="!canUpload" (click)="uploadPackage()" class="btn btn-primary">
-                                <span *ngIf="uploading"><i class="fa fa-circle-o-notch fa-spin"></i> Uploading</span>
-                                <span *ngIf="!uploading">Upload</span>
-                            </button>
+                            <button [disabled]="!canUpload" (click)="uploadPackage()" class="btn btn-primary">Upload</button>
                         </div>
                     </div>
+
+                    <overlay-cmp *ngIf="uploading">
+                        <span class="fa fa-circle-o-notch fa-spin black"></span>
+                        Uploading...
+                    </overlay-cmp>
                 </div>
 
             </div>
 
             <div class="col-md-8">
-
-                <div *ngFor="let package of packages |  orderBy: ['name']; let pIndex = index;" class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
-                    <package-card-cmp [package]="package" (onDelete)="deletePackage($event)"></package-card-cmp>
-                </div>
+                <masonry class="row">
+                    <div masonry-brick *ngFor="let package of packages |  orderBy: ['name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+                        <package-card-cmp [package]="package" (onDelete)="deletePackage($event)"></package-card-cmp>
+                    </div>
+                </masonry>
             </div>
         </div>
     </div>
