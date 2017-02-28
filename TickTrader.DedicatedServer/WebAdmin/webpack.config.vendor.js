@@ -31,6 +31,8 @@ module.exports = {
             'bootstrap',
             'bootstrap-notify',
             'bootstrap/dist/css/bootstrap.css',
+            "angular2-masonry",
+            "masonry-layout",
             'es6-shim',
             'es6-promise',
             'jquery',
