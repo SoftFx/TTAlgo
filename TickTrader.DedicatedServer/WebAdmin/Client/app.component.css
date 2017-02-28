@@ -67,6 +67,7 @@
     border-radius: inherit;
     overflow: hidden;
     background-color: rgba(243,243,243,0.9);
+    z-index:200;
 }
 
     .overlay .content {
