@@ -24,11 +24,13 @@ namespace TickTrader.Algo.Core
         private static Order order = new NullOrder();
         private static BookEntry[] book = new BookEntry[0];
         private static Quote quote = new NullQuote();
+        private static Currency currency = new NullCurrency();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
         public static BookEntry[] Book => book;
         public static Quote Quote => quote;
+        public static Currency Currency => currency;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
@@ -162,6 +164,23 @@ namespace TickTrader.Algo.Core
         public string Symbol { get { return ""; } }
         public DateTime Time { get { return DateTime.MinValue; } }
 
+        public override string ToString() { return "{null}"; }
+    }
+
+    public class NullCurrency : Currency
+    {
+        public NullCurrency() : this("")
+        {
+        }
+
+        public NullCurrency(string code)
+        {
+            Name = code;
+        }
+
+        public string Name { get; }
+        public int Digits => -1;
+        public bool IsNull => true;
         public override string ToString() { return "{null}"; }
     }
 }

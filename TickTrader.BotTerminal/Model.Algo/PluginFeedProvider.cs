@@ -18,16 +18,18 @@ namespace TickTrader.BotTerminal
         private SymbolCollectionModel symbols;
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
+        private Dictionary<string, CurrencyInfo> currencies;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
 
         public ISynchronizationContext Sync { get { return this; } }
 
-        public PluginFeedProvider(SymbolCollectionModel symbols, FeedHistoryProviderModel history)
+        public PluginFeedProvider(SymbolCollectionModel symbols, FeedHistoryProviderModel history, Dictionary<string, CurrencyInfo> currencies)
         {
             this.symbols = symbols;
             this.history = history;
+            this.currencies = currencies;
 
             rxBuffer = new BufferBlock<QuoteEntity>();
             txBlock = new ActionBlock<QuoteEntity[]>(uList =>
@@ -103,6 +105,11 @@ namespace TickTrader.BotTerminal
             return symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToList();
         }
 
+        public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
+        {
+            return currencies.Values.Select(FdkToAlgo.Convert).ToList();
+        }
+
         public IEnumerable<BarEntity> QueryBars(string symbolCode)
         {
             throw new NotImplementedException();
@@ -142,7 +149,7 @@ namespace TickTrader.BotTerminal
         private Func<List<BarEntity>> mainSeriesProvider;
 
         public BarBasedFeedProvider(TraderClientModel feed, Func<List<BarEntity>> mainSeriesProvider)
-            : base(feed.Symbols, feed.History)
+            : base(feed.Symbols, feed.History, feed.Currencies)
         {
             if (mainSeriesProvider == null)
                 throw new ArgumentNullException("mainSeriesProvider");
@@ -161,7 +168,7 @@ namespace TickTrader.BotTerminal
         private Func<List<QuoteEntity>> mainSeriesProvider;
 
         public QuoteBasedFeedProvider(TraderClientModel feed, Func<List<QuoteEntity>> mainSeriesProvider)
-            : base(feed.Symbols, feed.History)
+            : base(feed.Symbols, feed.History, feed.Currencies)
         {
             if (mainSeriesProvider == null)
                 throw new ArgumentNullException("mainSeriesProvider");

@@ -458,8 +458,11 @@ namespace TickTrader.Algo.Core
             if (metadata != null)
             {
                 var symbolInfoList = metadata.GetSymbolMetadata();
+                var currenciesDict = metadata.GetCurrencyMetadata().ToDictionary(c => c.Name);
                 foreach (var smb in symbolInfoList)
-                    builder.Symbols.Add(smb);
+                    builder.Symbols.Add(smb, currenciesDict);
+                foreach (var currency in currenciesDict.Values)
+                    builder.Currencies.Add(currency);
             }
         }
 

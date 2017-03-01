@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -23,5 +24,10 @@ namespace TickTrader.Algo.Core
         public string BaseCurrencyCode { get; set; }
         public string CounterCurrencyCode { get; set; }
         public bool IsTradeAllowed { get; set; }
+        public double Commission { get; set; }
+        public double LimitsCommission { get; set; }
+        public CommissionChargeMethod CommissionChargeMethod { get; set; }
+        public CommissionChargeType CommissionChargeType { get; set; }
+        public CommissionType CommissionType { get; set; }
     }
 }

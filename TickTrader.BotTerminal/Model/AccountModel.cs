@@ -31,6 +31,7 @@ namespace TickTrader.BotTerminal
         private ConnectionModel connection;
         private ActionBlock<System.Action> uiUpdater;
         private AccountType? accType;
+        private IDictionary<string, CurrencyInfo> _currencies;
 
         public AccountModel(TraderClientModel clientModel)
         {
@@ -131,6 +132,7 @@ namespace TickTrader.BotTerminal
         {
             var accInfo = connection.TradeProxy.Cache.AccountInfo;
             var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+            _currencies = currencies;
 
             Account = accInfo.AccountId;
             Type = accInfo.Type;
@@ -149,7 +151,7 @@ namespace TickTrader.BotTerminal
 
             var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
             foreach (var fdkAsset in fdkAssetsArray)
-                assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
+                assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
 
             Calc = AccountCalculatorModel.Create(this, clientModel);
             Calc.Recalculate();
@@ -192,7 +194,7 @@ namespace TickTrader.BotTerminal
                     Calc.Recalculate();
                 }
                 else if (Type == AccountType.Cash)
-                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency);
+                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
 
                 AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency));
             });
@@ -326,7 +328,7 @@ namespace TickTrader.BotTerminal
             if (IsEmpty(assetInfo))
                 assets.Remove(assetInfo.Currency);
             else
-                assets[assetInfo.Currency] = new AssetModel(assetInfo);
+                assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
@@ -362,7 +364,7 @@ namespace TickTrader.BotTerminal
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
             if (report.Assets != null)
-                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo).ToAlgoAsset()).ToList();
+                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
             AlgoEvent_OrderUpdated(algoReport);
         }
 

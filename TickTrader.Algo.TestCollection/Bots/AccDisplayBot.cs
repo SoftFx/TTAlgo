@@ -58,7 +58,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Status.WriteLine("{0}  orders:", pOrders.Count);
                 foreach (var order in pOrders)
                 {
-                    var tag = string.IsNullOrEmpty(order.Tag) ?"" : "[" + order.Tag + "]";
+                    var tag = string.IsNullOrEmpty(order.Tag) ? "" : "[" + order.Tag + "]";
 
                     Status.WriteLine("#{0} {1} {2}/{3} {4} {5}", order.Symbol, order.Side,
                         order.RemainingVolume, order.RequestedVolume, order.Comment, tag);
@@ -96,7 +96,9 @@ namespace TickTrader.Algo.TestCollection.Bots
             {
                 Status.WriteLine("{0} assets:", Account.Assets.Count);
                 foreach (var asset in Account.Assets)
-                    Status.WriteLine("#{0} {1}", asset.Currency, asset.Volume);
+                    if (asset.CurrencyInfo.IsNull)
+                        Status.WriteLine("{0} {1}", asset.Currency, asset.Volume);
+                    else Status.WriteLine("{0} {1}", asset.Currency, asset.Volume.ToString($"F{asset.CurrencyInfo.Digits}"));
             }
             else
                 Status.WriteLine("No assets");
