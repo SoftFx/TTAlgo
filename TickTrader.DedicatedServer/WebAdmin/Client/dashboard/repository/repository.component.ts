@@ -77,7 +77,7 @@ export class RepositoryComponent implements OnInit {
 
     public onFileInputChange(event) {
         this.uploadingError = null;
-        this.selectedFile = event.srcElement.files[0];
+        this.selectedFile = event.target.files[0];
     }
 
     public get fileInputError() {
