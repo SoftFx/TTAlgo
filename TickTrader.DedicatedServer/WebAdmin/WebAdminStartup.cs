@@ -11,6 +11,8 @@ using Microsoft.Extensions.FileProviders;
 using TickTrader.DedicatedServer.WebAdmin.Server.Core;
 using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.DedicatedServer.DS.Repository.Interface;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
@@ -36,12 +38,18 @@ namespace TickTrader.DedicatedServer.WebAdmin
             services.AddTransient<IPackageStorage, PackageStorage>();
             services.AddSingleton<IDedicatedServer, DedicatedServerProvider>();
 
+            var settings = new JsonSerializerSettings();
+            settings.ContractResolver = new SignalRContractResolver();
+
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
 
-            services.AddMvc().AddJsonOptions(jsonOptions =>
+            services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
+            services.AddMvc().AddJsonOptions(options =>
             {
-                jsonOptions.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
             });
+
             services.AddSwaggerGen();
         }
 
@@ -64,11 +72,14 @@ namespace TickTrader.DedicatedServer.WebAdmin
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions()
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"WebAdmin/wwwroot")),
             });
+
+            app.UseWebSockets();
+            app.UseSignalR();
+
 
             app.UseSwagger();
             app.UseSwaggerUi();

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ApiService, ToastrService } from '../../services/index';
+import { ApiService, FeedService, ToastrService } from '../../services/index';
 import { PackageModel, PluginModel, ResponseStatus } from '../../models/index';
 import { ViewChild } from '@angular/core';
 
@@ -21,10 +21,16 @@ export class RepositoryComponent implements OnInit {
     packageInput: any;
 
     constructor(private api: ApiService, private toastr: ToastrService) {
-
     }
 
     ngOnInit() {
+        this.api.feed.addPackage.subscribe(algoPackage => {
+            this.packages.push(algoPackage);
+        });
+        this.api.feed.deletePackage.subscribe(pname => {
+            this.packages = this.packages.filter(p => p.Name !== pname);
+        });
+
         this.refreshPackages();
     }
 
@@ -44,7 +50,7 @@ export class RepositoryComponent implements OnInit {
 
     public deletePackage(algoPackage: PackageModel) {
         this.api
-            .deleteAlgoPackage(algoPackage.name)
+            .deleteAlgoPackage(algoPackage.Name)
             .subscribe(() => {
                 this.packages = this.packages.filter(p => p !== algoPackage);
             },
@@ -93,7 +99,7 @@ export class RepositoryComponent implements OnInit {
     }
 
     private get isFileDuplicated(): boolean {
-        return this.packages.find(p => this.selectedFile && p.name == this.selectedFile.name) != null;
+        return this.packages.find(p => this.selectedFile && p.Name == this.selectedFile.name) != null;
     }
 
     public get canUpload() {

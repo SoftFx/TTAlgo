@@ -17,6 +17,7 @@ var sharedConfig = {
     },
     module: {
         loaders: [
+             { test: require.resolve('jquery'), loader: 'expose?jQuery!expose?$' },
             { test: /\.ts$/, include: /Client/, loader: 'ts', query: { silent: true } },
             { test: /\.html$/, loader: 'raw' },
             { test: /\.css$/, loader: 'css-to-string!css' },

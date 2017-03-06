@@ -16,7 +16,10 @@
     "Microsoft.Extensions.Logging": "1.1.0",
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
-    "Swashbuckle": "6.0.0-beta901"
+    "Microsoft.AspNetCore.SignalR.Server": "0.2.0-*",
+    "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
+    "Swashbuckle": "6.0.0-beta901",
+    "Microsoft.AspNet.SignalR.Core": "2.2.1"
   },
 
   "tools": {
@@ -65,7 +68,8 @@
 
   "scripts": {
     "postcompile": [
-      //"npm run build_dev",
+      //"npm install",
+      //"npm run build_dev"
     ],
     "prepublish": [
       "npm install",

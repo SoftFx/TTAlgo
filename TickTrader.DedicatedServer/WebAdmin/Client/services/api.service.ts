@@ -1,8 +1,9 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid } from "../models/index";
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid, AccountModel } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
+import { FeedService } from './feed.service';
 
 @Injectable()
 export class ApiService {
@@ -16,7 +17,7 @@ export class ApiService {
         bots: ExtBotModel[]
     };
 
-    constructor(private http: Http) {
+    constructor(private http: Http, public feed: FeedService) {
         this.dataStore = { bots: [] };
         this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
@@ -80,8 +81,7 @@ export class ApiService {
             () => { });
     }
 
-    /* strart API Repository*/
-
+    /* >>> API Repository*/
     uploadAlgoPackage(file: any) {
         let input = new FormData();
         input.append("file", file);
@@ -98,10 +98,30 @@ export class ApiService {
     getAlgoPackages(): Observable<PackageModel[]> {
         return this.http
             .get(this.repositoryUrl)
-            .map(res => res.json().map(i => new PackageModel().deserialize(i)));
+            .map(res => res.json().map(i => new PackageModel().Deserialize(i)));
+    }
+    /* <<< API Repository*/
+
+
+    /* >>> API Accounts */
+
+    addAccount(acc: AccountModel) {
+
     }
 
-    /* end API Repository*/
+    getAccounts(): Observable<AccountModel[]> {
+        return Observable.of(new AccountModel[0]);
+    }
+
+    deleteAccount(acc: AccountModel) {
+
+    }
+
+    updateAccount(acc: AccountModel) {
+
+    }
+
+    /* <<< API Accounts */
 
     private updateBotState(bot: ExtBotModel, state: BotState): boolean {
         for (let cBot of this.dataStore.bots) {

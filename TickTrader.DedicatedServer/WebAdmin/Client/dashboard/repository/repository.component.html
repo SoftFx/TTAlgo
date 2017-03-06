@@ -15,12 +15,13 @@
                         </div>
 
                         <h4 class="title truncate">
-                            Upload Algo Package
+                            Algo Package
                         </h4>
 
                     </div>
-                    <div class="content vertical-autoscroll_600 collapse in">
+                    <div id="uploadPanel" class="content vertical-autoscroll_600 collapse in">
                         <div class="form-group">
+                            <label>File</label>
                             <div class="input-group">
                                 <input [ngModel]="selectedFileName" type="text" class="form-control" placeholder="Select the file" readonly>
                                 <label class="input-group-btn">
@@ -52,7 +53,7 @@
 
             <div class="col-md-8">
                 <masonry class="row">
-                    <div masonry-brick *ngFor="let package of packages |  orderBy: ['name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+                    <div masonry-brick *ngFor="let package of packages |  orderBy: ['Name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
                         <package-card-cmp [package]="package" (onDelete)="deletePackage($event)"></package-card-cmp>
                     </div>
                 </masonry>
