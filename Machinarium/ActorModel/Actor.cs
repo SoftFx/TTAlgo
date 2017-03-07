@@ -8,66 +8,158 @@ using System.Threading.Tasks.Dataflow;
 
 namespace Machinarium.ActorModel
 {
-    public class ActorCore
-    {   
-        private ActionBlock<Action> block;
+    public abstract class Actor
+    {
+        private ActorScope scope;
 
-        public ActorCore(ActorContextOptions contextOption = ActorContextOptions.OwnContext)
+        public Actor()
         {
-            Action<Action> msgHandler = a =>
-            {
-                SynchronizationContext.SetSynchronizationContext(Context);
-                a();
-                AfterHandler();
-            };
-
-            if (contextOption == ActorContextOptions.OwnContext)
-            {
-                block = new ActionBlock<Action>(msgHandler);
-                Context = new ActorSynchronizationContext(block);
-            }
-            else if (contextOption == ActorContextOptions.InheritContext)
-            {
-                var options = new ExecutionDataflowBlockOptions() { TaskScheduler = TaskScheduler.FromCurrentSynchronizationContext() };
-                block = new ActionBlock<Action>(msgHandler, options);
-
-                this.Context = SynchronizationContext.Current;
-            }
+            scope = ActorScope.GetScope();
         }
 
-        protected SynchronizationContext Context { get; private set; }
-
-        protected virtual void AfterHandler() { }
-
-        public void Enqueue(Action actorAction)
+        public Actor(ActorScope scope)
         {
-            block.Post(actorAction);
+            if (scope == null)
+                this.scope = ActorScope.GetScope();
+            else
+                this.scope = scope;
+        }
+
+        protected void Enqueue(Action actorAction)
+        {
+            if (scope == SynchronizationContext.Current)
+            {
+                try
+                {
+                    actorAction();
+                }
+                catch (Exception ex)
+                {
+                    Environment.FailFast("Unhandled exception in Actor!", ex);
+                }
+            }
+            else
+                scope.Enqueue(actorAction);
+        }
+
+        protected Task<TResult> AsyncCall<TResult>(Func<Task<TResult>> asyncFunction)
+        {
+            TaskCompletionSource<TResult> src = new TaskCompletionSource<TResult>();
+            Enqueue(() => asyncFunction().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    src.SetException(t.Exception);
+                else if (t.IsCanceled)
+                    src.SetCanceled();
+                else
+                    src.SetResult(t.Result);
+            }));
+            return src.Task;
+        }
+
+        protected Task AsyncCall(Func<Task> asyncFunction)
+        {
+            TaskCompletionSource<object> src = new TaskCompletionSource<object>();
+            Enqueue(() => asyncFunction().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    src.SetException(t.Exception);
+                else if (t.IsCanceled)
+                    src.SetCanceled();
+                else
+                    src.SetResult(this);
+            }));
+            return src.Task;
+        }
+
+        protected TxChannel<T> InChannel<T>(Action<TxChannel<T>> channelFunc)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected RxChannel<T> OutChannel<T>(Action<TxChannel<T>> channelFunc)
+        {
+            throw new NotImplementedException();
         }
     }
 
-    public enum ActorContextOptions
+    public abstract class ActorScope : SynchronizationContext
     {
-        OwnContext,
-        InheritContext
-    }
-
-    internal class ActorSynchronizationContext : SynchronizationContext
-    {
-        private ActionBlock<Action> block;
-
-        public ActorSynchronizationContext(ActionBlock<Action> block)
+        public static ActorScope GetScope()
         {
-            this.block = block;
+            var currentActorScope = Current as ActorScope;
+
+            if (currentActorScope != null)
+                return currentActorScope;
+
+            return new DataflowScope(ActorContextOptions.OwnContext);
+        }
+
+        public ActorScope()
+        {
+        }
+
+        public abstract void Enqueue(Action actorAction);
+
+        protected void InvokeAction(Action actorAction)
+        {
+            var oldContext = Current;
+            SetSynchronizationContext(this);
+            try
+            {
+                actorAction();
+            }
+            catch (Exception ex)
+            {
+                Environment.FailFast("Unhandled exception in Actor!", ex);
+            }
+            finally
+            {
+                SetSynchronizationContext(oldContext);
+            }
         }
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            block.Post(() => d(state));
+            Enqueue(() => d(state));
         }
 
         public override void Send(SendOrPostCallback d, object state)
         {
             throw new NotImplementedException();
         }
+    }
+
+    public class DataflowScope : ActorScope
+    {   
+        private ActionBlock<Action> block;
+
+        public DataflowScope(ActorContextOptions contextOption = ActorContextOptions.OwnContext)
+        {
+            var options = new ExecutionDataflowBlockOptions();
+
+            if (contextOption == ActorContextOptions.InheritContext)
+                options.TaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            block = new ActionBlock<Action>(a => InvokeAction(a));
+        }
+
+        internal ActionBlock<Action> QueueBlock => block;
+
+        protected SynchronizationContext Context { get; private set; }
+
+        public override void Enqueue(Action actorAction)
+        {
+            block.Post(actorAction);
+        }
+    }
+
+
+    public enum ActorMessageType { Action, AsyncAction, AsyncFunc, ChannelData }
+
+    public enum ActorContextOptions
+    {
+        OwnContext,
+        InheritContext
     }
 }

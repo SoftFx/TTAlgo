@@ -27,12 +27,21 @@
   "frameworks": {
     "net452": {
       "dependencies": {
+        "Machinarium": {
+          "target": "project"
+        },
         "TickTrader.Algo.Api": {
+          "target": "project"
+        },
+        "TickTrader.Algo.Common": {
           "target": "project"
         },
         "TickTrader.Algo.Core": {
           "target": "project"
         }
+      },
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization": "4.0.0.0"
       }
     }
   },
