@@ -8,22 +8,22 @@
             </div>
         </div>
         <h4 class="title truncate">
-            <i class="{{package.icon}}"></i>
-            {{package.name}}
+            <i class="{{package.Icon}}"></i>
+            {{package.Name}}
         </h4>
     </div>
     <div class="content">
-        <ul *ngIf="package.isValid" class="list-unstyled">
-            <li *ngFor="let plugin of package.plugins |  orderBy: ['displayName']" class="card-text">
-                <strong [innerHTML]="plugin.icon"></strong>
-                {{plugin.displayName}}
+        <ul *ngIf="package.IsValid" class="list-unstyled">
+            <li *ngFor="let plugin of package.Plugins |  orderBy: ['DisplayName']" class="card-text">
+                <strong [innerHTML]="plugin.Icon"></strong>
+                {{plugin.DisplayName}}
             </li>
         </ul>
-        <p *ngIf="!package.isValid"><span class="text-error">Invalid package format</span></p>
+        <p *ngIf="!package.IsValid"><span class="text-error">Invalid package format</span></p>
         <div class="footer">
             <hr>
             <div class="stats">
-                <i class="fa fa-clock-o"></i> Uploaded: {{package.created | date:'short'}}
+                <i class="fa fa-clock-o"></i> Uploaded: {{package.Created | date:'short'}}
             </div>
         </div>
     </div>

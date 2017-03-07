@@ -1,21 +1,21 @@
 ﻿import { Serializable, PluginModel } from './index';
 
 export class PackageModel implements Serializable<PackageModel> {
-    public name: string;
-    public created: Date;
-    public isValid: boolean;
-    public plugins: PluginModel[];
+    public Name: string;
+    public Created: Date;
+    public IsValid: boolean;
+    public Plugins: PluginModel[];
 
-    public get icon(): string {
+    public get Icon(): string {
         return "fa fa-archive";
     }
 
-    public deserialize(input: any): PackageModel {
+    public Deserialize(input: any): PackageModel {
         let packageModel = new PackageModel();
-        packageModel.created = input.created;
-        packageModel.isValid = input.isValid;
-        packageModel.name = input.name;
-        packageModel.plugins = input.plugins ? input.plugins.map(p => new PluginModel().deserialize(p)) : input.plugins;
+        packageModel.Created = input.Created;
+        packageModel.IsValid = input.IsValid;
+        packageModel.Name = input.Name;
+        packageModel.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel().Deserialize(p)) : input.Plugins;
 
         return packageModel;
     }

@@ -42,6 +42,7 @@ node_modules/
 /[C]lient/*.map
 /[C]lient/**/*.js
 /[C]lient/**/*.map
+typings/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

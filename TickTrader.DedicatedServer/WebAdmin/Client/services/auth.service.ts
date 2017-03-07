@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
 import { Observable } from "rxjs/Rx";
+import { FeedService } from './feed.service';
 
 
 @Injectable()
@@ -10,17 +11,21 @@ export class AuthService {
 
     redirectUrl: string;
 
-    constructor(private http: Http) { }
+    constructor(private feed: FeedService, private http: Http) { }
 
     isAuthorized(): boolean {
         return this.isLoggedIn;
     }
 
     logIn(username: string, password: string): Observable<boolean> {
+        this.feed.start(true)
+            .subscribe(null, error => console.log('Error on init: ' + error));
         return Observable.of(true).delay(500).do(val => this.isLoggedIn = true);
     }
 
     logOut() {
-        this.isLoggedIn = false;
+        this.feed.stop()
+            .subscribe(null, error => console.log('Error on init: ' + error));
+        return Observable.of(true).do(v => this.isLoggedIn = false);
     }
 }

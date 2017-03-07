@@ -1,20 +1,20 @@
 ﻿import { Serializable } from './index';
 
 export class PluginModel implements Serializable<PluginModel>{
-    public id: string;
-    public displayName: string;
-    public type: string;
+    public Id: string;
+    public DisplayName: string;
+    public Type: string;
 
-    public get isIndicator() {
-        return this.type.toLowerCase() == "indicator"
+    public get IsIndicator() {
+        return this.Type.toLowerCase() == "indicator"
     }
 
-    public get isRobot() {
-        return this.type.toLowerCase() == "robot"
+    public get IsRobot() {
+        return this.Type.toLowerCase() == "robot"
     }
 
-    public get icon(): string {
-        if (this.isIndicator) {
+    public get Icon(): string {
+        if (this.IsIndicator) {
             return '&Iota;';
         }
         else {
@@ -22,7 +22,7 @@ export class PluginModel implements Serializable<PluginModel>{
         }
     }
 
-    public deserialize(input): PluginModel {
+    public Deserialize(input): PluginModel {
         return Object.assign(new PluginModel(), input);
     }
 }

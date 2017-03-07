@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -8,16 +9,18 @@ using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.DedicatedServer.WebAdmin.Server.Hubs;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class RepositoryController : Controller
+    public class RepositoryController : HubController<DSFeed>
     {
         private readonly ILogger<RepositoryController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
 
-        public RepositoryController(IDedicatedServer ddServer, ILogger<RepositoryController> logger)
+        public RepositoryController(IConnectionManager connectionManager, IDedicatedServer ddServer, ILogger<RepositoryController> logger) :
+            base(connectionManager)
         {
             _dedicatedServer = ddServer;
             _logger = logger;
@@ -44,7 +47,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
                     try
                     {
-                        _dedicatedServer.AddPackage(fileContent, file.FileName);
+                        var pacakge = _dedicatedServer.AddPackage(fileContent, file.FileName);
+                        Clients.All.AddPackage(pacakge.ToPackageDto());
                     }
                     catch (DuplicatePackageException dpe)
                     {
@@ -61,6 +65,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         public void Delete(string name)
         {
             _dedicatedServer.RemovePackage(name);
+            Clients.All.DeletePackage(name);
         }
     }
 }

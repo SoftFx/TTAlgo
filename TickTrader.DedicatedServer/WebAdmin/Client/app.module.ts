@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UniversalModule } from 'angular2-universal';
-import { AuthService, AuthGuard, ApiService, ResourceService, ToastrService } from './services/index';
+import { FeedService, AuthService, AuthGuard, ApiService, ResourceService, ToastrService } from './services/index';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ExpressionTrue } from './directives/expression-true.directive';
 
@@ -15,11 +15,12 @@ import { FooterModule } from './shared/footer/footer.module';
 @NgModule({
     bootstrap: [ AppComponent ],
     declarations: [
-        AppComponent,
         LoginComponent,
+        AppComponent,
         ExpressionTrue
     ],
     providers: [
+        FeedService,
         AuthService,
         AuthGuard,
         ApiService,
