@@ -23,27 +23,27 @@
                         <div class="form-group">
                             <label>File</label>
                             <div class="input-group">
-                                <input [ngModel]="selectedFileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                                <input [ngModel]="SelectedFileName" type="text" class="form-control" placeholder="Select the file" readonly>
                                 <label class="input-group-btn">
                                     <span class="btn btn-primary btn-fill">
                                         <i class="fa fa-folder-o"></i>
-                                        <input #packageInput (change)="onFileInputChange($event)" type="file" style="display: none;" accept=".ttalgo">
+                                        <input #PackageInput (change)="OnFileInputChange($event)" type="file" style="display: none;" accept=".ttalgo">
                                     </span>
                                 </label>
                             </div>
 
-                            <div *ngIf="fileInputError" class="alert alert-danger">
-                                <span>{{fileInputError | resx }}</span>
+                            <div *ngIf="FileInputError" class="alert alert-danger">
+                                <span>{{FileInputError | resx }}</span>
                             </div>
 
                         </div>
 
                         <div class="pull-right">
-                            <button [disabled]="!canUpload" (click)="uploadPackage()" class="btn btn-primary">Upload</button>
+                            <button [disabled]="!CanUpload" (click)="UploadPackage()" class="btn btn-primary">Upload</button>
                         </div>
                     </div>
 
-                    <overlay-cmp *ngIf="uploading">
+                    <overlay-cmp *ngIf="Uploading">
                         <span class="fa fa-circle-o-notch fa-spin black"></span>
                         Uploading...
                     </overlay-cmp>
@@ -53,8 +53,8 @@
 
             <div class="col-md-8">
                 <masonry class="row">
-                    <div masonry-brick *ngFor="let package of packages |  orderBy: ['Name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <package-card-cmp [package]="package" (onDelete)="deletePackage($event)"></package-card-cmp>
+                    <div masonry-brick *ngFor="let package of Packages |  orderBy: ['Name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+                        <package-card-cmp [package]="package" (onDelete)="DeletePackage($event)"></package-card-cmp>
                     </div>
                 </masonry>
             </div>

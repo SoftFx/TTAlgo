@@ -17,7 +17,7 @@ export class ApiService {
         bots: ExtBotModel[]
     };
 
-    constructor(private http: Http, public feed: FeedService) {
+    constructor(private http: Http, public Feed: FeedService) {
         this.dataStore = { bots: [] };
         this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
