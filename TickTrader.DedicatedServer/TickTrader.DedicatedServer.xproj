@@ -15,7 +15,9 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet.Web\Microsoft.DotNet.Web.targets" Condition="'$(VSToolsPath)' != ''" />

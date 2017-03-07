@@ -13,10 +13,10 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    internal class ConnectionModel
+    public class ConnectionModel
     {
         private IAlgoCoreLogger logger;
-        internal enum States { Offline, Connecting, WaitingLogon, Initializing, Online, Deinitializing, Disconnecting }
+        public enum States { Offline, Connecting, WaitingLogon, Initializing, Online, Deinitializing, Disconnecting }
         public enum Events { Started, DoneConnecting, FailedConnecting, DoneInit, DoneDeinit, DoneDisconnecting, OnLogon, OnLogout, StopRequested }
 
         private DataFeed feedProxy;
