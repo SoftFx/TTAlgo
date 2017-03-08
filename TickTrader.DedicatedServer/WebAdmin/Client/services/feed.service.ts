@@ -63,11 +63,12 @@ export class FeedService {
     }
 
     private onAddPackage(algoPackage: PackageModel) {
-        console.log(algoPackage.Name);
+        console.info('[FeedService] onAddPackage', algoPackage);
         this.addPackageSubject.next(algoPackage);
     }
 
     private onDeletePackage(name: string) {
+        console.info('[FeedService] onDeletePackage', name);
         this.deletePackageSubject.next(name);
     }
 }

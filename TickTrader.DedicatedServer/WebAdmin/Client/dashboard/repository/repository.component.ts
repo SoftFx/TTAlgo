@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { ApiService, FeedService, ToastrService } from '../../services/index';
 import { PackageModel, PluginModel, ResponseStatus } from '../../models/index';
 import { ViewChild } from '@angular/core';
@@ -6,7 +6,7 @@ import { ViewChild } from '@angular/core';
 @Component({
     selector: 'repository-cmp',
     template: require('./repository.component.html'),
-    styles: [require('../../app.component.css')],
+    styles: [require('../../app.component.css')]
 })
 
 export class RepositoryComponent implements OnInit {
@@ -21,14 +21,14 @@ export class RepositoryComponent implements OnInit {
     @ViewChild('PackageInput')
     PackageInput: any;
 
-    constructor(private Api: ApiService, private Toastr: ToastrService) {
+    constructor(private _api: ApiService, private _toastr: ToastrService) {
     }
 
     ngOnInit() {
-        this.Api.Feed.addPackage.subscribe(algoPackage => this.addPackage(algoPackage));
-        this.Api.Feed.deletePackage.subscribe(pname => this.deletePackage(pname));
+        this._api.Feed.addPackage.subscribe(algoPackage => this.addPackage(algoPackage));
+        this._api.Feed.deletePackage.subscribe(pname => this.deletePackage(pname));
 
-        this.refreshPackages();
+        this.loadPackages();
     }
 
     public get SelectedFileName() {
@@ -38,32 +38,25 @@ export class RepositoryComponent implements OnInit {
             return "";
     }
 
-    public DeletePackage(algoPackage: PackageModel) {
-        this.Api
-            .deleteAlgoPackage(algoPackage.Name)
-            .subscribe(() => this.deletePackage(algoPackage.Name),
-            err => this.Toastr.error("Failed to execute the query. Please try again."));
+    public OnPackageDeleted(algoPackage: PackageModel) {
+        //this.deletePackage(algoPackage.Name);
     }
 
     public UploadPackage() {
         this._uploadingError = null;
         this.Uploading = true;
 
-        this.Api
-            .uploadAlgoPackage(this.SelectedFile)
+        this._api
+            .UploadPackage(this.SelectedFile)
             .finally(() => { this.Uploading = false; })
             .subscribe(res => {
                 this.SelectedFile = null;
                 this.PackageInput.nativeElement.value = "";
-                this.refreshPackages();
             },
             err => {
-                try {
-                    this._uploadingError = err.json() as ResponseStatus;
-                }
-                catch (err) {
-                    this.Toastr.error("Failed to execute the query. Please try again.")
-                }
+                this._uploadingError = err;
+                if (!this._uploadingError.Handled)
+                    this._toastr.error(this._uploadingError.Message);
             });
     }
 
@@ -73,7 +66,7 @@ export class RepositoryComponent implements OnInit {
     }
 
     public get FileInputError() {
-        if ((this._uploadingError != null && this._uploadingError['code'] && this._uploadingError.code == 101) || this.isFileDuplicated) {
+        if ((this._uploadingError != null && this._uploadingError['Code'] && this._uploadingError.Code == 101) || this.isFileDuplicated) {
             return 'DuplicatePackage';
         }
         return null;
@@ -88,21 +81,22 @@ export class RepositoryComponent implements OnInit {
         return !this.Uploading
             && this.SelectedFileName
             && !this.isFileDuplicated
-            && (!this._uploadingError || !this._uploadingError['code'] || this._uploadingError['code'] != 101);
+            && (!this._uploadingError || !this._uploadingError['Code'] || this._uploadingError['Code'] != 101);
     }
 
     private get isFileDuplicated(): boolean {
         return this.Packages.find(p => this.SelectedFile && p.Name == this.SelectedFile.name) != null;
     }
 
-    private refreshPackages() {
-        this.Api.getAlgoPackages()
+    private loadPackages() {
+        this._api.GetPackages()
             .subscribe(res => this.Packages = res);
     }
 
     private addPackage(packageModel: PackageModel) {
-        if (!this.Packages.find(p => p.Name === packageModel.Name))
-            this.Packages.push(packageModel);
+        if (!this.Packages.find(p => p.Name === packageModel.Name)) {
+            this.Packages = this.Packages.concat(packageModel);
+        }
     }
 
     private deletePackage(packageName: string) {

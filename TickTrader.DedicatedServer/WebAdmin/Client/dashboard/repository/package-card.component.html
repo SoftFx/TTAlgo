@@ -1,4 +1,4 @@
-﻿<div class="card" >
+﻿<div class="card">
     <div class="header">
         <div class="btn-toolbar pull-right">
             <div class="btn-group btn-group-sm">
@@ -8,22 +8,23 @@
             </div>
         </div>
         <h4 class="title truncate">
-            <i class="{{package.Icon}}"></i>
-            {{package.Name}}
+            <i class="{{Package.Icon}}"></i>
+            {{Package.Name}}
         </h4>
+
     </div>
     <div class="content">
-        <ul *ngIf="package.IsValid" class="list-unstyled">
-            <li *ngFor="let plugin of package.Plugins |  orderBy: ['DisplayName']" class="card-text">
+        <ul *ngIf="Package.IsValid" class="list-unstyled">
+            <li *ngFor="let plugin of Package.Plugins |  orderBy: ['DisplayName']" class="card-text">
                 <strong [innerHTML]="plugin.Icon"></strong>
                 {{plugin.DisplayName}}
             </li>
         </ul>
-        <p *ngIf="!package.IsValid"><span class="text-error">Invalid package format</span></p>
+        <p *ngIf="!Package.IsValid"><span class="text-error">Invalid Package format</span></p>
         <div class="footer">
             <hr>
             <div class="stats">
-                <i class="fa fa-clock-o"></i> Uploaded: {{package.Created | date:'short'}}
+                <i class="fa fa-clock-o"></i> Uploaded: {{Package.Created | date:'short'}}
             </div>
         </div>
     </div>
@@ -35,7 +36,7 @@
             </div>
             <div class="row">
                 <div class="form-group col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="delete()" class="btn btn-primary btn-fill">Delete</button>
+                    <button (click)="Delete()" class="btn btn-primary btn-fill">Delete</button>
                 </div>
                 <div class="form-group col-xs-6 col-sm-6 col-md-6">
                     <button (click)="showConfirm=false" class="btn btn-danger btn-fill">Cancel</button>

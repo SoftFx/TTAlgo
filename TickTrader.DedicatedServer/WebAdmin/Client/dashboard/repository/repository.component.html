@@ -54,7 +54,7 @@
             <div class="col-md-8">
                 <masonry class="row">
                     <div masonry-brick *ngFor="let package of Packages |  orderBy: ['Name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <package-card-cmp [package]="package" (onDelete)="DeletePackage($event)"></package-card-cmp>
+                        <package-card-cmp [Package]="package" (OnDeleted)="OnPackageDeleted($event)"></package-card-cmp>
                     </div>
                 </masonry>
             </div>
