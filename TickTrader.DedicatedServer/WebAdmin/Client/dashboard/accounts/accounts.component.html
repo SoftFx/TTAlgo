@@ -32,46 +32,26 @@
                         </div>
 
                         <div class="pull-right">
+                            <button class="btn btn-primary">Test</button>
                             <button class="btn btn-primary">Add</button>
                             <button class="btn btn-warning">Cancel</button>
                         </div>
                     </div>
 
-                    <overlay-cmp *ngIf="uploading">
+                    <overlay-cmp *ngIf="false">
                         <span class="fa fa-circle-o-notch fa-spin black"></span>
-                        Uploading...
+                        Overlay...
                     </overlay-cmp>
                 </div>
 
             </div>
 
             <div class="col-md-8">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title truncate">100500</h4>
-                                <p class="category">dd.softfx.prod.com</p>
-                            </div>
-                        </div>
+                <masonry class="row"  >
+                    <div masonry-brick *ngFor="let account of Accounts; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+                        <account-card-cmp [Account]="account"></account-card-cmp>
                     </div>
-                    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title truncate">100500</h4>
-                                <p class="category">dd.softfx.prod.com</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title truncate">100500</h4>
-                                <p class="category">dd.softfx.prod.com</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </masonry>
             </div>
         </div>
     </div>

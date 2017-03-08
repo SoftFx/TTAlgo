@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid, AccountModel } from "../models/index";
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid, AccountModel, ResponseStatus, ResponseCode } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 
@@ -82,45 +82,52 @@ export class ApiService {
     }
 
     /* >>> API Repository*/
-    uploadAlgoPackage(file: any) {
+    UploadPackage(file: any) {
         let input = new FormData();
         input.append("file", file);
 
         return this.http
-            .post(this.repositoryUrl, input);
+            .post(this.repositoryUrl, input)
+            .catch(this.handleServerError);
     }
 
-    deleteAlgoPackage(name: string) {
+    DeletePackage(name: string) {
         return this.http
-            .delete(`${this.repositoryUrl}/${name}`, { headers: this.headers });
+            .delete(`${this.repositoryUrl}/${name}`, { headers: this.headers })
+            .catch(this.handleServerError);
     }
 
-    getAlgoPackages(): Observable<PackageModel[]> {
+    GetPackages(): Observable<PackageModel[]> {
         return this.http
             .get(this.repositoryUrl)
-            .map(res => res.json().map(i => new PackageModel().Deserialize(i)));
+            .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
+            .catch(this.handleServerError);
     }
     /* <<< API Repository*/
 
 
     /* >>> API Accounts */
-
-    addAccount(acc: AccountModel) {
-
+    GetAccounts(): Observable<AccountModel[]> {
+        return Observable.of(new Array<AccountModel>(0));
     }
 
-    getAccounts(): Observable<AccountModel[]> {
-        return Observable.of(new AccountModel[0]);
+    AddAccount(acc: AccountModel) {
+        return this.http
+            .post(this.repositoryUrl, { account: acc })
+            .catch(this.handleServerError);
     }
 
-    deleteAccount(acc: AccountModel) {
-
+    DeleteAccount(acc: AccountModel) {
+        return Observable.throw('NotImplemented');
     }
 
-    updateAccount(acc: AccountModel) {
-
+    UpdateAccount(acc: AccountModel) {
+        return Observable.throw('NotImplemented');
     }
 
+    TestAccount(acc: AccountModel) {
+        return Observable.throw('NotImplemented');
+    }
     /* <<< API Accounts */
 
     private updateBotState(bot: ExtBotModel, state: BotState): boolean {
@@ -131,5 +138,11 @@ export class ApiService {
             }
         }
         return false;
+    }
+
+
+    private handleServerError(error: Response): Observable<any> {
+        console.error('[ApiService] An error occurred' + error); //debug
+        return Observable.throw(new ResponseStatus(error));
     }
 }

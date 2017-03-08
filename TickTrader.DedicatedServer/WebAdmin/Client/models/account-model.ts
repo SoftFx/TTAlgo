@@ -1,5 +1,5 @@
 ﻿export class AccountModel {
-    public login: string;
-    public server: string;
-    public password: string;
+    public Login: string;
+    public Server: string;
+    public Password: string;
 }

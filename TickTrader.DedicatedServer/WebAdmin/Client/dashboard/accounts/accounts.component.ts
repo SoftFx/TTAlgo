@@ -8,10 +8,26 @@ import { AccountModel } from '../../models/index';
     styles: [require('../../app.component.css')]
 })
 
-export class AccountsComponent {
-    public accounts: AccountModel[];
+export class AccountsComponent implements OnInit {
 
-    constructor(api: ApiService) { }
+    public Accounts: AccountModel[] = [];
+    public Account: AccountModel = new AccountModel();
 
-    
+    constructor(private Api: ApiService) {
+        this.Accounts.push(new AccountModel());
+        this.Accounts.push(new AccountModel());
+        this.Accounts.push(new AccountModel());
+        this.Accounts.push(new AccountModel());
+        this.Accounts.push(new AccountModel());
+    }
+
+    ngOnInit() {
+       
+    }
+
+    public Add() { }
+
+    public Cancel() { }
+
+    public Test() { }
 }
