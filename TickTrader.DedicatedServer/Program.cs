@@ -7,6 +7,9 @@ using TickTrader.DedicatedServer.DS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.DedicatedServer.DS;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace TickTrader.DedicatedServer
 {
@@ -37,50 +40,70 @@ namespace TickTrader.DedicatedServer
 
         private static void RunConsole()
         {
-            var server = new ServerModel();
+            var serviceProvider = new ServiceCollection()
+                .AddLogging()
+                .BuildServiceProvider();
+
+            var server = ServerModel.Load(serviceProvider.GetService<ILoggerFactory>());
 
             CommandUi cmdEngine = new CommandUi();
-            cmdEngine.RegsiterCommand("display state", () =>
+            cmdEngine.RegsiterCommand("info", () =>
             {
                 lock (server.SyncObj)
                 {
                     foreach (var acc in server.Accounts)
                     {
                         Console.WriteLine(GetDisplayName(acc));
-                        foreach (var bot in acc.Bots)
-                        {
-                        }
+                        //foreach (var bot in acc.Bots)
+                        //{
+                        //}
                     }
                 }
             });
 
-            cmdEngine.RegsiterCommand("add account", () =>
+            cmdEngine.RegsiterCommand("account", () =>
             {
-                server.AddAccount(
-                    CommandUi.InputString("login"),
-                    CommandUi.InputString("password"),
-                    CommandUi.InputString("server"));
-            });
+                var cmd = CommandUi.Choose("cmd", "add", "remove", "test", "cancel");
 
-            cmdEngine.RegsiterCommand("test account", () =>
-            {
-                List<AccountModel> accountsList;
-                lock (server.SyncObj)
-                    accountsList = server.Accounts.ToList();
-                var acc = CommandUi.Choose("account", accountsList, GetDisplayName);
-                var result = acc.TestConnection().Result;
-                if (result == Algo.Common.Model.ConnectionErrorCodes.None)
-                    Console.WriteLine("Valid connection.");
-                else
-                    Console.WriteLine("Error = " + acc.TestConnection().Result);
+                IAccount acc;
+                List<IAccount> accountsList;
+
+                switch (cmd)
+                {
+                    case "add":
+                        server.AddAccount(
+                            CommandUi.InputString("login"),
+                            CommandUi.InputString("password"),
+                            CommandUi.InputString("server"));
+                        break;
+
+                    case "remove":
+                        lock (server.SyncObj)
+                            accountsList = server.Accounts.ToList();
+                        acc = CommandUi.Choose("account", accountsList, GetDisplayName);
+                        server.RemoveAccount(acc.Username, acc.Address);
+                        break;
+
+                    case "test":
+                        lock (server.SyncObj)
+                            accountsList = server.Accounts.ToList();
+                        acc = CommandUi.Choose("account", accountsList, GetDisplayName);
+                        var result = acc.TestConnection().Result;
+                        if (result == Algo.Common.Model.ConnectionErrorCodes.None)
+                            Console.WriteLine("Valid connection.");
+                        else
+                            Console.WriteLine("Error = " + acc.TestConnection().Result);
+                        break;
+                }
+ 
             });
 
             cmdEngine.Run();
         }
 
-        private static string GetDisplayName(AccountModel acc)
+        private static string GetDisplayName(IAccount acc)
         {
-            return string.Format("account {0} - {1}", acc.Connection.Address, acc.Connection.Address);
+            return string.Format("account {0} - {1}", acc.Address, acc.Username);
         }
     }
 }

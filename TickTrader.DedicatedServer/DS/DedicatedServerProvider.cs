@@ -1,31 +1,30 @@
 ﻿
 using TickTrader.DedicatedServer.DS.Models;
-using TickTrader.DedicatedServer.DS.Repository.Interface;
 
 namespace TickTrader.DedicatedServer.DS
 {
-    public class DedicatedServerProvider : IDedicatedServer
-    {
-        private IPackageStorage _packageStorage;
+    //public class DedicatedServerProvider : IDedicatedServer
+    //{
+    //    private IPackageStorage _packageStorage;
        
-        public DedicatedServerProvider(IPackageStorage packageRepository)
-        {
-            _packageStorage = packageRepository;
-        }
+    //    public DedicatedServerProvider(IPackageStorage packageRepository)
+    //    {
+    //        _packageStorage = packageRepository;
+    //    }
 
-        public PackageModel AddPackage(byte[] fileContent, string fileName)
-        {
-            return _packageStorage.Add(fileContent, fileName);
-        }
+    //    public PackageModel AddPackage(byte[] fileContent, string fileName)
+    //    {
+    //        return _packageStorage.Add(fileContent, fileName);
+    //    }
 
-        public PackageModel[] GetPackages()
-        {
-            return _packageStorage.GetAll();
-        }
+    //    public PackageModel[] GetPackages()
+    //    {
+    //        return _packageStorage.GetAll();
+    //    }
 
-        public void RemovePackage(string package)
-        {
-            _packageStorage.Remove(package);
-        }
-    }
+    //    public void RemovePackage(string package)
+    //    {
+    //        _packageStorage.Remove(package);
+    //    }
+    //}
 }

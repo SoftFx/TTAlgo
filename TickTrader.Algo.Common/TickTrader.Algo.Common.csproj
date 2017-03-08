@@ -31,12 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BusinessLogic">
-      <HintPath>..\lib\BusinessLogic.dll</HintPath>
-    </Reference>
-    <Reference Include="BusinessObjects">
-      <HintPath>..\lib\BusinessObjects.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="SoftFX.Extended.Net">
       <HintPath>..\lib\SoftFX.Extended.Net.dll</HintPath>
@@ -52,6 +46,12 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="TickTrader.BusinessLogic">
+      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.BusinessObjects">
+      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\AsyncEvent.cs" />

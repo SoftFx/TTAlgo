@@ -11,19 +11,15 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _sync;
 
-        [DataMember]
-        private ClientModel3 connection = new ClientModel3();
-
-        [DataMember]
-        private List<TradeBotModel> bots = new List<TradeBotModel>();
+        
 
         public override void SyncInvoke(Action syncAction)
         {
             lock (_sync) syncAction();
         }
 
-        public ClientModel3 Connection => connection;
-        public IEnumerable<TradeBotModel> Bots => bots;
+        //public ClientModel3 Connection => connection;
+        
 
         public AccountModel()
         {
@@ -31,11 +27,6 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void Init(object syncObject)
         {
-        }
-
-        public Task<ConnectionErrorCodes> TestConnection()
-        {
-            return connection.TestConnection();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 
@@ -7,7 +8,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class ToDtoExtensions
     {
-        public static PackageDto ToPackageDto(this PackageModel model)
+        public static PackageDto ToPackageDto(this IPackage model)
         {
             return new PackageDto()
             {

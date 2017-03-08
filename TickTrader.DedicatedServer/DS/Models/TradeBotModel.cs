@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class TradeBotModel
+    public class TradeBotModel : ITradeBot
     {
     }
 }

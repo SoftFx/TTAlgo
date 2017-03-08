@@ -43,10 +43,10 @@
         "bin/Debug/TickTrader.Algo.Common.dll": {}
       },
       "runtime": {
-        "../lib/BusinessLogic.dll": {},
-        "../lib/BusinessObjects.dll": {},
         "../lib/SoftFX.Extended.Net.dll": {},
         "../lib/SoftFX.Lrp.dll": {},
+        "../lib/TickTrader.BusinessLogic.dll": {},
+        "../lib/TickTrader.BusinessObjects.dll": {},
         "bin/Debug/TickTrader.Algo.Common.dll": {}
       },
       "contentFiles": {

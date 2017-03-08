@@ -9,11 +9,10 @@ using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading;
 using System.Collections.Generic;
-using TickTrader.DedicatedServer.DS.Repository.Interface;
 
 namespace TickTrader.DedicatedServer.DS.Repository
 {
-    public class PackageStorage : IPackageStorage
+    public class PackageStorage
     {
         private readonly string packageTemplate = "*.ttalgo";
         private readonly string _storageDir;
@@ -21,10 +20,10 @@ namespace TickTrader.DedicatedServer.DS.Repository
         private readonly ReaderWriterLockSlim _storageLock = new ReaderWriterLockSlim();
         private readonly Dictionary<string, PackageModel> _packages;
 
-        public PackageStorage(IOptions<PackageStorageSettings> config, ILogger<PackageStorage> logger)
+        public PackageStorage(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
-            _storageDir = GetFullPathToStorage(config.Value.Path);
+            _logger = loggerFactory.CreateLogger<PackageStorage>();
+            _storageDir = "AlgoRepository/";
             _packages = new Dictionary<string, PackageModel>();
 
             EnsureStorageDirectoryCreated();
