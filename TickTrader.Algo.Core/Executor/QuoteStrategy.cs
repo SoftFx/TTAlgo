@@ -7,9 +7,10 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class QuoteStrategy : FeedStrategy
+    public class QuoteStrategy : FeedStrategy
     {
         private QuoteSeriesFixture mainSeries;
+        private List<QuoteEntity> mainSerieData;
 
         public override ITimeRef TimeRef { get { return null; } }
         public override int BufferSize { get { return mainSeries.Count; } }
@@ -28,20 +29,20 @@ namespace TickTrader.Algo.Core
             return overallResult;
         }
 
-        private void ThrowIfNotTickType<TSrc>()
+        public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)
         {
-            if (!typeof(TSrc).Equals(typeof(QuoteEntity)))
-                throw new InvalidOperationException("Wrong data type! TickStrategy only works with QuoteEntity data!");
+            AddSetupAction(() =>
+            {
+                if (symbolCode != mainSeries.SymbolCode)
+                    throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
+
+                ExecContext.Builder.MapInput(inputName, symbolCode, selector);
+            });
         }
 
-        internal override void MapInput<TSrc, TVal>(string inputName, string symbolCode, Func<TSrc, TVal> selector)
+        public void SetMainSeries(List<QuoteEntity> data)
         {
-            ThrowIfNotTickType<TSrc>();
-
-            if(symbolCode != mainSeries.SymbolCode)
-                throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
-
-            ExecContext.Builder.MapInput(inputName, symbolCode, selector);
+            this.mainSerieData = data;
         }
 
         internal override void OnInit()
@@ -49,7 +50,7 @@ namespace TickTrader.Algo.Core
             if (mainSeries != null)
                 mainSeries.Dispose();
 
-            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, this);
+            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, this, mainSerieData);
         }
 
         internal override void Stop()

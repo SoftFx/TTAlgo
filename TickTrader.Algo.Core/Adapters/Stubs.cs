@@ -20,27 +20,29 @@ namespace TickTrader.Algo.Core
 
     internal static class Null
     {
-        private static DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
-        private static Order order = new NullOrder();
-        private static BookEntry[] book = new BookEntry[0];
-        private static Quote quote = new NullQuote();
+        private static readonly DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
+        private static readonly Order order = new NullOrder();
+        private static readonly BookEntry[] book = new BookEntry[0];
+        private static readonly Quote quote = new NullQuote();
+        private static readonly IPluginLogger nullLogger = new NullLogger();
         private static Currency currency = new NullCurrency();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
         public static BookEntry[] Book => book;
         public static Quote Quote => quote;
+        public static IPluginLogger Logger => nullLogger;
         public static Currency Currency => currency;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
     {
-        private static readonly IPluginLogger nullLogger = new NullLogger();
+        
         private IPluginLogger logger;
 
         public PluginLoggerAdapter()
         {
-            this.logger = nullLogger;
+            this.logger = Null.Logger;
         }
 
         public IPluginLogger Logger

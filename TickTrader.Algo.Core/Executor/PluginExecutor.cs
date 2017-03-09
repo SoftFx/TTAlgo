@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
 {
     public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget, DiagnosticInfo
     {
-        public enum States { Idle, Running, Stopping }
+        public enum States { Idle, Initializing, Running, Stopping }
 
         private object _sync = new object();
         private IPluginLogger logger;
@@ -31,6 +31,7 @@ namespace TickTrader.Algo.Core
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
+        private Task initTask;
         private Task stopTask;
         private string workingFolder;
         private States state;
@@ -40,6 +41,7 @@ namespace TickTrader.Algo.Core
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
             this.accFixture = new AccDataFixture(this);
             this.statusFixture = new StatusFixture(this);
+            this.logger = Null.Logger;
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -201,6 +203,7 @@ namespace TickTrader.Algo.Core
         }
 
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
+        public event Action<Exception> OnRuntimeError = delegate { };
 
         #endregion
 
@@ -208,10 +211,17 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
-
                 Validate();
+                ChangeState(States.Initializing);
+                System.Diagnostics.Debug.WriteLine("Exeutor: started!");
+                initTask = Task.Factory.StartNew(Init);
+            }
+        }
 
+        private void Init()
+        {
+            try
+            {
                 // Setup builder
 
                 builder = new PluginBuilder(descriptor);
@@ -249,43 +259,68 @@ namespace TickTrader.Algo.Core
 
                 // Update state
 
-                ChangeState(States.Running);
+                lock (_sync) ChangeState(States.Running);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Executor: init failed!");
+
+                OnRuntimeException(ex);
+                lock (_sync)
+                {
+                    if (state != States.Stopping)
+                    {
+                        ChangeState(States.Stopping);
+                        stopTask = DoStop(false);
+                    }
+                }
             }
         }
 
         public void Stop()
         {
+            StopAsync().Wait();
+        }
+
+        public async Task StopAsync()
+        {
             Task taskToWait = null;
 
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
-
                 if (state == States.Idle)
                     return;
                 else if (state != States.Stopping)
                 {
                     ChangeState(States.Stopping);
                     stopTask = DoStop(false);
-                }   
+                }
 
                 taskToWait = stopTask;
             }
 
-            taskToWait.Wait();
+            await taskToWait.ConfigureAwait(false);
         }
 
         private async Task DoStop(bool qucik)
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("Executor: wating init task to finsih!");
+
+                await initTask.ConfigureAwait(false);
+
+                System.Diagnostics.Debug.WriteLine("Executor: stopping invoke strategy!");
+
                 await iStrategy.Stop(qucik).ConfigureAwait(false);
 
-                System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
-
+                System.Diagnostics.Debug.WriteLine("Executor: stopping feed strategy!");
+                 
                 fStrategy.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
+
+                System.Diagnostics.Debug.WriteLine("Executor: everything was stopped!");
             }
             catch (Exception ex)
             {
@@ -299,7 +334,7 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
+                System.Diagnostics.Debug.WriteLine("Executor: algo exited!");
 
                 if (state != States.Running)
                     return;
@@ -311,47 +346,43 @@ namespace TickTrader.Algo.Core
 
         #region Setup Methods
 
-        public void InitBarStartegy(IBarBasedFeed feed)
+        public T GetFeedStrategy<T>()
+            where T: FeedStrategy
+        {
+            return (T)fStrategy;
+        }
+
+        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
-                fStrategy = new BarStrategy(feed);
+                ThrowIfAlreadyHasFStrategy();
+                var strategy = new BarStrategy(feed, mainPirceTipe);
+                this.fStrategy = strategy;
+                return strategy;
             }
         }
 
-        public void InitQuoteStartegy(IQuoteBasedFeed feed)
+        public QuoteStrategy InitQuoteStrategy(IPluginFeedProvider feed)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
-                fStrategy = new QuoteStrategy(feed);
+                ThrowIfAlreadyHasFStrategy();
+                var strategy = new QuoteStrategy(feed);
+                this.fStrategy = strategy;
+                return strategy;
             }
-        }
-
-        public void MapBarInput(string id, string symbolCode, Func<BarEntity, double> selector)
-        {
-            MapBarInput<double>(id, symbolCode, selector);
-        }
-
-        public void MapBarInput<TVal>(string inputName, string symbolCode, Func<BarEntity, TVal> selector)
-        {
-            setupActions.Add(() => fStrategy.MapInput(inputName, symbolCode, selector));
-        }
-
-        public void MapBarInput(string inputName, string symbolCode)
-        {
-            setupActions.Add(() => fStrategy.MapInput<BarEntity, Api.Bar>(inputName, symbolCode, b => b));
-        }
-
-        public void MapInput<TEntity, TData>(string inputName, string symbolCode, Func<TEntity, TData> selector)
-        {
-            setupActions.Add(() => fStrategy.MapInput<TEntity, TData>(inputName, symbolCode, selector));
         }
 
         public void SetParameter(string name, object value)
         {
-            setupActions.Add(() => builder.SetParameter(name, value));
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                setupActions.Add(() => builder.SetParameter(name, value));
+            }
         }
 
         public OutputFixture<T> GetOutput<T>(string id)
@@ -393,6 +424,12 @@ namespace TickTrader.Algo.Core
                 throw new InvalidOperationException("Executor parameters cannot be changed after start!");
         }
 
+        private void ThrowIfAlreadyHasFStrategy()
+        {
+            if (state != States.Idle)
+                throw new InvalidOperationException("Feed has beed already initialized!");
+        }
+
         private void ChangeState(States newState)
         {
             state = newState;
@@ -421,12 +458,12 @@ namespace TickTrader.Algo.Core
 
         private void OnInternalException(ExecutorException ex)
         {
-            logger.OnError(ex);
+            OnRuntimeError?.Invoke(ex);
         }
 
         private void OnRuntimeException(Exception ex)
         {
-            logger.OnError(ex);
+            OnRuntimeError?.Invoke(ex);
         }
 
         private void OnAsyncAction(Action asyncAction)
@@ -487,6 +524,11 @@ namespace TickTrader.Algo.Core
         {
             iStrategy.Enqueue(update);
         }
+
+        //void IFixtureContext.AddSetupAction(Action setupAction)
+        //{
+        //    setupActions.Add(setupAction);
+        //}
 
         //IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
         //{

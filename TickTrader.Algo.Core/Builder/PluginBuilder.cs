@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
 {
     public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler, EnvironmentInfo, IHelperApi
     {
-        private Dictionary<string, IDataBuffer> inputBuffers = new Dictionary<string, IDataBuffer>();
+        private Dictionary<object, IDataBuffer> inputBuffers = new Dictionary<object, IDataBuffer>();
         private MarketDataImpl marketData;
         private bool isAccountInitialized;
         private bool isSymbolsInitialized;
@@ -63,9 +63,19 @@ namespace TickTrader.Algo.Core
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
-        public IReadOnlyDictionary<string, IDataBuffer> DataBuffers { get { return inputBuffers; } }
+        public IReadOnlyDictionary<object, IDataBuffer> DataBuffers { get { return inputBuffers; } }
 
         public InputBuffer<T> GetBuffer<T>(string bufferId)
+        {
+            if (inputBuffers.ContainsKey(bufferId))
+                return (InputBuffer<T>)inputBuffers[bufferId];
+
+            InputBuffer<T> buffer = new InputBuffer<T>(PluginProxy.Coordinator);
+            inputBuffers.Add(bufferId, buffer);
+            return buffer;
+        }
+
+        public InputBuffer<T> GetBuffer<T>(object bufferId)
         {
             if (inputBuffers.ContainsKey(bufferId))
                 return (InputBuffer<T>)inputBuffers[bufferId];
@@ -85,6 +95,11 @@ namespace TickTrader.Algo.Core
             return GetBuffer<BarEntity>(bufferId);
         }
 
+        public InputBuffer<BarEntity> GetBarBuffer(object bufferId)
+        {
+            return GetBuffer<BarEntity>(bufferId);
+        }
+
         public IReaonlyDataBuffer GetOutput(string outputName)
         {
             var outputProxy = PluginProxy.GetOutput(outputName);
@@ -97,17 +112,17 @@ namespace TickTrader.Algo.Core
             return (OutputBuffer<T>)outputProxy.Buffer;
         }
 
-        public void MapBarInput<TVal>(string inputName, string bufferId, Func<BarEntity, TVal> selector)
+        public void MapBarInput<TVal>(string inputName, object bufferId, Func<BarEntity, TVal> selector)
         {
             MapInput(inputName, bufferId, selector);
         }
 
-        public void MapBarInput(string inputName, string bufferId)
+        public void MapBarInput(string inputName, object bufferId)
         {
             MapInput<BarEntity, Api.Bar>(inputName, bufferId, b => b);
         }
 
-        public void MapInput<TSrc, TVal>(string inputName, string bufferId, Func<TSrc, TVal> selector)
+        public void MapInput<TSrc, TVal>(string inputName, object bufferId, Func<TSrc, TVal> selector)
         {
             var buffer = GetBuffer<TSrc>(bufferId);
             var input = PluginProxy.GetInput<TVal>(inputName);
@@ -115,7 +130,16 @@ namespace TickTrader.Algo.Core
             input.Buffer = new ProxyBuffer<TSrc, TVal>(buffer, selector);
         }
 
-        public void MapInput<T>(string inputName, string bufferId)
+        public void MapInput<TSrc, TVal>(string inputName, object bufferId1, object bufferId2, Func<TSrc, TSrc, TVal> selector)
+        {
+            var buffer1 = GetBuffer<TSrc>(bufferId1);
+            var buffer2 = GetBuffer<TSrc>(bufferId2);
+            var input = PluginProxy.GetInput<TVal>(inputName);
+
+            input.Buffer = new ProxyBuffer2<TSrc, TVal>(buffer1, buffer2, selector);
+        }
+
+        public void MapInput<T>(string inputName, object bufferId)
         {
             var buffer = GetBuffer<T>(bufferId);
             var input = PluginProxy.GetInput<T>(inputName);

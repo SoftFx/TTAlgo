@@ -26,19 +26,16 @@ namespace TickTrader.BotTerminal
             this.PluginRef = pSetup.PluginRef;
             this.Name = pSetup.Descriptor.DisplayName;
 
-
-            //stateControl.AddTransition
-
-
             executor = CreateExecutor();
             Setup.Apply(executor);
+            
         }
 
         protected bool StartExcecutor()
         {
             try
             {
-                ConfigureExecutor(executor);
+                host.UpdatePlugin(executor);
                 executor.Start();
                 return true;
             }
@@ -62,20 +59,14 @@ namespace TickTrader.BotTerminal
         protected virtual PluginExecutor CreateExecutor()
         {
             var executor = PluginRef.CreateExecutor();
-            //executor.FeedProvider = host.GetProvider();
+            executor.OnRuntimeError += Executor_OnRuntimeError;
             host.InitializePlugin(executor);
-            executor.InvokeStrategy = new PriorityInvokeStartegy();
-            executor.AccInfoProvider = host.GetAccInfoProvider();
-            executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             return executor;
         }
 
-        protected virtual void ConfigureExecutor(PluginExecutor executor)
+        private void Executor_OnRuntimeError(Exception ex)
         {
-            executor.TimeFrame = Host.TimeFrame;
-            executor.MainSymbolCode = Host.SymbolCode;
-            executor.TimePeriodStart = Host.TimelineStart;
-            executor.TimePeriodEnd = DateTime.Now + TimeSpan.FromDays(100);
+            logger.Error(ex, "Exception in Algo executor! Name=" + Name);
         }
     }
 

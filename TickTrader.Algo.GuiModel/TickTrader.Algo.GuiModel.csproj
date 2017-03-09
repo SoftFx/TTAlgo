@@ -40,9 +40,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BarInputSetup.cs" />
     <Compile Include="Convert.cs" />
     <Compile Include="InputSetup.cs" />
+    <Compile Include="Inputs\BarInputBase.cs" />
+    <Compile Include="Inputs\BarToBarInput.cs" />
+    <Compile Include="Inputs\BarToDoubleInput.cs" />
+    <Compile Include="Inputs\QuoteToBarInput.cs" />
+    <Compile Include="Interfaces.cs" />
     <Compile Include="OutputSetup.cs" />
     <Compile Include="ParameterSetup.cs" />
     <Compile Include="PropertySetupBase.cs" />

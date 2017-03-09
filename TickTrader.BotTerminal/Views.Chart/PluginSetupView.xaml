@@ -107,7 +107,7 @@
         </Grid>
     </DataTemplate>
 
-    <!--  Parameter Setup Template  -->
+    <!--  Parameter Template  -->
 
     <DataTemplate x:Key="LabeledPropertySetup">
         <Grid Margin="3">
@@ -120,11 +120,24 @@
         </Grid>
     </DataTemplate>
 
+    <!--  Input Template  -->
+
+    <DataTemplate x:Key="LabeledInputSetup">
+        <Grid Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Content="{Binding DisplayName}" IsTabStop="False" />
+            <ContentControl Content="{Binding}" HorizontalAlignment="Stretch" Grid.Column="1" IsTabStop="False"/>
+        </Grid>
+    </DataTemplate>
+
     <!--  AlgoInvalidParameter  -->
 
     <DataTemplate DataType="{x:Type am:AlgoInvalidParameter}">
         <TextBox Name="input" Text="Invalid parameter" IsEnabled="False"
-                                     HorizontalAlignment="Stretch" Background="Red"/>
+                                     HorizontalAlignment="Stretch" />
     </DataTemplate>
 
     <!--  Int Param template  -->
@@ -207,10 +220,30 @@
 
     <!-- Bar Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:BarToBarInput}">
+    <!--<DataTemplate DataType="{x:Type am:BarToBarInput}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
-                      IsEnabled="{Binding HasChoice}"/>
+                  SelectedValue="{Binding SelectedSymbol}" ItemsSource="{Binding AvailableSymbols}"
+                  DisplayMemberPath="Name"
+                  IsEnabled="{Binding HasChoice}"/>
+    </DataTemplate>-->
+
+    <DataTemplate DataType="{x:Type am:BarToBarInput}">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
+            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedItem="{Binding SelectedMapping}"
+                      DisplayMemberPath="Name"
+                      Margin="2,0,0,0" />
+        </Grid>
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type am:QuoteToBarInput}">
@@ -230,18 +263,21 @@
     <!-- Double (bar based) Input Setup Template  -->
 
     <DataTemplate DataType="{x:Type am:BarToDoubleInput}">
-        <Grid>
+        <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="65" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
             </Grid.ColumnDefinitions>
 
             <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                          SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"/>
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
-                          ItemsSource="{Binding AvailableMappings}"
-                          SelectedItem="{Binding Mapping}"
-                          Margin="2,0,0,0" />
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedItem="{Binding SelectedMapping}"
+                      DisplayMemberPath="Name"
+                      Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
 
@@ -267,15 +303,6 @@
 
     <ControlTemplate x:Key="PluginSetupView.Old">
         <Grid Background="{TemplateBinding Background}">
-            <Grid.Resources>
-                <!--  Data Source  -->
-                <CollectionViewSource x:Key="inputsCollection" Source="{Binding Setup.Inputs}"/>
-                <CollectionViewSource x:Key="paramsCollection" Source="{Binding Setup.Parameters}"/>
-                <CompositeCollection x:Key="inputsAndParamsComposite">
-                    <CollectionContainer Collection="{Binding Source={StaticResource paramsCollection}}"/>
-                    <CollectionContainer Collection="{Binding Source={StaticResource inputsCollection}}"/>
-                </CompositeCollection>
-            </Grid.Resources>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -290,7 +317,7 @@
                       Style="{DynamicResource DialogScrollViewer_Style}">
                 <StackPanel>
 
-                    <ItemsControl IsTabStop="False" ItemsSource="{StaticResource inputsAndParamsComposite}"
+                    <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
                               ItemTemplate="{StaticResource LabeledPropertySetup}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -299,6 +326,11 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+
+                    <ItemsControl ItemsSource="{Binding Setup.Inputs}"
+                                  ItemTemplate="{StaticResource LabeledInputSetup}"/>
 
                     <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
 
@@ -336,15 +368,6 @@
 
     <ControlTemplate x:Key="PluginSetupView.Classic">
         <Grid Background="{TemplateBinding Background}">
-            <Grid.Resources>
-                <!--  Data Source  -->
-                <CollectionViewSource x:Key="inputsCollection" Source="{Binding Setup.Inputs}"/>
-                <CollectionViewSource x:Key="paramsCollection" Source="{Binding Setup.Parameters}"/>
-                <CompositeCollection x:Key="inputsAndParamsComposite">
-                    <CollectionContainer Collection="{Binding Source={StaticResource paramsCollection}}"/>
-                    <CollectionContainer Collection="{Binding Source={StaticResource inputsCollection}}"/>
-                </CompositeCollection>
-            </Grid.Resources>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -358,13 +381,18 @@
                           HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
                 <StackPanel>
                     <GroupBox Header="Parameters" Margin="4">
-                        <ItemsControl IsTabStop="False" ItemsSource="{StaticResource inputsAndParamsComposite}"
+                        <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
                               ItemTemplate="{StaticResource LabeledPropertySetup}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="2" VerticalAlignment="Top" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </GroupBox>
+                    <GroupBox Header="Inputs" Margin="4">
+                        <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Inputs}"
+                              ItemTemplate="{StaticResource LabeledInputSetup}">
                         </ItemsControl>
                     </GroupBox>
                     <GroupBox Name="OutputsGroup" Header="Outputs" Margin="4">
@@ -408,8 +436,11 @@
 
     <Style x:Key="PluginSetupViewStyle" TargetType="Window" BasedOn="{StaticResource PluginSetupViewStyle.Common}">
         <Setter Property="Template" Value="{StaticResource PluginSetupView.Old}"/>
-        <Setter Property="Height" Value="300"/>
+        <Setter Property="MinHeight" Value="340"/>
+        <Setter Property="MaxHeight" Value="600"/>
+        <Setter Property="Height" Value="Auto" />
         <Setter Property="Width" Value="340"/>
+        <Setter Property="SizeToContent" Value="Height"/>
         <Setter Property="ResizeMode" Value="NoResize"/>
         <Style.Resources>
             <Style x:Key="ControlImitationBorder" TargetType="Border">
@@ -447,9 +478,12 @@
 
     <Style x:Key="PluginSetupViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource PluginSetupViewStyle.Common}">
         <Setter Property="Template" Value="{StaticResource PluginSetupView.Classic}"/>
-        <Setter Property="Height" Value="360"/>
+        <Setter Property="Height" Value="Auto"/>
         <Setter Property="Width" Value="380"/>
         <Setter Property="ResizeMode" Value="NoResize"/>
+        <Setter Property="MinHeight" Value="340"/>
+        <Setter Property="MaxHeight" Value="600"/>
+        <Setter Property="SizeToContent" Value="Height"/>
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Style.Resources>
             <Style TargetType="CheckBox">

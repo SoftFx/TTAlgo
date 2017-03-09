@@ -53,6 +53,7 @@
     <Compile Include="Currency.cs" />
     <Compile Include="DiagnosticInfo.cs" />
     <Compile Include="EnvironmentInfo.cs" />
+    <Compile Include="Ext\Reduction.cs" />
     <Compile Include="File.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="RateUpdate.cs" />
