@@ -25,45 +25,25 @@ namespace TickTrader.BotTerminal
             _tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
         }
 
-        public Task<TransactionReport[]> DownloadHistoryAsync(DateTime from, DateTime to)
-        {
-            return DownloadHistoryAsync(from, to, CancellationToken.None);
-        }
-        public Task<TransactionReport[]> DownloadHistoryAsync(DateTime from, DateTime to, CancellationToken token)
-        {
-            return DownloadHistoryAsync(from, to, CancellationToken.None, null);
-        }
-        public Task<TransactionReport[]> DownloadHistoryAsync(DateTime from, DateTime to, CancellationToken token, IProgress<TransactionReport> progress)
-        {
-            return StartDownloadingHistory(from, to, token, progress);
-        }
-
-        private Task<TransactionReport[]> StartDownloadingHistory(DateTime from, DateTime to, CancellationToken token, IProgress<TransactionReport> progress)
+        public Task<int> DownloadingHistoryAsync(DateTime from, DateTime to, CancellationToken token, Action<TransactionReport> reportHandler)
         {
             return Task.Run(() =>
             {
-                try
+                token.ThrowIfCancellationRequested();
+
+                var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000);
+
+                while (!historyStream.EndOfStream)
                 {
-                    var tradesList = new List<TransactionReport>();
                     token.ThrowIfCancellationRequested();
 
-                    var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to);
+                    var historyItem = TransactionReportFactory.Create(_tradeClient.Account.Type.Value, historyStream.Item, GetSymbolFor(historyStream.Item));
+                    reportHandler(historyItem);
 
-                    while (!historyStream.EndOfStream)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        var historyItem = TransactionReportFactory.Create(_tradeClient.Account.Type.Value, historyStream.Item, GetSymbolFor(historyStream.Item));
-                        tradesList.Add(historyItem);
-                        progress?.Report(historyItem);
-
-                        historyStream.Next();
-                    }
-
-                    return tradesList.ToArray();
+                    historyStream.Next();
                 }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex) { _logger.Error(ex, "DownloadHistoryAsync FAILED"); throw; }
+
+                return 0;
             }, token);
         }
 

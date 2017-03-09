@@ -361,6 +361,8 @@ namespace TickTrader.BotTerminal
             algoReport.Action = entityAction;
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
+            if (report.Assets != null)
+                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo).ToAlgoAsset()).ToList();
             AlgoEvent_OrderUpdated(algoReport);
         }
 
