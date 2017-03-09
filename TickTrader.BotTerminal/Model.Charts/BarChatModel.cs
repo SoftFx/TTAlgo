@@ -99,7 +99,7 @@ namespace TickTrader.BotTerminal
         public override void InitializePlugin(PluginExecutor plugin)
         {
             base.InitializePlugin(plugin);
-            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History);
+            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies);
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
         }
