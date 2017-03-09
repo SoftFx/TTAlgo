@@ -36,22 +36,22 @@ namespace TickTrader.Algo.Core
             fixture.MainSymbol = fixture[mainSymbolCode];
         }
 
-        public void Add(SymbolEntity symbol)
+        public void Add(SymbolEntity symbol, Dictionary<string, CurrencyEntity> currencies)
         {
-            fixture.InnerCollection.Add(symbol.Name, new SymbolAccessor(symbol, subscriptionHandler));
+            fixture.InnerCollection.Add(symbol.Name, new SymbolAccessor(symbol, subscriptionHandler, currencies));
 
             if (symbol.Name == mainSymbolCode)
                 InitCurrentSymbol();
         }
 
-        public void Init(IEnumerable<SymbolEntity> symbols)
+        public void Init(IEnumerable<SymbolEntity> symbols, Dictionary<string, CurrencyEntity> currencies)
         {
             fixture.InnerCollection.Clear();
 
             if (symbols != null)
             {
                 foreach (var smb in symbols)
-                    fixture.InnerCollection.Add(smb.Name, new SymbolAccessor(smb, subscriptionHandler));
+                    fixture.InnerCollection.Add(smb.Name, new SymbolAccessor(smb, subscriptionHandler, currencies));
 
                 InitCurrentSymbol();
             }

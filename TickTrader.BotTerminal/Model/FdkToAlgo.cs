@@ -102,6 +102,19 @@ namespace TickTrader.BotTerminal
                 BaseCurrencyCode = info.Currency,
                 CounterCurrencyCode = info.SettlementCurrency,
                 IsTradeAllowed = info.IsTradeEnabled,
+                Commission = info.Commission,
+                LimitsCommission = info.LimitsCommission,
+                CommissionChargeMethod = Convert(info.CommissionChargeMethod),
+                CommissionChargeType = Convert(info.CommissionChargeType),
+                CommissionType = Convert(info.CommissionType),
+            };
+        }
+
+        public static CurrencyEntity Convert(CurrencyInfo info)
+        {
+            return new CurrencyEntity(info.Name)
+            {
+                Digits = info.Precision,
             };
         }
 
@@ -159,6 +172,43 @@ namespace TickTrader.BotTerminal
                 case Api.TimeFrames.S1: return BarPeriod.S1;
                 
                 default: throw new ArgumentException("Unsupported time frame: " + timeframe);
+            }
+        }
+
+        public static Api.CommissionType Convert(CommissionType fdkType)
+        {
+            switch (fdkType)
+            {
+                case CommissionType.Absolute: return Api.CommissionType.Absolute;
+                case CommissionType.PerBond: return Api.CommissionType.PerBond;
+                case CommissionType.PerUnit: return Api.CommissionType.PerUnit;
+                case CommissionType.Percent: return Api.CommissionType.Percent;
+                case CommissionType.PercentageWaivedCash: return Api.CommissionType.PercentageWaivedCash;
+                case CommissionType.PercentageWaivedEnhanced: return Api.CommissionType.PercentageWaivedEnhanced;
+
+                default: throw new ArgumentException("Unsupported commission type: " + fdkType);
+            }
+        }
+
+       public static Api.CommissionChargeType Convert(CommissionChargeType fdkChargeType)
+        {
+            switch (fdkChargeType)
+            {
+                case CommissionChargeType.PerLot: return Api.CommissionChargeType.PerLot;
+                case CommissionChargeType.PerTrade: return Api.CommissionChargeType.PerTrade;
+
+                default: throw new ArgumentException("Unsupported commission charge type: " + fdkChargeType);
+            }
+        }
+
+        public static Api.CommissionChargeMethod Convert(CommissionChargeMethod fdkChargeMethod)
+        {
+            switch (fdkChargeMethod)
+            {
+                case CommissionChargeMethod.OneWay: return Api.CommissionChargeMethod.OneWay;
+                case CommissionChargeMethod.RoundTurn: return Api.CommissionChargeMethod.RoundTurn;
+
+                default: throw new ArgumentException("Unsupported commission charge method: " + fdkChargeMethod);
             }
         }
     }
