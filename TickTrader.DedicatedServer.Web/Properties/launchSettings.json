@@ -14,18 +14,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "Console": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost/",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "Command Console": {
-      "commandName": "Project",
-      "commandLineArgs": "console"
     }
   }
 }

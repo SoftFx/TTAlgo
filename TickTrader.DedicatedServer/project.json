@@ -19,7 +19,8 @@
     "Microsoft.AspNetCore.SignalR.Server": "0.2.0-*",
     "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
     "Swashbuckle": "6.0.0-beta901",
-    "Microsoft.AspNet.SignalR.Core": "2.2.1"
+    "Microsoft.AspNet.SignalR.Core": "2.2.1",
+    "TickTrader.Common.Dlls" : "1.25.5"
   },
 
   "tools": {
@@ -30,12 +31,21 @@
   "frameworks": {
     "net452": {
       "dependencies": {
+        "Machinarium": {
+          "target": "project"
+        },
         "TickTrader.Algo.Api": {
+          "target": "project"
+        },
+        "TickTrader.Algo.Common": {
           "target": "project"
         },
         "TickTrader.Algo.Core": {
           "target": "project"
         }
+      },
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization": "4.0.0.0"
       }
     }
   },

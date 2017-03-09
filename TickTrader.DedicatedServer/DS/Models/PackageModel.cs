@@ -3,7 +3,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class PackageModel: IDisposable
+    public class PackageModel: IPackage, IDisposable
     {
         public PackageModel(string name, DateTime created, PluginContainer container)
         {

@@ -62,6 +62,11 @@ namespace TickTrader.BotTerminal
             return result;
         }
 
+        public bool ContainsKey(TKey key)
+        {
+            return innerList.ContainsKey(key);
+        }
+
         public bool TryGetValue(TKey key, out TValue val)
         {
             return innerList.TryGetValue(key, out val);

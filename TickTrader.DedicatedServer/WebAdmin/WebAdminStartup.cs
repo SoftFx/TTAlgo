@@ -10,7 +10,6 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using TickTrader.DedicatedServer.WebAdmin.Server.Core;
 using TickTrader.DedicatedServer.DS.Repository;
-using TickTrader.DedicatedServer.DS.Repository.Interface;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 
@@ -35,8 +34,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
             services.AddOptions();
             services.Configure<PackageStorageSettings>(Configuration.GetSection("PackageStorage"));
 
-            services.AddTransient<IPackageStorage, PackageStorage>();
-            services.AddSingleton<IDedicatedServer, DedicatedServerProvider>();
+            services.AddSingleton<IDedicatedServer>(sp => DS.Models.ServerModel.Load(sp.GetService<ILoggerFactory>()));
 
             var settings = new JsonSerializerSettings();
             settings.ContractResolver = new SignalRContractResolver();

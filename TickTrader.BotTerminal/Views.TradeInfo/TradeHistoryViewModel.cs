@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using SoftFX.Extended;
 using SoftFX.Extended.Reports;
 using System;
@@ -19,16 +20,21 @@ namespace TickTrader.BotTerminal
 {
     internal class TradeHistoryViewModel : PropertyChangedBase
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public enum TimePeriod { All, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
         public enum TradeDirection { All = 1, Buy, Sell }
 
         private ObservableSrotedList<string, TransactionReport> _tradesList;
-        private ObservableTask<TransactionReport[]> _downloadObserver;
+        private ObservableTask<int> _downloadObserver;
         private TraderClientModel _tradeClient;
         private DateTime _from;
         private DateTime _to;
         private TimePeriod _period;
         private TradeDirection _tradeDirectionFilter;
+
+        private CancellationTokenSource cancelLoadSrc;
+        private ActionBlock<TransactionReport> uiUpdater;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient)
         {
@@ -44,13 +50,14 @@ namespace TickTrader.BotTerminal
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
             _tradeClient.Account.TradeHistory.OnTradeReport += TradeTransactionReport;
 
-            tradeClient.Connected += LoadHistory;
+            tradeClient.Connected += RefreshHistory;
         }
 
         #region Properties
         public bool IsNetAccount { get; private set; }
         public bool IsCachAccount { get; private set; }
         public bool IsGrossAccount { get; private set; }
+
         public TradeDirection TradeDirectionFilter
         {
             get { return _tradeDirectionFilter; }
@@ -74,10 +81,11 @@ namespace TickTrader.BotTerminal
                     _period = value;
                     NotifyOfPropertyChange(nameof(Period));
                     UpdateDateTimePeriod();
-                    LoadHistory();
+                    RefreshHistory();
                 }
             }
         }
+
         public DateTime From
         {
             get { return _from; }
@@ -90,9 +98,10 @@ namespace TickTrader.BotTerminal
                 _period = TimePeriod.Custom;
                 NotifyOfPropertyChange(nameof(From));
                 NotifyOfPropertyChange(nameof(Period));
-                LoadHistory();
+                RefreshHistory();
             }
         }
+
         public DateTime To
         {
             get { return _to; }
@@ -105,11 +114,13 @@ namespace TickTrader.BotTerminal
                 _period = TimePeriod.Custom;
                 NotifyOfPropertyChange(nameof(To));
                 NotifyOfPropertyChange(nameof(Period));
-                LoadHistory();
+                RefreshHistory();
             }
         }
+
         public ICollectionView TradesList { get; private set; }
-        public ObservableTask<TransactionReport[]> DownloadObserver
+
+        public ObservableTask<int> DownloadObserver
         {
             get { return _downloadObserver; }
             set
@@ -123,45 +134,85 @@ namespace TickTrader.BotTerminal
         }
         #endregion
 
-        public async void LoadHistory()
+        private async void RefreshHistory()
         {
+            var currentSrc = new CancellationTokenSource();
+
             try
             {
-                _tradesList.Clear();
+                if (cancelLoadSrc != null)
+                    cancelLoadSrc.Cancel();
 
-                var downloadRequest = _tradeClient.Account.TradeHistory.DownloadHistoryAsync(From.ToUniversalTime(), To.ToUniversalTime());
-                DownloadObserver = new ObservableTask<TransactionReport[]>(downloadRequest);
-                var trades = await DownloadObserver.Task;
+                cancelLoadSrc = currentSrc;
 
-                if (IsCurrentRequest(downloadRequest))
-                    UpdateTradeHistory(trades);
+                if (uiUpdater != null)
+                {
+                    uiUpdater.Complete();
+                    await uiUpdater.Completion;
+                }
             }
-            catch { }
-        }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to stop background task!");
+            }
 
-        private bool IsCurrentRequest(Task<TransactionReport[]> downloadRequest)
-        {
-            return downloadRequest == DownloadObserver.Task;
+            if (currentSrc.IsCancellationRequested)
+                return;
+
+            try
+            {
+                var options = new ExecutionDataflowBlockOptions()
+                {
+                    TaskScheduler = DataflowHelper.UiDispatcherBacground,
+                    MaxDegreeOfParallelism = 5,
+                    MaxMessagesPerTask = 10,
+                    BoundedCapacity = 2000,
+                    CancellationToken = currentSrc.Token
+                };
+
+                var currentUpdater = new ActionBlock<TransactionReport>(r => AddToList(r), options);
+                currentUpdater.Post(null);
+
+                uiUpdater = currentUpdater;
+
+                var downloadTask = _tradeClient.Account.TradeHistory.DownloadingHistoryAsync(
+                    From.ToUniversalTime(), To.ToUniversalTime(), currentSrc.Token,
+                    r => currentUpdater.SendAsync(r, currentSrc.Token).Wait());
+                DownloadObserver = new ObservableTask<int>(downloadTask);
+
+                await downloadTask;
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to load trade history!");
+            }
         }
 
         public void Close()
         {
             _tradeClient.Account.AccountTypeChanged -= AccountTypeChanged;
-            _tradeClient.Connected -= LoadHistory;
+            _tradeClient.Connected -= RefreshHistory;
             _tradeClient.Account.TradeHistory.OnTradeReport -= TradeTransactionReport;
         }
 
+        private void AddToList(TransactionReport tradeTransaction)
+        {
+            try
+            {
+                if (tradeTransaction == null)
+                    _tradesList.Clear();
 
-        private void UpdateTradeHistory(TransactionReport[] trades)
-        {
-            for (int i = 0; i < trades.Length; i++)
-                AddIfNeed(trades[i]);
+                if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(tradeTransaction.UniqueId))
+                    _tradesList.Add(tradeTransaction.UniqueId, tradeTransaction);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
-        private void AddIfNeed(TransactionReport tradeTransaction)
-        {
-            if (_tradesList.GetOrDefault(tradeTransaction.UniqueId) == null)
-                _tradesList.Add(tradeTransaction.UniqueId, tradeTransaction);
-        }
+
         private void UpdateDateTimePeriod()
         {
             switch (Period)
@@ -203,11 +254,13 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(From));
             NotifyOfPropertyChange(nameof(To));
         }
+
         private void RefreshCollection()
         {
             if (this.TradesList != null)
                 TradesList.Refresh();
         }
+
         private bool FilterTradesList(object o)
         {
             if (o != null)
@@ -217,6 +270,7 @@ namespace TickTrader.BotTerminal
             }
             return false;
         }
+
         private TradeDirection Convert(TransactionReport.TransactionSide side)
         {
             switch (side)
@@ -226,11 +280,12 @@ namespace TickTrader.BotTerminal
                 default: return TradeDirection.All;
             }
         }
+
         private void TradeTransactionReport(TransactionReport tradeTransaction)
         {
-            if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To))
-                Execute.OnUIThread(() => AddIfNeed(tradeTransaction));
+            uiUpdater.Post(tradeTransaction);
         }
+
         private void AccountTypeChanged()
         {
             IsCachAccount = _tradeClient.Account.Type == AccountType.Cash;

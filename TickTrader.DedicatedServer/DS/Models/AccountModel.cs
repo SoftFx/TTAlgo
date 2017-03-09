@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
+
+namespace TickTrader.DedicatedServer.DS.Models
+{
+    public class AccountModel : Algo.Common.Model.AccountModel
+    {
+        private object _sync;
+
+        
+
+        public override void SyncInvoke(Action syncAction)
+        {
+            lock (_sync) syncAction();
+        }
+
+        //public ClientModel3 Connection => connection;
+        
+
+        public AccountModel()
+        {
+        }
+
+        public void Init(object syncObject)
+        {
+        }
+    }
+}

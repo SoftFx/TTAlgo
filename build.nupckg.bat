@@ -1,0 +1,1 @@
+@C:\Users\Andrei.Hilevich\.nuget\packages\NuGet.CommandLine\3.5.0\tools\NuGet.exe pack TickTrader.Common.nuspec -OutputDirectory lib
