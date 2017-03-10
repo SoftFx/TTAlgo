@@ -6,9 +6,9 @@ using TickTrader.Algo.Core;
 using TickTrader.DedicatedServer.Extensions;
 using Microsoft.Extensions.Logging;
 using TickTrader.DedicatedServer.DS.Models;
-using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading;
 using System.Collections.Generic;
+using TickTrader.DedicatedServer.DS.Models.Exceptions;
 
 namespace TickTrader.DedicatedServer.DS.Repository
 {
@@ -23,7 +23,7 @@ namespace TickTrader.DedicatedServer.DS.Repository
         public PackageStorage(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<PackageStorage>();
-            _storageDir = "AlgoRepository/";
+            _storageDir = GetFullPathToStorage("AlgoRepository/");
             _packages = new Dictionary<string, PackageModel>();
 
             EnsureStorageDirectoryCreated();
@@ -97,22 +97,24 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 PackageModel package;
                 if (_packages.TryGetValue(packageName, out package))
                 {
-                    _packages.Remove(packageName);
                     try
                     {
                         package.Dispose();
                     }
                     catch
                     {
-                        _logger.LogWarning($"Error when disposing package '{packageName}'");
+                        _logger.LogWarning($"Error disposing package '{packageName}'");
                     }
+
                     try
                     {
                         File.Delete(Path.Combine(_storageDir, packageName));
+                        _packages.Remove(packageName);
                     }
                     catch
                     {
-                        _logger.LogWarning($"Error when deleting file package '{packageName}'");
+                        _logger.LogWarning($"Error deleting file package '{packageName}'");
+                        throw;
                     }
                 }
             }

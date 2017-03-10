@@ -12,42 +12,48 @@
                             </button>
                         </div>
 
-                        <h4 class="title truncate">
-                            Trade account
-                        </h4>
+                        <h4 class="title truncate">Trade account</h4>
 
                     </div>
                     <div id="addAccountPanel" class="content vertical-autoscroll_600 collapse in">
                         <div class="form-group">
-                            <label>Login</label>
-                            <input type="text" class="form-control" />
+                            <label for="loginInput">Login</label>
+                            <input [(ngModel)]="Account.Login" id="loginInput" type="text" class="form-control" />
                         </div>
                         <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" class="form-control" />
+                            <label for="passwordInput">Password</label>
+                            <input [(ngModel)]="Account.Password" id="passwordInput" type="password" class="form-control" />
                         </div>
                         <div class="form-group">
-                            <label>Server</label>
-                            <input type="text" class="form-control" />
+                            <label for="serverInput">Server</label>
+                            <input [(ngModel)]="Account.Server" id="serverInput" type="text" class="form-control" />
                         </div>
-
+                        
                         <div class="pull-right">
-                            <button class="btn btn-primary">Test</button>
-                            <button class="btn btn-primary">Add</button>
-                            <button class="btn btn-warning">Cancel</button>
+                            <button (click)="Test()" class="btn btn-primary">Test</button>
+                            <button (click)="Add()" class="btn btn-primary">Add</button>
+                            <button (click)="Cancel()" class="btn btn-warning">Cancel</button>
                         </div>
                     </div>
 
-                    <overlay-cmp *ngIf="false">
+                    <overlay-cmp *ngIf="ConnectionTestRunning">
                         <span class="fa fa-circle-o-notch fa-spin black"></span>
-                        Overlay...
+                        Testing ...
+                    </overlay-cmp>
+                    <overlay-cmp *ngIf="TestResult">
+                        <div class="text-center">
+                            <p>Result: {{TestResult.Message}}</p>
+                            <div class="row">
+                                <button (click)="ResetTestResult()" class="btn btn-primary col-md-offset-4 col-sm-4">Ok</button>
+                            </div>
+                        </div>
                     </overlay-cmp>
                 </div>
 
             </div>
 
             <div class="col-md-8">
-                <masonry class="row"  >
+                <masonry class="row">
                     <div masonry-brick *ngFor="let account of Accounts; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
                         <account-card-cmp [Account]="account"></account-card-cmp>
                     </div>

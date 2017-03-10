@@ -1,4 +1,5 @@
 ﻿import { PackageModel } from './package-model';
+import { AccountModel } from './account-model';
 
 export interface FeedSignalR extends SignalR {
     dSFeed: FeedProxy;
@@ -12,6 +13,8 @@ export interface FeedProxy {
 export interface FeedClient {
     deletePackage: (packageName: string) => void;
     addPackage: (algoPackage: PackageModel) => void;
+    deleteAccount: (account: AccountModel) => void;
+    addAccount: (account: AccountModel) => void;
 }
 
 export interface FeedServer {

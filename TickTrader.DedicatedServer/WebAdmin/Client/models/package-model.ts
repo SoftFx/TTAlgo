@@ -11,12 +11,11 @@ export class PackageModel implements Serializable<PackageModel> {
     }
 
     public Deserialize(input: any): PackageModel {
-        let packageModel = new PackageModel();
-        packageModel.Created = input.Created;
-        packageModel.IsValid = input.IsValid;
-        packageModel.Name = input.Name;
-        packageModel.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel().Deserialize(p)) : input.Plugins;
+        this.Created = input.Created;
+        this.IsValid = input.IsValid;
+        this.Name = input.Name;
+        this.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel().Deserialize(p)) : input.Plugins;
 
-        return packageModel;
+        return this;
     }
 }

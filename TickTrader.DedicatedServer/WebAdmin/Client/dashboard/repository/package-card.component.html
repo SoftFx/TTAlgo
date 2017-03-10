@@ -30,15 +30,13 @@
     </div>
 
     <overlay-cmp *ngIf="showConfirm">
-        <div class="row text-center">
-            <div class="form-group">
+        <div class="text-center">
                 <p>Delete?</p>
-            </div>
             <div class="row">
-                <div class="form-group col-xs-6 col-sm-6 col-md-6">
+                <div class="col-xs-6 col-sm-6 col-md-6">
                     <button (click)="Delete()" class="btn btn-primary btn-fill">Delete</button>
                 </div>
-                <div class="form-group col-xs-6 col-sm-6 col-md-6">
+                <div class="col-xs-6 col-sm-6 col-md-6">
                     <button (click)="showConfirm=false" class="btn btn-danger btn-fill">Cancel</button>
                 </div>
             </div>

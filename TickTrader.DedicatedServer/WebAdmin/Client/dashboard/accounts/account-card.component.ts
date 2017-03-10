@@ -1,5 +1,5 @@
 ﻿import { Input, EventEmitter, Output, Component } from '@angular/core';
-import { AccountModel } from '../../models/index';
+import { AccountModel, ConnectionErrorCodes, ConnectionTestResult } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
@@ -9,6 +9,8 @@ import { ApiService, ToastrService } from '../../services/index';
 })
 
 export class AccountCardComponent {
+    public TestResult: ConnectionTestResult;
+    public ConnectionTestRunning: boolean;
 
     constructor(private _api: ApiService, private _toastr: ToastrService) { }
 
@@ -23,8 +25,22 @@ export class AccountCardComponent {
     }
 
     public Delete() {
-        this._api.DeleteAccount(<AccountModel>Object.assign({}, this.Account))
+        this._api.DeleteAccount(Object.assign(new AccountModel(), this.Account))
             .subscribe(ok => this.onDeleted.emit(this.Account),
             err => this._toastr.error(`Error deleting account ${this.Account.Login} (${this.Account.Server})`));
+    }
+
+    public Test() {
+        let accountClone = Object.assign(new AccountModel(), this.Account);
+        this.ConnectionTestRunning = true;
+        this.ResetTestResult();
+
+        this._api.TestAccount(accountClone)
+            .finally(() => { this.ConnectionTestRunning = false; })
+            .subscribe(ok => this.TestResult = new ConnectionTestResult(ok.json()));
+    }
+
+    public ResetTestResult() {
+        this.TestResult = null;
     }
 }

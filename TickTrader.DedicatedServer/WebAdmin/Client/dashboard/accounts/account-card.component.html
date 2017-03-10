@@ -2,35 +2,50 @@
     <div class="header">
         <div class="btn-toolbar pull-right">
             <div class="btn-group btn-group-sm">
-                <a href="javascript:;" data-toggle="dropdown" class="dropdown-toggle">
+                <button data-toggle="dropdown" class="dropdown-toggle btn btn-sm btn-simple">
                     <i class="fa fa-ellipsis-v"></i>
-                </a>
+                </button>
                 <ul class="dropdown-menu pull-right">
-                    <li><a href="javascript:;">Edit</a></li>
-                    <li><a href="javascript:;">Delete</a></li>
+                    <li><a (click)="confirmDeletion=true" href="javascript:;">Delete</a></li>
+                    <li class="divider"></li>
+                    <li><a (click)="Test()" href="javascript:;">Test</a></li>
                 </ul>
             </div>
         </div>
         <h4 class="title truncate">
-            Account Login
+            <i class="fa fa-user-circle"></i>
+            Trade account
         </h4>
     </div>
     <div class="content">
-        <p>Account Info</p>
+        <ul class="list-unstyled">
+            <li>Login: {{Account.Login}}</li>
+            <li>Server: {{Account.Server}}</li>
+        </ul>
     </div>
 
-    <overlay-cmp *ngIf="false">
-        <div class="row text-center">
-            <div class="form-group">
-                <p>Delete?</p>
-            </div>
+    <overlay-cmp *ngIf="confirmDeletion">
+        <div class="text-center">
+            <p>Delete?</p>
             <div class="row">
-                <div class="form-group col-xs-6 col-sm-6 col-md-6">
+                <div class="col-xs-6 col-sm-6 col-md-6">
                     <button (click)="Delete()" class="btn btn-primary btn-fill">Delete</button>
                 </div>
-                <div class="form-group col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="showConfirm=false" class="btn btn-danger btn-fill">Cancel</button>
+                <div class="col-xs-6 col-sm-6 col-md-6">
+                    <button (click)="confirmDeletion=false" class="btn btn-danger btn-fill">Cancel</button>
                 </div>
+            </div>
+        </div>
+    </overlay-cmp>
+    <overlay-cmp *ngIf="ConnectionTestRunning">
+        <span class="fa fa-circle-o-notch fa-spin black"></span>
+        Testing ...
+    </overlay-cmp>
+    <overlay-cmp *ngIf="TestResult">
+        <div class="text-center">
+            <p>Result: {{TestResult.Message}}</p>
+            <div class="row">
+                <button (click)="ResetTestResult()" class="btn btn-primary col-md-offset-4 col-sm-4">Ok</button>
             </div>
         </div>
     </overlay-cmp>

@@ -9,6 +9,8 @@ import { FeedService } from './feed.service';
 export class ApiService {
     private headers: Headers = new Headers({ 'Content-Type': 'application/json' });
     private repositoryUrl: string = '/api/Repository';
+    private accountsUrl: string = '/api/Account';
+    private testAccountUrl: string = '/api/TestAccount';
 
 
     dasboardBots: Observable<ExtBotModel[]>;
@@ -17,7 +19,7 @@ export class ApiService {
         bots: ExtBotModel[]
     };
 
-    constructor(private http: Http, public Feed: FeedService) {
+    constructor(private _http: Http, public Feed: FeedService) {
         this.dataStore = { bots: [] };
         this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
@@ -86,19 +88,19 @@ export class ApiService {
         let input = new FormData();
         input.append("file", file);
 
-        return this.http
+        return this._http
             .post(this.repositoryUrl, input)
             .catch(this.handleServerError);
     }
 
     DeletePackage(name: string) {
-        return this.http
+        return this._http
             .delete(`${this.repositoryUrl}/${name}`, { headers: this.headers })
             .catch(this.handleServerError);
     }
 
     GetPackages(): Observable<PackageModel[]> {
-        return this.http
+        return this._http
             .get(this.repositoryUrl)
             .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
             .catch(this.handleServerError);
@@ -108,17 +110,22 @@ export class ApiService {
 
     /* >>> API Accounts */
     GetAccounts(): Observable<AccountModel[]> {
-        return Observable.of(new Array<AccountModel>(0));
+        return this._http
+            .get(this.accountsUrl)
+            .map(res => res.json().map(i => new AccountModel().Deserialize(i)))
+            .catch(this.handleServerError);
     }
 
     AddAccount(acc: AccountModel) {
-        return this.http
-            .post(this.repositoryUrl, { account: acc })
+        return this._http
+            .post(this.accountsUrl, acc, { headers: this.headers })
             .catch(this.handleServerError);
     }
 
     DeleteAccount(acc: AccountModel) {
-        return Observable.throw('NotImplemented');
+        return this._http
+            .delete(`${this.accountsUrl}/?` + $.param({ login: acc.Login, server: acc.Server }), { headers: this.headers })
+            .catch(this.handleServerError);
     }
 
     UpdateAccount(acc: AccountModel) {
@@ -126,7 +133,8 @@ export class ApiService {
     }
 
     TestAccount(acc: AccountModel) {
-        return Observable.throw('NotImplemented');
+        return this._http.post(this.testAccountUrl, acc, { headers: this.headers })
+            .catch(this.handleServerError);
     }
     /* <<< API Accounts */
 

@@ -66,7 +66,7 @@ export class RepositoryComponent implements OnInit {
     }
 
     public get FileInputError() {
-        if ((this._uploadingError != null && this._uploadingError['Code'] && this._uploadingError.Code == 101) || this.isFileDuplicated) {
+        if ((this._uploadingError != null && this._uploadingError['Code'] && this._uploadingError.Code == 1000) || this.isFileDuplicated) {
             return 'DuplicatePackage';
         }
         return null;
@@ -81,7 +81,7 @@ export class RepositoryComponent implements OnInit {
         return !this.Uploading
             && this.SelectedFileName
             && !this.isFileDuplicated
-            && (!this._uploadingError || !this._uploadingError['Code'] || this._uploadingError['Code'] != 101);
+            && (!this._uploadingError || !this._uploadingError['Code'] || this._uploadingError['Code'] != 1000);
     }
 
     private get isFileDuplicated(): boolean {

@@ -33,7 +33,7 @@ export class ToastrService {
 
     private toastSettings = {
         type: "",
-        timer: 4000,
+        timer: 1500,
         allow_dismiss: true,
         newest_on_top: true,
         animate: {
