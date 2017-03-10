@@ -62,9 +62,6 @@ export class ConnectionTestResult {
     }
 
     public get Message(): string {
-        if (!this.ConnectionErrorCode)
-            return '';
-
         switch (this.ConnectionErrorCode) {
             case ConnectionErrorCodes.Unknown:
             case ConnectionErrorCodes.NetworkError:
