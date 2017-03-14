@@ -71,7 +71,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E3AFC7B3BE7EF208D294785AF3648714CF2CF202</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>4060E5EAFB0DAEEF9F935A89EE0AC15348DA2C3D</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
@@ -189,6 +189,7 @@
     <None Include="Resx\Sounds\Negative.wav" />
     <None Include="Resx\Sounds\Blop.wav" />
     <None Include="Resx\Sounds\Clinking.wav" />
+    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -508,7 +509,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
