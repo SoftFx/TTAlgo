@@ -3,7 +3,7 @@ import { AdminComponent } from './admin.component';
 import { DashboardComponent } from './dashboard.component';
 import { OverlayComponent } from './overlay.component';
 import { RepositoryComponent, PackageCardComponent } from './repository/index';
-import { AccountsComponent } from './accounts/accounts.component';
+import { AccountsComponent, AccountCardComponent } from './accounts/index';
 import { BotRunComponent } from './bot-run.component';
 import { BotSettingsComponent } from './bot-settings.component';
 import { BotDetailComponent } from './bot-detail.component';
@@ -27,6 +27,7 @@ export const MODULE_COMPONENTS = [
     AdminComponent,
     DashboardComponent,
     AccountsComponent,
+    AccountCardComponent,
     RepositoryComponent,
     PackageCardComponent,
     BotDetailComponent,

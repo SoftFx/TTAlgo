@@ -6,12 +6,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Hubs
 {
     public class DSFeed : Hub<IDSFeed>
     {
-
     }
 
     public interface IDSFeed
     {
-        Task DeletePackage(string name);
         Task AddPackage(PackageDto package);
+        Task DeletePackage(string name);
+
+        Task AddAccount(AccountDto account);
+        Task DeleteAccount(AccountDto account);
     }
 }

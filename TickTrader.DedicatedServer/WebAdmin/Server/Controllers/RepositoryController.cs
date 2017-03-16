@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using TickTrader.DedicatedServer.DS;
-using TickTrader.DedicatedServer.DS.Exceptions;
+using TickTrader.DedicatedServer.DS.Models.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Hubs;
@@ -31,7 +31,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             var packages = _dedicatedServer.GetPackages();
 
-            return packages.Select(p => p.ToPackageDto()).ToArray();
+            return packages.Select(p => p.ToDto()).ToArray();
         }
 
         [HttpPost]
@@ -48,12 +48,11 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     try
                     {
                         var pacakge = _dedicatedServer.AddPackage(fileContent, file.FileName);
-                        Clients.All.AddPackage(pacakge.ToPackageDto());
                     }
                     catch (DuplicatePackageException dpe)
                     {
                         _logger.LogError(dpe.Message);
-                        return BadRequest(new { code = dpe.Code, message = dpe.Message });
+                        return BadRequest(new { Code = dpe.Code, Message = dpe.Message });
                     }
                 }
             }
@@ -65,7 +64,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         public void Delete(string name)
         {
             _dedicatedServer.RemovePackage(name);
-            Clients.All.DeletePackage(name);
         }
     }
 }

@@ -23,6 +23,10 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 
     public Deserialize(input): PluginModel {
-        return Object.assign(new PluginModel(), input);
+        this.Id = input.Id;
+        this.DisplayName = input.DisplayName;
+        this.Type = input.Type;
+
+        return this;
     }
 }

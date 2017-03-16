@@ -65,5 +65,3 @@ export class Dictionary<T> implements IDictionary<T> {
 export interface Serializable<T> {
     Deserialize(input: Object): T;
 }
-
-

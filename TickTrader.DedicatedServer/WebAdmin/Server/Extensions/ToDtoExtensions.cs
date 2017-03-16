@@ -1,14 +1,14 @@
 ﻿using System.Linq;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS;
-using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class ToDtoExtensions
     {
-        public static PackageDto ToPackageDto(this IPackage model)
+        public static PackageDto ToDto(this IPackage model)
         {
             return new PackageDto()
             {
@@ -26,6 +26,16 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 Id = plugin.Ref.Id,
                 DisplayName = plugin.Ref.DisplayName,
                 Type = plugin.Ref.Descriptor.AlgoLogicType.ToString()
+            };
+        }
+
+        public static AccountDto ToDto(this IAccount account)
+        {
+            return new AccountDto()
+            {
+                Server = account.Address,
+                Login = account.Username,
+                LastConnectionStatus = ConnectionErrorCodes.None
             };
         }
     }

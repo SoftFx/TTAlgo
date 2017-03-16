@@ -5,13 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
-using TickTrader.DedicatedServer.DS;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using TickTrader.DedicatedServer.WebAdmin.Server.Core;
-using TickTrader.DedicatedServer.DS.Repository;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
+using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
@@ -31,14 +30,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions();
-            services.Configure<PackageStorageSettings>(Configuration.GetSection("PackageStorage"));
-
-            services.AddSingleton<IDedicatedServer>(sp => DS.Models.ServerModel.Load(sp.GetService<ILoggerFactory>()));
-
-            var settings = new JsonSerializerSettings();
-            settings.ContractResolver = new SignalRContractResolver();
-
+            services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
 
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
@@ -49,6 +41,8 @@ namespace TickTrader.DedicatedServer.WebAdmin
             });
 
             services.AddSwaggerGen();
+            services.AddDedicatedServer()
+                    .AddStorageOptions(Configuration.GetSection("PackageStorage"));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -77,7 +71,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
             app.UseWebSockets();
             app.UseSignalR();
-
+            app.ObserveDedicatedServer();
 
             app.UseSwagger();
             app.UseSwaggerUi();

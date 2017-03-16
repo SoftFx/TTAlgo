@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { ApiService, FeedService, ToastrService } from '../../services/index';
 import { PackageModel, PluginModel, ResponseStatus } from '../../models/index';
 import { ViewChild } from '@angular/core';
@@ -6,106 +6,101 @@ import { ViewChild } from '@angular/core';
 @Component({
     selector: 'repository-cmp',
     template: require('./repository.component.html'),
-    styles: [require('../../app.component.css')],
+    styles: [require('../../app.component.css')]
 })
 
 export class RepositoryComponent implements OnInit {
     private _isFileDuplicated: boolean = false;
+    private _uploadingError: ResponseStatus;
 
-    public selectedFile: any;
-    public packages: PackageModel[] = [];
-    public uploading: boolean = false;
-    public uploadingError: ResponseStatus;
+    public SelectedFile: any;
+    public Packages: PackageModel[] = [];
+    public Uploading: boolean = false;
 
-    @ViewChild('packageInput')
-    packageInput: any;
 
-    constructor(private api: ApiService, private toastr: ToastrService) {
+    @ViewChild('PackageInput')
+    PackageInput: any;
+
+    constructor(private _api: ApiService, private _toastr: ToastrService) {
     }
 
     ngOnInit() {
-        this.api.feed.addPackage.subscribe(algoPackage => {
-            this.packages.push(algoPackage);
-        });
-        this.api.feed.deletePackage.subscribe(pname => {
-            this.packages = this.packages.filter(p => p.Name !== pname);
-        });
+        this._api.Feed.addPackage.subscribe(algoPackage => this.addPackage(algoPackage));
+        this._api.Feed.deletePackage.subscribe(pname => this.deletePackage(pname));
 
-        this.refreshPackages();
+        this.loadPackages();
     }
 
-    public get selectedFileName() {
-        if (this.selectedFile)
-            return this.selectedFile.name;
+    public get SelectedFileName() {
+        if (this.SelectedFile)
+            return this.SelectedFile.name;
         else
             return "";
     }
 
-    private refreshPackages() {
-        this.api.getAlgoPackages()
-            .subscribe(res => {
-                this.packages = res;
-            });
+    public OnPackageDeleted(algoPackage: PackageModel) {
+        //this.deletePackage(algoPackage.Name);
     }
 
-    public deletePackage(algoPackage: PackageModel) {
-        this.api
-            .deleteAlgoPackage(algoPackage.Name)
-            .subscribe(() => {
-                this.packages = this.packages.filter(p => p !== algoPackage);
+    public UploadPackage() {
+        this._uploadingError = null;
+        this.Uploading = true;
+
+        this._api
+            .UploadPackage(this.SelectedFile)
+            .finally(() => { this.Uploading = false; })
+            .subscribe(res => {
+                this.SelectedFile = null;
+                this.PackageInput.nativeElement.value = "";
             },
             err => {
-                this.toastr.error("Failed to execute the query. Please try again.");
+                this._uploadingError = err;
+                if (!this._uploadingError.Handled)
+                    this._toastr.error(this._uploadingError.Message);
             });
     }
 
-    public uploadPackage() {
-        this.uploadingError = null;
-        this.uploading = true;
-
-        this.api
-            .uploadAlgoPackage(this.selectedFile)
-            .finally(() => { this.uploading = false; })
-            .subscribe(res => {
-                this.selectedFile = null;
-                this.packageInput.nativeElement.value = "";
-                this.refreshPackages();
-            },
-            err => {
-                try {
-                    this.uploadingError = err.json() as ResponseStatus;
-                }
-                catch (err) {
-                    this.toastr.error("Failed to execute the query. Please try again.")
-                }
-            });
+    public OnFileInputChange(event) {
+        this._uploadingError = null;
+        this.SelectedFile = event.target.files[0];
     }
 
-    public onFileInputChange(event) {
-        this.uploadingError = null;
-        this.selectedFile = event.target.files[0];
-    }
-
-    public get fileInputError() {
-        if ((this.uploadingError != null && this.uploadingError['code'] && this.uploadingError.code == 101) || this.isFileDuplicated) {
+    public get FileInputError() {
+        if ((this._uploadingError != null && this._uploadingError['Code'] && this._uploadingError.Code == 1000) || this.isFileDuplicated) {
             return 'DuplicatePackage';
         }
         return null;
     }
 
-    public get isFileNameVaild(): boolean {
-        let a = this.selectedFile && !this.selectedFile.name && !this.isFileDuplicated;
+    public get IsFileNameVaild(): boolean {
+        let a = this.SelectedFile && !this.SelectedFile.name && !this.isFileDuplicated;
         return a;
     }
 
-    private get isFileDuplicated(): boolean {
-        return this.packages.find(p => this.selectedFile && p.Name == this.selectedFile.name) != null;
+    public get CanUpload() {
+        return !this.Uploading
+            && this.SelectedFileName
+            && !this.isFileDuplicated
+            && (!this._uploadingError || !this._uploadingError['Code'] || this._uploadingError['Code'] != 1000);
     }
 
-    public get canUpload() {
-        return !this.uploading
-            && this.selectedFileName
-            && !this.isFileDuplicated
-            && (!this.uploadingError || !this.uploadingError['code'] || this.uploadingError['code'] != 101);
+    private get isFileDuplicated(): boolean {
+        return this.Packages.find(p => this.SelectedFile && p.Name == this.SelectedFile.name) != null;
     }
+
+    private loadPackages() {
+        this._api.GetPackages()
+            .subscribe(res => this.Packages = res);
+    }
+
+    private addPackage(packageModel: PackageModel) {
+        if (!this.Packages.find(p => p.Name === packageModel.Name)) {
+            this.Packages = this.Packages.concat(packageModel);
+        }
+    }
+
+    private deletePackage(packageName: string) {
+        this.Packages = this.Packages.filter(p => p.Name !== packageName);
+    }
+
 }

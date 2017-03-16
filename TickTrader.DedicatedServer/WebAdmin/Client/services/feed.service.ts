@@ -8,7 +8,7 @@ import { Subject } from "rxjs/Subject";
 import '../../../node_modules/signalr/jquery.signalR.js';
 $.getScript('signalr/hubs');
 
-import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel } from '../models/index';
+import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel } from '../models/index';
 
 @Injectable()
 export class FeedService {
@@ -18,11 +18,15 @@ export class FeedService {
 
     deletePackage: Observable<string>;
     addPackage: Observable<PackageModel>;
+    addAccount: Observable<AccountModel>;
+    deleteAccount: Observable<AccountModel>;
 
     private connectionStateSubject = new Subject<ConnectionStatus>();
 
     private deletePackageSubject = new Subject<string>();
     private addPackageSubject = new Subject<PackageModel>();
+    private addAccountSubject = new Subject<AccountModel>();
+    private deleteAccountSubject = new Subject<AccountModel>();
 
     private server: FeedServer;
 
@@ -31,6 +35,8 @@ export class FeedService {
 
         this.deletePackage = this.deletePackageSubject.asObservable();
         this.addPackage = this.addPackageSubject.asObservable();
+        this.addAccount = this.addAccountSubject.asObservable();
+        this.deleteAccount = this.deleteAccountSubject.asObservable();
     }
 
     public start(debug: boolean): Observable<ConnectionStatus> {
@@ -42,6 +48,8 @@ export class FeedService {
 
         feedHub.client.addPackage = x => this.onAddPackage(x);
         feedHub.client.deletePackage = x => this.onDeletePackage(x);
+        feedHub.client.addAccount = x => this.onAddAccount(x);
+        feedHub.client.deleteAccount = x => this.onDeleteAccount(x);
 
         $.connection.hub.start()
             .done(response => this.setConnectionState(ConnectionStatus.Connected))
@@ -63,11 +71,22 @@ export class FeedService {
     }
 
     private onAddPackage(algoPackage: PackageModel) {
-        console.log(algoPackage.Name);
+        console.info('[FeedService] onAddPackage', algoPackage);
         this.addPackageSubject.next(algoPackage);
     }
 
     private onDeletePackage(name: string) {
+        console.info('[FeedService] onDeletePackage', name);
         this.deletePackageSubject.next(name);
+    }
+
+    private onAddAccount(account: AccountModel) {
+        console.info('[FeedService] onAddAccount', account);
+        this.addAccountSubject.next(account);
+    }
+
+    private onDeleteAccount(account: AccountModel) {
+        console.info('[FeedService] onDeleteAccount', account);
+        this.deleteAccountSubject.next(account);
     }
 }

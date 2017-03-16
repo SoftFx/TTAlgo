@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid, AccountModel } from "../models/index";
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid, AccountModel, ResponseStatus, ResponseCode } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 
@@ -9,6 +9,8 @@ import { FeedService } from './feed.service';
 export class ApiService {
     private headers: Headers = new Headers({ 'Content-Type': 'application/json' });
     private repositoryUrl: string = '/api/Repository';
+    private accountsUrl: string = '/api/Account';
+    private testAccountUrl: string = '/api/TestAccount';
 
 
     dasboardBots: Observable<ExtBotModel[]>;
@@ -17,7 +19,7 @@ export class ApiService {
         bots: ExtBotModel[]
     };
 
-    constructor(private http: Http, public feed: FeedService) {
+    constructor(private _http: Http, public Feed: FeedService) {
         this.dataStore = { bots: [] };
         this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
@@ -82,45 +84,58 @@ export class ApiService {
     }
 
     /* >>> API Repository*/
-    uploadAlgoPackage(file: any) {
+    UploadPackage(file: any) {
         let input = new FormData();
         input.append("file", file);
 
-        return this.http
-            .post(this.repositoryUrl, input);
+        return this._http
+            .post(this.repositoryUrl, input)
+            .catch(this.handleServerError);
     }
 
-    deleteAlgoPackage(name: string) {
-        return this.http
-            .delete(`${this.repositoryUrl}/${name}`, { headers: this.headers });
+    DeletePackage(name: string) {
+        return this._http
+            .delete(`${this.repositoryUrl}/${name}`, { headers: this.headers })
+            .catch(this.handleServerError);
     }
 
-    getAlgoPackages(): Observable<PackageModel[]> {
-        return this.http
+    GetPackages(): Observable<PackageModel[]> {
+        return this._http
             .get(this.repositoryUrl)
-            .map(res => res.json().map(i => new PackageModel().Deserialize(i)));
+            .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
+            .catch(this.handleServerError);
     }
     /* <<< API Repository*/
 
 
     /* >>> API Accounts */
-
-    addAccount(acc: AccountModel) {
-
+    GetAccounts(): Observable<AccountModel[]> {
+        return this._http
+            .get(this.accountsUrl)
+            .map(res => res.json().map(i => new AccountModel().Deserialize(i)))
+            .catch(this.handleServerError);
     }
 
-    getAccounts(): Observable<AccountModel[]> {
-        return Observable.of(new AccountModel[0]);
+    AddAccount(acc: AccountModel) {
+        return this._http
+            .post(this.accountsUrl, acc, { headers: this.headers })
+            .catch(this.handleServerError);
     }
 
-    deleteAccount(acc: AccountModel) {
-
+    DeleteAccount(acc: AccountModel) {
+        return this._http
+            .delete(`${this.accountsUrl}/?` + $.param({ login: acc.Login, server: acc.Server }), { headers: this.headers })
+            .catch(this.handleServerError);
     }
 
-    updateAccount(acc: AccountModel) {
-
+    UpdateAccount(acc: AccountModel) {
+        return Observable.throw('NotImplemented');
     }
 
+    TestAccount(acc: AccountModel) {
+        return this._http.post(this.testAccountUrl, acc, { headers: this.headers })
+            .catch(this.handleServerError);
+    }
     /* <<< API Accounts */
 
     private updateBotState(bot: ExtBotModel, state: BotState): boolean {
@@ -131,5 +146,11 @@ export class ApiService {
             }
         }
         return false;
+    }
+
+
+    private handleServerError(error: Response): Observable<any> {
+        console.error('[ApiService] An error occurred' + error); //debug
+        return Observable.throw(new ResponseStatus(error));
     }
 }

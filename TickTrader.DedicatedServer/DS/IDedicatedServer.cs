@@ -23,10 +23,14 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<ITradeBot> TradeBots { get; }
         event Action<IAccount, ChangeAction> AccountChanged;
         event Action<ITradeBot, ChangeAction> BotChanged;
+        event Action<IPackage, ChangeAction> PackageChanged;
 
         string AutogenerateBotId(string botDescriptorName);
 
         void AddAccount(string login, string password, string server);
+        void RemoveAccount(string login, string server);
+        ConnectionErrorCodes TestAccount(string login, string server);
+        ConnectionErrorCodes TestAccount(string login, string password, string server);
     }
 
     public interface IAccount
