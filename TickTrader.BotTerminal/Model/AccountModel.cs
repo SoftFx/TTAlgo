@@ -159,5 +159,73 @@ namespace TickTrader.BotTerminal
         {
             Caliburn.Micro.Execute.OnUIThread(syncAction);
         }
+
+        private bool IsEmpty(AssetInfo assetInfo)
+        {
+            return assetInfo.Balance == 0;
+        }
+
+        #region IAccountInfoProvider
+
+        private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
+        private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
+        private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
+
+        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
+        {
+            OrderExecReport algoReport = new OrderExecReport();
+            if (newOrder != null)
+                algoReport.OrderCopy = newOrder.ToAlgoOrder();
+            algoReport.OrderId = report.OrderId;
+            algoReport.ExecAction = action;
+            algoReport.Action = entityAction;
+            if (!double.IsNaN(report.Balance))
+                algoReport.NewBalance = report.Balance;
+            if (report.Assets != null)
+                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo).ToAlgoAsset()).ToList();
+            AlgoEvent_OrderUpdated(algoReport);
+        }
+
+        AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
+
+        void IAccountInfoProvider.SyncInvoke(System.Action action)
+        {
+            Caliburn.Micro.Execute.OnUIThread(action);
+        }
+
+        List<OrderEntity> IAccountInfoProvider.GetOrders()
+        {
+            return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
+        }
+
+        IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
+        {
+            return Assets.Snapshot.Select(pair => pair.Value.ToAlgoAsset()).ToList();
+        }
+
+        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
+        {
+            add { AlgoEvent_OrderUpdated += value; }
+            remove { AlgoEvent_OrderUpdated -= value; }
+        }
+
+        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated
+        {
+            add { AlgoEvent_PositionUpdated += value; }
+            remove { AlgoEvent_PositionUpdated -= value; }
+        }
+
+        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated
+        {
+            add { AlgoEvent_BalanceUpdated += value; }
+            remove { AlgoEvent_BalanceUpdated -= value; }
+        }
+
+        #endregion
     }
 }
