@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SoftFX.Extended;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -14,16 +15,19 @@ namespace TickTrader.Algo.Common.Model
         private decimal amount;
         private double tradeAmount;
         private decimal margin;
+        private Algo.Api.Currency currencyInfo;
 
-        public AssetModel(double balance, string currency)
+        public AssetModel(double balance, string currency, IDictionary<string, CurrencyInfo> currencies)
         {
             this.currency = currency;
             this.amount = (decimal)balance;
+            currencyInfo = currencies.ContainsKey(currency) ? (Currency)FdkToAlgo.Convert(currencies[currency]) : new Algo.Core.NullCurrency(currency);
         }
 
-        public AssetModel(AssetInfo asset)
+        public AssetModel(AssetInfo asset, IDictionary<string, CurrencyInfo> currencies)
         {
             Currency = asset.Currency;
+            currencyInfo = currencies.ContainsKey(currency) ? (Currency)FdkToAlgo.Convert(currencies[currency]) : new Algo.Core.NullCurrency(currency);
             Update(asset);
         }
 
@@ -92,11 +96,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Algo.Core.AssetEntity ToAlgoAsset()
         {
-            return new Algo.Core.AssetEntity()
-            {
-                Currency = currency,
-                Volume = (double)amount
-            };
+            return new Algo.Core.AssetEntity((double)amount, currency, currencyInfo);
         }
     }
 }

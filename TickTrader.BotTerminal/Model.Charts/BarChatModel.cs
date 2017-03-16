@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.GuiModel;
 using TickTrader.Algo.Core;
 using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
@@ -96,12 +96,18 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(setup, this);
         }
 
-        protected override void InitPluign(PluginExecutor plugin)
+        public override void InitializePlugin(PluginExecutor plugin)
         {
-            var mainSeries = barCollection.Snapshot.ToList();
-            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History);
-            plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid, mainSeries);
+            base.InitializePlugin(plugin);
+            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies);
+            plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
+        }
+
+        public override void UpdatePlugin(PluginExecutor plugin)
+        {
+            base.UpdatePlugin(plugin);
+            plugin.GetFeedStrategy<BarStrategy>().SetMainSeries(barCollection.Snapshot.ToList());
         }
 
         protected override void ApplyUpdate(Quote quote)

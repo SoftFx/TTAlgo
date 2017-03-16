@@ -18,16 +18,18 @@ namespace TickTrader.BotTerminal
         private SymbolCollectionModel symbols;
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
+        private Dictionary<string, CurrencyInfo> currencies;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
 
         public ISynchronizationContext Sync { get { return this; } }
 
-        public PluginFeedProvider(SymbolCollectionModel symbols, FeedHistoryProviderModel history)
+        public PluginFeedProvider(SymbolCollectionModel symbols, FeedHistoryProviderModel history, Dictionary<string, CurrencyInfo> currencies)
         {
             this.symbols = symbols;
             this.history = history;
+            this.currencies = currencies;
 
             rxBuffer = new BufferBlock<QuoteEntity>();
             txBlock = new ActionBlock<QuoteEntity[]>(uList =>
@@ -101,6 +103,11 @@ namespace TickTrader.BotTerminal
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
         {
             return symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToList();
+        }
+
+        public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
+        {
+            return currencies.Values.Select(FdkToAlgo.Convert).ToList();
         }
 
         public IEnumerable<BarEntity> QueryBars(string symbolCode)

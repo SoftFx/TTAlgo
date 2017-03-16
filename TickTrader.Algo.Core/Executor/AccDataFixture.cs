@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -10,6 +11,7 @@ namespace TickTrader.Algo.Core
     internal class AccDataFixture : CrossDomainObject
     {
         private IFixtureContext context;
+        private Dictionary<string, Currency> currencies;
 
         public AccDataFixture(IFixtureContext context)
         {
@@ -36,6 +38,8 @@ namespace TickTrader.Algo.Core
 
             builder.Account.Id = DataProvider.Account;
             builder.Account.Type = accType;
+
+            currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
 
             if (accType == Api.AccountTypes.Cash)
@@ -86,8 +90,8 @@ namespace TickTrader.Algo.Core
             }
             else if (accProxy.Type == Api.AccountTypes.Cash)
             {
-                accProxy.Assets.Update(new AssetEntity() { Currency = report.CurrencyCode, Volume = report.Balance });
-                accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(report.Balance, report.CurrencyCode)));
+                accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode, currencies));
+                accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(report.Balance, report.CurrencyCode, currencies)));
             }
         }
 
@@ -178,8 +182,8 @@ namespace TickTrader.Algo.Core
                 {
                     foreach (var asset in eReport.Assets)
                     {
-                        acc.Assets.Update(new AssetEntity() { Currency = asset.Currency, Volume = asset.Volume });
-                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.Currency)));
+                        acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency, currencies));
+                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.Currency, currencies)));
                     }
                 }
             }
