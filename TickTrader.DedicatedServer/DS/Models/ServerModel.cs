@@ -44,8 +44,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             if (!string.IsNullOrWhiteSpace(password))
             {
-                var acc = new ClientModel(SyncObj, _loggerFactory);
+                var acc = new ClientModel();
                 acc.Change(server, login, password);
+                InitAccount(acc);
                 return acc.TestConnection().Result;
             }
             else
@@ -77,22 +78,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
 
                     Save();
-                }
-            }
-        }
-
-        public void RemoveAccount(string login, string server)
-        {
-            lock (SyncObj)
-            {
-                var acc = FindAccount(login, server);
-                if (acc != null)
-                {
-                    _accounts.Remove(acc);
-
-                    Save();
-
-                    AccountChanged?.Invoke(acc, ChangeAction.Removed);
                 }
             }
         }
