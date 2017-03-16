@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -15,8 +18,15 @@ namespace TickTrader.DedicatedServer.DS.Models
         public string Name { get; private set; }
         public DateTime Created { get; private set; }
         public PluginContainer Container { get; private set; }
-
         public bool IsValid => Container != null;
+
+        public IEnumerable<ServerPluginRef> GetPluginsByType(AlgoTypes type)
+        {
+            return Container?.Plugins
+                .Where(p => p.Descriptor.AlgoLogicType == type)
+                .Select(p => new ServerPluginRef(Name, p))
+                ?? Enumerable.Empty<ServerPluginRef>();
+        }
 
         public void Dispose()
         {

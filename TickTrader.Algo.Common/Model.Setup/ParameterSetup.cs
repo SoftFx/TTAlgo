@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
@@ -8,6 +9,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
+    [DataContract(Name = "Parameter",  Namespace = "")]
     public abstract class ParameterSetup : PropertySetupBase
     {
         public static ParameterSetup Create(ParameterDescriptor descriptor)
@@ -55,21 +57,25 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
     }
 
+    [DataContract(Name = "int", Namespace = "")]
     public class IntParamSetup : ParameterSetup<int>
     {
         internal override UiConverter<int> Converter { get { return UiConverter.Int; } }
     }
 
+    [DataContract(Name = "double", Namespace = "")]
     public class DoubleParamSetup : ParameterSetup<double>
     {
         internal override UiConverter<double> Converter { get { return UiConverter.Double; } }
     }
 
+    [DataContract(Name = "string", Namespace = "")]
     public class StringParamSetup : ParameterSetup<string>
     {
         internal override UiConverter<string> Converter { get { return UiConverter.String; } }
     }
 
+    [DataContract(Name = "enum", Namespace = "")]
     public class EnumParamSetup : ParameterSetup
     {
         private string selected;
@@ -126,6 +132,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
     }
 
+    [DataContract(Name = "file", Namespace = "")]
     public class FileParamSetup : ParameterSetup
     {
         private string path;
@@ -204,8 +211,10 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
     }
 
+    [DataContract(Namespace = "")]
     public class ParameterSetup<T> : ParameterSetup
     {
+        [DataMember(Name = "value")]
         private T value;
         private string strValue;
 
@@ -291,6 +300,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
     }
 
+    [DataContract(Name = "invalid", Namespace = "")]
     public class AlgoInvalidParameter : ParameterSetup
     {
         public AlgoInvalidParameter(GuiModelMsg error)

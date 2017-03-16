@@ -9,6 +9,7 @@ using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading;
 using System.Collections.Generic;
+using System;
 
 namespace TickTrader.DedicatedServer.DS.Repository
 {
@@ -17,11 +18,12 @@ namespace TickTrader.DedicatedServer.DS.Repository
         private readonly string packageTemplate = "*.ttalgo";
         private readonly string _storageDir;
         private readonly ILogger<PackageStorage> _logger;
-        private readonly ReaderWriterLockSlim _storageLock = new ReaderWriterLockSlim();
+        private readonly object _syncObj;
         private readonly Dictionary<string, PackageModel> _packages;
 
-        public PackageStorage(ILoggerFactory loggerFactory)
+        public PackageStorage(ILoggerFactory loggerFactory, object syncObj)
         {
+            _syncObj = syncObj;
             _logger = loggerFactory.CreateLogger<PackageStorage>();
             _storageDir = "AlgoRepository/";
             _packages = new Dictionary<string, PackageModel>();
@@ -43,8 +45,7 @@ namespace TickTrader.DedicatedServer.DS.Repository
 
         public PackageModel Add(byte[] packageContent, string packageName)
         {
-            _storageLock.EnterWriteLock();
-            try
+            lock (_syncObj)
             {
                 Validate(packageName);
 
@@ -56,47 +57,35 @@ namespace TickTrader.DedicatedServer.DS.Repository
 
                 return package;
             }
-            finally
-            {
-                _storageLock.ExitWriteLock();
-            }
         }
 
         public PackageModel[] GetAll()
         {
-            _storageLock.EnterReadLock();
-            try
-            {
+            lock (_syncObj)
                 return _packages.Select(x => x.Value).ToArray();
-            }
-            finally
-            {
-                _storageLock.ExitReadLock();
-            }
         }
 
         public PackageModel Get(string name)
         {
-            _storageLock.EnterReadLock();
-            try
+            lock (_syncObj)
             {
                 PackageModel package;
                 return _packages.TryGetValue(name, out package) ? package : null;
-            }
-            finally
-            {
-                _storageLock.ExitReadLock();
             }
         }
 
         public void Remove(string packageName)
         {
-            _storageLock.EnterWriteLock();
-            try
+            lock (_syncObj)
             {
                 PackageModel package;
                 if (_packages.TryGetValue(packageName, out package))
                 {
+                    bool allowed = RemovingPackage?.Invoke(package) ?? true;
+
+                    if (!allowed)
+                        throw new InvalidStateException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
+
                     _packages.Remove(packageName);
                     try
                     {
@@ -116,11 +105,9 @@ namespace TickTrader.DedicatedServer.DS.Repository
                     }
                 }
             }
-            finally
-            {
-                _storageLock.ExitWriteLock();
-            }
         }
+
+        public event Func<PackageModel, bool> RemovingPackage;
 
         #region Private Methods
 
@@ -144,10 +131,8 @@ namespace TickTrader.DedicatedServer.DS.Repository
         {
             try
             {
-                using (var container = PluginContainer.Load(fileInfo.FullName))
-                {
-                    return new PackageModel(fileInfo.Name, fileInfo.CreationTime, container);
-                }
+                var container = PluginContainer.Load(fileInfo.FullName);
+                return new PackageModel(fileInfo.Name, fileInfo.CreationTime, container);
             }
             catch
             {
