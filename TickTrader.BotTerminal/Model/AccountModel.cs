@@ -18,6 +18,7 @@ using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
 using System.Diagnostics;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -184,46 +185,6 @@ namespace TickTrader.BotTerminal
             if (report.Assets != null)
                 algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo).ToAlgoAsset()).ToList();
             AlgoEvent_OrderUpdated(algoReport);
-        }
-
-        AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
-
-        void IAccountInfoProvider.SyncInvoke(System.Action action)
-        {
-            Caliburn.Micro.Execute.OnUIThread(action);
-        }
-
-        List<OrderEntity> IAccountInfoProvider.GetOrders()
-        {
-            return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
-        }
-
-        IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
-        {
-            return Assets.Snapshot.Select(pair => pair.Value.ToAlgoAsset()).ToList();
-        }
-
-        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
-        {
-            add { AlgoEvent_OrderUpdated += value; }
-            remove { AlgoEvent_OrderUpdated -= value; }
-        }
-
-        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated
-        {
-            add { AlgoEvent_PositionUpdated += value; }
-            remove { AlgoEvent_PositionUpdated -= value; }
-        }
-
-        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated
-        {
-            add { AlgoEvent_BalanceUpdated += value; }
-            remove { AlgoEvent_BalanceUpdated -= value; }
         }
 
         #endregion
