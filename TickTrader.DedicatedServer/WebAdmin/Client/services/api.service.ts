@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, Guid, AccountModel, ResponseStatus, ResponseCode } from "../models/index";
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, PluginSetupModel, Guid, AccountModel, ResponseStatus, ResponseCode } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 
@@ -11,6 +11,7 @@ export class ApiService {
     private repositoryUrl: string = '/api/Repository';
     private accountsUrl: string = '/api/Account';
     private testAccountUrl: string = '/api/TestAccount';
+    private dashboardUrl: string = '/api/Dashboard';
 
 
     dasboardBots: Observable<ExtBotModel[]>;
@@ -83,6 +84,11 @@ export class ApiService {
             () => { });
     }
 
+    SetupPlugin(setup: PluginSetupModel) {
+       return this._http.post(this.dashboardUrl, setup.Payload, { headers: this.headers })
+            .catch(this.handleServerError);
+    }
+
     /* >>> API Repository*/
     UploadPackage(file: any) {
         let input = new FormData();
@@ -137,6 +143,10 @@ export class ApiService {
             .catch(this.handleServerError);
     }
     /* <<< API Accounts */
+
+    GetSymbols(account: AccountModel) {
+        return Observable.of(['EURUSD', 'AEDAUD', 'USDAFN', 'USDAMD']);
+    }
 
     private updateBotState(bot: ExtBotModel, state: BotState): boolean {
         for (let cBot of this.dataStore.bots) {

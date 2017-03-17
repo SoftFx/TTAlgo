@@ -20,7 +20,7 @@ export class ExtBotModel extends BotModel {
 
     constructor(name: string, setup: BotSetup, instanceId?: string, active?: boolean) {
         super(name, setup);
-        this.instanceId = !instanceId ? name + ' (' + Guid.new()+')' : instanceId;
+        this.instanceId = !instanceId ? name + ' (' + Guid.New()+')' : instanceId;
         this.state = active ? BotState.Runned : BotState.Stopped;
         this.account = "";
         this.symbol = "";

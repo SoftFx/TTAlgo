@@ -46,10 +46,10 @@ export class FeedService {
         let feedHub = connection.dSFeed;
         this.server = feedHub.server;
 
-        feedHub.client.addPackage = x => this.onAddPackage(x);
+        feedHub.client.addPackage = x => this.onAddPackage(new PackageModel().Deserialize(x));
         feedHub.client.deletePackage = x => this.onDeletePackage(x);
-        feedHub.client.addAccount = x => this.onAddAccount(x);
-        feedHub.client.deleteAccount = x => this.onDeleteAccount(x);
+        feedHub.client.addAccount = x => this.onAddAccount(new AccountModel().Deserialize(x));
+        feedHub.client.deleteAccount = x => this.onDeleteAccount(new AccountModel().Deserialize(x));
 
         $.connection.hub.start()
             .done(response => this.setConnectionState(ConnectionStatus.Connected))

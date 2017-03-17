@@ -1,14 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { ExtBotModel, BotModel, BotState, ParameterType } from '../models/index';
-import { ApiService } from '../services/index';
+import { ExtBotModel, BotModel, BotState, ParameterType } from '../../models/index';
+import { ApiService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
 
 @Component({
     selector: 'dashboard-cmp',
     template: require('./dashboard.component.html'),
-    styles: [require('../app.component.css')],
+    styles: [require('../../app.component.css')],
 })
 
 export class DashboardComponent{

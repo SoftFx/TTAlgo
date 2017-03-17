@@ -25,7 +25,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             {
                 Id = plugin.Id,
                 DisplayName = plugin.DisplayName,
-                Type = plugin.Descriptor.AlgoLogicType.ToString()
+                Type = plugin.Descriptor.AlgoLogicType.ToString(),
+                Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 
@@ -37,6 +38,36 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 Login = account.Username,
                 LastConnectionStatus = ConnectionErrorCodes.None
             };
+        }
+
+        public static ParameterDescriptorDto ToDto(this ParameterDescriptor parameter)
+        {
+            return new ParameterDescriptorDto()
+            {
+                Id = parameter.Id,
+                DisplayName = parameter.DisplayName,
+                DataType = GetDataType(parameter),
+                DefaultValue = parameter.DefaultValue,
+                EnumValues = parameter.EnumValues,
+                IsEnum = parameter.IsEnum,
+                IsRequired = parameter.IsRequired,
+                FileFilter = string.Join("|", parameter.FileFilters.Select(f => f.FileMask))
+            };
+        }
+
+        private static string GetDataType(ParameterDescriptor parameter)
+        {
+            if (parameter.IsEnum)
+                return "Enum";
+
+            switch (parameter.DataType)
+            {
+                case "System.Int32": return "Int";
+                case "System.Double": return "Double";
+                case "System.String": return "String";
+                case "TickTrader.Algo.Api.File": return "File";
+                default: return "Unknown";
+            }
         }
     }
 }

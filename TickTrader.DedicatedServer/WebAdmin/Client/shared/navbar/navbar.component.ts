@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ROUTES } from '../../dashboard/sidebar/sidebar-routes.config';
-import { MenuType } from '../../dashboard/sidebar/sidebar.metadata';
+import { ROUTES } from '../sidebar/sidebar-routes.config';
+import { MenuType } from '../sidebar/sidebar.metadata';
 import { AuthService } from '../../services/index';
 import { Router } from '@angular/router';
 
