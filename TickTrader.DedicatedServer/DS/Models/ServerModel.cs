@@ -8,10 +8,11 @@ using System.Xml;
 using TickTrader.Algo.Common.Model;
 using TickTrader.DedicatedServer.DS.Models.Exceptions;
 using TickTrader.DedicatedServer.DS.Repository;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    [DataContract(Name = "server.config")]
+    [DataContract(Name = "server.config", Namespace = "")]
     public class ServerModel : IDedicatedServer
     {
         private const string cfgFilePath = "server.config.xml";
@@ -29,7 +30,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         public object SyncObj { get; private set; }
 
         public IEnumerable<IAccount> Accounts { get { lock (SyncObj) { return _accounts.ToArray(); } } }
-        public IEnumerable<ITradeBot> TradeBots => _accounts.SelectMany(a => a.Bots);
+        public IEnumerable<ITradeBot> TradeBots => _accounts.SelectMany(a => a.TradeBots);
         public event Action<IAccount, ChangeAction> AccountChanged;
         public event Action<ITradeBot, ChangeAction> BotChanged;
         public event Action<IPackage, ChangeAction> PackageChanged;
@@ -43,8 +44,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             if (!string.IsNullOrWhiteSpace(password))
             {
-                var acc = new ClientModel(SyncObj, _loggerFactory);
+                var acc = new ClientModel();
                 acc.Change(server, login, password);
+                InitAccount(acc);
                 return acc.TestConnection().Result;
             }
             else
@@ -69,7 +71,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 }
                 else
                 {
-                    var newAcc = new ClientModel(SyncObj, _loggerFactory);
+                    var newAcc = new ClientModel();
+                    InitAccount(newAcc);
                     newAcc.Change(server, login, password);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
@@ -79,28 +82,43 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public void RemoveAccount(string login, string server)
-        {
-            lock (SyncObj)
-            {
-                var acc = FindAccount(login, server);
-                if (acc != null)
-                {
-                    _accounts.Remove(acc);
-
-                    Save();
-
-                    AccountChanged?.Invoke(acc, ChangeAction.Removed);
-                }
-            }
-        }
-
         private void Init(ILoggerFactory loggerFactory)
         {
             SyncObj = new object();
             _loggerFactory = loggerFactory;
-            _packageStorage = new PackageStorage(loggerFactory);
-            _accounts.ForEach(a => a.Init(SyncObj, loggerFactory));
+            _packageStorage = new PackageStorage(loggerFactory, SyncObj);
+            _accounts.ForEach(InitAccount);
+            _packageStorage.RemovingPackage += packageStorage_RemovingPackage;
+        }
+
+        private void InitAccount(ClientModel acc)
+        {
+            acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
+            acc.Changed += Acc_Changed;
+        }
+
+        private void DisposeAccount(ClientModel acc)
+        {
+            acc.Changed -= Acc_Changed;
+        }
+
+        private void Acc_Changed(ClientModel acc)
+        {
+            Save();
+        }
+
+        private bool packageStorage_RemovingPackage(PackageModel pckg)
+        {
+            var hasRunningBots = _accounts.SelectMany(a => a.TradeBots).Any(b => b.IsRunning);
+            if (hasRunningBots)
+                return false;
+
+            foreach (var acc in _accounts)
+                acc.RemoveBotsFromPackage(pckg);
+
+            Save();
+
+            return true;
         }
 
         private ClientModel FindAccount(string login, string server)
@@ -108,14 +126,53 @@ namespace TickTrader.DedicatedServer.DS.Models
             return _accounts.FirstOrDefault(a => a.Username == login && a.Address == server);
         }
 
+        public void RemoveAccount(string login, string server)
+        {
+            var acc = FindAccount(login, server);
+            if (acc == null)
+                throw new InvalidOperationException("Account not found!");
+            _accounts.Remove(acc);
+            DisposeAccount(acc);
+
+            Save();
+
+            AccountChanged?.Invoke(acc, ChangeAction.Removed);
+        }
+
+        public string AutogenerateBotId(string botDescriptorName)
+        {
+            lock (SyncObj)
+            {
+                HashSet<string> idSet = new HashSet<string>(TradeBots.Select(b => b.Id));
+
+                int seed = 1;
+
+                while (true)
+                {
+                    var botId = botDescriptorName + " " + seed;
+                    if (!idSet.Contains(botId))
+                        return botId;
+
+                    seed++;
+                }
+            }
+        }
+
         #region Serialization
 
         private void Save()
         {
-            var settings = new XmlWriterSettings { Indent = true };
-            DataContractSerializer serializer = new DataContractSerializer(typeof(ServerModel));
-            using (var writer = XmlWriter.Create(cfgFilePath, settings))
-                serializer.WriteObject(writer, this);
+            try
+            {
+                var settings = new XmlWriterSettings { Indent = true };
+                DataContractSerializer serializer = new DataContractSerializer(typeof(ServerModel));
+                using (var writer = XmlWriter.Create(cfgFilePath, settings))
+                    serializer.WriteObject(writer, this);
+            }
+            catch (Exception ex)
+            {
+                // TO DO : log
+            }
         }
 
         public static ServerModel Load(ILoggerFactory loggerFactory)
@@ -167,6 +224,21 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
+        public ServerPluginRef[] GetAllPlugins()
+        {
+            return _packageStorage.GetAll()
+                .SelectMany(p => p.Container.Plugins.Select(pRef => new ServerPluginRef(p.Name, pRef)))
+                .ToArray();
+        }
+
+        public ServerPluginRef[] GetPluginsByType(AlgoTypes type)
+        {
+            return _packageStorage.GetAll()
+                .SelectMany(p => p.Container.Plugins
+                    .Where(pRef => pRef.Descriptor.AlgoLogicType == type)
+                    .Select(pRef => new ServerPluginRef(p.Name, pRef)))
+                .ToArray();
+        }
 
         #endregion
     }

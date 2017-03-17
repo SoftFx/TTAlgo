@@ -247,3 +247,4 @@ _Pvt_Extensions
 algo.metadata
 /Repository.Public/API
 /TickTrader.BotTerminal/Redist
+/TickTrader.DedicatedServer/server.config.xml

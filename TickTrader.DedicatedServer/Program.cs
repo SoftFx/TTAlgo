@@ -10,6 +10,9 @@ using System.Linq;
 using TickTrader.DedicatedServer.DS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.DedicatedServer
 {
@@ -53,10 +56,10 @@ namespace TickTrader.DedicatedServer
                 {
                     foreach (var acc in server.Accounts)
                     {
-                        Console.WriteLine(GetDisplayName(acc));
-                        //foreach (var bot in acc.Bots)
-                        //{
-                        //}
+                        var model = acc;
+                        Console.WriteLine(GetDisplayName(acc) + " - " + acc.ConnectionState);
+                        foreach (var bot in acc.TradeBots)
+                            Console.WriteLine("\t{0} - {1} ", bot.Id, bot.State);
                     }
                 }
             });
@@ -98,12 +101,80 @@ namespace TickTrader.DedicatedServer
  
             });
 
+            cmdEngine.RegsiterCommand("trade bot", () =>
+            {
+                var cmd = CommandUi.Choose("cmd", "add", "remove", "start", "stop", "cancel");
+
+                IAccount acc;
+                List<IAccount> accountsList;
+                ITradeBot[] bots;
+
+                switch (cmd)
+                {
+                    case "add":
+
+                        ServerPluginRef[] availableBots;
+
+                        lock (server.SyncObj)
+                        {
+                            availableBots = server.GetPluginsByType(AlgoTypes.Robot);
+                            accountsList = server.Accounts.ToList();
+                        }
+
+                        if (accountsList.Count == 0)
+                            Console.WriteLine("Cannot add bot: no accounts!");
+                        else if (availableBots.Length == 0)
+                            Console.WriteLine("Cannot add bot: no bots in repository!");
+                        else
+                        {
+                            if (accountsList.Count == 1)
+                                acc = accountsList[0];
+                            else
+                                acc = CommandUi.Choose("account", accountsList, GetDisplayName);
+
+                            var botToAdd = CommandUi.Choose("bot", availableBots, b => b.Ref.DisplayName);
+
+                            if (botToAdd.Ref.Descriptor.IsValid)
+                            {
+                                var setup = new BarBasedPluginSetup(botToAdd.Ref, "EURUSD", BarPriceType.Bid, null);
+                                acc.AddBot(server.AutogenerateBotId(botToAdd.Ref.DisplayName), botToAdd.PackageName, setup);
+                            }
+                            else
+                                Console.WriteLine("Cannot add bot: bot is invalid!");
+                        }
+
+                        break;
+
+                    case "start":
+
+                        lock (server.SyncObj)
+                            bots = server.TradeBots.ToArray();
+
+                        var botToStart = CommandUi.Choose("bot", bots, b => b.Id);
+
+                        botToStart.Start();
+
+                        break;
+
+                    case "stop":
+
+                        lock (server.SyncObj)
+                            bots = server.TradeBots.ToArray();
+
+                        var botToStop = CommandUi.Choose("bot", bots, b => b.Id);
+
+                        botToStop.StopAsync().Wait();
+
+                        break;
+                }
+            });
+
             cmdEngine.Run();
         }
 
         private static string GetDisplayName(IAccount acc)
         {
-            return string.Format("account {0} - {1}", acc.Address, acc.Username);
+            return string.Format("account {0} : {1}", acc.Address, acc.Username);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
@@ -11,8 +12,11 @@ using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
+    [DataContract(Name = "algoSetup", Namespace = "")]
+    [KnownType(typeof(BarBasedPluginSetup))]
     public abstract class PluginSetup : ObservableObject
     {
+        [DataMember(Name = "properties")]
         private List<PropertySetupBase> allProperties;
         private List<ParameterSetup> parameters;
         private List<InputSetup> inputs;

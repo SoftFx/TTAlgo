@@ -302,7 +302,9 @@ namespace TickTrader.Algo.Common.Model
                 connectCancelSrc.Cancel();
 
                 // wait init task to stop
-                await initTask;
+                var toWait = initTask;
+                if (toWait != null)
+                    await toWait;
 
                 // fire events and wait all handlers
                 logger.Debug("Deinit. Invoking Deinitalizing event...");

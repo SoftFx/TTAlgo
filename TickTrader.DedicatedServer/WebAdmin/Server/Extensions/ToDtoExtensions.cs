@@ -14,19 +14,19 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             {
                 Name = model.Name,
                 Created = model.Created,
-                Plugins = model.Container?.Plugins.Select(p => p.ToDto()).ToArray(),
+                Plugins = model.GetPluginsByType(AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = model.IsValid
             };
         }
 
-        public static PluginDto ToDto(this AlgoPluginRef plugin)
+        public static PluginDto ToPluginDto(this ServerPluginRef plugin)
         {
             return new PluginDto()
             {
-                Id = plugin.Id,
-                DisplayName = plugin.DisplayName,
-                Type = plugin.Descriptor.AlgoLogicType.ToString(),
-                Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
+                Id = plugin.Ref.Id,
+                DisplayName = plugin.Ref.DisplayName,
+                Type = plugin.Ref.Descriptor.AlgoLogicType.ToString(),
+				Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 

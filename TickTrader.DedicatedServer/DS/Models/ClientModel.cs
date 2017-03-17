@@ -9,31 +9,44 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.DS.Repository;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    [DataContract(Name = "account")]
+    [DataContract(Name = "account", Namespace = "")]
     public class ClientModel : IAccount
     {
-        public enum States { Offline, Connecting, Online, Disconnecting }
-
         private object _sync;
         private CancellationTokenSource connectCancellation;
         private TaskCompletionSource<ConnectionErrorCodes> testRequest;
-        private List<TradeBotModel> bots = new List<TradeBotModel>();
+
+        [DataMember(Name = "bots")]
+        private List<TradeBotModel> _bots = new List<TradeBotModel>();
+        private Func<string, PackageModel> _packageProvider;
 
         private bool stopRequested;
         private bool lostConnection;
+        private int _startedBotsCount;
 
-        public ClientModel(object syncObj, ILoggerFactory loggerFactory)
-        {
-            Init(syncObj, loggerFactory);
-        }
-
-        public void Init(object syncObj, ILoggerFactory loggerFactory)
+        public void Init(object syncObj, ILoggerFactory loggerFactory, Func<string, PackageModel> packageProvider)
         {
             _sync = syncObj;
+            _packageProvider = packageProvider;
             var loggerAdapter = new LoggerAdapter(loggerFactory.CreateLogger<ConnectionModel>());
+
+            if (_bots == null)
+                _bots = new List<TradeBotModel>();
+
+            foreach (var bot in _bots)
+            {
+                if (bot.IsRunning)
+                    _startedBotsCount++;
+                bot.IsRunningChanged += Bot_StateChanged;
+                bot.Init(this, syncObj, _packageProvider, null);
+            }
+
             Connection = new ConnectionModel(loggerAdapter, new ConnectionOptions() { EnableFixLogs = false });
             Connection.Disconnected += () =>
             {
@@ -45,18 +58,22 @@ namespace TickTrader.DedicatedServer.DS.Models
             };
         }
 
-        public States State { get; private set; }
+        public ConnectionStates ConnectionState { get; private set; }
+        public object SyncObj => _sync;
         public ConnectionModel Connection { get; private set; }
-        public IEnumerable<TradeBotModel> Bots => bots;
+        public IEnumerable<ITradeBot> TradeBots => _bots;
 
         public event Action<ClientModel> StateChanged;
+        public event Action<ClientModel> Changed;
 
-        [DataMember]
+        [DataMember(Name = "server")]
         public string Address { get; private set; }
-        [DataMember]
+        [DataMember(Name = "login")]
         public string Username { get; private set; }
-        [DataMember]
+        [DataMember(Name = "password")]
         public string Password { get; private set; }
+
+        #region Connection Management
 
         public async Task<ConnectionErrorCodes> TestConnection()
         {
@@ -64,7 +81,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             lock (_sync)
             {
-                if (State == States.Online)
+                if (ConnectionState == ConnectionStates.Online)
                     return ConnectionErrorCodes.None;
                 else
                 {
@@ -83,49 +100,54 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void ManageConnection()
         {
-            if (State == States.Offline)
+            if (ConnectionState == ConnectionStates.Offline)
             {
-                if (testRequest != null)
+                if (testRequest != null || _startedBotsCount > 0)
                     Connect();
             }
-            else if (State == States.Online)
+            else if (ConnectionState == ConnectionStates.Online)
             {
-                if (stopRequested || lostConnection)
+                if (stopRequested || lostConnection || _startedBotsCount == 0)
                     Disconnect();
             }
         }
 
         private async void Disconnect()
         {
-            ChangeState(States.Disconnecting);
+            ChangeState(ConnectionStates.Disconnecting);
+
             await Connection.DisconnectAsync();
 
             lock (_sync)
             {
-                ChangeState(States.Offline);
+                ChangeState(ConnectionStates.Offline);
                 stopRequested = false;
                 lostConnection = false;
                 ManageConnection();
             }
         }
 
-        private void ChangeState(States newState)
+        private void ChangeState(ConnectionStates newState)
         {
-            State = newState;
+            ConnectionState = newState;
             StateChanged?.Invoke(this);
         }
 
         private async void Connect()
         {
-            ChangeState(States.Connecting);
+            ChangeState(ConnectionStates.Connecting);
             connectCancellation = new CancellationTokenSource();
             var result = await Connection.Connect(Username, Password, Address, connectCancellation.Token);
-            if (result == ConnectionErrorCodes.None)
-                ChangeState(States.Online);
-            else
-                ChangeState(States.Offline);
-            testRequest?.TrySetResult(result);
-            ManageConnection();
+            lock (_sync)
+            {
+                if (result == ConnectionErrorCodes.None)
+                    ChangeState(ConnectionStates.Online);
+                else
+                    ChangeState(ConnectionStates.Offline);
+                testRequest?.TrySetResult(result);
+                testRequest = null;
+                ManageConnection();
+            }
         }
 
         public void Change(string address, string username, string password)
@@ -136,10 +158,62 @@ namespace TickTrader.DedicatedServer.DS.Models
                 Username = username;
                 Password = password;
                 testRequest?.TrySetCanceled();
+                testRequest = null;
                 stopRequested = true;
                 connectCancellation?.Cancel();
                 ManageConnection();
             }
+        }
+
+        #endregion Connection Management
+
+        public ITradeBot AddBot(string botId, string packageName, PluginSetup setup)
+        {
+            lock (_sync)
+            {
+                var package = _packageProvider(packageName);
+
+                if (package == null)
+                    throw new ArgumentException("Package '" + packageName + "' cannot be found!");
+
+                var newBot = new TradeBotModel(botId, package, setup);
+                newBot.IsRunningChanged += Bot_StateChanged;
+                _bots.Add(newBot);
+                ManageConnection();
+                Changed?.Invoke(this);
+                return newBot;
+            }
+        }
+
+        private void Bot_StateChanged(TradeBotModel bot)
+        {
+            if (bot.IsRunning)
+                _startedBotsCount++;
+            else
+                _startedBotsCount--;
+            ManageConnection();
+        }
+
+        public void RemoveBot(string botId)
+        {
+            lock (_sync)
+            {
+                var bot = _bots.FirstOrDefault(b => b.Id == botId);
+                if (bot != null)
+                {
+                    if (bot.IsRunning)
+                        throw new InvalidStateException("Cannot remove running bot!");
+                    _bots.Remove(bot);
+                    bot.IsRunningChanged -= Bot_StateChanged;
+                    Changed?.Invoke(this);
+                }
+            }
+        }
+
+        internal void RemoveBotsFromPackage(PackageModel package)
+        {
+            var toRemove = _bots.Where(b => b.Package == package).ToList();
+            toRemove.ForEach(b => _bots.Remove(b));
         }
     }
 }
