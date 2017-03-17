@@ -27,5 +27,6 @@ namespace TickTrader.Algo.Core
         public string Currency { get; set; }
         public Currency CurrencyInfo { get; }
         public double Volume { get; set; }
+        public bool IsNull => false;
     }
 }

@@ -25,7 +25,8 @@ namespace TickTrader.Algo.Core
         private static readonly BookEntry[] book = new BookEntry[0];
         private static readonly Quote quote = new NullQuote();
         private static readonly IPluginLogger nullLogger = new NullLogger();
-        private static Currency currency = new NullCurrency();
+        private static readonly Currency currency = new NullCurrency();
+        private static readonly Asset asset = new NullAsset();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
@@ -33,6 +34,7 @@ namespace TickTrader.Algo.Core
         public static Quote Quote => quote;
         public static IPluginLogger Logger => nullLogger;
         public static Currency Currency => currency;
+        public static Asset Asset => asset;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
@@ -182,6 +184,24 @@ namespace TickTrader.Algo.Core
 
         public string Name { get; }
         public int Digits => -1;
+        public bool IsNull => true;
+        public override string ToString() { return "{null}"; }
+    }
+
+    public class NullAsset : Asset
+    {
+        public NullAsset() : this("")
+        {
+        }
+
+        public NullAsset(string currency)
+        {
+            Currency = currency;
+        }
+
+        public string Currency { get; }
+        public Currency CurrencyInfo => Null.Currency;
+        public double Volume => double.NaN;
         public bool IsNull => true;
         public override string ToString() { return "{null}"; }
     }

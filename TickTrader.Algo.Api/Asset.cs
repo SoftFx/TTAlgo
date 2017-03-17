@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Api
         string Currency { get; }
         Currency CurrencyInfo { get; }
         double Volume { get; }
+        bool IsNull { get; }
     }
 
     public interface AssetList : IEnumerable<Asset>
