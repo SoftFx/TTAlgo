@@ -11,7 +11,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            Status.WriteLine(ToObjectPropertiesString(SymbolName, Currencies[SymbolName]));
+            Status.WriteLine(ToObjectPropertiesString(SymbolName, Symbols[SymbolName]));
 
             Exit();
         }
