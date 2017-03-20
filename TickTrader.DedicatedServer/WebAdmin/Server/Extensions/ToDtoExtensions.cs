@@ -26,7 +26,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 Id = plugin.Ref.Id,
                 DisplayName = plugin.Ref.DisplayName,
                 Type = plugin.Ref.Descriptor.AlgoLogicType.ToString(),
-				Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
+				Parameters = plugin.Ref.Descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 
