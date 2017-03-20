@@ -8,7 +8,9 @@ namespace TickTrader.Algo.Core
     {
         void UpdateStatus(string status);
         void OnPrintInfo(string info);
+        void OnPrint(string entry);
         void OnPrint(string entry, params object[] parameters);
+        void OnPrintError(string entry);
         void OnPrintError(string entry, params object[] parameters);
         void OnPrintTrade(string entry);
         void OnError(Exception ex);
@@ -64,9 +66,19 @@ namespace TickTrader.Algo.Core
             logger.UpdateStatus(status);
         }
 
+        public void Print(string entry)
+        {
+            logger.OnPrint(entry);
+        }
+
         public void Print(string entry, object[] parameters)
         {
             logger.OnPrint(entry, parameters);
+        }
+
+        public void PrintError(string entry)
+        {
+            logger.OnPrintError(entry);
         }
 
         public void PrintError(string entry, object[] parameters)
@@ -99,7 +111,15 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        public void OnPrint(string entry)
+        {
+        }
+
         public void OnPrint(string entry, params object[] parameters)
+        {
+        }
+
+        public void OnPrintError(string entry)
         {
         }
 

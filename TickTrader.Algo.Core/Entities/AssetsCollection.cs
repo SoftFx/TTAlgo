@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     public class AssetsCollection
     {
         private PluginBuilder builder;
-        private OrdersFixture fixture = new OrdersFixture();
+        private AssetsFixture fixture = new AssetsFixture();
 
         internal AssetList AssetListImpl { get { return fixture; } }
 
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.Remove(currencyCode));
         }
 
-        internal class OrdersFixture : AssetList
+        internal class AssetsFixture : AssetList
         {
             private Dictionary<string, Asset> assets = new Dictionary<string, Asset>();
 

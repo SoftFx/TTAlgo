@@ -573,9 +573,21 @@ namespace TickTrader.Algo.Core
                 Apply();
             }
 
+            void StatusApi.Write(string str)
+            {
+                statusBuilder.Append(str);
+                hasChanges = true;
+            }
+
             void StatusApi.Write(string str, object[] strParams)
             {
                 statusBuilder.AppendFormat(str, strParams);
+                hasChanges = true;
+            }
+
+            void StatusApi.WriteLine(string str)
+            {
+                statusBuilder.Append(str).AppendLine();
                 hasChanges = true;
             }
 
