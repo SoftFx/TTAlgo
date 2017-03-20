@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     public class AssetsCollection
     {
         private PluginBuilder builder;
-        private OrdersFixture fixture = new OrdersFixture();
+        private AssetsFixture fixture = new AssetsFixture();
 
         internal AssetList AssetListImpl { get { return fixture; } }
 
@@ -35,9 +35,9 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.Remove(currencyCode));
         }
 
-        internal class OrdersFixture : AssetList
+        internal class AssetsFixture : AssetList
         {
-            private Dictionary<string, AssetEntity> assets = new Dictionary<string, AssetEntity>();
+            private Dictionary<string, Asset> assets = new Dictionary<string, Asset>();
 
             public int Count { get { return assets.Count; } }
 
@@ -45,10 +45,13 @@ namespace TickTrader.Algo.Core
             {
                 get
                 {
-                    AssetEntity entity;
-                    if (!assets.TryGetValue(currencyCode, out entity))
-                        return null;
-                    return entity;
+                    if (string.IsNullOrEmpty(currencyCode))
+                        return Null.Asset;
+
+                    Asset asset;
+                    if (!assets.TryGetValue(currencyCode, out asset))
+                        return new NullAsset(currencyCode);
+                    return asset;
                 }
             }
 
