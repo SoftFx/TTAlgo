@@ -28,8 +28,6 @@ namespace TickTrader.BotTerminal
         private TraderClientModel clientModel;
         private ConnectionModel connection;
         private ActionBlock<System.Action> uiUpdater;
-        private AccountType? accType;
-        private IDictionary<string, CurrencyInfo> _currencies;
 
         public AccountModel(TraderClientModel clientModel)
         {
@@ -108,21 +106,9 @@ namespace TickTrader.BotTerminal
         {
             var accInfo = connection.TradeProxy.Cache.AccountInfo;
             var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
-            _currencies = currencies;
+            var cache = connection.TradeProxy.Cache;
 
             base.Init(accInfo, currencies, clientModel.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
-
-            var fdkPositionsArray = connection.TradeProxy.Cache.Positions;
-            foreach (var fdkPosition in fdkPositionsArray)
-                positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition));
-
-            var fdkOrdersArray = connection.TradeProxy.Cache.TradeRecords;
-            foreach (var fdkOrder in fdkOrdersArray)
-                orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, clientModel.Symbols));
-
-            var fdkAssetsArray = connection.TradeProxy.Cache.AccountInfo.Assets;
-            foreach (var fdkAsset in fdkAssetsArray)
-                assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
 
             Calc = AccountCalculatorModel.Create(this, clientModel);
             Calc.Recalculate();
@@ -156,150 +142,12 @@ namespace TickTrader.BotTerminal
 
         private void TradeProxy_BalanceOperation(object sender, SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
         {
-            uiUpdater.SendAsync(() =>
-            {
-                if (Type == AccountType.Gross || Type == AccountType.Net)
-                {
-                    Balance = e.Data.Balance;
-                    // TO DO : Calc should listen to BalanceUpdated event and recalculate iteself
-                    Calc.Recalculate();
-                }
-                else if (Type == AccountType.Cash)
-                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
-
-                AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency));
-            });
+            uiUpdater.SendAsync(() => OnBalanceOperation(sender, e));
         }
 
         private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
         {
             var a = e.Report;
-        }
-
-        private void ApplyReport(Position report)
-        {
-            if (IsEmpty(report))
-                OnPositionRemoved(report);
-            else if (!positions.ContainsKey(report.Symbol))
-                OnPositionAdded(report);
-            else
-                OnPositionUpdated(report);
-        }
-
-        private void OnPositionUpdated(Position report)
-        {
-            var position = UpsertPosition(report);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Modified, position.ToAlgoPosition()));
-        }
-
-        private void OnPositionAdded(Position report)
-        {
-            var position = UpsertPosition(report);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Opened, position.ToAlgoPosition()));
-        }
-
-        private void OnPositionRemoved(Position report)
-        {
-            PositionModel position;
-
-            if (!positions.TryGetValue(report.Symbol, out position))
-                return;
-
-            positions.Remove(report.Symbol);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Closed, position.ToAlgoPosition()));
-        }
-
-        private PositionModel UpsertPosition(Position position)
-        {
-            var positionModel = new PositionModel(position);
-            positions[position.Symbol] = positionModel;
-
-            return positionModel;
-        }
-
-        private void ApplyReport(ExecutionReport report)
-        {
-            switch (report.ExecutionType)
-            {
-                case ExecutionType.Calculated:
-                    if (orders.ContainsKey(report.OrderId))
-                        OnOrderUpdated(report, OrderExecAction.Opened);
-                    else
-                        OnOrderAdded(report, OrderExecAction.Opened);
-                    break;
-
-                case ExecutionType.Replace:
-                    OnOrderUpdated(report, OrderExecAction.Modified);
-                    break;
-
-                case ExecutionType.Expired:
-                    OnOrderRemoved(report, OrderExecAction.Expired);
-                    break;
-
-                case ExecutionType.Canceled:
-                    OnOrderRemoved(report, OrderExecAction.Canceled);
-                    break;
-
-                case ExecutionType.Trade:
-                    if (report.OrderType == TradeRecordType.Limit
-                        || report.OrderType == TradeRecordType.Stop)
-                    {
-                        if (report.LeavesVolume != 0)
-                            OnOrderUpdated(report, OrderExecAction.Filled);
-                        else if (Type != AccountType.Gross)
-                            OnOrderRemoved(report, OrderExecAction.Filled);
-                    }
-                    else if (report.OrderType == TradeRecordType.Position)
-                    {
-                        Balance = report.Balance;
-
-                        if (report.LeavesVolume != 0)
-                            OnOrderUpdated(report, OrderExecAction.Closed);
-                        else
-                            OnOrderRemoved(report, OrderExecAction.Closed);
-                    }
-                    break;
-            }
-
-            if (Type == AccountType.Cash)
-            {
-                foreach (var asset in report.Assets)
-                    UpdateAsset(asset);
-            }
-        }
-
-        private OrderModel UpsertOrder(ExecutionReport report)
-        {
-            OrderModel order = new OrderModel(report, clientModel.Symbols);
-            orders[order.Id] = order;
-            return order;
-        }
-
-        private void OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
-        {
-            var order = UpsertOrder(report);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
-        }
-
-        private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
-        {
-            var orderCopy = orders[report.OrderId];
-            orders.Remove(report.OrderId);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, orderCopy);
-        }
-
-        private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
-        {
-            var order = UpsertOrder(report);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
-        }
-
-        private void UpdateAsset(AssetInfo assetInfo)
-        {
-            if (IsEmpty(assetInfo))
-                assets.Remove(assetInfo.Currency);
-            else
-                assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
@@ -311,33 +159,5 @@ namespace TickTrader.BotTerminal
         {
             Caliburn.Micro.Execute.OnUIThread(syncAction);
         }
-
-        private bool IsEmpty(AssetInfo assetInfo)
-        {
-            return assetInfo.Balance == 0;
-        }
-
-        #region IAccountInfoProvider
-
-        private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
-        private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
-        private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
-
-        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
-        {
-            OrderExecReport algoReport = new OrderExecReport();
-            if (newOrder != null)
-                algoReport.OrderCopy = newOrder.ToAlgoOrder();
-            algoReport.OrderId = report.OrderId;
-            algoReport.ExecAction = action;
-            algoReport.Action = entityAction;
-            if (!double.IsNaN(report.Balance))
-                algoReport.NewBalance = report.Balance;
-            if (report.Assets != null)
-                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
-            AlgoEvent_OrderUpdated(algoReport);
-        }
-
-        #endregion
     }
 }

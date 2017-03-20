@@ -325,7 +325,7 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                var strategy = new BarStrategy(feed, mainPirceTipe, mainSeries);
+                var strategy = new BarStrategy(feed, mainPirceTipe);
                 this.fStrategy = strategy;
                 return strategy;
             }
@@ -462,8 +462,9 @@ namespace TickTrader.Algo.Core
             if (metadata != null)
             {
                 var symbolInfoList = metadata.GetSymbolMetadata();
+                var currencies = metadata.GetCurrencyMetadata().ToDictionary(c => c.Name);
                 foreach (var smb in symbolInfoList)
-                    builder.Symbols.Add(smb);
+                    builder.Symbols.Add(smb, currencies);
             }
         }
 
