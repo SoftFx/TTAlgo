@@ -34,11 +34,12 @@
                 <input *ngSwitchCase="ParameterDataType.Double" type="number" class="form-control" [(ngModel)]="Parameter.Value" />
                 <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [(ngModel)]="Parameter.Value" />
                 <div *ngSwitchCase="ParameterDataType.File" class="input-group">
-                    <input [ngModel]="Parameter.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                    <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                    <input *ngIf="!Parameter.Value" type="text" class="form-control" placeholder="Select the file" readonly>
                     <label class="input-group-btn">
                         <span class="btn btn-primary btn-fill">
                             <i class="fa fa-folder-o"></i>
-                            <input (change)="Parameter.OnValueChanged($event)" type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
+                            <input [(fileModel)]="Parameter.Value"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
                         </span>
                     </label>
                 </div>

@@ -27,15 +27,7 @@ export class PluginSetupModel {
         }
     }
     private PayloadParameter(parameter: SetupParameter) {
-
-        if (parameter.Descriptor.DataType === ParameterDataTypes.File) {
-            let input = new FormData();
-            input.append("file", parameter.Value);
-            return { Id: parameter.Descriptor.Id, Value: input, DataType: ParameterDataTypes[parameter.Descriptor.DataType] }
-        }
-        else {
-            return { Id: parameter.Descriptor.Id, Value: parameter.Value, DataType: ParameterDataTypes[parameter.Descriptor.DataType] }
-        }
+        return { Id: parameter.Descriptor.Id, Value: parameter.Value, DataType: ParameterDataTypes[parameter.Descriptor.DataType] }
     }
 
     public static Create(plugin: PluginModel) {
@@ -58,12 +50,4 @@ export class SetupParameter {
 
     public Descriptor: ParameterDescriptor;
     public Value: any;
-    public OnValueChanged(value: any) {
-        this.Value = value.target.files[0];
-    }
-    public get FileName() {
-        if (this.Value)
-            return this.Value.name;
-        return "";
-    }
 }

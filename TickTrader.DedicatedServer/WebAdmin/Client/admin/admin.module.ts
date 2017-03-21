@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MasonryModule } from 'angular2-masonry';
 import { OrderByPipe, FilterByPipe, ResourcePipe } from '../pipes/index';
+import { FileModelDirective } from '../directives/base64-file-input.directive';
 import { UniversalModule } from 'angular2-universal';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarModule } from '../shared/navbar/navbar.module';
@@ -27,6 +28,7 @@ import { MODULE_COMPONENTS, MODULE_ROUTES } from './admin.routes';
         FilterByPipe,
         ResourcePipe,
         OverlayComponent,
+        FileModelDirective,
         MODULE_COMPONENTS,
     ]
 })
