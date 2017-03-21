@@ -47,6 +47,8 @@
         "../lib/SoftFX.Lrp.dll": {},
         "../lib/TickTrader.BusinessLogic.dll": {},
         "../lib/TickTrader.BusinessObjects.dll": {},
+        "../lib/TickTrader.Common.dll": {},
+        "../packages/System.Threading.Tasks.Dataflow.4.5.25/lib/dotnet/System.Threading.Tasks.Dataflow.dll": {},
         "bin/Debug/TickTrader.Algo.Common.dll": {}
       },
       "contentFiles": {

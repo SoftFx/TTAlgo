@@ -27,6 +27,11 @@ namespace TickTrader.BotTerminal
             logger.Debug(msgFormat, msgParams);
         }
 
+        public void Error(string msg)
+        {
+            logger.Error(msg);
+        }
+
         public void Error(Exception ex)
         {
             logger.Error(ex);

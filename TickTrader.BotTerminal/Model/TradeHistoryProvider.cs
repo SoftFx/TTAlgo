@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
             {
                 try
                 {
-                    symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
+                    symbolModel = (SymbolModel)_tradeClient.Symbols.GetOrDefault(transaction.Symbol);
                 }
                 catch
                 {

@@ -26,6 +26,11 @@ namespace TickTrader.DedicatedServer.DS
             _msLogger.LogDebug(msgFormat, msgParams);
         }
 
+        public void Error(string msg)
+        {
+            _msLogger.LogError(msg);
+        }
+
         public void Error(Exception ex)
         {
             _msLogger.LogError(ex.ToString());

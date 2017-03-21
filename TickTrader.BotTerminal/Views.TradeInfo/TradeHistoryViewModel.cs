@@ -203,8 +203,7 @@ namespace TickTrader.BotTerminal
             {
                 if (tradeTransaction == null)
                     _tradesList.Clear();
-
-                if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(tradeTransaction.UniqueId))
+                else if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(tradeTransaction.UniqueId))
                     _tradesList.Add(tradeTransaction.UniqueId, tradeTransaction);
             }
             catch (Exception ex)

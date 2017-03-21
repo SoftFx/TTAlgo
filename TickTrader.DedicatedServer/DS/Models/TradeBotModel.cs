@@ -30,6 +30,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
+        public Exception Fault { get; private set; }
 
         public void Init(ClientModel client, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
         {
@@ -77,7 +78,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_syncObj)
             {
-                if (State != BotStates.Offline)
+                if (State != BotStates.Offline && State != BotStates.Faulted)
                     throw new InvalidStateException("Bot has been already started!");
 
                 SetRunning(true);
@@ -113,14 +114,21 @@ namespace TickTrader.DedicatedServer.DS.Models
                 //executor.MainSymbolCode = 
                 Setup.Apply(executor);
                 executor.Start();
+
+                lock (_syncObj) ChangeState(BotStates.Online);
             }
             catch (Exception ex)
             {
                 // TO DO: log
-                lock(_syncObj) ChangeState(BotStates.Offline);
+                lock (_syncObj)
+                {
+                    Fault = ex;
+                    if (executor != null)
+                        executor.Dispose();
+                    SetRunning(false);
+                    ChangeState(BotStates.Faulted);
+                }
             }
-
-            lock (_syncObj) ChangeState(BotStates.Online);
         }
 
         private async Task DoStop()

@@ -47,7 +47,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 bot.Init(this, syncObj, _packageProvider, null);
             }
 
-            Connection = new ConnectionModel(loggerAdapter, new ConnectionOptions() { EnableFixLogs = false });
+            Connection = new ConnectionModel(new ConnectionOptions() { EnableFixLogs = false });
             Connection.Disconnected += () =>
             {
                 lock (_sync)

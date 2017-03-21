@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.BotTerminal.Lib;
 using Machinarium.Qnil;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,8 +26,8 @@ namespace TickTrader.BotTerminal
             connection.Deinitalizing += Connection_Deinitalizing;
 
             this.Symbols = new SymbolCollectionModel(connection);
-            this.ObservableSymbolList = Symbols.OrderBy((k, v) => k).AsObservable();
-            this.History = new FeedHistoryProviderModel(connection);
+            this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
+            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder);
             this.TradeApi = new TradeExecutor(this);
             this.Account = new AccountModel(this);
             this.Currencies = new Dictionary<string, CurrencyInfo>();
@@ -84,7 +85,7 @@ namespace TickTrader.BotTerminal
                 Currencies.Clear();
                 foreach (var c in cache.Currencies)
                     Currencies.Add(c.Name, c);
-                await Symbols.Initialize(cache.Symbols, Currencies);
+                Symbols.Initialize(cache.Symbols, Currencies);
                 Account.Init(Currencies);
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
@@ -129,7 +130,7 @@ namespace TickTrader.BotTerminal
         public AccountModel Account { get; private set; }
         public SymbolCollectionModel Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
-        public QuoteDistributor Distributor { get { return Symbols.Distributor; } }
+        public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
         public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
     }

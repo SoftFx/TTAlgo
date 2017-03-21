@@ -21,6 +21,7 @@ using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {

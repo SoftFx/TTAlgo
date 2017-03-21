@@ -73,6 +73,9 @@ namespace TickTrader.Algo.Common.Model
         public event Action<SymbolInfo> InfoUpdated = delegate { };
         public event Action<SymbolModel> RateUpdated = delegate { };
 
+        public virtual void Close()
+        {
+        }
 
         public virtual void Update(SymbolInfo newInfo)
         {

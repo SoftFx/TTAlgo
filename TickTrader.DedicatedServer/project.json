@@ -20,7 +20,8 @@
     "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
     "Swashbuckle": "6.0.0-beta901",
     "Microsoft.AspNet.SignalR.Core": "2.2.1",
-    "TickTrader.Common.Dlls" : "1.25.5"
+    "TickTrader.Common.Dlls": "1.25.5",
+    "System.Threading.Tasks.Dataflow": "4.5.25"
   },
 
   "tools": {

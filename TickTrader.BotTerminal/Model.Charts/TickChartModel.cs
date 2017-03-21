@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using Fdk = SoftFX.Extended;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -118,7 +119,7 @@ namespace TickTrader.BotTerminal
         {
             base.InitializePlugin(plugin);
 
-            var feedProvider = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies);
+            var feedProvider = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies, new DispatcherSync());
             plugin.InitQuoteStrategy(feedProvider);
             plugin.Metadata = feedProvider;
         }
