@@ -6,6 +6,18 @@ namespace TickTrader.Algo.TestCollection.Bots
 {
     public abstract class TradeBotCommon : TradeBot
     {
+        public string ToObjectPropertiesString(object obj)
+        {
+            var sb = new StringBuilder();
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+            {
+                var pNname = descriptor.Name;
+                var pValue = descriptor.GetValue(obj);
+                sb.AppendLine($"{pNname} = {pValue}");
+            }
+            return sb.ToString();
+        }
+
         public string ToObjectPropertiesString(string name, object obj)
         {
             var sb = new StringBuilder();
