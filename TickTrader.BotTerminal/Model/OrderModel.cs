@@ -74,7 +74,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-        public decimal? AmountLots { get; private set; }
+        public decimal? AmountLots { get; private set; } = 0;
         public decimal RemainingAmount
         {
             get { return amountRemaining; }
@@ -89,7 +89,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-        public decimal? RemainingAmountLots { get; private set; }
+        public decimal? RemainingAmountLots { get; private set; } = 0;
         public TradeRecordType OrderType
         {
             get { return orderType; }
