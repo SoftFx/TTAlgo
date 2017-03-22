@@ -32,6 +32,12 @@
                             <Binding Path="CurrencyDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Asset.Amount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Locked Volume" Width="*" SortMemberPath="Asset.LockedAmount">
                     <DataGridTextColumn.Binding>
@@ -40,6 +46,12 @@
                             <Binding Path="CurrencyDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Asset.LockedAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Available Volume" Width="*" SortMemberPath="Asset.FreeAmount">
                     <DataGridTextColumn.Binding>
@@ -48,6 +60,12 @@
                             <Binding Path="CurrencyDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Asset.FreeAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>

@@ -32,7 +32,7 @@
                     <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
                         <DataGridTextColumn.Binding>
-                            <MultiBinding StringFormat="{}{0}/{1}">
+                            <MultiBinding ConverterParameter=" {0}/{1}" Converter="{StaticResource StringFormat}">
                                 <Binding Path="Order.RemainingAmount" />
                                 <Binding Path="Order.Amount" />
                             </MultiBinding>

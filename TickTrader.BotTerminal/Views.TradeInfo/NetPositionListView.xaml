@@ -37,6 +37,12 @@
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Position.Profit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" />
                 <DataGridTextColumn Header="Net P/L" Width="*">
@@ -46,6 +52,12 @@
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Position.NetProfit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
