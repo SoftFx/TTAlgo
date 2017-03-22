@@ -9,6 +9,7 @@ namespace TickTrader.Algo.Api
     public interface Asset
     {
         string Currency { get; }
+        Currency CurrencyInfo { get; }
         double Volume { get; }
     }
 

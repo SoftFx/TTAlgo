@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
             {
                 token.ThrowIfCancellationRequested();
 
-                var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000);
+                var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000, false);
 
                 while (!historyStream.EndOfStream)
                 {
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
             {
                 try
                 {
-                    symbolModel = _tradeClient.Symbols.GetOrDefault(transaction.Symbol);
+                    symbolModel = (SymbolModel)_tradeClient.Symbols.GetOrDefault(transaction.Symbol);
                 }
                 catch
                 {

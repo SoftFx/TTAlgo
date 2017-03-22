@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Api
         FeedProvider Feed { get; }
         AccountDataProvider AccountData { get; }
         SymbolProvider Symbols { get; }
+        CurrencyList Currencies { get; }
         IPluginMonitor Logger { get; }
         TradeCommands TradeApi { get; }
         StatusApi StatusApi { get; }

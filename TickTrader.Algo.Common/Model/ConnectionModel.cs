@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public class ConnectionModel
     {
-        private IAlgoCoreLogger logger;
+        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
         public enum States { Offline, Connecting, WaitingLogon, Initializing, Online, Deinitializing, Disconnecting }
         public enum Events { Started, DoneConnecting, FailedConnecting, DoneInit, DoneDeinit, DoneDisconnecting, OnLogon, OnLogout, StopRequested }
 
@@ -35,9 +35,8 @@ namespace TickTrader.Algo.Common.Model
         private bool isSymbolsLoaded;
         private ConnectionOptions options;
 
-        public ConnectionModel(IAlgoCoreLogger logger, ConnectionOptions options, IStateMachineSync sync = null)
+        public ConnectionModel(ConnectionOptions options, IStateMachineSync sync = null)
         {
-            this.logger = logger;
             this.options = options;
 
             stateControl = new StateMachine<States>(sync);

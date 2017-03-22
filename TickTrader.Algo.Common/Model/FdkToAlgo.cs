@@ -105,6 +105,14 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
+        public static CurrencyEntity Convert(CurrencyInfo info)
+        {
+            return new CurrencyEntity(info.Name)
+            {
+                Digits = info.Precision,
+            };
+        }
+
         public static Api.AccountTypes Convert(AccountType fdkType)
         {
             switch (fdkType)

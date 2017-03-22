@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Common.Model
         private readonly DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private AccountType? accType;
         private IOrderDependenciesResolver orderResolver;
+        private IDictionary<string, CurrencyInfo> _currencies;
 
         public AccountModel()
         {
@@ -61,6 +62,8 @@ namespace TickTrader.Algo.Common.Model
             IEnumerable<Position> positions, 
             IEnumerable<AssetInfo> assets)
         {
+            _currencies = currencies;
+
             this.positions.Clear();
             this.orders.Clear();
             this.assets.Clear();
@@ -83,7 +86,7 @@ namespace TickTrader.Algo.Common.Model
                 this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, orderResolver));
 
             foreach (var fdkAsset in assets)
-                this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset));
+                this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, currencies));
         }
 
         protected virtual void OnBalanceChanged() { }
@@ -96,8 +99,8 @@ namespace TickTrader.Algo.Common.Model
                 OnBalanceChanged();
             }
             else if (Type == AccountType.Cash)
-                assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency);
-
+                assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
+            
             AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency));
         }
 
@@ -229,7 +232,7 @@ namespace TickTrader.Algo.Common.Model
             if (IsEmpty(assetInfo))
                 assets.Remove(assetInfo.Currency);
             else
-                assets[assetInfo.Currency] = new AssetModel(assetInfo);
+                assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)

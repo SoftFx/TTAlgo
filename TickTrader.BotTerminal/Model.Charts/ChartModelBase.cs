@@ -21,6 +21,7 @@ using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -222,7 +223,6 @@ namespace TickTrader.BotTerminal
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel CreateIndicator(PluginSetup setup);
         protected abstract void ApplyUpdate(Quote update);
-        protected abstract void InitPluign(PluginExecutor plugin);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -336,14 +336,19 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeApi;
         }
 
-        IAccountInfoProvider IAlgoPluginHost.GetAccInfoProvider()
+        public virtual void InitializePlugin(PluginExecutor plugin)
         {
-            return ClientModel.Account;
+            plugin.InvokeStrategy = new PriorityInvokeStartegy();
+            plugin.AccInfoProvider = ClientModel.Account;
+            plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
         }
 
-        void IAlgoPluginHost.InitializePlugin(PluginExecutor plugin)
+        public virtual void UpdatePlugin(PluginExecutor plugin)
         {
-            InitPluign(plugin);
+            plugin.TimeFrame = TimeFrame;
+            plugin.MainSymbolCode = SymbolCode;
+            plugin.TimePeriodStart = TimelineStart;
+            plugin.TimePeriodEnd = DateTime.Now + TimeSpan.FromDays(100);
         }
 
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }

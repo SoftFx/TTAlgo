@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
 
         public SymbolListViewModel(SymbolCollectionModel symbolCollection, iOrderUi orderUi)
         {
-            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel(v, orderUi)).OrderBy((k, v) => k);
+            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, orderUi)).OrderBy((k, v) => k);
 
             Symbols = viewModelCollection.AsObservable();
 

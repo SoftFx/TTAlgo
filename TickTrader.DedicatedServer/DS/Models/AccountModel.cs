@@ -11,17 +11,14 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _sync;
 
+        public AccountModel(object syncObj)
+        {
+            _sync = syncObj;
+        }
+
         public override void SyncInvoke(Action syncAction)
         {
             lock (_sync) syncAction();
-        }
-
-        public AccountModel()
-        {
-        }
-
-        public void Init(object syncObject)
-        {
         }
     }
 }

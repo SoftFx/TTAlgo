@@ -51,7 +51,7 @@ namespace TickTrader.BotTerminal
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            SymbolModel smb = clientModel.Symbols[symbol];
+            SymbolModel smb = (SymbolModel)clientModel.Symbols[symbol];
 
             UpdateLabelFormat(smb);
 

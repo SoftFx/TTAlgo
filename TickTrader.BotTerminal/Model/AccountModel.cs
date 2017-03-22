@@ -18,6 +18,7 @@ using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
 using System.Diagnostics;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -27,7 +28,6 @@ namespace TickTrader.BotTerminal
         private TraderClientModel clientModel;
         private ConnectionModel connection;
         private ActionBlock<System.Action> uiUpdater;
-        private AccountType? accType;
 
         public AccountModel(TraderClientModel clientModel)
         {

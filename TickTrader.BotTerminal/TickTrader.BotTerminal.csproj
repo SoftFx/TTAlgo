@@ -71,7 +71,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E3AFC7B3BE7EF208D294785AF3648714CF2CF202</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>144CA0736B3DE500D38E5962DCF8B2D5AAC6B907</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
@@ -118,11 +118,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net">
-      <HintPath>..\lib\SoftFX.Extended.Net.dll</HintPath>
+    <Reference Include="SoftFX.Extended.Net, Version=1.19.13.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.19.800\lib\net40\SoftFX.Extended.Net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="SoftFX.Lrp">
-      <HintPath>..\lib\SoftFX.Lrp.dll</HintPath>
+    <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.19.800\lib\net40\SoftFX.Lrp.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -135,9 +137,9 @@
       <HintPath>..\lib\SQLite\System.Data.SQLite.EF6.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\System.Threading.Tasks.Dataflow.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.25.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.5.25\lib\dotnet\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -189,6 +191,7 @@
     <None Include="Resx\Sounds\Negative.wav" />
     <None Include="Resx\Sounds\Blop.wav" />
     <None Include="Resx\Sounds\Clinking.wav" />
+    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -281,10 +284,10 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
-    <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
+    <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\OrderType.cs" />
@@ -350,8 +353,6 @@
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\AccountModel.cs" />
-    <Compile Include="Model\ConnectionModel.cs" />
-    <Compile Include="Model\FeedHistoryProviderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\RateSplitModel.cs" />
@@ -505,7 +506,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

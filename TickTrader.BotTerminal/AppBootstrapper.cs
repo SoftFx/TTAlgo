@@ -145,6 +145,8 @@ namespace TickTrader.BotTerminal
             config.LoggingRules.Add(ruleForLogTarget);
 
             NLog.LogManager.Configuration = config;
+
+            Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
         }
 
         protected override void OnStartup(object sender, StartupEventArgs e)

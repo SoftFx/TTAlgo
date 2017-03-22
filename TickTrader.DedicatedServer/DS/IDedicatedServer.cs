@@ -47,12 +47,13 @@ namespace TickTrader.DedicatedServer.DS
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
-    public enum BotStates { Offline, Started, Initializing, Online, Stopping }
+    public enum BotStates { Offline, Started, Initializing, Faulted, Online, Stopping }
 
     public interface ITradeBot
     {
         string Id { get; }
         bool IsRunning { get; }
+        IBotLog Log { get; }
         BotStates State { get; }
         void Start();
         Task StopAsync();
@@ -65,6 +66,12 @@ namespace TickTrader.DedicatedServer.DS
         bool IsValid { get; }
 
         IEnumerable<ServerPluginRef> GetPluginsByType(AlgoTypes type);
+    }
+
+    public interface IBotLog
+    {
+        string Status { get; }
+        event Action<string> StatusUpdated;
     }
 
     public class ServerPluginRef

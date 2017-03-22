@@ -28,6 +28,7 @@ namespace TickTrader.Algo.Api
         public CustomFeedProvider Feed { get { return context.Feed.CustomCommds; } }
         public EnvironmentInfo Enviroment { get { return context.Environment; } }
         public SymbolList Symbols { get { return context.Symbols.List; } }
+        public CurrencyList Currencies { get { return context.Currencies; } }
         public Symbol Symbol { get { return context.Symbols.MainSymbol; } }
         public BarSeries Bars { get { return context.Feed.Bars; } }
         public double Bid { get { return Symbol.Bid; } }

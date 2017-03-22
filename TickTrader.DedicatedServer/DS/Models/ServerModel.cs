@@ -59,7 +59,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-
         public void AddAccount(string login, string password, string server)
         {
             lock (SyncObj)
@@ -156,6 +155,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                     seed++;
                 }
             }
+        }
+
+        public void Close()
+        {
         }
 
         #region Serialization

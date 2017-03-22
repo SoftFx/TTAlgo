@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Core
     public class QuoteStrategy : FeedStrategy
     {
         private QuoteSeriesFixture mainSeries;
+        private List<QuoteEntity> mainSerieData;
 
         public override ITimeRef TimeRef { get { return null; } }
         public override int BufferSize { get { return mainSeries.Count; } }
@@ -39,12 +40,17 @@ namespace TickTrader.Algo.Core
             });
         }
 
+        public void SetMainSeries(List<QuoteEntity> data)
+        {
+            this.mainSerieData = data;
+        }
+
         internal override void OnInit()
         {
             if (mainSeries != null)
                 mainSeries.Dispose();
 
-            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, this);
+            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, this, mainSerieData);
         }
 
         internal override void Stop()

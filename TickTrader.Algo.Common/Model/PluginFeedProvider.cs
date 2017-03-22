@@ -7,27 +7,31 @@ using SoftFX.Extended;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
-using Cl = Caliburn.Micro;
 using System.Threading.Tasks.Dataflow;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.Common.Model
 {
-    internal class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
+    public class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
     {
+        private ISyncContext _sync;
         private IFeedSubscription subscription;
-        private SymbolCollectionModel symbols;
+        private ISymbolManager symbols;
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
+        private Dictionary<string, CurrencyInfo> currencies;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
 
         public ISynchronizationContext Sync { get { return this; } }
 
-        public PluginFeedProvider(SymbolCollectionModel symbols, FeedHistoryProviderModel history)
+        public PluginFeedProvider(ISymbolManager symbols, FeedHistoryProviderModel history,
+            Dictionary<string, CurrencyInfo> currencies, ISyncContext sync)
         {
+            _sync = sync;
             this.symbols = symbols;
             this.history = history;
+            this.currencies = currencies;
 
             rxBuffer = new BufferBlock<QuoteEntity>();
             txBlock = new ActionBlock<QuoteEntity[]>(uList =>
@@ -103,6 +107,11 @@ namespace TickTrader.BotTerminal
             return symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToList();
         }
 
+        public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
+        {
+            return currencies.Values.Select(FdkToAlgo.Convert).ToList();
+        }
+
         public IEnumerable<BarEntity> QueryBars(string symbolCode)
         {
             throw new NotImplementedException();
@@ -115,7 +124,7 @@ namespace TickTrader.BotTerminal
 
         public void Invoke(Action action)
         {
-            Caliburn.Micro.Execute.OnUIThread(action);
+            _sync.Invoke(action);
         }
 
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)

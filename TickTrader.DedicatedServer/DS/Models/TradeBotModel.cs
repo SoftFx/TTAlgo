@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -16,6 +18,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private ClientModel _client;
         private Task _stopTask;
         private PluginExecutor executor;
+        private BotLog _log;
 
         [DataMember(Name = "setup")]
         public PluginSetup Setup { get; private set; }
@@ -30,6 +33,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
+        public Exception Fault { get; private set; }
+        public IBotLog Log => _log;
 
         public void Init(ClientModel client, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
         {
@@ -53,6 +58,8 @@ namespace TickTrader.DedicatedServer.DS.Models
             Setup.CopyFrom(oldSetup);
 
             client.StateChanged += Client_StateChanged;
+
+            _log = new BotLog(syncObj);
         }
 
         private void Client_StateChanged(ClientModel client)
@@ -77,7 +84,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_syncObj)
             {
-                if (State != BotStates.Offline)
+                if (State != BotStates.Offline && State != BotStates.Faulted)
                     throw new InvalidStateException("Bot has been already started!");
 
                 SetRunning(true);
@@ -110,17 +117,37 @@ namespace TickTrader.DedicatedServer.DS.Models
             try
             {
                 executor = Setup.PluginRef.CreateExecutor();
+
+                if (Setup is BarBasedPluginSetup)
+                {
+                    var barSetup = (BarBasedPluginSetup)Setup;
+                    var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
+                    executor.InitBarStrategy(feedAdapter, barSetup.PriceType);
+                    executor.MainSymbolCode = barSetup.MainSymbol;
+                }
+
+                executor.InvokeStrategy = new PriorityInvokeStartegy();
+                executor.AccInfoProvider = _client.Account;
+                executor.Logger = _log;
+
                 //executor.MainSymbolCode = 
                 Setup.Apply(executor);
                 executor.Start();
+
+                lock (_syncObj) ChangeState(BotStates.Online);
             }
             catch (Exception ex)
             {
                 // TO DO: log
-                lock(_syncObj) ChangeState(BotStates.Offline);
+                lock (_syncObj)
+                {
+                    Fault = ex;
+                    if (executor != null)
+                        executor.Dispose();
+                    SetRunning(false);
+                    ChangeState(BotStates.Faulted);
+                }
             }
-
-            lock (_syncObj) ChangeState(BotStates.Online);
         }
 
         private async Task DoStop()

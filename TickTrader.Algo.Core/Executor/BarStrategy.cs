@@ -7,17 +7,15 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
     public sealed class BarStrategy : FeedStrategy
     {
         private BarSeriesFixture mainSeriesFixture;
         private List<BarEntity> mainSeries;
         private Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture> fixtures;
 
-        public BarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe, List<BarEntity> mainSeries = null)
+        public BarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
             : base(feed)
         {
-            this.mainSeries = mainSeries;
             this.MainPriceType = mainPirceTipe;
         }
 
@@ -85,6 +83,8 @@ namespace TickTrader.Algo.Core
             return overallResult;
         }
 
+        #region Setup
+
         private void ThrowIfNotbarType<TSrc>()
         {
             if (!typeof(TSrc).Equals(typeof(BarEntity)))
@@ -117,6 +117,13 @@ namespace TickTrader.Algo.Core
         {
             MapInput<Api.Bar>(inputName, symbolCode, priceType, b => b);
         }
+
+        public void SetMainSeries(List<BarEntity> mainSeries)
+        {
+            this.mainSeries = mainSeries;
+        }
+
+        #endregion Setup
 
         internal override void Stop()
         {
