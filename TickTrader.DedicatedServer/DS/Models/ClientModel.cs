@@ -1,6 +1,7 @@
 ﻿using Machinarium.ActorModel;
 using Machinarium.State;
 using Microsoft.Extensions.Logging;
+using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,12 +57,20 @@ namespace TickTrader.DedicatedServer.DS.Models
                     ManageConnection();
                 }
             };
+
+            Account = new AccountModel(SyncObj);
+            Symbols = new SymbolManager(Connection, _sync);
+            FeedHistory = new FeedHistoryProviderModel(Connection, "C:\\Temp\\Feed");
         }
 
         public ConnectionStates ConnectionState { get; private set; }
         public object SyncObj => _sync;
         public ConnectionModel Connection { get; private set; }
         public IEnumerable<ITradeBot> TradeBots => _bots;
+        public AccountModel Account { get; private set; }
+        public SymbolManager Symbols { get; private set; }
+        public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
+        public FeedHistoryProviderModel FeedHistory { get; private set; }
 
         public event Action<ClientModel> StateChanged;
         public event Action<ClientModel> Changed;
@@ -116,6 +125,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             ChangeState(ConnectionStates.Disconnecting);
 
+            await Symbols.Deinit();
+            await FeedHistory.Deinit();
             await Connection.DisconnectAsync();
 
             lock (_sync)
@@ -138,6 +149,16 @@ namespace TickTrader.DedicatedServer.DS.Models
             ChangeState(ConnectionStates.Connecting);
             connectCancellation = new CancellationTokenSource();
             var result = await Connection.Connect(Username, Password, Address, connectCancellation.Token);
+
+            await FeedHistory.Init();
+
+            var fCache = Connection.FeedProxy.Cache;
+            var tCache = Connection.TradeProxy.Cache;
+            var symbols = fCache.Symbols;
+            Currencies = fCache.Currencies.ToDictionary(c => c.Name);
+            Symbols.Initialize(symbols, Currencies);
+            Account.Init(tCache.AccountInfo, Currencies, Symbols, tCache.TradeRecords, tCache.Positions, tCache.AccountInfo.Assets);
+
             lock (_sync)
             {
                 if (result == ConnectionErrorCodes.None)
@@ -167,6 +188,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         #endregion Connection Management
 
+        #region Bot Management
+
         public ITradeBot AddBot(string botId, string packageName, PluginSetup setup)
         {
             lock (_sync)
@@ -178,6 +201,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 var newBot = new TradeBotModel(botId, package, setup);
                 newBot.IsRunningChanged += Bot_StateChanged;
+                newBot.Init(this, _sync, _packageProvider, null);
                 _bots.Add(newBot);
                 ManageConnection();
                 Changed?.Invoke(this);
@@ -215,5 +239,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             var toRemove = _bots.Where(b => b.Package == package).ToList();
             toRemove.ForEach(b => _bots.Remove(b));
         }
+
+        #endregion
     }
 }

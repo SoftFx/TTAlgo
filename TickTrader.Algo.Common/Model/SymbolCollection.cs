@@ -28,14 +28,15 @@ namespace TickTrader.Algo.Common.Model
         public SymbolCollectionBase(ConnectionModel connection, ISyncContext sync)
         {
             _sync = sync;
-            Distributor = CreateDistributor(connection);
         }
 
-        protected abstract SymbolModel CreateSymbolsEntity(QuoteDistributorBase distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies);
-        protected abstract QuoteDistributorBase CreateDistributor(ConnectionModel connection);
+        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributorBase distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        {
+            return new SymbolModel(info, currencies);
+        }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
-        public QuoteDistributorBase Distributor { get; private set; }
+        public abstract QuoteDistributorBase Distributor { get; }
 
         public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {

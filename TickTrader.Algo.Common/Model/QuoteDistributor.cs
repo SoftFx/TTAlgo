@@ -75,11 +75,11 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        protected abstract void EnqeueuUpdate(SoftFX.Extended.Events.TickEventArgs e);
+        protected abstract void EnqueueUpdate(SoftFX.Extended.Events.TickEventArgs e);
 
         void FeedProxy_Tick(object sender, SoftFX.Extended.Events.TickEventArgs e)
         {
-            EnqeueuUpdate(e);
+            EnqueueUpdate(e);
         }
 
         protected void UpdateRate(Quote tick)

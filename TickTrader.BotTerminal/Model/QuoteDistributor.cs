@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             rateUpdater = DataflowHelper.CreateUiActionBlock<Quote>(UpdateRate, 100, 100, CancellationToken.None);
         }
 
-        protected override void EnqeueuUpdate(TickEventArgs e)
+        protected override void EnqueueUpdate(TickEventArgs e)
         {
             rateUpdater.SendAsync(e.Tick).Wait();
         }

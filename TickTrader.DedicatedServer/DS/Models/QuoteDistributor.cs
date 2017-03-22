@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using SoftFX.Extended.Events;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class AccountModel : Algo.Common.Model.AccountModel
+    public class QuoteDistributor : QuoteDistributorBase
     {
         private object _sync;
 
-        public AccountModel(object syncObj)
+        public QuoteDistributor(ConnectionModel connection, object syncObj) : base(connection)
         {
             _sync = syncObj;
         }
 
-        public override void SyncInvoke(Action syncAction)
+        protected override void EnqueueUpdate(TickEventArgs e)
         {
-            lock (_sync) syncAction();
+            lock(_sync) UpdateRate(e.Tick);
         }
     }
 }

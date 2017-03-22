@@ -43,11 +43,11 @@
         "bin/Debug/TickTrader.Algo.Common.dll": {}
       },
       "runtime": {
-        "../lib/SoftFX.Extended.Net.dll": {},
-        "../lib/SoftFX.Lrp.dll": {},
         "../lib/TickTrader.BusinessLogic.dll": {},
         "../lib/TickTrader.BusinessObjects.dll": {},
         "../lib/TickTrader.Common.dll": {},
+        "../packages/SoftFX.FDK.1.19.800/lib/net40/SoftFX.Extended.Net.dll": {},
+        "../packages/SoftFX.FDK.1.19.800/lib/net40/SoftFX.Lrp.dll": {},
         "../packages/System.Threading.Tasks.Dataflow.4.5.25/lib/dotnet/System.Threading.Tasks.Dataflow.dll": {},
         "bin/Debug/TickTrader.Algo.Common.dll": {}
       },
@@ -66,7 +66,7 @@
         "bin/Debug/TickTrader.Algo.Core.dll": {}
       },
       "runtime": {
-        "../packages/Microsoft.Tpl.Dataflow.4.5.24/lib/portable-net45+win8+wpa81/System.Threading.Tasks.Dataflow.dll": {},
+        "../packages/System.Threading.Tasks.Dataflow.4.5.25/lib/dotnet/System.Threading.Tasks.Dataflow.dll": {},
         "bin/Debug/TickTrader.Algo.Core.dll": {}
       },
       "contentFiles": {

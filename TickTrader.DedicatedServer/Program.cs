@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.DedicatedServer
 {
@@ -47,7 +48,9 @@ namespace TickTrader.DedicatedServer
                 .AddLogging()
                 .BuildServiceProvider();
 
-            var server = ServerModel.Load(serviceProvider.GetService<ILoggerFactory>());
+            var logFactory = serviceProvider.GetService<ILoggerFactory>();
+            InitLogger(logFactory);
+            var server = ServerModel.Load(logFactory);
 
             CommandUi cmdEngine = new CommandUi();
             cmdEngine.RegsiterCommand("info", () =>
@@ -103,7 +106,7 @@ namespace TickTrader.DedicatedServer
 
             cmdEngine.RegsiterCommand("trade bot", () =>
             {
-                var cmd = CommandUi.Choose("cmd", "add", "remove", "start", "stop", "cancel");
+                var cmd = CommandUi.Choose("cmd", "add", "remove", "start", "stop", "view status", "cancel");
 
                 IAccount acc;
                 List<IAccount> accountsList;
@@ -166,15 +169,48 @@ namespace TickTrader.DedicatedServer
                         botToStop.StopAsync().Wait();
 
                         break;
+
+                    case "view status":
+
+                        lock (server.SyncObj)
+                            bots = server.TradeBots.ToArray();
+
+                        var botToView = CommandUi.Choose("bot", bots, b => b.Id);
+
+                        Action<string> printAction = st =>
+                        {
+                            Console.Clear();
+                            Console.WriteLine(st);
+                        };
+
+                        lock (server.SyncObj)
+                        {
+                            printAction(botToView.Log.Status);
+                            botToView.Log.StatusUpdated += printAction;
+                        }
+
+                        Console.ReadLine();
+
+                        lock (server.SyncObj)
+                            botToView.Log.StatusUpdated -= printAction;
+
+                        break;
                 }
             });
 
             cmdEngine.Run();
+
+            server.Close();
         }
 
         private static string GetDisplayName(IAccount acc)
         {
             return string.Format("account {0} : {1}", acc.Address, acc.Username);
+        }
+
+        private static void InitLogger(ILoggerFactory factory)
+        {
+            CoreLoggerFactory.Init(cn => new LoggerAdapter(factory.CreateLogger(cn)));
         }
     }
 }
