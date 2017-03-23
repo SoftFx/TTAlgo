@@ -22,7 +22,12 @@
     </UserControl.Resources>
     
     <Grid>
-        <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}">
+        <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Asset.Currency}" />
                 <DataGridTextColumn Header="Volume" Width="*" SortMemberPath="Asset.Amount">
@@ -32,6 +37,12 @@
                             <Binding Path="CurrencyDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Asset.Amount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Locked Volume" Width="*" SortMemberPath="Asset.LockedAmount">
                     <DataGridTextColumn.Binding>
@@ -40,6 +51,12 @@
                             <Binding Path="CurrencyDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Asset.LockedAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Available Volume" Width="*" SortMemberPath="Asset.FreeAmount">
                     <DataGridTextColumn.Binding>
@@ -48,6 +65,12 @@
                             <Binding Path="CurrencyDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Asset.FreeAmount"/>
+                            <Binding Path="CurrencyDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>

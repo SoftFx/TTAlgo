@@ -9,7 +9,12 @@
 
     <DataTemplate x:Key="HistoryDataGridTemplate">
         <Grid>
-            <DataGrid  ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}">
+            <DataGrid  ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}" SelectionMode="Extended" ClipboardCopyMode="IncludeHeader">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Visibility>
                     <MultiBinding Converter="{StaticResource LeastOneBoolToVisible}">
                         <Binding Path="IsGrossAccount"/>
@@ -34,6 +39,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="OpenQuantity"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Open Price" Width="*" SortMemberPath="OpenPrice">
                         <DataGridTextColumn.Binding>
@@ -67,6 +78,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="CloseQuantity"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Close Price" Width="*" SortMemberPath="ClosePrice">
                         <DataGridTextColumn.Binding>
@@ -83,6 +100,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="RemainingQuantity"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Gross P/L" Width="*" SortMemberPath="GrossProfitLoss">
                         <DataGridTextColumn.Binding>
@@ -91,6 +114,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="GrossProfitLoss"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
                         <DataGridTextColumn.Binding>
@@ -99,6 +128,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="Commission"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Swap" Width="*" SortMemberPath="Swap">
                         <DataGridTextColumn.Binding>
@@ -107,6 +142,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="Swap"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Net P/L" Width="*" SortMemberPath="NetProfitLoss">
                         <DataGridTextColumn.Binding>
@@ -115,13 +156,26 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="NetProfitLoss"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
                 </DataGrid.Columns>
             </DataGrid>
             <DataGrid ItemsSource="{Binding TradesList}"
                   Visibility="{Binding IsCachAccount, Converter={StaticResource BoolToVis}}"
-                  Style="{DynamicResource DataGrid_Style}">
+                  Style="{DynamicResource DataGrid_Style}"
+                  ClipboardCopyMode="IncludeHeader"
+                  SelectionMode="Extended">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order" Width="*" Binding="{Binding UniqueId}" />
                     <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}" />
@@ -135,6 +189,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="OpenQuantity"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Requested Rate" Width="*" SortMemberPath="OpenPrice">
                         <DataGridTextColumn.Binding>
@@ -168,6 +228,12 @@
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="RemainingQuantity"/>
+                                <Binding Path="ProfitDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
                         <DataGridTextColumn.Binding>
@@ -177,6 +243,13 @@
                                 <Binding Path="CommissionCurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="Commission"/>
+                                <Binding Path="ProfitDigits"/>
+                                <Binding Path="CommissionCurrency"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Asset I" Width="*" SortMemberPath="AssetI">
                         <DataGridTextColumn.Binding>
@@ -186,6 +259,13 @@
                                 <Binding Path="AssetICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="BuyingAmount"/>
+                                <Binding Path="ProfitDigits"/>
+                                <Binding Path="BuyingCurrency"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Asset II" Width="*" SortMemberPath="AssetII">
                         <DataGridTextColumn.Binding>
@@ -195,6 +275,13 @@
                                 <Binding Path="AssetIICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
+                        <DataGridTextColumn.ClipboardContentBinding>
+                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                                <Binding Path="SellingAmount"/>
+                                <Binding Path="ProfitDigits"/>
+                                <Binding Path="SellingCurrency"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
                 </DataGrid.Columns>
