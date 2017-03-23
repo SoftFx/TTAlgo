@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -16,13 +17,18 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetMetadata(descriptor);
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override Property Save()
         {
-            var otherInput = srcProperty as BarToBarInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
+            throw new NotImplementedException();
+        }
+
+        public override void Load(Property srcProperty)
+        {
+            throw new NotImplementedException();
+            //var otherInput = srcProperty as BarToBarInput;
+            //SelectedSymbol = otherInput.SelectedSymbol;
         }
     }
-
 
     public class SingleBarInputBase : BarInputBase
     {
@@ -51,10 +57,16 @@ namespace TickTrader.Algo.Common.Model.Setup
             PriceType = defPriceType;
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override Property Save()
         {
-            var otherInput = srcProperty as BarToBarInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
+            throw new NotImplementedException();
+        }
+
+        public override void Load(Property srcProperty)
+        {
+            throw new NotImplementedException();
+            //var otherInput = srcProperty as BarToBarInput;
+            //SelectedSymbol = otherInput.SelectedSymbol;
         }
     }
 }

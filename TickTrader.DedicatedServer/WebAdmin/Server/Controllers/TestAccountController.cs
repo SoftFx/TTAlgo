@@ -21,7 +21,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpPost]
         public ConnectionErrorCodes Post([FromBody]AccountDto account)
         {
-            var code = _dedicatedServer.TestAccount(account.Login, account.Password, account.Server);
+            var code = _dedicatedServer.TestCreds(account.Login, account.Password, account.Server);
             return code;
         }
     }

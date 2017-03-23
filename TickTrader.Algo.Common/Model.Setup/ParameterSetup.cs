@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -61,18 +62,21 @@ namespace TickTrader.Algo.Common.Model.Setup
     public class IntParamSetup : ParameterSetup<int>
     {
         internal override UiConverter<int> Converter { get { return UiConverter.Int; } }
+        public override Property Save() { return SaveTyped<IntParameter>(); }
     }
 
     [DataContract(Name = "double", Namespace = "")]
     public class DoubleParamSetup : ParameterSetup<double>
     {
         internal override UiConverter<double> Converter { get { return UiConverter.Double; } }
+        public override Property Save() { return SaveTyped<DoubleParameter>(); }
     }
 
     [DataContract(Name = "string", Namespace = "")]
     public class StringParamSetup : ParameterSetup<string>
     {
         internal override UiConverter<string> Converter { get { return UiConverter.String; } }
+        public override Property Save() { return SaveTyped<StringParameter>(); }
     }
 
     [DataContract(Name = "enum", Namespace = "")]
@@ -95,14 +99,19 @@ namespace TickTrader.Algo.Common.Model.Setup
         public List<string> EnumValues { get; private set; }   
         public string DefaultValue { get; private set; }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var typedSrcProperty = srcProperty as EnumParamSetup;
+            var typedSrcProperty = srcProperty as EnumParameter;
             if (typedSrcProperty != null)
             {
-                if (EnumValues.Contains(typedSrcProperty.selected))
-                    SelectedValue = typedSrcProperty.selected;
+                if (EnumValues.Contains(typedSrcProperty.Value))
+                    SelectedValue = typedSrcProperty.Value;
             }
+        }
+
+        public override Property Save()
+        {
+            return new EnumParameter() { Id = Id, Value = SelectedValue };
         }
 
         internal override void SetMetadata(ParameterDescriptor descriptor)
@@ -165,11 +174,16 @@ namespace TickTrader.Algo.Common.Model.Setup
         public string FileName { get; private set; }
         public string Filter { get; private set; }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var typedSrcProperty = srcProperty as FileParamSetup;
+            var typedSrcProperty = srcProperty as FileParameter;
             if (typedSrcProperty != null)
-                this.FilePath = typedSrcProperty.FilePath;
+                this.FilePath = typedSrcProperty.FileName;
+        }
+
+        public override Property Save()
+        {
+            return new FileParameter() { Id = Id, FileName = FilePath };
         }
 
         internal override void SetMetadata(ParameterDescriptor descriptor)
@@ -212,7 +226,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     }
 
     [DataContract(Namespace = "")]
-    public class ParameterSetup<T> : ParameterSetup
+    public abstract class ParameterSetup<T> : ParameterSetup
     {
         [DataMember(Name = "value")]
         private T value;
@@ -280,11 +294,17 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var typedSrcProperty = srcProperty as ParameterSetup<T>;
+            var typedSrcProperty = srcProperty as Parameter<T>;
             if (typedSrcProperty != null)
-                this.value = typedSrcProperty.value;
+                this.value = typedSrcProperty.Value;
+        }
+
+        protected Property SaveTyped<TCfg>()
+            where TCfg : Parameter<T>, new()
+        {
+            return new TCfg() { Id = Id, Value = Value };
         }
 
         private UiConverter<T> GetConverterOrThrow()
@@ -310,8 +330,10 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override bool IsReadonly { get { return true; } }
 
-        public override void CopyFrom(PropertySetupBase srcProperty) { }
         public override void Reset() { }
         public override object GetApplyValue() { return null; }
+
+        public override Property Save() { throw new Exception("Invalid parameter cannot be saved!"); }
+        public override void Load(Property srcProperty) { }
     }
 }

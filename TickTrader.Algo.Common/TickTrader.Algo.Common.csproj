@@ -66,6 +66,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\AsyncEvent.cs" />
+    <Compile Include="Model.Config\Inputs.cs" />
+    <Compile Include="Model.Config\Parameters.cs" />
+    <Compile Include="Model.Config\PluginConfig.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Setup\Serialization.cs" />
     <Compile Include="Model\AccountModel.cs" />

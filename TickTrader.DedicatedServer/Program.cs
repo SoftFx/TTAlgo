@@ -14,6 +14,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.DedicatedServer
 {
@@ -77,17 +78,17 @@ namespace TickTrader.DedicatedServer
                 switch (cmd)
                 {
                     case "add":
-                        server.AddAccount(
-                            CommandUi.InputString("login"),
-                            CommandUi.InputString("password"),
-                            CommandUi.InputString("server"));
+                        var newLogin = CommandUi.InputString("login");
+                        var newPassword = CommandUi.InputString("password");
+                        var newServer = CommandUi.InputString("server");
+                        server.AddAccount(new AccountKey(newLogin, newServer), newPassword);
                         break;
 
                     case "remove":
                         lock (server.SyncObj)
                             accountsList = server.Accounts.ToList();
                         acc = CommandUi.Choose("account", accountsList, GetDisplayName);
-                        server.RemoveAccount(acc.Username, acc.Address);
+                        server.RemoveAccount(new AccountKey(acc.Username, acc.Address));
                         break;
 
                     case "test":
@@ -116,7 +117,7 @@ namespace TickTrader.DedicatedServer
                 {
                     case "add":
 
-                        ServerPluginRef[] availableBots;
+                        PlguinInfo[] availableBots;
 
                         lock (server.SyncObj)
                         {
@@ -135,12 +136,15 @@ namespace TickTrader.DedicatedServer
                             else
                                 acc = CommandUi.Choose("account", accountsList, GetDisplayName);
 
-                            var botToAdd = CommandUi.Choose("bot", availableBots, b => b.Ref.DisplayName);
+                            var botToAdd = CommandUi.Choose("bot", availableBots, b => b.Descriptor.DisplayName);
 
-                            if (botToAdd.Ref.Descriptor.IsValid)
+                            if (botToAdd.Descriptor.IsValid)
                             {
-                                var setup = new BarBasedPluginSetup(botToAdd.Ref, "EURUSD", BarPriceType.Bid, null);
-                                acc.AddBot(server.AutogenerateBotId(botToAdd.Ref.DisplayName), botToAdd.PackageName, setup);
+                                var botConfig = new BarBasedConfig();
+                                botConfig.MainSymbol = "EURUSD";
+                                botConfig.PriceType = BarPriceType.Bid;
+                                var botId = server.AutogenerateBotId(botToAdd.Descriptor.DisplayName);
+                                acc.AddBot(botId, botToAdd.Id, botConfig);
                             }
                             else
                                 Console.WriteLine("Cannot add bot: bot is invalid!");

@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
@@ -52,16 +53,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 p.Reset();
         }
 
-        public virtual void CopyFrom(PluginSetup srcSetup)
-        {
-            foreach (var scrProperty in srcSetup.allProperties)
-            {
-                var thisProperty = this.allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
-                if (thisProperty != null)
-                    thisProperty.CopyFrom(scrProperty);
-            }
-        }
-
         private void Validate()
         {
             IsValid = Descriptor.Error == null && Parameters.All(p => !p.HasError);
@@ -72,6 +63,26 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             allProperties.ForEach(p => p.Apply(target));
         }
+
+        public virtual void Load(PluginConfig cfg)
+        {
+            foreach (var scrProperty in cfg.Properties)
+            {
+                var thisProperty = this.allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
+                if (thisProperty != null)
+                    thisProperty.Load(scrProperty);
+            }
+        }
+
+        public virtual PluginConfig Save()
+        {
+            var cfg = SaveToConfig();
+            foreach (var property in allProperties)
+                cfg.Properties.Add(property.Save());
+            return cfg;
+        }
+
+        protected abstract PluginConfig SaveToConfig();
 
         public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
         public IEnumerable<InputSetup> Inputs { get { return inputs; } }

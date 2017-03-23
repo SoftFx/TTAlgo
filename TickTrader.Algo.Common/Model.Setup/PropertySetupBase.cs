@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -34,7 +35,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public event Action<PropertySetupBase> ErrorChanged = delegate { };
 
-        public abstract void CopyFrom(PropertySetupBase srcProperty);
+        public abstract void Load(Property srcProperty);
+        public abstract Property Save();
         public abstract void Reset();
 
         public virtual void Apply(IPluginSetupTarget target) { }
@@ -51,11 +53,5 @@ namespace TickTrader.Algo.Common.Model.Setup
                 NotifyPropertyChanged("HasError");
             }
         }
-    }
-
-    public class NullProperty : PropertySetupBase
-    {
-        public override void CopyFrom(PropertySetupBase srcProperty) { }
-        public override void Reset() { }
     }
 }

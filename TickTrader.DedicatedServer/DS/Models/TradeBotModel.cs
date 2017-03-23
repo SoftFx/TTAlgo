@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -19,9 +20,19 @@ namespace TickTrader.DedicatedServer.DS.Models
         private Task _stopTask;
         private PluginExecutor executor;
         private BotLog _log;
+        private PluginSetup _setupModel;
+        private AlgoPluginRef _ref;
 
-        [DataMember(Name = "setup")]
-        public PluginSetup Setup { get; private set; }
+        public TradeBotModel(string id, PluginKey key, PluginConfig cfg)
+        {
+            Id = id;
+            Config = cfg;
+            PackageName = key.PackageName;
+            Descriptor = key.DescriptorId;
+        }
+
+        [DataMember(Name = "configuration")]
+        public PluginConfig Config { get; private set; }
         [DataMember(Name = "id")]
         public string Id { get; private set; }
         [DataMember(Name = "package")]
@@ -34,6 +45,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
         public Exception Fault { get; private set; }
+        public IAccount Account => _client;
         public IBotLog Log => _log;
 
         public void Init(ClientModel client, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
@@ -42,24 +54,26 @@ namespace TickTrader.DedicatedServer.DS.Models
             _client = client;
             Package = packageProvider(PackageName);
 
-            var pRef = Package.GetPluginsByType(AlgoTypes.Robot).FirstOrDefault(b => b.Ref.Id == Descriptor);
-
-            var oldSetup = Setup;
-
-            if (oldSetup is BarBasedPluginSetup)
+            _ref = Package.GetPluginRef(Descriptor);
+            if (_ref == null || _ref.Descriptor.AlgoLogicType != AlgoTypes.Robot)
             {
-                var oldBarSetup = (BarBasedPluginSetup)oldSetup;
-                Setup = new BarBasedPluginSetup(pRef.Ref, oldBarSetup.MainSymbol, oldBarSetup.PriceType, tradeMetadata);
+                // TO DO : faulted state
             }
+            else
+            {
+                if (Config is BarBasedConfig)
+                {
+                    _setupModel = new BarBasedPluginSetup(_ref);
+                    _setupModel.Load(Config);
+                }
 
-            if (IsRunning)
-                State = BotStates.Started;
+                if (IsRunning)
+                    State = BotStates.Started;
 
-            Setup.CopyFrom(oldSetup);
+                client.StateChanged += Client_StateChanged;
 
-            client.StateChanged += Client_StateChanged;
-
-            _log = new BotLog(syncObj);
+                _log = new BotLog(syncObj);
+            }
         }
 
         private void Client_StateChanged(ClientModel client)
@@ -70,15 +84,6 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
-
-        public TradeBotModel(string id, PackageModel package, PluginSetup setup)
-        {
-            Id = id;
-            Setup = setup;
-            Package = package;
-            PackageName = package.Name;
-            Descriptor = setup.PluginRef.Descriptor.Id;
-        }
 
         public void Start()
         {
@@ -116,11 +121,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             try
             {
-                executor = Setup.PluginRef.CreateExecutor();
+                executor = _ref.CreateExecutor();
 
-                if (Setup is BarBasedPluginSetup)
+                if (_setupModel is BarBasedPluginSetup)
                 {
-                    var barSetup = (BarBasedPluginSetup)Setup;
+                    var barSetup = (BarBasedPluginSetup)_setupModel;
                     var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
                     executor.InitBarStrategy(feedAdapter, barSetup.PriceType);
                     executor.MainSymbolCode = barSetup.MainSymbol;
@@ -131,7 +136,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.Logger = _log;
 
                 //executor.MainSymbolCode = 
-                Setup.Apply(executor);
+                _setupModel.Apply(executor);
                 executor.Start();
 
                 lock (_syncObj) ChangeState(BotStates.Online);

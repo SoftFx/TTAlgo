@@ -19,13 +19,13 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             };
         }
 
-        public static PluginDto ToPluginDto(this ServerPluginRef plugin)
+        public static PluginDto ToPluginDto(this PlguinInfo plugin)
         {
             return new PluginDto()
             {
-                Id = plugin.Ref.Id,
-                DisplayName = plugin.Ref.DisplayName,
-                Type = plugin.Ref.Descriptor.AlgoLogicType.ToString()
+                Id = plugin.Id.DescriptorId,
+                DisplayName = plugin.Descriptor.DisplayName,
+                Type = plugin.Descriptor.AlgoLogicType.ToString()
             };
         }
 

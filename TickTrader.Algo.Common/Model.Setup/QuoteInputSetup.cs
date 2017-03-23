@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -28,10 +29,14 @@ namespace TickTrader.Algo.Common.Model.Setup
                 target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Descriptor.Id, SelectedSymbol.Name, b => b);
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var otherInput = srcProperty as BarToBarInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
+            throw new NotImplementedException();
+        }
+
+        public override Property Save()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -105,11 +110,14 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var otherInput = srcProperty as QuoteToDoubleInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
-            Mapping = otherInput.Mapping;
+            throw new NotImplementedException();
+        }
+
+        public override Property Save()
+        {
+            throw new NotImplementedException();
         }
     }
 }

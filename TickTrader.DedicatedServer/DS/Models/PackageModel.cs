@@ -6,7 +6,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class PackageModel: IPackage, IDisposable
+    public class PackageModel : IPackage, IDisposable
     {
         public PackageModel(string name, DateTime created, PluginContainer container)
         {
@@ -20,12 +20,24 @@ namespace TickTrader.DedicatedServer.DS.Models
         public PluginContainer Container { get; private set; }
         public bool IsValid => Container != null;
 
-        public IEnumerable<ServerPluginRef> GetPluginsByType(AlgoTypes type)
+        public IEnumerable<PlguinInfo> GetPlugins()
+        {
+            return Container?.Plugins
+                .Select(p => new PlguinInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
+                ?? Enumerable.Empty<PlguinInfo>();
+        }
+
+        public IEnumerable<PlguinInfo> GetPluginsByType(AlgoTypes type)
         {
             return Container?.Plugins
                 .Where(p => p.Descriptor.AlgoLogicType == type)
-                .Select(p => new ServerPluginRef(Name, p))
-                ?? Enumerable.Empty<ServerPluginRef>();
+                .Select(p => new PlguinInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
+                ?? Enumerable.Empty<PlguinInfo>();
+        }
+
+        public AlgoPluginRef GetPluginRef(string id)
+        {
+            return Container?.Plugins.FirstOrDefault(pr => pr.Id == id);
         }
 
         public void Dispose()

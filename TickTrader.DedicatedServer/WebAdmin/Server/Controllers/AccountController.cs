@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using TickTrader.DedicatedServer.DS;
-using TickTrader.DedicatedServer.DS.Models.Exceptions;
+using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 
@@ -31,7 +31,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                _dedicatedServer.AddAccount(account.Login, account.Password, account.Server);
+                _dedicatedServer.AddAccount(new AccountKey(account.Login, account.Server), account.Password);
             }
             catch(DuplicateAccountException dae)
             {
@@ -45,7 +45,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpDelete]
         public void Delete(string login, string server)
         {
-            _dedicatedServer.RemoveAccount(login ?? "", server ?? "");
+            _dedicatedServer.RemoveAccount(new AccountKey(login ?? "", server ?? ""));
         }
 
        

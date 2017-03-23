@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -70,8 +71,13 @@ namespace TickTrader.Algo.Common.Model.Setup
                 throw new Exception("Cannot configure invalid input!");
             }
 
-            public override void CopyFrom(PropertySetupBase srcProperty)
+            public override void Load(Property srcProperty)
             {
+            }
+
+            public override Property Save()
+            {
+                throw new Exception("Cannot save invalid input!");
             }
         }
 
