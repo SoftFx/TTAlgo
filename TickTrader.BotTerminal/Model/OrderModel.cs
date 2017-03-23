@@ -31,6 +31,10 @@ namespace TickTrader.BotTerminal
         private decimal? currentPrice;
         private SymbolModel symbolModel;
         private OrderError error;
+        private double? execPrice;
+        private double? execAmount;
+        private double? lastFillPrice;
+        private double? lastFillAmount;
 
         public OrderModel(TradeRecord record, IOrderDependenciesResolver resolver)
         {
@@ -68,7 +72,7 @@ namespace TickTrader.BotTerminal
                 if (this.amount != value)
                 {
                     this.amount = value;
-                    this.AmountLots = AmountToLost(value);
+                    this.AmountLots = AmountToLots(value);
                     NotifyOfPropertyChange(nameof(Amount));
                     NotifyOfPropertyChange(nameof(AmountLots));
                 }
@@ -83,7 +87,7 @@ namespace TickTrader.BotTerminal
                 if (this.amountRemaining != value)
                 {
                     this.amountRemaining = value;
-                    this.RemainingAmountLots = AmountToLost(value);
+                    this.RemainingAmountLots = AmountToLots(value);
                     NotifyOfPropertyChange(nameof(RemainingAmount));
                     NotifyOfPropertyChange(nameof(RemainingAmountLots));
                 }
@@ -253,6 +257,64 @@ namespace TickTrader.BotTerminal
 
         public DateTime? Modified { get; private set; }
 
+        public double? ExecPrice
+        {
+            get { return execPrice; }
+            set
+            {
+                if (execPrice != value)
+                {
+                    execPrice = value;
+                    NotifyOfPropertyChange(nameof(ExecPrice));
+                }
+            }
+        }
+
+        public double? ExecAmount
+        {
+            get { return execAmount; }
+            set
+            {
+                if (execAmount != value)
+                {
+                    execAmount = value;
+                    ExecAmountLots = AmountToLots(value);
+                    NotifyOfPropertyChange(nameof(ExecAmount));
+                    NotifyOfPropertyChange(nameof(ExecAmountLots));
+                }
+            }
+        }
+        public double? ExecAmountLots { get; private set; }
+
+        public double? LastFillPrice
+        {
+            get { return lastFillPrice; }
+            set
+            {
+                if (lastFillPrice != value)
+                {
+                    lastFillPrice = value;
+                    NotifyOfPropertyChange(nameof(LastFillPrice));
+                }
+            }
+        }
+
+        public double? LastFillAmount
+        {
+            get { return lastFillAmount; }
+            set
+            {
+                if (lastFillAmount != value)
+                {
+                    lastFillAmount = value;
+                    LastFillAmountLots = AmountToLots(value);
+                    NotifyOfPropertyChange(nameof(LastFillAmount));
+                    NotifyOfPropertyChange(nameof(LastFillAmountLots));
+                }
+            }
+        }
+        public double? LastFillAmountLots { get; private set; }
+
         #endregion
 
         #region IOrderModel
@@ -328,7 +390,11 @@ namespace TickTrader.BotTerminal
                 Comment = this.Comment,
                 Tag = this.Tag,
                 Created = this.Created ?? DateTime.MinValue,
-                Modified = this.Modified ?? DateTime.MinValue
+                Modified = this.Modified ?? DateTime.MinValue,
+                ExecPrice = ExecPrice ?? double.NaN,
+                ExecVolume = ExecAmountLots ?? double.NaN,
+                LastFillPrice = LastFillPrice ?? double.NaN,
+                LastFillVolume = LastFillAmountLots ?? double.NaN
             };
         }
 
@@ -338,7 +404,7 @@ namespace TickTrader.BotTerminal
             this.RemainingAmount = (decimal)record.Volume;
             this.OrderType = record.Type;
             this.Side = record.Side;
-            this.Price = (decimal)record.Price;
+            this.Price = (decimal?)record.Price ?? 0M;
             this.Created = record.Created;
             this.Modified = record.Modified;
             this.Expiration = record.Expiration;
@@ -366,14 +432,26 @@ namespace TickTrader.BotTerminal
             this.TakeProfit = report.TakeProfit;
             this.Swap = (decimal)report.Swap;
             this.Commission = (decimal)report.Commission;
+            this.ExecPrice = report.AveragePrice;
+            this.ExecAmount = report.ExecutedVolume;
+            this.LastFillPrice = report.TradePrice;
+            this.LastFillAmount = report.TradeAmount;
         }
 
-        private decimal? AmountToLost(decimal volume)
+        private decimal? AmountToLots(decimal? volume)
         {
-            if (symbolModel == null)
+            if (volume == null || symbolModel == null)
                 return null;
 
             return volume / (decimal)symbolModel.LotSize;
+        }
+
+        private double? AmountToLots(double? volume)
+        {
+            if (volume == null || symbolModel == null)
+                return null;
+
+            return volume / symbolModel.LotSize;
         }
     }
 

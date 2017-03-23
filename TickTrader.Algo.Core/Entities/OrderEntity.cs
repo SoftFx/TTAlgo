@@ -47,6 +47,10 @@ namespace TickTrader.Algo.Core
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
         public bool IsNull { get { return false; } }
+        public double ExecPrice { get; set; }
+        public double ExecVolume { get; set; }
+        public double LastFillPrice { get; set; }
+        public double LastFillVolume { get; set; }
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
@@ -69,5 +73,9 @@ namespace TickTrader.Algo.Core
         public DateTime Created { get { return DateTime.MinValue; } }
         public DateTime Modified { get { return DateTime.MinValue; } }
         public bool IsNull { get { return true; } }
+        public double ExecPrice { get { return double.NaN; } }
+        public double ExecVolume { get { return double.NaN; } }
+        public double LastFillPrice { get { return double.NaN; } }
+        public double LastFillVolume { get { return double.NaN; } }
     }
 }
