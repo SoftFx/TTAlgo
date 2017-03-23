@@ -178,21 +178,21 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Debet" Width="*" SortMemberPath="BuyingAmount">
+                    <DataGridTextColumn Header="Asset I" Width="*" SortMemberPath="AssetI">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="BuyingAmount"/>
+                                <Binding Path="AssetI"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="BuyingCurrency"/>
+                                <Binding Path="AssetICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Credit" Width="*" SortMemberPath="SellingAmount">
+                    <DataGridTextColumn Header="Asset II" Width="*" SortMemberPath="AssetII">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="SellingAmount"/>
+                                <Binding Path="AssetII"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="SellingCurrency"/>
+                                <Binding Path="AssetIICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
