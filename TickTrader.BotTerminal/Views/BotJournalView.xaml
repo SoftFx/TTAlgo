@@ -43,7 +43,7 @@
                                     SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
                 <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding Bot}"
                                     CellStyle="{DynamicResource DataGridCellStyle_RightAligned}"/>
-                <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*">
+                <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>

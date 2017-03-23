@@ -12,5 +12,7 @@
     <l:FullTimeConverter x:Key="FullTimeFormat" />
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
     <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
+    <l:NumberConverter x:Key="ClipboardNumberConverter" Type="Price" />
+    <l:StringFormatConverter x:Key="StringFormat"/>
 
 </ResourceDictionary>
