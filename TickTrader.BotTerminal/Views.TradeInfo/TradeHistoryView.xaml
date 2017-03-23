@@ -9,7 +9,12 @@
 
     <DataTemplate x:Key="HistoryDataGridTemplate">
         <Grid>
-            <DataGrid  ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}">
+            <DataGrid  ItemsSource="{Binding TradesList}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}" SelectionMode="Extended" ClipboardCopyMode="IncludeHeader">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Visibility>
                     <MultiBinding Converter="{StaticResource LeastOneBoolToVisible}">
                         <Binding Path="IsGrossAccount"/>
@@ -163,7 +168,14 @@
             </DataGrid>
             <DataGrid ItemsSource="{Binding TradesList}"
                   Visibility="{Binding IsCachAccount, Converter={StaticResource BoolToVis}}"
-                  Style="{DynamicResource DataGrid_Style}">
+                  Style="{DynamicResource DataGrid_Style}"
+                  ClipboardCopyMode="IncludeHeader"
+                  SelectionMode="Extended">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order" Width="*" Binding="{Binding UniqueId}" />
                     <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}" />

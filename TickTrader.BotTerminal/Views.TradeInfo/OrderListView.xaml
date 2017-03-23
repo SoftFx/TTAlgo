@@ -13,7 +13,12 @@
                 <l:BindingProxy x:Key="ProxyElement" Data="{Binding}"/>
             </Grid.Resources>
 
-            <DataGrid Name="Orders" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
+            <DataGrid Name="Orders" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
                         <DataGridTextColumn.CellStyle>

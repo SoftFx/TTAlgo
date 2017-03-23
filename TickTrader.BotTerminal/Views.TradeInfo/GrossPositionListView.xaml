@@ -8,7 +8,12 @@
              d:DesignHeight="300" d:DesignWidth="300">
     
     <Grid>
-        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
+        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
                     <DataGridTextColumn.CellStyle>

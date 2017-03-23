@@ -22,7 +22,12 @@
     </UserControl.Resources>
     
     <Grid>
-        <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}">
+        <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Asset.Currency}" />
                 <DataGridTextColumn Header="Volume" Width="*" SortMemberPath="Asset.Amount">
