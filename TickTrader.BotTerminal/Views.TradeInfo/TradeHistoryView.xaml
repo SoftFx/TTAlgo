@@ -261,9 +261,9 @@
                         </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ClipboardContentBinding>
                             <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="BuyingAmount"/>
+                                <Binding Path="AssetI"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="BuyingCurrency"/>
+                                <Binding Path="AssetICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
@@ -277,9 +277,9 @@
                         </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ClipboardContentBinding>
                             <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="SellingAmount"/>
+                                <Binding Path="AssetII"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="SellingCurrency"/>
+                                <Binding Path="AssetIICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
