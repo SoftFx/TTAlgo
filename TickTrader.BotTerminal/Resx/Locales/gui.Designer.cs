@@ -628,6 +628,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##TimePeriod_LastHour##.
+        /// </summary>
+        internal static string TimePeriod_LastHour {
+            get {
+                return ResourceManager.GetString("TimePeriod_LastHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##TradePeriod_LastSixMonths##.
         /// </summary>
         internal static string TimePeriod_LastSixMonths {
