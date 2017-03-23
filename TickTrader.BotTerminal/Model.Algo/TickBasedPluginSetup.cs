@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -46,6 +47,11 @@ namespace TickTrader.BotTerminal
                 return new MarkerSeriesOutputSetup(descriptor);
             else
                 return new ColoredLineOutputSetup(descriptor, Algo.Common.Model.Setup.MsgCodes.UnsupportedPropertyType);
+        }
+
+        protected override PluginConfig SaveToConfig()
+        {
+            throw new NotImplementedException();
         }
     }
 }

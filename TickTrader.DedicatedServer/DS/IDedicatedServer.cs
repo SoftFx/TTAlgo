@@ -26,9 +26,9 @@ namespace TickTrader.DedicatedServer.DS
         event Action<ITradeBot, ChangeAction> BotChanged;
         event Action<IPackage, ChangeAction> PackageChanged;
 
-        string AutogenerateBotId(string botDescriptorName);
+        string AutogenerateBotId(string botDisplayName);
 
-        void AddAccount(AccountKey key, string server);
+        void AddAccount(AccountKey key, string password);
         void RemoveAccount(AccountKey key);
         ConnectionErrorCodes TestAccount(AccountKey accountId);
         ConnectionErrorCodes TestCreds(string login, string password, string server);
