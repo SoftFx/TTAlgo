@@ -67,8 +67,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             Task<ConnectionErrorCodes> testTask;
 
-            var acc = new ClientModel();
-            acc.Change(server, login, password);
+            var acc = new ClientModel(server, login, password);
             lock (SyncObj)
             {
                 InitAccount(acc);
@@ -87,12 +86,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel();
+                    var newAcc = new ClientModel(accountId.Login, accountId.Server, password);
                     InitAccount(newAcc);
-                    newAcc.Change(accountId.Login, accountId.Server, password);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
-
                     Save();
                 }
             }
@@ -112,6 +109,15 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                     AccountChanged?.Invoke(acc, ChangeAction.Removed);
                 }
+            }
+        }
+
+        public void ChangeAccountPassword(AccountKey key, string password)
+        {
+            lock (SyncObj)
+            {
+                var acc = GetAccountOrThrow(key);
+                acc.ChangePassword(password);
             }
         }
 
@@ -252,7 +258,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public PlguinInfo[] GetAllPlugins()
+        public PluginInfo[] GetAllPlugins()
         {
             lock (SyncObj)
             {
@@ -262,7 +268,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public PlguinInfo[] GetPluginsByType(AlgoTypes type)
+        public PluginInfo[] GetPluginsByType(AlgoTypes type)
         {
             lock (SyncObj)
             {

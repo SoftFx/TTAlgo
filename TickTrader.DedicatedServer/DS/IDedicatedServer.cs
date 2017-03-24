@@ -17,8 +17,8 @@ namespace TickTrader.DedicatedServer.DS
         IPackage AddPackage(byte[] fileContent, string fileName);
         IPackage[] GetPackages();
         void RemovePackage(string package);
-        PlguinInfo[] GetAllPlugins();
-        PlguinInfo[] GetPluginsByType(AlgoTypes type);
+        PluginInfo[] GetAllPlugins();
+        PluginInfo[] GetPluginsByType(AlgoTypes type);
 
         IEnumerable<IAccount> Accounts { get; }
         IEnumerable<ITradeBot> TradeBots { get; }
@@ -30,6 +30,7 @@ namespace TickTrader.DedicatedServer.DS
 
         void AddAccount(AccountKey key, string password);
         void RemoveAccount(AccountKey key);
+        void ChangeAccountPassword(AccountKey key, string password);
         ConnectionErrorCodes TestAccount(AccountKey accountId);
         ConnectionErrorCodes TestCreds(string login, string password, string server);
 
@@ -45,6 +46,7 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<ITradeBot> TradeBots { get; }
 
         Task<ConnectionErrorCodes> TestConnection();
+        void ChangePassword(string password);
 
         ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig);
         void RemoveBot(string botId);
@@ -70,7 +72,7 @@ namespace TickTrader.DedicatedServer.DS
         DateTime Created { get; }
         bool IsValid { get; }
 
-        IEnumerable<PlguinInfo> GetPluginsByType(AlgoTypes type);
+        IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
     public interface IBotLog
@@ -79,9 +81,9 @@ namespace TickTrader.DedicatedServer.DS
         event Action<string> StatusUpdated;
     }
 
-    public class PlguinInfo
+    public class PluginInfo
     {
-        public PlguinInfo(PluginKey key, AlgoPluginDescriptor descriptor)
+        public PluginInfo(PluginKey key, AlgoPluginDescriptor descriptor)
         {
             Id = key;
             Descriptor = descriptor;

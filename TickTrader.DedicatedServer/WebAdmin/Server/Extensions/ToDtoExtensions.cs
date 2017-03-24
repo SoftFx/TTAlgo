@@ -19,7 +19,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             };
         }
 
-        public static PluginDto ToPluginDto(this PlguinInfo plugin)
+        public static PluginDto ToPluginDto(this PluginInfo plugin)
         {
             return new PluginDto()
             {

@@ -20,19 +20,19 @@ namespace TickTrader.DedicatedServer.DS.Models
         public PluginContainer Container { get; private set; }
         public bool IsValid => Container != null;
 
-        public IEnumerable<PlguinInfo> GetPlugins()
+        public IEnumerable<PluginInfo> GetPlugins()
         {
             return Container?.Plugins
-                .Select(p => new PlguinInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
-                ?? Enumerable.Empty<PlguinInfo>();
+                .Select(p => new PluginInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
+                ?? Enumerable.Empty<PluginInfo>();
         }
 
-        public IEnumerable<PlguinInfo> GetPluginsByType(AlgoTypes type)
+        public IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type)
         {
             return Container?.Plugins
                 .Where(p => p.Descriptor.AlgoLogicType == type)
-                .Select(p => new PlguinInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
-                ?? Enumerable.Empty<PlguinInfo>();
+                .Select(p => new PluginInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
+                ?? Enumerable.Empty<PluginInfo>();
         }
 
         public AlgoPluginRef GetPluginRef(string id)

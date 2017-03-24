@@ -33,6 +33,13 @@ namespace TickTrader.DedicatedServer.DS.Models
         private bool lostConnection;
         private int _startedBotsCount;
 
+        public ClientModel(string address, string username, string password)
+        {
+            Address = address;
+            Username = username;
+            Password = password;
+        }
+
         public void Init(object syncObj, ILoggerFactory loggerFactory, Func<string, PackageModel> packageProvider)
         {
             _sync = syncObj;
@@ -173,17 +180,31 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public void Change(string address, string username, string password)
+        //public void Change(string address, string username, string password)
+        //{
+        //    lock (_sync)
+        //    {
+        //        Address = address;
+        //        Username = username;
+        //        Password = password;
+        //        testRequest?.TrySetCanceled();
+        //        testRequest = null;
+        //        stopRequested = true;
+        //        connectCancellation?.Cancel();
+        //        ManageConnection();
+        //    }
+        //}
+
+        public void ChangePassword(string password)
         {
             lock (_sync)
             {
-                Address = address;
-                Username = username;
                 Password = password;
                 testRequest?.TrySetCanceled();
                 testRequest = null;
                 stopRequested = true;
                 connectCancellation?.Cancel();
+                Changed?.Invoke(this);
                 ManageConnection();
             }
         }

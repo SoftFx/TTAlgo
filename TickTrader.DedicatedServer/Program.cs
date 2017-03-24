@@ -70,7 +70,7 @@ namespace TickTrader.DedicatedServer
 
             cmdEngine.RegsiterCommand("account", () =>
             {
-                var cmd = CommandUi.Choose("cmd", "add", "remove", "test", "cancel");
+                var cmd = CommandUi.Choose("cmd", "add", "remove", "change password", "test", "cancel");
 
                 IAccount acc;
                 List<IAccount> accountsList;
@@ -89,6 +89,14 @@ namespace TickTrader.DedicatedServer
                             accountsList = server.Accounts.ToList();
                         acc = CommandUi.Choose("account", accountsList, GetDisplayName);
                         server.RemoveAccount(new AccountKey(acc.Username, acc.Address));
+                        break;
+
+                    case "change password":
+                        lock (server.SyncObj)
+                            accountsList = server.Accounts.ToList();
+                        acc = CommandUi.Choose("account", accountsList, GetDisplayName);
+                        var chgPassword = CommandUi.InputString("new password");
+                        server.ChangeAccountPassword(new AccountKey(acc.Username, acc.Address), chgPassword);
                         break;
 
                     case "test":
@@ -117,7 +125,7 @@ namespace TickTrader.DedicatedServer
                 {
                     case "add":
 
-                        PlguinInfo[] availableBots;
+                        PluginInfo[] availableBots;
 
                         lock (server.SyncObj)
                         {
