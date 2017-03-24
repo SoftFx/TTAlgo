@@ -9,7 +9,7 @@ namespace TickTrader.DedicatedServer.DS.Exceptions
     {
         public PackageNotFoundException(string message) : base(message)
         {
-            Code = ExceptionCodes.AccountNotFound;
+            Code = ExceptionCodes.PackageNotFound;
         }
     }
 }

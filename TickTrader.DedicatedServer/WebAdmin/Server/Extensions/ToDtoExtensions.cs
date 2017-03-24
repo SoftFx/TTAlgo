@@ -23,10 +23,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         {
             return new PluginDto()
             {
-                Id = plugin.Ref.Id,
-                DisplayName = plugin.Ref.DisplayName,
-                Type = plugin.Ref.Descriptor.AlgoLogicType.ToString(),
-                Parameters = plugin.Ref.Descriptor.Parameters.Select(p => p.ToDto())
+                Id = plugin.Descriptor.Id,
+                DisplayName = plugin.Descriptor.DisplayName,
+                Type = plugin.Descriptor.AlgoLogicType.ToString(),
+                Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 
