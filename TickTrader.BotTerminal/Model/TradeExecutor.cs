@@ -45,8 +45,11 @@ namespace TickTrader.BotTerminal
                     ValidateTp(tp);
                     ValidateSl(sl);
 
+                    var px = type == OrderType.Stop ? default(double?) : price;
+                    var stopPx = type == OrderType.Stop ? price : default(double?);
+
                     var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type, options), Convert(side),
-                        volume, null, price, null, sl, tp, null, comment, tag, null);
+                        volume, null, px, stopPx, sl, tp, null, comment, tag, null);
                     return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
                 }
                 catch (ValidatioException vex)
@@ -123,8 +126,11 @@ namespace TickTrader.BotTerminal
                 {
                     ValidateOrderId(orderId);
 
+                    var px = orderType == OrderType.Stop ? default(double?) : price;
+                    var stopPx = orderType == OrderType.Stop ? price : default(double?);
+
                     var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
-                        ToRecordType(orderType), Convert(side), volume, null, price, null, sl, tp, null, comment, null, null);
+                        ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
                     if (!string.IsNullOrEmpty(result.OrderId)) // Ugly hack to make it work!
                         return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result, resolver).ToAlgoOrder());
                     return new OpenModifyResult(OrderCmdResultCodes.DealerReject, null);
