@@ -1,14 +1,9 @@
 import { Route } from '@angular/router';
 import { AdminComponent } from './admin.component';
-import { DashboardComponent } from './dashboard.component';
-import { OverlayComponent } from './overlay.component';
+import { DashboardComponent, BotRunComponent, PluginSetupComponent, BotDetailComponent } from './dashboard/index';
 import { RepositoryComponent, PackageCardComponent } from './repository/index';
 import { AccountsComponent, AccountCardComponent } from './accounts/index';
-import { BotRunComponent } from './bot-run.component';
-import { BotSettingsComponent } from './bot-settings.component';
-import { BotDetailComponent } from './bot-detail.component';
 import { AuthGuard } from '../services/index';
-
 
 export const MODULE_ROUTES: Route[] = [
     {
@@ -32,6 +27,5 @@ export const MODULE_COMPONENTS = [
     PackageCardComponent,
     BotDetailComponent,
     BotRunComponent,
-    BotSettingsComponent,
-    OverlayComponent
+    PluginSetupComponent
 ]

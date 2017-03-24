@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -9,18 +8,16 @@ using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
-using TickTrader.DedicatedServer.WebAdmin.Server.Hubs;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class RepositoryController : HubController<DSFeed>
+    public class RepositoryController : Controller
     {
         private readonly ILogger<RepositoryController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
 
-        public RepositoryController(IConnectionManager connectionManager, IDedicatedServer ddServer, ILogger<RepositoryController> logger) :
-            base(connectionManager)
+        public RepositoryController(IDedicatedServer ddServer, ILogger<RepositoryController> logger)
         {
             _dedicatedServer = ddServer;
             _logger = logger;
