@@ -251,35 +251,35 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Debet" Width="*" SortMemberPath="BuyingAmount">
+                    <DataGridTextColumn Header="Asset I" Width="*" SortMemberPath="AssetI">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="BuyingAmount"/>
+                                <Binding Path="AssetI"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="BuyingCurrency"/>
+                                <Binding Path="AssetICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ClipboardContentBinding>
                             <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="BuyingAmount"/>
+                                <Binding Path="AssetI"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="BuyingCurrency"/>
+                                <Binding Path="AssetICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Credit" Width="*" SortMemberPath="SellingAmount">
+                    <DataGridTextColumn Header="Asset II" Width="*" SortMemberPath="AssetII">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="SellingAmount"/>
+                                <Binding Path="AssetII"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="SellingCurrency"/>
+                                <Binding Path="AssetIICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ClipboardContentBinding>
                             <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="SellingAmount"/>
+                                <Binding Path="AssetII"/>
                                 <Binding Path="ProfitDigits"/>
-                                <Binding Path="SellingCurrency"/>
+                                <Binding Path="AssetIICurrency"/>
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
@@ -338,14 +338,15 @@
             </Grid.Visibility>
 
             <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
-                <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TradeDirectionFilter,  Delay=200, UpdateSourceTrigger=PropertyChanged}"
+                <!--Trade direction functionality. Just uncomment and enjoy-->
+                <!--<ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TradeDirectionFilter,  Delay=200, UpdateSourceTrigger=PropertyChanged}"
                       ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:TradeHistoryViewModel+TradeDirection}}}" IsEditable="False">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{l:ResxBinding Prefix=TradeDirection_}"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
-                </ComboBox>
+                </ComboBox>-->
                 <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding Period, Delay=200, UpdateSourceTrigger=PropertyChanged}"
                       ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:TradeHistoryViewModel+TimePeriod}}}" IsEditable="False">
                     <ComboBox.ItemTemplate>
@@ -354,9 +355,9 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <l:DateTimePicker Width="120" SelectedDateTime="{Binding From,  Delay=500, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="5 0 2 0"/>
+                <l:DateTimePicker Width="145" SelectedDateTime="{Binding From,  Delay=500, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="5 0 2 0"/>
                 <TextBlock Text="-"/>
-                <l:DateTimePicker Width="120" Margin="2 0 0 0" SelectedDateTime="{Binding To, Delay=500, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                <l:DateTimePicker Width="145" Margin="2 0 0 0" SelectedDateTime="{Binding To, Delay=500, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
             </DockPanel>
 
             <ContentPresenter Grid.Row="1" Content="{Binding}" ContentTemplate="{StaticResource HistoryDataGridTemplate}"/>

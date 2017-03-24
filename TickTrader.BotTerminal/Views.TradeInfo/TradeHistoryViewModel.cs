@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public enum TimePeriod { All, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
+        public enum TimePeriod { All, LastHour, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
         public enum TradeDirection { All = 1, Buy, Sell }
 
         private ObservableSrotedList<string, TransactionReport> _tradesList;
@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
 
         public TradeHistoryViewModel(TraderClientModel tradeClient)
         {
-            _period = TimePeriod.CurrentMonth;
+            _period = TimePeriod.LastHour;
             UpdateDateTimePeriod();
             TradeDirectionFilter = TradeDirection.All;
 
@@ -220,6 +220,10 @@ namespace TickTrader.BotTerminal
                 case TimePeriod.All:
                     _from = new DateTime(1980, 01, 01);
                     _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    break;
+                case TimePeriod.LastHour:
+                    _from = DateTime.Now.AddHours(-1);
+                    _to = DateTime.Now;
                     break;
                 case TimePeriod.CurrentMonth:
                     _from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);

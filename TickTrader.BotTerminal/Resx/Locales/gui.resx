@@ -333,4 +333,7 @@
   <data name="DownloadingTradeHistoryError" xml:space="preserve">
     <value>##DownloadingTradeHistoryError##</value>
   </data>
+  <data name="TimePeriod_LastHour" xml:space="preserve">
+    <value>##TimePeriod_LastHour##</value>
+  </data>
 </root>
