@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -58,11 +59,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             selectedMapping?.MapInput(target.GetFeedStrategy<BarStrategy>(), Descriptor.Id, SelectedSymbol.Name);
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var otherInput = srcProperty as BarToBarInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
-            SetDefaultMapping();
+            throw new NotImplementedException();
+            //var otherInput = srcProperty as BarToBarInput;
+            //SelectedSymbol = otherInput.SelectedSymbol;
+            //SetDefaultMapping();
         }
 
         public override void Reset()

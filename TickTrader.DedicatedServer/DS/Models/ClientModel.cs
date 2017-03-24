@@ -13,6 +13,8 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Repository;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.DedicatedServer.DS.Exceptions;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -190,16 +192,16 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         #region Bot Management
 
-        public ITradeBot AddBot(string botId, string packageName, PluginSetup setup)
+        public ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig)
         {
             lock (_sync)
             {
-                var package = _packageProvider(packageName);
+                var package = _packageProvider(pluginId.PackageName);
 
                 if (package == null)
-                    throw new ArgumentException("Package '" + packageName + "' cannot be found!");
+                    throw new PackageNotFoundException($"Package '{pluginId.PackageName}' cannot be found!");
 
-                var newBot = new TradeBotModel(botId, package, setup);
+                var newBot = new TradeBotModel(botId, pluginId, botConfig);
                 newBot.IsRunningChanged += Bot_StateChanged;
                 newBot.Init(this, _sync, _packageProvider, null);
                 _bots.Add(newBot);

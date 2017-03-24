@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using TickTrader.DedicatedServer.DS;
-using TickTrader.DedicatedServer.DS.Models.Exceptions;
+using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 

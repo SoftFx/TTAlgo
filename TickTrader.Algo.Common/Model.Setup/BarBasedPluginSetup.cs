@@ -5,19 +5,23 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    [DataContract(Name = "BarBasedSetup", Namespace = "")]
     public class BarBasedPluginSetup : PluginSetup
     {
-        [DataMember]
         private string mainSymbol;
-        [DataMember]
         private BarPriceType priceType;
         private IAlgoGuiMetadata metadata;
+
+        public BarBasedPluginSetup(AlgoPluginRef pRef)
+            : base(pRef)
+        {
+            Init();
+        }
 
         public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol, BarPriceType priceType, IAlgoGuiMetadata metadata)
             : base(pRef)
@@ -57,6 +61,26 @@ namespace TickTrader.Algo.Common.Model.Setup
                 return new MarkerSeriesOutputSetup(descriptor);
             else
                 return new ColoredLineOutputSetup(descriptor, Algo.Common.Model.Setup.MsgCodes.UnsupportedPropertyType);
+        }
+
+        public override void Load(PluginConfig cfg)
+        {
+            var barConfig = cfg as BarBasedConfig;
+            if (barConfig != null)
+            {
+                mainSymbol = barConfig.MainSymbol;
+                priceType = barConfig.PriceType;       
+            }
+
+            base.Load(cfg);
+        }
+
+        protected override PluginConfig SaveToConfig()
+        {
+            var config = new BarBasedConfig();
+            config.MainSymbol = MainSymbol;
+            config.PriceType = PriceType;
+            return config;
         }
     }
 }

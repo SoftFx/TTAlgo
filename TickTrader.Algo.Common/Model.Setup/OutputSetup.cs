@@ -8,12 +8,14 @@ using System.Windows.Media;
 using TickTrader.Algo.Api;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class OutputSetup : PropertySetupBase
     {
-        public override void CopyFrom(PropertySetupBase srcProperty) { }
+        public override void Load(Property srcProperty) { }
+        public override Property Save() { return null; }
         public override void Reset() { }
 
         public OutputSetup(OutputDescriptor descriptor)
@@ -119,16 +121,22 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var oldSetup = srcProperty as ColoredLineOutputSetup;
-            if (oldSetup != null)
-            {
-                this.LineColor = oldSetup.LineColor;
-                this.LineThickness = oldSetup.LineThickness;
-                this.LineStyle = oldSetup.LineStyle;
-                this.IsEnabled = oldSetup.IsEnabled;
-            }
+            throw new NotImplementedException();
+            //var oldSetup = srcProperty as ColoredLineOutputSetup;
+            //if (oldSetup != null)
+            //{
+            //    this.LineColor = oldSetup.LineColor;
+            //    this.LineThickness = oldSetup.LineThickness;
+            //    this.LineStyle = oldSetup.LineStyle;
+            //    this.IsEnabled = oldSetup.IsEnabled;
+            //}
+        }
+
+        public override Property Save()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -196,15 +204,22 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override Property Save()
         {
-            var oldSetup = srcProperty as MarkerSeriesOutputSetup;
-            if (oldSetup != null)
-            {
-                this.LineColor = oldSetup.LineColor;
-                this.LineThickness = oldSetup.LineThickness;
-                this.IsEnabled = oldSetup.IsEnabled;
-            }
+            throw new NotImplementedException();
+        }
+
+        public override void Load(Property srcProperty)
+        {
+            throw new NotImplementedException();
+
+            //var oldSetup = srcProperty as MarkerSeriesOutputSetup;
+            //if (oldSetup != null)
+            //{
+            //    this.LineColor = oldSetup.LineColor;
+            //    this.LineThickness = oldSetup.LineThickness;
+            //    this.IsEnabled = oldSetup.IsEnabled;
+            //}
         }
 
         public override void Reset()

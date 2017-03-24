@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -16,8 +17,8 @@ namespace TickTrader.DedicatedServer.DS
         IPackage AddPackage(byte[] fileContent, string fileName);
         IPackage[] GetPackages();
         void RemovePackage(string package);
-        ServerPluginRef[] GetAllPlugins();
-        ServerPluginRef[] GetPluginsByType(AlgoTypes type);
+        PlguinInfo[] GetAllPlugins();
+        PlguinInfo[] GetPluginsByType(AlgoTypes type);
 
         IEnumerable<IAccount> Accounts { get; }
         IEnumerable<ITradeBot> TradeBots { get; }
@@ -25,12 +26,15 @@ namespace TickTrader.DedicatedServer.DS
         event Action<ITradeBot, ChangeAction> BotChanged;
         event Action<IPackage, ChangeAction> PackageChanged;
 
-        string AutogenerateBotId(string botDescriptorName);
+        string AutogenerateBotId(string botDisplayName);
 
-        void AddAccount(string login, string password, string server);
-        void RemoveAccount(string login, string server);
-        ConnectionErrorCodes TestAccount(string login, string server);
-        ConnectionErrorCodes TestAccount(string login, string password, string server);
+        void AddAccount(AccountKey key, string password);
+        void RemoveAccount(AccountKey key);
+        ConnectionErrorCodes TestAccount(AccountKey accountId);
+        ConnectionErrorCodes TestCreds(string login, string password, string server);
+
+        ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig);
+        void RemoveBot(string botId);
     }
 
     public interface IAccount
@@ -42,7 +46,7 @@ namespace TickTrader.DedicatedServer.DS
 
         Task<ConnectionErrorCodes> TestConnection();
 
-        ITradeBot AddBot(string botId, string packageName, PluginSetup setup);
+        ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig);
         void RemoveBot(string botId);
     }
 
@@ -54,6 +58,7 @@ namespace TickTrader.DedicatedServer.DS
         string Id { get; }
         bool IsRunning { get; }
         IBotLog Log { get; }
+        IAccount Account { get; }
         BotStates State { get; }
         void Start();
         Task StopAsync();
@@ -65,7 +70,7 @@ namespace TickTrader.DedicatedServer.DS
         DateTime Created { get; }
         bool IsValid { get; }
 
-        IEnumerable<ServerPluginRef> GetPluginsByType(AlgoTypes type);
+        IEnumerable<PlguinInfo> GetPluginsByType(AlgoTypes type);
     }
 
     public interface IBotLog
@@ -74,15 +79,39 @@ namespace TickTrader.DedicatedServer.DS
         event Action<string> StatusUpdated;
     }
 
-    public class ServerPluginRef
+    public class PlguinInfo
     {
-        public ServerPluginRef(string pckg, AlgoPluginRef pRef)
+        public PlguinInfo(PluginKey key, AlgoPluginDescriptor descriptor)
         {
-            PackageName = pckg;
-            Ref = pRef;
+            Id = key;
+            Descriptor = descriptor;
         }
 
-        public string PackageName { get; }
-        public AlgoPluginRef Ref { get; }
+        public PluginKey Id { get; }
+        public AlgoPluginDescriptor Descriptor { get; }
+    }
+
+    public class PluginKey
+    {
+        public PluginKey(string package, string id)
+        {
+            PackageName = package;
+            DescriptorId = id;
+        }
+
+        public string PackageName { get; private set; }
+        public string DescriptorId { get; private set; }
+    }
+
+    public class AccountKey
+    {
+        public AccountKey(string login, string server)
+        {
+            Login = login;
+            Server = server;
+        }
+
+        public string Login { get; private set; }
+        public string Server { get; private set; }
     }
 }

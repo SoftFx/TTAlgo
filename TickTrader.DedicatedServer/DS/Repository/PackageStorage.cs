@@ -9,7 +9,7 @@ using TickTrader.DedicatedServer.DS.Models;
 using System.Threading;
 using System.Collections.Generic;
 using System;
-using TickTrader.DedicatedServer.DS.Models.Exceptions;
+using TickTrader.DedicatedServer.DS.Exceptions;
 
 namespace TickTrader.DedicatedServer.DS.Repository
 {

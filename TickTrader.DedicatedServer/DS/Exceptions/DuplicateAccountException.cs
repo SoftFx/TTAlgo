@@ -1,4 +1,4 @@
-﻿namespace TickTrader.DedicatedServer.DS.Models.Exceptions
+﻿namespace TickTrader.DedicatedServer.DS.Exceptions
 {
     public class DuplicateAccountException : DSException
     {

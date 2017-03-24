@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -100,13 +101,15 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = mappings.FirstOrDefault(m => m.Name == defPriceType + ".Close");
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var otherInput = srcProperty as BarToDoubleInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
-            SelectedMapping = mappings.FirstOrDefault(m => m.Name == otherInput.selectedMapping.Name);
-            if (selectedMapping == null)
-                SetDefaultMapping();
+            base.Load(srcProperty);
+
+            //var otherInput = srcProperty as BarToDoubleInput;
+            //SelectedSymbol = otherInput.SelectedSymbol;
+            //SelectedMapping = mappings.FirstOrDefault(m => m.Name == otherInput.selectedMapping.Name);
+            //if (selectedMapping == null)
+            //    SetDefaultMapping();
         }
 
         public abstract class Mapping

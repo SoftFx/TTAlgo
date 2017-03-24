@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TickTrader.DedicatedServer.DS.Models.Exceptions
+namespace TickTrader.DedicatedServer.DS.Exceptions
 {
     public class DSException : ApplicationException
     {

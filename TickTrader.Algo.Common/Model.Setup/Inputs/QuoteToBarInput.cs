@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -47,11 +48,13 @@ namespace TickTrader.Algo.Common.Model.Setup
                 PriceType == BarPriceType.Ask ? askConvertor : bidConvertor);
         }
 
-        public override void CopyFrom(PropertySetupBase srcProperty)
+        public override void Load(Property srcProperty)
         {
-            var otherInput = srcProperty as QuoteToBarInput;
-            SelectedSymbol = otherInput.SelectedSymbol;
-            PriceType = otherInput.PriceType;
+            base.Load(srcProperty);
+
+            //var otherInput = srcProperty as QuoteToBarInput;
+            //SelectedSymbol = otherInput.SelectedSymbol;
+            //PriceType = otherInput.PriceType;
         }
     }
 }
