@@ -97,11 +97,6 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 LowerBound2[CountBars] = double.NaN;
             }
 
-            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
-            {
-                Rbci[pos + i] = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
-            }
-
             var stdMa = new AnotherSma(Std);
             var std2Ma = new AnotherSma(Std);
             stdMa.Init();
@@ -109,8 +104,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
             for (var i = Math.Min(Price.Count, CountBars) - 1; i >= 0; i--)
             {
-                stdMa.Add(Rbci[pos + i]);
-                std2Ma.Add(Rbci[pos + i]*Rbci[pos + i]);
+                var rbci = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
+                Rbci[pos + i] = rbci;
+                stdMa.Add(rbci);
+                std2Ma.Add(rbci*rbci);
                 var tmp = (std2Ma.Sum + stdMa.Average*stdMa.Average*Std - 2*stdMa.Average*stdMa.Sum)/(Std - 1);
 
                 var deviation = Math.Sqrt(tmp);
