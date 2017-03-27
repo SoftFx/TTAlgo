@@ -123,7 +123,7 @@ namespace TickTrader.Algo.Core
                 if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(oldOrder));
+                    orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(eReport.OrderCopy));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Canceled)
@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core
                 if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(oldOrder));
+                    orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(eReport.OrderCopy));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Expired)
@@ -141,7 +141,7 @@ namespace TickTrader.Algo.Core
                 if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(oldOrder));
+                    orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(eReport.OrderCopy));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)

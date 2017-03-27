@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
         {
             Std = std;
             CountBars = countBars;
+            Epsilon = 6e-9;
         }
 
         protected override void SetupParameters()

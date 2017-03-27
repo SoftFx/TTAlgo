@@ -7,6 +7,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
     internal class AnotherSma : SMA
     {
+        public double Sum => _sum;
+
         public AnotherSma(int period) : base(period)
         {
         }
@@ -95,32 +97,18 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 LowerBound2[CountBars] = double.NaN;
             }
 
-            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
+            var stdMa = new AnotherSma(Std);
+            var std2Ma = new AnotherSma(Std);
+            stdMa.Init();
+            std2Ma.Init();
+
+            for (var i = Math.Min(Price.Count, CountBars) - 1; i >= 0; i--)
             {
-                Rbci[pos + i] = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
-            }
-
-            for (var i = 0; i < Math.Min(Price.Count, CountBars); i++)
-            {
-                var sum = 0.0;
-                for (var j = 0; j < Std; j++)
-                {
-                    var rbci = pos + i + j < Price.Count ? Rbci[pos + i + j] : 0.0;
-                    rbci = double.IsNaN(rbci) ? 0.0 : rbci;
-                    sum -= rbci;
-                }
-
-                var tmp = sum/Std;
-
-                sum = 0.0;
-                for (var j = 0; j < Std; j++)
-                {
-                    var rbci = pos + i + j < Price.Count ? Rbci[pos + i + j] : 0.0;
-                    rbci = double.IsNaN(rbci) ? 0.0 : rbci;
-                    sum += (rbci + tmp)*(rbci + tmp);
-                }
-
-                tmp = sum/(Std - 1);
+                var rbci = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
+                Rbci[pos + i] = rbci;
+                stdMa.Add(rbci);
+                std2Ma.Add(rbci*rbci);
+                var tmp = (std2Ma.Sum + stdMa.Average*stdMa.Average*Std - 2*stdMa.Average*stdMa.Sum)/(Std - 1);
 
                 var deviation = Math.Sqrt(tmp);
 
