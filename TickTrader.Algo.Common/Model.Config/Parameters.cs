@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Common.Model.Config
     [DataContract(Name = "Parameter", Namespace = "")]
     public abstract class Parameter : Property
     {
+        public abstract object ValObj { get; }
     }
 
     [DataContract(Name = "int", Namespace = "")]
@@ -48,6 +49,8 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         [DataMember(Name = "fileName")]
         public string FileName { get; set; }
+
+        public override object ValObj => FileName;
     }
 
     [DataContract(Namespace = "")]
@@ -55,5 +58,7 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         [DataMember(Name = "value")]
         public T Value { get; set; }
+
+        public override object ValObj => Value;
     }
 }

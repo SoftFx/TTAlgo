@@ -44,7 +44,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             _loggerFactory = loggerFactory;
             _packageStorage = new PackageStorage(loggerFactory, SyncObj);
             _accounts.ForEach(InitAccount);
-            _packageStorage.RemovingPackage += packageStorage_RemovingPackage;
         }
 
         public void Close()
@@ -143,6 +142,13 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
             acc.Changed += Acc_Changed;
+            acc.BotChanged += Acc_BotChanged;
+        }
+
+        private void DeinitAccount(ClientModel acc)
+        {
+            acc.Changed -= Acc_Changed;
+            acc.BotChanged -= Acc_BotChanged;
         }
 
         private void DisposeAccount(ClientModel acc)
@@ -153,6 +159,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         private void Acc_Changed(ClientModel acc)
         {
             Save();
+        }
+
+        private void Acc_BotChanged(ITradeBot bot, ChangeAction changeAction)
+        {
+            BotChanged?.Invoke(bot, changeAction);
         }
 
         #endregion
@@ -276,20 +287,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 .SelectMany(p => p.GetPluginsByType(type))
                 .ToArray();
             }
-        }
-
-        private bool packageStorage_RemovingPackage(PackageModel pckg)
-        {
-            var hasRunningBots = _accounts.SelectMany(a => a.TradeBots).Any(b => b.IsRunning);
-            if (hasRunningBots)
-                return false;
-
-            foreach (var acc in _accounts)
-                acc.RemoveBotsFromPackage(pckg);
-
-            Save();
-
-            return true;
         }
 
         #endregion

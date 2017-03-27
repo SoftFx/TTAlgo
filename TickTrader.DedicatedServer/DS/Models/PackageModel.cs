@@ -8,6 +8,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 {
     public class PackageModel : IPackage, IDisposable
     {
+        private int _refCount;
+
         public PackageModel(string name, DateTime created, PluginContainer container)
         {
             Name = name;
@@ -19,6 +21,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         public DateTime Created { get; private set; }
         public PluginContainer Container { get; private set; }
         public bool IsValid => Container != null;
+        public bool IsLocked => _refCount > 0;
+
+        public event Action<PackageModel> IsLockedChanged;
 
         public IEnumerable<PluginInfo> GetPlugins()
         {
@@ -38,6 +43,20 @@ namespace TickTrader.DedicatedServer.DS.Models
         public AlgoPluginRef GetPluginRef(string id)
         {
             return Container?.Plugins.FirstOrDefault(pr => pr.Id == id);
+        }
+
+        internal void IncrementRef()
+        {
+            _refCount++;
+            if (_refCount == 1)
+                IsLockedChanged?.Invoke(this);
+        }
+
+        internal void DecrementRef()
+        {
+            _refCount--;
+            if (_refCount == 0)
+                IsLockedChanged?.Invoke(this);
         }
 
         public void Dispose()
