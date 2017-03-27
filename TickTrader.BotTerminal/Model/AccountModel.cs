@@ -312,9 +312,9 @@ namespace TickTrader.BotTerminal
 
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
         {
-            var orderCopy = orders[report.OrderId];
             orders.Remove(report.OrderId);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, orderCopy);
+            var order = new OrderModel(report, clientModel.Symbols);
+            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, order);
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
