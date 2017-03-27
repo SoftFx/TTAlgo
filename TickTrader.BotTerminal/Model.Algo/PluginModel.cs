@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
         {
             var executor = PluginRef.CreateExecutor();
             executor.OnRuntimeError += Executor_OnRuntimeError;
-            host.InitializePlugin(executor);
+            host.InitializePlugin(executor, (this as TradeBotModel2)?.Name);
             return executor;
         }
 

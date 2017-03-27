@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Core
         private Task initTask;
         private Task stopTask;
         private string workingFolder;
+        private string botWorkingFolder;
         private States state;
 
         public PluginExecutor(string pluginId)
@@ -198,6 +199,23 @@ namespace TickTrader.Algo.Core
                         throw new InvalidOperationException("Working folder cannot be null or empty string!");
 
                     workingFolder = value;
+                }
+            }
+        }
+
+        public string BotWorkingFolder
+        {
+            get { return botWorkingFolder; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    if (string.IsNullOrEmpty(value))
+                        throw new InvalidOperationException("Bot working folder cannot be null or empty string!");
+
+                    botWorkingFolder = value;
                 }
             }
         }
@@ -505,10 +523,8 @@ namespace TickTrader.Algo.Core
 
         private void InitWorkingFolder()
         {
-            if (!string.IsNullOrEmpty(workingFolder))
-                builder.DataFolder = workingFolder;
-            else
-                builder.DataFolder = System.IO.Directory.GetCurrentDirectory();
+            builder.DataFolder = !string.IsNullOrEmpty(workingFolder) ? workingFolder : System.IO.Directory.GetCurrentDirectory();
+            builder.BotDataFolder = !string.IsNullOrEmpty(botWorkingFolder) ? botWorkingFolder : System.IO.Directory.GetCurrentDirectory();
         }
 
         #region IFeedStrategyContext
