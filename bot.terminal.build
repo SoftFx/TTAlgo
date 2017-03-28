@@ -23,6 +23,7 @@
 
   <target name="Build" >
 	<property name="Build.Target" value="Publish" />
+    <call target="CleanUpFolder" />
     <call target="RunMSBuild" />
 	  <call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
