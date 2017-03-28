@@ -35,8 +35,8 @@ namespace TickTrader.BotTerminal
         public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> BotTraders { get; private set; }
         public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> AllPlugins { get { return plugins; } }
 
-        public event Action<PluginCatalogItem> PluginBeingReplaced;
-        public event Action<PluginCatalogItem> PluginBeingRemoved;
+        //public event Action<PluginCatalogItem> PluginBeingReplaced;
+        //public event Action<PluginCatalogItem> PluginBeingRemoved;
 
         public void AddFolder(string path)
         {

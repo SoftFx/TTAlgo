@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
 
         private TraderClientModel clientModel;
 
-        public event System.Action DepthChanged;
+        //public event System.Action DepthChanged;
 
         public OpenOrderDialogViewModel(TraderClientModel clientModel, string preselectedSymbol)
         {

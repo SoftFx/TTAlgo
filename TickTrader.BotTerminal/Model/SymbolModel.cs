@@ -38,8 +38,10 @@ namespace TickTrader.BotTerminal
         public RateDirectionTracker AskTracker { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
 
-        public void Close()
+        public override void Close()
         {
+            base.Close();
+
             subscription.Dispose();
         }
 

@@ -32,7 +32,15 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
         }
 
+        public void OnPrint(string entry)
+        {
+        }
+
         public void OnPrint(string entry, params object[] parameters)
+        {
+        }
+
+        public void OnPrintError(string entry)
         {
         }
 
