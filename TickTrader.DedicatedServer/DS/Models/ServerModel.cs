@@ -66,9 +66,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             Task<ConnectionErrorCodes> testTask;
 
-            var acc = new ClientModel();
+            var acc = new ClientModel(server, login, password);
             acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
-            acc.Change(server, login, password);
             lock (SyncObj)
             {
                 InitAccount(acc);
@@ -87,9 +86,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel(accountId.Login, accountId.Server, password);
+                    var newAcc = new ClientModel(accountId.Server, accountId.Login,  password);
                     InitAccount(newAcc);
-                    newAcc.Change(accountId.Login, accountId.Server, password);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
                     Save();
