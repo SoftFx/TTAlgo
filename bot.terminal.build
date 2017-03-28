@@ -163,7 +163,6 @@
   <target name="DSRestore">
     <exec program="dotnet" workingdir="${SourcesDir}TickTrader.DedicatedServer">
       <arg value="restore"/>
-      <arg value="restore.dg"/>
     </exec>
   </target>
 
