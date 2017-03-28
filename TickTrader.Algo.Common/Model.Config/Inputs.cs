@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    public class Input : Parameter
+    public class Input : Property
     {
     }
 }

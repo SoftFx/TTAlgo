@@ -93,6 +93,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new InvalidStateException("Bot has been already started!");
 
                 SetRunning(true);
+                Package.IncrementRef();
 
                 if (_client.ConnectionState == ConnectionStates.Online)
                     StartExecutor();
@@ -158,7 +159,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         private async Task DoStop()
         {
             await Task.Factory.StartNew(() => executor.Stop());
-            lock (_syncObj) ChangeState(BotStates.Offline);
+            lock (_syncObj)
+            {
+                ChangeState(BotStates.Offline);
+                Package.DecrementRef();
+            }
         }
 
         private void ChangeState(BotStates newState)

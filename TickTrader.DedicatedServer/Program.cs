@@ -70,7 +70,7 @@ namespace TickTrader.DedicatedServer
 
             cmdEngine.RegsiterCommand("account", () =>
             {
-                var cmd = CommandUi.Choose("cmd", "add", "remove", "test", "cancel");
+                var cmd = CommandUi.Choose("cmd", "add", "remove", "change password", "test", "cancel");
 
                 IAccount acc;
                 List<IAccount> accountsList;
@@ -89,6 +89,14 @@ namespace TickTrader.DedicatedServer
                             accountsList = server.Accounts.ToList();
                         acc = CommandUi.Choose("account", accountsList, GetDisplayName);
                         server.RemoveAccount(new AccountKey(acc.Username, acc.Address));
+                        break;
+
+                    case "change password":
+                        lock (server.SyncObj)
+                            accountsList = server.Accounts.ToList();
+                        acc = CommandUi.Choose("account", accountsList, GetDisplayName);
+                        var chgPassword = CommandUi.InputString("new password");
+                        server.ChangeAccountPassword(new AccountKey(acc.Username, acc.Address), chgPassword);
                         break;
 
                     case "test":
@@ -117,7 +125,7 @@ namespace TickTrader.DedicatedServer
                 {
                     case "add":
 
-                        PlguinInfo[] availableBots;
+                        PluginInfo[] availableBots;
 
                         lock (server.SyncObj)
                         {
@@ -140,9 +148,7 @@ namespace TickTrader.DedicatedServer
 
                             if (botToAdd.Descriptor.IsValid)
                             {
-                                var botConfig = new BarBasedConfig();
-                                botConfig.MainSymbol = "EURUSD";
-                                botConfig.PriceType = BarPriceType.Bid;
+                                var botConfig = SetupBot(botToAdd.Descriptor);
                                 var botId = server.AutogenerateBotId(botToAdd.Descriptor.DisplayName);
                                 acc.AddBot(botId, botToAdd.Id, botConfig);
                             }
@@ -215,6 +221,64 @@ namespace TickTrader.DedicatedServer
         private static void InitLogger(ILoggerFactory factory)
         {
             CoreLoggerFactory.Init(cn => new LoggerAdapter(factory.CreateLogger(cn)));
+        }
+
+        private static PluginConfig SetupBot(AlgoPluginDescriptor descriptor)
+        {
+            var config = new BarBasedConfig();
+
+            config.PriceType = BarPriceType.Bid;
+            config.MainSymbol = CommandUi.InputString("symbol");
+
+            foreach (var prop in descriptor.AllProperties)
+                config.Properties.Add(InputBotParam(prop));
+
+            Console.WriteLine();
+            Console.WriteLine("Configuration:");
+            Console.WriteLine("\tMain Symbol - {0}", config.MainSymbol);
+
+            foreach (var p in config.Properties)
+                PrintProperty(p);
+
+            return config;
+        }
+
+        private static Property InputBotParam(AlgoPropertyDescriptor descriptor)
+        {
+            if (descriptor is ParameterDescriptor)
+            {
+                var paramDescriptor = (ParameterDescriptor)descriptor;
+                var id = descriptor.Id;
+
+                if (paramDescriptor.IsEnum)
+                {
+                    var enumVal = CommandUi.ChooseNullable(descriptor.DisplayName, paramDescriptor.EnumValues.ToArray());
+                    return new EnumParameter() { Id = id, Value = enumVal ?? (string)paramDescriptor.DefaultValue };
+                }
+
+                switch (paramDescriptor.DataType)
+                {
+                    case "System.Int32":
+                        var valInt32 = CommandUi.InputNullabelInteger(paramDescriptor.DisplayName);
+                        return new IntParameter() { Id = id, Value = valInt32 ?? (int)paramDescriptor.DefaultValue };
+                    case "System.Double":
+                        var valDouble = CommandUi.InputNullableDouble(paramDescriptor.DisplayName);
+                        return new DoubleParameter() { Id = id, Value = valDouble ?? (double)paramDescriptor.DefaultValue };
+                    case "System.String":
+                        var strVal = CommandUi.InputString(paramDescriptor.DisplayName);
+                        return new StringParameter() { Id = id, Value = CommandUi.InputString(paramDescriptor.DisplayName) };
+                    case "TickTrader.Algo.Api.File":
+                        return new FileParameter() { Id = id, FileName = CommandUi.InputString(paramDescriptor.DisplayName) };
+                }
+            }
+
+            throw new ApplicationException($"Parameter '{descriptor.DisplayName}' is of unsupported type!");
+        }
+
+        private static void PrintProperty(Property p)
+        {
+            if (p is Parameter)
+                Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
         }
     }
 }

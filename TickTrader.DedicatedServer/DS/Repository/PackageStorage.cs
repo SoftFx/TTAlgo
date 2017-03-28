@@ -82,10 +82,8 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 PackageModel package;
                 if (_packages.TryGetValue(packageName, out package))
                 {
-                    bool allowed = RemovingPackage?.Invoke(package) ?? true;
-
-                    if (!allowed)
-                        throw new InvalidStateException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
+                    if (package.IsLocked)
+                        throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
 
                     _packages.Remove(packageName);
                     try
@@ -110,8 +108,6 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 }
             }
         }
-
-        public event Func<PackageModel, bool> RemovingPackage;
 
         #region Private Methods
 
@@ -138,9 +134,10 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 var container = PluginContainer.Load(fileInfo.FullName);
                 return new PackageModel(fileInfo.Name, fileInfo.CreationTime, container);
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.LogWarning($"PACKAGE_STORAGE: Failed to read package {fileInfo.Name}");
+                //_logger.LogWarning($"PACKAGE_STORAGE: Failed to read package {fileInfo.Name}");
+                _logger.LogError($"Failed to read package {fileInfo.Name}: {ex}");
 
                 return new PackageModel(fileInfo.Name, fileInfo.CreationTime, null);
             }

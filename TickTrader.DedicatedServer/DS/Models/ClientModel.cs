@@ -33,6 +33,13 @@ namespace TickTrader.DedicatedServer.DS.Models
         private bool lostConnection;
         private int _startedBotsCount;
 
+        public ClientModel(string address, string username, string password)
+        {
+            Address = address;
+            Username = username;
+            Password = password;
+        }
+
         public void Init(object syncObj, ILoggerFactory loggerFactory, Func<string, PackageModel> packageProvider)
         {
             _sync = syncObj;
@@ -46,8 +53,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             {
                 if (bot.IsRunning)
                     _startedBotsCount++;
-                bot.IsRunningChanged += Bot_StateChanged;
-                bot.Init(this, syncObj, _packageProvider, null);
+                InitBot(bot);
             }
 
             Connection = new ConnectionModel(new ConnectionOptions() { EnableFixLogs = false });
@@ -76,6 +82,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public event Action<ClientModel> StateChanged;
         public event Action<ClientModel> Changed;
+        public event Action<ITradeBot, ChangeAction> BotChanged;
+        public event Action<ITradeBot> BotStateChanged;
 
         [DataMember(Name = "server")]
         public string Address { get; private set; }
@@ -173,17 +181,31 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public void Change(string address, string username, string password)
+        //public void Change(string address, string username, string password)
+        //{
+        //    lock (_sync)
+        //    {
+        //        Address = address;
+        //        Username = username;
+        //        Password = password;
+        //        testRequest?.TrySetCanceled();
+        //        testRequest = null;
+        //        stopRequested = true;
+        //        connectCancellation?.Cancel();
+        //        ManageConnection();
+        //    }
+        //}
+
+        public void ChangePassword(string password)
         {
             lock (_sync)
             {
-                Address = address;
-                Username = username;
                 Password = password;
                 testRequest?.TrySetCanceled();
                 testRequest = null;
                 stopRequested = true;
                 connectCancellation?.Cancel();
+                Changed?.Invoke(this);
                 ManageConnection();
             }
         }
@@ -202,8 +224,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new PackageNotFoundException($"Package '{pluginId.PackageName}' cannot be found!");
 
                 var newBot = new TradeBotModel(botId, pluginId, botConfig);
-                newBot.IsRunningChanged += Bot_StateChanged;
-                newBot.Init(this, _sync, _packageProvider, null);
+                InitBot(newBot);
                 _bots.Add(newBot);
                 ManageConnection();
                 Changed?.Invoke(this);
@@ -211,7 +232,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private void Bot_StateChanged(TradeBotModel bot)
+        private void Bot_IsRunningChanged(TradeBotModel bot)
         {
             if (bot.IsRunning)
                 _startedBotsCount++;
@@ -230,10 +251,28 @@ namespace TickTrader.DedicatedServer.DS.Models
                     if (bot.IsRunning)
                         throw new InvalidStateException("Cannot remove running bot!");
                     _bots.Remove(bot);
-                    bot.IsRunningChanged -= Bot_StateChanged;
+                    DeinitBot(bot);
                     Changed?.Invoke(this);
                 }
             }
+        }
+
+        private void InitBot(TradeBotModel bot)
+        {
+            bot.IsRunningChanged += Bot_IsRunningChanged;
+            bot.StateChanged += Bot_StateChanged;
+            bot.Init(this, _sync, _packageProvider, null);
+        }
+
+        private void DeinitBot(TradeBotModel bot)
+        {
+            bot.IsRunningChanged -= Bot_IsRunningChanged;
+            bot.StateChanged -= Bot_StateChanged;
+        }
+
+        private void Bot_StateChanged(TradeBotModel bot)
+        {
+            BotStateChanged?.Invoke(bot);
         }
 
         internal void RemoveBotsFromPackage(PackageModel package)

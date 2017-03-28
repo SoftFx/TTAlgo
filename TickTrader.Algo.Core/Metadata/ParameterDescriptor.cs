@@ -43,8 +43,8 @@ namespace TickTrader.Algo.Core.Metadata
 
                 if (DefaultValue != null && DefaultValue.GetType() == propertyInfo.PropertyType)
                     DefaultValue = DefaultValue.ToString();
-                else
-                    DefaultValue = null;
+                else if (EnumValues.Count > 0)
+                    DefaultValue = EnumValues[0];
             }
             else
                 EnumValues = emptyEnumValuesList;
@@ -52,6 +52,9 @@ namespace TickTrader.Algo.Core.Metadata
             // Filter out unknown objects from DefaultValue because they can cause cross-domain serialization problems
             if (DefaultValue != null && !(DefaultValue is string) && !DefaultValue.GetType().IsPrimitive)
                 DefaultValue = null;
+
+            if (DefaultValue == null && propertyInfo.PropertyType.IsValueType && propertyInfo.PropertyType.IsPrimitive)
+                DefaultValue = Activator.CreateInstance(propertyInfo.PropertyType);
 
             InspectFileFilterAttr(propertyInfo);
         }

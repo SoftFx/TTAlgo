@@ -70,6 +70,40 @@ namespace TickTrader.DedicatedServer
             return result;
         }
 
+        public static int? InputNullabelInteger(string paramName)
+        {
+            Console.Write(paramName + ">");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+            int result;
+            if (!int.TryParse(input, out result))
+                throw new ApplicationException("Invalid integer!");
+            return result;
+        }
+
+        public static double InputDouble(string paramName)
+        {
+            Console.Write(paramName + ">");
+            var input = Console.ReadLine();
+            double result;
+            if (!double.TryParse(input, out result))
+                throw new ApplicationException("Invalid double!");
+            return result;
+        }
+
+        public static double? InputNullableDouble(string paramName)
+        {
+            Console.Write(paramName + ">");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+            double result;
+            if (!double.TryParse(input, out result))
+                throw new ApplicationException("Invalid double!");
+            return result;
+        }
+
         public static string InputString(string paramName)
         {
             Console.Write(paramName + ">");
@@ -94,6 +128,14 @@ namespace TickTrader.DedicatedServer
             return choices[index];
         }
 
+        public static string ChooseNullable(string paramName, params string[] choices)
+        {
+            var index = ChooseIndexNullable(paramName, choices);
+            if (index == null)
+                return null;
+            return choices[index.Value];
+        }
+
         public static int ChooseIndex(string paramName, params string[] choices)
         {
             for (int i = 0; i < choices.Length; i++)
@@ -101,6 +143,23 @@ namespace TickTrader.DedicatedServer
 
             Console.Write(paramName + ">");
             var input = Console.ReadLine();
+            int choice;
+            if (!int.TryParse(input, out choice))
+                throw new ApplicationException("Invalid integer!");
+            if (choice <= 0 || choice > choices.Length)
+                Console.WriteLine("Invalid choice!");
+            return choice - 1;
+        }
+
+        public static int? ChooseIndexNullable(string paramName, params string[] choices)
+        {
+            for (int i = 0; i < choices.Length; i++)
+                Console.WriteLine(i + 1 + ". " + choices[i]);
+
+            Console.Write(paramName + ">");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
             int choice;
             if (!int.TryParse(input, out choice))
                 throw new ApplicationException("Invalid integer!");

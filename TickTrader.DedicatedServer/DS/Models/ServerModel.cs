@@ -44,7 +44,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             _loggerFactory = loggerFactory;
             _packageStorage = new PackageStorage(loggerFactory, SyncObj);
             _accounts.ForEach(InitAccount);
-            _packageStorage.RemovingPackage += packageStorage_RemovingPackage;
         }
 
         public void Close()
@@ -88,12 +87,11 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel();
+                    var newAcc = new ClientModel(accountId.Login, accountId.Server, password);
                     InitAccount(newAcc);
-                    newAcc.Change(accountId.Server, accountId.Login, password);
+                    newAcc.Change(accountId.Login, accountId.Server, password);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
-
                     Save();
                 }
             }
@@ -113,6 +111,15 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                     AccountChanged?.Invoke(acc, ChangeAction.Removed);
                 }
+            }
+        }
+
+        public void ChangeAccountPassword(AccountKey key, string password)
+        {
+            lock (SyncObj)
+            {
+                var acc = GetAccountOrThrow(key);
+                acc.ChangePassword(password);
             }
         }
 
@@ -138,6 +145,13 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
             acc.Changed += Acc_Changed;
+            acc.BotChanged += Acc_BotChanged;
+        }
+
+        private void DeinitAccount(ClientModel acc)
+        {
+            acc.Changed -= Acc_Changed;
+            acc.BotChanged -= Acc_BotChanged;
         }
 
         private void DisposeAccount(ClientModel acc)
@@ -148,6 +162,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         private void Acc_Changed(ClientModel acc)
         {
             Save();
+        }
+
+        private void Acc_BotChanged(ITradeBot bot, ChangeAction changeAction)
+        {
+            BotChanged?.Invoke(bot, changeAction);
         }
 
         #endregion
@@ -253,7 +272,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public PlguinInfo[] GetAllPlugins()
+        public PluginInfo[] GetAllPlugins()
         {
             lock (SyncObj)
             {
@@ -263,7 +282,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public PlguinInfo[] GetPluginsByType(AlgoTypes type)
+        public PluginInfo[] GetPluginsByType(AlgoTypes type)
         {
             lock (SyncObj)
             {
@@ -271,20 +290,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 .SelectMany(p => p.GetPluginsByType(type))
                 .ToArray();
             }
-        }
-
-        private bool packageStorage_RemovingPackage(PackageModel pckg)
-        {
-            var hasRunningBots = _accounts.SelectMany(a => a.TradeBots).Any(b => b.IsRunning);
-            if (hasRunningBots)
-                return false;
-
-            foreach (var acc in _accounts)
-                acc.RemoveBotsFromPackage(pckg);
-
-            Save();
-
-            return true;
         }
 
         #endregion
