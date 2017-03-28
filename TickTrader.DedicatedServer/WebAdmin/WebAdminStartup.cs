@@ -11,6 +11,8 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Core;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.Algo.Core;
+using TickTrader.DedicatedServer.DS;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
@@ -49,6 +51,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            CoreLoggerFactory.Init(cn => new LoggerAdapter(loggerFactory.CreateLogger(cn)));
 
             if (env.IsDevelopment())
             {

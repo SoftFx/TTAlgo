@@ -68,6 +68,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             Task<ConnectionErrorCodes> testTask;
 
             var acc = new ClientModel();
+            acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
             acc.Change(server, login, password);
             lock (SyncObj)
             {
@@ -89,7 +90,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 {
                     var newAcc = new ClientModel();
                     InitAccount(newAcc);
-                    newAcc.Change(accountId.Login, accountId.Server, password);
+                    newAcc.Change(accountId.Server, accountId.Login, password);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
 

@@ -39,7 +39,8 @@ namespace TickTrader.DedicatedServer.DS.Repository
             files.AsParallel().ForAll(f =>
             {
                 var package = ReadPackage(f);
-                _packages.Add(package.Name, package);
+                lock (_packages)
+                    _packages.Add(package.Name, package);
             });
         }
 

@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, PluginSetupModel, Guid, AccountModel, ResponseStatus, ResponseCode } from "../models/index";
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, PluginSetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 
@@ -12,6 +12,7 @@ export class ApiService {
     private accountsUrl: string = '/api/Account';
     private testAccountUrl: string = '/api/TestAccount';
     private dashboardUrl: string = '/api/Dashboard';
+    private tradeBotUrl: string = '/api/TradeBot';
 
 
     dasboardBots: Observable<ExtBotModel[]>;
@@ -84,8 +85,25 @@ export class ApiService {
             () => { });
     }
 
+    GetTradeBots() {
+        return this._http.get(this.dashboardUrl)
+            .map(res => res.json().map(tb => new TradeBotModel().Deserialize(tb)))
+            .catch(this.handleServerError);
+    }
+
     SetupPlugin(setup: PluginSetupModel) {
-       return this._http.post(this.dashboardUrl, setup.Payload, { headers: this.headers })
+        return this._http.post(this.dashboardUrl, setup.Payload, { headers: this.headers })
+            .map(res => new TradeBotModel().Deserialize(res.json()))
+            .catch(this.handleServerError);
+    }
+
+    StartBot(botId: string) {
+        return this._http.post(this.tradeBotUrl, { Command: "start", BotId: botId }, { headers: this.headers })
+            .catch(this.handleServerError);
+    }
+
+    StopBot(botId: string) {
+        return this._http.post(this.tradeBotUrl, { Command: "stop", BotId: botId }, { headers: this.headers })
             .catch(this.handleServerError);
     }
 

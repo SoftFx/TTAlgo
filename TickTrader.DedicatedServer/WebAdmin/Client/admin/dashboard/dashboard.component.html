@@ -21,46 +21,15 @@
 
                     </div>
                     <div id="quickRunPanel" class="content vertical-autoscroll_600 collapse in">
-                        <bot-run-cmp></bot-run-cmp>
+                        <bot-run-cmp (OnAdded)="OnTradeBotAdded($event)"></bot-run-cmp>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-8">
                 <div class="row">
-                    <div *ngFor="let bot of dashboardBots | async | orderBy: ['-isActive', 'name'] " class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
-                        <div class="card">
-                            <div (click)="gotoDetails(bot)" class="header">
-                                <h4 class="title truncate">
-                                    <i class="fa fa-circle offline" [ngClass]="{'online': bot.isActive}"></i>
-                                    {{bot.instanceId}}
-                                </h4>
-                            </div>
-                            <div class="content">
-                                <ul class="list-unstyled">
-                                    <li class="card-text">Account: ...</li>
-                                    <li class="card-text">Server: ...</li>
-                                    <li class="card-text">Symbol: ...</li>
-                                </ul>
-                                <div class="footer">
-                                    <hr />
-                                    <div class="btn-toolbar" role="toolbar">
-                                        <div class="btn-group btn-group-sm btn-group-justified">
-                                            <a (click)="run(bot)" [class.disabled]="!(bot.state === botStateType.Stopped)" class="btn btn-simple"><span class="fa fa-play"></span></a>
-                                            <a (click)="stop(bot)" [class.disabled]="!(bot.state === botStateType.Runned)" class="btn btn-simple"><span class="fa fa-stop"></span></a>
-                                            <a (click)="configurate(bot)" [class.disabled]="!(bot.state === botStateType.Stopped)" class="btn btn-simple"><span class="fa fa-cogs"></span></a>
-                                            <a (click)="remove(bot)" [class.disabled]="!(bot.state === botStateType.Stopped)" class="btn btn-simple"><span class="fa fa-remove"></span></a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div *ngIf="bot.state === botStateType.Running || bot.state === botStateType.Stopping" class="overlay">
-                                <div class="content">
-                                    <span class="fa fa-circle-o-notch fa-spin black"></span>
-                                </div>
-                            </div>
-                        </div>
-                       
+                    <div *ngFor="let Bot of TradeBots | orderBy: ['Id'] " class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+                      <trade-bot-card-cmp [TradeBot]="Bot"></trade-bot-card-cmp> 
                     </div>
                 </div>
             </div>

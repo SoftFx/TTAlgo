@@ -1,7 +1,7 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, PluginSetupModel } from '../../models/index';
-import { ApiService } from '../../services/index';
+import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, PluginSetupModel, TradeBotModel } from '../../models/index';
+import { ApiService, ToastrService } from '../../services/index';
 import { Router } from '@angular/router';
 
 @Component({
@@ -16,8 +16,9 @@ export class BotRunComponent implements OnInit {
     public SelectedPlugin: PluginModel;
     public Setup: PluginSetupModel;
 
+    @Output() OnAdded = new EventEmitter<TradeBotModel>();
 
-    constructor(private _api: ApiService) { }
+    constructor(private _api: ApiService, private _toastr: ToastrService) { }
 
     ngOnInit() {
         this._api.GetAccounts().subscribe(response => this.Accounts = response);
@@ -26,7 +27,12 @@ export class BotRunComponent implements OnInit {
 
     addBot() {
         console.info(this.Setup.Payload);
-        this._api.SetupPlugin(this.Setup).subscribe(r => { });
+        this._api.SetupPlugin(this.Setup).subscribe(
+            tb => this.OnAdded.emit(tb),
+            err => {
+                if (!err.Handled)
+                    this._toastr.error(err.Message);
+            });
     }
 
     cancel() {

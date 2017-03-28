@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { ExtBotModel, BotModel, BotState, ParameterType } from '../../models/index';
+import { TradeBotModel, TradeBotStates } from '../../models/index';
 import { ApiService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
@@ -11,44 +11,33 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
     styles: [require('../../app.component.css')],
 })
 
-export class DashboardComponent{
-    botStateType = BotState;
-    parameterType = ParameterType;
+export class DashboardComponent {
+    BotStatesType = TradeBotStates;
+    TradeBots: TradeBotModel[];
 
-    allBots: BotModel[];
-    dashboardBots: Observable<ExtBotModel[]>;
-
-    constructor(private api: ApiService,
-        private route: ActivatedRoute,
-        private router: Router
-    ) { }
+    constructor(private _api: ApiService, private _route: ActivatedRoute, private _router: Router) { }
 
     ngOnInit() {
-        this.dashboardBots = this.api.dasboardBots;
-        this.api.loadBotsOnDashboard();
-
-        this.api.loadAllBots().subscribe(data => {
-            this.allBots = data;
-        });
+        this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 
-    run(bot: ExtBotModel) {
-        this.api.runBot(bot);
-    }
-
-    stop(bot: ExtBotModel) {
-        this.api.stopBot(bot);
-    }
-
-    configurate(bot: ExtBotModel) {
+    Start(bot: TradeBotModel) {
 
     }
 
-    remove(bot: ExtBotModel) {
-        this.api.removeBotFromDashboard(bot);
+    Stop(bot: TradeBotModel) {
     }
 
-    gotoDetails(bot: ExtBotModel) {
-        this.router.navigate(['/bot', bot.instanceId]);
+    Remove(bot: TradeBotModel) {
     }
+
+    OnTradeBotAdded(bot: TradeBotModel) {
+        this.TradeBots.push(bot);
+    }
+
+
+
+    //gotoDetails(bot: ExtBotModel) {
+    //    this.router.navigate(['/bot', bot.instanceId]);
+    //}
 }

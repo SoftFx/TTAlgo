@@ -1,0 +1,44 @@
+﻿<div class="card">
+    <div class="header">
+        <h4 class="title truncate">
+            <i class="fa fa-circle offline" [ngClass]="{'online': TradeBot.State === TradeBotState.Online}"></i>
+            {{TradeBot.Id}}
+        </h4>
+    </div>
+    <div class="content">
+        <ul class="list-unstyled">
+            <li class="card-text">Account: {{TradeBot.Account.Login}}</li>
+            <li class="card-text">Server: {{TradeBot.Account.Server}}</li>
+            <li class="card-text">Status: {{TradeBot.Status}}</li>
+        </ul>
+        <div class="footer">
+            <hr />
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group btn-group-sm btn-group-justified">
+                    <a (click)="Start()" [class.disabled]="TradeBot.State === TradeBotState.Online" class="btn btn-simple"><span class="fa fa-play"></span></a>
+                    <a (click)="Stop()" [class.disabled]="TradeBot.State === TradeBotState.Offline" class="btn btn-simple"><span class="fa fa-stop"></span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <overlay-cmp *ngIf="false">
+        <div class="text-center">
+            <span class="fa fa-circle-o-notch fa-spin black"></span>
+        </div>
+    </overlay-cmp>
+
+    <overlay-cmp *ngIf="false">
+        <div class="text-center">
+            <p>Delete?</p>
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6">
+                    <button (click)="Delete()" class="btn btn-primary ">Delete</button>
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-6">
+                    <button (click)="showConfirm=false" class="btn btn-danger ">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </overlay-cmp>
+</div>

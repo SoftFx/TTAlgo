@@ -8,6 +8,18 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class ToDtoExtensions
     {
+        public static TradeBotDto ToDto(this ITradeBot bot)
+        {
+            return new TradeBotDto()
+            {
+                Id = bot.Id,
+                IsRunning = bot.IsRunning,
+                Status = bot.Log.Status,
+                Account = bot.Account.ToDto(),
+                State = bot.State.ToString()
+            };
+        }
+
         public static PackageDto ToDto(this IPackage model)
         {
             return new PackageDto()
