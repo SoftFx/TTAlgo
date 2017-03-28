@@ -348,4 +348,7 @@
   <data name="PluginError_HasInvalidProperties" xml:space="preserve">
     <value />
   </data>
+  <data name="TimePeriod_LastHour" xml:space="preserve">
+    <value>Last Hour</value>
+  </data>
 </root>

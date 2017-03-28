@@ -243,16 +243,36 @@ namespace TickTrader.BotTerminal
     {
         public CashTransactionModel(TradeTransactionReport transaction, SymbolModel symbol) : base(transaction, symbol)
         {
-            BuyingCurrency = IsBalanceTransaction ? transaction.TransactionCurrency : transaction.DstAssetCurrency;
-            BuyingAmount = IsBalanceTransaction ? transaction.TransactionAmount : transaction.DstAssetMovement ?? 0;
-            SellingCurrency = transaction.SrcAssetCurrency;
-            SellingAmount = -transaction.SrcAssetMovement ?? 0;
+            if (GetTransactionSide(transaction) == TransactionSide.Buy)
+            {
+                AssetI = transaction.DstAssetMovement ?? 0;
+                AssetICurrency = transaction.DstAssetCurrency;
+
+                AssetII = transaction.SrcAssetMovement ?? 0;
+                AssetIICurrency = transaction.SrcAssetCurrency;
+            }
+            else if(GetTransactionSide(transaction) == TransactionSide.Sell)
+            {
+                AssetII = transaction.DstAssetMovement ?? 0;
+                AssetIICurrency = transaction.DstAssetCurrency;
+
+                AssetI = transaction.SrcAssetMovement ?? 0;
+                AssetICurrency = transaction.SrcAssetCurrency;
+            }
+            else if(IsBalanceTransaction)
+            {
+                AssetI = transaction.TransactionAmount;
+                AssetICurrency = transaction.TransactionCurrency;
+
+                AssetII = 0;
+                AssetIICurrency = "";
+            }
         }
 
-        public double BuyingAmount { get; private set; }
-        public string BuyingCurrency { get; private set; }
-        public double SellingAmount { get; private set; }
-        public string SellingCurrency { get; private set; }
+        public double AssetI { get; private set; }
+        public double AssetII { get; private set; }
+        public string AssetICurrency { get; set; }
+        public string AssetIICurrency { get; set; }
 
         protected override string GetCommissionCurrency(TradeTransactionReport transaction)
         {

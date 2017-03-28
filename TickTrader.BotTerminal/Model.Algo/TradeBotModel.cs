@@ -98,6 +98,11 @@ namespace TickTrader.BotTerminal
                 statusChanged(status);
             }
 
+            public void OnPrint(string entry)
+            {
+                journal.Custom(botName, entry);
+            }
+
             public void OnPrint(string entry, object[] parameters)
             {
                 string msg = entry;
@@ -108,6 +113,11 @@ namespace TickTrader.BotTerminal
                 catch { }
 
                 journal.Custom(botName, msg);
+            }
+
+            public void OnPrintError(string entry)
+            {
+                journal.Error(botName, entry);
             }
 
             public void OnPrintError(string entry, object[] parameters)

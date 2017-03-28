@@ -46,12 +46,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
+    <Compile Include="Bots\EnvironmentInfoBot.cs" />
+    <Compile Include="Bots\OpenOrder.cs" />
+    <Compile Include="Bots\OrderEventsBot.cs" />
+    <Compile Include="Bots\TradeBotCommon.cs" />
     <Compile Include="Bots\CancelAll.cs" />
     <Compile Include="Bots\CloseAll.cs" />
     <Compile Include="Bots\CurrencyInfoBot.cs" />
     <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\ExceptionBot.cs" />
     <Compile Include="Bots\ExitBot.cs" />
+    <Compile Include="Bots\GetAssetInfoBot.cs" />
+    <Compile Include="Bots\GetCurrencyInfoBot.cs" />
+    <Compile Include="Bots\GetSymbolInfoBot.cs" />
     <Compile Include="Bots\InvalidPropertiesBot.cs" />
     <Compile Include="Bots\OnTickBot.cs" />
     <Compile Include="Bots\OpenLimit.cs" />

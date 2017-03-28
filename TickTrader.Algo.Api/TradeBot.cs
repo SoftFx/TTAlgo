@@ -58,9 +58,19 @@ namespace TickTrader.Algo.Api
 
         public StatusApi Status { get { return context.StatusApi; } }
 
+        public void Print(string msg)
+        {
+            context.Logger.Print(msg);
+        }
+
         public void Print(string msg, params object[] parameters)
         {
             context.Logger.Print(msg, parameters);
+        }
+
+        public void PrintError(string msg)
+        {
+            context.Logger.PrintError(msg);
         }
 
         public void PrintError(string msg, params object[] parameters)

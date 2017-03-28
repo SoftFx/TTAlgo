@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
         void Unlock();
 
         bool IsStarted { get; }
-        void InitializePlugin(PluginExecutor plugin);
+        void InitializePlugin(PluginExecutor plugin, string uniqueBotName);
         void UpdatePlugin(PluginExecutor plugin);
 
         ITradeApi GetTradeApi();

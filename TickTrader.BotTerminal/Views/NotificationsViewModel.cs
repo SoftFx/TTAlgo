@@ -131,12 +131,12 @@ namespace TickTrader.BotTerminal
                     {
                         case OrderType.Position:
                             header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
-                            body = $"Your request to {order.Side} {order.RequestedVolume} of {order.Symbol} was filled at {order.Price}.";
+                            body = $"Your request to {order.Side} {order.LastFillPrice} lots of {order.Symbol} was filled at {order.LastFillPrice}. Order #{order.Id}";
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
                             header = $"Order {obj.OrderId} Placed at {order.Price}";
-                            body = $"Your {order.Side} {order.Type} order for {order.RequestedVolume} of {order.Symbol} at {order.Price} was successfully placed.";
+                            body = $"Your order #{order.Id} {order.Side} {order.Type} order for {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was placed.";
                             break;
                     }
                     break;
@@ -145,12 +145,12 @@ namespace TickTrader.BotTerminal
                     {
                         case OrderType.Position:
                             header = $"Order {obj.OrderId} Modified";
-                            body = $"Order {order.Side} {order.RequestedVolume} of {order.Symbol} at {order.Price} modified.";
+                            body = $"Order #{order.Id} {order.Side} {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was modified.";
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
                             header = $"Order {obj.OrderId} Modified";
-                            body = $"Order {order.Side} {order.Type} {order.RequestedVolume} of {order.Symbol} at {order.Price} was successfully modified.";
+                            body = $"Order #{order.Id} {order.Side} {order.Type} {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was modified.";
                             break;
                     }
                     break;
@@ -158,16 +158,16 @@ namespace TickTrader.BotTerminal
                     if (order.Type == Algo.Api.OrderType.Position)
                     {
                         header = $"Order {obj.OrderId} Filled at {order.Price}";
-                        body = $"Your request to close position {order.Side} {order.RequestedVolume} of {order.Symbol} was filled at {order.Price}.";
+                        body = $"Your request to close position #{order.Id} {order.Side} {order.RemainingVolume} lots of {order.Symbol} was filled at {order.LastFillPrice}.";
                     }
                     break;
                 case OrderExecAction.Canceled:
                     header = $"Order {obj.OrderId} Canceled";
-                    body = $"Your order {order.Side} {order.Type} {order.RequestedVolume} of {order.Symbol} at {order.Price} was successfully canceled.";
+                    body = $"Your order #{order.Id} {order.Side} {order.Type} {order.RemainingVolume} lots of {order.Symbol} at {order.Price} was canceled.";
                     break;
                 case OrderExecAction.Filled:
-                    header = $"Order {obj.OrderId} Filled at {order.Price}";
-                    body = $"Your order {order.Side} {order.Type} {order.RequestedVolume} of {order.Symbol} was filled at at {order.Price}.";
+                    header = $"Order {obj.OrderId} Filled at {order.LastFillPrice}";
+                    body = $"Your order #{order.Id} {order.Side} {order.Type} {order.LastFillVolume} lots of {order.Symbol} was filled at at {order.LastFillPrice}.";
                     break;
             }
 
