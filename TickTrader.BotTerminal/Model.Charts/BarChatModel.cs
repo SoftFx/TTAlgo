@@ -96,9 +96,9 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(setup, this);
         }
 
-        public override void InitializePlugin(PluginExecutor plugin)
+        public override void InitializePlugin(PluginExecutor plugin, string uniqueBotName)
         {
-            base.InitializePlugin(plugin);
+            base.InitializePlugin(plugin, uniqueBotName);
             var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies);
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;

@@ -60,6 +60,7 @@ namespace TickTrader.Algo.Core
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
+        public string BotDataFolder { get; set; }
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 

@@ -8,6 +8,7 @@ using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -335,11 +336,20 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeApi;
         }
 
-        public virtual void InitializePlugin(PluginExecutor plugin)
+        public virtual void InitializePlugin(PluginExecutor plugin, string uniqueBotName)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = ClientModel.Account;
             plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            if (string.IsNullOrEmpty(uniqueBotName))
+            {
+                plugin.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            }
+            else
+            {
+                plugin.BotWorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                EnvService.Instance.EnsureFolder(plugin.BotWorkingFolder);
+            }
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)
