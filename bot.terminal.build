@@ -170,8 +170,8 @@
     <exec program="dotnet" workingdir="${SourcesDir}TickTrader.DedicatedServer">
       <arg value="build" />
       <arg value="--configuration"/>
-	  <arg value="Release"/>
-	  <arg value="--no-dependencies"/>
+	    <arg value="Release"/>
+	    <!--<arg value="--no-dependencies"/>-->
     </exec>
   </target>
   
