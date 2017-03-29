@@ -50,7 +50,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 switch (param.DataType)
                 {
                     case "Int":
-                        barConfig.Properties.Add(new IntParameter() { Id = param.Id, Value = (int)param.Value });
+                        barConfig.Properties.Add(new IntParameter() { Id = param.Id, Value = (int)(long)param.Value });
                         break;
                     case "Double":
                         barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
