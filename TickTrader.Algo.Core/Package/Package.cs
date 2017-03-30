@@ -53,10 +53,12 @@ namespace TickTrader.Algo.Core
             files.Add(normalizedPath, bytes);
         }
 
-        public void Save(FileStream stream)
+        public void Save(ref FileStream stream)
         {
             using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
             {
+                stream = null;
+
                 // write files
 
                 foreach (var file in files)

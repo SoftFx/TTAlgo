@@ -86,11 +86,19 @@ namespace TickTrader.Algo.Core
             int retry = 1;
             while(true)
             {
-                FileStream stream;
-                if (TryOpenWrite(path, out stream))
+                FileStream stream = null;
+                try
                 {
-                    using (stream) pckg.Save(stream);
-                    break;
+                    if (TryOpenWrite(path, out stream))
+                    {
+                        pckg.Save(ref stream);
+                        break;
+                    }
+                }
+                finally
+                {
+                    if (stream != null)
+                        stream.Dispose();
                 }
 
                 trace("File is locked! Retry " + retry + " ...");
