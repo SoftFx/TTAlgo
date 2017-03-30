@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Open Order Script")]
-    public class OpenOrder : TradeBot
+    public class OpenOrder : TradeBotCommon
     {
         [Parameter(DefaultValue = 0.1)]
         public double Volume { get; set; }
@@ -28,7 +28,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void OnStart()
         {
             var price = Math.Abs(Price) > Symbol.Point ? Price : (Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid);
-            OpenOrder(Symbol.Name, Type, Side, Volume, price, null, null, "Open Order Bot " + DateTime.Now, Options, Tag);
+            var res = OpenOrder(Symbol.Name, Type, Side, Volume, price, null, null, "Open Order Bot " + DateTime.Now, Options, Tag);
+            Status.WriteLine($"ResultCode = {res.ResultCode}");
+            if (res.ResultingOrder != null)
+            {
+                Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
+            }
             Exit();
         }
     }
