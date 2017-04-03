@@ -8,7 +8,12 @@
              d:DesignHeight="300" d:DesignWidth="300">
     
     <Grid>
-        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}">
+        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
                     <DataGridTextColumn.CellStyle>
@@ -51,6 +56,12 @@
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Order.Profit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Commission" Width="*">
                     <DataGridTextColumn.Binding>
@@ -59,6 +70,12 @@
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Order.Commission"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Order.Swap}" />
                 <DataGridTextColumn Header="Net P/L" Width="*">
@@ -68,6 +85,12 @@
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ClipboardContentBinding>
+                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
+                            <Binding Path="Order.NetProfit"/>
+                            <Binding Path="ProfitDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
             </DataGrid.Columns>

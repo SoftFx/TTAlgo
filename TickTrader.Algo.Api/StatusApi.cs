@@ -8,7 +8,9 @@ namespace TickTrader.Algo.Api
 {
     public interface StatusApi
     {
+        void Write(string str);
         void Write(string str, params object[] strParams);
+        void WriteLine(string str);
         void WriteLine(string str, params object[] strParams);
         void WriteLine();
         void Flush();

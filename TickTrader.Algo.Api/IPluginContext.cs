@@ -40,7 +40,9 @@ namespace TickTrader.Algo.Api
 
     internal interface IPluginMonitor
     {
+        void Print(string entry);
         void Print(string entry, object[] parameters);
+        void PrintError(string entry);
         void PrintError(string entry, object[] parameters);
     }
 

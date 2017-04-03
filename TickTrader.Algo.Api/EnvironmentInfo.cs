@@ -9,5 +9,9 @@ namespace TickTrader.Algo.Api
     public interface EnvironmentInfo
     {
         string DataFolder { get; }
+        /// <summary>
+        /// Bot data folder path, equals <code>DataFolder</code> for indicators.
+        /// </summary>
+        string BotDataFolder { get; }
     }
 }

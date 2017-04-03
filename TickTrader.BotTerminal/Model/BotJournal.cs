@@ -32,43 +32,50 @@ namespace TickTrader.BotTerminal
 
         public void Custom(string botName, string message)
         {
-            Custom(botName, message, new object[0]);
+            var botMessage = new BotMessage(botName, message, JournalMessageType.Custom);
+            Add(botMessage);
+            LogInfo(botMessage);
         }
+
         public void Custom(string botName, string message, params object[] args)
         {
-            var botMessage = new BotMessage(botName, string.Format(message, args), JournalMessageType.Custom);
-            Add(botMessage);
-            LogInfo(botMessage);
+            Custom(botName, string.Format(message, args));
         }
+
         public void Info(string botName, string message)
         {
-            Info(botName, message, new object[0]);
-        }
-        public void Info(string botName, string message, params object[] args)
-        {
-            var botMessage = new BotMessage(botName, string.Format(message, args), JournalMessageType.Info);
+            var botMessage = new BotMessage(botName, message, JournalMessageType.Info);
             Add(botMessage);
             LogInfo(botMessage);
         }
+
+        public void Info(string botName, string message, params object[] args)
+        {
+            Info(botName, string.Format(message, args));
+        }
+
         public void Error(string botName, string message)
         {
-            Error(botName, message, new object[0]);
-        }
-        public void Error(string botName, string message, params object[] args)
-        {
-            var botMessage = new BotMessage(botName, string.Format(message, args), JournalMessageType.Error);
+            var botMessage = new BotMessage(botName, message, JournalMessageType.Error);
             Add(botMessage);
             LogError(botMessage);
         }
+
+        public void Error(string botName, string message, params object[] args)
+        {
+            Error(botName, string.Format(message, args));
+        }
+
         public void Trading(string botName, string message)
         {
-            Trading(botName, message, new object[0]);
-        }
-        public void Trading(string botName, string message, params object[] args)
-        {
-            var botMessage = new BotMessage(botName, string.Format(message, args), JournalMessageType.Trading);
+            var botMessage = new BotMessage(botName, message, JournalMessageType.Trading);
             Add(botMessage);
             LogInfo(botMessage);
+        }
+
+        public void Trading(string botName, string message, params object[] args)
+        {
+            Trading(botName, string.Format(message, args));
         }
 
 
@@ -77,11 +84,13 @@ namespace TickTrader.BotTerminal
             var logger = GetOrAddLogger(message.Bot);
             logger.Info(message.ToString());
         }
+
         private void LogError(BotMessage message)
         {
             var logger = GetOrAddLogger(message.Bot);
             logger.Error(message.ToString());
         }
+
         private Logger GetOrAddLogger(string botName)
         {
             var loggerName = $"{nameof(BotJournal)}.{PathHelper.GetSafeFileName(botName)}";

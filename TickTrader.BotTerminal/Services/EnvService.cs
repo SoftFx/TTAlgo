@@ -84,7 +84,7 @@ namespace TickTrader.BotTerminal
         public IObjectStorage UserDataStorage { get; private set; }
         public IObjectStorage ProtectedUserDataStorage { get; private set; }
 
-        private void EnsureFolder(string folderPath)
+        public void EnsureFolder(string folderPath)
         {
             if (string.IsNullOrEmpty(folderPath))
                 return;

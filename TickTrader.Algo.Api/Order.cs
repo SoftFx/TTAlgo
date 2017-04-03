@@ -22,6 +22,10 @@ namespace TickTrader.Algo.Api
         string Tag { get; }
         DateTime Modified { get; }
         DateTime Created { get; }
+        double ExecPrice { get; }
+        double ExecVolume { get; }
+        double LastFillPrice { get; }
+        double LastFillVolume { get; }
     }
 
     public enum OrderType { Market, Limit, Stop, StopLimit, Position }

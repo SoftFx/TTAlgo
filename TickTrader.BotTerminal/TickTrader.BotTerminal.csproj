@@ -118,12 +118,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net, Version=1.19.13.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.19.800\lib\net40\SoftFX.Extended.Net.dll</HintPath>
+    <Reference Include="SoftFX.Extended.Net, Version=1.19.18.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.19.815\lib\net40\SoftFX.Extended.Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.19.800\lib\net40\SoftFX.Lrp.dll</HintPath>
+      <HintPath>..\packages\SoftFX.FDK.1.19.815\lib\net40\SoftFX.Lrp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -260,6 +260,7 @@
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
@@ -274,7 +275,6 @@
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
-    <Compile Include="Lib\ValidationGroup.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
@@ -576,6 +576,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles.Classic\DataGrid.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\DateTimePicker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

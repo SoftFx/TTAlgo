@@ -60,7 +60,8 @@
                                         CellStyle="{DynamicResource DataGridCellStyle_RightAligned}"
                                         SortMemberPath="Time" SortDirection="Ascending" />
                     <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="*"
-                                            CellTemplate="{StaticResource MessageCellTemplate}"/>
+                                            CellTemplate="{StaticResource MessageCellTemplate}"
+                                            ClipboardContentBinding="{Binding Message}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
     {
         private double? rate;
         private int precision;
-        private string rateFormat;
+        //private string rateFormat;
 
         public double? Rate
         {

@@ -60,6 +60,7 @@ namespace TickTrader.Algo.Core
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
+        public string BotDataFolder { get; set; }
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -573,9 +574,21 @@ namespace TickTrader.Algo.Core
                 Apply();
             }
 
+            void StatusApi.Write(string str)
+            {
+                statusBuilder.Append(str);
+                hasChanges = true;
+            }
+
             void StatusApi.Write(string str, object[] strParams)
             {
                 statusBuilder.AppendFormat(str, strParams);
+                hasChanges = true;
+            }
+
+            void StatusApi.WriteLine(string str)
+            {
+                statusBuilder.Append(str).AppendLine();
                 hasChanges = true;
             }
 

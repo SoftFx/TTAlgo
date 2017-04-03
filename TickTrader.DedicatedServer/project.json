@@ -22,7 +22,7 @@
     "Microsoft.AspNet.SignalR.Core": "2.2.1",
     "TickTrader.Common.Dlls": "1.25.5",
     "System.Threading.Tasks.Dataflow": "4.5.25",
-    "SoftFX.FDK": "1.19.800"
+    "SoftFX.FDK": "1.19.815"
   },
 
   "tools": {
