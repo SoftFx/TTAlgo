@@ -24,6 +24,7 @@ namespace TickTrader.BotTerminal
         private DateTime? created;
         private DateTime? expiration;
         private string comment;
+        private string tag;
         private double? stopLoss;
         private double? takeProfit;
         private decimal? profit;
@@ -190,7 +191,18 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-        public string Tag { get; private set; }
+        public string Tag
+        {
+            get { return tag; }
+            private set
+            {
+                if (tag != value)
+                {
+                    tag = value;
+                    NotifyOfPropertyChange(nameof(Tag));
+                }
+            }
+        }
         public double? TakeProfit
         {
             get { return takeProfit; }
