@@ -152,8 +152,10 @@ export class ApiService {
             .catch(this.handleServerError);
     }
 
-    UpdateAccount(acc: AccountModel) {
-        return Observable.throw('NotImplemented');
+    ChangeAccountPassword(acc: AccountModel) {
+        return this._http
+            .patch(this.accountsUrl, acc, { headers: this.headers })
+            .catch(this.handleServerError);
     }
 
     TestAccount(acc: AccountModel) {

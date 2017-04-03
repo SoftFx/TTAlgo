@@ -6,9 +6,10 @@
                     <i class="fa fa-ellipsis-v"></i>
                 </button>
                 <ul class="dropdown-menu pull-right">
-                    <li><a (click)="confirmDeletion=true" href="javascript:;">Delete</a></li>
+                    <li><a (click)="TestAccount()" href="javascript:;">Test</a></li>
+                    <li><a (click)="ChangePassword()" href="javascript:;">Change Password</a></li>
                     <li class="divider"></li>
-                    <li><a (click)="Test()" href="javascript:;">Test</a></li>
+                    <li><a (click)="confirmDeletion=true" href="javascript:;">Delete</a></li>
                 </ul>
             </div>
         </div>
@@ -24,6 +25,14 @@
         </ul>
     </div>
 
+    <overlay-cmp *ngIf="ChangePasswordEnabled">
+           <change-password-cmp [Account]="Account" (OnChanged)="PasswordChangedOrCnaceled()" (OnCanceled)="PasswordChangedOrCnaceled()"></change-password-cmp>
+    </overlay-cmp>
+    
+    <overlay-cmp *ngIf="TestAccountEnabled">
+        <test-account-cmp [Account]="Account" (OnClosed)="TestAccountClosed()"></test-account-cmp>
+    </overlay-cmp>
+
     <overlay-cmp *ngIf="confirmDeletion">
         <div class="text-center">
             <p>Delete?</p>
@@ -34,18 +43,6 @@
                 <div class="col-xs-6 col-sm-6 col-md-6">
                     <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
                 </div>
-            </div>
-        </div>
-    </overlay-cmp>
-    <overlay-cmp *ngIf="ConnectionTestRunning">
-        <span class="fa fa-circle-o-notch fa-spin black"></span>
-        Testing ...
-    </overlay-cmp>
-    <overlay-cmp *ngIf="TestResult">
-        <div class="text-center">
-            <p>Result: {{TestResult.Message}}</p>
-            <div class="row">
-                <button (click)="ResetTestResult()" class="btn btn-primary  col-md-offset-4 col-sm-4">Ok</button>
             </div>
         </div>
     </overlay-cmp>

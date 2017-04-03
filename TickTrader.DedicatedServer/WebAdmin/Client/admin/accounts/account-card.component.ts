@@ -9,8 +9,9 @@ import { ApiService, ToastrService } from '../../services/index';
 })
 
 export class AccountCardComponent {
-    public TestResult: ConnectionTestResult;
-    public ConnectionTestRunning: boolean;
+
+    public ChangePasswordEnabled: boolean;
+    public TestAccountEnabled: boolean;
 
     constructor(private _api: ApiService, private _toastr: ToastrService) { }
 
@@ -18,29 +19,27 @@ export class AccountCardComponent {
     @Output() onDeleted = new EventEmitter<AccountModel>();
     @Output() onUpdated = new EventEmitter<AccountModel>();
 
-    public Update() {
-        this._api.UpdateAccount(<AccountModel>Object.assign({}, this.Account))
-            .subscribe(ok => this.onUpdated.emit(this.Account),
-            err => this._toastr.error(`Error updating account ${this.Account.Login} (${this.Account.Server})`));
+    /* Change Password */
+    public ChangePassword() {
+        this.ChangePasswordEnabled = true;
+    }
+
+    public PasswordChangedOrCnaceled() {
+        this.ChangePasswordEnabled = false;
+    }
+
+    /*Test Account*/
+    public TestAccount() {
+        this.TestAccountEnabled = true;
+    }
+
+    public TestAccountClosed() {
+        this.TestAccountEnabled = false;
     }
 
     public Delete() {
         this._api.DeleteAccount(Object.assign(new AccountModel(), this.Account))
             .subscribe(ok => this.onDeleted.emit(this.Account),
             err => this._toastr.error(`Error deleting account ${this.Account.Login} (${this.Account.Server})`));
-    }
-
-    public Test() {
-        let accountClone = Object.assign(new AccountModel(), this.Account);
-        this.ConnectionTestRunning = true;
-        this.ResetTestResult();
-
-        this._api.TestAccount(accountClone)
-            .finally(() => { this.ConnectionTestRunning = false; })
-            .subscribe(ok => this.TestResult = new ConnectionTestResult(ok.json()));
-    }
-
-    public ResetTestResult() {
-        this.TestResult = null;
     }
 }

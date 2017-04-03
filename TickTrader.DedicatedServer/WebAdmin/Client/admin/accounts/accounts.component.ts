@@ -9,10 +9,9 @@ import { AccountModel, ResponseStatus, ResponseCode, ConnectionErrorCodes, Conne
 })
 
 export class AccountsComponent implements OnInit {
-    public TestResult: ConnectionTestResult;
-    public ConnectionTestRunning: boolean;
     public Accounts: AccountModel[];
     public Account: AccountModel = new AccountModel();
+    public TestAccountEnabled: boolean;
 
     constructor(private _api: ApiService, private _toastr: ToastrService) {
     }
@@ -40,17 +39,11 @@ export class AccountsComponent implements OnInit {
         this.Account = new AccountModel();
     }
 
-    public Test() {
-        let accountClone = Object.assign(new AccountModel(), this.Account);
-        this.ConnectionTestRunning = true;
-        this.ResetTestResult();
-
-        this._api.TestAccount(accountClone)
-            .finally(() => { this.ConnectionTestRunning = false; })
-            .subscribe(ok => this.TestResult = new ConnectionTestResult(ok.json()));
+    public TestAccount() {
+        this.TestAccountEnabled = true;
     }
 
-    public ResetTestResult() {
-        this.TestResult = null;
+    public TestAccountClosed() {
+        this.TestAccountEnabled = false;
     }
 }

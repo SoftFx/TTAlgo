@@ -48,6 +48,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             _dedicatedServer.RemoveAccount(new AccountKey(login ?? "", server ?? ""));
         }
 
-       
+        [HttpPatch]
+        public void Patch([FromBody] AccountDto account)
+        {
+            _dedicatedServer.ChangeAccountPassword(new AccountKey(account.Login, account.Server), account.Password);
+        }
     }
 }

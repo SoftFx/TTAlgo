@@ -30,23 +30,14 @@
                         </div>
                         
                         <div class="pull-right">
-                            <button (click)="Test()" class="btn btn-primary">Test</button>
+                            <button (click)="TestAccount()" class="btn btn-primary">Test</button>
                             <button (click)="Add()" class="btn btn-primary">Add</button>
                             <button (click)="Cancel()" class="btn btn-warning">Cancel</button>
                         </div>
                     </div>
 
-                    <overlay-cmp *ngIf="ConnectionTestRunning">
-                        <span class="fa fa-circle-o-notch fa-spin black"></span>
-                        Testing ...
-                    </overlay-cmp>
-                    <overlay-cmp *ngIf="TestResult">
-                        <div class="text-center">
-                            <p>Result: {{TestResult.Message}}</p>
-                            <div class="row">
-                                <button (click)="ResetTestResult()" class="btn btn-primary col-md-offset-4 col-sm-4">Ok</button>
-                            </div>
-                        </div>
+                    <overlay-cmp *ngIf="TestAccountEnabled">
+                        <test-account-cmp [Account]="Account" (OnClosed)="TestAccountClosed()"></test-account-cmp>
                     </overlay-cmp>
                 </div>
 
