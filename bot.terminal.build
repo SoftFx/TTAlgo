@@ -1,31 +1,31 @@
 <project name="TickTrader server" default="help">
 
-  <property name="MSBuildDir"		    value="C:\Program Files (x86)\MSBuild\14.0\Bin\amd64\"		unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
 
   <tstamp property="Date"		        pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
   <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
-  <property name="Configuration"	  value="Release"							                unless="${property::exists('Configuration')}" />
+  <property name="Configuration"		value="Release"							                unless="${property::exists('Configuration')}" />
 
-  <property name="SourcesDir"		    value="c:\platform.algo\"							      unless="${property::exists('SourcesDir')}" />
-  <property name="SolutionFile"		  value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
+  <property name="SourcesDir"		    value=".\"							      unless="${property::exists('SourcesDir')}" />
+  <property name="SolutionFile"			value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
   
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
 
-  <property name="WinScpPath"       value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
+  <property name="WinScpPath"			value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
 
-  <property name="OutpuFolder"      value="${SourcesDir}build.ouput\" />
+  <property name="OutpuFolder"			value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
-  <property name="ToolsFolder"	    value="${SourcesDir}tools\"  />
+  <property name="ToolsFolder"			value="${SourcesDir}tools\"  />
 
   <target name="help">
     <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Publish|Clean]"/>
   </target>
 
   <target name="Build" >
-	  <property name="Build.Target" value="Publish" />
+	<property name="Build.Target" value="Publish" />
     <call target="CleanUpFolder" />
     <call target="RunMSBuild" />
-	  <call target="CreateBinPackage" />
+	<call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
     <property name="Package.ProjectFolder" value="TickTrader.Algo.TestCollection" />
     <call target="CreateAlgoPackage"/>
@@ -106,17 +106,16 @@
 
     <property name="BotTerminalBinDir" value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}" />
     <property name="BotTerminalDestArchive" value="${OutpuFolder}BotTerminal ${Build}.zip" />
-    <property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
-    <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
-    <property name="IndicatorsBinDir" value="${SourcesDir}TickTrader.Algo.Indicators\bin\${Configuration}" />
-    <property name="IndicatorsDestArchive" value="${OutpuFolder}Indicators ${Build}.zip" />
-
+    
     <zip zipfile="${BotTerminalDestArchive}">
       <fileset basedir="${BotTerminalBinDir}">
         <include name ="*.*" />
         <include name ="**/*" />
       </fileset>
     </zip>
+
+	<property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
+    <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
 
     <zip zipfile="${CoreDestArchive}">
       <fileset basedir="${CoreBinDir}">
@@ -125,8 +124,21 @@
       </fileset>
     </zip>
 
+	<property name="IndicatorsBinDir" value="${SourcesDir}TickTrader.Algo.Indicators\bin\${Configuration}" />
+    <property name="IndicatorsDestArchive" value="${OutpuFolder}Indicators ${Build}.zip" />
+
     <zip zipfile="${IndicatorsDestArchive}">
       <fileset basedir="${IndicatorsBinDir}">
+        <include name ="*.*" />
+        <include name ="**/*" />
+      </fileset>
+    </zip>
+
+	<property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net452\publish\" />
+    <property name="ServerDestArchive" value="${OutpuFolder}DedicatedServer ${Build}.zip" />
+
+    <zip zipfile="${ServerDestArchive}">
+      <fileset basedir="${ServerBinDir}">
         <include name ="*.*" />
         <include name ="**/*" />
       </fileset>
