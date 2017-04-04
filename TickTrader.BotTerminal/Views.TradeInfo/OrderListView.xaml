@@ -63,6 +63,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
+                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
