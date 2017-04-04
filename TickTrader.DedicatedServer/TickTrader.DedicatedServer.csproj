@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
@@ -7,10 +7,12 @@
     <OutputType>Exe</OutputType>
     <PackageId>TickTrader.DedicatedServer</PackageId>
     <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <PostBuildEvent></PostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="WebAdmin\Server\Views\**\*;WebAdmin\wwwroot">
+    <None Update="WebAdmin\Server\Views\**\*;WebAdmin\wwwroot\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj" />
@@ -36,9 +38,9 @@
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.0.1" />
     <PackageReference Include="Swashbuckle" Version="6.0.0-beta901" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Core" Version="2.2.1" />
-    <PackageReference Include="TickTrader.Common.Dlls" Version="1.25.5" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.6.0" />
-    <PackageReference Include="SoftFX.FDK" Version="1.19.815" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.5.24" />
+    <PackageReference Include="SoftFX.FDK" Version="1.19.832" />
+    <PackageReference Include="TickTrader.Common.Dlls" Version="1.27.8" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">

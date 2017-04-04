@@ -20,7 +20,6 @@ namespace TickTrader.Algo.Common.Model
 
             BaseCurrencyDigits = BaseCurrency?.Precision ?? 2;
             QuoteCurrencyDigits = QuoteCurrency?.Precision ?? 2;
-
         }
 
         public string Name { get { return Descriptor.Name; } }
@@ -36,6 +35,7 @@ namespace TickTrader.Algo.Common.Model
         public double? CurrentAsk { get; private set; }
         public double? CurrentBid { get; private set; }
         public double LotSize { get { return Descriptor.RoundLot; } }
+        public double StopOrderMarginReduction => Descriptor.StopOrderMarginReduction ?? 0;
 
         #region ISymbolInfo
 

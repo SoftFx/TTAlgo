@@ -188,6 +188,18 @@ namespace TickTrader.BotTerminal
                     AssetsChanged(args.OldItem, AssetChangeTypes.Removed);
             }
 
+            public void LogInfo(string message)
+            {
+            }
+
+            public void LogWarn(string message)
+            {
+            }
+
+            public void LogError(string message)
+            {
+            }
+
             public event Action<IOrderModel> OrderAdded = delegate { };
             public event Action<IOrderModel> OrderRemoved = delegate { };
             public event Action<IOrderModel> OrderReplaced = delegate { };
