@@ -1,6 +1,6 @@
 <project name="TickTrader server" default="help">
 
-  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"  		unless="${property::exists('MSBuildDir')}" />
 
   <tstamp property="Date"		        pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
   <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
@@ -61,7 +61,7 @@
       </exec>
     </if>
 
-    <exec program="${MSBuildDir}msbuild.exe" >
+    <exec program="${MSBuildDir}\msbuild.exe" >
       <arg value="${MSBuild.SolutionFile}" />
       <arg value="/t:${MSBuild.Target}" />
       <arg value="/maxcpucount" />
