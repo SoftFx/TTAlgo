@@ -1,6 +1,6 @@
 <project name="TickTrader server" default="help">
 
-  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"  		unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
 
   <tstamp property="Date"		        pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
   <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
@@ -60,6 +60,10 @@
         <arg value="/USER:${Publish.User}" />
       </exec>
     </if>
+
+	<exec program="dotnet" workingdir="${SourcesDir}">
+      <arg value="restore" />
+    </exec>
 
     <exec program="${MSBuildDir}msbuild.exe" >
       <arg value="${MSBuild.SolutionFile}" />
