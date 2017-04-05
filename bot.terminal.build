@@ -61,7 +61,7 @@
       </exec>
     </if>
 
-    <exec program="${MSBuildDir}\msbuild.exe" >
+    <exec program="${MSBuildDir}msbuild.exe" >
       <arg value="${MSBuild.SolutionFile}" />
       <arg value="/t:${MSBuild.Target}" />
       <arg value="/maxcpucount" />
