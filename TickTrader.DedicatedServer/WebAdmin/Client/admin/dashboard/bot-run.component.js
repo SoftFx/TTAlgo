@@ -12,8 +12,10 @@ var core_1 = require("@angular/core");
 var index_1 = require("../../models/index");
 var index_2 = require("../../services/index");
 var BotRunComponent = (function () {
-    function BotRunComponent(_api) {
+    function BotRunComponent(_api, _toastr) {
         this._api = _api;
+        this._toastr = _toastr;
+        this.OnAdded = new core_1.EventEmitter();
     }
     BotRunComponent.prototype.ngOnInit = function () {
         var _this = this;
@@ -21,8 +23,12 @@ var BotRunComponent = (function () {
         this._api.GetPackages().subscribe(function (response) { return _this.Packages = response; });
     };
     BotRunComponent.prototype.addBot = function () {
+        var _this = this;
         console.info(this.Setup.Payload);
-        this._api.SetupPlugin(this.Setup).subscribe(function (r) { });
+        this._api.SetupPlugin(this.Setup).subscribe(function (tb) { return _this.OnAdded.emit(tb); }, function (err) {
+            if (!err.Handled)
+                _this._toastr.error(err.Message);
+        });
     };
     BotRunComponent.prototype.cancel = function () {
     };
@@ -31,13 +37,17 @@ var BotRunComponent = (function () {
     };
     return BotRunComponent;
 }());
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", Object)
+], BotRunComponent.prototype, "OnAdded", void 0);
 BotRunComponent = __decorate([
     core_1.Component({
         selector: 'bot-run-cmp',
         template: require('./bot-run.component.html'),
         styles: [require('../../app.component.css')],
     }),
-    __metadata("design:paramtypes", [index_2.ApiService])
+    __metadata("design:paramtypes", [index_2.ApiService, index_2.ToastrService])
 ], BotRunComponent);
 exports.BotRunComponent = BotRunComponent;
 //# sourceMappingURL=bot-run.component.js.map

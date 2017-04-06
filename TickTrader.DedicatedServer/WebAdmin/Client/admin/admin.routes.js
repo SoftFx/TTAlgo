@@ -21,10 +21,13 @@ exports.MODULE_COMPONENTS = [
     index_1.DashboardComponent,
     index_3.AccountsComponent,
     index_3.AccountCardComponent,
+    index_3.ChangePasswordComponent,
+    index_3.TestAccountComponent,
     index_2.RepositoryComponent,
     index_2.PackageCardComponent,
     index_1.BotDetailComponent,
     index_1.BotRunComponent,
-    index_1.PluginSetupComponent
+    index_1.PluginSetupComponent,
+    index_1.TradeBotCardComponent
 ];
 //# sourceMappingURL=admin.routes.js.map

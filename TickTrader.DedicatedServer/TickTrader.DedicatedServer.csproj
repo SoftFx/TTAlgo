@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>TickTrader.DedicatedServer</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -9,6 +9,10 @@
     <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <PostBuildEvent></PostBuildEvent>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NET462</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.AngularServices" Version="1.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />

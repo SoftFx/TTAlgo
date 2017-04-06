@@ -29,8 +29,8 @@ AppModule = __decorate([
             expression_true_directive_1.ExpressionTrue
         ],
         providers: [
-            index_1.FeedService,
             index_1.AuthService,
+            index_1.FeedService,
             index_1.AuthGuard,
             index_1.ApiService,
             index_1.ResourceService,

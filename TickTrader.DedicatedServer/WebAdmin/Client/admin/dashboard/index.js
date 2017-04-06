@@ -6,4 +6,5 @@ __export(require("./bot-detail.component"));
 __export(require("./bot-run.component"));
 __export(require("./plugin-setup.component"));
 __export(require("./dashboard.component"));
+__export(require("./trade-bot-card.component"));
 //# sourceMappingURL=index.js.map

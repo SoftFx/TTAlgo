@@ -14,18 +14,30 @@ var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
 var index_1 = require("../models/index");
 var http_1 = require("@angular/http");
 var feed_service_1 = require("./feed.service");
+var auth_service_1 = require("./auth.service");
 var ApiService = (function () {
-    function ApiService(_http, Feed) {
+    function ApiService(_http, Auth, Feed) {
+        var _this = this;
         this._http = _http;
+        this.Auth = Auth;
         this.Feed = Feed;
         this.headers = new http_1.Headers({ 'Content-Type': 'application/json' });
         this.repositoryUrl = '/api/Repository';
         this.accountsUrl = '/api/Account';
         this.testAccountUrl = '/api/TestAccount';
         this.dashboardUrl = '/api/Dashboard';
+        this.tradeBotUrl = '/api/TradeBot';
         this.dataStore = { bots: [] };
         this._bots = new BehaviorSubject_1.BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
+        this.Auth.AuthDataUpdated.subscribe(function (authData) {
+            if (authData) {
+                _this.headers.append('Authorization', 'Bearer ' + authData.token);
+            }
+            else {
+                _this.headers.delete('Authorization');
+            }
+        });
     }
     ApiService.prototype.loadAllBots = function () {
         return Rx_1.Observable.of(index_1.FakeData.bots);
@@ -78,16 +90,31 @@ var ApiService = (function () {
             _this.updateBotState(bot, response);
         }, function (err) { }, function () { });
     };
+    ApiService.prototype.GetTradeBots = function () {
+        return this._http.get(this.dashboardUrl, { headers: this.headers })
+            .map(function (res) { return res.json().map(function (tb) { return new index_1.TradeBotModel().Deserialize(tb); }); })
+            .catch(this.handleServerError);
+    };
     ApiService.prototype.SetupPlugin = function (setup) {
         return this._http.post(this.dashboardUrl, setup.Payload, { headers: this.headers })
+            .map(function (res) { return new index_1.TradeBotModel().Deserialize(res.json()); })
+            .catch(this.handleServerError);
+    };
+    ApiService.prototype.StartBot = function (botId) {
+        return this._http.post(this.tradeBotUrl, { Command: "start", BotId: botId }, { headers: this.headers })
+            .catch(this.handleServerError);
+    };
+    ApiService.prototype.StopBot = function (botId) {
+        return this._http.post(this.tradeBotUrl, { Command: "stop", BotId: botId }, { headers: this.headers })
             .catch(this.handleServerError);
     };
     /* >>> API Repository*/
     ApiService.prototype.UploadPackage = function (file) {
         var input = new FormData();
         input.append("file", file);
+        var header = new http_1.Headers({ 'Authorization': 'Bearer ' + this.Auth.AuthData.token });
         return this._http
-            .post(this.repositoryUrl, input)
+            .post(this.repositoryUrl, input, { headers: header })
             .catch(this.handleServerError);
     };
     ApiService.prototype.DeletePackage = function (name) {
@@ -97,7 +124,7 @@ var ApiService = (function () {
     };
     ApiService.prototype.GetPackages = function () {
         return this._http
-            .get(this.repositoryUrl)
+            .get(this.repositoryUrl, { headers: this.headers })
             .map(function (res) { return res.json().map(function (i) { return new index_1.PackageModel().Deserialize(i); }); })
             .catch(this.handleServerError);
     };
@@ -105,7 +132,7 @@ var ApiService = (function () {
     /* >>> API Accounts */
     ApiService.prototype.GetAccounts = function () {
         return this._http
-            .get(this.accountsUrl)
+            .get(this.accountsUrl, { headers: this.headers })
             .map(function (res) { return res.json().map(function (i) { return new index_1.AccountModel().Deserialize(i); }); })
             .catch(this.handleServerError);
     };
@@ -119,8 +146,10 @@ var ApiService = (function () {
             .delete(this.accountsUrl + "/?" + $.param({ login: acc.Login, server: acc.Server }), { headers: this.headers })
             .catch(this.handleServerError);
     };
-    ApiService.prototype.UpdateAccount = function (acc) {
-        return Rx_1.Observable.throw('NotImplemented');
+    ApiService.prototype.ChangeAccountPassword = function (acc) {
+        return this._http
+            .patch(this.accountsUrl, acc, { headers: this.headers })
+            .catch(this.handleServerError);
     };
     ApiService.prototype.TestAccount = function (acc) {
         return this._http.post(this.testAccountUrl, acc, { headers: this.headers })
@@ -148,7 +177,7 @@ var ApiService = (function () {
 }());
 ApiService = __decorate([
     core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http, feed_service_1.FeedService])
+    __metadata("design:paramtypes", [http_1.Http, auth_service_1.AuthService, feed_service_1.FeedService])
 ], ApiService);
 exports.ApiService = ApiService;
 //# sourceMappingURL=api.service.js.map

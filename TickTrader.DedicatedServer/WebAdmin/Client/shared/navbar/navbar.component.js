@@ -31,7 +31,7 @@ var NavbarComponent = (function () {
         return 'Dashboard';
     };
     NavbarComponent.prototype.logout = function () {
-        this.authService.logOut().subscribe(null, function (error) { return console.log('LogOut error: ' + error); });
+        this.authService.LogOut();
         this.router.navigate(['login']);
     };
     return NavbarComponent;

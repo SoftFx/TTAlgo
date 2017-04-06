@@ -24,10 +24,10 @@ var AuthGuard = (function () {
         return this.canActivate(route, state);
     };
     AuthGuard.prototype.checkLogin = function (url) {
-        if (this.authService.isAuthorized()) {
+        if (this.authService.IsAuthorized()) {
             return true;
         }
-        this.authService.redirectUrl = url;
+        this.authService.RedirectUrl = url;
         this.router.navigate(['/login']);
         return false;
     };

@@ -36,17 +36,11 @@ var AccountsComponent = (function () {
     AccountsComponent.prototype.Cancel = function () {
         this.Account = new index_2.AccountModel();
     };
-    AccountsComponent.prototype.Test = function () {
-        var _this = this;
-        var accountClone = Object.assign(new index_2.AccountModel(), this.Account);
-        this.ConnectionTestRunning = true;
-        this.ResetTestResult();
-        this._api.TestAccount(accountClone)
-            .finally(function () { _this.ConnectionTestRunning = false; })
-            .subscribe(function (ok) { return _this.TestResult = new index_2.ConnectionTestResult(ok.json()); });
+    AccountsComponent.prototype.TestAccount = function () {
+        this.TestAccountEnabled = true;
     };
-    AccountsComponent.prototype.ResetTestResult = function () {
-        this.TestResult = null;
+    AccountsComponent.prototype.TestAccountClosed = function () {
+        this.TestAccountEnabled = false;
     };
     return AccountsComponent;
 }());

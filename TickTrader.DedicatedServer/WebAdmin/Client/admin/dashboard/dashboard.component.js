@@ -13,34 +13,24 @@ var index_1 = require("../../models/index");
 var index_2 = require("../../services/index");
 var router_1 = require("@angular/router");
 var DashboardComponent = (function () {
-    function DashboardComponent(api, route, router) {
-        this.api = api;
-        this.route = route;
-        this.router = router;
-        this.botStateType = index_1.BotState;
-        this.parameterType = index_1.ParameterType;
+    function DashboardComponent(_api, _route, _router) {
+        this._api = _api;
+        this._route = _route;
+        this._router = _router;
+        this.BotStatesType = index_1.TradeBotStates;
     }
     DashboardComponent.prototype.ngOnInit = function () {
         var _this = this;
-        this.dashboardBots = this.api.dasboardBots;
-        this.api.loadBotsOnDashboard();
-        this.api.loadAllBots().subscribe(function (data) {
-            _this.allBots = data;
-        });
+        this._api.GetTradeBots().subscribe(function (res) { return _this.TradeBots = res; });
     };
-    DashboardComponent.prototype.run = function (bot) {
-        this.api.runBot(bot);
+    DashboardComponent.prototype.Start = function (bot) {
     };
-    DashboardComponent.prototype.stop = function (bot) {
-        this.api.stopBot(bot);
+    DashboardComponent.prototype.Stop = function (bot) {
     };
-    DashboardComponent.prototype.configurate = function (bot) {
+    DashboardComponent.prototype.Remove = function (bot) {
     };
-    DashboardComponent.prototype.remove = function (bot) {
-        this.api.removeBotFromDashboard(bot);
-    };
-    DashboardComponent.prototype.gotoDetails = function (bot) {
-        this.router.navigate(['/bot', bot.instanceId]);
+    DashboardComponent.prototype.OnTradeBotAdded = function (bot) {
+        this.TradeBots.push(bot);
     };
     return DashboardComponent;
 }());
@@ -50,9 +40,7 @@ DashboardComponent = __decorate([
         template: require('./dashboard.component.html'),
         styles: [require('../../app.component.css')],
     }),
-    __metadata("design:paramtypes", [index_2.ApiService,
-        router_1.ActivatedRoute,
-        router_1.Router])
+    __metadata("design:paramtypes", [index_2.ApiService, router_1.ActivatedRoute, router_1.Router])
 ], DashboardComponent);
 exports.DashboardComponent = DashboardComponent;
 //# sourceMappingURL=dashboard.component.js.map

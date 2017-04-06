@@ -16,8 +16,8 @@ require("../../../node_modules/signalr/jquery.signalR.js");
 $.getScript('signalr/hubs');
 var index_1 = require("../models/index");
 var FeedService = (function () {
-    function FeedService(http) {
-        this.http = http;
+    function FeedService(_http) {
+        this._http = _http;
         this.currentState = index_1.ConnectionStatus.Disconnected;
         this.connectionStateSubject = new Subject_1.Subject();
         this.deletePackageSubject = new Subject_1.Subject();
@@ -30,12 +30,14 @@ var FeedService = (function () {
         this.addAccount = this.addAccountSubject.asObservable();
         this.deleteAccount = this.deleteAccountSubject.asObservable();
     }
-    FeedService.prototype.start = function (debug) {
+    FeedService.prototype.start = function (debug, token) {
         var _this = this;
+        if (token) {
+            $.connection.hub.qs = { 'authorization-token': token };
+        }
         $.connection.hub.logging = debug;
         var connection = $.connection;
         var feedHub = connection.dSFeed;
-        this.server = feedHub.server;
         feedHub.client.addPackage = function (x) { return _this.onAddPackage(new index_1.PackageModel().Deserialize(x)); };
         feedHub.client.deletePackage = function (x) { return _this.onDeletePackage(x); };
         feedHub.client.addAccount = function (x) { return _this.onAddAccount(new index_1.AccountModel().Deserialize(x)); };
@@ -47,6 +49,7 @@ var FeedService = (function () {
     };
     FeedService.prototype.stop = function () {
         $.connection.hub.stop(true, true);
+        $.connection.hub.qs = {};
         this.setConnectionState(index_1.ConnectionStatus.Disconnected);
         return this.connectionState;
     };

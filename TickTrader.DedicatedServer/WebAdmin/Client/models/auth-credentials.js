@@ -9,4 +9,16 @@ var AuthCredentials = (function () {
     return AuthCredentials;
 }());
 exports.AuthCredentials = AuthCredentials;
+var AuthData = (function () {
+    function AuthData(token, expires, user) {
+        this.token = token;
+        this.expires = new Date(expires);
+        this.user = user;
+    }
+    AuthData.prototype.IsEmpty = function () {
+        return !this.token;
+    };
+    return AuthData;
+}());
+exports.AuthData = AuthData;
 //# sourceMappingURL=auth-credentials.js.map

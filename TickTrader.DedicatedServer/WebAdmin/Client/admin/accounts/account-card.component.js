@@ -18,27 +18,24 @@ var AccountCardComponent = (function () {
         this.onDeleted = new core_1.EventEmitter();
         this.onUpdated = new core_1.EventEmitter();
     }
-    AccountCardComponent.prototype.Update = function () {
-        var _this = this;
-        this._api.UpdateAccount(Object.assign({}, this.Account))
-            .subscribe(function (ok) { return _this.onUpdated.emit(_this.Account); }, function (err) { return _this._toastr.error("Error updating account " + _this.Account.Login + " (" + _this.Account.Server + ")"); });
+    /* Change Password */
+    AccountCardComponent.prototype.ChangePassword = function () {
+        this.ChangePasswordEnabled = true;
+    };
+    AccountCardComponent.prototype.PasswordChangedOrCnaceled = function () {
+        this.ChangePasswordEnabled = false;
+    };
+    /*Test Account*/
+    AccountCardComponent.prototype.TestAccount = function () {
+        this.TestAccountEnabled = true;
+    };
+    AccountCardComponent.prototype.TestAccountClosed = function () {
+        this.TestAccountEnabled = false;
     };
     AccountCardComponent.prototype.Delete = function () {
         var _this = this;
         this._api.DeleteAccount(Object.assign(new index_1.AccountModel(), this.Account))
             .subscribe(function (ok) { return _this.onDeleted.emit(_this.Account); }, function (err) { return _this._toastr.error("Error deleting account " + _this.Account.Login + " (" + _this.Account.Server + ")"); });
-    };
-    AccountCardComponent.prototype.Test = function () {
-        var _this = this;
-        var accountClone = Object.assign(new index_1.AccountModel(), this.Account);
-        this.ConnectionTestRunning = true;
-        this.ResetTestResult();
-        this._api.TestAccount(accountClone)
-            .finally(function () { _this.ConnectionTestRunning = false; })
-            .subscribe(function (ok) { return _this.TestResult = new index_1.ConnectionTestResult(ok.json()); });
-    };
-    AccountCardComponent.prototype.ResetTestResult = function () {
-        this.TestResult = null;
     };
     return AccountCardComponent;
 }());

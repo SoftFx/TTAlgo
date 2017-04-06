@@ -13,16 +13,16 @@ var router_1 = require("@angular/router");
 var index_1 = require("./services/index");
 var index_2 = require("./models/index");
 var LoginComponent = (function () {
-    function LoginComponent(router, authService) {
+    function LoginComponent(router, _api) {
         this.router = router;
-        this.authService = authService;
-        this.creds = new index_2.AuthCredentials('Administrator', 'BestPasswordInTheWorld');
+        this._api = _api;
+        this.creds = new index_2.AuthCredentials('Administrator', 'Administrator');
     }
     LoginComponent.prototype.login = function () {
         var _this = this;
-        this.authService.logIn(this.creds.login, this.creds.password)
+        this._api.Auth.LogIn(this.creds.login, this.creds.password)
             .subscribe(function (data) {
-            var redirectUrl = _this.authService.redirectUrl ? _this.authService.redirectUrl : '/';
+            var redirectUrl = _this._api.Auth.RedirectUrl ? _this._api.Auth.RedirectUrl : '/';
             _this.router.navigate([redirectUrl]);
         });
     };
@@ -35,7 +35,7 @@ LoginComponent = __decorate([
         styles: [require('./app.component.css'), require('./login.component.css')]
     }),
     __metadata("design:paramtypes", [router_1.Router,
-        index_1.AuthService])
+        index_1.ApiService])
 ], LoginComponent);
 exports.LoginComponent = LoginComponent;
 //# sourceMappingURL=login.component.js.map
