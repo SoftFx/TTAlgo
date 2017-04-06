@@ -49,8 +49,11 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+  <Target Name="NpmInstall" BeforeTargets="PreComputeCompileTypeScriptWithTSConfig">
     <Exec Command="npm install" />
+  </Target>
+
+  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <Exec Command="npm run build_prod" />
   </Target>
 
