@@ -4,6 +4,7 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Hubs
 {
+    [Authorize]
     public class DSFeed : Hub<IDSFeed>
     {
     }

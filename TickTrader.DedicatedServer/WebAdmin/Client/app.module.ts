@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UniversalModule } from 'angular2-universal';
-import { FeedService, AuthService, AuthGuard, ApiService, ResourceService, ToastrService } from './services/index';
+import { AuthService, FeedService,  AuthGuard, ApiService, ResourceService, ToastrService } from './services/index';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ExpressionTrue } from './directives/expression-true.directive';
 
@@ -20,8 +20,8 @@ import { FooterModule } from './shared/footer/footer.module';
         ExpressionTrue
     ],
     providers: [
-        FeedService,
         AuthService,
+        FeedService,
         AuthGuard,
         ApiService,
         ResourceService,

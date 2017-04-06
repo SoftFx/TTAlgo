@@ -1,6 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-
 import 'rxjs/add/operator/toPromise';
 import { Observable } from "rxjs/Observable";
 import { Subject } from "rxjs/Subject";
@@ -9,6 +8,7 @@ import '../../../node_modules/signalr/jquery.signalR.js';
 $.getScript('signalr/hubs');
 
 import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel } from '../models/index';
+
 
 @Injectable()
 export class FeedService {
@@ -28,9 +28,7 @@ export class FeedService {
     private addAccountSubject = new Subject<AccountModel>();
     private deleteAccountSubject = new Subject<AccountModel>();
 
-    private server: FeedServer;
-
-    constructor(private http: Http) {
+    constructor(private _http: Http) {
         this.connectionState = this.connectionStateSubject.asObservable();
 
         this.deletePackage = this.deletePackageSubject.asObservable();
@@ -39,12 +37,15 @@ export class FeedService {
         this.deleteAccount = this.deleteAccountSubject.asObservable();
     }
 
-    public start(debug: boolean): Observable<ConnectionStatus> {
-        $.connection.hub.logging = debug;
+    public start(debug: boolean, token?: string): Observable<ConnectionStatus> {
+        if (token) {
+            $.connection.hub.qs = { 'authorization-token': token };
+        }
 
+        $.connection.hub.logging = debug;
+        
         let connection = <FeedSignalR>$.connection;
         let feedHub = connection.dSFeed;
-        this.server = feedHub.server;
 
         feedHub.client.addPackage = x => this.onAddPackage(new PackageModel().Deserialize(x));
         feedHub.client.deletePackage = x => this.onDeletePackage(x);
@@ -60,6 +61,7 @@ export class FeedService {
 
     public stop(): Observable<ConnectionStatus> {
         $.connection.hub.stop(true, true);
+        $.connection.hub.qs = {};
         this.setConnectionState(ConnectionStatus.Disconnected);
         return this.connectionState;
     }

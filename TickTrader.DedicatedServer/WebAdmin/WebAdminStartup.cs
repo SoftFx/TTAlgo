@@ -23,7 +23,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
 {
     public class WebAdminStartup
     {
-        private static readonly string jwtKey = "asdklfhkashdfkhasdkjfhkasdhfkasdhfjkashd";
+        private static readonly string jwtKey = "Hu68yowUs4anwe04u48uKNDuweALKSWEUjnenasd";
 
         public WebAdminStartup(IHostingEnvironment env)
         {
@@ -85,31 +85,29 @@ namespace TickTrader.DedicatedServer.WebAdmin
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"WebAdmin/wwwroot")),
             });
 
-            app.UseWebSockets();
-            app.UseSignalR();
+            app.UseJwtAuthentication();
+            
             app.ObserveDedicatedServer();
 
             app.UseSwagger();
             app.UseSwaggerUi();
 
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            };
-
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
                 AutomaticAuthenticate = true,
                 AutomaticChallenge = true,
-                TokenValidationParameters = tokenValidationParameters
+                TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }
             });
 
-
+            app.UseSignalR();
 
             app.UseMvc(routes =>
             {
