@@ -22,7 +22,12 @@
     "Microsoft.AspNet.SignalR.Core": "2.2.1",
     "TickTrader.Common.Dlls": "1.25.5",
     "System.Threading.Tasks.Dataflow": "4.5.25",
-    "SoftFX.FDK": "1.19.815"
+    "SoftFX.FDK": "1.19.815",
+    "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0",
+    "Microsoft.AspNetCore.Authorization": "1.1.0",
+    "Microsoft.AspNetCore.Mvc.Core": "1.1.0",
+    "Microsoft.IdentityModel.Tokens": "5.0.0",
+    "System.IdentityModel.Tokens.Jwt": "5.0.0"
   },
 
   "tools": {
@@ -31,7 +36,7 @@
   },
 
   "frameworks": {
-    "net452": {
+    "net462": {
       "dependencies": {
         "Machinarium": {
           "target": "project"
