@@ -248,3 +248,4 @@ algo.metadata
 /Repository.Public/API
 /TickTrader.BotTerminal/Redist
 /TickTrader.DedicatedServer/server.config.xml
+/build.ouput
