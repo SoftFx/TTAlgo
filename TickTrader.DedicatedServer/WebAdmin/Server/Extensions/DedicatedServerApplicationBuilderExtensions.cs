@@ -24,8 +24,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 
             _dedicatedServer.PackageChanged += OnPackageChanged;
             _dedicatedServer.AccountChanged += OnAccountChanged;
+            _dedicatedServer.BotStateChanged += OnBotStateChanged;
 
             return app;
+        }
+
+        private static void OnBotStateChanged(ITradeBot bot)
+        {
+            Console.WriteLine($"DEDICATED SERVER OBSERVER: BotId: {bot.Id} BotState: {bot.State}");
         }
 
         private static void OnAccountChanged(IAccount account, ChangeAction action)
