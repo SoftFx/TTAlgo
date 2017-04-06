@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TickTrader.Algo.Common.Model;
 using TickTrader.DedicatedServer.DS;
@@ -7,7 +8,8 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
-    public class TestAccountController
+    [Authorize]
+    public class TestAccountController: Controller
     {
         private readonly ILogger<RepositoryController> _logger;
         private readonly IDedicatedServer _dedicatedServer;

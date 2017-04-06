@@ -7,3 +7,19 @@
         this.password = password;
     }
 }
+
+export class AuthData {
+    token: string;
+    expires: Date;
+    user: string;
+
+    constructor(token: string, expires: string, user: string) {
+        this.token = token;
+        this.expires = new Date(expires);
+        this.user = user;
+    }
+
+    IsEmpty(): Boolean {
+        return !this.token;
+    }
+}

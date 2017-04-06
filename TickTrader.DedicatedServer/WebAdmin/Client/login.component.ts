@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from './services/index';
+import { ApiService } from './services/index';
 import { AuthCredentials } from './models/index';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
@@ -12,18 +12,18 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 export class LoginComponent {
     public statusMessage: string;
-    public creds: AuthCredentials = new AuthCredentials('Administrator', 'BestPasswordInTheWorld');
+    public creds: AuthCredentials = new AuthCredentials('Administrator', 'Administrator');
 
     constructor(
         private router: Router,
-        private authService: AuthService) {
+        private _api: ApiService) {
     }
 
     login() {
-        this.authService.logIn(this.creds.login, this.creds.password)
+        this._api.Auth.LogIn(this.creds.login, this.creds.password)
             .subscribe(
             data => {
-                let redirectUrl = this.authService.redirectUrl ? this.authService.redirectUrl : '/';
+                let redirectUrl = this._api.Auth.RedirectUrl ? this._api.Auth.RedirectUrl : '/';
                 this.router.navigate([redirectUrl]);
             });
     }

@@ -160,14 +160,17 @@ namespace TickTrader.DedicatedServer.DS.Models
             connectCancellation = new CancellationTokenSource();
             var result = await Connection.Connect(Username, Password, Address, connectCancellation.Token);
 
-            await FeedHistory.Init();
+            if (result == ConnectionErrorCodes.None)
+            {
+                await FeedHistory.Init();
 
-            var fCache = Connection.FeedProxy.Cache;
-            var tCache = Connection.TradeProxy.Cache;
-            var symbols = fCache.Symbols;
-            Currencies = fCache.Currencies.ToDictionary(c => c.Name);
-            Symbols.Initialize(symbols, Currencies);
-            Account.Init(tCache.AccountInfo, Currencies, Symbols, tCache.TradeRecords, tCache.Positions, tCache.AccountInfo.Assets);
+                var fCache = Connection.FeedProxy.Cache;
+                var tCache = Connection.TradeProxy.Cache;
+                var symbols = fCache.Symbols;
+                Currencies = fCache.Currencies.ToDictionary(c => c.Name);
+                Symbols.Initialize(symbols, Currencies);
+                Account.Init(tCache.AccountInfo, Currencies, Symbols, tCache.TradeRecords, tCache.Positions, tCache.AccountInfo.Assets);
+            }
 
             lock (_sync)
             {

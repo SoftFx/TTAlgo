@@ -5,10 +5,12 @@ using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly ILogger<RepositoryController> _logger;

@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TickTrader.DedicatedServer.DS;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     public class TradeBotController: Controller
     {
         private readonly ILogger<TradeBotController> _logger;

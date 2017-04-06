@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,6 +13,7 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     public class RepositoryController : Controller
     {
         private readonly ILogger<RepositoryController> _logger;

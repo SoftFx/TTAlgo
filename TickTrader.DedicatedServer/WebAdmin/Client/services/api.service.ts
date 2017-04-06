@@ -1,19 +1,20 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, PluginSetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel } from "../models/index";
-import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
+import { PackageModel, PluginModel, ExtBotModel, BotModel, FakeData, BotState, PluginSetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, AuthCredentials } from "../models/index";
+import { Http, Request, Response, RequestOptionsArgs, RequestOptions, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class ApiService {
     private headers: Headers = new Headers({ 'Content-Type': 'application/json' });
     private repositoryUrl: string = '/api/Repository';
     private accountsUrl: string = '/api/Account';
-    private testAccountUrl: string = '/api/TestAccount';
-    private dashboardUrl: string = '/api/Dashboard';
-    private tradeBotUrl: string = '/api/TradeBot';
 
+    private readonly testAccountUrl: string = '/api/TestAccount';
+    private readonly dashboardUrl: string = '/api/Dashboard';
+    private readonly tradeBotUrl: string = '/api/TradeBot';
 
     dasboardBots: Observable<ExtBotModel[]>;
     private _bots: BehaviorSubject<ExtBotModel[]>;
@@ -21,10 +22,19 @@ export class ApiService {
         bots: ExtBotModel[]
     };
 
-    constructor(private _http: Http, public Feed: FeedService) {
+    constructor(private _http: Http, public Auth: AuthService, public Feed: FeedService) {
         this.dataStore = { bots: [] };
         this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
         this.dasboardBots = this._bots.asObservable();
+
+        this.Auth.AuthDataUpdated.subscribe(authData => {
+            if (authData) {
+                this.headers.append('Authorization', 'Bearer ' + authData.token);
+            }
+            else {
+                this.headers.delete('Authorization');
+            }
+        });
     }
 
     loadAllBots(): Observable<BotModel[]> {
@@ -86,7 +96,7 @@ export class ApiService {
     }
 
     GetTradeBots() {
-        return this._http.get(this.dashboardUrl)
+        return this._http.get(this.dashboardUrl, { headers: this.headers })
             .map(res => res.json().map(tb => new TradeBotModel().Deserialize(tb)))
             .catch(this.handleServerError);
     }
@@ -112,8 +122,10 @@ export class ApiService {
         let input = new FormData();
         input.append("file", file);
 
+        var header = new Headers({ 'Authorization': 'Bearer ' + this.Auth.AuthData.token });
+
         return this._http
-            .post(this.repositoryUrl, input)
+            .post(this.repositoryUrl, input, { headers: header })
             .catch(this.handleServerError);
     }
 
@@ -125,7 +137,7 @@ export class ApiService {
 
     GetPackages(): Observable<PackageModel[]> {
         return this._http
-            .get(this.repositoryUrl)
+            .get(this.repositoryUrl, { headers: this.headers })
             .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
             .catch(this.handleServerError);
     }
@@ -135,7 +147,7 @@ export class ApiService {
     /* >>> API Accounts */
     GetAccounts(): Observable<AccountModel[]> {
         return this._http
-            .get(this.accountsUrl)
+            .get(this.accountsUrl, { headers: this.headers })
             .map(res => res.json().map(i => new AccountModel().Deserialize(i)))
             .catch(this.handleServerError);
     }
@@ -177,7 +189,6 @@ export class ApiService {
         }
         return false;
     }
-
 
     private handleServerError(error: Response): Observable<any> {
         console.error('[ApiService] An error occurred' + error); //debug

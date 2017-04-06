@@ -13,11 +13,18 @@ using Newtonsoft.Json;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.Algo.Core;
 using TickTrader.DedicatedServer.DS;
+using TickTrader.DedicatedServer.WebAdmin.Server.Core.Auth;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
     public class WebAdminStartup
     {
+        private static readonly string jwtKey = "asdklfhkashdfkhasdkjfhkasdhfkasdhfjkashd";
+
         public WebAdminStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -34,6 +41,12 @@ namespace TickTrader.DedicatedServer.WebAdmin
         {
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
+            services.AddTransient<ITokenOptions>(x => new TokenOptions
+            {
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                    SecurityAlgorithms.HmacSha256)
+            });
+            services.AddTransient<IAuthManager, AuthManager>();
 
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
             services.AddMvc().AddJsonOptions(options =>
@@ -78,6 +91,25 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
             app.UseSwagger();
             app.UseSwaggerUi();
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            app.UseJwtBearerAuthentication(new JwtBearerOptions
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                TokenValidationParameters = tokenValidationParameters
+            });
+
+
 
             app.UseMvc(routes =>
             {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -11,6 +12,7 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     public class DashboardController: Controller
     {
         private readonly ILogger<DashboardController> _logger;

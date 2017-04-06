@@ -10,3 +10,4 @@ export * from './core';
 export * from './account-model';
 export * from './ds-feed';
 export * from './trade-bot-model';
+export * from './utils';

@@ -29,7 +29,7 @@ export class NavbarComponent implements OnInit {
     }
 
     public logout() {
-        this.authService.logOut().subscribe(null, error => console.log('LogOut error: ' + error));
+        this.authService.LogOut();
         this.router.navigate(['login']);
     }
 }
