@@ -61,8 +61,9 @@
       </exec>
     </if>
 
-	<exec program="dotnet" workingdir="${SourcesDir}">
+	<exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}">
       <arg value="restore" />
+	  <arg value="Algo.sln" />
     </exec>
 
     <exec program="${MSBuildDir}msbuild.exe" >
