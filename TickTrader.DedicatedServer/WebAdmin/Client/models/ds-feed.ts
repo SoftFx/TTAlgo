@@ -1,5 +1,6 @@
 ﻿import { PackageModel } from './package-model';
 import { AccountModel } from './account-model';
+import { TradeBotStateModel } from './trade-bot-model';
 
 export interface FeedSignalR extends SignalR {
     dSFeed: FeedProxy;
@@ -15,6 +16,7 @@ export interface FeedClient {
     addPackage: (algoPackage: PackageModel) => void;
     deleteAccount: (account: AccountModel) => void;
     addAccount: (account: AccountModel) => void;
+    changeBotState: (state: TradeBotStateModel) => void;
 }
 
 export interface FeedServer {

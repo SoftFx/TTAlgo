@@ -31,7 +31,9 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 
         private static void OnBotStateChanged(ITradeBot bot)
         {
-            Console.WriteLine($"DEDICATED SERVER OBSERVER: BotId: {bot.Id} BotState: {bot.State}");
+            var signalRConnectionManager = _services.GetService<IConnectionManager>();
+            var _hub = signalRConnectionManager.GetHubContext<DSFeed>();
+            _hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }
 
         private static void OnAccountChanged(IAccount account, ChangeAction action)

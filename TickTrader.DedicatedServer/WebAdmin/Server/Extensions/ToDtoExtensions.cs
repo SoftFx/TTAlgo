@@ -42,6 +42,15 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             };
         }
 
+        public static BotStateDto ToBotStateDto(this ITradeBot bot)
+        {
+            return new BotStateDto
+            {
+                Id = bot.Id,
+                State = bot.State.ToString()
+            };
+        }
+
         public static AccountDto ToDto(this IAccount account)
         {
             return new AccountDto()
