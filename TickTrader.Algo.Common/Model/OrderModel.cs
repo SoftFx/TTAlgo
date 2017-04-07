@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Common.Model
         public decimal Amount
         {
             get { return amount; }
-            private set
+            set
             {
                 if (this.amount != value)
                 {
@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
         public decimal RemainingAmount
         {
             get { return amountRemaining; }
-            private set
+            set
             {
                 if (this.amountRemaining != value)
                 {
@@ -121,7 +121,7 @@ namespace TickTrader.Algo.Common.Model
         public decimal? Price
         {
             get { return price; }
-            private set
+            set
             {
                 if (price != value)
                 {
@@ -349,6 +349,11 @@ namespace TickTrader.Algo.Common.Model
                     default: throw new NotImplementedException();
                 }
             }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
 
         OrderSides ICommonOrder.Side
@@ -361,6 +366,11 @@ namespace TickTrader.Algo.Common.Model
                     case TradeRecordSide.Sell: return OrderSides.Sell;
                     default: throw new NotImplementedException();
                 }
+            }
+
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 

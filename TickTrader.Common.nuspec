@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>TickTrader.Common.Dlls</id>
-    <version>1.25.5.0</version>
+    <version>1.27.8.0</version>
     <authors>SoftFX</authors>
     <owners>SoftFX</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
