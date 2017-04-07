@@ -38,10 +38,10 @@ LRP/lib/
 /wwwroot/
 wwwroot/
 node_modules/
-/[C]lient/*.js
-/[C]lient/*.map
-/[C]lient/**/*.js
-/[C]lient/**/*.map
+WebAdmin/[C]lient/*.js
+WebAdmin/[C]lient/*.map
+WebAdmin/[C]lient/**/*.js
+WebAdmin/[C]lient/**/*.map
 typings/
 
 # MSTest test Results
