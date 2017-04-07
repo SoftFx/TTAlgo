@@ -34,8 +34,8 @@ namespace TickTrader.Algo.Core
                 return new TradeResultEntity(code);
 
             price = RoundPrice(price, symbol, side);
-            sl = RoundPrice(price, symbol, side);
-            tp = RoundPrice(price, symbol, side);
+            sl = RoundPrice(sl, symbol, side);
+            tp = RoundPrice(tp, symbol, side);
 
             LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
@@ -139,8 +139,8 @@ namespace TickTrader.Algo.Core
 
             double orderVolume = orderToModify.RequestedVolume * smbMetatda.ContractSize;
             price = RoundPrice(price, orderToModify.Symbol, orderToModify.Side);
-            sl = RoundPrice(price, orderToModify.Symbol, orderToModify.Side);
-            tp = RoundPrice(price, orderToModify.Symbol, orderToModify.Side);
+            sl = RoundPrice(sl, orderToModify.Symbol, orderToModify.Side);
+            tp = RoundPrice(tp, orderToModify.Symbol, orderToModify.Side);
 
             logger.PrintTrade("Modifying order #" + orderId);
 
