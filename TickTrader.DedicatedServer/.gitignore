@@ -26,8 +26,14 @@ Obj/
 
 # Visual Studio 2015 cache/options directory
 .vs/
-/wwwroot/dist/**
-/ClientApp/dist/**
+/wwwroot/
+wwwroot/
+node_modules/
+WebAdmin/[C]lient/*.js
+WebAdmin/[C]lient/*.map
+WebAdmin/[C]lient/**/*.js
+WebAdmin/[C]lient/**/*.map
+typings/
 
 # Workaround for https://github.com/aspnet/JavaScriptServices/issues/235
 !/wwwroot/dist/_placeholder.txt

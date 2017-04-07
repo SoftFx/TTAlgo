@@ -19,9 +19,7 @@ export class AuthService {
         this.AuthDataUpdated = this._authDataUpdatedSubject.asObservable();
         this.AuthDataUpdated.subscribe(authData => {
             if (authData && this.IsAuthorized()) {
-                Observable.of(authData).delay(1500).subscribe(auth => {
-                    this._feed.start(true, authData.token).subscribe(null, error => console.log('Error on init: ' + error));
-                })
+                this._feed.start(true, authData.token).subscribe(null, error => console.log('Error on init: ' + error));
             }
         });
 
@@ -71,12 +69,10 @@ export class AuthService {
     private restoreAuthData() {
         let authData = <AuthData>JSON.parse(localStorage.getItem(this._storageKey), Utils.DateReviver);
 
-        if (this.IsAuthorized())
-        {
+        if (this.IsAuthorized()) {
             this._authDataUpdatedSubject.next(authData);
         }
-        else
-        {
+        else {
             localStorage.removeItem(this._storageKey);
         }
     }
