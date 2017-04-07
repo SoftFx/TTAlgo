@@ -62,7 +62,9 @@ export class AuthService {
 
     public LogOut() {
         this._feed.stop().subscribe(null, error => console.log('Error on init: ' + error));
+
         localStorage.removeItem(this._storageKey);
+
         this._authDataUpdatedSubject.next(<AuthData>null);
     }
 

@@ -11,6 +11,35 @@
     color: #87CB16;
 }
 
+Offline, Started, Initializing, Faulted, Online, Stopping
+
+/*\/\/\/Bot States Colors*/
+
+.bot-state-offline {
+     color: #FB404B;
+}
+
+.bot-state-started {
+    color: #6a9227;
+}
+
+.bot-state-initializing {
+    color: #c1c2c0;
+}
+
+.bot-state-faulted {
+    color: #ff0110;
+}
+
+.bot-state-online {
+    color: #87CB16;
+}
+
+.bot-state-stopping {
+    color: #fe9298;
+}
+
+/*/\/\/\Bot States Colors*/
 .text-error {
     color: orangered;
 }

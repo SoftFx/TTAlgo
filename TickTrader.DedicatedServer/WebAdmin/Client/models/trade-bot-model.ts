@@ -20,5 +20,19 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 }
 
+export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
+    public Id: string;
+    public State: TradeBotStates;
+
+    constructor() { }
+
+
+    public Deserialize(input: any): TradeBotStateModel {
+        this.Id = input.Id;
+        this.State = TradeBotStates[input.State as string];
+
+        return this;
+    }
+}
 
 export enum TradeBotStates { Offline, Started, Initializing, Faulted, Online, Stopping }

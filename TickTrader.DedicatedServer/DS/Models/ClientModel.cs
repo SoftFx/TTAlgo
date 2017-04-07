@@ -230,7 +230,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 InitBot(newBot);
                 _bots.Add(newBot);
                 ManageConnection();
-                newBot.StateChanged += BotStateChanged;
                 BotChanged?.Invoke(newBot, ChangeAction.Added);
                 return newBot;
             }

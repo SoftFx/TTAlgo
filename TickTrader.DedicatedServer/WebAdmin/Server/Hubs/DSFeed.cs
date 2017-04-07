@@ -16,5 +16,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Hubs
 
         Task AddAccount(AccountDto account);
         Task DeleteAccount(AccountDto account);
+
+        Task ChangeBotState(BotStateDto status);
     }
 }

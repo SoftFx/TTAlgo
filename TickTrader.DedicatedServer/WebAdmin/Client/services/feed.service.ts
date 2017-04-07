@@ -7,7 +7,7 @@ import { Subject } from "rxjs/Subject";
 import '../../../node_modules/signalr/jquery.signalR.js';
 $.getScript('signalr/hubs');
 
-import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel } from '../models/index';
+import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel } from '../models/index';
 
 
 @Injectable()
@@ -20,6 +20,7 @@ export class FeedService {
     addPackage: Observable<PackageModel>;
     addAccount: Observable<AccountModel>;
     deleteAccount: Observable<AccountModel>;
+    changeBotState: Observable<TradeBotStateModel>;
 
     private connectionStateSubject = new Subject<ConnectionStatus>();
 
@@ -27,6 +28,7 @@ export class FeedService {
     private addPackageSubject = new Subject<PackageModel>();
     private addAccountSubject = new Subject<AccountModel>();
     private deleteAccountSubject = new Subject<AccountModel>();
+    private changeBotStateSubject = new Subject<TradeBotStateModel>();
 
     constructor(private _http: Http) {
         this.connectionState = this.connectionStateSubject.asObservable();
@@ -35,6 +37,7 @@ export class FeedService {
         this.addPackage = this.addPackageSubject.asObservable();
         this.addAccount = this.addAccountSubject.asObservable();
         this.deleteAccount = this.deleteAccountSubject.asObservable();
+        this.changeBotState = this.changeBotStateSubject.asObservable();
     }
 
     public start(debug: boolean, token?: string): Observable<ConnectionStatus> {
@@ -51,6 +54,7 @@ export class FeedService {
         feedHub.client.deletePackage = x => this.onDeletePackage(x);
         feedHub.client.addAccount = x => this.onAddAccount(new AccountModel().Deserialize(x));
         feedHub.client.deleteAccount = x => this.onDeleteAccount(new AccountModel().Deserialize(x));
+        feedHub.client.changeBotState = x => this.onChangeBotState(new TradeBotStateModel().Deserialize(x));
 
         $.connection.hub.start()
             .done(response => this.setConnectionState(ConnectionStatus.Connected))
@@ -90,5 +94,10 @@ export class FeedService {
     private onDeleteAccount(account: AccountModel) {
         console.info('[FeedService] onDeleteAccount', account);
         this.deleteAccountSubject.next(account);
+    }
+
+    private onChangeBotState(botState: TradeBotStateModel) {
+        console.info('[FeedService] onChangeBotState', botState);
+        this.changeBotStateSubject.next(botState);
     }
 }
