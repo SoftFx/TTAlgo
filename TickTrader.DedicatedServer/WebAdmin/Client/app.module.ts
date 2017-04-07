@@ -10,6 +10,7 @@ import { LoginComponent } from './login.component';
 
 import { AdminModule } from './admin/admin.module';
 import { FooterModule } from './shared/footer/footer.module';
+$.getScript('signalr/hubs');
 
 
 @NgModule({

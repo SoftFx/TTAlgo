@@ -5,14 +5,12 @@ import { Observable } from "rxjs/Observable";
 import { Subject } from "rxjs/Subject";
 
 import '../../../node_modules/signalr/jquery.signalR.js';
-$.getScript('signalr/hubs');
 
 import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel } from '../models/index';
 
 
 @Injectable()
 export class FeedService {
-
     currentState = ConnectionStatus.Disconnected;
     connectionState: Observable<ConnectionStatus>;
 

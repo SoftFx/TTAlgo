@@ -26,7 +26,6 @@ export class BotRunComponent implements OnInit {
     }
 
     addBot() {
-        console.info(this.Setup.Payload);
         this._api.SetupPlugin(this.Setup).subscribe(
             tb => this.OnAdded.emit(tb),
             err => {
