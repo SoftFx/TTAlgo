@@ -63,6 +63,10 @@
     <Exec Command="npm run build_prod" />
   </Target>
 
+  <Target Name="NpmDevBuild" AfterTargets="Build" Condition="'$(Configuration)'=='Debug'">
+    <Exec Command="npm run build_dev" />
+  </Target>
+
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
   </ItemGroup>
