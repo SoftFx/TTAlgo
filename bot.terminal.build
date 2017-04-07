@@ -140,7 +140,7 @@
       </fileset>
     </zip>
 
-	<property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net452\publish\" />
+	<property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
     <property name="ServerDestArchive" value="${OutpuFolder}DedicatedServer ${Build}.zip" />
 
     <zip zipfile="${ServerDestArchive}">
