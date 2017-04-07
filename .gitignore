@@ -38,10 +38,10 @@ LRP/lib/
 /wwwroot/
 wwwroot/
 node_modules/
-WebAdmin/[C]lient/*.js
-WebAdmin/[C]lient/*.map
-WebAdmin/[C]lient/**/*.js
-WebAdmin/[C]lient/**/*.map
+TickTrader.DedicatedServer/WebAdmin/Client/*.js
+TickTrader.DedicatedServer/WebAdmin/Client/*.map
+TickTrader.DedicatedServer/WebAdmin/Client/**/*.js
+TickTrader.DedicatedServer/WebAdmin/Client/**/*.map
 typings/
 
 # MSTest test Results
