@@ -82,8 +82,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public event Action<ClientModel> StateChanged;
         public event Action<ClientModel> Changed;
-        public event Action<ITradeBot, ChangeAction> BotChanged;
-        public event Action<ITradeBot> BotStateChanged;
+        public event Action<TradeBotModel, ChangeAction> BotChanged;
+        public event Action<TradeBotModel> BotStateChanged;
 
         [DataMember(Name = "server")]
         public string Address { get; private set; }
@@ -230,7 +230,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 InitBot(newBot);
                 _bots.Add(newBot);
                 ManageConnection();
-                Changed?.Invoke(this);
+                newBot.StateChanged += BotStateChanged;
+                BotChanged?.Invoke(newBot, ChangeAction.Added);
                 return newBot;
             }
         }
@@ -255,7 +256,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                         throw new InvalidStateException("Cannot remove running bot!");
                     _bots.Remove(bot);
                     DeinitBot(bot);
-                    Changed?.Invoke(this);
+                    bot.StateChanged -= BotStateChanged;
+                    BotChanged?.Invoke(bot, ChangeAction.Removed);
                 }
             }
         }

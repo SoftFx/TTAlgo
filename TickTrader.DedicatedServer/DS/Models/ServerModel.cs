@@ -35,7 +35,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IEnumerable<ITradeBot> TradeBots => _accounts.SelectMany(a => a.TradeBots);
         public event Action<IAccount, ChangeAction> AccountChanged;
         public event Action<ITradeBot, ChangeAction> BotChanged;
-        public event Action<ITradeBot, ChangeAction> BotStateChanged;
+        public event Action<ITradeBot> BotStateChanged;
         public event Action<IPackage, ChangeAction> PackageChanged;
 
         private void Init(ILoggerFactory loggerFactory)
@@ -144,12 +144,19 @@ namespace TickTrader.DedicatedServer.DS.Models
             acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
             acc.Changed += Acc_Changed;
             acc.BotChanged += Acc_BotChanged;
+            acc.BotStateChanged += OnBotStateChanged;
         }
 
         private void DeinitAccount(ClientModel acc)
         {
             acc.Changed -= Acc_Changed;
             acc.BotChanged -= Acc_BotChanged;
+            acc.BotStateChanged -= OnBotStateChanged;
+        }
+
+        private void OnBotStateChanged(TradeBotModel bot)
+        {
+            this.BotStateChanged?.Invoke(bot);
         }
 
         private void DisposeAccount(ClientModel acc)
@@ -162,9 +169,11 @@ namespace TickTrader.DedicatedServer.DS.Models
             Save();
         }
 
-        private void Acc_BotChanged(ITradeBot bot, ChangeAction changeAction)
+        private void Acc_BotChanged(TradeBotModel bot, ChangeAction changeAction)
         {
             BotChanged?.Invoke(bot, changeAction);
+
+            
         }
 
         #endregion

@@ -24,6 +24,7 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<ITradeBot> TradeBots { get; }
         event Action<IAccount, ChangeAction> AccountChanged;
         event Action<ITradeBot, ChangeAction> BotChanged;
+        event Action<ITradeBot> BotStateChanged;
         event Action<IPackage, ChangeAction> PackageChanged;
 
         string AutogenerateBotId(string botDisplayName);
