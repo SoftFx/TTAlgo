@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -25,10 +26,16 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
+            volumeLots = RoundVolume(volumeLots, symbol);
+
             OrderCmdResultCodes code;
             double volume = ConvertVolume(volumeLots, symbol, out code);
             if (code != OrderCmdResultCodes.Ok)
                 return new TradeResultEntity(code);
+
+            price = RoundPrice(price, symbol, side);
+            sl = RoundPrice(price, symbol, side);
+            tp = RoundPrice(price, symbol, side);
 
             LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
@@ -83,6 +90,8 @@ namespace TickTrader.Algo.Core
 
             if (closeVolumeLots != null)
             {
+                closeVolumeLots = RoundVolume(closeVolumeLots, orderToClose.Symbol);
+
                 OrderCmdResultCodes code;
                 closeVolume = ConvertVolume(closeVolumeLots.Value, orderToClose.Symbol, out code);
                 if (code != OrderCmdResultCodes.Ok)
@@ -129,6 +138,9 @@ namespace TickTrader.Algo.Core
                 return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
 
             double orderVolume = orderToModify.RequestedVolume * smbMetatda.ContractSize;
+            price = RoundPrice(price, orderToModify.Symbol, orderToModify.Side);
+            sl = RoundPrice(price, orderToModify.Symbol, orderToModify.Side);
+            tp = RoundPrice(price, orderToModify.Symbol, orderToModify.Side);
 
             logger.PrintTrade("Modifying order #" + orderId);
 
@@ -170,6 +182,46 @@ namespace TickTrader.Algo.Core
                 rCode = OrderCmdResultCodes.Ok;
                 return smbMetatda.ContractSize * volumeInLots;
             }
+        }
+
+        private double RoundVolume(double volumeInLots, string symbolCode)
+        {
+            var smbMetatda = symbols.List[symbolCode];
+            if (smbMetatda.IsNull)
+            {
+                return double.NaN;
+            }
+            return volumeInLots.Floor(smbMetatda.TradeVolumeStep);
+        }
+
+        private double? RoundVolume(double? volumeInLots, string symbolCode)
+        {
+            var smbMetatda = symbols.List[symbolCode];
+            if (smbMetatda.IsNull)
+            {
+                return double.NaN;
+            }
+            return volumeInLots.Floor(smbMetatda.TradeVolumeStep);
+        }
+
+        private double RoundPrice(double price, string symbolCode, OrderSide side)
+        {
+            var smbMetatda = symbols.List[symbolCode];
+            if (smbMetatda.IsNull)
+            {
+                return double.NaN;
+            }
+            return side == OrderSide.Buy ? price.Ceil(smbMetatda.Digits) : price.Floor(smbMetatda.Digits);
+        }
+
+        private double? RoundPrice(double? price, string symbolCode, OrderSide side)
+        {
+            var smbMetatda = symbols.List[symbolCode];
+            if (smbMetatda.IsNull)
+            {
+                return double.NaN;
+            }
+            return side == OrderSide.Buy ? price.Ceil(smbMetatda.Digits) : price.Floor(smbMetatda.Digits);
         }
 
         #region Logging
