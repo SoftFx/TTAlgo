@@ -1,1 +1,0 @@
-{"version":3,"file":"overlay.component.js","sourceRoot":"","sources":["overlay.component.ts"],"names":[],"mappings":";;;;;;;AAAA,sCAA0C;AAQ1C,IAAa,gBAAgB;IAA7B;IAEA,CAAC;IAAD,uBAAC;AAAD,CAAC,AAFD,IAEC;AAFY,gBAAgB;IAN5B,gBAAS,CAAC;QACP,QAAQ,EAAE,aAAa;QACvB,QAAQ,EAAE,OAAO,CAAC,0BAA0B,CAAC;QAC7C,MAAM,EAAE,CAAC,OAAO,CAAC,sBAAsB,CAAC,CAAC;KAC5C,CAAC;GAEW,gBAAgB,CAE5B;AAFY,4CAAgB"}
