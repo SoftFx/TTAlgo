@@ -12,6 +12,7 @@ import { ApiService, ToastrService, FeedService } from '../../services/index';
 export class TradeBotCardComponent {
     public TradeBotState = TradeBotStates;
     @Input() TradeBot: TradeBotModel;
+    @Output() OnDeleted = new EventEmitter<TradeBotModel>();
 
     constructor(private _api: ApiService, private _toastr: ToastrService) {
         _api.Feed.changeBotState.subscribe(botState => {
@@ -27,5 +28,10 @@ export class TradeBotCardComponent {
 
     public Stop() {
         this._api.StopBot(this.TradeBot.Id).subscribe(r => { });
+    }
+
+    public Delete() {
+        this._api.DeleteBot(this.TradeBot.Id).subscribe(ok => this.OnDeleted.emit(this.TradeBot),
+            err => this._toastr.error(err.Message));
     }
 }

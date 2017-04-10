@@ -21,21 +21,13 @@ export class DashboardComponent {
         this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 
-    Start(bot: TradeBotModel) {
-
-    }
-
-    Stop(bot: TradeBotModel) {
-    }
-
-    Remove(bot: TradeBotModel) {
-    }
-
     OnTradeBotAdded(bot: TradeBotModel) {
         this.TradeBots.push(bot);
     }
 
-
+    OnTradeBotDeleted(bot: TradeBotModel) {
+        this.TradeBots = this.TradeBots.filter(x => x.Id !== bot.Id);
+    }
 
     //gotoDetails(bot: ExtBotModel) {
     //    this.router.navigate(['/bot', bot.instanceId]);

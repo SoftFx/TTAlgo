@@ -18,7 +18,7 @@ export class ResponseStatus {
     private parse(response: Response) {
         try {
             var responseBody = response.json();
-            this.Code = responseBody.Code;
+            this.Code = responseBody.Code ? responseBody.Code : ResponseCode.None;
             this.Message = responseBody.Message;
             this.Ok = response.ok;
             return;
