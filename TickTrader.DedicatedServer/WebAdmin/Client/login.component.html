@@ -2,12 +2,17 @@
     <form class="form-signin" role="form">
         <h3 class="form-signin-heading">Please sign in</h3>
         <div class="form-group">
-            <input [(ngModel)]="creds.login" type="text" class="form-control" placeholder="Login" autofocus="" name="login">
+            <input [(ngModel)]="Creds.Login" type="text" class="form-control" placeholder="Login" autofocus="" name="login">
         </div>
         <div class="form-group">
-            <input [(ngModel)]="creds.password" type="password" class="form-control" placeholder="Password" name="password">
+            <input [(ngModel)]="Creds.Password" type="password" class="form-control" placeholder="Password" name="password">
         </div>
-        <button class="btn btn-primary btn-block" type="submit" (click)="login()">Sign in</button>
+        <div class="form-group">
+            <div *ngIf="LogInStatusMessage" class="alert alert-danger">
+                <span>{{LogInStatusMessage}}</span>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" (click)="LogIn()">Sign in</button>
     </form>
 </div>
 

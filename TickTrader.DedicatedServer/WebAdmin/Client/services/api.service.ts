@@ -19,7 +19,7 @@ export class ApiService {
     constructor(private _http: Http, public Auth: AuthService, public Feed: FeedService) {
         this.Auth.AuthDataUpdated.subscribe(authData => {
             if (authData) {
-                this.headers.append('Authorization', 'Bearer ' + authData.token);
+                this.headers.append('Authorization', 'Bearer ' + authData.Token);
             }
             else {
                 this.headers.delete('Authorization');
@@ -60,7 +60,7 @@ export class ApiService {
         let input = new FormData();
         input.append("file", file);
 
-        var header = new Headers({ 'Authorization': 'Bearer ' + this.Auth.AuthData.token });
+        var header = new Headers({ 'Authorization': 'Bearer ' + this.Auth.AuthData.Token });
 
         return this._http
             .post(this.repositoryUrl, input, { headers: header })
