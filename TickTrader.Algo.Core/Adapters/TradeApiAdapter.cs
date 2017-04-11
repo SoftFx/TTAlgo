@@ -192,9 +192,19 @@ namespace TickTrader.Algo.Core
                 logEntry.Append("→ SUCCESS: Opened ");
                 if (order != null)
                 {
-                    logEntry.Append("#").Append(order.Id).Append(" ");
-                    AppendOrderParams(logEntry, " ", order.Symbol, order.Type, order.Side,
-                        order.RemainingVolume, order.Price, order.StopLoss, order.TakeProfit);
+                    if (!double.IsNaN(order.LastFillPrice))
+                    {
+                        logEntry.Append("#").Append(order.Id).Append(" ");
+                        AppendOrderParams(logEntry, " ", order.Symbol, order.Type, order.Side,
+                            order.LastFillVolume, order.LastFillPrice, order.StopLoss, order.TakeProfit);
+                    }
+                    else
+                    {
+                        logEntry.Append("#").Append(order.Id).Append(" ");
+                        AppendOrderParams(logEntry, " ", order.Symbol, order.Type, order.Side,
+                            order.RemainingVolume, order.Price, order.StopLoss, order.TakeProfit);
+                    }
+
                 }
                 else
                     logEntry.Append("Null Order");
