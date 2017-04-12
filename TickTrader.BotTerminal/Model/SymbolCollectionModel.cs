@@ -11,106 +11,26 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolCollectionModel : IDynamicDictionarySource<string, SymbolModel>, IOrderDependenciesResolver
+    internal class SymbolCollectionModel : Algo.Common.Model.SymbolCollectionBase
     {
-        private Logger logger;
-        private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
-        private IDictionary<string, CurrencyInfo> currencies;
-
-        public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
+        private QuoteDistributor _distributor;
 
         public SymbolCollectionModel(ConnectionModel connection)
+            : base(connection, new DispatcherSync()) 
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
-            Distributor = new QuoteDistributor(connection);
+            _distributor =  new QuoteDistributor(connection);
         }
 
-        public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
-        public QuoteDistributor Distributor { get; private set; }
-
-        public async Task Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
+        protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributorBase distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
         {
-            this.currencies = currencySnapshot;
-            await Merge(symbolSnapshot);
-            Distributor.Init();
+            return new SymbolModel((QuoteDistributor)distributor, info, currencies);
         }
 
-        public IFeedSubscription SubscribeAll()
-        {
-            return Distributor.SubscribeAll();
-        }
-
-        private async Task Merge(IEnumerable<SymbolInfo> freshSnashot)
-        {
-            var freshSnapshotDic = freshSnashot.ToDictionary(i => i.Name);
-
-            // upsert
-            foreach (var info in freshSnashot)
-            {
-                await App.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    SymbolModel model;
-                    if (symbols.TryGetValue(info.Name, out model))
-                        model.Update(info);
-                    else
-                    {
-                        Distributor.AddSymbol(info.Name);
-                        model = new SymbolModel(Distributor, info, currencies);
-                        symbols.Add(info.Name, model);
-                    }
-                });
-            }
-
-            // delete
-            List<SymbolModel> toRemove = new List<SymbolModel>();
-            foreach (var symbolModel in symbols.Values)
-            {
-                if (!freshSnapshotDic.ContainsKey(symbolModel.Name))
-                    toRemove.Add(symbolModel);
-            }
-
-            foreach (var model in toRemove)
-            {
-                symbols.Remove(model.Name);
-                model.Close();
-                Distributor.RemoveSymbol(model.Name);
-            }
-        }
-
-        public Task Deinit()
-        {
-            return Distributor.Stop();
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public SymbolModel GetOrDefault(string key)
-        {
-            SymbolModel result;
-            this.symbols.TryGetValue(key, out result);
-            return result;
-        }
-
-        SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
-        {
-            return GetOrDefault(name);
-        }
-
-        public SymbolModel this[string key]
-        {
-            get
-            {
-                SymbolModel result;
-                if (!this.symbols.TryGetValue(key, out result))
-                    throw new ArgumentException("Symbol Not Found: " + key);
-                return result;
-            }
-        }
+        public override QuoteDistributorBase Distributor => _distributor;
     }
 }

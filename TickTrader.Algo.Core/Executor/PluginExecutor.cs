@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
 {
     public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget, DiagnosticInfo
     {
-        public enum States { Idle, Initializing, Running, Stopping }
+        public enum States { Idle, Running, Stopping }
 
         private object _sync = new object();
         private IPluginLogger logger;
@@ -31,7 +31,6 @@ namespace TickTrader.Algo.Core
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
-        private Task initTask;
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
@@ -229,17 +228,10 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                Validate();
-                ChangeState(States.Initializing);
-                System.Diagnostics.Debug.WriteLine("Exeutor: started!");
-                initTask = Task.Factory.StartNew(Init);
-            }
-        }
+                System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
 
-        private void Init()
-        {
-            try
-            {
+                Validate();
+
                 // Setup builder
 
                 builder = new PluginBuilder(descriptor);
@@ -277,68 +269,43 @@ namespace TickTrader.Algo.Core
 
                 // Update state
 
-                lock (_sync) ChangeState(States.Running);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Executor: init failed!");
-
-                OnRuntimeException(ex);
-                lock (_sync)
-                {
-                    if (state != States.Stopping)
-                    {
-                        ChangeState(States.Stopping);
-                        stopTask = DoStop(false);
-                    }
-                }
+                ChangeState(States.Running);
             }
         }
 
         public void Stop()
         {
-            StopAsync().Wait();
-        }
-
-        public async Task StopAsync()
-        {
             Task taskToWait = null;
 
             lock (_sync)
             {
+                System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
+
                 if (state == States.Idle)
                     return;
                 else if (state != States.Stopping)
                 {
                     ChangeState(States.Stopping);
                     stopTask = DoStop(false);
-                }
+                }   
 
                 taskToWait = stopTask;
             }
 
-            await taskToWait.ConfigureAwait(false);
+            taskToWait.Wait();
         }
 
         private async Task DoStop(bool qucik)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Executor: wating init task to finsih!");
-
-                await initTask.ConfigureAwait(false);
-
-                System.Diagnostics.Debug.WriteLine("Executor: stopping invoke strategy!");
-
                 await iStrategy.Stop(qucik).ConfigureAwait(false);
 
-                System.Diagnostics.Debug.WriteLine("Executor: stopping feed strategy!");
-                 
+                System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
+
                 fStrategy.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
-
-                System.Diagnostics.Debug.WriteLine("Executor: everything was stopped!");
             }
             catch (Exception ex)
             {
@@ -352,7 +319,7 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("Executor: algo exited!");
+                System.Diagnostics.Debug.WriteLine("EXECUTOR EXIT!");
 
                 if (state != States.Running)
                     return;
@@ -370,7 +337,7 @@ namespace TickTrader.Algo.Core
             return (T)fStrategy;
         }
 
-        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
+        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe, List<BarEntity> mainSeries = null)
         {
             lock (_sync)
             {
@@ -513,10 +480,10 @@ namespace TickTrader.Algo.Core
             if (metadata != null)
             {
                 var symbolInfoList = metadata.GetSymbolMetadata();
-                var currenciesDict = metadata.GetCurrencyMetadata().ToDictionary(c => c.Name);
+                var currencies = metadata.GetCurrencyMetadata().ToDictionary(c => c.Name);
                 foreach (var smb in symbolInfoList)
-                    builder.Symbols.Add(smb, currenciesDict);
-                foreach (var currency in currenciesDict.Values)
+                    builder.Symbols.Add(smb, currencies);
+                foreach (var currency in currencies.Values)
                     builder.Currencies.Add(currency);
             }
         }

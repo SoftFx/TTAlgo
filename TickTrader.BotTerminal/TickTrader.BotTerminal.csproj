@@ -80,12 +80,6 @@
     <ApplicationIcon>softfx.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BusinessLogic">
-      <HintPath>..\lib\BusinessLogic.dll</HintPath>
-    </Reference>
-    <Reference Include="BusinessObjects">
-      <HintPath>..\lib\BusinessObjects.dll</HintPath>
-    </Reference>
     <Reference Include="Caliburn.Micro, Version=2.0.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.Core.3.0.0-beta1\lib\net45\Caliburn.Micro.dll</HintPath>
       <Private>True</Private>
@@ -97,9 +91,6 @@
     <Reference Include="Caliburn.Micro.Platform.Core, Version=2.0.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.0.0-beta1\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Common">
-      <HintPath>..\lib\Common.dll</HintPath>
     </Reference>
     <Reference Include="NLog">
       <HintPath>..\lib\NLog.dll</HintPath>
@@ -127,11 +118,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net">
-      <HintPath>..\lib\SoftFX.Extended.Net.dll</HintPath>
+    <Reference Include="SoftFX.Extended.Net, Version=1.19.23.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.19.838\lib\net40\SoftFX.Extended.Net.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Lrp">
-      <HintPath>..\lib\SoftFX.Lrp.dll</HintPath>
+    <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.19.838\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -145,8 +136,8 @@
     </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -160,6 +151,15 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="TickTrader.BusinessLogic">
+      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.BusinessObjects">
+      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.Common">
+      <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -273,7 +273,6 @@
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
-    <Compile Include="Lib\ValidationGroup.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
@@ -283,15 +282,16 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
-    <Compile Include="Model.Algo\PluginFeedProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
+    <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\OrderType.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
+    <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\SymbolObserver.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
@@ -299,7 +299,6 @@
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
-    <Compile Include="Model\AssetModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Model\TradeTransactionModel.cs" />
     <Compile Include="Model\Journal.cs" />
@@ -310,7 +309,6 @@
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model\BotJournal.cs" />
-    <Compile Include="Model\FdkToAlgo.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model.Algo\PluginCatalog.cs" />
@@ -352,15 +350,10 @@
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\AccountModel.cs" />
-    <Compile Include="Model\ConnectionModel.cs" />
-    <Compile Include="Model\FeedHistoryProviderModel.cs" />
     <Compile Include="Model\LocMsg.cs" />
-    <Compile Include="Model\OrderModel.cs" />
-    <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\RateSplitModel.cs" />
     <Compile Include="Model\SymbolCollectionModel.cs" />
-    <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -909,13 +902,13 @@
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj">
+      <Project>{bffe802c-bcb0-4376-9551-977fe8c277d2}</Project>
+      <Name>TickTrader.Algo.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.Algo.GuiModel\TickTrader.Algo.GuiModel.csproj">
-      <Project>{c29222d6-e27c-4d1a-970f-a54851e0647e}</Project>
-      <Name>TickTrader.Algo.GuiModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>

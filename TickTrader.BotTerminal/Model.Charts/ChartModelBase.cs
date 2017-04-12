@@ -16,12 +16,13 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
 using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {

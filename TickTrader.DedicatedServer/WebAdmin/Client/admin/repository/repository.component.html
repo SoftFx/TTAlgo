@@ -1,0 +1,63 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card max_height_600">
+                    <div class="header">
+                        <div class="btn-toolbar pull-right">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#uploadPanel" aria-expanded="true">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                    <i class="fa fa-chevron-down"></i>
+                                    <i class="fa fa-chevron-up"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <h4 class="title truncate">
+                            Algo Package
+                        </h4>
+
+                    </div>
+                    <div id="uploadPanel" class="content vertical-autoscroll_600 collapse in">
+                        <div class="form-group">
+                            <label>File</label>
+                            <div class="input-group">
+                                <input [ngModel]="SelectedFileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                                <label class="input-group-btn">
+                                    <span class="btn btn-primary btn-fill">
+                                        <i class="fa fa-folder-o"></i>
+                                        <input #PackageInput (change)="OnFileInputChange($event)" type="file" style="display: none;" accept=".ttalgo">
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div *ngIf="FileInputError" class="alert alert-danger">
+                                <span>{{FileInputError | resx }}</span>
+                            </div>
+
+                        </div>
+
+                        <div class="pull-right">
+                            <button [disabled]="!CanUpload" (click)="UploadPackage()" class="btn btn-primary">Upload</button>
+                        </div>
+                    </div>
+
+                    <overlay-cmp *ngIf="Uploading">
+                        <span class="fa fa-circle-o-notch fa-spin black"></span>
+                        Uploading...
+                    </overlay-cmp>
+                </div>
+
+            </div>
+
+            <div class="col-md-8">
+                <masonry class="row">
+                    <div masonry-brick *ngFor="let package of Packages |  orderBy: ['Name']; let pIndex = index;" class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+                        <package-card-cmp [Package]="package" (OnDeleted)="OnPackageDeleted($event)"></package-card-cmp>
+                    </div>
+                </masonry>
+            </div>
+        </div>
+    </div>
+</div>

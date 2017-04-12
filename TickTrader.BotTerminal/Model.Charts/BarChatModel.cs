@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.GuiModel;
 using TickTrader.Algo.Core;
 using Api = TickTrader.Algo.Api;
 using SciChart.Charting.Model.DataSeries;
@@ -15,6 +14,8 @@ using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Core.Math;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -99,7 +100,7 @@ namespace TickTrader.BotTerminal
         public override void InitializePlugin(PluginExecutor plugin, string uniqueBotName)
         {
             base.InitializePlugin(plugin, uniqueBotName);
-            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies);
+            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies, new DispatcherSync());
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
         }

@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core.Repository
         private bool isRescanRequested;
         private Task scanTask;
         private IAlgoCoreLogger logger;
-        private AlgoRepositoryItem item;
+        private PluginContainer item;
 
         public FileWatcher(string filePath, IAlgoCoreLogger logger)
         {
@@ -69,32 +69,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public void Dispose()
         {
-            DisposeSafe(item);       
-        }
-
-        private void DisposeSafe(AlgoRepositoryItem itemToDispose)
-        {
-            try
-            {
-                if (item != null)
-                    itemToDispose.Dispose();
-            }
-            catch (Exception ex)
-            {
-                logger?.Debug("Failed to unload child domain: " + ex.Message);
-            }
-        }
-
-        private static AlgoRepositoryItem ItemFactory(string filePath)
-        {
-            var ext = Path.GetExtension(filePath).ToLowerInvariant();
-
-            if (ext == ".ttalgo")
-                return new AlgoPackageItem();
-            else if (ext == ".dll")
-                return new NetAssemblyItem();
-            else
-                throw new ArgumentException("Unrecognized file type: " + ext);
+            item?.Dispose();
         }
 
         internal void CheckForChanges()
@@ -109,7 +84,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private void Load(string filePath)
         {
-            AlgoRepositoryItem newItem = null;
+            PluginContainer newItem = null;
 
             try
             {
@@ -126,13 +101,11 @@ namespace TickTrader.Algo.Core.Repository
 
                     if (!skipFileScan)
                     {
-                        newItem = ItemFactory(filePath);
-                        newItem.Logger = logger;
-                        newItem.Load(stream, filePath);
+                        newItem = PluginContainer.Load(filePath, logger);
                         currentFileInfo = info;
                         logger.Info("Loaded package " + FileName);
-                        Merge(newItem.Metadata); // this will fire events
-                        DisposeSafe(item); // dispose old item after event firing, so all running plugins can be gracefuly stopped
+                        Merge(newItem.Plugins); // this will fire events
+                        item?.Dispose(); // dispose old item after event firing, so all running plugins can be gracefuly stopped
                         item = newItem;
                     }
                 }
@@ -141,8 +114,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (IOException ioEx)
             {
-                if (newItem != null)
-                    DisposeSafe(newItem);
+                newItem?.Dispose();
 
                 if (ioEx.IsLockExcpetion())
                 {
@@ -157,9 +129,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                if (newItem != null)
-                    DisposeSafe(newItem);
-
+                newItem?.Dispose();
                 logger?.Info("Cannot open file: " + FileName + " " + ex.Message);
                 stateControl.PushEvent(Events.DoneLoad);
             }
@@ -194,120 +164,6 @@ namespace TickTrader.Algo.Core.Repository
                     Removed(this, item);
                 }
             }
-        }
-    }
-
-    internal abstract class AlgoRepositoryItem : CrossDomainObject
-    {
-        public IAlgoCoreLogger Logger { get; set; }
-        public IEnumerable<AlgoPluginRef> Metadata { get; protected set; }
-        public abstract void Load(FileStream stream, string filePath);
-
-        internal class ChildDomainProxy : CrossDomainObject
-        {
-            public AlgoSandbox CreateDotNetSanbox(IDotNetPluginPackage netPackage)
-            {
-                return new AlgoSandbox(netPackage);
-            }
-        }
-    }
-
-    internal class NetAssemblyItem : AlgoRepositoryItem, IDotNetPluginPackage
-    {
-        private Isolated<ChildDomainProxy> subDomain;
-        private string dllFolderPath;
-
-        public string MainAssemblyName { get; private set; }
-
-        public override void Load(FileStream stream, string filePath)
-        {
-            dllFolderPath = Path.GetDirectoryName(filePath);
-            MainAssemblyName = Path.GetFileName(filePath);
-            try
-            {
-                subDomain = new Isolated<ChildDomainProxy>();
-                var sandbox = subDomain.Value.CreateDotNetSanbox(this);
-                Metadata = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
-            }
-            catch (Exception)
-            {
-                Dispose(true);
-                throw;
-            }
-        }
-
-        public byte[] GetFileBytes(string packageLocalPath)
-        {
-            string fullPath = Path.Combine(dllFolderPath, packageLocalPath);
-
-            try
-            {
-                return File.ReadAllBytes(fullPath);
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            try
-            {
-                if (subDomain != null)
-                    subDomain.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Logger?.Debug("Failed to unload child domain: " + ex.Message);
-            }
-
-            base.Dispose(disposing);
-        }
-    }
-
-    internal class AlgoPackageItem : AlgoRepositoryItem, IDotNetPluginPackage
-    {
-        private Isolated<ChildDomainProxy> subDomain;
-        private Package algoPackage;
-
-        public override void Load(FileStream stream, string filePath)
-        {
-            algoPackage = Package.Load(stream);
-            MainAssemblyName = algoPackage.Metadata.MainBinaryFile;
-            try
-            {
-                subDomain = new Isolated<ChildDomainProxy>();
-                var sandbox = subDomain.Value.CreateDotNetSanbox(this);
-                Metadata = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
-            }
-            catch (Exception)
-            {
-                Dispose(true);
-                throw;
-            }
-        }
-
-        public string MainAssemblyName { get; private set; }
-
-        public byte[] GetFileBytes(string packageLocalPath)
-        {
-            return algoPackage.GetFile(packageLocalPath);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            try
-            {
-                if (subDomain != null)
-                    subDomain.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Logger?.Debug("Failed to unload child domain: " + ex.Message);
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

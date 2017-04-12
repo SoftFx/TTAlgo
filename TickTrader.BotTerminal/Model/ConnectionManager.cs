@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -63,7 +64,8 @@ namespace TickTrader.BotTerminal
             internalStateControl.OnEnter(InStates.Online, () => UpdateState(States.Online));
             internalStateControl.OnEnter(InStates.Disconnecting, DoDisconnect);
 
-            Connection = new ConnectionModel();
+            var connectionOptions = new ConnectionOptions() { EnableFixLogs = BotTerminal.Properties.Settings.Default.EnableFixLogs };
+            Connection = new ConnectionModel(connectionOptions, new DispatcherStateMachineSync());
             Connection.Connecting += () => { recconectTokenSource?.Cancel(); recconectTokenSource = null; };
             Connection.Connected += () => { connectionDelay.Reset(); };
             Connection.Disconnected += () =>

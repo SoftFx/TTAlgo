@@ -1,0 +1,136 @@
+/*region Colors*/
+.black {
+    color: black;
+}
+
+.offline {
+    color: #FB404B;
+}
+
+.online {
+    color: #87CB16;
+}
+
+Offline, Started, Initializing, Faulted, Online, Stopping
+
+/*\/\/\/Bot States Colors*/
+
+.bot-state-offline {
+     color: #FB404B;
+}
+
+.bot-state-started {
+    color: #6a9227;
+}
+
+.bot-state-initializing {
+    color: #c1c2c0;
+}
+
+.bot-state-faulted {
+    color: #ff0110;
+}
+
+.bot-state-online {
+    color: #87CB16;
+}
+
+.bot-state-stopping {
+    color: #fe9298;
+}
+
+/*/\/\/\Bot States Colors*/
+.text-error {
+    color: orangered;
+}
+/*endregion Colors*/
+
+.fixed_height_400 {
+    height: 400px;
+}
+
+.max_height_400 {
+    max-height: 400px;
+}
+
+.vertical-autoscroll_400 {
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.fixed_height_600 {
+    height: 614px;
+}
+
+.max_height_600 {
+    max-height: 614px;
+}
+
+.vertical-autoscroll_600 {
+    max-height: 554px;
+    overflow-y: auto;
+}
+
+.page-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    line-height: 20px;
+    background-color: #f5f5f5;
+}
+
+
+
+.btn-icon-sm {
+    min-height: 30px;
+    min-width: 30px;
+}
+
+.overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    overflow: hidden;
+    background-color: rgba(243,243,243,0.9);
+    z-index:200;
+}
+
+    .overlay .content {
+        padding: 0px 0px 0px 0px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+        .overlay .content .text {
+            margin: 0px 0px 0px 0px;
+            color: #333333;
+            /*font-weight: 250;*/
+            font-size: 11px;
+        }
+
+.blur {
+    filter: blur(2px);
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -ms-filter: blur(2px);
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+button[aria-expanded=false] .fa-chevron-up {
+    display: none;
+}
+
+button[aria-expanded=true] .fa-chevron-down {
+    display: none;
+}

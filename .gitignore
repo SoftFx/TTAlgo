@@ -38,10 +38,11 @@ LRP/lib/
 /wwwroot/
 wwwroot/
 node_modules/
-/[C]lient/*.js
-/[C]lient/*.map
-/[C]lient/**/*.js
-/[C]lient/**/*.map
+TickTrader.DedicatedServer/WebAdmin/Client/*.js
+TickTrader.DedicatedServer/WebAdmin/Client/*.map
+TickTrader.DedicatedServer/WebAdmin/Client/**/*.js
+TickTrader.DedicatedServer/WebAdmin/Client/**/*.map
+typings/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -246,3 +247,5 @@ _Pvt_Extensions
 algo.metadata
 /Repository.Public/API
 /TickTrader.BotTerminal/Redist
+/TickTrader.DedicatedServer/server.config.xml
+/build.ouput

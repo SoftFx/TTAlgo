@@ -53,8 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActorModel\Actor.cs" />
-    <Compile Include="ActorModel\LameActor.cs" />
-    <Compile Include="ActorModel\StateActor.cs" />
+    <Compile Include="ActorModel\Channel.cs" />
     <Compile Include="Collections\SortedList.cs" />
     <Compile Include="EntityModel\Field.cs" />
     <Compile Include="EntityModel\FieldExt.cs" />

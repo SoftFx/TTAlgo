@@ -15,7 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Entities;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             this.Icon.Data = (Geometry)FindResource(GetIconResxKey(marker.Icon));
             this.Icon.Stroke = new SolidColorBrush(stroke);
             this.Icon.StrokeThickness = strokeThickness;
-            this.Icon.Fill = new SolidColorBrush(Algo.GuiModel.Convert.ToWindowsColor(marker.Color));
+            this.Icon.Fill = new SolidColorBrush(Algo.Common.Model.Setup.Convert.ToWindowsColor(marker.Color));
 
             switch (size)
             {

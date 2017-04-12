@@ -12,7 +12,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.GuiModel;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {

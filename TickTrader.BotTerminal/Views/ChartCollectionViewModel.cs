@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             clientModel.Symbols.Updated += Symbols_Updated;
         }
 
-        private void Symbols_Updated(DictionaryUpdateArgs<string, SymbolModel> args)
+        private void Symbols_Updated(DictionaryUpdateArgs<string, Algo.Common.Model.SymbolModel> args)
         {
             if (args.Action == DLinqAction.Remove)
             {

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SoftFX.Extended;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,13 +19,13 @@ namespace TickTrader.BotTerminal
 
         private TraderClientModel clientModel;
 
-        public event System.Action DepthChanged;
+        //public event System.Action DepthChanged;
 
         public OpenOrderDialogViewModel(TraderClientModel clientModel, string preselectedSymbol)
         {
             this.clientModel = clientModel;
 
-            Symbols = clientModel.Symbols.OrderBy((k, v) => k).Chain().AsObservable();
+            Symbols = clientModel.Symbols.Select((k,v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
 
             marketOrderPage = new MarketOrderPageViewModel(this);
             pendingOrderPage = new PendingOrderPageViewModel(this);

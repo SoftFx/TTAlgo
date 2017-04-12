@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 using TickTrader.Common.Business;
@@ -185,6 +186,18 @@ namespace TickTrader.BotTerminal
                     AssetsChanged(args.NewItem, AssetChangeTypes.Replaced);
                 else if(args.Action == DLinqAction.Remove)
                     AssetsChanged(args.OldItem, AssetChangeTypes.Removed);
+            }
+
+            public void LogInfo(string message)
+            {
+            }
+
+            public void LogWarn(string message)
+            {
+            }
+
+            public void LogError(string message)
+            {
             }
 
             public event Action<IOrderModel> OrderAdded = delegate { };
