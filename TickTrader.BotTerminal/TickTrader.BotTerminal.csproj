@@ -309,7 +309,6 @@
     <Compile Include="Model.Auth\AuthStorageModel.cs" />
     <Compile Include="Model.Charts\ChartModelBase.cs" />
     <Compile Include="Model\BotJournal.cs" />
-    <Compile Include="Model\FdkToAlgo.cs" />
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model.Algo\PluginCatalog.cs" />
