@@ -45,7 +45,7 @@
                 </ListBox.GroupStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <DockPanel LastChildFill="True" Margin="3" VerticalAlignment="Center">
+                        <DockPanel LastChildFill="True" Margin="3" VerticalAlignment="Center" ToolTip="{Binding Description}">
                             <Button x:Name="btnArrowDown" DockPanel.Dock="Right"
                                 Style="{DynamicResource ListItemActionButton_Style}">
                                 <Button.Content>
@@ -91,7 +91,7 @@
                         <HierarchicalDataTemplate.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderThickness="0">
-                                    <TextBlock Text="{Binding Path=Name}"/>
+                                    <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Description}"/>
                                     <i:Interaction.Behaviors>
                                         <l:DragBehavior/>
                                     </i:Interaction.Behaviors>

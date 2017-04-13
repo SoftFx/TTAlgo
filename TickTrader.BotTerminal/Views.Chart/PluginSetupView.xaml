@@ -312,6 +312,8 @@
             <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Setup.Descriptor.Error, Prefix=PluginError_}"
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
 
+            <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
+
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False" Grid.Row="1"
                       Style="{DynamicResource DialogScrollViewer_Style}">
@@ -377,10 +379,12 @@
             <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Setup.Descriptor.Error, Prefix=PluginError_}"
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
 
+            <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
+
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
                 <StackPanel>
-                    <GroupBox Header="Parameters" Margin="4">
+                    <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
                         <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
                               ItemTemplate="{StaticResource LabeledPropertySetup}">
                             <ItemsControl.ItemsPanel>
@@ -390,7 +394,7 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
                     </GroupBox>
-                    <GroupBox Header="Inputs" Margin="4">
+                    <GroupBox Name="InputsGroup" Header="Inputs" Margin="4">
                         <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Inputs}"
                               ItemTemplate="{StaticResource LabeledInputSetup}">
                         </ItemsControl>
@@ -418,6 +422,12 @@
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding Setup.HasOutputs}" Value="False">
                 <Setter TargetName="OutputsGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Setup.HasInputs}" Value="False">
+                <Setter TargetName="InputsGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Setup.HasParams}" Value="False">
+                <Setter TargetName="ParamsGroup" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
