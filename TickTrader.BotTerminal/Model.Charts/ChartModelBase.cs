@@ -43,11 +43,9 @@ namespace TickTrader.BotTerminal
         private bool isIndicatorsOnline;
         private bool isLoading;
         private bool isUpdateRequired;
-        private bool isCloseRequested;
         private bool isConnected;
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
         private ChartNavigator navigator;
-        private TimelineTypes timelineType;
         private long indicatorNextId = 1;
         private AxisBase timeAxis;
         private bool isCrosshairEnabled;

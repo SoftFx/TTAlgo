@@ -25,18 +25,19 @@ namespace TickTrader.Algo.Common.Model
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
-        public SymbolCollectionBase(ConnectionModel connection, ISyncContext sync)
+        public SymbolCollectionBase(ClientCore client, ISyncContext sync)
         {
             _sync = sync;
+            Distributor = new QuoteDistributor(client);
         }
 
-        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributorBase distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
         {
             return new SymbolModel(info, currencies);
         }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
-        public abstract QuoteDistributorBase Distributor { get; }
+        public QuoteDistributor Distributor { get; }
 
         public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
         {

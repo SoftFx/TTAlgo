@@ -15,6 +15,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
+using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -22,8 +23,10 @@ namespace TickTrader.DedicatedServer.DS.Models
     public class ClientModel : IAccount
     {
         private object _sync;
+        private object _syncEvents = new object();
         private CancellationTokenSource connectCancellation;
         private TaskCompletionSource<ConnectionErrorCodes> testRequest;
+        private ClientCore _core;
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
@@ -66,8 +69,11 @@ namespace TickTrader.DedicatedServer.DS.Models
                 }
             };
 
-            Account = new AccountModel(SyncObj);
-            Symbols = new SymbolManager(Connection, _sync);
+            var eventSyncAdapter = new SyncAdapter(_syncEvents);
+            _core = new ClientCore(Connection, c => new SymbolManager(c, _sync), eventSyncAdapter, eventSyncAdapter);
+
+            Account = new AccountModel(_core, AccountModelOptions.None);
+            Symbols = (SymbolManager)_core.Symbols;
             FeedHistory = new FeedHistoryProviderModel(Connection, "C:\\Temp\\Feed");
         }
 
@@ -168,8 +174,9 @@ namespace TickTrader.DedicatedServer.DS.Models
                 var tCache = Connection.TradeProxy.Cache;
                 var symbols = fCache.Symbols;
                 Currencies = fCache.Currencies.ToDictionary(c => c.Name);
+                _core.Init();
                 Symbols.Initialize(symbols, Currencies);
-                Account.Init(tCache.AccountInfo, Currencies, Symbols, tCache.TradeRecords, tCache.Positions, tCache.AccountInfo.Assets);
+                Account.Init();
             }
 
             lock (_sync)

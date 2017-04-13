@@ -1,5 +1,6 @@
 ﻿using SoftFX.Extended;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,33 +11,62 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.Common.Model
 {
-    internal class TradeExecutor : CrossDomainObject, ITradeApi
+    public class TradeExecutor : CrossDomainObject, ITradeApi
     {
-        private static readonly NLog.ILogger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<TradeExecutor>();
 
-        private BufferBlock<Task> orderQueue;
-        private ActionBlock<Task> orderSender;
-        private ConnectionModel conenction;
-        private IOrderDependenciesResolver resolver;
+        private ActionBlock<Task> _orderSender;
+        private ClientCore _client;
+        private ConcurrentDictionary<string, TaskProxy<OpenModifyResult>> _openOrderWaiters = new ConcurrentDictionary<string, TaskProxy<OpenModifyResult>>();
 
-        public TradeExecutor(TraderClientModel trader)
+        public TradeExecutor(ClientCore client)
         {
-            this.conenction = trader.Connection;
-            this.resolver = trader.Symbols;
-
-            orderQueue = new BufferBlock<Task>();
+            _client = client;
+            _client.ExecutionReportReceived += _client_ExecutionReportReceived;
 
             var senderOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 10 };
-            orderSender = new ActionBlock<Task>(t => t.RunSynchronously(), senderOptions);
+            _orderSender = new ActionBlock<Task>(t => t.RunSynchronously(), senderOptions);
+        }
 
-            orderQueue.LinkTo(orderSender);
+        private void _client_ExecutionReportReceived(SoftFX.Extended.Events.ExecutionReportEventArgs args)
+        {
+            var report = args.Report;
+            var execType = report.ExecutionType;
+
+            if (execType == ExecutionType.Calculated)
+            {
+                if (!string.IsNullOrEmpty(report.ClientOrderId))
+                {
+                    TaskProxy<OpenModifyResult> hOpen;
+                    if (_openOrderWaiters.TryRemove(report.ClientOrderId, out hOpen))
+                    {
+                        var resultOrder = new OrderModel(report, _client.Symbols).ToAlgoOrder();
+                        hOpen.SetCompleted(new OpenModifyResult(OrderCmdResultCodes.Ok, resultOrder));
+                    }
+                }
+            }
+            else if (execType == ExecutionType.Rejected)
+            {
+                if (!string.IsNullOrEmpty(report.ClientOrderId))
+                {
+                    TaskProxy<OpenModifyResult> hOpen;
+                    if (_openOrderWaiters.TryRemove(report.ClientOrderId, out hOpen))
+                    {
+                        var reason = Convert(report.RejectReason, report.Text);
+                        hOpen.SetCompleted(new OpenModifyResult(reason, null));
+                    }
+                }
+            }
         }
 
         public void OpenOrder(TaskProxy<OpenModifyResult> waitHandler, string symbol,
             OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
         {
+            var clientOrderId = Guid.NewGuid().ToString();
+            _openOrderWaiters.TryAdd(clientOrderId, waitHandler);
+
             var task = new Task<OpenModifyResult>(() =>
             {
                 try
@@ -48,10 +78,10 @@ namespace TickTrader.BotTerminal
 
                     var px = type == OrderType.Stop ? default(double?) : price;
                     var stopPx = type == OrderType.Stop ? price : default(double?);
-
-                    var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type, options), Convert(side),
+                    var record = _client.TradeProxy.Server.SendOrderEx(clientOrderId, symbol, Convert(type, options), Convert(side),
                         volume, null, px, stopPx, sl, tp, null, comment, tag, null);
-                    return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
+
+                    return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, _client.Symbols).ToAlgoOrder());
                 }
                 catch (ValidatioException vex)
                 {
@@ -77,7 +107,7 @@ namespace TickTrader.BotTerminal
             });
 
             waitHandler.Attach(task);
-            orderQueue.Post(task);
+            _orderSender.Post(task);
         }
 
         public void CancelOrder(TaskProxy<CancelResult> waitHandler, string orderId, string clientOrderId, OrderSide side)
@@ -88,7 +118,7 @@ namespace TickTrader.BotTerminal
                 {
                     ValidateOrderId(orderId);
 
-                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, Convert(side));
+                    _client.TradeProxy.Server.DeletePendingOrder(orderId, Convert(side));
                     return new CancelResult(OrderCmdResultCodes.Ok);
                 }
                 catch (ValidatioException vex)
@@ -115,7 +145,7 @@ namespace TickTrader.BotTerminal
             });
 
             waitHandler.Attach(task);
-            orderQueue.Post(task);
+            _orderSender.Post(task);
         }
 
         public void ModifyOrder(TaskProxy<OpenModifyResult> waitHandler, string orderId, string clientOrderId, string symbol,
@@ -130,10 +160,10 @@ namespace TickTrader.BotTerminal
                     var px = orderType == OrderType.Stop ? default(double?) : price;
                     var stopPx = orderType == OrderType.Stop ? price : default(double?);
 
-                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
+                    var result = _client.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
                         ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
                     if (!string.IsNullOrEmpty(result.OrderId)) // Ugly hack to make it work!
-                        return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result, resolver).ToAlgoOrder());
+                        return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result, _client.Symbols).ToAlgoOrder());
                     return new OpenModifyResult(OrderCmdResultCodes.DealerReject, null);
                 }
                 catch (ValidatioException vex)
@@ -160,7 +190,7 @@ namespace TickTrader.BotTerminal
             });
 
             waitHandler.Attach(task);
-            orderQueue.Post(task);
+            _orderSender.Post(task);
         }
 
         public void CloseOrder(TaskProxy<CloseResult> waitHandler, string orderId, double? volume)
@@ -173,13 +203,13 @@ namespace TickTrader.BotTerminal
 
                     if (volume == null)
                     {
-                        var result = conenction.TradeProxy.Server.ClosePosition(orderId);
+                        var result = _client.TradeProxy.Server.ClosePosition(orderId);
                         return new CloseResult(OrderCmdResultCodes.Ok, result.ExecutedPrice, result.ExecutedVolume);
                     }
                     else
                     {
                         ValidateVolume(volume.Value);
-                        var result = conenction.TradeProxy.Server.ClosePositionPartially(orderId, volume.Value);
+                        var result = _client.TradeProxy.Server.ClosePositionPartially(orderId, volume.Value);
                         return new CloseResult(OrderCmdResultCodes.Ok);
                     }
                 }
@@ -207,7 +237,7 @@ namespace TickTrader.BotTerminal
             });
 
             waitHandler.Attach(task);
-            orderQueue.Post(task);
+            _orderSender.Post(task);
         }
 
         private TradeCommand Convert(OrderType type, OrderExecOptions options)
