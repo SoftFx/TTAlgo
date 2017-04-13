@@ -11,6 +11,7 @@
             <i class="fa fa-circle" [ngClass]="{'bot-state-offline': TradeBot.State === TradeBotState.Offline, 'bot-state-started': TradeBot.State === TradeBotState.Started, 'bot-state-initializing': TradeBot.State === TradeBotState.Initializing, 'bot-state-faulted': TradeBot.State === TradeBotState.Faulted, 'bot-state-stopping': TradeBot.State === TradeBotState.Stopping, 'bot-state-online': TradeBot.State === TradeBotState.Online }"></i>
             {{TradeBot.Id}}
         </h4>
+        <p class="category">{{TradeBotState[TradeBot.State]}}</p>
     </div>
     <div class="content">
         <ul class="list-unstyled">
