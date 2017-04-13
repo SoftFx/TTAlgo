@@ -1,25 +1,31 @@
-﻿export class AuthCredentials {
-    login: string;
-    password: string;
+﻿import { Serializable } from './index';
+
+export class AuthCredentials {
+    Login: string;
+    Password: string;
 
     constructor(login: string = "", password: string = "") {
-        this.login = login;
-        this.password = password;
+        this.Login = login;
+        this.Password = password;
     }
 }
 
-export class AuthData {
-    token: string;
-    expires: Date;
-    user: string;
+export class AuthData implements Serializable<AuthData>{
+    Token: string;
+    Expires: Date;
+    User: string;
 
-    constructor(token: string, expires: string, user: string) {
-        this.token = token;
-        this.expires = new Date(expires);
-        this.user = user;
+    public Deserialize(input: any): AuthData {
+        if (input) {
+            this.Token = input.Token;
+            this.Expires = input.Expires;
+            this.User = input.User;
+        }
+
+        return this;
     }
 
     IsEmpty(): Boolean {
-        return !this.token;
+        return !this.Token;
     }
 }

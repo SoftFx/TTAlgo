@@ -46,7 +46,7 @@
                 <select *ngSwitchCase="ParameterDataType.Enum" [(ngModel)]="Parameter.Value" class="form-control">
                     <option *ngFor="let EnumItem of (Parameter.Descriptor.EnumValues | orderBy)" [ngValue]="EnumItem">{{EnumItem}}</option>
                 </select>
-                <input *ngSwitchDefault type="text" readonly value="Unsupported control" class="form-control"/>
+                <input *ngSwitchDefault type="text" readonly value="Unsupported property type" class="form-control"/>
             </div>
         </div>
     </div>

@@ -11,20 +11,21 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 })
 
 export class LoginComponent {
-    public statusMessage: string;
-    public creds: AuthCredentials = new AuthCredentials('Administrator', 'Administrator');
+    public LogInStatusMessage: string;
+    public Creds: AuthCredentials = new AuthCredentials('Administrator', 'Administrator');
 
     constructor(
         private router: Router,
         private _api: ApiService) {
     }
 
-    login() {
-        this._api.Auth.LogIn(this.creds.login, this.creds.password)
-            .subscribe(
-            data => {
+    LogIn() {
+        this._api.Auth.LogIn(this.Creds.Login, this.Creds.Password).subscribe(
+            ok => {
                 let redirectUrl = this._api.Auth.RedirectUrl ? this._api.Auth.RedirectUrl : '/';
                 this.router.navigate([redirectUrl]);
-            });
+            },
+            err => this.LogInStatusMessage = err.Message
+        );
     }
 }

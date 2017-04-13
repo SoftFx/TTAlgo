@@ -1,5 +1,12 @@
 ﻿<div class="card">
     <div class="header">
+        <div class="btn-toolbar pull-right">
+            <div class="btn-group btn-group-sm">
+                <button (click)="confirmDeletion=true" [class.disabled]="TradeBot.State === TradeBotState.Online || TradeBot.State === TradeBotState.Started" type="button" class="btn btn-simple">
+                    <i class="fa fa-remove"></i>
+                </button>
+            </div>
+        </div>
         <h4 class="title truncate">
             <i class="fa fa-circle offline" [ngClass]="{'bot-state-started': TradeBot.State === TradeBotState.Started, 'bot-state-initializing': TradeBot.State === TradeBotState.Initializing, 'bot-state-faulted': TradeBot.State === TradeBotState.Faulted, 'bot-state-stopping': TradeBot.State === TradeBotState.Stopping, 'bot-state-online': TradeBot.State === TradeBotState.Online }"></i>
             {{TradeBot.Id}}
@@ -28,7 +35,7 @@
         </div>
     </overlay-cmp>
 
-    <overlay-cmp *ngIf="false">
+    <overlay-cmp *ngIf="confirmDeletion">
         <div class="text-center">
             <p>Delete?</p>
             <div class="row">
@@ -36,7 +43,7 @@
                     <button (click)="Delete()" class="btn btn-primary ">Delete</button>
                 </div>
                 <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="showConfirm=false" class="btn btn-danger ">Cancel</button>
+                    <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
                 </div>
             </div>
         </div>

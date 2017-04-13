@@ -16,83 +16,15 @@ export class ApiService {
     private readonly dashboardUrl: string = '/api/Dashboard';
     private readonly tradeBotUrl: string = '/api/TradeBot';
 
-    dasboardBots: Observable<ExtBotModel[]>;
-    private _bots: BehaviorSubject<ExtBotModel[]>;
-    private dataStore: {
-        bots: ExtBotModel[]
-    };
-
     constructor(private _http: Http, public Auth: AuthService, public Feed: FeedService) {
-        this.dataStore = { bots: [] };
-        this._bots = <BehaviorSubject<ExtBotModel[]>>new BehaviorSubject([]);
-        this.dasboardBots = this._bots.asObservable();
-
         this.Auth.AuthDataUpdated.subscribe(authData => {
             if (authData) {
-                this.headers.append('Authorization', 'Bearer ' + authData.token);
+                this.headers.append('Authorization', 'Bearer ' + authData.Token);
             }
             else {
                 this.headers.delete('Authorization');
             }
         });
-    }
-
-    loadAllBots(): Observable<BotModel[]> {
-        return Observable.of(FakeData.bots);
-    }
-
-    loadBotsOnDashboard() {
-        Observable.of(FakeData.extBots).delay(150).subscribe(data => {
-            this.dataStore.bots = data;
-            this._bots.next(Object.assign({}, this.dataStore).bots);
-        }, error => console.log('Could not load bots.'));
-    }
-
-    getBot(id: string): Observable<ExtBotModel> {
-        return Observable.of(this.dataStore.bots.find(bot => bot.instanceId == id));
-    }
-
-    removeBotFromDashboard(bot: ExtBotModel) {
-        Observable.of(true).delay(150).subscribe(response => {
-            this.dataStore.bots.forEach((b, i) => {
-                if (b == bot) { this.dataStore.bots.splice(i, 1); }
-            });
-
-            this._bots.next(Object.assign({}, this.dataStore).bots);
-        }, error => console.log('Could not delete bot.'));
-    }
-
-    addBot(bot: ExtBotModel) {
-        return Observable
-            .of(true)
-            .delay(150)
-            .do(response => {
-                this.dataStore.bots.push(bot);
-            },
-            err => { },
-            () => { });
-    }
-
-    runBot(bot: ExtBotModel) {
-        return Observable.from([BotState.Running, BotState.Runned])
-            .map(function (value) { return Observable.of(value).delay(value == BotState.Running ? 0 : 1500); })
-            .concatAll()
-            .subscribe(response => {
-                this.updateBotState(bot, response);
-            },
-            err => { },
-            () => { });
-    }
-
-    stopBot(bot: ExtBotModel) {
-        return Observable.from([BotState.Stopping, BotState.Stopped])
-            .map(function (value) { return Observable.of(value).delay(value == BotState.Stopping ? 0 : 1500); })
-            .concatAll()
-            .subscribe(response => {
-                this.updateBotState(bot, response);
-            },
-            err => { },
-            () => { });
     }
 
     GetTradeBots() {
@@ -101,9 +33,15 @@ export class ApiService {
             .catch(this.handleServerError);
     }
 
-    SetupPlugin(setup: PluginSetupModel) {
+    AddBot(setup: PluginSetupModel) {
         return this._http.post(this.dashboardUrl, setup.Payload, { headers: this.headers })
             .map(res => new TradeBotModel().Deserialize(res.json()))
+            .catch(this.handleServerError);
+    }
+
+    DeleteBot(botId: string) {
+        return this._http
+            .delete(`${this.dashboardUrl}/?` + $.param({ botId: botId }), { headers: this.headers })
             .catch(this.handleServerError);
     }
 
@@ -122,7 +60,7 @@ export class ApiService {
         let input = new FormData();
         input.append("file", file);
 
-        var header = new Headers({ 'Authorization': 'Bearer ' + this.Auth.AuthData.token });
+        var header = new Headers({ 'Authorization': 'Bearer ' + this.Auth.AuthData.Token });
 
         return this._http
             .post(this.repositoryUrl, input, { headers: header })
@@ -180,15 +118,6 @@ export class ApiService {
         return Observable.of(['EURUSD', 'AEDAUD', 'USDAFN', 'USDAMD']);
     }
 
-    private updateBotState(bot: ExtBotModel, state: BotState): boolean {
-        for (let cBot of this.dataStore.bots) {
-            if (cBot.instanceId == bot.instanceId) {
-                cBot.state = state;
-                return true;
-            }
-        }
-        return false;
-    }
 
     private handleServerError(error: Response): Observable<any> {
         console.error('[ApiService] An error occurred' + error); //debug

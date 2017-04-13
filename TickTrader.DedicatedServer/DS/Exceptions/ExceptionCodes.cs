@@ -2,6 +2,8 @@
 {
     public class ExceptionCodes
     {
+        public const int InvalidCredentials = 100;
+
         public const int DuplicatePackage = 1000;
         public const int PackageNotFound = 1001;
         public const int PackageIsLocked = 1002;

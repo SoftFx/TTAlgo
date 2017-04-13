@@ -18,26 +18,33 @@ export class DashboardComponent {
     constructor(private _api: ApiService, private _route: ActivatedRoute, private _router: Router) { }
 
     ngOnInit() {
+        this._api.Feed.addBot.subscribe(bot => this.addBot(bot));
+        this._api.Feed.deleteBot.subscribe(id => this.deleteBot(id));
+
         this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 
-    Start(bot: TradeBotModel) {
-
-    }
-
-    Stop(bot: TradeBotModel) {
-    }
-
-    Remove(bot: TradeBotModel) {
-    }
-
     OnTradeBotAdded(bot: TradeBotModel) {
-        this.TradeBots.push(bot);
+        this.addBot(bot);
     }
 
-
+    OnTradeBotDeleted(bot: TradeBotModel) {
+        this.deleteBot(bot.Id);
+    }
 
     //gotoDetails(bot: ExtBotModel) {
     //    this.router.navigate(['/bot', bot.instanceId]);
     //}
+
+    private addBot(bot: TradeBotModel)
+    {
+        if (!this.TradeBots.find(b => b.Id === bot.Id)) {
+            this.TradeBots = this.TradeBots.concat(bot);
+        }
+    }
+
+    private deleteBot(id: string) {
+        this.TradeBots = this.TradeBots.filter(x => x.Id !== id);
+    }
+    
 }

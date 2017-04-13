@@ -29,7 +29,7 @@
             <div class="col-md-8">
                 <masonry class="row">
                     <div masonry-brick *ngFor="let Bot of TradeBots | orderBy: ['Id'] " class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <trade-bot-card-cmp [TradeBot]="Bot"></trade-bot-card-cmp> 
+                        <trade-bot-card-cmp (OnDeleted)="OnTradeBotDeleted($event)" [TradeBot]="Bot"></trade-bot-card-cmp> 
                     </div>
                 </masonry>
             </div>

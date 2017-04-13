@@ -3,7 +3,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 <label>Bot</label>
-                <select  class="form-control" [ngModel]="SelectedPlugin" (ngModelChange)="onPluginSelected($event)" >
+                <select class="form-control" [(ngModel)]="SelectedPlugin" (ngModelChange)="onPluginSelected($event)">
                     <optgroup *ngFor="let Package of (Packages | orderBy: ['Name'])" label="{{Package.Name}}">
                         <option *ngFor="let Plugin of (Package.Plugins | orderBy: ['DisplayName'])" [ngValue]="Plugin">{{Plugin.DisplayName}}</option>
                     </optgroup>
@@ -15,8 +15,8 @@
 
     <div>
         <div class="pull-right">
-            <button (click)="addBot(bot)" class="btn btn-primary" type="submit">Add</button>
-            <button (click)="cancel()"  class="btn btn-primary" type="submit">Cancel</button>
+            <button [class.disabled]="!Setup" (click)="addBot(bot)" class="btn btn-primary" type="submit">Add</button>
+            <button [class.disabled]="!Setup" (click)="cancel()" class="btn btn-primary" type="submit">Cancel</button>
         </div>
     </div>
 </div>
