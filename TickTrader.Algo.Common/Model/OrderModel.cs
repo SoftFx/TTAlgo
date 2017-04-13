@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Common.Model
         private DateTime? created;
         private DateTime? expiration;
         private string comment;
+        private string tag;
         private double? stopLoss;
         private double? takeProfit;
         private decimal? profit;
@@ -190,7 +191,18 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
-        public string Tag { get; private set; }
+        public string Tag
+        {
+            get { return tag; }
+            private set
+            {
+                if (tag != value)
+                {
+                    tag = value;
+                    NotifyOfPropertyChange(nameof(Tag));
+                }
+            }
+        }
         public double? TakeProfit
         {
             get { return takeProfit; }
@@ -424,6 +436,14 @@ namespace TickTrader.Algo.Common.Model
             this.TakeProfit = record.TakeProfit;
             this.Swap = (decimal)record.Swap;
             this.Commission = (decimal)record.Commission;
+            if (record.ImmediateOrCancel)
+            {
+                this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
+                this.ExecPrice = record.Price;
+                this.ExecAmount = record.Volume;
+                this.LastFillPrice = record.Price;
+                this.LastFillAmount = record.Volume;
+            }
         }
 
         private void Update(ExecutionReport report)
