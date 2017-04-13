@@ -28,6 +28,17 @@ export class NavbarComponent implements OnInit {
         return 'Dashboard';
     }
 
+    public get UserName(): string {
+        if (this.authService.IsAuthorized)
+        {
+            return this.authService.AuthData.User;
+        }
+        else
+        {
+            return '';
+        }
+    }
+
     public logout() {
         this.authService.LogOut();
         this.router.navigate(['login']);
