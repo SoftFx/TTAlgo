@@ -93,7 +93,7 @@ namespace TickTrader.BotTerminal
 
         private Logger GetOrAddLogger(string botName)
         {
-            var loggerName = $"{nameof(BotJournal)}.{PathHelper.GetSafeFileName(botName)}";
+            var loggerName = LoggerHelper.GetBotLoggerName(botName);
             return _loggers.GetOrAdd(loggerName, () => LogManager.GetLogger(loggerName));
         }
     }

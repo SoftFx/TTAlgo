@@ -286,6 +286,7 @@
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
+    <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\OrderType.cs" />

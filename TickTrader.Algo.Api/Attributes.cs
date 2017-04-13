@@ -39,20 +39,25 @@ namespace TickTrader.Algo.Api
     }
 
     [Serializable]
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class IndicatorAttribute : Attribute
+    public abstract class AlgoPluginAttribute : Attribute
     {
-        public bool IsOverlay { get; set; }
         public string DisplayName { get; set; }
         public string Category { get; set; }
+        public string Version { get; set; }
+        public string Description { get; set; }
     }
 
     [Serializable]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class TradeBotAttribute : Attribute
+    public class IndicatorAttribute : AlgoPluginAttribute
     {
-        public string DisplayName { get; set; }
-        public string Category { get; set; }
+        public bool IsOverlay { get; set; }
+    }
+
+    [Serializable]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class TradeBotAttribute : AlgoPluginAttribute
+    {
     }
 
     [Serializable]
@@ -61,7 +66,7 @@ namespace TickTrader.Algo.Api
     {
         public CopyrightAttribute(string copyrightText)
         {
-            this.Text = copyrightText;
+            Text = copyrightText;
         }
 
         public string Text { get; set; }
@@ -73,8 +78,8 @@ namespace TickTrader.Algo.Api
     {
         public FileFilterAttribute(string name, string mask)
         {
-            this.Name = name;
-            this.Mask = mask;
+            Name = name;
+            Mask = mask;
         }
 
         public string Name { get; set; }
