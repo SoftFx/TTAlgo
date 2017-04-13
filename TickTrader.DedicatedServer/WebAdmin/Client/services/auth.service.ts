@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Http, Request, Response, RequestOptionsArgs, Headers } from '@angular/http';
-import { AuthData, AuthCredentials, Utils } from '../models/index';
+import { AuthData, AuthCredentials, Utils, ResponseStatus } from '../models/index';
 import { Observable } from "rxjs/Rx";
 import { FeedService } from './feed.service';
 import { Subject } from "rxjs/Subject";
@@ -18,20 +18,20 @@ export class AuthService {
     constructor(private _http: Http, private _feed: FeedService) {
         this.AuthDataUpdated = this._authDataUpdatedSubject.asObservable();
         this.AuthDataUpdated.subscribe(authData => {
-            if (authData && this.IsAuthorized()) {
-                this._feed.start(true, authData.token).subscribe(null, error => console.log('Error on init: ' + error));
+            if (authData && this.IsAuthorized) {
+                this._feed.start(true, authData.Token).subscribe(null, error => console.log('Error on init: ' + error));
             }
         });
 
         this.restoreAuthData();
     }
 
-    public IsAuthorized(): boolean {
+    public get IsAuthorized(): boolean {
         if (localStorage.getItem(this._storageKey)) {
             let authData = <AuthData>JSON.parse(localStorage.getItem(this._storageKey), Utils.DateReviver);
 
             let nowUtc = new Date(new Date().toUTCString());
-            if (authData.expires >= nowUtc)
+            if (authData.Expires >= nowUtc)
                 return true;
         }
         return false;
@@ -43,19 +43,19 @@ export class AuthService {
         return authData;
     }
 
-    public LogIn(login: string, password: string): Observable<boolean> {
+    public LogIn(login: string, password: string) {
         return this._http.post(this._loginUrl, { Login: login, Password: password })
-            .map((response: Response) => response.json())
+            .map((response: Response) => new AuthData().Deserialize(response.json()))
             .do(authData => {
-                if (authData && authData.token) {
+                if (authData && authData.Token) {
                     localStorage.setItem(this._storageKey, JSON.stringify(authData));
-
-                    this._authDataUpdatedSubject.next(<AuthData>authData);
-
-                    return Observable.of(true);
+                    this._authDataUpdatedSubject.next(authData);
                 }
-                return Observable.of(false);
-            });
+                else {
+                    console.error('Failed to extract token');
+                }
+            })
+            .catch(this.handleServerError);
     }
 
     public LogOut() {
@@ -69,11 +69,16 @@ export class AuthService {
     private restoreAuthData() {
         let authData = <AuthData>JSON.parse(localStorage.getItem(this._storageKey), Utils.DateReviver);
 
-        if (this.IsAuthorized()) {
+        if (this.IsAuthorized) {
             this._authDataUpdatedSubject.next(authData);
         }
         else {
             localStorage.removeItem(this._storageKey);
         }
+    }
+
+    private handleServerError(error: Response): Observable<any> {
+        console.error('[AuthService] An error occurred' + error); //debug
+        return Observable.throw(new ResponseStatus(error));
     }
 }

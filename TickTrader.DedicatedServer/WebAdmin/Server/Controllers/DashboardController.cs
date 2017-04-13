@@ -13,7 +13,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class DashboardController: Controller
+    public class DashboardController : Controller
     {
         private readonly ILogger<DashboardController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
@@ -47,7 +47,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             var barConfig = new BarBasedConfig();
             barConfig.MainSymbol = setup.Symbol;
             barConfig.PriceType = BarPriceType.Ask;
-            foreach(var param in setup.Parameters)
+            foreach (var param in setup.Parameters)
             {
                 switch (param.DataType)
                 {
@@ -55,7 +55,16 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                         barConfig.Properties.Add(new IntParameter() { Id = param.Id, Value = (int)(long)param.Value });
                         break;
                     case "Double":
-                        barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
+                        switch (param.Value)
+                        {
+                            case Int64 l:
+                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (long)param.Value });
+                                break;
+                            case Double d:
+                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
+                                break;
+                            default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
+                        }
                         break;
                     case "String":
                         barConfig.Properties.Add(new StringParameter() { Id = param.Id, Value = (string)param.Value });
@@ -68,5 +77,21 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
             return barConfig;
         }
+
+        [HttpDelete]
+        public IActionResult Delete(string botId)
+        {
+            try
+            {
+                _dedicatedServer.RemoveBot(botId);
+
+                return Ok();
+            }
+            catch (InvalidStateException isex)
+            {
+                return BadRequest(new { Message = isex.Message });
+            }
+        }
+
     }
 }

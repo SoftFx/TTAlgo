@@ -23,17 +23,15 @@ export class BotDetailComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.route.params
-            .switchMap((params: Params) => this.api.getBot(params['id']))
-            .subscribe((bot: ExtBotModel) => this.bot = bot);
+        //this.route.params
+        //    .switchMap((params: Params) => this.api.getBot(params['id']))
+        //    .subscribe((bot: ExtBotModel) => this.bot = bot);
     }
 
     run() {
-        this.api.runBot(this.bot);
     }
 
     stop() {
-        this.api.stopBot(this.bot);
     }
 
     configurate() {
@@ -41,7 +39,6 @@ export class BotDetailComponent implements OnInit {
     }
 
     remove() {
-        this.api.removeBotFromDashboard(this.bot);
         this.router.navigate(["/dasboard"]);
     }
 }

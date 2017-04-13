@@ -31,7 +31,7 @@
             <div class="form-group">
                 <label>{{Parameter.Descriptor.DisplayName}}</label>
                 <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" />
-                <input *ngSwitchCase="ParameterDataType.Double" type="number" class="form-control" [(ngModel)]="Parameter.Value" />
+                <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [(ngModel)]="Parameter.Value" />
                 <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [(ngModel)]="Parameter.Value" />
                 <div *ngSwitchCase="ParameterDataType.File" class="input-group">
                     <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
@@ -46,7 +46,7 @@
                 <select *ngSwitchCase="ParameterDataType.Enum" [(ngModel)]="Parameter.Value" class="form-control">
                     <option *ngFor="let EnumItem of (Parameter.Descriptor.EnumValues | orderBy)" [ngValue]="EnumItem">{{EnumItem}}</option>
                 </select>
-                <input *ngSwitchDefault type="text" readonly value="Unsupported control" class="form-control"/>
+                <input *ngSwitchDefault type="text" readonly value="Unsupported property type" class="form-control"/>
             </div>
         </div>
     </div>

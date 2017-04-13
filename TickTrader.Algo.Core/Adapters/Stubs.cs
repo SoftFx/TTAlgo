@@ -191,6 +191,7 @@ namespace TickTrader.Algo.Core
         public override string ToString() { return "{null}"; }
     }
 
+    [Serializable]
     public class NullCurrency : Currency
     {
         public NullCurrency() : this("")
@@ -208,6 +209,7 @@ namespace TickTrader.Algo.Core
         public override string ToString() { return "{null}"; }
     }
 
+    [Serializable]
     public class NullAsset : Asset
     {
         public NullAsset() : this("")

@@ -169,6 +169,17 @@ namespace TickTrader.DedicatedServer
 
                         break;
 
+                    case "remove":
+
+                        lock (server.SyncObj)
+                            bots = server.TradeBots.ToArray();
+
+                        var botToRemove = CommandUi.Choose("bot", bots, b => b.Id);
+
+                        server.RemoveBot(botToRemove.Id);
+
+                        break;
+
                     case "stop":
 
                         lock (server.SyncObj)

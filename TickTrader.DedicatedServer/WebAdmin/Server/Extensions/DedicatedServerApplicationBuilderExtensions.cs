@@ -12,6 +12,16 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
     {
         private static IServiceProvider _services;
 
+        private static Microsoft.AspNetCore.SignalR.IHubContext Hub
+        {
+            get
+            {
+                var signalRConnectionManager = _services.GetService<IConnectionManager>();
+                var _hub = signalRConnectionManager.GetHubContext<DSFeed>();
+                return _hub;
+            }
+        }
+
         /// <summary>
         /// Use SignalR Hubs to notify clients about server changes
         /// </summary>
@@ -25,43 +35,54 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             _dedicatedServer.PackageChanged += OnPackageChanged;
             _dedicatedServer.AccountChanged += OnAccountChanged;
             _dedicatedServer.BotStateChanged += OnBotStateChanged;
+            _dedicatedServer.BotChanged += OnBotChaged;
 
             return app;
         }
 
+        private static void OnBotChaged(ITradeBot bot, ChangeAction action)
+        {
+            switch (action)
+            {
+                case ChangeAction.Added:
+                    Hub.Clients.All.AddBot(bot.ToDto());
+                    break;
+                case ChangeAction.Removed:
+                    Hub.Clients.All.DeleteBot(bot.Id);
+                    break;
+                case ChangeAction.Modified:
+                    Hub.Clients.All.UpdateBot(bot.ToDto());
+                    break;
+            }
+        }
+
         private static void OnBotStateChanged(ITradeBot bot)
         {
-            var signalRConnectionManager = _services.GetService<IConnectionManager>();
-            var _hub = signalRConnectionManager.GetHubContext<DSFeed>();
-            _hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
+            Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }
 
         private static void OnAccountChanged(IAccount account, ChangeAction action)
         {
-            var signalRConnectionManager = _services.GetService<IConnectionManager>();
-            var _hub = signalRConnectionManager.GetHubContext<DSFeed>();
             switch (action)
             {
                 case ChangeAction.Added:
-                    _hub.Clients.All.AddAccount(account.ToDto());
+                    Hub.Clients.All.AddAccount(account.ToDto());
                     break;
                 case ChangeAction.Removed:
-                    _hub.Clients.All.DeleteAccount(account.ToDto());
+                    Hub.Clients.All.DeleteAccount(account.ToDto());
                     break;
             }
         }
 
         private static void OnPackageChanged(IPackage package, ChangeAction action)
         {
-            var signalRConnectionManager = _services.GetService<IConnectionManager>();
-            var _hub = signalRConnectionManager.GetHubContext<DSFeed>();
             switch (action)
             {
                 case ChangeAction.Added:
-                    _hub.Clients.All.AddPackage(package.ToDto());
+                    Hub.Clients.All.AddPackage(package.ToDto());
                     break;
                 case ChangeAction.Removed:
-                    _hub.Clients.All.DeletePackage(package.Name);
+                    Hub.Clients.All.DeletePackage(package.Name);
                     break;
             }
         }
