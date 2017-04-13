@@ -106,16 +106,27 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_syncObj)
             {
-                if (State == BotStates.Offline)
+                if (IsStopped())
                     return Task.FromResult(this);
 
                 SetRunning(false);
+                ChangeState(BotStates.Stopping);
 
-                if (_stopTask == null)
+                if (TaskIsNullOrStopped(_stopTask))
                     _stopTask = DoStop();
 
                 return _stopTask;
             }
+        }
+
+        private bool IsStopped()
+        {
+            return State == BotStates.Offline || State == BotStates.Stopping || State == BotStates.Faulted;
+        }
+
+        private bool TaskIsNullOrStopped(Task task)
+        {
+            return task == null || task.IsCompleted || task.IsFaulted || task.IsCanceled;
         }
 
         private void StartExecutor()
@@ -169,7 +180,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private void ChangeState(BotStates newState)
         {
             State = newState;
-            StateChanged?.Invoke(this);       
+            StateChanged?.Invoke(this);
         }
 
         private void SetRunning(bool val)
