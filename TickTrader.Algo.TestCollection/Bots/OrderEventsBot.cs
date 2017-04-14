@@ -3,7 +3,8 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Order Events Bot")]
+    [TradeBot(DisplayName = "[T] Order Events Bot", Version = "2.0", Category = "Test Orders",
+        Description = "Subscribes to order events and prints each event info to bot log")]
     public class OrderEventsBot : TradeBotCommon
     {
         protected override void OnStart()

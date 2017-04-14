@@ -312,7 +312,8 @@
             <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Setup.Descriptor.Error, Prefix=PluginError_}"
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
 
-            <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
+            <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"
+                       Foreground="{DynamicResource Shell_PrimaryForeground}"/>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False" Grid.Row="1"
@@ -379,11 +380,12 @@
             <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Setup.Descriptor.Error, Prefix=PluginError_}"
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
 
-            <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
-
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
                 <StackPanel>
+                    <GroupBox Name="DescriptionGroup" Header="Description">
+                        <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
+                    </GroupBox>
                     <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
                         <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
                               ItemTemplate="{StaticResource LabeledPropertySetup}">
@@ -428,6 +430,9 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding Setup.HasParams}" Value="False">
                 <Setter TargetName="ParamsGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Setup.HasDescription}" Value="False">
+                <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>

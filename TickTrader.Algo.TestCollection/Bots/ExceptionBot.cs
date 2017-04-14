@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Exception Bot")]
+    [TradeBot(DisplayName = "[T] Exception Bot", Version = "1.0", Category = "Test Bot Routine",
+        Description = "Throw exception on init, start, stop, new quote, balance update, order filled and order opened")]
     public class ExceptionBot : TradeBot
     {
         protected override void Init()
         {
-            this.Account.BalanceUpdated += () => { throw new Exception("Test exception!"); };
-            this.Account.Orders.Filled += a => { throw new Exception("Test exception!"); };
-            this.Account.Orders.Opened += a => { throw new Exception("Test exception!"); };
+            Account.BalanceUpdated += () => { throw new Exception("Test exception!"); };
+            Account.Orders.Filled += a => { throw new Exception("Test exception!"); };
+            Account.Orders.Opened += a => { throw new Exception("Test exception!"); };
 
             throw new Exception("Test exception!");
         }

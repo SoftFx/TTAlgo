@@ -2,7 +2,8 @@
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Get Asset Info Bot")]
+    [TradeBot(DisplayName = "[T] Get Asset Info Bot", Version = "1.0", Category = "Test Plugin Info",
+        Description = "Prints info about asset with specified currency code to bot status window")]
     public class GetAssetInfoBot : TradeBotCommon
     {
         [Parameter(DisplayName = "Currency Code", DefaultValue = "USD")]

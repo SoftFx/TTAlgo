@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Market Script")]
+    [TradeBot(DisplayName = "[T] Open Market Script", Version = "1.0", Category = "Test Orders",
+        Description = "Opens market order for current chart symbol with specified volume, side and tag")]
     public class OpenMarket : TradeBot
     {
         [Parameter(DefaultValue = 0.1)]

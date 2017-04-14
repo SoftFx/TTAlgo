@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
     public enum EmptyE { }
 
-    [TradeBot(DisplayName = "[T] Invalid Properties Bot")]
+    [TradeBot(DisplayName = "[T] Invalid Properties Bot", Version = "1.0", Category = "Test Plugin Setup",
+        Description = "Contains an invalid property. Setup should not allow to continue")]
     public class InvalidPropertiesBot : TradeBot
     {
         [Parameter]
@@ -38,7 +35,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         public DataSeries Output1 { get; set; }
     }
 
-    [TradeBot(DisplayName = "[T] Unsupported Properties Bot")]
+    [TradeBot(DisplayName = "[T] Unsupported Properties Bot", Version = "1.0", Category = "Test Plugin Setup",
+        Description = "Contains unsupported properties. Setup should not allow to continue")]
     public class UnsupportedPropertiesBot : TradeBot
     {
         [Parameter]
@@ -48,7 +46,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         public Version Property2 { get; set; }
     }
 
-    [TradeBot(DisplayName = "[T] Unsupported Input Bot")]
+    [TradeBot(DisplayName = "[T] Unsupported Input Bot", Version = "1.0", Category = "Test Plugin Setup",
+        Description = "Contains unsupported input. Setup should not allow to continue")]
     public class UnsupportedInputBot : TradeBot
     {
         [Input]
