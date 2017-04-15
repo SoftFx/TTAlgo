@@ -64,6 +64,7 @@ namespace TickTrader.BotTerminal
             this.Journal = algoEnv.BotJournal;
 
             this.AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+            this.AvailableBotTraders = algoEnv.Repo.BotTraders.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
 
             this.isConnected = client.IsConnected;
             client.Connected += Connection_Connected;
@@ -97,6 +98,7 @@ namespace TickTrader.BotTerminal
         public abstract Api.TimeFrames TimeFrame { get; }
         public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
+        public IObservableListSource<PluginCatalogItem> AvailableBotTraders { get; private set; }
         public IDynamicListSource<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
@@ -280,6 +282,7 @@ namespace TickTrader.BotTerminal
         public void Dispose()
         {
             AvailableIndicators.Dispose();
+            AvailableBotTraders.Dispose();
             subscription.Dispose();
         }
 

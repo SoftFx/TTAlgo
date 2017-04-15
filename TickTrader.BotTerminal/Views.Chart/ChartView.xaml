@@ -5,7 +5,8 @@
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
     <ControlTemplate x:Key="IndicatorOutputRolloverTooltipTemplate">
         <Rectangle Fill="Red" Width="5" Height="5"/>
@@ -16,6 +17,21 @@
     </Style>
 
     <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
+
+    <Style x:Key="PluginsMenu" TargetType="MenuItem">
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                    <TextBlock Text="{Binding Name}"/>
+                    <HierarchicalDataTemplate.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}"/>
+                        </DataTemplate>
+                    </HierarchicalDataTemplate.ItemTemplate>
+                </HierarchicalDataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <ContextMenu x:Key="MainChartPanelContextMenu" Style="{DynamicResource ContextMenu_Style}">
 
@@ -43,9 +59,45 @@
             </l:MenuItemSelector.ItemTemplate>
         </l:MenuItemSelector>
 
-        <MenuItem Header="Add Indicator" ItemsSource="{Binding Chart.AvailableIndicators}" DisplayMemberPath="DisplayName"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="OpenIndicator($originalsourcecontext)" />
+        <MenuItem Header="Add Indicator"
+                cal:Message.Attach="OpenPlugin($originalsourcecontext)">
+            <MenuItem.Resources>
+                <CollectionViewSource x:Key="IndicatorsViewSrc" Source="{Binding Chart.AvailableIndicators}">
+                    <CollectionViewSource.SortDescriptions>
+                        <scm:SortDescription PropertyName="Category" />
+                        <scm:SortDescription PropertyName="DisplayName" />
+                    </CollectionViewSource.SortDescriptions>
+                    <CollectionViewSource.GroupDescriptions>
+                        <PropertyGroupDescription PropertyName="Category" />
+                    </CollectionViewSource.GroupDescriptions>
+                </CollectionViewSource>
+            </MenuItem.Resources>
+            <MenuItem.Style>
+                <Style TargetType="MenuItem" BasedOn="{StaticResource PluginsMenu}">
+                    <Setter Property="ItemsSource" Value="{Binding Source={StaticResource IndicatorsViewSrc}, Path=Groups}"/>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+
+        <MenuItem Header="Add Bot Trader"
+                cal:Message.Attach="OpenPlugin($originalsourcecontext)">
+            <MenuItem.Resources>
+                <CollectionViewSource x:Key="BotTradersViewSrc" Source="{Binding Chart.AvailableBotTraders}">
+                    <CollectionViewSource.SortDescriptions>
+                        <scm:SortDescription PropertyName="Category" />
+                        <scm:SortDescription PropertyName="DisplayName" />
+                    </CollectionViewSource.SortDescriptions>
+                    <CollectionViewSource.GroupDescriptions>
+                        <PropertyGroupDescription PropertyName="Category" />
+                    </CollectionViewSource.GroupDescriptions>
+                </CollectionViewSource>
+            </MenuItem.Resources>
+            <MenuItem.Style>
+                <Style TargetType="MenuItem" BasedOn="{StaticResource PluginsMenu}">
+                    <Setter Property="ItemsSource" Value="{Binding Source={StaticResource BotTradersViewSrc}, Path=Groups}"/>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
 
         <MenuItem Header="Indicators" ItemsSource="{Binding Indicators}"
                       Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=HasIndicators}">

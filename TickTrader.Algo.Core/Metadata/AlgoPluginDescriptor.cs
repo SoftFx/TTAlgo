@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Core.Metadata
                 DisplayName = string.IsNullOrWhiteSpace(pluginAttr.DisplayName) ?
                     $"{algoCustomType.Name}{version}" :
                     $"{pluginAttr.DisplayName}{version}";
-                Category = pluginAttr.Category;
+                Category = string.IsNullOrWhiteSpace(pluginAttr.Category) ? "Misc" : pluginAttr.Category;
                 Version = pluginAttr.Version;
                 Description = pluginAttr.Description;
             }

@@ -31,6 +31,7 @@ namespace TickTrader.BotTerminal
             PluginItem = item;
             Name = item.DisplayName;
             Description = string.IsNullOrWhiteSpace(item.Ref.Descriptor.Description) ? null : item.Ref.Descriptor.Description;
+            Category = item.Ref.Descriptor.Category;
             var type = item.Ref.Descriptor.AlgoLogicType;
             if (type == Algo.Core.Metadata.AlgoTypes.Indicator)
                 Group = "Indicators";
@@ -44,5 +45,6 @@ namespace TickTrader.BotTerminal
         public string Name { get; private set; }
         public string Group { get; private set; }
         public string Description { get; private set; }
+        public string Category { get; private set; }
     }
 }

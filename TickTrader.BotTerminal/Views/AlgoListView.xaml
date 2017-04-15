@@ -17,10 +17,12 @@
                 <CollectionViewSource x:Key="AlgoGroupViewSrc" Source="{Binding Plugins}">
                     <CollectionViewSource.SortDescriptions>
                         <scm:SortDescription PropertyName="Group" />
+                        <scm:SortDescription PropertyName="Category" />
                         <scm:SortDescription PropertyName="Name" />
                     </CollectionViewSource.SortDescriptions>
                     <CollectionViewSource.GroupDescriptions>
                         <PropertyGroupDescription PropertyName="Group" />
+                        <PropertyGroupDescription PropertyName="Category" />
                     </CollectionViewSource.GroupDescriptions>
                 </CollectionViewSource>
             </Grid.Resources>
@@ -72,10 +74,12 @@
                 <CollectionViewSource x:Key="AlgoGroupViewSrc" Source="{Binding Plugins}">
                     <CollectionViewSource.SortDescriptions>
                         <scm:SortDescription PropertyName="Group" />
+                        <scm:SortDescription PropertyName="Category" />
                         <scm:SortDescription PropertyName="Name" />
                     </CollectionViewSource.SortDescriptions>
                     <CollectionViewSource.GroupDescriptions>
                         <PropertyGroupDescription PropertyName="Group" />
+                        <PropertyGroupDescription PropertyName="Category" />
                     </CollectionViewSource.GroupDescriptions>
                 </CollectionViewSource>
             </Border.Resources>
@@ -89,14 +93,19 @@
                     <HierarchicalDataTemplate ItemsSource="{Binding Items}">
                         <TextBlock Text="{Binding Name}"/>
                         <HierarchicalDataTemplate.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderThickness="0">
-                                    <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Description}"/>
-                                    <i:Interaction.Behaviors>
-                                        <l:DragBehavior/>
-                                    </i:Interaction.Behaviors>
-                                </Border>
-                            </DataTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                                <TextBlock Text="{Binding Name}"/>
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderThickness="0">
+                                            <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Description}"/>
+                                            <i:Interaction.Behaviors>
+                                                <l:DragBehavior/>
+                                            </i:Interaction.Behaviors>
+                                        </Border>
+                                    </DataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
                         </HierarchicalDataTemplate.ItemTemplate>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
