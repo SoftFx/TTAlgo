@@ -29,6 +29,8 @@
     <call target="RunMSBuild" />
 	  <call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
+    <property name="Package.ProjectFolder" value="TickTrader.Algo.Indicators" />
+    <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.TestCollection" />
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
@@ -122,7 +124,7 @@
       </fileset>
     </zip>
 
-	<property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
+	  <property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
     <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
 
     <zip zipfile="${CoreDestArchive}">
@@ -132,17 +134,7 @@
       </fileset>
     </zip>
 
-	<property name="IndicatorsBinDir" value="${SourcesDir}TickTrader.Algo.Indicators\bin\${Configuration}" />
-    <property name="IndicatorsDestArchive" value="${OutpuFolder}Indicators ${Build}.zip" />
-
-    <zip zipfile="${IndicatorsDestArchive}">
-      <fileset basedir="${IndicatorsBinDir}">
-        <include name ="*.*" />
-        <include name ="**/*" />
-      </fileset>
-    </zip>
-
-	<property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
+	  <property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
     <property name="ServerDestArchive" value="${OutpuFolder}DedicatedServer ${Build}.zip" />
 
     <zip zipfile="${ServerDestArchive}">
