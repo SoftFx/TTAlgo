@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/FTLM-STLM")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "FTLM-STLM", Version = "1.0")]
     public class FtlmStlm : Indicator
     {
         private FastTrendLineMomentum.FastTrendLineMomentum _ftlm;

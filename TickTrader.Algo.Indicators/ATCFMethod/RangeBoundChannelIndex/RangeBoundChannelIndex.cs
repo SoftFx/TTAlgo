@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         }
     }
 
-    [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Range Bound Channel Index")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index", Version = "1.1")]
     public class RangeBoundChannelIndex : DigitalIndicatorBase
     {
         private IMA _ma;

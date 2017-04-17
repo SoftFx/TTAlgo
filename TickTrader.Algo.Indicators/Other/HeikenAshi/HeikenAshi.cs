@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Indicators.Other.HeikenAshi
 {
 
-    [Indicator(IsOverlay = true, Category = "Other", DisplayName = "Other/Heiken Ashi")]
+    [Indicator(IsOverlay = true, Category = "Other", DisplayName = "Heiken Ashi", Version = "1.0")]
     public class HeikenAshi : Indicator
     {
         [Input]

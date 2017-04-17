@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Oscillators/DeMarker")]
+    [Indicator(Category = "Oscillators", DisplayName = "DeMarker", Version = "1.0")]
     public class DeMarker : Indicator
     {
         private IMA _smaDeMax, _smaDeMin;

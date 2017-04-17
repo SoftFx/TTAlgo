@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
 {
-    [Indicator(Category = "Bill Williams", DisplayName = "Bill Williams/Gator Oscillator")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Gator Oscillator", Version = "1.0")]
     public class GatorOscillator : Indicator
     {
         private MovingAverage _jaws, _lips, _teethLips, _jawsTeeth;

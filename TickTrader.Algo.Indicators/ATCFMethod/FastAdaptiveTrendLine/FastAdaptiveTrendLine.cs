@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "AT&CF Method/Fast Adaptive Trend Line")]
+    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "Fast Adaptive Trend Line", Version = "1.0")]
     public class FastAdaptiveTrendLine : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]

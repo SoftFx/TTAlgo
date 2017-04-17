@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Trend/Ichimoku Kinko Hyo")]
+    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Ichimoku Kinko Hyo", Version = "1.0")]
     public class IchimokuKinkoHyo : Indicator
     {
         private IShift _chikouShifter, _senkouAShifter, _senkouBShifter;

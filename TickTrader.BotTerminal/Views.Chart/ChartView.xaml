@@ -60,7 +60,8 @@
         </l:MenuItemSelector>
 
         <MenuItem Header="Add Indicator"
-                cal:Message.Attach="OpenPlugin($originalsourcecontext)">
+                  Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableIndicators}"
+                  cal:Message.Attach="OpenPlugin($originalsourcecontext)">
             <MenuItem.Resources>
                 <CollectionViewSource x:Key="IndicatorsViewSrc" Source="{Binding Chart.AvailableIndicators}">
                     <CollectionViewSource.SortDescriptions>
@@ -80,7 +81,8 @@
         </MenuItem>
 
         <MenuItem Header="Add Bot Trader"
-                cal:Message.Attach="OpenPlugin($originalsourcecontext)">
+                  Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableBotTraders}"
+                  cal:Message.Attach="OpenPlugin($originalsourcecontext)">
             <MenuItem.Resources>
                 <CollectionViewSource x:Key="BotTradersViewSrc" Source="{Binding Chart.AvailableBotTraders}">
                     <CollectionViewSource.SortDescriptions>
@@ -100,7 +102,7 @@
         </MenuItem>
 
         <MenuItem Header="Indicators" ItemsSource="{Binding Indicators}"
-                      Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=HasIndicators}">
+                  Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=HasIndicators}">
             <MenuItem.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

@@ -11,7 +11,7 @@ using System;
 
 namespace TickTrader.Algo.Indicators.Other.News
 {
-    [Indicator(Category = "Other", DisplayName = "Other/News")]
+    [Indicator(Category = "Other", DisplayName = "News", Version = "1.0")]
     public class News : NewsMarkersBase
     {
         public new BarSeries Bars { get; set; }

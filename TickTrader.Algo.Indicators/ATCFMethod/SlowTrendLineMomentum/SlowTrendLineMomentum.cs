@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Slow Trend Line Momentum")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Slow Trend Line Momentum", Version = "1.0")]
     public class SlowTrendLineMomentum : Indicator
     {
         private SlowAdaptiveTrendLine.SlowAdaptiveTrendLine _satl;
