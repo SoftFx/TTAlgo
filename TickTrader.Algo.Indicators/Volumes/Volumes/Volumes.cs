@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.Volumes.Volumes
 {
-    [Indicator(Category = "Volumes", DisplayName = "Volumes/Volumes")]
+    [Indicator(Category = "Volumes", DisplayName = "Volumes", Version = "1.0")]
     public class Volumes : Indicator
     {
         [Input]

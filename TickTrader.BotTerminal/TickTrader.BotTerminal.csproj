@@ -286,6 +286,7 @@
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
+    <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\OrderType.cs" />
@@ -402,6 +403,10 @@
     <Compile Include="Views.TradeInfo\OrderViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeHistoryViewModel.cs" />
+    <Compile Include="Views\AboutDialogView.xaml.cs">
+      <DependentUpon>AboutDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AboutDialogViewModel.cs" />
     <Compile Include="Views\AlgoListViewModel.cs" />
     <Compile Include="Views.TradeInfo\AssetsView.xaml.cs">
       <DependentUpon>AssetsView.xaml</DependentUpon>
@@ -479,6 +484,7 @@
     <EmbeddedResource Include="Resx\Locales\gui.en-gb.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>gui.en-gb.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resx\Locales\gui.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -815,6 +821,10 @@
     <Page Include="Views.TradeInfo\TradeHistoryView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\AboutDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\AlgoListView.xaml">
       <SubType>Designer</SubType>

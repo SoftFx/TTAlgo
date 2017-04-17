@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Cancel All Limits/Stops Script")]
+    [TradeBot(DisplayName = "[T] Cancel All Limits/Stops Script", Version = "1.0", Category = "Test Orders",
+        Description = "Cancels all pending orders one by one.")]
     public class CancelAll : TradeBot
     {
         protected async override void OnStart()

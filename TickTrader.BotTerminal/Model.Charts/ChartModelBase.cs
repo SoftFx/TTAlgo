@@ -23,6 +23,7 @@ using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
+using System.Collections.Specialized;
 
 namespace TickTrader.BotTerminal
 {
@@ -63,7 +64,11 @@ namespace TickTrader.BotTerminal
             this.algoEnv = algoEnv;
             this.Journal = algoEnv.BotJournal;
 
-            this.AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+            AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+            AvailableBotTraders = algoEnv.Repo.BotTraders.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+
+            AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
+            AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
 
             this.isConnected = client.IsConnected;
             client.Connected += Connection_Connected;
@@ -97,6 +102,9 @@ namespace TickTrader.BotTerminal
         public abstract Api.TimeFrames TimeFrame { get; }
         public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
+        public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
+        public IObservableListSource<PluginCatalogItem> AvailableBotTraders { get; private set; }
+        public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public IDynamicListSource<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
@@ -277,9 +285,22 @@ namespace TickTrader.BotTerminal
             stateController.ModifyConditions(() => isConnected = true);
         }
 
+        private void AvailableIndicators_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            NotifyOfPropertyChange("HasAvailableIndicators");
+        }
+
+        private void AvailableBotTraders_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            NotifyOfPropertyChange("HasAvailableBotTraders");
+        }
+
         public void Dispose()
         {
+            AvailableIndicators.CollectionChanged -= AvailableIndicators_CollectionChanged;
+            AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
             AvailableIndicators.Dispose();
+            AvailableBotTraders.Dispose();
             subscription.Dispose();
         }
 

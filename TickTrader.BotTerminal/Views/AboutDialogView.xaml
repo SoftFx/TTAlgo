@@ -1,0 +1,27 @@
+﻿<Window x:Class="TickTrader.BotTerminal.AboutDialogView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        mc:Ignorable="d"
+        Icon="{StaticResource MainAppIcon}"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        Background="{DynamicResource Dialog_Background}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Content="TickTrader BotTerminal" VerticalAlignment="Center" Margin="10" FontSize="30"/>
+        <Label Grid.Row="1" Content="{Binding Version}" VerticalAlignment="Center" Margin="10" HorizontalAlignment="Center"/>
+
+        <l:FlatButton Grid.Row="2" Grid.Column="0" Margin="5"
+                      x:Name="Ok" Content="OK" IsDefault="True"
+                      Background="{DynamicResource Dialog_ButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+    </Grid>
+</Window>

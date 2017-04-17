@@ -312,4 +312,10 @@
   <data name="TimePeriod_LastHour" xml:space="preserve">
     <value>Последний час</value>
   </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>Помощь</value>
+  </data>
 </root>

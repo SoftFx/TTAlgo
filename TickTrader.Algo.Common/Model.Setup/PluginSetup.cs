@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using Api = TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -18,27 +14,27 @@ namespace TickTrader.Algo.Common.Model.Setup
     public abstract class PluginSetup : ObservableObject
     {
         [DataMember(Name = "properties")]
-        private List<PropertySetupBase> allProperties;
-        private List<ParameterSetup> parameters;
-        private List<InputSetup> inputs;
-        private List<OutputSetup> outputs;
+        private List<PropertySetupBase> _allProperties;
+        private List<ParameterSetup> _parameters;
+        private List<InputSetup> _inputs;
+        private List<OutputSetup> _outputs;
 
         public PluginSetup(AlgoPluginRef pRef)
         {
-            this.PluginRef = pRef;
-            this.Descriptor = pRef.Descriptor;
+            PluginRef = pRef;
+            Descriptor = pRef.Descriptor;
         }
 
         protected void Init()
         {
-            parameters = Descriptor.Parameters.Select(ParameterSetup.Create).ToList();
-            inputs = Descriptor.Inputs.Select(CreateInput).ToList();
-            outputs = Descriptor.Outputs.Select(CreateOuput).ToList();
+            _parameters = Descriptor.Parameters.Select(ParameterSetup.Create).ToList();
+            _inputs = Descriptor.Inputs.Select(CreateInput).ToList();
+            _outputs = Descriptor.Outputs.Select(CreateOuput).ToList();
 
-            allProperties = parameters.Concat<PropertySetupBase>(inputs).Concat(outputs).ToList();
-            allProperties.ForEach(p => p.ErrorChanged += s => Validate());
+            _allProperties = _parameters.Concat<PropertySetupBase>(_inputs).Concat(_outputs).ToList();
+            _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
-            IsEmpty = allProperties.Count == 0;
+            IsEmpty = _allProperties.Count == 0;
 
             Reset();
             Validate();
@@ -49,7 +45,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public void Reset()
         {
-            foreach (var p in allProperties)
+            foreach (var p in _allProperties)
                 p.Reset();
         }
 
@@ -61,14 +57,14 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public virtual void Apply(IPluginSetupTarget target)
         {
-            allProperties.ForEach(p => p.Apply(target));
+            _allProperties.ForEach(p => p.Apply(target));
         }
 
         public virtual void Load(PluginConfig cfg)
         {
             foreach (var scrProperty in cfg.Properties)
             {
-                var thisProperty = this.allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
+                var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
                 if (thisProperty != null)
                     thisProperty.Load(scrProperty);
             }
@@ -77,20 +73,21 @@ namespace TickTrader.Algo.Common.Model.Setup
         public virtual PluginConfig Save()
         {
             var cfg = SaveToConfig();
-            foreach (var property in allProperties)
+            foreach (var property in _allProperties)
                 cfg.Properties.Add(property.Save());
             return cfg;
         }
 
         protected abstract PluginConfig SaveToConfig();
 
-        public IEnumerable<ParameterSetup> Parameters { get { return parameters; } }
-        public IEnumerable<InputSetup> Inputs { get { return inputs; } }
-        public IEnumerable<PropertySetupBase> Outputs { get { return outputs; } }
-        public bool HasInputsOrParams { get { return HasParams || HasInputs; } }
-        public bool HasParams { get { return parameters.Count > 0; } }
-        public bool HasInputs { get { return inputs.Count > 0; } }
-        public bool HasOutputs { get { return outputs.Count > 0; } }
+        public IEnumerable<ParameterSetup> Parameters => _parameters;
+        public IEnumerable<InputSetup> Inputs => _inputs;
+        public IEnumerable<PropertySetupBase> Outputs => _outputs;
+        public bool HasInputsOrParams => HasParams || HasInputs;
+        public bool HasParams => _parameters.Count > 0;
+        public bool HasInputs => _inputs.Count > 0;
+        public bool HasOutputs => _outputs.Count > 0;
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Descriptor?.Description);
         public AlgoPluginDescriptor Descriptor { get; private set; }
         public AlgoPluginRef PluginRef { get; private set; }
 

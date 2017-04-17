@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.Oscillators.Momentum
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Momentum")]
+    [Indicator(Category = "Oscillators", DisplayName = "Momentum", Version = "1.0")]
     public class Momentum : Indicator
     {
         [Parameter(DefaultValue = 14, DisplayName = "Period")]

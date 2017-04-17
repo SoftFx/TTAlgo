@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
 {
-    [Indicator(Category = "Bill Williams", DisplayName = "Bill Williams/Market Facilitation Index")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Market Facilitation Index", Version = "1.0")]
     public class MarketFacilitationIndex : Indicator
     {
         private bool _volumeUp, _mfiUp;

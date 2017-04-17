@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Stochastic Oscillator")]
+    [Indicator(Category = "Oscillators", DisplayName = "Stochastic Oscillator", Version = "1.0")]
     public class StochasticOscillator : Indicator
     {
         public enum PriceField

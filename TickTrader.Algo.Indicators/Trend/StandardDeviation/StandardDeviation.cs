@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 {
-    [Indicator(Category = "Trend", DisplayName = "Trend/Standard Deviation")]
+    [Indicator(Category = "Trend", DisplayName = "Standard Deviation", Version = "1.0")]
     public class StandardDeviation : Indicator
     {
         private MovingAverage.MovingAverage _sma, _ma;

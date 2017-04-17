@@ -4,7 +4,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Bears Power")]
+    [Indicator(Category = "Oscillators", DisplayName = "Bears Power", Version = "1.0")]
     public class BearsPower : Indicator
     {
         private MovingAverage _ema;

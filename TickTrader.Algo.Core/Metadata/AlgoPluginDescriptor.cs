@@ -136,9 +136,8 @@ namespace TickTrader.Algo.Core.Metadata
             IndicatorAttribute indicatorAttr = algoCustomType.GetCustomAttribute<IndicatorAttribute>(false);
             if (indicatorAttr != null)
             {
-                DisplayName = indicatorAttr.DisplayName;
-                Category = indicatorAttr.Category;
                 IsOverlay = indicatorAttr.IsOverlay;
+                InspectAlgoPluginAttr(algoCustomType, indicatorAttr);
             }
         }
 
@@ -153,7 +152,25 @@ namespace TickTrader.Algo.Core.Metadata
         {
             TradeBotAttribute botAttr = algoCustomType.GetCustomAttribute<TradeBotAttribute>(false);
             if (botAttr != null)
-                DisplayName = botAttr.DisplayName;
+            {
+                InspectAlgoPluginAttr(algoCustomType, botAttr);
+            }
+        }
+
+        private void InspectAlgoPluginAttr(Type algoCustomType, AlgoPluginAttribute pluginAttr)
+        {
+            if (pluginAttr != null)
+            {
+                var version = "";
+                if (!string.IsNullOrWhiteSpace(pluginAttr.Version))
+                    version = $" ({pluginAttr.Version})";
+                DisplayName = string.IsNullOrWhiteSpace(pluginAttr.DisplayName) ?
+                    $"{algoCustomType.Name}{version}" :
+                    $"{pluginAttr.DisplayName}{version}";
+                Category = string.IsNullOrWhiteSpace(pluginAttr.Category) ? "Misc" : pluginAttr.Category;
+                Version = pluginAttr.Version;
+                Description = pluginAttr.Description;
+            }
         }
 
         private void InspectProperties(Type algoCustomType)
@@ -208,21 +225,23 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public string ApiVersionStr { get; private set; }
-        public Version ApiVersion { get { return apiVersion; } }
+        public Version ApiVersion => apiVersion;
         public string Id { get; private set; }
         public string DisplayName { get; private set; }
         public string Category { get; private set; }
+        public string Version { get; private set; }
+        public string Description { get; private set; }
         public string Copyright { get; private set; }
         public AlgoTypes AlgoLogicType { get; private set; }
         public AlgoMetadataErrors? Error { get; private set; }
-        public bool IsValid { get { return Error == null; } }
+        public bool IsValid => Error == null;
         public bool IsOverlay { get; private set; }
-        public IEnumerable<AlgoPropertyDescriptor> AllProperties { get { return allProperties; } }
-        public IEnumerable<ParameterDescriptor> Parameters { get { return parameters; } }
-        public IEnumerable<InputDescriptor> Inputs { get { return inputs; } }
-        public IEnumerable<OutputDescriptor> Outputs { get { return outputs; } }    
+        public IEnumerable<AlgoPropertyDescriptor> AllProperties => allProperties;
+        public IEnumerable<ParameterDescriptor> Parameters => parameters;
+        public IEnumerable<InputDescriptor> Inputs => inputs;
+        public IEnumerable<OutputDescriptor> Outputs => outputs;
     }
 
     public enum AlgoTypes { Indicator, Robot, Unknown }
-    public enum AlgoMetadataErrors { HasInvalidProperties, UnknwonBaseType, IncompatibleApiVersion  }
+    public enum AlgoMetadataErrors { HasInvalidProperties, UnknwonBaseType, IncompatibleApiVersion }
 }

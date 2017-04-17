@@ -336,4 +336,10 @@
   <data name="TimePeriod_LastHour" xml:space="preserve">
     <value>##TimePeriod_LastHour##</value>
   </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>##About##</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>##Help##</value>
+  </data>
 </root>

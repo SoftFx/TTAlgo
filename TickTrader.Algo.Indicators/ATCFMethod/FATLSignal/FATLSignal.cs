@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "AT&CF Method/FATLs")]
+    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "FATLs", Version = "1.0")]
     public class FatlSignal : Indicator
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;

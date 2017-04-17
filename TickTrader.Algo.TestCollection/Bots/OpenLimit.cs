@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Limit Script")]
+    [TradeBot(DisplayName = "[T] Open Limit Script", Version = "1.0", Category = "Test Orders",
+        Description = "Opens limit order for current chart symbol with specified volume, side and options. " +
+                      "Price is moved for specified number of pips into spread")]
     public class OpenLimit : TradeBot
     {
         [Parameter(DefaultValue = 1D)]
@@ -27,7 +25,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            double ordPrice = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
+            var ordPrice = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
             if (Side == OrderSide.Buy)
                 ordPrice -= Symbol.Point * PriceDelta;
             else
@@ -37,7 +35,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         }
     }
 
-    [TradeBot(DisplayName = "[T] Hit Limit By IoC")]
+    [TradeBot(DisplayName = "[T] Hit Limit By IoC", Version = "1.0", Category = "Test Orders",
+        Description = "Opens buy limit for current chart symbol with specified volume and then tries to take it by sell limit IoC. " +
+                      "Price is moved for specified number of pips into spread")]
     public class HitLimit : TradeBot
     {
         [Parameter(DefaultValue = 1D)]
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            double ordPrice = Symbol.Bid + Symbol.Point * PriceDelta;
+            var ordPrice = Symbol.Bid + Symbol.Point * PriceDelta;
             OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now);
             OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, OrderExecOptions.ImmediateOrCancel);
             Exit();

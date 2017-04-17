@@ -4,7 +4,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Force Index")]
+    [Indicator(Category = "Oscillators", DisplayName = "Force Index", Version = "1.0")]
     public class ForceIndex : Indicator
     {
         private MovingAverage _ma;

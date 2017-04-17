@@ -158,7 +158,7 @@ namespace TickTrader.BotTerminal
 
         #region Algo
 
-        public void OpenIndicator(object descriptorObj)
+        public void OpenPlugin(object descriptorObj)
         {
             OpenAlgoSetup((PluginCatalogItem)descriptorObj);
         }
@@ -171,7 +171,7 @@ namespace TickTrader.BotTerminal
                 if (!model.SetupCanBeSkipped)
                     shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
                 else
-                    OpenPlugin(model);
+                    AttachPlugin(model);
 
                 model.Closed += AlgoSetupClosed;
             }
@@ -181,7 +181,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void OpenPlugin(PluginSetupViewModel setupModel)
+        private void AttachPlugin(PluginSetupViewModel setupModel)
         {
             var pluginType = setupModel.Setup.Descriptor.AlgoLogicType;
 
@@ -207,7 +207,7 @@ namespace TickTrader.BotTerminal
         {
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
-                OpenPlugin(setupModel);
+                AttachPlugin(setupModel);
         }
 
         private void BotClosed(BotControlViewModel sender)

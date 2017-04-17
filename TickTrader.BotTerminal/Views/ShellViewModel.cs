@@ -159,6 +159,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void About()
+        {
+            AboutDialogViewModel model = new AboutDialogViewModel();
+            wndManager.ShowDialog(model);
+        }
+
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
         public AlgoListViewModel AlgoList { get; set; }
