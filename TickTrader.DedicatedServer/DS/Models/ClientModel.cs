@@ -255,7 +255,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                         throw new InvalidStateException("Cannot remove running bot!");
                     _bots.Remove(bot);
                     DeinitBot(bot);
-                    bot.StateChanged -= BotStateChanged;
                     BotChanged?.Invoke(bot, ChangeAction.Removed);
                 }
             }

@@ -44,10 +44,27 @@ export class PluginSetupModel {
 }
 
 export class SetupParameter {
+    private _value: any;
+
     constructor(descriptor: ParameterDescriptor) {
         this.Descriptor = descriptor;
     }
 
     public Descriptor: ParameterDescriptor;
-    public Value: any;
+    
+
+    public get Value() {
+        return this._value;
+    }
+
+    public set Value(value: any) {
+        switch (this.Descriptor.DataType)
+        {
+            case ParameterDataTypes.Int:
+                this._value = Math.floor(value);
+                break;
+            default:
+                this._value = value;
+        }
+    }
 }

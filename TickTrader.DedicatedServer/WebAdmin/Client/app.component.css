@@ -11,33 +11,31 @@
     color: #87CB16;
 }
 
-Offline, Started, Initializing, Faulted, Online, Stopping
-
 /*\/\/\/Bot States Colors*/
-
 .bot-state-offline {
-     color: #FB404B;
+    color: #808080 !important;
 }
 
 .bot-state-started {
-    color: #6a9227;
+    color: yellow !important;
 }
 
 .bot-state-initializing {
-    color: #c1c2c0;
-}
-
-.bot-state-faulted {
-    color: #ff0110;
-}
-
-.bot-state-online {
-    color: #87CB16;
+    color: yellow !important;
 }
 
 .bot-state-stopping {
-    color: #fe9298;
+    color: yellow !important;
 }
+
+.bot-state-faulted {
+    color: #FB404B !important;
+}
+
+.bot-state-online {
+    color: #87CB16 !important;
+}
+
 
 /*/\/\/\Bot States Colors*/
 .text-error {

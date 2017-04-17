@@ -25,10 +25,9 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     }
 
     checkLogin(url: string): boolean {
-        if (this.authService.IsAuthorized()) { 
+        if (this.authService.IsAuthorized) { 
             return true;
         }
-
 
         this.authService.RedirectUrl = url;
         this.authService.LogOut()

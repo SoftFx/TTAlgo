@@ -2,15 +2,16 @@
     <div class="header">
         <div class="btn-toolbar pull-right">
             <div class="btn-group btn-group-sm">
-                <button (click)="confirmDeletion=true" [class.disabled]="TradeBot.State === TradeBotState.Online || TradeBot.State === TradeBotState.Started" type="button" class="btn btn-simple">
+                <a (click)="confirmDeletion=true" [class.disabled]="TradeBot.State === TradeBotState.Online || TradeBot.State === TradeBotState.Started" class="btn btn-simple">
                     <i class="fa fa-remove"></i>
-                </button>
+                </a>
             </div>
         </div>
         <h4 class="title truncate">
-            <i class="fa fa-circle offline" [ngClass]="{'bot-state-started': TradeBot.State === TradeBotState.Started, 'bot-state-initializing': TradeBot.State === TradeBotState.Initializing, 'bot-state-faulted': TradeBot.State === TradeBotState.Faulted, 'bot-state-stopping': TradeBot.State === TradeBotState.Stopping, 'bot-state-online': TradeBot.State === TradeBotState.Online }"></i>
+            <i class="fa fa-circle" [ngClass]="{'bot-state-offline': TradeBot.State === TradeBotState.Offline, 'bot-state-started': TradeBot.State === TradeBotState.Started, 'bot-state-initializing': TradeBot.State === TradeBotState.Initializing, 'bot-state-faulted': TradeBot.State === TradeBotState.Faulted, 'bot-state-stopping': TradeBot.State === TradeBotState.Stopping, 'bot-state-online': TradeBot.State === TradeBotState.Online }"></i>
             {{TradeBot.Id}}
         </h4>
+        <p class="category">{{TradeBotState[TradeBot.State]}}</p>
     </div>
     <div class="content">
         <ul class="list-unstyled">
@@ -22,7 +23,7 @@
             <hr />
             <div class="btn-toolbar" role="toolbar">
                 <div class="btn-group btn-group-sm btn-group-justified">
-                    <a (click)="Start()" [class.disabled]="TradeBot.State !== TradeBotState.Offline" class="btn btn-simple"><span class="fa fa-play"></span></a>
+                    <a (click)="Start()" [class.disabled]="TradeBot.State !== TradeBotState.Offline && TradeBot.State !== TradeBotState.Faulted" class="btn btn-simple"><span class="fa fa-play"></span></a>
                     <a (click)="Stop()" [class.disabled]="TradeBot.State !== TradeBotState.Online" class="btn btn-simple"><span class="fa fa-stop"></span></a>
                 </div>
             </div>

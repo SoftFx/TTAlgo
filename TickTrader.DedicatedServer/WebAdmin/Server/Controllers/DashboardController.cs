@@ -55,7 +55,16 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                         barConfig.Properties.Add(new IntParameter() { Id = param.Id, Value = (int)(long)param.Value });
                         break;
                     case "Double":
-                        barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
+                        switch (param.Value)
+                        {
+                            case Int64 l:
+                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (long)param.Value });
+                                break;
+                            case Double d:
+                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
+                                break;
+                            default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
+                        }
                         break;
                     case "String":
                         barConfig.Properties.Add(new StringParameter() { Id = param.Id, Value = (string)param.Value });

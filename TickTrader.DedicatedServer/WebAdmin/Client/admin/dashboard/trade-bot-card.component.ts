@@ -42,12 +42,12 @@ export class TradeBotCardComponent implements OnInit {
     }
 
     private updateBotState(botState: TradeBotStateModel) {
-        if (this.TradeBot.Id === botState.Id)
-            this.TradeBot.State = botState.State;
+        if (this.TradeBot.Id === botState.Id) {
+            this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State }
+        }
     }
 
     private notifyAboutError(response: ResponseStatus) {
-        if (response.Handled)
-            this._toastr.error(response.Message);
+        this._toastr.error(response.Message);
     }
 }
