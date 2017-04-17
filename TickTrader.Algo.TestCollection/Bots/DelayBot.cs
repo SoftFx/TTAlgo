@@ -6,7 +6,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Delay Bot", Version = "1.0", Category = "Test Plugin Info",
-        Description = "Subscribes to a number of additional symbols(default 0, current chart symbol is subscribed automatically). " +
+        Description = "Subscribes to a number of additional symbols (default 0, current chart symbol is subscribed automatically). " +
                       "Then waits for a quote and delays execution for configured number of milliseconds")]
     public class DelayBot : TradeBot
     {

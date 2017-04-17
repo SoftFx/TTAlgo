@@ -106,6 +106,11 @@
       </fileset>
     </delete>
     <delete>
+      <fileset basedir="${OutpuFolder}">
+        <include name="*.ttalgo" />
+      </fileset>
+    </delete>
+    <delete>
       <fileset basedir="${PublishFolder}">
         <include name="**/*" />
       </fileset>

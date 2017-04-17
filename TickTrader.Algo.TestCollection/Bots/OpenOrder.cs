@@ -5,10 +5,10 @@ using TickTrader.Algo.Api.Math;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.1", Category = "Test Orders",
-        Description = "Opens order for current chart symbol with specified volume, price, side, type, options, tag, SL, TP." +
+        Description = "Opens order for current chart symbol with specified volume, price, side, type, options, tag, SL, TP. " +
                       "Prints order execution result to bot status window. " +
-                       "If price = 0 then it will be taken from symbol bid/ask(depending on order side). " +
-                       "If SL or TP = 0 then they won't be sent in order request")]
+                      "If price = 0 then it will be taken from symbol bid/ask (depending on order side). " +
+                      "If SL or TP = 0 then they won't be sent in order request")]
     public class OpenOrder : TradeBotCommon
     {
         [Parameter(DefaultValue = 0.1)]

@@ -37,7 +37,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
     [TradeBot(DisplayName = "[T] Hit Limit By IoC", Version = "1.0", Category = "Test Orders",
         Description = "Opens buy limit for current chart symbol with specified volume and then tries to take it by sell limit IoC. " +
-                      "Price is moved for specified number of pips of pips into spread")]
+                      "Price is moved for specified number of pips into spread")]
     public class HitLimit : TradeBot
     {
         [Parameter(DefaultValue = 1D)]
