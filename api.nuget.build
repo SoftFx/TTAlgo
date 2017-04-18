@@ -100,6 +100,7 @@
       <arg line="push" />
       <arg line="${OutputDir}${ProjectName}.${Version}.nupkg" />
       <arg line="-Source nuget.org" />
+      <arg line="-ConfigFile ${ToolsDir}NugetPublish.config" />
       <arg line="-Verbosity detailed" />
     </exec>
 
