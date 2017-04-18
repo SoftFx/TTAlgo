@@ -15,7 +15,13 @@
   <property name="OutputDir"        value="${SolutionDir}nuget.output\" />
 
   <target name="help">
-    <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Clean]"/>
+    <echo message="Use: nant.exe buildfile:bot.terminal.build [Clean|Build|Publish]"/>
+  </target>
+
+  <target name="Clean" >
+    <property name="Build.Target" value="Clean" />
+    <call target="RunMSBuild" />
+    <call target="CleanOutput" />
   </target>
 
   <target name="Build" >
@@ -26,10 +32,8 @@
     <call target="CreateNugetPackage" />
   </target>
 
-  <target name="Clean" >
-    <property name="Build.Target" value="Clean" />
-    <call target="RunMSBuild" />
-    <call target="CleanOutput" />
+  <target name="Publish" >
+    <call target="PublishNugetPackage" />
   </target>
 
   <target name="RunMSBuild">
@@ -86,6 +90,17 @@
       <arg line="-Verbosity detailed" />
       <arg line="-Version ${Version}" />
       <arg line="-Properties Configuration=Release"/>
+    </exec>
+
+  </target>
+
+  <target name="PublishNugetPackage">
+
+    <exec program="${ToolsDir}nuget.exe" verbose="true">
+      <arg line="push" />
+      <arg line="${OutputDir}${ProjectName}.${Version}.nupkg" />
+      <arg line="-Source nuget.org" />
+      <arg line="-Verbosity detailed" />
     </exec>
 
   </target>
