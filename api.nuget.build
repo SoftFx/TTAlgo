@@ -100,7 +100,7 @@
       <arg line="push" />
       <arg line="${OutputDir}${ProjectName}.${Version}.nupkg" />
       <arg line="-Source nuget.org" />
-      <arg line="-ConfigFile ${ToolsDir}NugetPublish.config" />
+      <arg line="-ApiKey 834d16fb-4069-41f6-83ae-c90572576442" />
       <arg line="-Verbosity detailed" />
     </exec>
 
