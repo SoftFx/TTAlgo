@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.VersionTest
 {
-    [Indicator(DisplayName = "Incompatible Indicator", IsOverlay = true)]
+    [Indicator(IsOverlay = true, Category = "Test Plugin Setup", DisplayName = "Incompatible Indicator", Version = "1.0",
+        Description = "Should display a warning that newer version of API was used to build this indicator")]
     public class IncompatibleIndicator : Indicator
     {
         [Parameter(DisplayName = "Param 1", DefaultValue = 2)]
