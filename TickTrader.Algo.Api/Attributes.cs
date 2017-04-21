@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -20,6 +16,8 @@ namespace TickTrader.Algo.Api
         public OutputAttribute()
         {
             DefaultColor = Colors.Auto;
+            IsOverlay = false;
+            PaneName = "Default";
         }
 
         public string DisplayName { get; set; }
@@ -27,6 +25,8 @@ namespace TickTrader.Algo.Api
         public LineStyles DefaultLineStyle { get; set; }
         public float DefaultThickness { get; set; }
         public PlotType PlotType { get; set; }
+        public bool IsOverlay { get; set; }
+        public string PaneName { get; set; }
     }
 
     [Serializable]

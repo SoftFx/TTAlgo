@@ -5,6 +5,7 @@ using TickTrader.Algo.Core;
 using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
+using System.Linq;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,7 +23,8 @@ namespace TickTrader.BotTerminal
                 StartIndicator();
         }
 
-        public bool IsOverlay { get { return Setup.Descriptor.IsOverlay; } }
+        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.IsOverlay); } }
+        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => !o.IsOverlay); } }
 
         public IXyDataSeries GetOutputSeries(string id)
         {

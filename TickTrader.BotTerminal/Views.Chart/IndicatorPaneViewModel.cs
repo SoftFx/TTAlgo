@@ -27,7 +27,15 @@ namespace TickTrader.BotTerminal
             this.indicator = indicator;
             this.ChartWindowId = windowId;
 
-            Series = indicator.Series.AsObservable();
+            var series = new DynamicList<IRenderableSeriesViewModel>();
+            foreach (OutputSetup output in indicator.Model.Setup.Outputs.Where(o => !o.IsOverlay))
+            {
+                var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator.Model, output);
+                if (seriesViewModel != null)
+                    series.Values.Add(seriesViewModel);
+            }
+
+            Series = series.AsObservable();
 
             UpdateAxis();
 

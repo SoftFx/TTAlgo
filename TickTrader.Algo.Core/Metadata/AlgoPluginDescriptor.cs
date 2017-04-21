@@ -198,7 +198,7 @@ namespace TickTrader.Algo.Core.Metadata
                 return new AlgoPropertyDescriptor(property, AlgoPropertyErrors.MultipleAttributes);
             else if (algoAttribute is OutputAttribute)
             {
-                var descriptor = new OutputDescriptor(property, (OutputAttribute)algoAttribute);
+                var descriptor = new OutputDescriptor(property, (OutputAttribute)algoAttribute, IsOverlay);
                 outputs.Add(descriptor);
                 return descriptor;
             }

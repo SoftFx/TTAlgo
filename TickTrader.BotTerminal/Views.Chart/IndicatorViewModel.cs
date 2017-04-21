@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
             Model = indicator;
             Series = new DynamicList<IRenderableSeriesViewModel>();
 
-            foreach (OutputSetup output in indicator.Setup.Outputs)
+            foreach (OutputSetup output in indicator.Setup.Outputs.Where(o => o.IsOverlay))
             {
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator, output);
                 if (seriesViewModel != null)
