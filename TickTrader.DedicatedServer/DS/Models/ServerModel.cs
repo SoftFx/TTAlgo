@@ -81,6 +81,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (SyncObj)
             {
+                Validate(accountId.Login, accountId.Server, password);
+
                 var existing = FindAccount(accountId);
                 if (existing != null)
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
@@ -92,6 +94,14 @@ namespace TickTrader.DedicatedServer.DS.Models
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
                     Save();
                 }
+            }
+        }
+
+        private void Validate(string login, string server, string password)
+        {
+            if(string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
+            {
+                throw new InvalidAccountException("Login, password and server are required");
             }
         }
 
@@ -116,6 +126,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (SyncObj)
             {
+                Validate(key.Login, key.Server, password);
+
                 var acc = GetAccountOrThrow(key);
                 acc.ChangePassword(password);
             }
