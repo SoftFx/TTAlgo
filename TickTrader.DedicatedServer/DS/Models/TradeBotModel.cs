@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -7,6 +8,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
@@ -16,13 +18,15 @@ namespace TickTrader.DedicatedServer.DS.Models
     [DataContract(Name = "tradeBot", Namespace = "")]
     public class TradeBotModel : ITradeBot
     {
+        private ILogger _log;
         private object _syncObj;
         private ClientModel _client;
         private Task _stopTask;
         private PluginExecutor executor;
-        private BotLog _log;
+        private BotLog _botLog;
         private PluginSetup _setupModel;
         private AlgoPluginRef _ref;
+        private ListenerProxy _stopListener;
 
         public TradeBotModel(string id, PluginKey key, PluginConfig cfg)
         {
@@ -46,19 +50,22 @@ namespace TickTrader.DedicatedServer.DS.Models
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
         public Exception Fault { get; private set; }
+        public string FaultMessage { get; private set; }
         public IAccount Account => _client;
-        public IBotLog Log => _log;
+        public IBotLog Log => _botLog;
 
-        public void Init(ClientModel client, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
+        public void Init(ClientModel client, ILogger log, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
         {
             _syncObj = syncObj;
             _client = client;
+            _log = log;
             Package = packageProvider(PackageName);
 
             _ref = Package.GetPluginRef(Descriptor);
             if (_ref == null || _ref.Descriptor.AlgoLogicType != AlgoTypes.Robot)
             {
-                // TO DO : faulted state
+                State = BotStates.Broken;
+                FaultMessage = "Package '" + PackageName + "' is not found in repository!";
             }
             else
             {
@@ -68,12 +75,12 @@ namespace TickTrader.DedicatedServer.DS.Models
                     _setupModel.Load(Config);
                 }
 
-                if (IsRunning)
-                    State = BotStates.Started;
-
                 client.StateChanged += Client_StateChanged;
 
-                _log = new BotLog(syncObj);
+                _botLog = new BotLog(syncObj);
+
+                if (IsRunning)
+                    Start();
             }
         }
 
@@ -143,12 +150,20 @@ namespace TickTrader.DedicatedServer.DS.Models
                     executor.InitBarStrategy(feedAdapter, barSetup.PriceType);
                     executor.MainSymbolCode = barSetup.MainSymbol;
                 }
+                else
+                    throw new Exception("Unsupported configuration!");
+
+                executor.InitSlidingBuffering(10);
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
-                executor.Logger = _log;
+                executor.TradeApi = _client.TradeApi;
+                executor.Logger = _botLog;
+                _stopListener = new ListenerProxy(executor, () =>
+                {
+                    lock (_syncObj) OnStopped(false);
+                });
 
-                //executor.MainSymbolCode = 
                 _setupModel.Apply(executor);
                 executor.Start();
 
@@ -160,10 +175,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 lock (_syncObj)
                 {
                     Fault = ex;
-                    if (executor != null)
-                        executor.Dispose();
-                    SetRunning(false);
-                    ChangeState(BotStates.Faulted);
+                    FaultMessage = ex.Message;
+                    OnStopped(true);
                 }
             }
         }
@@ -171,10 +184,27 @@ namespace TickTrader.DedicatedServer.DS.Models
         private async Task DoStop()
         {
             await Task.Factory.StartNew(() => executor.Stop());
-            lock (_syncObj)
+            lock (_syncObj) OnStopped(false);
+        }
+
+        private void OnStopped(bool isFaulted)
+        {
+            if (State != BotStates.Offline)
             {
-                ChangeState(BotStates.Offline);
-                Package.DecrementRef();
+                try
+                {
+                    _stopListener.Dispose();
+                    if (executor != null)
+                        executor.Dispose();
+                    Package.DecrementRef();
+                }
+                catch (Exception ex)
+                {
+                    _log.LogError("TradeBotModel.OnStopped() failed! {0}", ex);
+                }
+                
+                ChangeState(isFaulted ? BotStates.Faulted : BotStates.Offline);
+                SetRunning(false);
             }
         }
 
@@ -186,8 +216,36 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void SetRunning(bool val)
         {
-            IsRunning = val;
-            IsRunningChanged?.Invoke(this);
+            if (IsRunning != val)
+            {
+                IsRunning = val;
+                IsRunningChanged?.Invoke(this);
+            }
+        }
+
+        private class ListenerProxy : CrossDomainObject
+        {
+            private PluginExecutor _executor;
+            private Action _onStopped;
+
+            public ListenerProxy(PluginExecutor executor, Action onStopped)
+            {
+                _executor = executor;
+                _onStopped = onStopped;
+                executor.IsRunningChanged += Executor_IsRunningChanged1;
+            }
+
+            private void Executor_IsRunningChanged1(PluginExecutor exec)
+            {
+                if (!exec.IsRunning)
+                    _onStopped();
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                _executor.IsRunningChanged -= Executor_IsRunningChanged1;
+                base.Dispose(disposing);
+            }
         }
     }
 }

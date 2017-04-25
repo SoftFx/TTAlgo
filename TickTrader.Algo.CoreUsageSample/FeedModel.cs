@@ -55,6 +55,16 @@ namespace TickTrader.Algo.CoreUsageSample
             return null;
         }
 
+        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
+        {
+            throw new NotImplementedException();
+        }
+
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, int count, DateTime to, int depth)
+        {
+            throw new NotImplementedException();
+        }
+
         IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
         {
             return dataBySymbol.Values.Where(d => d.LastQuote != null).Select(d => d.LastQuote).ToList();
@@ -81,11 +91,6 @@ namespace TickTrader.Algo.CoreUsageSample
 
         public void Invoke(Action action)
         {
-        }
-
-        public List<BarEntity> GetMainSeries()
-        {
-            throw new NotImplementedException();
         }
 
         private class SymbolDataModel

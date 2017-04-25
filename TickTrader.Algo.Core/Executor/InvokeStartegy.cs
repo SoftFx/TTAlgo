@@ -15,7 +15,6 @@ namespace TickTrader.Algo.Core
         private Action<ExecutorException> onCoreError;
         private Action<Exception> onRuntimeError;
         private Action<RateUpdate> onFeedUpdate;
-        private Action<RateUpdate> onRateUpdate;
 
         internal InvokeStartegy()
         {

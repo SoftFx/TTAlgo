@@ -12,6 +12,9 @@
         public const int AccountNotFound = 2001;
 		public const int InvalidAccount = 2002;
 
-        public const int InvalidState = 3000; // Needs to be decomposed into more detailed errors
+        public const int InvalidState = 10000; // Needs to be decomposed into more detailed errors
+
+        public const int DuplicateBot = 3000;
+        public const int BotNotFound = 3001;
     }
 }

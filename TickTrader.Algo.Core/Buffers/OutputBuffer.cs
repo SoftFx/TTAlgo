@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class OutputBuffer<T> : IPluginDataBuffer<T>, IReaonlyDataBuffer, IReaonlyDataBuffer<T>
+    public class OutputBuffer<T> : IPluginDataBuffer<T>, IReaonlyDataBuffer, IReaonlyDataBuffer<T>, IBuffer
     {
-        private List<T> data = new List<T>();
+        private CircularList<T> data = new CircularList<T>();
         private BuffersCoordinator coordinator;
         private ValueFactory<T> valueFactory;
 
@@ -26,27 +27,7 @@ namespace TickTrader.Algo.Core
             this.coordinator = coordinator;
             this.valueFactory = ValueFactory.Get<T>();
 
-            //coordinator.BuffersCleared += Coordinator_BuffersCleared;
-            coordinator.BuffersExtended += () =>
-            {
-                var index = data.Count;
-                var initialValue = InitValue(index);
-                data.Add(initialValue);
-                if (Appended != null)
-                    Appended(index, initialValue);
-            };
-
-            coordinator.BeginBatch += () =>
-            {
-                if (BeginBatchBuild != null)
-                    BeginBatchBuild();
-            };
-
-            coordinator.EndBatch += () =>
-            {
-                if (EndBatchBuild != null)
-                    EndBatchBuild();
-            };
+            coordinator.RegisterBuffer(this);
         }
 
         protected virtual T InitValue(int index)
@@ -56,8 +37,7 @@ namespace TickTrader.Algo.Core
 
         protected void OnUpdated(int index, T val)
         {
-            if (Updated != null)
-                Updated(index, val);
+            Updated?.Invoke(index, val);
         }
 
         public virtual T this[int index]
@@ -74,6 +54,8 @@ namespace TickTrader.Algo.Core
         public int VirtualPos { get { return coordinator.VirtualPos; } }
         public Action<int, T> Appended { get; set; }
         public Action<int, T> Updated { get; set; }
+        public Action<int> Truncated { get; set; }
+        public Action Cleared { get; set; }
         //public event Action Cleared;
         public Action BeginBatchBuild { get; set; }
         public Action EndBatchBuild { get; set; }
@@ -89,6 +71,39 @@ namespace TickTrader.Algo.Core
         {
             return data.GetEnumerator();
         }
+
+        #region IBuffer
+
+        void IBuffer.Extend()
+        {
+            var index = data.Count;
+            var initialValue = InitValue(index);
+            data.Add(initialValue);
+            Appended?.Invoke(index, initialValue);
+        }
+
+        void IBuffer.Truncate(int size)
+        {
+            data.TruncateStart(size);
+            Truncated?.Invoke(size);
+        }
+
+        void IBuffer.Clear()
+        {
+            Cleared?.Invoke();
+        }
+
+        void IBuffer.BeginBatch()
+        {
+            BeginBatchBuild?.Invoke();
+        }
+
+        void IBuffer.EndBatch()
+        {
+            EndBatchBuild?.Invoke();
+        }
+
+        #endregion
 
         //private void Coordinator_BuffersCleared()
         //{

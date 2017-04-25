@@ -41,8 +41,9 @@ export enum ResponseCode {
     DuplicateAccount = 2000,
     AccountNotFound = 2001,
     InvalidAccount = 2002,
-
-	InvalidState = 3000
+    DuplicateBot = 3000,
+    BotNotFound = 3001,
+	InvalidState = 10000
 }
 
 export enum ConnectionErrorCodes {
