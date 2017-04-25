@@ -40,7 +40,7 @@ export enum ResponseCode {
     PackageIsLocked = 1002,
     DuplicateAccount = 2000,
     AccountNotFound = 2001,
-    InvalidAccount = 2002
+    InvalidAccount = 2002,
 
 	InvalidState = 3000
 }
