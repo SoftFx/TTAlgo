@@ -16,12 +16,12 @@
                         </div>
 
                         <h4 class="title truncate">
-                            Quick run
+                            TradeBot Setup
                         </h4>
-
+                        <p class="category">Select and configure a new bot bot instance</p>
                     </div>
                     <div id="quickRunPanel" class="content vertical-autoscroll_600 collapse in">
-                        <bot-run-cmp (OnAdded)="OnTradeBotAdded($event)"></bot-run-cmp>
+                        <bot-setup-cmp (OnAdded)="OnTradeBotAdded($event)"></bot-setup-cmp>
                     </div>
                 </div>
             </div>
@@ -29,7 +29,7 @@
             <div class="col-md-8">
                 <masonry class="row">
                     <div masonry-brick *ngFor="let Bot of TradeBots | orderBy: ['Id'] " class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-                        <trade-bot-card-cmp (OnDeleted)="OnTradeBotDeleted($event)" [TradeBot]="Bot"></trade-bot-card-cmp> 
+                        <bot-card-cmp (OnDeleted)="OnTradeBotDeleted($event)" [TradeBot]="Bot"></bot-card-cmp> 
                     </div>
                 </masonry>
             </div>

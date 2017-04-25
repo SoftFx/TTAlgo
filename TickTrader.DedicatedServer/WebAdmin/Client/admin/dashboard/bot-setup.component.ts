@@ -5,12 +5,12 @@ import { ApiService, ToastrService } from '../../services/index';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'bot-run-cmp',
-    template: require('./bot-run.component.html'),
+    selector: 'bot-setup-cmp',
+    template: require('./bot-setup.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class BotRunComponent implements OnInit {
+export class BotSetupComponent implements OnInit {
     public Packages: PackageModel[];
     public Accounts: AccountModel[];
     public SelectedPlugin: PluginModel;

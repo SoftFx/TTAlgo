@@ -4,12 +4,12 @@ import { TradeBotModel, TradeBotStates, TradeBotStateModel, ResponseStatus } fro
 import { ApiService, ToastrService, FeedService } from '../../services/index';
 
 @Component({
-    selector: 'trade-bot-card-cmp',
-    template: require('./trade-bot-card.component.html'),
+    selector: 'bot-card-cmp',
+    template: require('./bot-card.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class TradeBotCardComponent implements OnInit {
+export class BotCardComponent implements OnInit {
     public TradeBotState = TradeBotStates;
     @Input() TradeBot: TradeBotModel;
     @Output() OnDeleted = new EventEmitter<TradeBotModel>();
@@ -21,6 +21,8 @@ export class TradeBotCardComponent implements OnInit {
     }
 
     public Start() {
+        this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': TradeBotStates.Starting }
+
         this._api.StartBot(this.TradeBot.Id).subscribe(
             ok => { },
             err => this.notifyAboutError(err)
