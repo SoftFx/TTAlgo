@@ -10,5 +10,8 @@
 
         public const int DuplicateAccount = 2000;
         public const int AccountNotFound = 2001;
+
+        public const int DuplicateBot = 3000;
+        public const int BotNotFound = 3001;
     }
 }

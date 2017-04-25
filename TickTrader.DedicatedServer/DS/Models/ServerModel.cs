@@ -11,28 +11,33 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
+using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
     [DataContract(Name = "server.config", Namespace = "")]
     public class ServerModel : IDedicatedServer
     {
-        private const string cfgFilePath = "server.config.xml";
+        private static readonly EnvService envService = new EnvService();
+        private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
         [DataMember(Name = "accounts")]
         private List<ClientModel> _accounts = new List<ClientModel>();
         private ILogger<ServerModel> _logger;
         private ILoggerFactory _loggerFactory;
+        private Dictionary<string, TradeBotModel> _allBots;
 
         private ServerModel(ILoggerFactory loggerFactory)
         {
             Init(loggerFactory);
         }
 
+        public static EnvService Environment => envService;
+
         public object SyncObj { get; private set; }
 
         public IEnumerable<IAccount> Accounts { get { lock (SyncObj) { return _accounts.ToArray(); } } }
-        public IEnumerable<ITradeBot> TradeBots => _accounts.SelectMany(a => a.TradeBots);
+        public IEnumerable<ITradeBot> TradeBots => _allBots.Values;
         public event Action<IAccount, ChangeAction> AccountChanged;
         public event Action<ITradeBot, ChangeAction> BotChanged;
         public event Action<ITradeBot> BotStateChanged;
@@ -41,6 +46,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         private void Init(ILoggerFactory loggerFactory)
         {
             SyncObj = new object();
+            _allBots = new Dictionary<string, TradeBotModel>();
+            _logger = loggerFactory.CreateLogger<ServerModel>();
             _loggerFactory = loggerFactory;
             _packageStorage = new PackageStorage(loggerFactory, SyncObj);
             _accounts.ForEach(InitAccount);
@@ -141,6 +148,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void InitAccount(ClientModel acc)
         {
+            acc.BotValidation += Acc_BotValidation;
+            acc.BotInitialized += Acc_BotInitialized;
             acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
             acc.Changed += Acc_Changed;
             acc.BotChanged += Acc_BotChanged;
@@ -149,6 +158,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void DeinitAccount(ClientModel acc)
         {
+            acc.BotValidation -= Acc_BotValidation;
             acc.Changed -= Acc_Changed;
             acc.BotChanged -= Acc_BotChanged;
             acc.BotStateChanged -= OnBotStateChanged;
@@ -171,9 +181,22 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void Acc_BotChanged(TradeBotModel bot, ChangeAction changeAction)
         {
-            BotChanged?.Invoke(bot, changeAction);
+            if (changeAction == ChangeAction.Removed)
+                _allBots.Remove(bot.Id);
 
-            
+            Save();
+            BotChanged?.Invoke(bot, changeAction);
+        }
+
+        private void Acc_BotValidation(TradeBotModel bot)
+        {
+            if (_allBots.ContainsKey(bot.Id))
+                throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
+        }
+
+        private void Acc_BotInitialized(TradeBotModel bot)
+        {
+            _allBots.Add(bot.Id, bot);
         }
 
         #endregion
@@ -189,21 +212,19 @@ namespace TickTrader.DedicatedServer.DS.Models
         public void RemoveBot(string botId)
         {
             lock (SyncObj)
-                TradeBots.FirstOrDefault(b => b.Id == botId)?.Account.RemoveBot(botId);
+                _allBots.GetOrDefault(botId)?.Account.RemoveBot(botId);
         }
 
         public string AutogenerateBotId(string botDescriptorName)
         {
             lock (SyncObj)
             {
-                HashSet<string> idSet = new HashSet<string>(TradeBots.Select(b => b.Id));
-
                 int seed = 1;
 
                 while (true)
                 {
                     var botId = botDescriptorName + " " + seed;
-                    if (!idSet.Contains(botId))
+                    if (!_allBots.ContainsKey(botId))
                         return botId;
 
                     seed++;
@@ -226,7 +247,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
             catch (Exception ex)
             {
-                // TO DO : log
+                _logger.LogError("Failed to save config file! {0}", ex);
             }
         }
 

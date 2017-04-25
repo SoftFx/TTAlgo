@@ -56,6 +56,13 @@ namespace TickTrader.Algo.Common.Model
             return FdkToAlgo.Convert(result).ToList();
         }
 
+        public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
+        {
+            BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
+            var result = history.GetBars(symbolCode, PriceType.Ask, period, from, size).Result;
+            return FdkToAlgo.Convert(result).ToList();
+        }
+
         public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
             try
@@ -68,6 +75,11 @@ namespace TickTrader.Algo.Common.Model
                 // TO DO : return corresponding error code
                 return Enumerable.Empty<QuoteEntity>();
             }
+        }
+
+        public List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth)
+        {
+            throw new NotImplementedException();
         }
 
         public void Subscribe(Action<QuoteEntity[]> handler)

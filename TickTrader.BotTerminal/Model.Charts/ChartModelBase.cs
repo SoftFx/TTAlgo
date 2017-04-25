@@ -355,8 +355,7 @@ namespace TickTrader.BotTerminal
         {
             plugin.TimeFrame = TimeFrame;
             plugin.MainSymbolCode = SymbolCode;
-            plugin.TimePeriodStart = TimelineStart;
-            plugin.TimePeriodEnd = DateTime.Now + TimeSpan.FromDays(100);
+            plugin.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }

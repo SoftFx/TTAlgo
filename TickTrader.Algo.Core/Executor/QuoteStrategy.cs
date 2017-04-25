@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
         private QuoteSeriesFixture mainSeries;
         private List<QuoteEntity> mainSerieData;
 
-        public override ITimeRef TimeRef { get { return null; } }
+        public override IFeedBuffer MainBuffer { get { return null; } }
         public override int BufferSize { get { return mainSeries.Count; } }
 
         public QuoteStrategy(IPluginFeedProvider feed) : base(feed)

@@ -30,15 +30,15 @@ namespace TickTrader.Algo.Core
         public void BuildNext(int count, CancellationToken cToken)
         {
             LazyInit();
-            PluginProxy.Coordinator.FireBeginBatch();
+            PluginProxy.Coordinator.BeginBatch();
             for (int i = 0; i < count; i++)
             {
                 if (cToken.IsCancellationRequested)
                     return;
-                PluginProxy.Coordinator.MoveNext();
+                PluginProxy.Coordinator.Extend();
                 InvokeCalculate(false);
             }
-            PluginProxy.Coordinator.FireEndBatch();
+            PluginProxy.Coordinator.EndBatch();
         }
 
         public void RebuildLast()

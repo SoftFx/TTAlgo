@@ -56,14 +56,14 @@ namespace TickTrader.Algo.Core.Metadata
         public PlotType PlotType { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
 
-        internal DataSeriesProxy<T> CreateOutput2<T>()
+        internal DataSeriesImpl<T> CreateOutput2<T>()
         {
             if (typeof(T) == typeof(double) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new DataSeriesProxy();
+                return (DataSeriesImpl<T>)(object)new DataSeriesProxy();
             else if (typeof(T) == typeof(Marker) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new MarkerSeriesProxy();
+                return (DataSeriesImpl<T>)(object)new MarkerSeriesProxy();
             else
-                return new DataSeriesProxy<T>();
+                return new DataSeriesImpl<T>();
         }
     }
 }
