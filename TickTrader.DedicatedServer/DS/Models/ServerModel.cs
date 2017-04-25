@@ -12,6 +12,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
+using TickTrader.DedicatedServer.DS.Info;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -82,6 +83,25 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
 
             return testTask.Result;
+        }
+
+        public ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info)
+        {
+            Task<ConnectionInfo> task;
+
+            lock (SyncObj) task = GetAccountOrThrow(key).GetInfo();
+
+            try
+            {
+                info = task.Result;
+                return ConnectionErrorCodes.None;
+            }
+            catch (CommunicationException ex)
+            {
+                info = null;
+                return ex.FdkCode;
+            }
+
         }
 
         public void AddAccount(AccountKey accountId, string password)

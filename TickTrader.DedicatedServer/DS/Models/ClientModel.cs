@@ -16,6 +16,7 @@ using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
+using TickTrader.DedicatedServer.DS.Info;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -25,9 +26,12 @@ namespace TickTrader.DedicatedServer.DS.Models
         private object _sync;
         private ILogger _log;
         //private object _syncEvents = new object();
-        private CancellationTokenSource connectCancellation;
-        private TaskCompletionSource<ConnectionErrorCodes> testRequest;
+        private CancellationTokenSource _connectCancellation;
+        private CancellationTokenSource _requestCancellation;
+        //private TaskCompletionSource<ConnectionErrorCodes> testRequest;
+        private List<Task> _requests;
         private ClientCore _core;
+        private ConnectionErrorCodes _lastErrorCode;
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
@@ -49,6 +53,9 @@ namespace TickTrader.DedicatedServer.DS.Models
             _sync = syncObj;
             _packageProvider = packageProvider;
             _log = loggerFactory.CreateLogger<ClientModel>();
+            _requests = new List<Task>();
+            _requestCancellation = new CancellationTokenSource();
+
             var loggerAdapter = new LoggerAdapter(loggerFactory.CreateLogger<ConnectionModel>());
 
             if (_bots == null)
@@ -123,36 +130,68 @@ namespace TickTrader.DedicatedServer.DS.Models
         [DataMember(Name = "password")]
         public string Password { get; private set; }
 
-        #region Connection Management
-
-        public async Task<ConnectionErrorCodes> TestConnection()
+        public Task<ConnectionInfo> GetInfo()
         {
-            Task<ConnectionErrorCodes> resultTask = null;
-
             lock (_sync)
             {
                 if (ConnectionState == ConnectionStates.Online)
-                    return ConnectionErrorCodes.None;
+                    return Task.FromResult(new ConnectionInfo(this));
                 else
                 {
-                    if (testRequest == null)
-                    {
-                        testRequest = new TaskCompletionSource<ConnectionErrorCodes>();
-                        ManageConnection();
-                    }
-
-                    resultTask = testRequest.Task;
+                    return AddPendingRequest(
+                        new Task<ConnectionInfo>(() =>
+                        {
+                            if (_lastErrorCode != ConnectionErrorCodes.None)
+                                throw new CommunicationException("Connection error! Code: " + _lastErrorCode, _lastErrorCode);
+                            return new ConnectionInfo(this);
+                        }
+                        , _requestCancellation.Token));
                 }
             }
+        }
 
-            return await resultTask;
+        #region Connection Management
+
+        public Task<ConnectionErrorCodes> TestConnection()
+        {
+            lock (_sync)
+            {
+                if (ConnectionState == ConnectionStates.Online)
+                    return Task.FromResult(ConnectionErrorCodes.None);
+                else
+                    return AddPendingRequest(new Task<ConnectionErrorCodes>(() => _lastErrorCode, _requestCancellation.Token));
+            }
+        }
+
+        private Task<T> AddPendingRequest<T>(Task<T> requestTask)
+        {
+            _requests.Add(requestTask);
+            ManageConnection();
+            return requestTask;
+        }
+
+        private void ExecRequests()
+        {
+            foreach (var req in _requests)
+                req.RunSynchronously();
+            _requests.Clear();
+        }
+
+        private void CancelRequests()
+        {
+            if (_requests.Count > 0)
+            {
+                _requestCancellation.Cancel();
+                _requests.Clear();
+                _requestCancellation = new CancellationTokenSource();
+            }
         }
 
         private void ManageConnection()
         {
             if (ConnectionState == ConnectionStates.Offline)
             {
-                if (testRequest != null || _startedBotsCount > 0)
+                if (_requests.Count > 0 || _startedBotsCount > 0)
                     Connect();
             }
             else if (ConnectionState == ConnectionStates.Online)
@@ -188,10 +227,10 @@ namespace TickTrader.DedicatedServer.DS.Models
         private async void Connect()
         {
             ChangeState(ConnectionStates.Connecting);
-            connectCancellation = new CancellationTokenSource();
-            var result = await Connection.Connect(Username, Password, Address, connectCancellation.Token);
+            _connectCancellation = new CancellationTokenSource();
+            _lastErrorCode = await Connection.Connect(Username, Password, Address, _connectCancellation.Token);
 
-            if (result == ConnectionErrorCodes.None)
+            if (_lastErrorCode == ConnectionErrorCodes.None)
             {
                 await FeedHistory.Init();
 
@@ -206,12 +245,11 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             lock (_sync)
             {
-                if (result == ConnectionErrorCodes.None)
+                if (_lastErrorCode == ConnectionErrorCodes.None)
                     ChangeState(ConnectionStates.Online);
                 else
                     ChangeState(ConnectionStates.Offline);
-                testRequest?.TrySetResult(result);
-                testRequest = null;
+                ExecRequests();
                 ManageConnection();
             }
         }
@@ -236,10 +274,9 @@ namespace TickTrader.DedicatedServer.DS.Models
             lock (_sync)
             {
                 Password = password;
-                testRequest?.TrySetCanceled();
-                testRequest = null;
+                CancelRequests();
                 stopRequested = true;
-                connectCancellation?.Cancel();
+                _connectCancellation?.Cancel();
                 Changed?.Invoke(this);
                 ManageConnection();
             }

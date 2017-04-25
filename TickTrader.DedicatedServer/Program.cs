@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.DedicatedServer.DS.Info;
 
 namespace TickTrader.DedicatedServer
 {
@@ -70,7 +71,7 @@ namespace TickTrader.DedicatedServer
 
             cmdEngine.RegsiterCommand("account", () =>
             {
-                var cmd = CommandUi.Choose("cmd", "add", "remove", "change password", "test", "cancel");
+                var cmd = CommandUi.Choose("cmd", "add", "remove", "change password", "test", "cancel", "info");
 
                 IAccount acc;
                 List<IAccount> accountsList;
@@ -106,6 +107,25 @@ namespace TickTrader.DedicatedServer
                         var result = acc.TestConnection().Result;
                         if (result == Algo.Common.Model.ConnectionErrorCodes.None)
                             Console.WriteLine("Valid connection.");
+                        else
+                            Console.WriteLine("Error = " + acc.TestConnection().Result);
+                        break;
+                    case "info":
+                        lock (server.SyncObj)
+                            accountsList = server.Accounts.ToList();
+                        acc = CommandUi.Choose("account", accountsList, GetDisplayName);
+                        var accKey = new AccountKey(acc.Username, acc.Address);
+                        ConnectionInfo info;
+                        var getInfoError = server.GetAccountInfo(accKey, out info);
+                        if (getInfoError == Algo.Common.Model.ConnectionErrorCodes.None)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Symbols:");
+                            Console.WriteLine(string.Join(",", info.Symbols.Select(s => s.Name)));
+                            Console.WriteLine();
+                            Console.WriteLine("Currencies:");
+                            Console.WriteLine(string.Join(",", info.Currencies.Select(s => s.Name)));
+                        }
                         else
                             Console.WriteLine("Error = " + acc.TestConnection().Result);
                         break;

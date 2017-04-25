@@ -13,5 +13,7 @@
 
         public const int DuplicateBot = 3000;
         public const int BotNotFound = 3001;
+
+        public const int CommunicationError = 4000;
     }
 }

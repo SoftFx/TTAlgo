@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.DS
@@ -34,6 +35,8 @@ namespace TickTrader.DedicatedServer.DS
         void ChangeAccountPassword(AccountKey key, string password);
         ConnectionErrorCodes TestAccount(AccountKey accountId);
         ConnectionErrorCodes TestCreds(string login, string password, string server);
+
+        ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
 
         ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig);
         void RemoveBot(string botId);
