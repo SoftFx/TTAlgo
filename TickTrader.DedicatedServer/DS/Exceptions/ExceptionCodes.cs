@@ -10,5 +10,7 @@
 
         public const int DuplicateAccount = 2000;
         public const int AccountNotFound = 2001;
+
+        public const int InvalidState = 3000; // Needs to be decomposed into more detailed errors
     }
 }
