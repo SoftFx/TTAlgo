@@ -31,7 +31,10 @@ export class ChangePasswordComponent implements OnInit {
         account.Password = password;
 
         this._api.ChangeAccountPassword(account)
-            .subscribe(ok => this.OnChanged.emit(),
+            .subscribe(ok => {
+                this._toastr.success("Password was successfully changed");
+                this.OnChanged.emit();
+            },
             err => this._toastr.error(`Error changing account password ${account.Login} (${account.Server})`));
     }
 
