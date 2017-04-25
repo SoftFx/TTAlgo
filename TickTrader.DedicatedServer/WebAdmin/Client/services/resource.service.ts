@@ -7,7 +7,7 @@ export class ResourceService {
 	private _currentLang: string;
     private readonly resources: any;
 
-	public get currentLang() {
+	public get CurrentLang() {
 	  return this._currentLang;
 	}
 
@@ -16,19 +16,23 @@ export class ResourceService {
         this.resources = { [GuiEn.name]: GuiEn.dictionary }
 	}
 
-	public use(lang: string): void {
+	public Use(lang: string): void {
 		this._currentLang = lang;
 	}
 
-	private pop(key: string): string {
-        if (this.resources[this.currentLang] && this.resources[this.currentLang][key]) {
-			return this.resources[this.currentLang][key];
+    private pop(key: string): string {
+        if (this.Contains(key)) {
+			return this.resources[this.CurrentLang][key];
 		}
 
 		return key;
 	}
 
-	public instant(key: string) {
+    public Contains(key: string) {
+        return this.resources[this.CurrentLang] && this.resources[this.CurrentLang][key];
+    }
+
+	public Instant(key: string) {
 		return this.pop(key); 
 	}
 }
