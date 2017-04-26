@@ -43,6 +43,14 @@
 }
 /*endregion Colors*/
 
+.fixed_height_160 {
+    height: 160px;
+}
+
+.fixed_height_200 {
+    height: 200px;
+}
+
 .fixed_height_400 {
     height: 400px;
 }
