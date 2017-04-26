@@ -13,12 +13,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         private object _sycn;
         private QuoteDistributor _distributor;
 
-        public SymbolManager(ConnectionModel connection, object sync) : base(connection, new SyncAdapter(sync))
+        public SymbolManager(ClientCore client, object sync) : base(client, new SyncAdapter(sync))
         {
             _sycn = sync;
-            _distributor = new QuoteDistributor(connection, _sycn);
         }
-
-        public override QuoteDistributorBase Distributor => _distributor;
     }
 }

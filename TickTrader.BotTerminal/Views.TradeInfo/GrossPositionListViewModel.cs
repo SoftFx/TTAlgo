@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,7 +15,8 @@ namespace TickTrader.BotTerminal
     {
         private SymbolCollectionModel _symbols;
 
-        public GrossPositionListViewModel(AccountModel model, SymbolCollectionModel symbols) : base(model)
+        public GrossPositionListViewModel(AccountModel model, SymbolCollectionModel symbols, ConnectionModel connection)
+            : base(model, connection)
         {
             _symbols = symbols;
 

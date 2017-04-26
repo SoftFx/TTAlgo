@@ -11,18 +11,19 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public abstract class QuoteDistributorBase
+    public class QuoteDistributor
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("QuoteDistributor");
 
-        private ConnectionModel connection;
+        private ClientCore _client;
         private List<Subscription> allSymbolSubscriptions = new List<Subscription>();
         private Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
         private ActionBlock<Task> requestQueue;
 
-        public QuoteDistributorBase(ConnectionModel connection)
+        public QuoteDistributor(ClientCore client)
         {
-            this.connection = connection;
+            _client = client;
+            _client.TickReceived += FeedProxy_Tick;
         }
 
         public IFeedSubscription SubscribeAll()
@@ -49,8 +50,6 @@ namespace TickTrader.Algo.Common.Model
 
         public void Init()
         {
-            connection.FeedProxy.Tick += FeedProxy_Tick;
-
             foreach (var group in groups.Values)
                 group.CurrentDepth = group.MaxDepth;
 
@@ -60,7 +59,6 @@ namespace TickTrader.Algo.Common.Model
 
         public async Task Stop()
         {
-            connection.FeedProxy.Tick -= FeedProxy_Tick;
             requestQueue.Complete();
             await requestQueue.Completion;
         }
@@ -75,14 +73,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        protected abstract void EnqueueUpdate(SoftFX.Extended.Events.TickEventArgs e);
-
-        void FeedProxy_Tick(object sender, SoftFX.Extended.Events.TickEventArgs e)
+        void FeedProxy_Tick(SoftFX.Extended.Events.TickEventArgs e)
         {
-            EnqueueUpdate(e);
+            UpdateRate(e.Tick);
         }
 
-        protected void UpdateRate(Quote tick)
+        private void UpdateRate(Quote tick)
         {
             foreach (var subscription in allSymbolSubscriptions)
                 subscription.OnNewQuote(tick);
@@ -124,7 +120,7 @@ namespace TickTrader.Algo.Common.Model
         {
             if (requestQueue != null) // online
             {
-                var subscribeTask = new Task(() => connection.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
+                var subscribeTask = new Task(() => _client.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
                 requestQueue.Post(subscribeTask);
                 return subscribeTask;
             }
@@ -133,12 +129,12 @@ namespace TickTrader.Algo.Common.Model
 
         private class Subscription : IFeedSubscription
         {
-            protected QuoteDistributorBase parent;
+            protected QuoteDistributor parent;
             protected Dictionary<string, int> bySymbol = new Dictionary<string, int>();
 
             public event Action<Quote> NewQuote;
 
-            public Subscription(QuoteDistributorBase parent)
+            public Subscription(QuoteDistributor parent)
             {
                 this.parent = parent;
             }
@@ -198,7 +194,7 @@ namespace TickTrader.Algo.Common.Model
 
         private class AllSymbolSubscription : Subscription
         {
-            public AllSymbolSubscription(QuoteDistributorBase parent) : base(parent)
+            public AllSymbolSubscription(QuoteDistributor parent) : base(parent)
             {
                 parent.allSymbolSubscriptions.Add(this);
             }

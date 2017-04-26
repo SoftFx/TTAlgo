@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class QuoteSeriesFixture : FeedFixture
+    internal class QuoteSeriesFixture : FeedFixture, IFeedBuffer
     {
         private InputBuffer<Quote> buffer;
 
@@ -15,15 +15,18 @@ namespace TickTrader.Algo.Core
         {
             var execContext = context.ExecContext;
             var feed = context.Feed;
-            if (data != null)
-                data = feed.QueryTicks(SymbolCode, execContext.TimePeriodStart, execContext.TimePeriodEnd, 1);
 
             buffer = execContext.Builder.GetBuffer<Quote>(SymbolCode);
             if (data != null)
-                buffer.AppendRange(data);
+                AppendData(data);
         }
 
+        public DateTime this[int index] => buffer[index].Time;
         public int Count { get { return buffer.Count; } }
+        public bool IsLoaded { get; private set; }
+        public int LastIndex => buffer.Count - 1;
+
+        public event Action Appended;
 
         public DateTime? GetTimeAtIndex(int index)
         {
@@ -32,10 +35,35 @@ namespace TickTrader.Algo.Core
             return buffer[index].Time;
         }
 
+        public void LoadFeed(DateTime from, DateTime to)
+        {
+            var data = Context.Feed.QueryTicks(SymbolCode, from, to, 1);
+            AppendData(data);
+        }
+
+        public void LoadFeed(int size)
+        {
+            var to = DateTime.Now + TimeSpan.FromDays(1);
+            var data = Context.Feed.QueryTicks(SymbolCode, size, to, 1);
+            AppendData(data);
+        }
+
+        public void LoadFeed(DateTime to, int size)
+        {
+            var data = Context.Feed.QueryTicks(SymbolCode, size, to, 1);
+            AppendData(data);
+        }
+
         public BufferUpdateResult Update(Api.Quote quote)
         {
             buffer.Append(quote);
             return new BufferUpdateResult() { IsLastUpdated = true };
+        }
+
+        private void AppendData(List<QuoteEntity> data)
+        {
+            IsLoaded = true;
+            buffer.AppendRange(data);
         }
     }
 

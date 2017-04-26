@@ -73,6 +73,9 @@ namespace TickTrader.Algo.Common.Model
         public DataTrade TradeProxy { get { return tradeProxy; } }
         public ConnectionErrorCodes LastError { get; private set; }
         public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
+        public string CurrentLogin { get; private set; }
+        public string CurrentServer { get; private set; }
+        private string CurrentPassword { get; set; }
 
         public IStateProvider<States> State { get { return stateControl; } }
 
@@ -128,6 +131,10 @@ namespace TickTrader.Algo.Common.Model
             LastError = ConnectionErrorCodes.None;
             connectCancelSrc = new CancellationTokenSource();
 
+            CurrentLogin = username;
+            CurrentPassword = password;
+            CurrentServer = address;
+
             return Task.Factory.StartNew(() =>
                {
                    try
@@ -155,9 +162,10 @@ namespace TickTrader.Algo.Common.Model
                            DecodeLogFixMessages = true
                        };
 
-                       feedCs.Address = address;
-                       feedCs.Username = username;
-                       feedCs.Password = password;
+                       feedCs.Address = CurrentServer;
+                       feedCs.Username = CurrentLogin;
+                       feedCs.Password = CurrentPassword;
+
                        if (logsEnabled)
                        {
                            feedCs.FixEventsFileName = "feed.events.log";

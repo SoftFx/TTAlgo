@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 import { AdminComponent } from './admin.component';
-import { DashboardComponent, BotRunComponent, PluginSetupComponent, BotDetailComponent, TradeBotCardComponent } from './dashboard/index';
+import { DashboardComponent, BotSetupComponent, BotParametersComponent, BotDetailComponent, BotCardComponent } from './dashboard/index';
 import { RepositoryComponent, PackageCardComponent } from './repository/index';
 import { AccountsComponent, AccountCardComponent, ChangePasswordComponent, TestAccountComponent } from './accounts/index';
 import { AuthGuard } from '../services/index';
@@ -28,7 +28,7 @@ export const MODULE_COMPONENTS = [
     RepositoryComponent,
     PackageCardComponent,
     BotDetailComponent,
-    BotRunComponent,
-    PluginSetupComponent,
-    TradeBotCardComponent
+    BotSetupComponent,
+    BotParametersComponent,
+    BotCardComponent
 ]

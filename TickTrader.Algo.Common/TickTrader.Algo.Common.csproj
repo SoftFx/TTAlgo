@@ -64,11 +64,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lib\AsyncEvent.cs" />
+    <Compile Include="Lib\PathEscaper.cs" />
     <Compile Include="Model.Config\Inputs.cs" />
     <Compile Include="Model.Config\Parameters.cs" />
     <Compile Include="Model.Config\PluginConfig.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Setup\Serialization.cs" />
+    <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AssetModel.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
@@ -96,6 +98,8 @@
     <Compile Include="Model\QuoteDistributor.cs" />
     <Compile Include="Model\SymbolCollection.cs" />
     <Compile Include="Model\SymbolModel.cs" />
+    <Compile Include="Model\ClientCore.cs" />
+    <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
