@@ -11,12 +11,12 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override void Load(Property srcProperty) { }
         public override Property Save() { return null; }
         public override void Reset() { }
-        public bool IsOverlay { get; }
+        public OutputTargets Target { get; }
 
         public OutputSetup(OutputDescriptor descriptor)
         {
             SetMetadata(descriptor);
-            IsOverlay = descriptor.IsOverlay;
+            Target = descriptor.Target;
         }
     }
 

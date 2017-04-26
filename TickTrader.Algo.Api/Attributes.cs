@@ -16,8 +16,7 @@ namespace TickTrader.Algo.Api
         public OutputAttribute()
         {
             DefaultColor = Colors.Auto;
-            IsOverlay = false;
-            PaneName = "Default";
+            Target = OutputTargets.Overlay;
         }
 
         public string DisplayName { get; set; }
@@ -25,8 +24,7 @@ namespace TickTrader.Algo.Api
         public LineStyles DefaultLineStyle { get; set; }
         public float DefaultThickness { get; set; }
         public PlotType PlotType { get; set; }
-        public bool IsOverlay { get; set; }
-        public string PaneName { get; set; }
+        public OutputTargets Target { get; set; }
     }
 
     [Serializable]

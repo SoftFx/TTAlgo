@@ -23,8 +23,8 @@ namespace TickTrader.BotTerminal
                 StartIndicator();
         }
 
-        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.IsOverlay); } }
-        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => !o.IsOverlay); } }
+        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Target == OutputTargets.Overlay); } }
+        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Target != OutputTargets.Overlay); } }
 
         public IXyDataSeries GetOutputSeries(string id)
         {

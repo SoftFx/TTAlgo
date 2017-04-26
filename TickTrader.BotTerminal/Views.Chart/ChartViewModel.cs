@@ -61,12 +61,12 @@ namespace TickTrader.BotTerminal
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
             var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
-            var indicatorViewModels = allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i));
+            var indicatorViewModels = allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i, ChartWindowId));
             var overlayIndicators = indicatorViewModels.Chain().Where(i => i.Model.HasOverlayOutputs);
             var overlaySeries = overlayIndicators.Chain().SelectMany(i => i.Series);
             var allSeries = Dynamic.CombineChained(dataSeries, overlaySeries);
             var paneIndicators = indicatorViewModels.Chain().Where(i => i.Model.HasPaneOutputs);
-            var panes = paneIndicators.Chain().Select(i => new IndicatorPaneViewModel(i, Chart, ChartWindowId));
+            var panes = paneIndicators.Chain().SelectMany(i => i.Panes);
 
             Series = allSeries.AsObservable();
 

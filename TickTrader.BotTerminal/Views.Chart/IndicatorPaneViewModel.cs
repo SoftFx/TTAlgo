@@ -12,23 +12,24 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {
     class IndicatorPaneViewModel : PropertyChangedBase
     {
-        private IndicatorViewModel indicator;
-        private ChartModelBase chart;
+        private IndicatorViewModel _indicator;
+        private ChartModelBase _chart;
 
-        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, string windowId)
+        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, OutputTargets target)
         {
-            this.chart = chartModel;
-            this.indicator = indicator;
-            this.ChartWindowId = windowId;
+            _chart = chartModel;
+            _indicator = indicator;
+            ChartWindowId = indicator.ChartWindowId;
 
             var series = new DynamicList<IRenderableSeriesViewModel>();
-            foreach (OutputSetup output in indicator.Model.Setup.Outputs.Where(o => !o.IsOverlay))
+            foreach (OutputSetup output in indicator.Model.Setup.Outputs.Where(o => o.Target == target))
             {
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator.Model, output);
                 if (seriesViewModel != null)
@@ -53,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateAxis()
         {
-            TimeAxis = chart.Navigator.CreateAxis();
+            TimeAxis = _chart.Navigator.CreateAxis();
             TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
             NotifyOfPropertyChange("TimeAxis");
         }
@@ -61,7 +62,7 @@ namespace TickTrader.BotTerminal
         public string ChartWindowId { get; private set; }
         public AxisBase TimeAxis { get; private set; }
         //public long IndicatorId { get { return indicator.Model.Id; } }
-        public ChartModelBase Chart { get { return chart; } }
+        public ChartModelBase Chart { get { return _chart; } }
         public IObservableListSource<IRenderableSeriesViewModel> Series { get; private set; }
         //public AnnotationCollection Annotations { get; private set; }
     }

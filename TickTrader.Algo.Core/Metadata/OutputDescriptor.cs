@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class OutputDescriptor : AlgoPropertyDescriptor
     {
-        public OutputDescriptor(PropertyInfo propertyInfo, OutputAttribute attribute, bool isGlobalOverlay)
+        public OutputDescriptor(PropertyInfo propertyInfo, OutputAttribute attribute)
             : base(propertyInfo)
         {
             Validate(propertyInfo);
@@ -38,8 +38,7 @@ namespace TickTrader.Algo.Core.Metadata
             DefaultColor = attribute.DefaultColor;
             DefaultLineStyle = attribute.DefaultLineStyle;
             PlotType = attribute.PlotType;
-            IsOverlay = isGlobalOverlay || attribute.IsOverlay;
-            PaneName = attribute.PaneName;
+            Target = attribute.Target;
 
             InitDisplayName(attribute.DisplayName);
         }
@@ -53,8 +52,7 @@ namespace TickTrader.Algo.Core.Metadata
         public LineStyles DefaultLineStyle { get; private set; }
         public PlotType PlotType { get; private set; }
         public override AlgoPropertyTypes PropertyType => AlgoPropertyTypes.OutputSeries;
-        public bool IsOverlay { get; private set; }
-        public string PaneName { get; private set; }
+        public OutputTargets Target { get; private set; }
 
         internal DataSeriesProxy<T> CreateOutput2<T>()
         {

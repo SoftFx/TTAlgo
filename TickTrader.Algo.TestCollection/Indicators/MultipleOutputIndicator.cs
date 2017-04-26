@@ -10,17 +10,23 @@ namespace TickTrader.Algo.TestCollection.Indicators
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(IsOverlay = true, DisplayName = "High", DefaultColor = Colors.Blue)]
+        [Output(DisplayName = "High", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries S1 { get; set; }
 
-        [Output(IsOverlay = true, DisplayName = "Low", DefaultColor = Colors.Cyan)]
+        [Output(DisplayName = "Low", Target = OutputTargets.Overlay, DefaultColor = Colors.Cyan)]
         public DataSeries S2 { get; set; }
 
-        [Output(DisplayName = "Move", DefaultColor = Colors.Green, PaneName = "Pane1")]
+        [Output(DisplayName = "Move", Target = OutputTargets.Window1, DefaultColor = Colors.Green)]
         public DataSeries S3 { get; set; }
 
-        [Output(DisplayName = "Range", DefaultColor = Colors.Red, PaneName = "Pane2")]
+        [Output(DisplayName = "Range", Target = OutputTargets.Window2, DefaultColor = Colors.Red)]
         public DataSeries S4 { get; set; }
+
+        [Output(DisplayName = "Volume", Target = OutputTargets.Window3, DefaultColor = Colors.DarkGoldenrod)]
+        public DataSeries S5 { get; set; }
+
+        [Output(DisplayName = "Typical", Target = OutputTargets.Window4, DefaultColor = Colors.Magenta)]
+        public DataSeries S6 { get; set; }
 
 
         protected override void Calculate()
@@ -29,6 +35,8 @@ namespace TickTrader.Algo.TestCollection.Indicators
             S2[0] = Bars[0].Low;
             S3[0] = Bars.Move[0];
             S4[0] = Bars.Range[0];
+            S5[0] = Bars.Volume[0];
+            S6[0] = Bars.Typical[0];
         }
     }
 }
