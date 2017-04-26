@@ -20,6 +20,9 @@ namespace TickTrader.BotTerminal
 {
     internal class TradeHistoryViewModel : PropertyChangedBase
     {
+        private const int CleanUpDelay = 200;
+
+
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public enum TimePeriod { All, LastHour, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
@@ -33,8 +36,9 @@ namespace TickTrader.BotTerminal
         private TimePeriod _period;
         private TradeDirection _tradeDirectionFilter;
 
-        private CancellationTokenSource cancelLoadSrc;
-        private ActionBlock<TransactionReport> uiUpdater;
+        private CancellationTokenSource _cancelLoadSrc, _cancelCleanSrc;
+        private ActionBlock<TransactionReport> _uiUpdater;
+        private ActionBlock<string> _cleanUpdater;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient)
         {
@@ -80,6 +84,7 @@ namespace TickTrader.BotTerminal
                 {
                     _period = value;
                     NotifyOfPropertyChange(nameof(Period));
+                    NotifyOfPropertyChange(nameof(CanEditPeriod));
                     UpdateDateTimePeriod();
                     RefreshHistory();
                 }
@@ -95,9 +100,7 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _from = value;
-                _period = TimePeriod.Custom;
                 NotifyOfPropertyChange(nameof(From));
-                NotifyOfPropertyChange(nameof(Period));
                 RefreshHistory();
             }
         }
@@ -111,9 +114,7 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _to = value;
-                _period = TimePeriod.Custom;
                 NotifyOfPropertyChange(nameof(To));
-                NotifyOfPropertyChange(nameof(Period));
                 RefreshHistory();
             }
         }
@@ -132,29 +133,33 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(DownloadObserver));
             }
         }
+
+        public bool CanEditPeriod => Period == TimePeriod.Custom;
         #endregion
 
         private async void RefreshHistory()
         {
+            CleanUpHistory();
+
             var currentSrc = new CancellationTokenSource();
 
             try
             {
-                if (cancelLoadSrc != null)
-                    cancelLoadSrc.Cancel();
+                if (_cancelLoadSrc != null)
+                    _cancelLoadSrc.Cancel();
 
-                cancelLoadSrc = currentSrc;
+                _cancelLoadSrc = currentSrc;
 
-                if (uiUpdater != null)
+                if (_uiUpdater != null)
                 {
-                    uiUpdater.Complete();
-                    await uiUpdater.Completion;
+                    _uiUpdater.Complete();
+                    await _uiUpdater.Completion;
                 }
             }
             catch (TaskCanceledException) { }
             catch (Exception ex)
             {
-                logger.Error(ex, "Failed to stop background task!");
+                logger.Error(ex, "Failed to stop background load task!");
             }
 
             if (currentSrc.IsCancellationRequested)
@@ -174,7 +179,7 @@ namespace TickTrader.BotTerminal
                 var currentUpdater = new ActionBlock<TransactionReport>(r => AddToList(r), options);
                 currentUpdater.Post(null);
 
-                uiUpdater = currentUpdater;
+                _uiUpdater = currentUpdater;
 
                 var downloadTask = _tradeClient.TradeHistory.DownloadingHistoryAsync(
                     From.ToUniversalTime(), To.ToUniversalTime(), currentSrc.Token,
@@ -254,8 +259,11 @@ namespace TickTrader.BotTerminal
                     break;
             }
 
-            NotifyOfPropertyChange(nameof(From));
-            NotifyOfPropertyChange(nameof(To));
+            if (!CanEditPeriod)
+            {
+                NotifyOfPropertyChange(nameof(From));
+                NotifyOfPropertyChange(nameof(To));
+            }
         }
 
         private void RefreshCollection()
@@ -286,7 +294,7 @@ namespace TickTrader.BotTerminal
 
         private void TradeTransactionReport(TransactionReport tradeTransaction)
         {
-            uiUpdater.Post(tradeTransaction);
+            _uiUpdater.Post(tradeTransaction);
         }
 
         private void AccountTypeChanged()
@@ -298,6 +306,95 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(IsCachAccount));
             NotifyOfPropertyChange(nameof(IsGrossAccount));
             NotifyOfPropertyChange(nameof(IsNetAccount));
+        }
+
+        private async void CleanUpHistory()
+        {
+            var currentSrc = new CancellationTokenSource();
+
+            try
+            {
+                if (_cancelCleanSrc != null)
+                    _cancelCleanSrc.Cancel();
+
+                _cancelCleanSrc = currentSrc;
+
+                if (_cleanUpdater != null)
+                {
+                    _cleanUpdater.Complete();
+                    await _cleanUpdater.Completion;
+                }
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to stop background clean task!");
+            }
+
+            if (currentSrc.IsCancellationRequested)
+                return;
+
+            try
+            {
+                var options = new ExecutionDataflowBlockOptions()
+                {
+                    TaskScheduler = DataflowHelper.UiDispatcherBacground,
+                    MaxDegreeOfParallelism = 5,
+                    MaxMessagesPerTask = 10,
+                    BoundedCapacity = 2000,
+                    CancellationToken = currentSrc.Token
+                };
+
+                var currentUpdater = new ActionBlock<string>(id => RemoveFromList(id), options);
+
+                _cleanUpdater = currentUpdater;
+
+                var cleanTask = CleanUpHistoryAsync(currentSrc.Token, r => currentUpdater.SendAsync(r, currentSrc.Token).Wait());
+
+                await cleanTask;
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to clean trade history!");
+            }
+        }
+
+        private void RemoveFromList(string tradeTransactionId)
+        {
+            try
+            {
+                if (_tradesList.ContainsKey(tradeTransactionId))
+                    _tradesList.Remove(tradeTransactionId);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        public Task CleanUpHistoryAsync(CancellationToken token, Action<string> reportHandler)
+        {
+            return Task.Run(async () =>
+            {
+                token.ThrowIfCancellationRequested();
+
+                while (true)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    UpdateDateTimePeriod();
+
+                    var toDeleteList = _tradesList.Where(r => !r.CloseTime.ToLocalTime().Between(From, To)).Select(r => r.UniqueId).ToList();
+
+                    foreach (var reportId in toDeleteList)
+                    {
+                        reportHandler(reportId);
+                    }
+
+                    await Task.Delay(CleanUpDelay);
+                }
+            }, token);
         }
     }
 }
