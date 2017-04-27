@@ -1,52 +1,66 @@
 ﻿<div *ngIf="Setup">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="form-group">
-                <label>Instance ID</label>
-                <input [(ngModel)]="Setup.InstanceId" type="text" class="form-control" />
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label>Account</label>
-                <select [(ngModel)]="Setup.Account" (ngModelChange)="OnAccountChanged($event)" class="form-control">
-                    <option *ngFor="let Account of Accounts" [ngValue]="Account">{{Account.Login}}-{{Account.Server}}</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label>Symbol</label>
-                <select [(ngModel)]="Setup.Symbol" class="form-control">
-                    <option *ngFor="let Symbol of (Symbols | orderBy)" [ngValue]="Symbol">{{Symbol}}</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div *ngFor="let Parameter of Setup.Parameters" [ngSwitch]="Parameter.Descriptor.DataType" class="col-md-6">
-            <div class="form-group">
-                <label>{{Parameter.Descriptor.DisplayName}}</label>
-                <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" />
-                <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [(ngModel)]="Parameter.Value" />
-                <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [(ngModel)]="Parameter.Value" />
-                <div *ngSwitchCase="ParameterDataType.File" class="input-group">
-                    <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
-                    <input *ngIf="!Parameter.Value" type="text" class="form-control" placeholder="Select the file" readonly>
-                    <label class="input-group-btn">
-                        <span class="btn btn-primary btn-fill">
-                            <i class="fa fa-folder-o"></i>
-                            <input [(fileModel)]="Parameter.Value"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
-                        </span>
-                    </label>
+    <div [formGroup]="BotSetupForm">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Instance ID</label>
+                    <input formControlName="InstanceId" type="text" class="form-control" />
+                    <div *ngIf="BotSetupForm.controls.InstanceId.invalid && BotSetupForm.controls.InstanceId.touched" class="alert alert-danger">
+                        <span>{{ 'FieldIsRequired' | resx: ['InstanceId'] }}</span>
+                    </div>
                 </div>
-                <select *ngSwitchCase="ParameterDataType.Enum" [(ngModel)]="Parameter.Value" class="form-control">
-                    <option *ngFor="let EnumItem of (Parameter.Descriptor.EnumValues | orderBy)" [ngValue]="EnumItem">{{EnumItem}}</option>
-                </select>
-                <input *ngSwitchDefault type="text" readonly value="Unsupported property type" class="form-control"/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Account</label>
+                    <select formControlName="Account" (ngModelChange)="OnAccountChanged($event)" class="form-control">
+                        <option *ngFor="let Account of Accounts" [ngValue]="Account">{{Account.Login}}-{{Account.Server}}</option>
+                    </select>
+                    <div *ngIf="BotSetupForm.controls.Account.invalid && BotSetupForm.controls.Account.touched" class="alert alert-danger">
+                        <span>{{ 'FieldIsRequired' | resx: ['Account'] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Symbol</label>
+                    <select formControlName="Symbol" class="form-control">
+                        <option *ngFor="let Symbol of (Symbols | orderBy)" [ngValue]="Symbol">{{Symbol}}</option>
+                    </select>
+                    <div *ngIf="BotSetupForm.controls.Symbol.invalid && BotSetupForm.controls.Symbol.touched" class="alert alert-danger">
+                        <span>{{ 'FieldIsRequired' | resx: ['Symbol'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div *ngFor="let Parameter of Setup.Parameters" [ngSwitch]="Parameter.Descriptor.DataType" class="col-md-6">
+                <div class="form-group">
+                    <label>{{Parameter.Descriptor.DisplayName}}</label>
+                    <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [formControlName]="Parameter.Descriptor.Id" />
+                    <!--<div *ngSwitchCase="ParameterDataType.File" class="input-group">
+                        <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                        <input *ngIf="!Parameter.Value" type="text" class="form-control" placeholder="Select the file" readonly>
+                        <label class="input-group-btn">
+                            <span class="btn btn-primary btn-fill">
+                                <i class="fa fa-folder-o"></i>
+                                <input [(fileModel)]="Parameter.Value"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
+                            </span>
+                        </label>
+                    </div>-->
+                    <select *ngSwitchCase="ParameterDataType.Enum" [formControlName]="Parameter.Descriptor.Id" class="form-control">
+                        <option *ngFor="let EnumItem of (Parameter.Descriptor.EnumValues | orderBy)" [ngValue]="EnumItem">{{EnumItem}}</option>
+                    </select>
+                    <input *ngSwitchDefault type="text" readonly value="Unsupported property type" class="form-control" />
+                    <div *ngIf="BotSetupForm.controls[Parameter.Descriptor.Id].invalid && BotSetupForm.controls[Parameter.Descriptor.Id].touched" class="alert alert-danger">
+                        <span>{{ 'FieldIsRequired' | resx: Parameter.Descriptor.DisplayName }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

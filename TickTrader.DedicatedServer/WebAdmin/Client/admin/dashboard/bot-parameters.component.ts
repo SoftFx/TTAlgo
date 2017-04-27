@@ -1,5 +1,6 @@
 ﻿import { Input, Component } from '@angular/core';
 import { PluginModel, ParameterDataTypes, AccountModel, PluginSetupModel } from '../../models/index';
+import { FormGroup } from '@angular/forms';
 import { ApiService } from '../../services/index';
 
 @Component({
@@ -14,6 +15,7 @@ export class BotParametersComponent {
 
     @Input() Setup: PluginSetupModel;
     @Input() Accounts: AccountModel[];
+    @Input() BotSetupForm: FormGroup;
 
     constructor(private _api: ApiService) { }
 

@@ -22,8 +22,6 @@ export class PluginSetupModel {
             Account: this.Account,
             Symbol: this.Symbol,
             Parameters: this.Parameters.map(p => this.PayloadParameter(p))
-
-
         }
     }
     private PayloadParameter(parameter: SetupParameter) {

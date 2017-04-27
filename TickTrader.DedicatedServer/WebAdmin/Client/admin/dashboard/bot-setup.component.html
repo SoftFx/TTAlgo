@@ -11,12 +11,15 @@
             </div>
         </div>
     </div>
-    <bot-parameters-cmp [Setup]="Setup" [Accounts]="Accounts"></bot-parameters-cmp>
 
-    <div>
-        <div class="pull-right">
-            <button [class.disabled]="!Setup" (click)="addBot(bot)" class="btn btn-primary" type="submit">Add</button>
-            <button [class.disabled]="!Setup" (click)="cancel()" class="btn btn-primary" type="submit">Cancel</button>
+    <form [formGroup]="BotSetupForm" novalidate>
+        <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm" [Accounts]="Accounts"></bot-parameters-cmp>
+
+        <div>
+            <div class="pull-right">
+                <button [disabled]="!Setup || BotSetupForm.invalid" (click)="addBot(bot)" class="btn btn-primary" type="submit">Add</button>
+                <button [class.disabled]="!Setup" (click)="cancel()" class="btn btn-primary" type="submit">Cancel</button>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
