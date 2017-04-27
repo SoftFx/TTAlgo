@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Market Order Per Tick Bot")]
+    [TradeBot(DisplayName = "[T] Market Order Per Tick Bot", Version = "1.0", Category = "Test Orders",
+        Description = "Open market order on every tick of current chart symbol with specified volume and side")]
     public class OnTickBot : TradeBot
     {
         [Parameter(DefaultValue = 0.1D)]
@@ -18,7 +14,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            this.Symbol.Subscribe();
+            Symbol.Subscribe();
         }
 
         protected override void OnQuote(Quote quote)

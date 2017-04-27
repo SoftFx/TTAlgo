@@ -2,7 +2,8 @@
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Get Currency Info Bot")]
+    [TradeBot(DisplayName = "[T] Get Currency Info Bot", Version = "1.0", Category = "Test Plugin Info",
+        Description = "Prints info about currency with specified code to bot status window")]
     public class GetCurrencyInfoBot : TradeBotCommon
     {
         [Parameter(DisplayName = "Currency Code", DefaultValue = "USD")]

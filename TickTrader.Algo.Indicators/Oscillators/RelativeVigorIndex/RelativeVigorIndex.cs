@@ -4,7 +4,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 {
-    [Indicator(Category = "Oscillators", DisplayName = "Oscillators/Relative Vigor Index")]
+    [Indicator(Category = "Oscillators", DisplayName = "Relative Vigor Index", Version = "1.0")]
     public class RelativeVigorIndex : Indicator
     {
         private MovingAverage _moveTriMa, _rangeTriMa;

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Close All Positions Script")]
+    [TradeBot(DisplayName = "[T] Close All Positions Script", Version = "1.0", Category = "Test Orders",
+        Description = "Closes all positions for gross accounts")]
     public class CloseAll : TradeBot
     {
         protected async override void OnStart()

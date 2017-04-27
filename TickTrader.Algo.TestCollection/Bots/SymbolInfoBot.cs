@@ -2,7 +2,8 @@
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Symbol Info Bot")]
+    [TradeBot(DisplayName = "[T] Symbol Info Bot", Version = "2.0", Category = "Test Plugin Info",
+        Description = "Prints info about current chart symbol and all symbols plugin can see to bot status window")]
     public class SymbolInfoBot : TradeBotCommon
     {
         protected override void Init()

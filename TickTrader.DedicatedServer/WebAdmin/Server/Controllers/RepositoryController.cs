@@ -51,7 +51,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     catch (DuplicatePackageException dpe)
                     {
                         _logger.LogError(dpe.Message);
-                        return BadRequest(new { Code = dpe.Code, Message = dpe.Message });
+                        return BadRequest(dpe.ToBadResult());
                     }
                 }
             }

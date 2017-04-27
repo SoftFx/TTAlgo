@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Trend/Bollinger Bands")]
+    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.0")]
     public class BollingerBands : Indicator
     {
         private StandardDeviation.StandardDeviation _stdDev;

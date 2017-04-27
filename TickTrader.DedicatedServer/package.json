@@ -36,7 +36,8 @@
     "rxjs": "5.0.0-beta.12",
     "zone.js": "^0.6.26",
     "jquery": "3.1.1",
-    "signalr": "2.2.1"
+    "signalr": "2.2.1",
+    "string-format": "0.5.0"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.34",

@@ -286,6 +286,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##About##.
+        /// </summary>
+        internal static string Menu_About {
+            get {
+                return ResourceManager.GetString("Menu_About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##BotTrader##.
         /// </summary>
         internal static string Menu_BotTrader {
@@ -300,6 +309,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         internal static string Menu_ExitBotTrader {
             get {
                 return ResourceManager.GetString("Menu_ExitBotTrader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Help##.
+        /// </summary>
+        internal static string Menu_Help {
+            get {
+                return ResourceManager.GetString("Menu_Help", resourceCulture);
             }
         }
         

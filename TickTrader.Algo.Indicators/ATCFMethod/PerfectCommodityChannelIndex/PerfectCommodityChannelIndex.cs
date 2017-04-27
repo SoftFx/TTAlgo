@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Perfect Commodity Channel Index")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Perfect Commodity Channel Index", Version = "1.0")]
     public class PerfectCommodityChannelIndex : Indicator
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;

@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Delay Bot")]
+    [TradeBot(DisplayName = "[T] Delay Bot", Version = "1.0", Category = "Test Plugin Info",
+        Description = "Subscribes to a number of additional symbols (default 0, current chart symbol is subscribed automatically). " +
+                      "Then waits for a quote and delays execution for configured number of milliseconds")]
     public class DelayBot : TradeBot
     {
         private Dictionary<string, Quote> lastQuotes = new Dictionary<string, Quote>();

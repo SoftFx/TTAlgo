@@ -12,7 +12,10 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
+<<<<<<< HEAD
 using TickTrader.DedicatedServer.DS.Info;
+=======
+>>>>>>> remotes/origin/master
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -108,6 +111,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (SyncObj)
             {
+                Validate(accountId.Login, accountId.Server, password);
+
                 var existing = FindAccount(accountId);
                 if (existing != null)
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
@@ -119,6 +124,14 @@ namespace TickTrader.DedicatedServer.DS.Models
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
                     Save();
                 }
+            }
+        }
+
+        private void Validate(string login, string server, string password)
+        {
+            if(string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
+            {
+                throw new InvalidAccountException("Login, password and server are required");
             }
         }
 
@@ -143,6 +156,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (SyncObj)
             {
+                Validate(key.Login, key.Server, password);
+
                 var acc = GetAccountOrThrow(key);
                 acc.ChangePassword(password);
             }
@@ -207,6 +222,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             Save();
             BotChanged?.Invoke(bot, changeAction);
         }
+<<<<<<< HEAD
 
         private void Acc_BotValidation(TradeBotModel bot)
         {
@@ -214,6 +230,15 @@ namespace TickTrader.DedicatedServer.DS.Models
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
 
+=======
+
+        private void Acc_BotValidation(TradeBotModel bot)
+        {
+            if (_allBots.ContainsKey(bot.Id))
+                throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
+        }
+
+>>>>>>> remotes/origin/master
         private void Acc_BotInitialized(TradeBotModel bot)
         {
             _allBots.Add(bot.Id, bot);

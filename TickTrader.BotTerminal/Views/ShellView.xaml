@@ -36,6 +36,9 @@
         <MenuItem Header="{l:Resx Menu_Tools}">
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
         </MenuItem>
+        <MenuItem Header="{l:Resx Menu_Help}">
+            <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>
+        </MenuItem>
     </Menu>
 
     <!-- Old Template -->

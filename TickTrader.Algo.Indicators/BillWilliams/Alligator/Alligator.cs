@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 {
-    [Indicator(IsOverlay = true, Category = "Bill Williams", DisplayName = "Bill Williams/Alligator")]
+    [Indicator(IsOverlay = true, Category = "Bill Williams", DisplayName = "Alligator", Version = "1.0")]
     public class Alligator : Indicator
     {
         private MovingAverage _jaws, _teeth, _lips;

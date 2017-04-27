@@ -4,7 +4,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 {
-    [Indicator(Category = "Volumes", DisplayName = "Volumes/Money Flow Index")]
+    [Indicator(Category = "Volumes", DisplayName = "Money Flow Index", Version = "1.0")]
     public class MoneyFlowIndex : Indicator
     {
         private IMA _positiveMa, _negativeMa;

@@ -1,4 +1,4 @@
-<project name="TickTrader server" default="help">
+<project name="TickTrader Algo" default="help">
 
   <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
 
@@ -22,11 +22,15 @@
   </target>
 
   <target name="Build" >
-	<property name="Build.Target" value="Publish" />
+	  <property name="Build.Target" value="Publish" />
     <call target="CleanUpFolder" />
+    <property name="AssemblyInfoFile" value="${SourcesDir}\TickTrader.BotTerminal\Properties\AssemblyInfo.cs" />
+    <call target="ReplaceBuild" />
     <call target="RunMSBuild" />
-	<call target="CreateBinPackage" />
+	  <call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
+    <property name="Package.ProjectFolder" value="TickTrader.Algo.Indicators" />
+    <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.TestCollection" />
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
@@ -61,10 +65,10 @@
       </exec>
     </if>
 
-	<exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}">
+    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}">
       <arg value="restore" />
-	  <arg value="Algo.sln" />
-	  <arg value="-NoCache" />
+      <arg value="Algo.sln" />
+      <arg value="-NoCache" />
     </exec>
 
     <exec program="${MSBuildDir}msbuild.exe" >
@@ -102,6 +106,11 @@
       </fileset>
     </delete>
     <delete>
+      <fileset basedir="${OutpuFolder}">
+        <include name="*.ttalgo" />
+      </fileset>
+    </delete>
+    <delete>
       <fileset basedir="${PublishFolder}">
         <include name="**/*" />
       </fileset>
@@ -120,7 +129,7 @@
       </fileset>
     </zip>
 
-	<property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
+	  <property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
     <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
 
     <zip zipfile="${CoreDestArchive}">
@@ -130,17 +139,7 @@
       </fileset>
     </zip>
 
-	<property name="IndicatorsBinDir" value="${SourcesDir}TickTrader.Algo.Indicators\bin\${Configuration}" />
-    <property name="IndicatorsDestArchive" value="${OutpuFolder}Indicators ${Build}.zip" />
-
-    <zip zipfile="${IndicatorsDestArchive}">
-      <fileset basedir="${IndicatorsBinDir}">
-        <include name ="*.*" />
-        <include name ="**/*" />
-      </fileset>
-    </zip>
-
-	<property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
+	  <property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
     <property name="ServerDestArchive" value="${OutpuFolder}DedicatedServer ${Build}.zip" />
 
     <zip zipfile="${ServerDestArchive}">
@@ -173,6 +172,25 @@
       <arg value="workspace=${SourcesDir}${SolutionFile}" />
       <arg value="output=${OutpuFolder}" />
     </exec>
+  </target>
+
+  <target name="ReplaceBuild">
+    <property
+        name="cs.file"
+        value="${AssemblyInfoFile}" />
+
+    <loadfile file="${cs.file}" property="cs.file.content" encoding="UTF-8"/>
+    <attrib file="${cs.file}" readonly="false"/>
+    <regex
+      options="Singleline"
+      input="${cs.file.content}"
+      pattern="(?'BEFORE1'.*AssemblyVersion.*)(?'BUILD1'\d+\.\d+\.\d+\.\d+)(?'AFTER1'.*)(?'BEFORE2'AssemblyFileVersion.*)(?'BUILD2'\d+\.\d+\.\d+\.\d+)(?'AFTER2'.*)" />
+    <echo
+      encoding="UTF-8"
+      file="${cs.file}"
+      message="${BEFORE1}${Build}${AFTER1}${BEFORE2}${Build}${AFTER2}"
+      append="false" />
+    <attrib file="${cs.file}" readonly="true"/>
   </target>
 
 </project>

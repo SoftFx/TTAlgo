@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Indicators.Volumes.AccumulationDistribution
 {
-    [Indicator(Category = "Volumes", DisplayName = "Volumes/Accumulation/Distribution")]
+    [Indicator(Category = "Volumes", DisplayName = "Accumulation/Distribution", Version = "1.0")]
     public class AccumulationDistribution : Indicator
     {
         [Input]

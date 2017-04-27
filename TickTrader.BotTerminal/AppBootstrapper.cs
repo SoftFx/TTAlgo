@@ -90,6 +90,8 @@ namespace TickTrader.BotTerminal
 
         private void ConfigurateLogger()
         {
+            ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("botName", typeof(BotNameLayoutRenderer));
+
             var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message} ${exception:format=tostring}" };
 
             var logTarget = new FileTarget()
@@ -110,9 +112,9 @@ namespace TickTrader.BotTerminal
 
             var botInfoTarget = new FileTarget()
             {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}/Log.txt"),
+                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Log.txt"),
                 Layout = "${longdate} | ${message}",
-                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}"), "Archives"), "Log-{#}.zip"),
+                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}"), "Archives"), "Log-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true
@@ -120,17 +122,17 @@ namespace TickTrader.BotTerminal
 
             var botErrorTarget = new FileTarget()
             {
-                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}/Error.txt"),
+                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Error.txt"),
                 Layout = "${longdate} | ${message}",
-                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${logger:shortName=true}"), "Archives"), "Error-{#}.zip"),
+                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}"), "Archives"), "Error-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true
             };
 
             var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
-            var ruleForBotInfoTarget = new LoggingRule(string.Concat(nameof(BotJournal), ".*"), LogLevel.Debug, botInfoTarget) { Final = true };
-            var ruleForBotErrorTarget = new LoggingRule(string.Concat(nameof(BotJournal), ".*"), LogLevel.Error, botErrorTarget);
+            var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoTarget) { Final = true };
+            var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorTarget);
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
             ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);

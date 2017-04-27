@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { Injectable, NgZone } from '@angular/core';
 import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from "rxjs/Observable";
@@ -25,8 +25,6 @@ export class FeedService {
     changeBotState: Observable<TradeBotStateModel>;
 
     private connectionStateSubject = new Subject<ConnectionStatus>();
-
-
     private addPackageSubject = new Subject<PackageModel>();
     private deletePackageSubject = new Subject<string>();
     private addAccountSubject = new Subject<AccountModel>();
@@ -36,7 +34,7 @@ export class FeedService {
     private deleteBotSubject = new Subject<string>();
     private updateBotSubject = new Subject<TradeBotModel>();
 
-    constructor(private _http: Http) {
+    constructor(private _zone: NgZone) {
         this.connectionState = this.connectionStateSubject.asObservable();
 
         this.deletePackage = this.deletePackageSubject.asObservable();
@@ -70,7 +68,7 @@ export class FeedService {
 
         $.connection.hub.start()
             .done(response => this.setConnectionState(ConnectionStatus.Connected))
-            .fail(error => this.connectionStateSubject.error(error));
+            .fail(error =>  this._zone.run(() => this.connectionStateSubject.error(error)));
 
         return this.connectionState;
     }
@@ -83,48 +81,66 @@ export class FeedService {
     }
 
     private setConnectionState(connectionState: ConnectionStatus) {
-        console.log('connection state changed to: ' + connectionState);
-        this.currentState = connectionState;
-        this.connectionStateSubject.next(connectionState);
+        this._zone.run(() => {
+            console.log('connection state changed to: ' + connectionState);
+            this.currentState = connectionState;
+            this.connectionStateSubject.next(connectionState);
+        });
     }
 
     private onAddPackage(algoPackage: PackageModel) {
-        console.info('[FeedService] onAddPackage', algoPackage);
-        this.addPackageSubject.next(algoPackage);
+        this._zone.run(() => {
+            console.info('[FeedService] onAddPackage', algoPackage);
+            this.addPackageSubject.next(algoPackage);
+        });
     }
 
     private onDeletePackage(name: string) {
-        console.info('[FeedService] onDeletePackage', name);
-        this.deletePackageSubject.next(name);
+        this._zone.run(() => {
+            console.info('[FeedService] onDeletePackage', name);
+            this.deletePackageSubject.next(name);
+        });
     }
 
     private onAddAccount(account: AccountModel) {
-        console.info('[FeedService] onAddAccount', account);
-        this.addAccountSubject.next(account);
+        this._zone.run(() => {
+            console.info('[FeedService] onAddAccount', account);
+            this.addAccountSubject.next(account);
+        });
     }
 
     private onDeleteAccount(account: AccountModel) {
-        console.info('[FeedService] onDeleteAccount', account);
-        this.deleteAccountSubject.next(account);
+        this._zone.run(() => {
+            console.info('[FeedService] onDeleteAccount', account);
+            this.deleteAccountSubject.next(account);
+        });
     }
 
     private onChangeBotState(botState: TradeBotStateModel) {
-        console.info('[FeedService] onChangeBotState', botState);
-        this.changeBotStateSubject.next(botState);
+        this._zone.run(() => {
+            console.info('[FeedService] onChangeBotState', botState);
+            this.changeBotStateSubject.next(botState);
+        });
     }
 
     private onBotAdded(bot: TradeBotModel) {
-        console.info('[FeedService] onBotAdded', bot);
-        this.addBotSubject.next(bot);
+        this._zone.run(() => {
+            console.info('[FeedService] onBotAdded', bot);
+            this.addBotSubject.next(bot);
+        });
     }
 
     private onBotDeleted(botId: string) {
-        console.info('[FeedService] onBotDeleted', botId);
-        this.deleteBotSubject.next(botId);
+        this._zone.run(() => {
+            console.info('[FeedService] onBotDeleted', botId);
+            this.deleteBotSubject.next(botId);
+        });
     }
 
     private onBotUpdated(bot: TradeBotModel) {
-        console.info('[FeedService] onBotUpdated', bot);
-        this.updateBotSubject.next(bot);
+        this._zone.run(() => {
+            console.info('[FeedService] onBotUpdated', bot);
+            this.updateBotSubject.next(bot);
+        });
     }
 }

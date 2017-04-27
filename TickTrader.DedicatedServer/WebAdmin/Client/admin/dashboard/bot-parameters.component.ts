@@ -3,12 +3,12 @@ import { PluginModel, ParameterDataTypes, AccountModel, PluginSetupModel } from 
 import { ApiService } from '../../services/index';
 
 @Component({
-    selector: 'plugin-setup-cmp',
-    template: require('./plugin-setup.component.html'),
+    selector: 'bot-parameters-cmp',
+    template: require('./bot-parameters.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class PluginSetupComponent {
+export class BotParametersComponent {
     public ParameterDataType = ParameterDataTypes;
     public Symbols: string[];
 

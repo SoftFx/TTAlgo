@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "AT&CF Method/Fast Trend Line Momentum")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Fast Trend Line Momentum", Version = "1.0")]
     public class FastTrendLineMomentum : Indicator
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;

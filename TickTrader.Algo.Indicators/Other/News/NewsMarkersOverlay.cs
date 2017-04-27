@@ -12,11 +12,11 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Indicators.Other.News
 {
-    [Indicator(Category = "Other", DisplayName = "Other/News Marker", IsOverlay = true)]
+    [Indicator(IsOverlay = true, Category = "Other", DisplayName = "News Marker", Version = "1.0")]
     public class NewsMarkersOverlay : NewsMarkersBase
     {
         [Parameter(DefaultValue = "", DisplayName = "Additional Currencies")]
-        public string Currencies { get; set; }
+        public string CurrencyCodes { get; set; }
 
         public override void InitializeNewsProviders()
         {
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Indicators.Other.News
             currenciesList.Add(Symbol.CounterCurrency);
 
             currenciesList.AddRange(
-                Currencies.Split(',')
+                CurrencyCodes.Split(',')
                 .Select(s => s.Trim())
                 .Where(s => !string.IsNullOrWhiteSpace(s)));
 

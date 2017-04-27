@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceSlowTrendLine
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "AT&CF Method/Reference Slow Trend Line")]
+    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "Reference Slow Trend Line", Version = "1.0")]
     public class ReferenceSlowTrendLine : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
