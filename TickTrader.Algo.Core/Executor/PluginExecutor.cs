@@ -339,7 +339,7 @@ namespace TickTrader.Algo.Core
             lock (_sync)
             {
                 ThrowIfRunning();
-                ThrowIfAlreadyHasBufferStrategy();
+                //ThrowIfAlreadyHasBufferStrategy();
                 this.bStrategy = new SlidingBufferStrategy(size);
             }
         }
@@ -349,7 +349,7 @@ namespace TickTrader.Algo.Core
             lock (_sync)
             {
                 ThrowIfRunning();
-                ThrowIfAlreadyHasBufferStrategy();
+                //ThrowIfAlreadyHasBufferStrategy();
                 this.bStrategy = new TimeSpanStrategy(from, to);
             }
         }
@@ -411,11 +411,11 @@ namespace TickTrader.Algo.Core
                 throw new InvalidOperationException("Feed has beed already initialized!");
         }
 
-        private void ThrowIfAlreadyHasBufferStrategy()
-        {
-            if (bStrategy != null)
-                throw new InvalidOperationException("Buffering strategy has beed already initialized!");
-        }
+        //private void ThrowIfAlreadyHasBufferStrategy()
+        //{
+        //    if (bStrategy != null)
+        //        throw new InvalidOperationException("Buffering strategy has beed already initialized!");
+        //}
 
         private void ChangeState(States newState)
         {
