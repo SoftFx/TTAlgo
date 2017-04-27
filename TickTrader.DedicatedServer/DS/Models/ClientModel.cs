@@ -16,10 +16,7 @@ using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
-<<<<<<< HEAD
 using TickTrader.DedicatedServer.DS.Info;
-=======
->>>>>>> remotes/origin/master
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -28,19 +25,12 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _sync;
         private ILogger _log;
-        //private object _syncEvents = new object();
-<<<<<<< HEAD
         private CancellationTokenSource _connectCancellation;
         private CancellationTokenSource _requestCancellation;
-        //private TaskCompletionSource<ConnectionErrorCodes> testRequest;
         private List<Task> _requests;
-        private ClientCore _core;
         private ConnectionErrorCodes _lastErrorCode;
-=======
         private CancellationTokenSource connectCancellation;
-        private TaskCompletionSource<ConnectionErrorCodes> testRequest;
         private ClientCore _core;
->>>>>>> remotes/origin/master
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
@@ -62,12 +52,9 @@ namespace TickTrader.DedicatedServer.DS.Models
             _sync = syncObj;
             _packageProvider = packageProvider;
             _log = loggerFactory.CreateLogger<ClientModel>();
-<<<<<<< HEAD
             _requests = new List<Task>();
             _requestCancellation = new CancellationTokenSource();
 
-=======
->>>>>>> remotes/origin/master
             var loggerAdapter = new LoggerAdapter(loggerFactory.CreateLogger<ConnectionModel>());
 
             if (_bots == null)

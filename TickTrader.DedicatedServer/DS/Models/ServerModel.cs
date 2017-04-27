@@ -12,10 +12,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
-<<<<<<< HEAD
 using TickTrader.DedicatedServer.DS.Info;
-=======
->>>>>>> remotes/origin/master
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -222,7 +219,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             Save();
             BotChanged?.Invoke(bot, changeAction);
         }
-<<<<<<< HEAD
 
         private void Acc_BotValidation(TradeBotModel bot)
         {
@@ -230,15 +226,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
 
-=======
-
-        private void Acc_BotValidation(TradeBotModel bot)
-        {
-            if (_allBots.ContainsKey(bot.Id))
-                throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
-        }
-
->>>>>>> remotes/origin/master
         private void Acc_BotInitialized(TradeBotModel bot)
         {
             _allBots.Add(bot.Id, bot);
