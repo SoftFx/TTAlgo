@@ -54,7 +54,7 @@ namespace TickTrader.DedicatedServer.DS
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
-    public enum BotStates { Offline, Started, Initializing, Faulted, Online, Stopping, Broken }
+    public enum BotStates { Offline, Started, Initializing, Faulted, Online, Stopping }
 
     public interface ITradeBot
     {

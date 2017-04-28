@@ -9,31 +9,31 @@ using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 using TickTrader.Common.Business;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.BotTerminal
 {
-    public abstract class AccountCalculatorModel
+    internal abstract class AccountCalculatorModel
     {
-        private ClientCore _client;
-        private IFeedSubscription _subscription;
+        private TraderClientModel feed;
+        private IFeedSubscription subscription;
 
-        private AccountCalculatorModel(AccountModel acc, ClientCore client)
+        private AccountCalculatorModel(AccountModel acc, TraderClientModel feed)
         {
-            _client = client;
-            Account = new AccountAdapter(acc);
-            MarketModel = new MarketState(NettingCalculationTypes.OneByOne);
+            this.feed = feed;
+            this.Account = new AccountAdapter(acc);
+            this.MarketModel = new MarketState(NettingCalculationTypes.OneByOne);
 
-            MarketModel.Set(client.Symbols.Snapshot.Values);
-            MarketModel.Set(client.Currencies.Values.Select(c => new CurrencyInfoAdapter(c)));
+            MarketModel.Set(feed.Symbols.Snapshot.Values);
+            MarketModel.Set(feed.Currencies.Values.Select(c => new CurrencyInfoAdapter(c)));
 
-            _subscription = client.Distributor.SubscribeAll();
+            subscription = feed.Distributor.SubscribeAll();
 
-            foreach (var smb in client.Symbols.Snapshot.Values)
+            foreach (var smb in feed.Symbols.Snapshot.Values)
             {
                 if (smb.LastQuote != null)
                     MarketModel.Update(new RateAdapter(smb.LastQuote));
             }
 
-            _subscription.NewQuote += Symbols_RateUpdated;
+            subscription.NewQuote += Symbols_RateUpdated;
         }
 
         protected AccountAdapter Account { get; private set; }
@@ -54,18 +54,18 @@ namespace TickTrader.Algo.Common.Model
             Updated?.Invoke(this);
         }
 
-        public static AccountCalculatorModel Create(AccountModel acc, ClientCore client)
+        public static AccountCalculatorModel Create(AccountModel acc, TraderClientModel feed)
         {
             if (acc.Type == SoftFX.Extended.AccountType.Cash)
-                return new CashCalc(acc, client);
+                return new CashCalc(acc, feed);
             else
-                return new MarginCalc(acc, client);
+                return new MarginCalc(acc, feed);
         }
 
         public virtual void Dispose()
         {
             Account.Dispose();
-            _subscription.Dispose();
+            subscription.Dispose();
         }
 
         private void Symbols_RateUpdated(SoftFX.Extended.Quote quote)
@@ -212,8 +212,8 @@ namespace TickTrader.Algo.Common.Model
         {
             private AccCalcAdapter calc;
 
-            public MarginCalc(AccountModel acc, ClientCore client)
-                : base(acc, client)
+            public MarginCalc(AccountModel acc, TraderClientModel feed)
+                : base(acc, feed)
             {
                 calc = new AccCalcAdapter(Account,  MarketModel);
                 calc.Updated = () =>
@@ -237,8 +237,8 @@ namespace TickTrader.Algo.Common.Model
         {
             private CashAccountCalculator calc;
 
-            public CashCalc(AccountModel acc, ClientCore client)
-                : base(acc, client)
+            public CashCalc(AccountModel acc, TraderClientModel feed)
+                : base(acc, feed)
             {
                 this.calc = new CashAccountCalculator(Account, MarketModel);
             }

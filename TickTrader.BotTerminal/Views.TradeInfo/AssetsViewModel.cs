@@ -7,14 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
-using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
     class AssetsViewModel : AccountBasedViewModel
     {
-        public AssetsViewModel(AccountModel model, IDictionary<string, CurrencyInfo> currencies, ConnectionModel connection)
-            : base(model, connection)
+        public AssetsViewModel(AccountModel model, IDictionary<string, CurrencyInfo> currencies) : base(model)
         {
             Assets = model.Assets
                 .OrderBy((c, a) => c)

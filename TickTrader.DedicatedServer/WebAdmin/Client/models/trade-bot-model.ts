@@ -35,4 +35,4 @@ export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
     }
 }
 
-export enum TradeBotStates { Offline, Starting, Started, Initializing, Faulted, Online, Stopping }
+export enum TradeBotStates { Offline, Started, Initializing, Faulted, Online, Stopping }

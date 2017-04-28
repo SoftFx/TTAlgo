@@ -16,7 +16,6 @@ namespace TickTrader.BotTerminal
     internal class TraderClientModel
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private ClientCore _core;
 
         public TraderClientModel(ConnectionModel connection)
         {
@@ -26,15 +25,12 @@ namespace TickTrader.BotTerminal
             connection.State.StateChanged += State_StateChanged;
             connection.Deinitalizing += Connection_Deinitalizing;
 
-            var sync = new DispatcherSync();
-            _core = new ClientCore(connection, c => new SymbolCollectionModel(c), sync, sync);
-
-            this.Symbols = (SymbolCollectionModel)_core.Symbols;
-            this.TradeHistory = new TradeHistoryProvider(this);
+            this.Symbols = new SymbolCollectionModel(connection);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
-            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
-            this.TradeApi = new TradeExecutor(_core);
-            this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
+            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder);
+            this.TradeApi = new TradeExecutor(this);
+            this.Account = new AccountModel(this);
+            this.Currencies = new Dictionary<string, CurrencyInfo>();
         }
 
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
@@ -86,8 +82,11 @@ namespace TickTrader.BotTerminal
             {
                 var cache = Connection.FeedProxy.Cache;
                 await History.Init();
-                _core.Init();
-                Account.Init();
+                Currencies.Clear();
+                foreach (var c in cache.Currencies)
+                    Currencies.Add(c.Name, c);
+                Symbols.Initialize(cache.Symbols, Currencies);
+                Account.Init(Currencies);
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
             }
@@ -105,8 +104,8 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                await _core.Deinit();
-                Account.Deinit();
+                await Symbols.Deinit();
+                await Account.Deinit();
                 await History.Deinit();
                 if (Deinitializing != null)
                     await Deinitializing.InvokeAsync(this, cancelToken);
@@ -129,11 +128,10 @@ namespace TickTrader.BotTerminal
         public ConnectionModel Connection { get; private set; }
         public TradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
-        public TradeHistoryProvider TradeHistory { get; }
         public SymbolCollectionModel Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
-        public Dictionary<string, CurrencyInfo> Currencies => _core.Currencies;
+        public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
     }
 }
