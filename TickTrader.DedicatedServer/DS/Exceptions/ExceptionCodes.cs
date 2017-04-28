@@ -10,5 +10,6 @@
 
         public const int DuplicateAccount = 2000;
         public const int AccountNotFound = 2001;
+        public const int InvalidAccount = 2002;
     }
 }

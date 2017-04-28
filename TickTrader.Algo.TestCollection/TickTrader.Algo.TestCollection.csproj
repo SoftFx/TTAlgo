@@ -66,6 +66,7 @@
     <Compile Include="Bots\SubscriptionTestBot.cs" />
     <Compile Include="Bots\SymbolInfoBot.cs" />
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
+    <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
