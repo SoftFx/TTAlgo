@@ -17,7 +17,6 @@
         <ul class="list-unstyled">
             <li class="card-text">Account: {{TradeBot.Account.Login}}</li>
             <li class="card-text">Server: {{TradeBot.Account.Server}}</li>
-            <li class="card-text">Status: {{TradeBot.Status}}</li>
         </ul>
         <div class="footer">
             <hr />
@@ -25,6 +24,7 @@
                 <div class="btn-group btn-group-sm btn-group-justified">
                     <a (click)="Start()" [class.disabled]="TradeBot.State !== TradeBotState.Offline && TradeBot.State !== TradeBotState.Faulted" class="btn btn-simple"><span class="fa fa-play"></span></a>
                     <a (click)="Stop()" [class.disabled]="TradeBot.State !== TradeBotState.Online" class="btn btn-simple"><span class="fa fa-stop"></span></a>
+                    <a (click)="Configurate(TradeBot.Id)" [class.disabled]="TradeBot.State !== TradeBotState.Offline && TradeBot.State !== TradeBotState.Faulted" class="btn btn-simple"><span class="fa fa-edit"></span></a>
                 </div>
             </div>
         </div>

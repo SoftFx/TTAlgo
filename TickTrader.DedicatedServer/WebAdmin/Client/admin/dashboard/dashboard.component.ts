@@ -36,8 +36,11 @@ export class DashboardComponent {
     //    this.router.navigate(['/bot', bot.instanceId]);
     //}
 
-    private addBot(bot: TradeBotModel)
-    {
+    public Configurate() {
+        this._router.navigate(['/configurate']);
+    }
+
+    private addBot(bot: TradeBotModel) {
         if (!this.TradeBots.find(b => b.Id === bot.Id)) {
             this.TradeBots = this.TradeBots.concat(bot);
         }
@@ -46,5 +49,5 @@ export class DashboardComponent {
     private deleteBot(id: string) {
         this.TradeBots = this.TradeBots.filter(x => x.Id !== id);
     }
-    
+
 }

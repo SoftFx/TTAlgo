@@ -6,17 +6,18 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class AccountController : Controller
+    public class AccountsController : Controller
     {
-        private readonly ILogger<RepositoryController> _logger;
+        private readonly ILogger<PackagesController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
-        
-        public AccountController(IDedicatedServer ddServer, ILogger<RepositoryController> logger)
+
+        public AccountsController(IDedicatedServer ddServer, ILogger<PackagesController> logger)
         {
             _dedicatedServer = ddServer;
             _logger = logger;
@@ -35,7 +36,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 _dedicatedServer.AddAccount(new AccountKey(account.Login, account.Server), account.Password);
             }
-            catch(DSException dsex)
+            catch (DSException dsex)
             {
                 _logger.LogError(dsex.Message);
                 return BadRequest(dsex.ToBadResult());
@@ -51,19 +52,27 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody] AccountDto account)
+        public IActionResult UpdatePassword([FromBody] AccountDto account)
         {
             try
             {
                 _dedicatedServer.ChangeAccountPassword(new AccountKey(account.Login, account.Server), account.Password);
             }
-            catch(DSException dsex)
+            catch (DSException dsex)
             {
                 _logger.LogError(dsex.Message);
                 return BadRequest(dsex.ToBadResult());
             }
 
             return Ok();
+        }
+
+        [HttpGet("[action]")]
+        public ConnectionErrorCodes Test(string login, string server, string password)
+        {
+            return string.IsNullOrWhiteSpace(password) ?
+                _dedicatedServer.TestAccount(new AccountKey(login, server)) :
+                _dedicatedServer.TestCreds(login, password, server);
         }
     }
 }

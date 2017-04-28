@@ -1,25 +1,25 @@
-﻿<div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="form-group">
-                <label>Bot</label>
-                <select class="form-control" [(ngModel)]="SelectedPlugin" (ngModelChange)="onPluginSelected($event)">
-                    <optgroup *ngFor="let Package of (Packages | orderBy: ['Name'])" label="{{Package.Name}}">
-                        <option *ngFor="let Plugin of (Package.Plugins | orderBy: ['DisplayName'])" [ngValue]="Plugin">{{Plugin.DisplayName}}</option>
-                    </optgroup>
-                </select>
-            </div>
+﻿
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label>Bot</label>
+            <select class="form-control" [(ngModel)]="SelectedPlugin" (ngModelChange)="onPluginSelected($event)">
+                <optgroup *ngFor="let Package of (Packages | orderBy: ['Name'])" label="{{Package.Name}}">
+                    <option *ngFor="let Plugin of (Package.Plugins | orderBy: ['DisplayName'])" [ngValue]="Plugin">{{Plugin.DisplayName}}</option>
+                </optgroup>
+            </select>
         </div>
     </div>
-
-    <form [formGroup]="BotSetupForm" novalidate>
-        <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm" [Accounts]="Accounts"></bot-parameters-cmp>
-
-        <div>
+    <div class="col-md-12">
+        <form [formGroup]="BotSetupForm" novalidate>
+            <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm" [Accounts]="Accounts"></bot-parameters-cmp>
             <div class="pull-right">
                 <button [disabled]="!Setup || BotSetupForm.invalid" (click)="addBot(bot)" class="btn btn-primary" type="submit">Add</button>
                 <button [class.disabled]="!Setup" (click)="cancel()" class="btn btn-primary" type="submit">Cancel</button>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
+
+
+

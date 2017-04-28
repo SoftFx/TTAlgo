@@ -18,14 +18,14 @@ export class NavbarComponent implements OnInit {
         this.listTitles = ROUTES.filter(listTitle => listTitle.menuType !== MenuType.BRAND);
     }
 
-    getTitle() {
+    public get RouteInfo(): any {
         var titlee = window.location.pathname;
         for (var item = 0; item < this.listTitles.length; item++) {
             if (this.listTitles[item].path === titlee) {
-                return this.listTitles[item].title;
+                return this.listTitles[item];
             }
         }
-        return 'Dashboard';
+        return { title: 'Dashboard', icon: 'fa fa-tachometer' };
     }
 
     public get UserName(): string {

@@ -2,6 +2,7 @@
 import { Observable } from "rxjs/Rx";
 import { TradeBotModel, TradeBotStates, TradeBotStateModel, ResponseStatus } from '../../models/index';
 import { ApiService, ToastrService, FeedService } from '../../services/index';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'bot-card-cmp',
@@ -14,7 +15,7 @@ export class BotCardComponent implements OnInit {
     @Input() TradeBot: TradeBotModel;
     @Output() OnDeleted = new EventEmitter<TradeBotModel>();
 
-    constructor(private _api: ApiService, private _toastr: ToastrService) { }
+    constructor(private _api: ApiService, private _toastr: ToastrService, private _router: Router) { }
 
     ngOnInit() {
         this._api.Feed.changeBotState.subscribe(botState => this.updateBotState(botState));
@@ -41,6 +42,11 @@ export class BotCardComponent implements OnInit {
             ok => this.OnDeleted.emit(this.TradeBot),
             err => this.notifyAboutError(err)
         );
+    }
+
+    public Configurate(instanceId: string) {
+        if (instanceId)
+            this._router.navigate(['/configurate', instanceId]);
     }
 
     private updateBotState(botState: TradeBotStateModel) {

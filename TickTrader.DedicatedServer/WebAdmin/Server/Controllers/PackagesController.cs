@@ -14,12 +14,12 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class RepositoryController : Controller
+    public class PackagesController : Controller
     {
-        private readonly ILogger<RepositoryController> _logger;
+        private readonly ILogger<PackagesController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
 
-        public RepositoryController(IDedicatedServer ddServer, ILogger<RepositoryController> logger)
+        public PackagesController(IDedicatedServer ddServer, ILogger<PackagesController> logger)
         {
             _dedicatedServer = ddServer;
             _logger = logger;

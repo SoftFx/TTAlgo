@@ -1,25 +1,27 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using TickTrader.DedicatedServer.DS.Exceptions;
-using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
+using TickTrader.DedicatedServer.DS.Models;
+using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class DashboardController : Controller
+    public class TradeBotsController : Controller
     {
-        private readonly ILogger<DashboardController> _logger;
+        private readonly ILogger<TradeBotsController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
 
-        public DashboardController(IDedicatedServer ddServer, ILogger<DashboardController> logger)
+        public TradeBotsController(IDedicatedServer ddServer, ILogger<TradeBotsController> logger)
         {
             _dedicatedServer = ddServer;
             _logger = logger;
@@ -30,6 +32,17 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             var bots = _dedicatedServer.TradeBots.ToArray();
             return bots.Select(b => b.ToDto()).ToArray();
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
+        {
+            var tradeBot = (TradeBotModel)_dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+
+            if (tradeBot != null)
+                return Ok(tradeBot.ToDto());
+            else
+                return NotFound();
         }
 
         [HttpPost]
@@ -44,11 +57,66 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return Ok(tradeBot.ToDto());
             }
-            catch(DSException ex)
+            catch (DSException ex)
             {
                 _logger.LogError(ex.Message);
                 return BadRequest(ex.ToBadResult());
             }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(string id)
+        {
+            try
+            {
+                _dedicatedServer.RemoveBot(id);
+
+                return Ok();
+            }
+            catch (InvalidStateException isex)
+            {
+                return BadRequest(isex.ToBadResult());
+            }
+        }
+
+        [HttpPatch("{id}/[action]")]
+        public IActionResult Start(string id)
+        {
+            try
+            {
+                var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == id);
+                if (bot != null)
+                {
+                    bot.Start();
+                }
+            }
+            catch(DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
+        }
+
+        [HttpPatch("{id}/[action]")]
+        public IActionResult Stop(string id)
+        {
+            try
+            {
+                var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == id);
+                if (bot != null)
+                {
+                    bot.StopAsync();
+                }
+            }
+            catch (DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
         }
 
         private PluginConfig CreateConfig(PluginSetupDto setup)
@@ -86,21 +154,5 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
             return barConfig;
         }
-
-        [HttpDelete]
-        public IActionResult Delete(string botId)
-        {
-            try
-            {
-                _dedicatedServer.RemoveBot(botId);
-
-                return Ok();
-            }
-            catch (InvalidStateException isex)
-            {
-                return BadRequest(isex.ToBadResult());
-            }
-        }
-
     }
 }

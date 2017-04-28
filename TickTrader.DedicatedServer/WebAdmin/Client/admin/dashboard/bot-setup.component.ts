@@ -1,5 +1,6 @@
 ﻿import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
+
 import { Observable } from "rxjs/Rx";
 import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, PluginSetupModel, TradeBotModel, ResponseStatus } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
@@ -30,13 +31,16 @@ export class BotSetupComponent implements OnInit {
     }
 
     addBot() {
-        console.log(JSON.stringify(this.BotSetupForm.value));
-        //if (this.Setup) {
-        //    this._api.AddBot(this.Setup).subscribe(
-        //        tb => this.OnAdded.emit(tb),
-        //        err => this.notifyAboutError(err)
-        //    );
-        //}
+        if (this.BotSetupForm.valid) {
+            this.applSetupForm();
+
+            console.info(this.Setup);
+
+            this._api.AddBot(this.Setup).subscribe(
+                tb => this.OnAdded.emit(tb),
+                err => this.notifyAboutError(err)
+            );
+        }
     }
 
     cancel() {
@@ -48,6 +52,16 @@ export class BotSetupComponent implements OnInit {
     onPluginSelected(plugin: PluginModel) {
         this.Setup = PluginSetupModel.Create(plugin);
         this.BotSetupForm = this.createGroupForm(this.Setup);
+        this.BotSetupForm.valueChanges.subscribe(v => console.log(v));
+    }
+
+    private applSetupForm() {
+        this.Setup.Account = this.BotSetupForm.value.Account;
+        this.Setup.Symbol = this.BotSetupForm.value.Symbol;
+        this.Setup.InstanceId = this.BotSetupForm.value.InstanceId;
+        this.Setup.Parameters.forEach(p => {
+            p.Value = this.BotSetupForm.value[p.Descriptor.Id];
+        })
     }
 
     private createGroupForm(setup: PluginSetupModel) {
