@@ -1,6 +1,6 @@
 ﻿export * from './bot-detail.component';
-export * from './bot-setup.component';
-export * from './bot-parameters.component';
+export * from './bot-run.component';
+export * from './plugin-setup.component';
 export * from './dashboard.component';
-export * from './bot-card.component';
+export * from './trade-bot-card.component';
 

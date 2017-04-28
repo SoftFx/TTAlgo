@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
 
             _tradeClient = tradeClient;
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
-            _tradeClient.TradeHistory.OnTradeReport += TradeTransactionReport;
+            _tradeClient.Account.TradeHistory.OnTradeReport += TradeTransactionReport;
 
             tradeClient.Connected += RefreshHistory;
         }
@@ -176,7 +176,7 @@ namespace TickTrader.BotTerminal
 
                 uiUpdater = currentUpdater;
 
-                var downloadTask = _tradeClient.TradeHistory.DownloadingHistoryAsync(
+                var downloadTask = _tradeClient.Account.TradeHistory.DownloadingHistoryAsync(
                     From.ToUniversalTime(), To.ToUniversalTime(), currentSrc.Token,
                     r => currentUpdater.SendAsync(r, currentSrc.Token).Wait());
                 DownloadObserver = new ObservableTask<int>(downloadTask);
@@ -194,7 +194,7 @@ namespace TickTrader.BotTerminal
         {
             _tradeClient.Account.AccountTypeChanged -= AccountTypeChanged;
             _tradeClient.Connected -= RefreshHistory;
-            _tradeClient.TradeHistory.OnTradeReport -= TradeTransactionReport;
+            _tradeClient.Account.TradeHistory.OnTradeReport -= TradeTransactionReport;
         }
 
         private void AddToList(TransactionReport tradeTransaction)

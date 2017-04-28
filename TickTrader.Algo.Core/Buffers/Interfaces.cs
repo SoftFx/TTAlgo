@@ -19,15 +19,6 @@ namespace TickTrader.Algo.Core
         T this[int index] { get; set; }
     }
 
-    internal interface IBuffer
-    {
-        void Extend();
-        void Truncate(int size);
-        void Clear();
-        void BeginBatch();
-        void EndBatch();
-    }
-
     public interface IDataBuffer : IEnumerable
     {
         object this[int index] { get; set; }

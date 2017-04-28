@@ -18,14 +18,19 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolCollectionModel : Algo.Common.Model.SymbolCollectionBase
     {
-        public SymbolCollectionModel(ClientCore client)
-            : base(client, new DispatcherSync()) 
+        private QuoteDistributor _distributor;
+
+        public SymbolCollectionModel(ConnectionModel connection)
+            : base(connection, new DispatcherSync()) 
         {
+            _distributor =  new QuoteDistributor(connection);
         }
 
-        protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributorBase distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
         {
             return new SymbolModel((QuoteDistributor)distributor, info, currencies);
         }
+
+        public override QuoteDistributorBase Distributor => _distributor;
     }
 }

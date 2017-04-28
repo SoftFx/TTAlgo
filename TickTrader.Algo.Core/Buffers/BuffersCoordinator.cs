@@ -8,39 +8,34 @@ namespace TickTrader.Algo.Core
 {
     internal class BuffersCoordinator
     {
-        private List<IBuffer> buffers = new List<IBuffer>();
+        public event Action BuffersExtended = delegate { };
+        public event Action BuffersShifted = delegate { };
+        public event Action BuffersCleared = delegate { };
+        public event Action BeginBatch = delegate { };
+        public event Action EndBatch = delegate { };
 
         public int VirtualPos { get; private set; }
         public int MaxBufferSize { get; set; }
 
-        internal void RegisterBuffer(IBuffer buffer)
+        public void MoveNext()
         {
-            buffers.Add(buffer);
+            if (MaxBufferSize > 0 && VirtualPos >= MaxBufferSize)
+                BuffersShifted();
+            else
+            {
+                VirtualPos++;
+                BuffersExtended();
+            }
         }
 
-        public void Extend()
+        public void FireBeginBatch()
         {
-            VirtualPos++;
-            foreach (var buffer in buffers)
-                buffer.Extend();
+            BeginBatch();
         }
 
-        public void BeginBatch()
+        public void FireEndBatch()
         {
-            foreach (var buffer in buffers)
-                buffer.BeginBatch();
-        }
-
-        public void EndBatch()
-        {
-            foreach (var buffer in buffers)
-                buffer.EndBatch();
-        }
-
-        public void Truncate(int bySize)
-        {
-            foreach (var buffer in buffers)
-                buffer.Truncate(bySize);
+            EndBatch();
         }
 
         //public void Reset()

@@ -44,9 +44,11 @@ namespace TickTrader.BotTerminal
         private bool isIndicatorsOnline;
         private bool isLoading;
         private bool isUpdateRequired;
+        private bool isCloseRequested;
         private bool isConnected;
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
         private ChartNavigator navigator;
+        private TimelineTypes timelineType;
         private long indicatorNextId = 1;
         private AxisBase timeAxis;
         private bool isCrosshairEnabled;
@@ -376,7 +378,8 @@ namespace TickTrader.BotTerminal
         {
             plugin.TimeFrame = TimeFrame;
             plugin.MainSymbolCode = SymbolCode;
-            plugin.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            plugin.TimePeriodStart = TimelineStart;
+            plugin.TimePeriodEnd = DateTime.Now + TimeSpan.FromDays(100);
         }
 
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }

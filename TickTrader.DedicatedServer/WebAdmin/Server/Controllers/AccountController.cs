@@ -35,10 +35,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 _dedicatedServer.AddAccount(new AccountKey(account.Login, account.Server), account.Password);
             }
-            catch(DSException dsex)
+            catch(DSException dse)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(dse.Message);
+                return BadRequest(new { Code = dse.Code, Message = dse.Message });
             }
 
             return Ok();
@@ -57,10 +57,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 _dedicatedServer.ChangeAccountPassword(new AccountKey(account.Login, account.Server), account.Password);
             }
-            catch(DSException dsex)
+            catch (DSException dse)
             {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
+                _logger.LogError(dse.Message);
+                return BadRequest(new { Code = dse.Code, Message = dse.Message });
             }
 
             return Ok();
