@@ -6,7 +6,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.VersionTest
 {
-    [Indicator(DisplayName = "Incompatible Indicator", IsOverlay = true)]
+    [Indicator(DisplayName = "Incompatible Indicator")]
     public class IncompatibleIndicator : Indicator
     {
         [Parameter(DisplayName = "Param 1", DefaultValue = 2)]

@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "FTLM", DefaultColor = Colors.DarkKhaki)]
+        [Output(DisplayName = "FTLM", Target = OutputTargets.Window1, DefaultColor = Colors.DarkKhaki)]
         public DataSeries Ftlm { get; set; }
 
         public int LastPositionChanged { get { return _fatl.LastPositionChanged; } }

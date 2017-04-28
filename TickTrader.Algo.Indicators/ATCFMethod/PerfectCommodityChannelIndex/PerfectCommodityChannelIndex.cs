@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "PCCI", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "PCCI", Target = OutputTargets.Window1, DefaultColor = Colors.Red)]
         public DataSeries Pcci { get; set; }
 
         public int LastPositionChanged { get { return _fatl.LastPositionChanged; } }

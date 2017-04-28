@@ -49,7 +49,6 @@ namespace TickTrader.Algo.Api
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class IndicatorAttribute : AlgoPluginAttribute
     {
-        public bool IsOverlay { get; set; }
     }
 
     [Serializable]

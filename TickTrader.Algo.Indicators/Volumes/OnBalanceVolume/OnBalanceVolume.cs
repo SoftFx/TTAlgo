@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 
         public DataSeries Price { get; private set; }
 
-        [Output(DisplayName = "OBV", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "OBV", Target = OutputTargets.Window1, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Obv { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

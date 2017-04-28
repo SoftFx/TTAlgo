@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Bulls", DefaultColor = Colors.Silver)]
+        [Output(DisplayName = "Bulls", Target = OutputTargets.Window1, DefaultColor = Colors.Silver)]
         public DataSeries Bulls { get; set; }
 
         public int LastPositionChanged { get { return _ema.LastPositionChanged; } }

@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RSI", DefaultColor = Colors.DodgerBlue)]
+        [Output(DisplayName = "RSI", Target = OutputTargets.Window1, DefaultColor = Colors.DodgerBlue)]
         public DataSeries Rsi { get; set; }
 
         public int LastPositionChanged
