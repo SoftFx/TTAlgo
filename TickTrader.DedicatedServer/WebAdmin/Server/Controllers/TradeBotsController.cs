@@ -37,7 +37,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            var tradeBot = (TradeBotModel)_dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+            var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
 
             if (tradeBot != null)
                 return Ok(tradeBot.ToDto());
@@ -90,7 +90,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     bot.Start();
                 }
             }
-            catch(DSException dsex)
+            catch (DSException dsex)
             {
                 _logger.LogError(dsex.Message);
                 return BadRequest(dsex.ToBadResult());

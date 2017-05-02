@@ -1,6 +1,4 @@
-﻿import { PackageModel } from './package-model';
-import { AccountModel } from './account-model';
-import { TradeBotStateModel, TradeBotModel } from './trade-bot-model';
+﻿import { PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from './ds-models';
 
 export interface FeedSignalR extends SignalR {
     dSFeed: FeedProxy;

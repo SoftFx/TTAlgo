@@ -1,8 +1,10 @@
 ﻿using System.Linq;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
+using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
@@ -16,8 +18,25 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 IsRunning = bot.IsRunning,
                 Status = bot.Log.Status,
                 Account = bot.Account.ToDto(),
-                State = bot.State.ToString()
+                State = bot.State.ToString(),
+                Config = bot.ToConfigDto()
             };
+        }
+
+        public static TradeBotConfigDto ToConfigDto(this ITradeBot bot)
+        {
+            var descriptor = bot.Package.GetPluginRef(bot.Descriptor).Descriptor;
+            var config = new TradeBotConfigDto()
+            {
+                Symbol = bot.Config.MainSymbol,
+                Parameters = bot.Config.Properties.Select(p =>
+                new ParameterDto()
+                {
+                    Value = ((Parameter)p).ValObj,
+                    Descriptor = descriptor.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                }).ToArray()
+            };
+            return config;
         }
 
         public static PackageDto ToDto(this IPackage model)

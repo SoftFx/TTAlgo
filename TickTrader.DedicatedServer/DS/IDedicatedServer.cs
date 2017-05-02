@@ -9,6 +9,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Models;
+using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 
 namespace TickTrader.DedicatedServer.DS
 {
@@ -62,6 +63,9 @@ namespace TickTrader.DedicatedServer.DS
         bool IsRunning { get; }
         IBotLog Log { get; }
         IAccount Account { get; }
+        PluginConfig Config { get; }
+        PackageModel Package { get; }
+        string Descriptor { get;  }
         BotStates State { get; }
         void Start();
         Task StopAsync();
