@@ -42,6 +42,12 @@ export class ApiService {
             .catch(this.handleServerError);
     }
 
+    UpdateBotConfig(setup: SetupModel) {
+        return this._http.post(this._tradeBotsUrl, setup.Payload, { headers: this.headers })
+            .map(res => new TradeBotModel().Deserialize(res.json()))
+            .catch(this.handleServerError);
+    }
+
     DeleteBot(botId: string) {
         return this._http
             .delete(`${this._tradeBotsUrl}/` + encodeURIComponent(botId), { headers: this.headers })

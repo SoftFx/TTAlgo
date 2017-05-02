@@ -7,48 +7,49 @@ import { ApiService, ToastrService } from '../../services/index';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'bot-setup-cmp',
-    template: require('./bot-setup.component.html'),
+    selector: 'bot-add-cmp',
+    template: require('./bot-add.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class BotSetupComponent implements OnInit {
+export class BotAddComponent implements OnInit {
+    public Packages: PackageModel[];
     public Accounts: AccountModel[];
+    public SelectedPlugin: PluginModel;
     public Setup: SetupModel;
     public BotSetupForm: FormGroup;
 
-    @Input() TradeBot: TradeBotModel;
-    @Output() OnSaved = new EventEmitter<TradeBotModel>();
+    @Output() OnAdded = new EventEmitter<TradeBotModel>();
 
     constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService) { }
 
     ngOnInit() {
         this.BotSetupForm = this._fb.group({});
 
-        this.Setup = SetupModel.ForTradeBot(this.TradeBot);
-        this.BotSetupForm = this.createGroupForm(this.Setup);
-
-        this._api.GetAccounts().subscribe(response => {
-            this.Accounts = response;
-            let acc = this.Accounts.find(a => a.Login === this.Setup.Account.Login && a.Server === this.Setup.Account.Server)
-            this.BotSetupForm.patchValue({ "Account": acc });
-        });
+        this._api.GetAccounts().subscribe(response => this.Accounts = response);
+        this._api.GetPackages().subscribe(response => this.Packages = response);
     }
 
-    applyConfig() {
+    addBot() {
         if (this.BotSetupForm.valid) {
             this.applSetupForm();
 
-            this._api.UpdateBotConfig(this.Setup).subscribe(
-                tb => this.OnSaved.emit(tb),
+            this._api.AddBot(this.Setup).subscribe(
+                tb => this.OnAdded.emit(tb),
                 err => this.notifyAboutError(err)
             );
         }
     }
 
     cancel() {
+        this.SelectedPlugin = null;
         this.Setup = null;
         this.BotSetupForm.reset();
+    }
+
+    onPluginSelected(plugin: PluginModel) {
+            this.Setup = SetupModel.ForPlugin(plugin);
+            this.BotSetupForm = this.createGroupForm(this.Setup);
     }
 
     private applSetupForm() {
@@ -63,12 +64,12 @@ export class BotSetupComponent implements OnInit {
     private createGroupForm(setup: SetupModel) {
         let formGroup = this._fb.group({});
 
-        formGroup.addControl("Account", this._fb.control(setup.Account, Validators.required));
-        formGroup.addControl("Symbol", this._fb.control(setup.Symbol, Validators.required));
+        formGroup.addControl("Account", this._fb.control(null, Validators.required));
+        formGroup.addControl("Symbol", this._fb.control("", Validators.required));
         formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, Validators.required));
 
         setup.Parameters.forEach(parameter => formGroup.addControl(parameter.Descriptor.Id,
-            this._fb.control(parameter.Descriptor.DefaultValue, parameter.Descriptor.IsRequired ? Validators.required : []))
+            this._fb.control(parameter.Descriptor.DefaultValue, parameter.Descriptor.IsRequired? Validators.required : []))
         );
         return formGroup;
     }

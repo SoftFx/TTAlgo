@@ -1,5 +1,5 @@
-﻿import { Input, Component } from '@angular/core';
-import { PluginModel, ParameterDataTypes, AccountModel, PluginSetupModel } from '../../models/index';
+﻿import { Input, Component, OnInit } from '@angular/core';
+import { PluginModel, ParameterDataTypes, AccountModel, SetupModel } from '../../models/index';
 import { FormGroup } from '@angular/forms';
 import { ApiService } from '../../services/index';
 
@@ -13,12 +13,11 @@ export class BotParametersComponent {
     public ParameterDataType = ParameterDataTypes;
     public Symbols: string[];
 
-    @Input() Setup: PluginSetupModel;
+    @Input() Setup: SetupModel;
     @Input() Accounts: AccountModel[];
     @Input() BotSetupForm: FormGroup;
 
     constructor(private _api: ApiService) { }
-
 
     OnAccountChanged(account: AccountModel) {
         this._api.GetSymbols(account).subscribe(symbols => this.Symbols = symbols);

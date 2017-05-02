@@ -4,17 +4,20 @@
             <div class="col-md-5">
                 <div class="card">
                     <div class="header">
-                        <h4 class="title truncate">
-                            Bot Setup
+                        <h4 *ngIf="!Bot" class="title truncate">
+                            New bot instance setup
+                        </h4>
+                        <h4 *ngIf="Bot" class="title truncate">
+                            Bot Configuration
                         </h4>
                         <!--<p class="category">Select and configure a new bot bot instance</p>-->
                     </div>
                     <div id="quickRunPanel" class="content">
-                        <bot-setup-cmp (OnAdded)="OnTradeBotAdded($event)"></bot-setup-cmp>
+                        <bot-add-cmp *ngIf="!Bot" (OnAdded)="OnAdded($event)"></bot-add-cmp>
+                        <bot-setup-cmp *ngIf="Bot" [TradeBot]="Bot" (OnSaved)="OnSaved($event)"></bot-setup-cmp>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

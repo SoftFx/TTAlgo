@@ -22,13 +22,17 @@ export class BotConfigurationComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        if (this._route.params['id'])
-            this._route.params
-                .switchMap((params: Params) => this._api.GetTradeBot(params['id']))
-                .subscribe((bot: TradeBotModel) => this.Bot = bot);
+        this._route.params
+            .filter((params: Params) => params['id'])
+            .switchMap((params: Params) => this._api.GetTradeBot(params['id']))
+            .subscribe((bot: TradeBotModel) => this.Bot = bot);
     }
 
-    public OnTradeBotAdded(bot: TradeBotModel) {
+    public OnSaved(bot: TradeBotModel) {
+        this._location.back();
+    }
+
+    public OnAdded(bot: TradeBotModel) {
         this._location.back();
     }
 }
