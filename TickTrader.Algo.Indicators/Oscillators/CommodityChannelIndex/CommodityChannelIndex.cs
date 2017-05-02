@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "CCI", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "CCI", Target = OutputTargets.Window1, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Cci { get; set; }
 
         public int LastPositionChanged { get { return _sma.LastPositionChanged; } }

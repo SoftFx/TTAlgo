@@ -58,6 +58,7 @@
     <Compile Include="Helper.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
+    <Compile Include="OutputTargets.cs" />
     <Compile Include="RateUpdate.cs" />
     <Compile Include="StatusApi.cs" />
     <Compile Include="TradeCommands.cs" />

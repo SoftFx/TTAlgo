@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.Momentum
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "Momentum", DefaultColor = Colors.DodgerBlue)]
+        [Output(DisplayName = "Momentum", Target = OutputTargets.Window1, DefaultColor = Colors.DodgerBlue)]
         public DataSeries Moment { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

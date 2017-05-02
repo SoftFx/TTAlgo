@@ -2,16 +2,16 @@
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
 {
-    [Indicator(IsOverlay = true, Category = "Bill Williams", DisplayName = "Fractals", Version = "1.0")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Fractals", Version = "1.0")]
     public class Fractals : Indicator
     {
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Fractals Up", DefaultColor = Colors.Gray)]
+        [Output(DisplayName = "Fractals Up", Target = OutputTargets.Overlay, DefaultColor = Colors.Gray)]
         public DataSeries<Marker> FractalsUp { get; set; }
 
-        [Output(DisplayName = "Fractals Down", DefaultColor = Colors.Gray)]
+        [Output(DisplayName = "Fractals Down", Target = OutputTargets.Overlay, DefaultColor = Colors.Gray)]
         public DataSeries<Marker> FractalsDown { get; set; }
 
         public Fractals()

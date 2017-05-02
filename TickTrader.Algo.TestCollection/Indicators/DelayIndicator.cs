@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Indicators
 {
-    [Indicator(IsOverlay = true, Category = "Test Indicator Routine", DisplayName = "[T] Delay Indicator", Version = "1.0",
+    [Indicator(Category = "Test Indicator Routine", DisplayName = "[T] Delay Indicator", Version = "1.0",
         Description = "Waits for specified amount of milliseconds on last bar update")]
     public class DelayIndicator : Indicator
     {
@@ -13,7 +13,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         [Input(DisplayName = "Price")]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "Delayed Price", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Delayed Price", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries DelayedPrice { get; set; }
 
 

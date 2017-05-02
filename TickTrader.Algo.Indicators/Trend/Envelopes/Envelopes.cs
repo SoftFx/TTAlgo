@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Envelopes", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Envelopes", Version = "1.0")]
     public class Envelopes : Indicator
     {
         private MovingAverage.MovingAverage _middleLine;
@@ -23,10 +23,10 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DefaultColor = Colors.Blue)]
+        [Output(DisplayName = "Top Line", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries TopLine { get; set; }
 
-        [Output(DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Bottom Line", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries BottomLine { get; set; }
 
         public int LastPositionChanged { get { return _middleLine.LastPositionChanged; } }

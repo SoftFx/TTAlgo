@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.SlowAdaptiveTrendLine
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "Slow Adaptive Trend Line", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Slow Adaptive Trend Line", Version = "1.0")]
     public class SlowAdaptiveTrendLine : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowAdaptiveTrendLine
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "SATL", DefaultColor = Colors.Cornsilk)]
+        [Output(DisplayName = "SATL", Target = OutputTargets.Overlay, DefaultColor = Colors.Cornsilk)]
         public DataSeries Satl { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

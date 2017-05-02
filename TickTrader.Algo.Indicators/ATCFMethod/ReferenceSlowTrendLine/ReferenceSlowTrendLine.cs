@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceSlowTrendLine
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "Reference Slow Trend Line", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Reference Slow Trend Line", Version = "1.0")]
     public class ReferenceSlowTrendLine : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceSlowTrendLine
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RSTL", DefaultColor = Colors.DeepSkyBlue)]
+        [Output(DisplayName = "RSTL", Target = OutputTargets.Overlay, DefaultColor = Colors.DeepSkyBlue)]
         public DataSeries Rstl { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
