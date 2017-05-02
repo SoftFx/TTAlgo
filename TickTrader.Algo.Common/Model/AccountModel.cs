@@ -18,7 +18,7 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class AccountModel : CrossDomainObject, IAccountInfoProvider
+    public abstract class AccountModel : CrossDomainObject, IAccountInfoProvider
     {
         private readonly DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
         private readonly DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
@@ -26,17 +26,9 @@ namespace TickTrader.Algo.Common.Model
         private AccountType? accType;
         private IOrderDependenciesResolver orderResolver;
         private IDictionary<string, CurrencyInfo> _currencies;
-        private ClientCore _client;
-        private bool _isCalcEnabled;
 
-        public AccountModel(ClientCore client, AccountModelOptions options)
+        public AccountModel()
         {
-            _client = client;
-            _isCalcEnabled = options.HasFlag(AccountModelOptions.EnableCalculator);
-
-            _client.BalanceReceived += OnBalanceOperation;
-            _client.ExecutionReportReceived += OnReport;
-            _client.PositionReportReceived += OnReport;
         }
 
         public event System.Action AccountTypeChanged = delegate { };
@@ -62,32 +54,8 @@ namespace TickTrader.Algo.Common.Model
         public int BalanceDigits { get; private set; }
         public string Account { get; private set; }
         public int Leverage { get; private set; }
-        public AccountCalculatorModel Calc { get; private set; }
 
-        public void Init()
-        {
-            var cache = _client.TradeProxy.Cache;
-            var currencies = _client.Currencies;
-            var accInfo = cache.AccountInfo;
-            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
-            
-
-            UpdateData(accInfo, currencies, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
-
-            if (_isCalcEnabled)
-            {
-                Calc = AccountCalculatorModel.Create(this, _client);
-                Calc.Recalculate();
-            }
-        }
-
-        public void Deinit()
-        {
-            if (_isCalcEnabled)
-                Calc.Dispose();
-        }
-
-        private void UpdateData(AccountInfo accInfo,
+        public void Init(AccountInfo accInfo,
             IDictionary<string, CurrencyInfo> currencies,
             IOrderDependenciesResolver orderResolver,
             IEnumerable<TradeRecord> orders,
@@ -121,11 +89,9 @@ namespace TickTrader.Algo.Common.Model
                 this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, currencies));
         }
 
-        protected void OnBalanceChanged()
-        {
-        }
+        protected virtual void OnBalanceChanged() { }
 
-        private void OnBalanceOperation(SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
+        public void OnBalanceOperation(object sender, SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
         {
             if (Type == AccountType.Gross || Type == AccountType.Net)
             {
@@ -143,10 +109,8 @@ namespace TickTrader.Algo.Common.Model
             var a = e.Report;
         }
 
-        protected void OnReport(SoftFX.Extended.Events.PositionReportEventArgs e)
+        protected void OnReport(Position report)
         {
-            var report = e.Report;
-
             if (IsEmpty(report))
                 OnPositionRemoved(report);
             else if (!positions.ContainsKey(report.Symbol))
@@ -186,10 +150,8 @@ namespace TickTrader.Algo.Common.Model
             return positionModel;
         }
 
-        private void OnReport(SoftFX.Extended.Events.ExecutionReportEventArgs e)
+        protected void OnReport(ExecutionReport report)
         {
-            var report = e.Report;
-
             switch (report.ExecutionType)
             {
                 case ExecutionType.Calculated:
@@ -310,10 +272,7 @@ namespace TickTrader.Algo.Common.Model
 
         AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
 
-        void IAccountInfoProvider.SyncInvoke(Action syncAction)
-        {
-            _client.TradeSync.Invoke(syncAction);
-        }
+        public abstract void SyncInvoke(Action syncAction);
 
         List<OrderEntity> IAccountInfoProvider.GetOrders()
         {
@@ -349,12 +308,5 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #endregion
-    }
-
-    [Flags]
-    public enum AccountModelOptions
-    {
-        None = 0,
-        EnableCalculator = 1
     }
 }

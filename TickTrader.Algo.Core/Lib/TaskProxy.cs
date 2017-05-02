@@ -16,12 +16,12 @@ namespace TickTrader.Algo.Core.Lib
 
         public void SetCompleted(T result)
         {
-            taskSrc.TrySetResult(result);
+            taskSrc.SetResult(result);
         }
 
         public void SetException(Exception ex)
         {
-            taskSrc.TrySetException(ex);
+            taskSrc.SetException(ex);
         }
 
         public Task<T> LocalTask { get { return taskSrc.Task; } }

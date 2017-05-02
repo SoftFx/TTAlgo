@@ -3,13 +3,11 @@ using SoftFX.Extended;
 using SoftFX.Extended.Storage;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
@@ -24,13 +22,11 @@ namespace TickTrader.Algo.Common.Model
         private ActionBlock<Task> requestProcessor;
         private IDisposable pipeLink;
         private string _dataFolder;
-        private FeedHistoryFolderOptions _folderOptions;
 
-        public FeedHistoryProviderModel(ConnectionModel connection, string dataFolder, FeedHistoryFolderOptions folderOptions)
+        public FeedHistoryProviderModel(ConnectionModel connection, string dataFolder)
         {
             _dataFolder = dataFolder;
             this.connection = connection;
-            _folderOptions = folderOptions;
 
             requestProcessor = new ActionBlock<Task>(t => t.RunSynchronously(), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 });
         }
@@ -47,14 +43,8 @@ namespace TickTrader.Algo.Common.Model
 
         public async Task Init()
         {
-            var historyFolder = _dataFolder;
-            if (_folderOptions == FeedHistoryFolderOptions.ServerHierarchy || _folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
-                historyFolder = Path.Combine(historyFolder, PathEscaper.Escape(connection.CurrentServer));
-            if (_folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
-                historyFolder = Path.Combine(historyFolder, PathEscaper.Escape(connection.CurrentLogin));
-
             fdkStorage = await Task.Factory.StartNew(
-                () => new DataFeedStorage(historyFolder, StorageProvider.Ntfs, 2, connection.FeedProxy, false, false));
+                () => new DataFeedStorage(_dataFolder, StorageProvider.Ntfs, 2, connection.FeedProxy, false, false));
             pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
         }
 
@@ -97,13 +87,5 @@ namespace TickTrader.Algo.Common.Model
             requestQueue.Post(task);
             return task;
         }
-    }
-
-   
-    public enum FeedHistoryFolderOptions
-    {
-        NoHierarchy, // places history right into specified folder
-        ServerHierarchy, // creates subfolder for server
-        ServerClientHierarchy // creates subfolder for server and nested subfolder for client.
     }
 }

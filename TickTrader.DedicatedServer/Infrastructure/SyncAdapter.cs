@@ -20,19 +20,9 @@ namespace TickTrader.DedicatedServer.Infrastructure
             lock (_sync) syncAction();
         }
 
-        public void Invoke<T>(Action<T> syncAction, T args)
-        {
-            lock (_sync) syncAction(args);
-        }
-
         public T Invoke<T>(Func<T> syncFunc)
         {
             lock (_sync) return syncFunc();
-        }
-
-        public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
-        {
-            lock (_sync) return syncFunc(args);
         }
     }
 }

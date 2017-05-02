@@ -15,7 +15,6 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
-using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -23,11 +22,8 @@ namespace TickTrader.DedicatedServer.DS.Models
     public class ClientModel : IAccount
     {
         private object _sync;
-        private ILogger _log;
-        //private object _syncEvents = new object();
         private CancellationTokenSource connectCancellation;
         private TaskCompletionSource<ConnectionErrorCodes> testRequest;
-        private ClientCore _core;
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
@@ -48,34 +44,17 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             _sync = syncObj;
             _packageProvider = packageProvider;
-            _log = loggerFactory.CreateLogger<ClientModel>();
             var loggerAdapter = new LoggerAdapter(loggerFactory.CreateLogger<ConnectionModel>());
 
             if (_bots == null)
                 _bots = new List<TradeBotModel>();
 
-            var toRemove = new List<TradeBotModel>();
-
             foreach (var bot in _bots)
             {
-                try
-                {
-                    BotValidation?.Invoke(bot);
-                }
-                catch (Exception ex)
-                {
-                    _log.LogError("Bot '{0}' failed validation and was removed! {1}", bot.Id, ex);
-                    toRemove.Add(bot);
-                    continue;
-                }
-
                 if (bot.IsRunning)
                     _startedBotsCount++;
                 InitBot(bot);
             }
-
-            foreach (var bot in toRemove)
-                _bots.Remove(bot);
 
             Connection = new ConnectionModel(new ConnectionOptions() { EnableFixLogs = false });
             Connection.Disconnected += () =>
@@ -87,16 +66,9 @@ namespace TickTrader.DedicatedServer.DS.Models
                 }
             };
 
-            var eventSyncAdapter = new SyncAdapter(syncObj);
-            _core = new ClientCore(Connection, c => new SymbolManager(c, _sync), eventSyncAdapter, eventSyncAdapter);
-
-            Account = new AccountModel(_core, AccountModelOptions.None);
-            Symbols = (SymbolManager)_core.Symbols;
-            FeedHistory = new FeedHistoryProviderModel(Connection, ServerModel.Environment.FeedHistoryCacheFolder,
-                FeedHistoryFolderOptions.ServerClientHierarchy);
-            TradeApi = new TradeExecutor(_core);
-
-            ManageConnection();
+            Account = new AccountModel(SyncObj);
+            Symbols = new SymbolManager(Connection, _sync);
+            FeedHistory = new FeedHistoryProviderModel(Connection, "C:\\Temp\\Feed");
         }
 
         public ConnectionStates ConnectionState { get; private set; }
@@ -107,12 +79,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         public SymbolManager Symbols { get; private set; }
         public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
         public FeedHistoryProviderModel FeedHistory { get; private set; }
-        public TradeExecutor TradeApi { get; private set; }
 
         public event Action<ClientModel> StateChanged;
         public event Action<ClientModel> Changed;
-        public event Action<TradeBotModel> BotValidation;
-        public event Action<TradeBotModel> BotInitialized;
         public event Action<TradeBotModel, ChangeAction> BotChanged;
         public event Action<TradeBotModel> BotStateChanged;
 
@@ -199,9 +168,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 var tCache = Connection.TradeProxy.Cache;
                 var symbols = fCache.Symbols;
                 Currencies = fCache.Currencies.ToDictionary(c => c.Name);
-                _core.Init();
                 Symbols.Initialize(symbols, Currencies);
-                Account.Init();
+                Account.Init(tCache.AccountInfo, Currencies, Symbols, tCache.TradeRecords, tCache.Positions, tCache.AccountInfo.Assets);
             }
 
             lock (_sync)
@@ -259,7 +227,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new PackageNotFoundException($"Package '{pluginId.PackageName}' cannot be found!");
 
                 var newBot = new TradeBotModel(botId, pluginId, botConfig);
-                BotValidation?.Invoke(newBot);
                 InitBot(newBot);
                 _bots.Add(newBot);
                 ManageConnection();
@@ -274,7 +241,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 _startedBotsCount++;
             else
                 _startedBotsCount--;
-            BotChanged?.Invoke(bot, ChangeAction.Modified);
             ManageConnection();
         }
 
@@ -298,8 +264,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             bot.IsRunningChanged += Bot_IsRunningChanged;
             bot.StateChanged += Bot_StateChanged;
-            bot.Init(this, _log, _sync, _packageProvider, null);
-            BotInitialized?.Invoke(bot);
+            bot.Init(this, _sync, _packageProvider, null);
         }
 
         private void DeinitBot(TradeBotModel bot)

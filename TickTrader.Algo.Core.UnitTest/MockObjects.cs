@@ -85,13 +85,10 @@ namespace TickTrader.Algo.Core.UnitTest
         public MockFeedFixtureContext(MockFixtureContext execContext)
         {
             this.ExecContext = execContext;
-            BufferingStrategy = new SlidingBufferStrategy(100);
         }
 
         public IFixtureContext ExecContext { get; private set; }
         public IPluginFeedProvider Feed { get; set; }
-
-        public FeedBufferStrategy BufferingStrategy { get; }
 
         public void Add(IFeedFixture subscriber)
         {

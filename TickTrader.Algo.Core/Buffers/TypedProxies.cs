@@ -8,19 +8,19 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class DataSeriesProxy : DataSeriesImpl<double>, Api.DataSeries
+    internal class DataSeriesProxy : DataSeriesProxy<double>, Api.DataSeries
     {
     }
 
-    internal class TimeSeriesProxy : DataSeriesImpl<DateTime>, Api.TimeSeries
+    internal class TimeSeriesProxy : DataSeriesProxy<DateTime>, Api.TimeSeries
     {
     }
 
-    internal class MarkerSeriesProxy : DataSeriesImpl<Marker>, Api.MarkerSeries
+    internal class MarkerSeriesProxy : DataSeriesProxy<Marker>, Api.MarkerSeries
     {
     }
 
-    internal class QuoteSeriesProxy : DataSeriesImpl<Quote>, Api.QuoteSeries, Api.QuoteL2Series
+    internal class QuoteSeriesProxy : DataSeriesProxy<Quote>, Api.QuoteSeries, Api.QuoteL2Series
     {
         private Lazy<DataSeriesProxy> askBufferLazy;
         private Lazy<DataSeriesProxy> bidBufferLazy;
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
             timeBufferLazy = ConstructLazy<TimeSeriesProxy, DateTime>(q => q.Time);
         }
 
-        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Quote, TData> selector) where TProxy : DataSeriesImpl<TData>, new()
+        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Quote, TData> selector) where TProxy : DataSeriesProxy<TData>, new()
         {
             return new Lazy<TProxy>(() =>
             {
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core
         public TimeSeries Time { get { return timeBufferLazy.Value; } }
     }
 
-    internal class BarSeriesProxy : DataSeriesImpl<Bar>, Api.BarSeries
+    internal class BarSeriesProxy : DataSeriesProxy<Bar>, Api.BarSeries
     {
         private ProxyBuffer<Bar, double> openBuffer = new ProxyBuffer<Bar, double>(b => b.Open);
         private ProxyBuffer<Bar, double> closeBuffer = new ProxyBuffer<Bar, double>(b => b.Close);
@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core
             Symbol = string.Empty;
         }
 
-        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Bar, TData> selector) where TProxy : DataSeriesImpl<TData>, new()
+        private Lazy<TProxy> ConstructLazy<TProxy, TData>(Func<Bar, TData> selector) where TProxy : DataSeriesProxy<TData>, new()
         {
             return new Lazy<TProxy>(() =>
             {

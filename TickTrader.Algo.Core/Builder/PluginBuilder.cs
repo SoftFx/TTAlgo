@@ -358,22 +358,17 @@ namespace TickTrader.Algo.Core
 
         internal void StartBatch()
         {
-            PluginProxy.Coordinator.BeginBatch();
+            PluginProxy.Coordinator.FireBeginBatch();
         }
 
         internal void StopBatch()
         {
-            PluginProxy.Coordinator.EndBatch();
+            PluginProxy.Coordinator.FireEndBatch();
         }
 
         internal void IncreaseVirtualPosition()
         {
-            PluginProxy.Coordinator.Extend();
-        }
-
-        internal void TruncateBuffers(int bySize)
-        {
-            PluginProxy.Coordinator.Truncate(bySize);
+            PluginProxy.Coordinator.MoveNext();
         }
 
         void IPluginSubscriptionHandler.Subscribe(string smbCode, int depth)
