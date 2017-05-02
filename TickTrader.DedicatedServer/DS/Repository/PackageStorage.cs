@@ -85,20 +85,11 @@ namespace TickTrader.DedicatedServer.DS.Repository
                     if (package.IsLocked)
                         throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
 
-                    _packages.Remove(packageName);
-                    try
-                    {
-                        package.Dispose();
-                    }
-                    catch
-                    {
-                        _logger.LogWarning($"Error disposing package '{packageName}'");
-                    }
-
                     try
                     {
                         File.Delete(Path.Combine(_storageDir, packageName));
                         _packages.Remove(packageName);
+                        TryDisposePackage(package);
                     }
                     catch
                     {
@@ -109,7 +100,21 @@ namespace TickTrader.DedicatedServer.DS.Repository
             }
         }
 
+
         #region Private Methods
+        private bool TryDisposePackage(PackageModel package)
+        {
+            try
+            {
+                package.Dispose();
+                return true;
+            }
+            catch
+            {
+                _logger.LogWarning($"Error disposing package '{package.Name}'");
+                return false;
+            }
+        }
 
         private void EnsureStorageDirectoryCreated()
         {
