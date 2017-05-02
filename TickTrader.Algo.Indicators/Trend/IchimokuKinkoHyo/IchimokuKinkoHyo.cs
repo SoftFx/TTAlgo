@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Ichimoku Kinko Hyo", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Ichimoku Kinko Hyo", Version = "1.0")]
     public class IchimokuKinkoHyo : Indicator
     {
         private IShift _chikouShifter, _senkouAShifter, _senkouBShifter;
@@ -20,19 +20,19 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Tenkan-sen", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Tenkan-sen", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries Tenkan { get; set; }
 
-        [Output(DisplayName = "Kijun-sen", DefaultColor = Colors.Blue)]
+        [Output(DisplayName = "Kijun-sen", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries Kijun { get; set; }
 
-        [Output(DisplayName = "Senkou Span A", DefaultColor = Colors.SandyBrown, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Senkou Span A", Target = OutputTargets.Overlay, DefaultColor = Colors.SandyBrown, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries SenkouA { get; set; }
 
-        [Output(DisplayName = "Senkou Span B", DefaultColor = Colors.Thistle, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Senkou Span B", Target = OutputTargets.Overlay, DefaultColor = Colors.Thistle, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries SenkouB { get; set; }
 
-        [Output(DisplayName = "Chikou Span", DefaultColor = Colors.Lime)]
+        [Output(DisplayName = "Chikou Span", Target = OutputTargets.Overlay, DefaultColor = Colors.Lime)]
         public DataSeries Chikou { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

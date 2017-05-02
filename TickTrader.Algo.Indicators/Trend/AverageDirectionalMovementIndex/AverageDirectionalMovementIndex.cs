@@ -21,13 +21,13 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         public DataSeries Price { get; private set; }
 
-        [Output(DisplayName = "ADX", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "ADX", Target = OutputTargets.Window1, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Adx { get; set; }
 
-        [Output(DisplayName = "+DMI", DefaultColor = Colors.YellowGreen, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "+DMI", Target = OutputTargets.Window1, DefaultColor = Colors.YellowGreen, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries PlusDmi { get; set; }
 
-        [Output(DisplayName = "-DMI", DefaultColor = Colors.Wheat, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "-DMI", Target = OutputTargets.Window1, DefaultColor = Colors.Wheat, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries MinusDmi { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

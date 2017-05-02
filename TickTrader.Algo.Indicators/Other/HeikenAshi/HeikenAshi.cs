@@ -4,23 +4,22 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Indicators.Other.HeikenAshi
 {
 
-    [Indicator(IsOverlay = true, Category = "Other", DisplayName = "Heiken Ashi", Version = "1.0")]
+    [Indicator(Category = "Other", DisplayName = "Heiken Ashi", Version = "1.0")]
     public class HeikenAshi : Indicator
     {
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Low/High", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Low/High", Target = OutputTargets.Overlay, DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
         public DataSeries HaLowHigh { get; set; }
 
-        [Output(DisplayName = "High/Low", DefaultColor = Colors.White, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "High/Low", Target = OutputTargets.Overlay, DefaultColor = Colors.White, PlotType = PlotType.Histogram)]
         public DataSeries HaHighLow { get; set; }
 
-        [Output(DisplayName = "Open", DefaultColor = Colors.Red, PlotType = PlotType.Histogram, DefaultThickness = 3)]
+        [Output(DisplayName = "Open", Target = OutputTargets.Overlay, DefaultColor = Colors.Red, PlotType = PlotType.Histogram, DefaultThickness = 3)]
         public DataSeries HaOpen { get; set; }
 
-        [Output(DisplayName = "Close", DefaultColor = Colors.White, PlotType = PlotType.Histogram, DefaultThickness = 3)
-        ]
+        [Output(DisplayName = "Close", Target = OutputTargets.Overlay, DefaultColor = Colors.White, PlotType = PlotType.Histogram, DefaultThickness = 3)]
         public DataSeries HaClose { get; set; }
 
         public int LastPositionChanged

@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public IEnumerable<ParameterSetup> Parameters => _parameters;
         public IEnumerable<InputSetup> Inputs => _inputs;
-        public IEnumerable<PropertySetupBase> Outputs => _outputs;
+        public IEnumerable<OutputSetup> Outputs => _outputs;
         public bool HasInputsOrParams => HasParams || HasInputs;
         public bool HasParams => _parameters.Count > 0;
         public bool HasInputs => _inputs.Count > 0;

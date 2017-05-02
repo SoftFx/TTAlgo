@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Moving Average", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Moving Average", Version = "1.0")]
     public class MovingAverage : Indicator
     {
         private IMA _maInstance;
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output]
+        [Output(DisplayName = "Average", Target = OutputTargets.Overlay)]
         public DataSeries Average { get; set; }
 
         public int LastPositionChanged { get { return _shifter.Position; } }

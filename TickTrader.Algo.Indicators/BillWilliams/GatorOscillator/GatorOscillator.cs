@@ -36,16 +36,16 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "Gator Teeth-Lips Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Gator Teeth-Lips Up", Target = OutputTargets.Window1, DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries TeethLipsUp { get; set; }
 
-        [Output(DisplayName = "Gator Teeth-Lips Down", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Gator Teeth-Lips Down", Target = OutputTargets.Window1, DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
         public DataSeries TeethLipsDown { get; set; }
 
-        [Output(DisplayName = "Gator Jaws-Teeth Up", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Gator Jaws-Teeth Up", Target = OutputTargets.Window1, DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries JawsTeethUp { get; set; }
 
-        [Output(DisplayName = "Gator Jaws-Teeth Down", DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Gator Jaws-Teeth Down", Target = OutputTargets.Window1, DefaultColor = Colors.Red, PlotType = PlotType.Histogram)]
         public DataSeries JawsTeethDown { get; set; }
 
         public int LastPositionChanged { get { return -1; } }

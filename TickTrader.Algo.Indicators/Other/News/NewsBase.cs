@@ -16,9 +16,6 @@ namespace TickTrader.Algo.Indicators.Other.News
         protected List<FxStreetProvider> NewsProviders = new List<FxStreetProvider>();
         protected List<FxStreetNewsModel> News = new List<FxStreetNewsModel>();
 
-        [Output(DisplayName = "Markers")]
-        public DataSeries<Marker> Markers { get; set; }
-
         protected override void Init()
         {
             InitializeNewsProviders();

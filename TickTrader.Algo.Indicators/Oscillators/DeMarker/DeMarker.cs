@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "DeMarker", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "DeMarker", Target = OutputTargets.Window1, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries DeMark { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
