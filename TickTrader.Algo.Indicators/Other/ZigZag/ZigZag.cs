@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Utility;
 namespace TickTrader.Algo.Indicators.Other.ZigZag
 {
 
-    [Indicator(IsOverlay = true, Category = "Other", DisplayName = "ZigZag", Version = "1.0")]
+    [Indicator(Category = "Other", DisplayName = "ZigZag", Version = "1.0")]
     public class ZigZag : Indicator
     {
         private bool? _peakNext, _prevPeakNext;
@@ -30,10 +30,10 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "ZigZag", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "ZigZag", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries Zigzag { get; set; }
 
-        [Output(DisplayName = "ZigZag Line", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "ZigZag Line", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries ZigzagLine { get; set; }
 
         public int LastPositionChanged

@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 {
-    [Indicator(IsOverlay = true, Category = "Bill Williams", DisplayName = "Alligator", Version = "1.0")]
+    [Indicator(Category = "Bill Williams", DisplayName = "Alligator", Version = "1.0")]
     public class Alligator : Indicator
     {
         private MovingAverage _jaws, _teeth, _lips;
@@ -32,13 +32,13 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DefaultColor = Colors.Blue)]
+        [Output(DisplayName = "Jaws", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries Jaws { get; set; }
 
-        [Output(DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Teeth", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries Teeth { get; set; }
 
-        [Output(DefaultColor = Colors.Green)]
+        [Output(DisplayName = "Lips", Target = OutputTargets.Overlay, DefaultColor = Colors.Green)]
         public DataSeries Lips { get; set; }
 
         public int LastPositionChanged { get { return _jaws.LastPositionChanged; } }

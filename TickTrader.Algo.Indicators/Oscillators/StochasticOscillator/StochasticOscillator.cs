@@ -33,10 +33,10 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Stoch", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "Stoch", Target = OutputTargets.Window1, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Stoch { get; set; }
 
-        [Output(DisplayName = "Signal", DefaultColor = Colors.Red, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Signal", Target = OutputTargets.Window1, DefaultColor = Colors.Red, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries Signal { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

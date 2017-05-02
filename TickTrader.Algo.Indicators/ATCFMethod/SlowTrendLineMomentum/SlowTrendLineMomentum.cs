@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "STLM", DefaultColor = Colors.DarkSalmon)]
+        [Output(DisplayName = "STLM", Target = OutputTargets.Window1, DefaultColor = Colors.DarkSalmon)]
         public DataSeries Stlm { get; set; }
 
         public int LastPositionChanged { get { return _satl.LastPositionChanged; } }

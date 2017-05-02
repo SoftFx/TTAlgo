@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Parabolic SAR", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Parabolic SAR", Version = "1.0")]
     public class ParabolicSar : Indicator
     {
         private double _acceleration, _lastLow, _lastHigh, _price;
@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "SAR", DefaultColor = Colors.Lime, PlotType = PlotType.Points)]
+        [Output(DisplayName = "SAR", Target = OutputTargets.Overlay, DefaultColor = Colors.Lime, PlotType = PlotType.Points)]
         public DataSeries Sar { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

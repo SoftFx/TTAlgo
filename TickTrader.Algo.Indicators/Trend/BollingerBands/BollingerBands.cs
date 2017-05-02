@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 {
-    [Indicator(IsOverlay = true, Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.0")]
+    [Indicator(Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.0")]
     public class BollingerBands : Indicator
     {
         private StandardDeviation.StandardDeviation _stdDev;
@@ -19,13 +19,13 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DefaultColor = Colors.MediumSeaGreen)]
+        [Output(DisplayName = "Middle Line", Target = OutputTargets.Overlay, DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries MiddleLine { get; set; }
 
-        [Output(DefaultColor = Colors.MediumSeaGreen)]
+        [Output(DisplayName = "Top Line", Target = OutputTargets.Overlay, DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries TopLine { get; set; }
 
-        [Output(DefaultColor = Colors.MediumSeaGreen)]
+        [Output(DisplayName = "Bottom Line", Target = OutputTargets.Overlay, DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries BottomLine { get; set; }
 
         public int LastPositionChanged { get { return _stdDev.LastPositionChanged; } }

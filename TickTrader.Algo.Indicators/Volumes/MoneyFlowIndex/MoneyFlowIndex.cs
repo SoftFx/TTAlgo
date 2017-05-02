@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "MFI", DefaultColor = Colors.DodgerBlue)]
+        [Output(DisplayName = "MFI", Target = OutputTargets.Window1, DefaultColor = Colors.DodgerBlue)]
         public DataSeries Mfi { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

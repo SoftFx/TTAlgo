@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "ATR", DefaultColor = Colors.DodgerBlue)]
+        [Output(DisplayName = "ATR", Target = OutputTargets.Window1, DefaultColor = Colors.DodgerBlue)]
         public DataSeries Atr { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
