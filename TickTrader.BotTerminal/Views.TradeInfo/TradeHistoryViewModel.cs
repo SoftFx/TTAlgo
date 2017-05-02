@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Threading;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -156,7 +157,8 @@ namespace TickTrader.BotTerminal
                     await _uiUpdater.Completion;
                 }
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) { logger.Debug("Load task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Load operation canceled"); }
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to stop background load task!");
@@ -188,7 +190,8 @@ namespace TickTrader.BotTerminal
 
                 await downloadTask;
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) { logger.Debug("Load task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Load operation canceled"); }
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to load trade history!");
@@ -325,7 +328,8 @@ namespace TickTrader.BotTerminal
                     await _cleanUpdater.Completion;
                 }
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) { logger.Debug("Clean task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Clean operation canceled"); }
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to stop background clean task!");
@@ -353,7 +357,8 @@ namespace TickTrader.BotTerminal
 
                 await cleanTask;
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) { logger.Debug("Clean task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Clean operation canceled"); }
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to clean trade history!");
@@ -385,7 +390,10 @@ namespace TickTrader.BotTerminal
 
                     UpdateDateTimePeriod();
 
-                    var toDeleteList = _tradesList.Where(r => !r.CloseTime.ToLocalTime().Between(From, To)).Select(r => r.UniqueId).ToList();
+                    var toDeleteList = new List<string>();
+                    await App.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                        toDeleteList = _tradesList.Where(r => r.CloseTime.ToLocalTime() < From).Select(r => r.UniqueId).ToList()),
+                        DispatcherPriority.Background);
 
                     foreach (var reportId in toDeleteList)
                     {
