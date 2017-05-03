@@ -140,7 +140,10 @@ namespace TickTrader.BotTerminal
 
         private async void RefreshHistory()
         {
-            CleanUpHistory();
+            if (Period != TimePeriod.Custom)
+            {
+                CleanUpHistory();
+            }
 
             var currentSrc = new CancellationTokenSource();
 
@@ -205,6 +208,11 @@ namespace TickTrader.BotTerminal
             _tradeClient.Account.TradeHistory.OnTradeReport -= TradeTransactionReport;
         }
 
+        public string GetTransactionKey(TransactionReport tradeTransaction)
+        {
+            return $"{tradeTransaction.CloseTime.Ticks} {tradeTransaction.UniqueId}";
+        }
+
         private void AddToList(TransactionReport tradeTransaction)
         {
             try
@@ -212,7 +220,7 @@ namespace TickTrader.BotTerminal
                 if (tradeTransaction == null)
                     _tradesList.Clear();
                 else if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(tradeTransaction.UniqueId))
-                    _tradesList.Add(tradeTransaction.UniqueId, tradeTransaction);
+                    _tradesList.Add(GetTransactionKey(tradeTransaction), tradeTransaction);
             }
             catch (Exception ex)
             {
@@ -220,47 +228,52 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void UpdateDateTimePeriod()
+        private void CalculateDateTimePeriod(ref DateTime from, ref DateTime to)
         {
             switch (Period)
             {
                 case TimePeriod.All:
-                    _from = new DateTime(1980, 01, 01);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = new DateTime(1980, 01, 01);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastHour:
-                    _from = DateTime.Now.AddHours(-1);
-                    _to = DateTime.Now;
+                    from = DateTime.Now.AddHours(-1);
+                    to = DateTime.Now;
                     break;
                 case TimePeriod.CurrentMonth:
-                    _from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                    _to = _from.AddMonths(1).AddSeconds(-1);
+                    from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                    to = _from.AddMonths(1).AddSeconds(-1);
                     break;
                 case TimePeriod.PreviousMonth:
-                    _from = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 1);
-                    _to = _from.AddMonths(1).AddSeconds(-1);
+                    from = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 1);
+                    to = _from.AddMonths(1).AddSeconds(-1);
                     break;
                 case TimePeriod.Today:
-                    _from = DateTime.Today;
-                    _to = _from.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today;
+                    to = _from.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.Yesterday:
-                    _from = DateTime.Today.AddDays(-1);
-                    _to = _from.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddDays(-1);
+                    to = _from.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastThreeMonths:
-                    _from = DateTime.Today.AddMonths(-3);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddMonths(-3);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastSixMonths:
-                    _from = DateTime.Today.AddMonths(-5);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddMonths(-5);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastYear:
-                    _from = DateTime.Today.AddYears(-1);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddYears(-1);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
             }
+        }
+
+        private void UpdateDateTimePeriod()
+        {
+            CalculateDateTimePeriod(ref _from, ref _to);
 
             if (!CanEditPeriod)
             {
@@ -388,16 +401,30 @@ namespace TickTrader.BotTerminal
                 {
                     token.ThrowIfCancellationRequested();
 
-                    UpdateDateTimePeriod();
-
-                    var toDeleteList = new List<string>();
-                    await App.Current.Dispatcher.BeginInvoke(new System.Action(() =>
-                        toDeleteList = _tradesList.Where(r => r.CloseTime.ToLocalTime() < From).Select(r => r.UniqueId).ToList()),
-                        DispatcherPriority.Background);
-
-                    foreach (var reportId in toDeleteList)
+                    if (Period == TimePeriod.LastHour)
                     {
-                        reportHandler(reportId);
+                        UpdateDateTimePeriod();
+
+                        var toDeleteList = new List<string>();
+                        for (var index = 0; index < _tradesList.Count && _tradesList[index].CloseTime.ToLocalTime() < From; index++)
+                        {
+                            toDeleteList.Add(GetTransactionKey(_tradesList[index]));
+                        }
+                        foreach (var reportId in toDeleteList)
+                        {
+                            reportHandler(reportId);
+                        }
+                    }
+                    else
+                    {
+                        var from = _from;
+                        var to = _to;
+                        CalculateDateTimePeriod(ref from, ref to);
+                        if (_from != from)
+                        {
+                            UpdateDateTimePeriod();
+                            RefreshHistory();
+                        }
                     }
 
                     await Task.Delay(CleanUpDelay);
