@@ -6,7 +6,7 @@ using TickTrader.Algo.Api;
 
 namespace $safeprojectname$
 {
-    [TradeBot(DisplayName = "$projectname$")]
+    [TradeBot(Category = "Misc", DisplayName = "$projectname$", Version = "1.0")]
     public class $safeprojectname$ : TradeBot
     {
         [Parameter(DisplayName = "Param 1", DefaultValue = 2)]

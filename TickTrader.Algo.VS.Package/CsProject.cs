@@ -53,8 +53,6 @@ namespace TickTrader.Algo.VS.Package
             this.buildEvents = dteObj.Events.BuildEvents;
 
             buildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
-
-            AdjustApiReference();
         }
 
         private void BuildEvents_OnBuildProjConfigDone(string Project, string ProjectConfig, string Platform, string SolutionConfig, bool Success)
@@ -230,110 +228,6 @@ namespace TickTrader.Algo.VS.Package
             return VSConstants.S_OK;
         }
 
-        private void AdjustApiReference()
-        {
-            WriteToGeneral("Loading project " + projectName + " ...\r\n");
-
-            VSLangProj.VSProject vsProject = (VSLangProj.VSProject)dteProject.Object;
-            var references = vsProject.References.Cast<VSLangProj.Reference>();
-            var apiRef = references.FirstOrDefault(r => r.Name == EnvService.ApiAssemblyName);
-            var apiSrc = GetLatestApiCopy();
-            var apiProjectDefPath = Path.Combine(projectFolder, EnvService.ApiAssemblyFileName);
-
-            if (apiSrc != null)
-                WriteToGeneral("Available Api version: " + apiSrc.Version + "\r\n");
-            else
-            {
-                WriteToGeneral("Cannot find/load API asembly! Reference update is not possible.\r\n");
-                return;
-            }
-
-            if (apiRef == null)
-            {
-                WriteToGeneral("Project has no API refenrece.\r\n");
-
-                // add reference
-                try
-                {
-                    apiSrc.Save(apiProjectDefPath);
-                    var newRef = vsProject.References.Add(apiProjectDefPath);
-                    newRef.CopyLocal = false;
-                    WriteToGeneral("Added reference to API v." + apiSrc.Version + "\r\n");
-                }
-                catch (Exception ex)
-                {
-                    WriteToGeneral("Failed to add API reference! " + ex.Message + "\r\n");
-                }
-            }
-            else
-            {
-                // update reference if necessary
-                try
-                {
-                    // check location
-                    var existingApiRefPath = apiRef.Path;
-                    if (!ComparePaths(existingApiRefPath, apiProjectDefPath))
-                        return; // User has relocated API dll. Let's keep it as it is.
-
-                    // check version
-                    var refVersion = GetVersionOrNull(existingApiRefPath);
-                    if (refVersion != null)
-                        WriteToGeneral("Project Api version: " + refVersion + "\r\n");
-                    if (refVersion == null || refVersion < apiSrc.Version)
-                    {
-                        apiSrc.Save(existingApiRefPath);
-                        WriteToGeneral("Updated reference to API v." + apiSrc.Version + "\r\n");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    WriteToGeneral("Failed to update API reference! " + ex.Message + "\r\n");
-                }
-            }
-        }
-
-        private Version GetVersionOrNull(string path)
-        {
-            try
-            {
-                var versionStr = FileVersionInfo.GetVersionInfo(path).FileVersion;
-                return new Version(versionStr);
-            }
-            catch (Exception ex)
-            {
-                WriteToGeneral("Error: " + ex.Message);
-                return null;
-            }
-        }
-
-        private AssemblyCopy GetLatestApiCopy()
-        {
-            var commonApiPath = Path.Combine(EnvService.AlgoCommonApiFolder, EnvService.ApiAssemblyFileName);
-            var apiFromCommon = new AssemblyCopy(commonApiPath);
-
-            if (apiFromCommon.IsValid)
-                return apiFromCommon;
-
-            if (apiFromCommon.LoadErrorMessage != null)
-                WriteToGeneral("Error: " + apiFromCommon.LoadErrorMessage + "\r\n");
-
-            string packageApiPath = Path.Combine(EnvService.PackageFolder, EnvService.ApiAssemblyFileName);
-            var apiFromPackage = new AssemblyCopy(packageApiPath);
-
-            if (apiFromPackage.IsValid)
-                return apiFromPackage;
-
-            if (apiFromPackage.LoadErrorMessage != null)
-                WriteToGeneral("Error: " + apiFromPackage.LoadErrorMessage + "\r\n");
-
-            return null;
-        }
-
-        private void WriteToGeneral(string message)
-        {
-            package.OutputPane_General?.OutputString(message);
-        }
-
         private void WriteLineToBuild(string message)
         {
             WriteToBuild(message + "\r\n");
@@ -342,18 +236,6 @@ namespace TickTrader.Algo.VS.Package
         private void WriteToBuild(string message)
         {
             package.OutputPane_Build?.OutputString(message);
-        }
-
-        public static bool ComparePaths(string path1, string path2)
-        {
-            return NormalizePath(path1) == NormalizePath(path2);
-        }
-
-        public static string NormalizePath(string path)
-        {
-            return Path.GetFullPath(new Uri(path).LocalPath)
-                       .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                       .ToUpperInvariant();
         }
     }
 }
