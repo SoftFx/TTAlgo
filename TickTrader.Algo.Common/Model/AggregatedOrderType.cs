@@ -1,16 +1,10 @@
 ﻿using SoftFX.Extended;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.BusinessObjects;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.Common.Model
 {
-    enum AggregatedOrderType { Unknown, Buy, BuyLimit, BuyStop, BuyStopLimit, Sell, SellLimit, SellStop, SellStopLimit }
+    public enum AggregatedOrderType { Unknown, Buy, BuyLimit, BuyStop, BuyStopLimit, Sell, SellLimit, SellStop, SellStopLimit }
 
-    static class OrderCommontExtensions
+    public static class OrderCommonExtensions
     {
         public static AggregatedOrderType Aggregate(this TradeRecordSide side, TradeRecordType type)
         {

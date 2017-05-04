@@ -289,7 +289,6 @@
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
-    <Compile Include="Model\OrderType.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
     <Compile Include="Model\SymbolModel.cs" />

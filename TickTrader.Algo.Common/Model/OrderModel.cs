@@ -104,6 +104,7 @@ namespace TickTrader.Algo.Common.Model
                 {
                     this.orderType = value;
                     NotifyOfPropertyChange(nameof(OrderType));
+                    NotifyOfPropertyChange(nameof(AggregatedType));
                 }
             }
         }
@@ -116,6 +117,7 @@ namespace TickTrader.Algo.Common.Model
                 {
                     side = value;
                     NotifyOfPropertyChange(nameof(Side));
+                    NotifyOfPropertyChange(nameof(AggregatedType));
                 }
             }
         }
@@ -386,13 +388,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        //public AggregatedOrderType AggregatedType
-        //{
-        //    get
-        //    {
-        //        return side.Aggregate(orderType);
-        //    }
-        //}
+        public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
 
         #endregion
 

@@ -91,6 +91,7 @@
     <Compile Include="Model.Setup\QuoteInputSetup.cs" />
     <Compile Include="Model.Setup\UiConverter.cs" />
     <Compile Include="Model\OrderModel.cs" />
+    <Compile Include="Model\AggregatedOrderType.cs" />
     <Compile Include="Model\PluginFeedProvider.cs" />
     <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
