@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
         {
             PluginItem = item;
             Name = item.DisplayName;
-            Description = string.IsNullOrWhiteSpace(item.Ref.Descriptor.Description) ? null : item.Ref.Descriptor.Description;
+            Description = string.Join(Environment.NewLine, item.Ref.Descriptor.Description, string.Empty, $"Path: {item.FilePath}").Trim();
             Category = item.Ref.Descriptor.Category;
             var type = item.Ref.Descriptor.AlgoLogicType;
             if (type == Algo.Core.Metadata.AlgoTypes.Indicator)

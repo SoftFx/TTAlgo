@@ -121,9 +121,9 @@ namespace TickTrader.Algo.Core.Repository
         private void AddItem(string file)
         {
             var item = new FileWatcher(file, logger);
-            item.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName));
-            item.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName));
-            item.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName));
+            item.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
+            item.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
+            item.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
             assemblies.Add(file, item);
             item.Start();
         }
@@ -197,15 +197,17 @@ namespace TickTrader.Algo.Core.Repository
 
     public class AlgoRepositoryEventArgs
     {
-        public AlgoRepositoryEventArgs(AlgoRepository rep, AlgoPluginRef pRef, string fileName)
+        public AlgoRepositoryEventArgs(AlgoRepository rep, AlgoPluginRef pRef, string fileName, string filePath)
         {
             Repository = rep;
             FileName = fileName;
+            FilePath = filePath;
             PluginRef = pRef;
         }
 
         public AlgoPluginRef PluginRef { get; private set; }
         public string FileName { get; private set; }
+        public string FilePath { get; private set; }
         public AlgoRepository Repository { get; private set; }
     }
 }

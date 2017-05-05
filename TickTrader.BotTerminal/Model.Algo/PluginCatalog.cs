@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
         public void Add(AlgoPluginDescriptor descriptor)
         {
             var key = new PluginCatalogKey(NoRepositoryId, "", descriptor.Id);
-            plugins.Add(key, new PluginCatalogItem(key, new AlgoPluginRef(descriptor)));
+            plugins.Add(key, new PluginCatalogItem(key, new AlgoPluginRef(descriptor), "Built-in"));
         }
 
         public void AddAssembly(Assembly assembly)
@@ -73,7 +73,7 @@ namespace TickTrader.BotTerminal
                 {
                     var repId = repositoryToIdMap[args.Repository];
                     var key = new PluginCatalogKey(repId, args.FileName, args.PluginRef.Id);
-                    plugins.Add(key, new PluginCatalogItem(key, args.PluginRef));
+                    plugins.Add(key, new PluginCatalogItem(key, args.PluginRef, args.FilePath));
                 }
                 catch (Exception ex)
                 {
@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
                 {
                     var repId = repositoryToIdMap[args.Repository];
                     var key = new PluginCatalogKey(repId, args.FileName, args.PluginRef.Id);
-                    plugins[key] = new PluginCatalogItem(key, args.PluginRef);
+                    plugins[key] = new PluginCatalogItem(key, args.PluginRef, args.FilePath);
                 }
                 catch (Exception ex)
                 {
