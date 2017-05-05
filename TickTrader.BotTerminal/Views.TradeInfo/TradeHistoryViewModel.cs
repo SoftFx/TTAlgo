@@ -14,12 +14,16 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Threading;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
     internal class TradeHistoryViewModel : PropertyChangedBase
     {
+        private const int CleanUpDelay = 200;
+
+
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public enum TimePeriod { All, LastHour, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
@@ -33,8 +37,9 @@ namespace TickTrader.BotTerminal
         private TimePeriod _period;
         private TradeDirection _tradeDirectionFilter;
 
-        private CancellationTokenSource cancelLoadSrc;
-        private ActionBlock<TransactionReport> uiUpdater;
+        private CancellationTokenSource _cancelLoadSrc, _cancelCleanSrc;
+        private ActionBlock<TransactionReport> _uiUpdater;
+        private ActionBlock<string> _cleanUpdater;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient)
         {
@@ -80,6 +85,7 @@ namespace TickTrader.BotTerminal
                 {
                     _period = value;
                     NotifyOfPropertyChange(nameof(Period));
+                    NotifyOfPropertyChange(nameof(CanEditPeriod));
                     UpdateDateTimePeriod();
                     RefreshHistory();
                 }
@@ -95,9 +101,7 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _from = value;
-                _period = TimePeriod.Custom;
                 NotifyOfPropertyChange(nameof(From));
-                NotifyOfPropertyChange(nameof(Period));
                 RefreshHistory();
             }
         }
@@ -111,9 +115,7 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _to = value;
-                _period = TimePeriod.Custom;
                 NotifyOfPropertyChange(nameof(To));
-                NotifyOfPropertyChange(nameof(Period));
                 RefreshHistory();
             }
         }
@@ -132,29 +134,37 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(DownloadObserver));
             }
         }
+
+        public bool CanEditPeriod => Period == TimePeriod.Custom;
         #endregion
 
         private async void RefreshHistory()
         {
+            if (Period != TimePeriod.Custom)
+            {
+                CleanUpHistory();
+            }
+
             var currentSrc = new CancellationTokenSource();
 
             try
             {
-                if (cancelLoadSrc != null)
-                    cancelLoadSrc.Cancel();
+                if (_cancelLoadSrc != null)
+                    _cancelLoadSrc.Cancel();
 
-                cancelLoadSrc = currentSrc;
+                _cancelLoadSrc = currentSrc;
 
-                if (uiUpdater != null)
+                if (_uiUpdater != null)
                 {
-                    uiUpdater.Complete();
-                    await uiUpdater.Completion;
+                    _uiUpdater.Complete();
+                    await _uiUpdater.Completion;
                 }
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) { logger.Debug("Load task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Load operation canceled"); }
             catch (Exception ex)
             {
-                logger.Error(ex, "Failed to stop background task!");
+                logger.Error(ex, "Failed to stop background load task!");
             }
 
             if (currentSrc.IsCancellationRequested)
@@ -174,7 +184,7 @@ namespace TickTrader.BotTerminal
                 var currentUpdater = new ActionBlock<TransactionReport>(r => AddToList(r), options);
                 currentUpdater.Post(null);
 
-                uiUpdater = currentUpdater;
+                _uiUpdater = currentUpdater;
 
                 var downloadTask = _tradeClient.Account.TradeHistory.DownloadingHistoryAsync(
                     From.ToUniversalTime(), To.ToUniversalTime(), currentSrc.Token,
@@ -183,7 +193,8 @@ namespace TickTrader.BotTerminal
 
                 await downloadTask;
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) { logger.Debug("Load task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Load operation canceled"); }
             catch (Exception ex)
             {
                 logger.Error(ex, "Failed to load trade history!");
@@ -197,14 +208,25 @@ namespace TickTrader.BotTerminal
             _tradeClient.Account.TradeHistory.OnTradeReport -= TradeTransactionReport;
         }
 
+        public string GetTransactionKey(TransactionReport tradeTransaction)
+        {
+            return $"{tradeTransaction.CloseTime.Ticks} {tradeTransaction.UniqueId}";
+        }
+
         private void AddToList(TransactionReport tradeTransaction)
         {
             try
             {
                 if (tradeTransaction == null)
+                {
                     _tradesList.Clear();
-                else if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(tradeTransaction.UniqueId))
-                    _tradesList.Add(tradeTransaction.UniqueId, tradeTransaction);
+                }
+                else
+                {
+                    var key = GetTransactionKey(tradeTransaction);
+                    if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(key))
+                        _tradesList.Add(key, tradeTransaction);
+                }
             }
             catch (Exception ex)
             {
@@ -212,50 +234,58 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void UpdateDateTimePeriod()
+        private void CalculateDateTimePeriod(ref DateTime from, ref DateTime to)
         {
             switch (Period)
             {
                 case TimePeriod.All:
-                    _from = new DateTime(1980, 01, 01);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = new DateTime(1980, 01, 01);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastHour:
-                    _from = DateTime.Now.AddHours(-1);
-                    _to = DateTime.Now;
+                    from = DateTime.Now.AddHours(-1);
+                    to = DateTime.Now;
                     break;
                 case TimePeriod.CurrentMonth:
-                    _from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                    _to = _from.AddMonths(1).AddSeconds(-1);
+                    from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                    to = _from.AddMonths(1).AddSeconds(-1);
                     break;
                 case TimePeriod.PreviousMonth:
-                    _from = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 1);
-                    _to = _from.AddMonths(1).AddSeconds(-1);
+                    from = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 1);
+                    to = _from.AddMonths(1).AddSeconds(-1);
                     break;
                 case TimePeriod.Today:
-                    _from = DateTime.Today;
-                    _to = _from.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today;
+                    to = _from.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.Yesterday:
-                    _from = DateTime.Today.AddDays(-1);
-                    _to = _from.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddDays(-1);
+                    to = _from.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastThreeMonths:
-                    _from = DateTime.Today.AddMonths(-3);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddMonths(-3);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastSixMonths:
-                    _from = DateTime.Today.AddMonths(-5);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddMonths(-5);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
                 case TimePeriod.LastYear:
-                    _from = DateTime.Today.AddYears(-1);
-                    _to = DateTime.Today.AddDays(1).AddSeconds(-1);
+                    from = DateTime.Today.AddYears(-1);
+                    to = DateTime.Today.AddDays(1).AddSeconds(-1);
                     break;
             }
+        }
 
-            NotifyOfPropertyChange(nameof(From));
-            NotifyOfPropertyChange(nameof(To));
+        private void UpdateDateTimePeriod()
+        {
+            CalculateDateTimePeriod(ref _from, ref _to);
+
+            if (!CanEditPeriod)
+            {
+                NotifyOfPropertyChange(nameof(From));
+                NotifyOfPropertyChange(nameof(To));
+            }
         }
 
         private void RefreshCollection()
@@ -286,7 +316,7 @@ namespace TickTrader.BotTerminal
 
         private void TradeTransactionReport(TransactionReport tradeTransaction)
         {
-            uiUpdater.Post(tradeTransaction);
+            _uiUpdater.Post(tradeTransaction);
         }
 
         private void AccountTypeChanged()
@@ -298,6 +328,114 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(IsCachAccount));
             NotifyOfPropertyChange(nameof(IsGrossAccount));
             NotifyOfPropertyChange(nameof(IsNetAccount));
+        }
+
+        private async void CleanUpHistory()
+        {
+            var currentSrc = new CancellationTokenSource();
+
+            try
+            {
+                if (_cancelCleanSrc != null)
+                    _cancelCleanSrc.Cancel();
+
+                _cancelCleanSrc = currentSrc;
+
+                if (_cleanUpdater != null)
+                {
+                    _cleanUpdater.Complete();
+                    await _cleanUpdater.Completion;
+                }
+            }
+            catch (TaskCanceledException) { logger.Debug("Clean task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Clean operation canceled"); }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to stop background clean task!");
+            }
+
+            if (currentSrc.IsCancellationRequested)
+                return;
+
+            try
+            {
+                var options = new ExecutionDataflowBlockOptions()
+                {
+                    TaskScheduler = DataflowHelper.UiDispatcherBacground,
+                    MaxDegreeOfParallelism = 5,
+                    MaxMessagesPerTask = 10,
+                    BoundedCapacity = 2000,
+                    CancellationToken = currentSrc.Token
+                };
+
+                var currentUpdater = new ActionBlock<string>(id => RemoveFromList(id), options);
+
+                _cleanUpdater = currentUpdater;
+
+                var cleanTask = CleanUpHistoryAsync(currentSrc.Token, r => currentUpdater.SendAsync(r, currentSrc.Token).Wait());
+
+                await cleanTask;
+            }
+            catch (TaskCanceledException) { logger.Debug("Clean task canceled"); }
+            catch (OperationCanceledException) { logger.Debug("Clean operation canceled"); }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to clean trade history!");
+            }
+        }
+
+        private void RemoveFromList(string tradeTransactionId)
+        {
+            try
+            {
+                if (_tradesList.ContainsKey(tradeTransactionId))
+                    _tradesList.Remove(tradeTransactionId);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        public Task CleanUpHistoryAsync(CancellationToken token, Action<string> reportHandler)
+        {
+            return Task.Run(async () =>
+            {
+                token.ThrowIfCancellationRequested();
+
+                while (true)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    if (Period == TimePeriod.LastHour)
+                    {
+                        UpdateDateTimePeriod();
+
+                        var toDeleteList = new List<string>();
+                        for (var index = 0; index < _tradesList.Count && _tradesList[index].CloseTime.ToLocalTime() < From; index++)
+                        {
+                            toDeleteList.Add(GetTransactionKey(_tradesList[index]));
+                        }
+                        foreach (var reportId in toDeleteList)
+                        {
+                            reportHandler(reportId);
+                        }
+                    }
+                    else
+                    {
+                        var from = _from;
+                        var to = _to;
+                        CalculateDateTimePeriod(ref from, ref to);
+                        if (_from != from)
+                        {
+                            UpdateDateTimePeriod();
+                            RefreshHistory();
+                        }
+                    }
+
+                    await Task.Delay(CleanUpDelay);
+                }
+            }, token);
         }
     }
 }
