@@ -218,9 +218,15 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (tradeTransaction == null)
+                {
                     _tradesList.Clear();
-                else if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(tradeTransaction.UniqueId))
-                    _tradesList.Add(GetTransactionKey(tradeTransaction), tradeTransaction);
+                }
+                else
+                {
+                    var key = GetTransactionKey(tradeTransaction);
+                    if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(key))
+                        _tradesList.Add(key, tradeTransaction);
+                }
             }
             catch (Exception ex)
             {
