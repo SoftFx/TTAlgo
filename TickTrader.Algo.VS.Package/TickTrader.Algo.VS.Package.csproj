@@ -46,6 +46,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DeployExtension>True</DeployExtension>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -70,7 +71,6 @@
       <Link>Algo.Core.Copy\PackageWriter.cs</Link>
     </Compile>
     <Compile Include="EnvService.cs" />
-    <Compile Include="AssemblyCopy.cs" />
     <Compile Include="CsProject.cs" />
     <Compile Include="CsProjectConfiguration.cs" />
     <Compile Include="CsProjectFactory.cs" />
@@ -83,7 +83,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <Content Include="Packages\TickTrader.Algo.Api.1.0.15.nupkg">
+    <Content Include="Packages\TickTrader.Algo.Api.1.0.16.nupkg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>

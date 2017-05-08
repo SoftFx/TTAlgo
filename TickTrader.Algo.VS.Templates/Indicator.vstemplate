@@ -24,7 +24,7 @@
   </WizardExtension>
   <WizardData>
     <packages repository="extension" repositoryId="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1">
-      <package id="TickTrader.Algo.Api" version="1.0.15" />
+      <package id="TickTrader.Algo.Api" version="1.0.16" />
     </packages>
   </WizardData>
 </VSTemplate>
