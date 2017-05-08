@@ -1,7 +1,34 @@
 ﻿<div class="row">
     <div class="col-md-12">
         <form [formGroup]="BotSetupForm" novalidate>
-            <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm" [Accounts]="Accounts"></bot-parameters-cmp>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Instance ID</label>
+                        <input formControlName="InstanceId" type="text" class="form-control" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Account</label>
+                        <input formControlName="Account" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Symbol</label>
+                        <select formControlName="Symbol" class="form-control">
+                            <option *ngFor="let Symbol of (Symbols | orderBy)" [ngValue]="Symbol">{{Symbol}}</option>
+                        </select>
+                        <div *ngIf="BotSetupForm.controls.Symbol.invalid && BotSetupForm.controls.Symbol.touched" class="alert alert-danger">
+                            <span>{{ 'FieldIsRequired' | resx: ['Symbol'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm"></bot-parameters-cmp>
             <div class="pull-right">
                 <button [disabled]="!Setup || BotSetupForm.invalid" (click)="applyConfig(bot)" class="btn btn-primary" type="submit">Save</button>
                 <button [class.disabled]="!Setup" (click)="cancel()" class="btn btn-primary" type="submit">Cancel</button>

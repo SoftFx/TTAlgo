@@ -6,8 +6,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
-using TickTrader.DedicatedServer.WebAdmin.Server.Models;
-using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Api;
@@ -42,7 +40,13 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             if (tradeBot != null)
                 return Ok(tradeBot.ToDto());
             else
-                return NotFound();
+                return NotFound((new BotNotFoundException($"Bot {id} not found")).ToBadResult());
+        }
+
+        [HttpGet("{botName}/[action]")]
+        public string BotId(string botName)
+        {
+            return _dedicatedServer.AutogenerateBotId(botName);
         }
 
         [HttpPost]
@@ -56,6 +60,31 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     CreateConfig(setup));
 
                 return Ok(tradeBot.ToDto());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Put(string id, [FromBody]PluginSetupDto setup)
+        {
+            try
+            {
+                var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+
+                if(tradeBot != null)
+                {
+                    tradeBot.Configurate(CreateConfig(setup));
+                }
+                else
+                {
+                    return NotFound((new BotNotFoundException($"Bot {id} not found")).ToBadResult());
+                }
+
+                return Ok();
             }
             catch (DSException ex)
             {

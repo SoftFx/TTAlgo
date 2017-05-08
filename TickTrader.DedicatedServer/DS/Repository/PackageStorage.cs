@@ -141,7 +141,6 @@ namespace TickTrader.DedicatedServer.DS.Repository
             }
             catch (Exception ex)
             {
-                //_logger.LogWarning($"PACKAGE_STORAGE: Failed to read package {fileInfo.Name}");
                 _logger.LogError($"Failed to read package {fileInfo.Name}: {ex}");
 
                 return new PackageModel(fileInfo.Name, fileInfo.CreationTime, null);

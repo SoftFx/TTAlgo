@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 
 export class BotCardComponent implements OnInit {
     public TradeBotState = TradeBotStates;
+
     @Input() TradeBot: TradeBotModel;
     @Output() OnDeleted = new EventEmitter<TradeBotModel>();
 

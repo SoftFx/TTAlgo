@@ -11,16 +11,7 @@ import { ApiService } from '../../services/index';
 
 export class BotParametersComponent {
     public ParameterDataType = ParameterDataTypes;
-    public Symbols: string[];
 
     @Input() Setup: SetupModel;
-    @Input() Accounts: AccountModel[];
     @Input() BotSetupForm: FormGroup;
-
-    constructor(private _api: ApiService) { }
-
-    OnAccountChanged(account: AccountModel) {
-        this._api.GetSymbols(account).subscribe(symbols => this.Symbols = symbols);
-    }
-
 }

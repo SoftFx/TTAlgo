@@ -115,6 +115,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         public event Action<TradeBotModel> BotInitialized;
         public event Action<TradeBotModel, ChangeAction> BotChanged;
         public event Action<TradeBotModel> BotStateChanged;
+        public event Action<TradeBotModel> BotConfigurationChanged;
 
         [DataMember(Name = "server")]
         public string Address { get; private set; }
@@ -268,7 +269,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private void Bot_IsRunningChanged(TradeBotModel bot)
+        private void OnBotIsRunningChanged(TradeBotModel bot)
         {
             if (bot.IsRunning)
                 _startedBotsCount++;
@@ -296,19 +297,27 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void InitBot(TradeBotModel bot)
         {
-            bot.IsRunningChanged += Bot_IsRunningChanged;
-            bot.StateChanged += Bot_StateChanged;
+            bot.IsRunningChanged += OnBotIsRunningChanged;
+            bot.ConfigurationChanged += OnBotConfigurationChanged;
+            bot.StateChanged += OnBotStateChanged;
             bot.Init(this, _log, _sync, _packageProvider, null);
             BotInitialized?.Invoke(bot);
         }
 
-        private void DeinitBot(TradeBotModel bot)
+        private void OnBotConfigurationChanged(TradeBotModel bot)
         {
-            bot.IsRunningChanged -= Bot_IsRunningChanged;
-            bot.StateChanged -= Bot_StateChanged;
+            BotConfigurationChanged?.Invoke(bot);
+            BotChanged?.Invoke(bot, ChangeAction.Modified);
         }
 
-        private void Bot_StateChanged(TradeBotModel bot)
+        private void DeinitBot(TradeBotModel bot)
+        {
+            bot.ConfigurationChanged -= OnBotConfigurationChanged;
+            bot.IsRunningChanged -= OnBotIsRunningChanged;
+            bot.StateChanged -= OnBotStateChanged;
+        }
+
+        private void OnBotStateChanged(TradeBotModel bot)
         {
             BotStateChanged?.Invoke(bot);
         }

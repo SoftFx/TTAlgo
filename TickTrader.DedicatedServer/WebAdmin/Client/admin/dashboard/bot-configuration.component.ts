@@ -13,6 +13,9 @@ import { Location } from '@angular/common';
 
 export class BotConfigurationComponent implements OnInit {
     public Bot: TradeBotModel;
+    public ErrorMessage: string;
+    public IsEditMode: boolean;
+    public IsCreateMode: boolean;
 
     constructor(
         private _route: ActivatedRoute,
@@ -23,9 +26,12 @@ export class BotConfigurationComponent implements OnInit {
 
     ngOnInit() {
         this._route.params
-            .filter((params: Params) => params['id'])
-            .switchMap((params: Params) => this._api.GetTradeBot(params['id']))
-            .subscribe((bot: TradeBotModel) => this.Bot = bot);
+            .switchMap((params: Params) => params['id'] ? this._api.GetTradeBot(params['id']) : Observable.of(null))
+            .subscribe((bot: TradeBotModel) => {
+                this.Bot = bot;
+                this.updateModeOfComponent();
+            },
+            err => { this.ErrorMessage = err.Message; });
     }
 
     public OnSaved(bot: TradeBotModel) {
@@ -34,5 +40,16 @@ export class BotConfigurationComponent implements OnInit {
 
     public OnAdded(bot: TradeBotModel) {
         this._location.back();
+    }
+
+    private updateModeOfComponent() {
+        if (this.Bot) {
+            this.IsCreateMode = false;
+            this.IsEditMode = true;
+        }
+        else {
+            this.IsCreateMode = true;
+            this.IsEditMode = false;
+        }
     }
 }

@@ -24,6 +24,12 @@ export class ApiService {
         });
     }
 
+    AutogenerateBotId(name: string) {
+        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(name) + '/BotId', { headers: this.headers })
+            .map(res => res.text())
+            .catch(this.handleServerError);
+    }
+
     GetTradeBot(id: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id), { headers: this.headers })
             .map(res => new TradeBotModel().Deserialize(res.json()))
@@ -42,9 +48,8 @@ export class ApiService {
             .catch(this.handleServerError);
     }
 
-    UpdateBotConfig(setup: SetupModel) {
-        return this._http.post(this._tradeBotsUrl, setup.Payload, { headers: this.headers })
-            .map(res => new TradeBotModel().Deserialize(res.json()))
+    UpdateBotConfig(botId: string, setup: SetupModel) {
+        return this._http.put(`${this._tradeBotsUrl}/` + encodeURIComponent(botId), setup.Payload, { headers: this.headers })
             .catch(this.handleServerError);
     }
 

@@ -160,20 +160,25 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void InitAccount(ClientModel acc)
         {
-            acc.BotValidation += Acc_BotValidation;
-            acc.BotInitialized += Acc_BotInitialized;
+            acc.BotValidation += OnBotValidation;
+            acc.BotInitialized += OnBotInitialized;
             acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
-            acc.Changed += Acc_Changed;
-            acc.BotChanged += Acc_BotChanged;
+            acc.Changed += OnAccountChanged;
+            acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
         }
-
+       
         private void DeinitAccount(ClientModel acc)
         {
-            acc.BotValidation -= Acc_BotValidation;
-            acc.Changed -= Acc_Changed;
-            acc.BotChanged -= Acc_BotChanged;
+            acc.BotValidation -= OnBotValidation;
+            acc.Changed -= OnAccountChanged;
+            acc.BotChanged -= OnBotChanged;
             acc.BotStateChanged -= OnBotStateChanged;
+        }
+
+        private void OnBotConfigurationChanged(TradeBotModel obj)
+        {
+            throw new NotImplementedException();
         }
 
         private void OnBotStateChanged(TradeBotModel bot)
@@ -183,15 +188,15 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void DisposeAccount(ClientModel acc)
         {
-            acc.Changed -= Acc_Changed;
+            acc.Changed -= OnAccountChanged;
         }
 
-        private void Acc_Changed(ClientModel acc)
+        private void OnAccountChanged(ClientModel acc)
         {
             Save();
         }
 
-        private void Acc_BotChanged(TradeBotModel bot, ChangeAction changeAction)
+        private void OnBotChanged(TradeBotModel bot, ChangeAction changeAction)
         {
             if (changeAction == ChangeAction.Removed)
                 _allBots.Remove(bot.Id);
@@ -200,13 +205,13 @@ namespace TickTrader.DedicatedServer.DS.Models
             BotChanged?.Invoke(bot, changeAction);
         }
 
-        private void Acc_BotValidation(TradeBotModel bot)
+        private void OnBotValidation(TradeBotModel bot)
         {
             if (_allBots.ContainsKey(bot.Id))
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
 
-        private void Acc_BotInitialized(TradeBotModel bot)
+        private void OnBotInitialized(TradeBotModel bot)
         {
             _allBots.Add(bot.Id, bot);
         }

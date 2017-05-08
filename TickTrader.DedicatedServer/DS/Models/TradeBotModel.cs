@@ -54,6 +54,10 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IAccount Account => _client;
         public IBotLog Log => _botLog;
 
+        public event Action<TradeBotModel> StateChanged;
+        public event Action<TradeBotModel> IsRunningChanged;
+        public event Action<TradeBotModel> ConfigurationChanged;
+
         public void Init(ClientModel client, ILogger log, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
         {
             _syncObj = syncObj;
@@ -69,18 +73,39 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
             else
             {
-                if (Config is BarBasedConfig)
-                {
-                    _setupModel = new BarBasedPluginSetup(_ref);
-                    _setupModel.Load(Config);
-                }
+                ApplyConfig();
 
-                client.StateChanged += Client_StateChanged;
+                _client.StateChanged += Client_StateChanged;
 
-                _botLog = new BotLog(syncObj);
+                _botLog = new BotLog(_syncObj);
 
                 if (IsRunning)
                     Start();
+            }
+        }
+
+        public void Configurate(PluginConfig cfg)
+        {
+            if (State == BotStates.Broken)
+                return;
+
+            if (IsStopped())
+            {
+                Config = cfg;
+                ApplyConfig();
+                ConfigurationChanged?.Invoke(this);
+            }
+            else
+                throw new InvalidOperationException("Make sure that the bot is stopped before installing a new configuration");
+            
+        }
+
+        private void ApplyConfig()
+        {
+            if (Config is BarBasedConfig)
+            {
+                _setupModel = new BarBasedPluginSetup(_ref);
+                _setupModel.Load(Config);
             }
         }
 
@@ -90,8 +115,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 StartExecutor();
         }
 
-        public event Action<TradeBotModel> StateChanged;
-        public event Action<TradeBotModel> IsRunningChanged;
+       
 
         public void Start()
         {
@@ -114,7 +138,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_syncObj)
             {
-                if (IsStopped())
+                if (IsStopped() || State == BotStates.Stopping)
                     return Task.FromResult(this);
 
                 SetRunning(false);
@@ -129,7 +153,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private bool IsStopped()
         {
-            return State == BotStates.Offline || State == BotStates.Stopping || State == BotStates.Faulted;
+            return State == BotStates.Offline || State == BotStates.Faulted;
         }
 
         private bool TaskIsNullOrStopped(Task task)

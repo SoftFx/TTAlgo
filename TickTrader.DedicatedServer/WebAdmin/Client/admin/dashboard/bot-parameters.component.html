@@ -1,42 +1,6 @@
 ﻿<div *ngIf="Setup">
     <div [formGroup]="BotSetupForm">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    <label>Instance ID</label>
-                    <input formControlName="InstanceId" type="text" class="form-control" />
-                    <div *ngIf="BotSetupForm.controls.InstanceId.invalid && BotSetupForm.controls.InstanceId.touched" class="alert alert-danger">
-                        <span>{{ 'FieldIsRequired' | resx: ['InstanceId'] }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>Account</label>
-                    <select formControlName="Account" (ngModelChange)="OnAccountChanged($event)" class="form-control">
-                        <option *ngFor="let Account of Accounts" [ngValue]="Account">{{Account.Login}}-{{Account.Server}}</option>
-                    </select>
-                    <div *ngIf="BotSetupForm.controls.Account.invalid && BotSetupForm.controls.Account.touched" class="alert alert-danger">
-                        <span>{{ 'FieldIsRequired' | resx: ['Account'] }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>Symbol</label>
-                    <select formControlName="Symbol" class="form-control">
-                        <option *ngFor="let Symbol of (Symbols | orderBy)" [ngValue]="Symbol">{{Symbol}}</option>
-                    </select>
-                    <div *ngIf="BotSetupForm.controls.Symbol.invalid && BotSetupForm.controls.Symbol.touched" class="alert alert-danger">
-                        <span>{{ 'FieldIsRequired' | resx: ['Symbol'] }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
+       <div class="row">
             <div *ngFor="let Parameter of Setup.Parameters" [ngSwitch]="Parameter.Descriptor.DataType" class="col-md-6">
                 <div class="form-group">
                     <label>{{Parameter.Descriptor.DisplayName}}</label>

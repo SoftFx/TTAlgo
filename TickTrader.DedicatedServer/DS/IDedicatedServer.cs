@@ -67,6 +67,7 @@ namespace TickTrader.DedicatedServer.DS
         PackageModel Package { get; }
         string Descriptor { get;  }
         BotStates State { get; }
+        void Configurate(PluginConfig cfg);
         void Start();
         Task StopAsync();
     }

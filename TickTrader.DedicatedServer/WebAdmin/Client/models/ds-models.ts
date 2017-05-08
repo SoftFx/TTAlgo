@@ -13,6 +13,10 @@ export class AccountModel implements Serializable<AccountModel> {
 
         return this;
     }
+
+    public toString = (): string => {
+        return `${this.Login} - ${this.Server}`;  
+    }
 }
 
 export class PackageModel implements Serializable<PackageModel> {
@@ -220,7 +224,7 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.PackageName = plugin.Package;
         setup.PluginId = plugin.Id;
-        setup.InstanceId = `${plugin.DisplayName} [${Guid.New().substring(0, 4)}]`;
+        //setup.InstanceId = `${plugin.DisplayName} [${Guid.New().substring(0, 4)}]`;
         setup.Parameters = plugin.Parameters.map(p => new Parameter(p));
         setup.Account = null;
         setup.Symbol = "";

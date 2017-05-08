@@ -11,16 +11,15 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
     styles: [require('../../app.component.css')],
 })
 
-export class DashboardComponent {
-    BotStatesType = TradeBotStates;
-    TradeBots: TradeBotModel[];
+export class DashboardComponent implements OnInit {
+    public BotStatesType = TradeBotStates;
+    public TradeBots: TradeBotModel[];
 
     constructor(private _api: ApiService, private _route: ActivatedRoute, private _router: Router) { }
 
     ngOnInit() {
         this._api.Feed.addBot.subscribe(bot => this.addBot(bot));
         this._api.Feed.deleteBot.subscribe(id => this.deleteBot(id));
-
         this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 

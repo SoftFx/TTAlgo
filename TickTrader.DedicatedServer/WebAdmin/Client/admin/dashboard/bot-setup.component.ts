@@ -13,9 +13,9 @@ import { Router } from '@angular/router';
 })
 
 export class BotSetupComponent implements OnInit {
-    public Accounts: AccountModel[];
     public Setup: SetupModel;
     public BotSetupForm: FormGroup;
+    public Symbols: string[];
 
     @Input() TradeBot: TradeBotModel;
     @Output() OnSaved = new EventEmitter<TradeBotModel>();
@@ -28,18 +28,14 @@ export class BotSetupComponent implements OnInit {
         this.Setup = SetupModel.ForTradeBot(this.TradeBot);
         this.BotSetupForm = this.createGroupForm(this.Setup);
 
-        this._api.GetAccounts().subscribe(response => {
-            this.Accounts = response;
-            let acc = this.Accounts.find(a => a.Login === this.Setup.Account.Login && a.Server === this.Setup.Account.Server)
-            this.BotSetupForm.patchValue({ "Account": acc });
-        });
+        this._api.GetSymbols(this.Setup.Account).subscribe(symbols => this.Symbols = symbols);
     }
 
     applyConfig() {
         if (this.BotSetupForm.valid) {
             this.applSetupForm();
 
-            this._api.UpdateBotConfig(this.Setup).subscribe(
+            this._api.UpdateBotConfig(this.TradeBot.Id, this.Setup).subscribe(
                 tb => this.OnSaved.emit(tb),
                 err => this.notifyAboutError(err)
             );
@@ -63,14 +59,20 @@ export class BotSetupComponent implements OnInit {
     private createGroupForm(setup: SetupModel) {
         let formGroup = this._fb.group({});
 
+        formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, Validators.required));
         formGroup.addControl("Account", this._fb.control(setup.Account, Validators.required));
         formGroup.addControl("Symbol", this._fb.control(setup.Symbol, Validators.required));
-        formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, Validators.required));
 
         setup.Parameters.forEach(parameter => formGroup.addControl(parameter.Descriptor.Id,
-            this._fb.control(parameter.Descriptor.DefaultValue, parameter.Descriptor.IsRequired ? Validators.required : []))
+            this._fb.control(this.getParamValue(parameter.Descriptor.Id), parameter.Descriptor.IsRequired ? Validators.required : []))
         );
         return formGroup;
+    }
+
+    private getParamValue(paramId: string): Object
+    {
+        let parameter = this.Setup.Parameters.find(p => p.Descriptor.Id === paramId);
+        return parameter.Value;
     }
 
     private notifyAboutError(response: ResponseStatus) {
