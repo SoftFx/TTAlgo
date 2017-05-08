@@ -1,4 +1,79 @@
-﻿export interface IDictionary<T> {
+﻿import { Observable } from "rxjs/Rx";
+import { ResponseStatus } from './response';
+
+export class ObservableRequest<T>
+{
+    private _task: Observable<T>;
+    private _success: (value: T) => void;
+    private _error: (error: ResponseStatus) => void;
+    private _complete: () => void;
+
+    public IsRunning: boolean;
+    public IsCompleted: boolean;
+    public Error: ResponseStatus;
+    public Result: T;
+
+    constructor(task: Observable<T>) {
+        this._task = task;
+
+        this._success = (v) => { };
+        this._error = (e) => { };
+        this._complete = () => { };
+
+        this.IsRunning = false;
+        this.IsCompleted = false;
+    }
+
+    public Subscribe(ok?: (value: T) => void, error?: (error: ResponseStatus) => void, complete?: () => void) {
+        if (ok)
+            this._success = ok;
+
+        if (error)
+            this._error = error;
+
+        if (complete)
+            this._complete = complete;
+
+        this.IsRunning = true;
+
+        this._task.subscribe(v => this.handleSuccess(v), e=> this.handleError(e), () => this.handleComplete());
+
+        return this;
+    }
+
+    public get ErrorMessage(): string {
+        if (this.Error)
+            return this.Error.Message;
+        else
+            "";
+    }
+    public get IsFaulted(): boolean {
+        return !!this.Error;
+    }
+
+    private handleSuccess(value: T) {
+        this.Result = value;
+
+        this._success(value);
+    }
+
+    private handleError(error: ResponseStatus) {
+        this.Error = error;
+
+        this._error(error);
+    }
+
+    private handleComplete() {
+        this.IsRunning = false;
+        this.IsCompleted = true;
+
+        this._complete();
+    }
+
+
+}
+
+export interface IDictionary<T> {
     Add(key: string, value: T);
     ContainsKey(key: string): boolean;
     Count(): number;
