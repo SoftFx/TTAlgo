@@ -15,7 +15,7 @@ namespace TickTrader.DedicatedServer.DS
 {
     public interface IDedicatedServer
     {
-        IPackage AddPackage(byte[] fileContent, string fileName);
+        IPackage UpdatePackage(byte[] fileContent, string fileName);
         IPackage[] GetPackages();
         void RemovePackage(string package);
         PluginInfo[] GetAllPlugins();
@@ -76,6 +76,7 @@ namespace TickTrader.DedicatedServer.DS
         DateTime Created { get; }
         bool IsValid { get; }
 
+        bool NameEquals(string name);
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 

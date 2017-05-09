@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.DS.Repository;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -62,6 +63,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         public void Dispose()
         {
             Container?.Dispose();
+        }
+
+        public bool NameEquals(string name)
+        {
+            return PackageStorage.GetPackageKey(name) == PackageStorage.GetPackageKey(Name);
         }
     }
 }

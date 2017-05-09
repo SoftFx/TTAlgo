@@ -37,13 +37,6 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public object SyncObj { get; private set; }
 
-        public IEnumerable<IAccount> Accounts { get { lock (SyncObj) { return _accounts.ToArray(); } } }
-        public IEnumerable<ITradeBot> TradeBots => _allBots.Values;
-        public event Action<IAccount, ChangeAction> AccountChanged;
-        public event Action<ITradeBot, ChangeAction> BotChanged;
-        public event Action<ITradeBot> BotStateChanged;
-        public event Action<IPackage, ChangeAction> PackageChanged;
-
         private void Init(ILoggerFactory loggerFactory)
         {
             SyncObj = new object();
@@ -60,6 +53,10 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         #region Account management
 
+        public IEnumerable<IAccount> Accounts { get { lock (SyncObj) { return _accounts.ToArray(); } } }
+
+        public event Action<IAccount, ChangeAction> AccountChanged;
+
         public ConnectionErrorCodes TestAccount(AccountKey accountId)
         {
             Task<ConnectionErrorCodes> testTask;
@@ -75,7 +72,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             Task<ConnectionErrorCodes> testTask;
 
             var acc = new ClientModel(server, login, password);
-            acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
+            acc.Init(SyncObj, _loggerFactory, _packageStorage);
             lock (SyncObj)
             {
                 InitAccount(acc);
@@ -139,6 +136,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                 var acc = FindAccount(accountId);
                 if (acc != null)
                 {
+                    if (acc.HasRunningBots)
+                        throw new AccountLockedException("Account cannot be removed! Stop all bots and try again.");
+
+                    acc.RemoveAllBots();
                     _accounts.Remove(acc);
                     DisposeAccount(acc);
 
@@ -182,7 +183,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             acc.BotValidation += Acc_BotValidation;
             acc.BotInitialized += Acc_BotInitialized;
-            acc.Init(SyncObj, _loggerFactory, _packageStorage.Get);
+            acc.Init(SyncObj, _loggerFactory, _packageStorage);
             acc.Changed += Acc_Changed;
             acc.BotChanged += Acc_BotChanged;
             acc.BotStateChanged += OnBotStateChanged;
@@ -234,6 +235,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         #endregion
 
         #region Bot management
+
+        public IEnumerable<ITradeBot> TradeBots => _allBots.Values;
+
+        public event Action<ITradeBot, ChangeAction> BotChanged;
+        public event Action<ITradeBot> BotStateChanged;
 
         public ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig)
         {
@@ -307,13 +313,15 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private PackageStorage _packageStorage;
 
-        public IPackage AddPackage(byte[] fileContent, string fileName)
+        public event Action<IPackage, ChangeAction> PackageChanged
         {
-            var newPackage = _packageStorage.Add(fileContent, fileName);
+            add { _packageStorage.PackageChanged += value; }
+            remove { _packageStorage.PackageChanged -= value; }
+        }
 
-            PackageChanged?.Invoke(newPackage, ChangeAction.Added);
-
-            return newPackage;
+        public IPackage UpdatePackage(byte[] fileContent, string fileName)
+        {
+            return _packageStorage.Update(fileContent, fileName);
         }
 
         public IPackage[] GetPackages()
@@ -326,9 +334,12 @@ namespace TickTrader.DedicatedServer.DS.Models
             var dPackage = _packageStorage.Get(package);
             if (dPackage != null)
             {
-                _packageStorage.Remove(package);
+                var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
 
-                PackageChanged?.Invoke(dPackage, ChangeAction.Removed);
+                foreach (var bot in botsToDelete)
+                    bot.Account.RemoveBot(bot.Id);
+
+                _packageStorage.Remove(package);
             }
         }
 

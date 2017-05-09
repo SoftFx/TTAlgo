@@ -11,6 +11,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Exceptions;
+using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
@@ -24,9 +25,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         private Task _stopTask;
         private PluginExecutor executor;
         private BotLog _botLog;
-        private PluginSetup _setupModel;
         private AlgoPluginRef _ref;
         private ListenerProxy _stopListener;
+        private PackageStorage _packageRepo;
 
         public TradeBotModel(string id, PluginKey key, PluginConfig cfg)
         {
@@ -54,34 +55,21 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IAccount Account => _client;
         public IBotLog Log => _botLog;
 
-        public void Init(ClientModel client, ILogger log, object syncObj, Func<string, PackageModel> packageProvider, IAlgoGuiMetadata tradeMetadata)
+        public void Init(ClientModel client, ILogger log, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata)
         {
             _syncObj = syncObj;
             _client = client;
             _log = log;
-            Package = packageProvider(PackageName);
+            _packageRepo = packageRepo;
+            UpdatePackage();
 
-            _ref = Package.GetPluginRef(Descriptor);
-            if (_ref == null || _ref.Descriptor.AlgoLogicType != AlgoTypes.Robot)
-            {
-                State = BotStates.Broken;
-                FaultMessage = "Package '" + PackageName + "' is not found in repository!";
-            }
-            else
-            {
-                if (Config is BarBasedConfig)
-                {
-                    _setupModel = new BarBasedPluginSetup(_ref);
-                    _setupModel.Load(Config);
-                }
+            _packageRepo.PackageChanged += _packageRepo_PackageChanged;
+            _client.StateChanged += Client_StateChanged;
 
-                client.StateChanged += Client_StateChanged;
+            _botLog = new BotLog(syncObj);
 
-                _botLog = new BotLog(syncObj);
-
-                if (IsRunning)
-                    Start();
-            }
+            if (IsRunning)
+                Start();
         }
 
         private void Client_StateChanged(ClientModel client)
@@ -97,8 +85,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_syncObj)
             {
+                if (State == BotStates.Broken)
+                    throw new InvalidStateException("Trade bot is broken!");
+
                 if (State != BotStates.Offline && State != BotStates.Faulted)
-                    throw new InvalidStateException("Bot has been already started!");
+                    throw new InvalidStateException("Trade bot has been already started!");
 
                 SetRunning(true);
                 Package.IncrementRef();
@@ -127,6 +118,12 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
+        public void Dispose()
+        {
+            _packageRepo.PackageChanged -= _packageRepo_PackageChanged;
+            _client.StateChanged -= Client_StateChanged;
+        }
+
         private bool IsStopped()
         {
             return State == BotStates.Offline || State == BotStates.Stopping || State == BotStates.Faulted;
@@ -143,17 +140,22 @@ namespace TickTrader.DedicatedServer.DS.Models
             {
                 executor = _ref.CreateExecutor();
 
-                if (_setupModel is BarBasedPluginSetup)
+                if (Config is BarBasedConfig)
                 {
-                    var barSetup = (BarBasedPluginSetup)_setupModel;
+                    var setupModel = new BarBasedPluginSetup(_ref);
+                    setupModel.Load(Config);
+                    setupModel.Apply(executor);
+
                     var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
-                    executor.InitBarStrategy(feedAdapter, barSetup.PriceType);
-                    executor.MainSymbolCode = barSetup.MainSymbol;
+                    executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
+                    executor.MainSymbolCode = setupModel.MainSymbol;
+                    executor.TimeFrame = Algo.Api.TimeFrames.M1;
+                    executor.Metadata = feedAdapter;
                 }
                 else
                     throw new Exception("Unsupported configuration!");
 
-                executor.InitSlidingBuffering(10);
+                executor.InitSlidingBuffering(1024);
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
@@ -164,7 +166,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                     lock (_syncObj) OnStopped(false);
                 });
 
-                _setupModel.Apply(executor);
                 executor.Start();
 
                 lock (_syncObj) ChangeState(BotStates.Online);
@@ -208,9 +209,10 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private void ChangeState(BotStates newState)
+        private void ChangeState(BotStates newState, string errorMessage = null)
         {
             State = newState;
+            FaultMessage = errorMessage;
             StateChanged?.Invoke(this);
         }
 
@@ -221,6 +223,33 @@ namespace TickTrader.DedicatedServer.DS.Models
                 IsRunning = val;
                 IsRunningChanged?.Invoke(this);
             }
+        }
+
+        private void UpdatePackage()
+        {
+            Package = _packageRepo.Get(PackageName);
+
+            if (Package == null)
+            {
+                ChangeState(BotStates.Broken, "Package '" + PackageName + "' is not found in repository!");
+                return;
+            }
+
+            _ref = Package.GetPluginRef(Descriptor);
+            if (_ref == null || _ref.Descriptor.AlgoLogicType != AlgoTypes.Robot)
+            {
+                ChangeState(BotStates.Broken, $"Trade bot '{Descriptor}' is missing in package '{PackageName}'!");
+                return;
+            }
+
+            if (State == BotStates.Broken)
+                ChangeState(BotStates.Offline, null);
+        }
+
+        private void _packageRepo_PackageChanged(IPackage pckg, ChangeAction action)
+        {
+            if (pckg.NameEquals(PackageName))
+                UpdatePackage();
         }
 
         private class ListenerProxy : CrossDomainObject

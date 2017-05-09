@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Market Script", Version = "1.0", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Market Script", Version = "1.1", Category = "Test Orders",
         Description = "Opens market order for current chart symbol with specified volume, side and tag")]
     public class OpenMarket : TradeBot
     {
@@ -22,7 +22,10 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void OnStart()
         {
-            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, Symbol.Ask, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
+            var price = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
+            if (double.IsNaN(price))
+                price = 1; // can still try
+            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, price, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
             Exit();
         }
     }

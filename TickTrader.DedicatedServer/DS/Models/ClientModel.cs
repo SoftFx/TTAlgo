@@ -29,12 +29,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         private CancellationTokenSource _requestCancellation;
         private List<Task> _requests;
         private ConnectionErrorCodes _lastErrorCode;
-        private CancellationTokenSource connectCancellation;
         private ClientCore _core;
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
-        private Func<string, PackageModel> _packageProvider;
+        private PackageStorage _packageProvider;
 
         private bool stopRequested;
         private bool lostConnection;
@@ -47,7 +46,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             Password = password;
         }
 
-        public void Init(object syncObj, ILoggerFactory loggerFactory, Func<string, PackageModel> packageProvider)
+        public void Init(object syncObj, ILoggerFactory loggerFactory, PackageStorage packageProvider)
         {
             _sync = syncObj;
             _packageProvider = packageProvider;
@@ -114,6 +113,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
         public FeedHistoryProviderModel FeedHistory { get; private set; }
         public TradeExecutor TradeApi { get; private set; }
+        public int RunningBotsCount => _startedBotsCount;
+        public bool HasRunningBots => _startedBotsCount > 0;
 
         public event Action<ClientModel> StateChanged;
         public event Action<ClientModel> Changed;
@@ -238,7 +239,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 var symbols = fCache.Symbols;
                 Currencies = fCache.Currencies.ToDictionary(c => c.Name);
                 _core.Init();
-                Symbols.Initialize(symbols, Currencies);
                 Account.Init();
             }
 
@@ -289,7 +289,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_sync)
             {
-                var package = _packageProvider(pluginId.PackageName);
+                var package = _packageProvider.Get(pluginId.PackageName);
 
                 if (package == null)
                     throw new PackageNotFoundException($"Package '{pluginId.PackageName}' cannot be found!");
@@ -330,6 +330,23 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
+        public void RemoveAllBots()
+        {
+            lock (_sync)
+            {
+                if (HasRunningBots)
+                    throw new InvalidStateException("Some bots are running. Remove is not possible.");
+
+                foreach(var bot in _bots)
+                {
+                    DeinitBot(bot);
+                    BotChanged?.Invoke(bot, ChangeAction.Removed);
+                }
+
+                _bots.Clear();
+            }
+        }
+
         private void InitBot(TradeBotModel bot)
         {
             bot.IsRunningChanged += Bot_IsRunningChanged;
@@ -342,6 +359,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             bot.IsRunningChanged -= Bot_IsRunningChanged;
             bot.StateChanged -= Bot_StateChanged;
+            bot.Dispose();
         }
 
         private void Bot_StateChanged(TradeBotModel bot)

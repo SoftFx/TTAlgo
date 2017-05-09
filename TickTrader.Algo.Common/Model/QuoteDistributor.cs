@@ -120,7 +120,11 @@ namespace TickTrader.Algo.Common.Model
         {
             if (requestQueue != null) // online
             {
-                var subscribeTask = new Task(() => _client.FeedProxy.Server.SubscribeToQuotes(symbols, depth));
+                var subscribeTask = new Task(() =>
+                {
+                    _client.FeedProxy.Server.SubscribeToQuotes(symbols, depth);
+                    logger.Debug("Subscribed to " + string.Join(",", symbols));
+                });
                 requestQueue.Post(subscribeTask);
                 return subscribeTask;
             }

@@ -40,21 +40,29 @@ namespace TickTrader.DedicatedServer.DS.Repository
             {
                 var package = ReadPackage(f);
                 lock (_packages)
-                    _packages.Add(package.Name, package);
+                    _packages.Add(GetPackageKey(package.Name), package);
             });
         }
 
-        public PackageModel Add(byte[] packageContent, string packageName)
+        public PackageModel Update(byte[] packageContent, string packageName)
         {
             lock (_syncObj)
             {
-                Validate(packageName);
+                //Validate(packageName);
 
                 EnsureStorageDirectoryCreated();
 
+                var key = GetPackageKey(packageName);
+                var existing = _packages.GetOrDefault(key);
+                if (existing != null)
+                    RemovePackage(existing);
+
                 var packageFileInfo = SavePackage(packageName, packageContent);
                 var package = ReadPackage(packageFileInfo);
-                _packages.Add(package.Name, package);
+                _packages.Add(key, package);
+
+                if (existing == null)
+                    PackageChanged?.Invoke(package, ChangeAction.Added);
 
                 return package;
             }
@@ -63,16 +71,16 @@ namespace TickTrader.DedicatedServer.DS.Repository
         public PackageModel[] GetAll()
         {
             lock (_syncObj)
-                return _packages.Select(x => x.Value).ToArray();
+                return _packages.Values.ToArray();
         }
 
         public PackageModel Get(string name)
         {
-            lock (_syncObj)
-            {
-                PackageModel package;
-                return _packages.TryGetValue(name, out package) ? package : null;
-            }
+            lock (_syncObj) return GetByName(name);
+        }
+
+        public void Replace()
+        {
         }
 
         public void Remove(string packageName)
@@ -80,36 +88,58 @@ namespace TickTrader.DedicatedServer.DS.Repository
             lock (_syncObj)
             {
                 PackageModel package;
-                if (_packages.TryGetValue(packageName, out package))
+                if (_packages.TryGetValue(GetPackageKey(packageName), out package))
                 {
-                    if (package.IsLocked)
-                        throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
-
-                    _packages.Remove(packageName);
-                    try
-                    {
-                        package.Dispose();
-                    }
-                    catch
-                    {
-                        _logger.LogWarning($"Error disposing package '{packageName}'");
-                    }
-
-                    try
-                    {
-                        File.Delete(Path.Combine(_storageDir, packageName));
-                        _packages.Remove(packageName);
-                    }
-                    catch
-                    {
-                        _logger.LogWarning($"Error deleting file package '{packageName}'");
-                        throw;
-                    }
+                    RemovePackage(package);
+                    PackageChanged?.Invoke(package, ChangeAction.Removed);
                 }
             }
         }
 
+        public event Action<IPackage, ChangeAction> PackageChanged;
+
         #region Private Methods
+
+        private static void CheckLock(PackageModel package)
+        {
+            if (package.IsLocked)
+                throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
+        }
+
+        private PackageModel GetByName(string name)
+        {
+            return _packages.GetOrDefault(GetPackageKey(name));
+        }
+
+        public static string GetPackageKey(string packageName)
+        {
+            return packageName.ToLower();
+        }
+
+        private void RemovePackage(PackageModel package)
+        {
+            CheckLock(package);
+
+            try
+            {
+                File.Delete(Path.Combine(_storageDir, package.Name));
+                _packages.Remove(GetPackageKey(package.Name));
+            }
+            catch
+            {
+                _logger.LogWarning($"Error deleting file package '{package.Name}'");
+                throw;
+            }
+
+            try
+            {
+                package.Dispose();
+            }
+            catch
+            {
+                _logger.LogWarning($"Error disposing package '{package.Name}'");
+            }
+        }
 
         private void EnsureStorageDirectoryCreated()
         {
@@ -118,15 +148,18 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 var dinfo = Directory.CreateDirectory(_storageDir);
             }
         }
+
         private string GetFullPathToStorage(string path)
         {
             return PathExtensions.IsPathAbsolute(path) ? path :
               Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), path);
         }
+
         private string GetFullPathToPackage(string fileName)
         {
             return Path.Combine(_storageDir, fileName);
         }
+
         private PackageModel ReadPackage(FileInfo fileInfo)
         {
             try
@@ -142,18 +175,19 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 return new PackageModel(fileInfo.Name, fileInfo.CreationTime, null);
             }
         }
+
         private FileInfo SavePackage(string packageName, byte[] packageContent)
         {
             var packagePath = GetFullPathToPackage(packageName);
             File.WriteAllBytes(packagePath, packageContent);
             return new FileInfo(packagePath);
+        }
 
-        }
-        private void Validate(string packageName)
-        {
-            if (_packages.ContainsKey(packageName))
-                throw new DuplicatePackageException($"Package with the same name '{packageName}' already exists");
-        }
+        //private void Validate(string packageName)
+        //{
+        //    if (_packages.ContainsKey(GetPackageKey(packageName)))
+        //        throw new DuplicatePackageException($"Package with the same name '{packageName}' already exists");
+        //}
 
         #endregion
     }
