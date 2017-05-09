@@ -18,6 +18,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
+using NLog.Extensions.Logging;
+using NLog.Web;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
@@ -62,8 +64,9 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+            loggerFactory.AddNLog();
+            app.AddNLogWeb();
+
             CoreLoggerFactory.Init(cn => new LoggerAdapter(loggerFactory.CreateLogger(cn)));
 
             if (env.IsDevelopment())
