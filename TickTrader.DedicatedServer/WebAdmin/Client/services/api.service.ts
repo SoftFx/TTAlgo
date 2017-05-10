@@ -123,7 +123,7 @@ export class ApiService {
     }
 
     TestAccount(acc: AccountModel) {
-        return this._http.get(`${this._accountsUrl}/Test/?` + $.param({ login: acc.Login, server: acc.Server }), { headers: this.headers })
+        return this._http.get(`${this._accountsUrl}/Test/?` + $.param({ login: acc.Login, server: acc.Server, password: acc.Password }), { headers: this.headers })
             .catch(this.handleServerError);
     }
     /* <<< API Accounts */
