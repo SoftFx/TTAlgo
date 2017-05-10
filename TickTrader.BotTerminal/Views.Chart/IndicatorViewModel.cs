@@ -14,16 +14,21 @@ namespace TickTrader.BotTerminal
     {
         private ChartModelBase _chart;
 
-        public IndicatorViewModel(ChartModelBase chart, IndicatorModel indicator, string windowId)
+        public IndicatorViewModel(ChartModelBase chart, IndicatorModel indicator, string windowId, SymbolModel symbol)
         {
             _chart = chart;
             ChartWindowId = windowId;
             Model = indicator;
             Series = new DynamicList<IRenderableSeriesViewModel>();
             Panes = new DynamicList<IndicatorPaneViewModel>();
+            Precision = 0;
 
             foreach (OutputSetup output in indicator.Setup.Outputs.Where(o => o.Target == OutputTargets.Overlay))
             {
+                if (output.Precision == -1)
+                {
+                    Precision = Math.Max(Precision, symbol.Descriptor.Precision);
+                }
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator, output);
                 if (seriesViewModel != null)
                     Series.Values.Add(seriesViewModel);
@@ -33,7 +38,7 @@ namespace TickTrader.BotTerminal
             {
                 if (target != OutputTargets.Overlay)
                 {
-                    CreatePane(target);
+                    CreatePane(target, symbol);
                 }
             }
         }
@@ -43,6 +48,7 @@ namespace TickTrader.BotTerminal
         public DynamicList<IRenderableSeriesViewModel> Series { get; private set; }
         public DynamicList<IndicatorPaneViewModel> Panes { get; private set; }
         public string ChartWindowId { get; private set; }
+        public int Precision { get; private set; }
 
         public void Close()
         {
@@ -50,11 +56,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void CreatePane(OutputTargets target)
+        private void CreatePane(OutputTargets target, SymbolModel symbol)
         {
             if (Model.Setup.Outputs.Any(o => o.Target == target))
             {
-                Panes.Values.Add(new IndicatorPaneViewModel(this, _chart, target));
+                Panes.Values.Add(new IndicatorPaneViewModel(this, _chart, target, symbol));
             }
         }
     }

@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Api
         {
             DefaultColor = Colors.Auto;
             Target = OutputTargets.Overlay;
+            Precision = -1;
         }
 
         public string DisplayName { get; set; }
@@ -25,6 +26,7 @@ namespace TickTrader.Algo.Api
         public float DefaultThickness { get; set; }
         public PlotType PlotType { get; set; }
         public OutputTargets Target { get; set; }
+        public int Precision { get; set; }
     }
 
     [Serializable]
