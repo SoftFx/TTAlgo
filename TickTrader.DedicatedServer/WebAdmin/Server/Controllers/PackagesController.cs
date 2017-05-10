@@ -46,7 +46,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
                     try
                     {
-                        var pacakge = _dedicatedServer.AddPackage(fileContent, file.FileName);
+                        var pacakge = _dedicatedServer.UpdatePackage(fileContent, file.FileName);
                     }
                     catch (DuplicatePackageException dpe)
                     {

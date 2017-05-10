@@ -16,6 +16,7 @@ using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
+using TickTrader.DedicatedServer.DS.Info;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -24,14 +25,15 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _sync;
         private ILogger _log;
-        //private object _syncEvents = new object();
-        private CancellationTokenSource connectCancellation;
-        private TaskCompletionSource<ConnectionErrorCodes> testRequest;
+        private CancellationTokenSource _connectCancellation;
+        private CancellationTokenSource _requestCancellation;
+        private List<Task> _requests;
+        private ConnectionErrorCodes _lastErrorCode;
         private ClientCore _core;
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
-        private Func<string, PackageModel> _packageProvider;
+        private PackageStorage _packageProvider;
 
         private bool stopRequested;
         private bool lostConnection;
@@ -44,11 +46,14 @@ namespace TickTrader.DedicatedServer.DS.Models
             Password = password;
         }
 
-        public void Init(object syncObj, ILoggerFactory loggerFactory, Func<string, PackageModel> packageProvider)
+        public void Init(object syncObj, ILoggerFactory loggerFactory, PackageStorage packageProvider)
         {
             _sync = syncObj;
             _packageProvider = packageProvider;
             _log = loggerFactory.CreateLogger<ClientModel>();
+            _requests = new List<Task>();
+            _requestCancellation = new CancellationTokenSource();
+
             var loggerAdapter = new LoggerAdapter(loggerFactory.CreateLogger<ConnectionModel>());
 
             if (_bots == null)
@@ -108,6 +113,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
         public FeedHistoryProviderModel FeedHistory { get; private set; }
         public TradeExecutor TradeApi { get; private set; }
+        public int RunningBotsCount => _startedBotsCount;
+        public bool HasRunningBots => _startedBotsCount > 0;
 
         public event Action<ClientModel> StateChanged;
         public event Action<ClientModel> Changed;
@@ -124,36 +131,68 @@ namespace TickTrader.DedicatedServer.DS.Models
         [DataMember(Name = "password")]
         public string Password { get; private set; }
 
-        #region Connection Management
-
-        public async Task<ConnectionErrorCodes> TestConnection()
+        public Task<ConnectionInfo> GetInfo()
         {
-            Task<ConnectionErrorCodes> resultTask = null;
-
             lock (_sync)
             {
                 if (ConnectionState == ConnectionStates.Online)
-                    return ConnectionErrorCodes.None;
+                    return Task.FromResult(new ConnectionInfo(this));
                 else
                 {
-                    if (testRequest == null)
-                    {
-                        testRequest = new TaskCompletionSource<ConnectionErrorCodes>();
-                        ManageConnection();
-                    }
-
-                    resultTask = testRequest.Task;
+                    return AddPendingRequest(
+                        new Task<ConnectionInfo>(() =>
+                        {
+                            if (_lastErrorCode != ConnectionErrorCodes.None)
+                                throw new CommunicationException("Connection error! Code: " + _lastErrorCode, _lastErrorCode);
+                            return new ConnectionInfo(this);
+                        }
+                        , _requestCancellation.Token));
                 }
             }
+        }
 
-            return await resultTask;
+        #region Connection Management
+
+        public Task<ConnectionErrorCodes> TestConnection()
+        {
+            lock (_sync)
+            {
+                if (ConnectionState == ConnectionStates.Online)
+                    return Task.FromResult(ConnectionErrorCodes.None);
+                else
+                    return AddPendingRequest(new Task<ConnectionErrorCodes>(() => _lastErrorCode, _requestCancellation.Token));
+            }
+        }
+
+        private Task<T> AddPendingRequest<T>(Task<T> requestTask)
+        {
+            _requests.Add(requestTask);
+            ManageConnection();
+            return requestTask;
+        }
+
+        private void ExecRequests()
+        {
+            foreach (var req in _requests)
+                req.RunSynchronously();
+            _requests.Clear();
+        }
+
+        private void CancelRequests()
+        {
+            if (_requests.Count > 0)
+            {
+                _requestCancellation.Cancel();
+                _requests.Clear();
+                _requestCancellation = new CancellationTokenSource();
+            }
         }
 
         private void ManageConnection()
         {
             if (ConnectionState == ConnectionStates.Offline)
             {
-                if (testRequest != null || _startedBotsCount > 0)
+                if (_requests.Count > 0 || _startedBotsCount > 0)
                     Connect();
             }
             else if (ConnectionState == ConnectionStates.Online)
@@ -189,10 +228,10 @@ namespace TickTrader.DedicatedServer.DS.Models
         private async void Connect()
         {
             ChangeState(ConnectionStates.Connecting);
-            connectCancellation = new CancellationTokenSource();
-            var result = await Connection.Connect(Username, Password, Address, connectCancellation.Token);
+            _connectCancellation = new CancellationTokenSource();
+            _lastErrorCode = await Connection.Connect(Username, Password, Address, _connectCancellation.Token);
 
-            if (result == ConnectionErrorCodes.None)
+            if (_lastErrorCode == ConnectionErrorCodes.None)
             {
                 await FeedHistory.Init();
 
@@ -201,18 +240,16 @@ namespace TickTrader.DedicatedServer.DS.Models
                 var symbols = fCache.Symbols;
                 Currencies = fCache.Currencies.ToDictionary(c => c.Name);
                 _core.Init();
-                Symbols.Initialize(symbols, Currencies);
                 Account.Init();
             }
 
             lock (_sync)
             {
-                if (result == ConnectionErrorCodes.None)
+                if (_lastErrorCode == ConnectionErrorCodes.None)
                     ChangeState(ConnectionStates.Online);
                 else
                     ChangeState(ConnectionStates.Offline);
-                testRequest?.TrySetResult(result);
-                testRequest = null;
+                ExecRequests();
                 ManageConnection();
             }
         }
@@ -237,10 +274,9 @@ namespace TickTrader.DedicatedServer.DS.Models
             lock (_sync)
             {
                 Password = password;
-                testRequest?.TrySetCanceled();
-                testRequest = null;
+                CancelRequests();
                 stopRequested = true;
-                connectCancellation?.Cancel();
+                _connectCancellation?.Cancel();
                 Changed?.Invoke(this);
                 ManageConnection();
             }
@@ -254,7 +290,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_sync)
             {
-                var package = _packageProvider(pluginId.PackageName);
+                var package = _packageProvider.Get(pluginId.PackageName);
 
                 if (package == null)
                     throw new PackageNotFoundException($"Package '{pluginId.PackageName}' cannot be found!");
@@ -295,6 +331,23 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
+        public void RemoveAllBots()
+        {
+            lock (_sync)
+            {
+                if (HasRunningBots)
+                    throw new InvalidStateException("Some bots are running. Remove is not possible.");
+
+                foreach(var bot in _bots)
+                {
+                    DeinitBot(bot);
+                    BotChanged?.Invoke(bot, ChangeAction.Removed);
+                }
+
+                _bots.Clear();
+            }
+        }
+
         private void InitBot(TradeBotModel bot)
         {
             bot.IsRunningChanged += OnBotIsRunningChanged;
@@ -315,6 +368,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             bot.ConfigurationChanged -= OnBotConfigurationChanged;
             bot.IsRunningChanged -= OnBotIsRunningChanged;
             bot.StateChanged -= OnBotStateChanged;
+            bot.Dispose();
         }
 
         private void OnBotStateChanged(TradeBotModel bot)

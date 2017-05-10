@@ -4,7 +4,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.1", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.2", Category = "Test Orders",
         Description = "Opens order for current chart symbol with specified volume, price, side, type, options, tag, SL, TP. " +
                       "Prints order execution result to bot status window. " +
                       "If price = 0 then it will be taken from symbol bid/ask (depending on order side). " +
@@ -35,17 +35,19 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Take Profit", DefaultValue = 0.0, IsRequired = false)]
         public double TakeProfit { get; set; }
 
-
-        protected override void OnStart()
+        protected async override void OnStart()
         {
-            var price = Price.Gt(Symbol.Point) ? Price : (Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid);
+            var price = Price.Gt(Symbol.Point) ? Price : await GetCurrentPrice(Side);
             var sl = StopLoss.Gt(Symbol.Point) ? StopLoss : (double?)null;
             var tp = TakeProfit.Gt(Symbol.Point) ? TakeProfit : (double?)null;
-            var res = OpenOrder(Symbol.Name, Type, Side, Volume, price, sl, tp, "Open Order Bot " + DateTime.Now, Options, Tag);
-            Status.WriteLine($"ResultCode = {res.ResultCode}");
-            if (res.ResultingOrder != null)
+            if (double.IsNaN(price))
+                PrintError("Cannot open order: off quotes for " + Symbol.Name);
+            else
             {
-                Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
+                var res = OpenOrder(Symbol.Name, Type, Side, Volume, price, sl, tp, "Open Order Bot " + DateTime.Now, Options, Tag);
+                Status.WriteLine($"ResultCode = {res.ResultCode}");
+                if (res.ResultingOrder != null)
+                    Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
             }
             Exit();
         }
