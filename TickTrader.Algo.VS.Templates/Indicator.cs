@@ -6,7 +6,7 @@ using TickTrader.Algo.Api;
 
 namespace $safeprojectname$
 {
-    [Indicator(DisplayName = "$projectname$", IsOverlay = true)]
+    [Indicator(Category = "Misc", DisplayName = "$projectname$", Version = "1.0")]
 	public class $safeprojectname$ : Indicator
     {
         [Parameter(DisplayName = "Param 1", DefaultValue = 2)]
@@ -22,10 +22,10 @@ namespace $safeprojectname$
         [Input]
         public DataSeries PriceInput { get; set; }
 
-        [Output(DisplayName = "Line 1", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "Line 1", Target = OutputTargets.Overlay, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Ouput1 { get; set; }
 
-        [Output(DisplayName = "Line 2", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Line 2", Target = OutputTargets.Window1, DefaultColor = Colors.Red)]
         public DataSeries Ouput2 { get; set; }
 
         protected override void Init()
