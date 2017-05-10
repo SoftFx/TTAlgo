@@ -190,8 +190,6 @@ namespace TickTrader.BotTerminal
             if (pluginType == AlgoTypes.Indicator)
             {
                 Chart.AddIndicator(setupModel.Setup);
-                Precision = Indicators.Where(i => i.Model.HasOverlayOutputs).Max(i => i.Precision);
-                UpdateLabelFormat();
             }
             else if (pluginType == AlgoTypes.Robot)
             {
@@ -264,6 +262,8 @@ namespace TickTrader.BotTerminal
         private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
             NotifyOfPropertyChange("HasIndicators");
+            Precision = Indicators.Where(i => i.Model.HasOverlayOutputs).Max(i => i.Precision);
+            UpdateLabelFormat();
         }
 
         private void InitChart()
