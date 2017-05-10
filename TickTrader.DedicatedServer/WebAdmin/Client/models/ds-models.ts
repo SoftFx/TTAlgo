@@ -145,6 +145,9 @@ export class Parameter {
             case ParameterDataTypes.Int:
                 this._value = Math.floor(value);
                 break;
+            case ParameterDataTypes.Double:
+                this._value = value ? value : 0.0;
+                break;
             default:
                 this._value = value;
         }

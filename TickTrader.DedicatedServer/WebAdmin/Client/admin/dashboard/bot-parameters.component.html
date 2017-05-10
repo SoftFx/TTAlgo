@@ -4,20 +4,20 @@
             <div *ngFor="let Parameter of Setup.Parameters" [ngSwitch]="Parameter.Descriptor.DataType" class="col-md-6">
                 <div class="form-group">
                     <label>{{Parameter.Descriptor.DisplayName}}</label>
-                    <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [formControlName]="Parameter.Descriptor.Id" />
-                    <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [formControlName]="Parameter.Descriptor.Id" />
-                    <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
                     <!--<div *ngSwitchCase="ParameterDataType.File" class="input-group">
                         <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
                         <input *ngIf="!Parameter.Value" type="text" class="form-control" placeholder="Select the file" readonly>
                         <label class="input-group-btn">
                             <span class="btn btn-primary btn-fill">
                                 <i class="fa fa-folder-o"></i>
-                                <input [(fileModel)]="Parameter.Value"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
+                                <input [(fileModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
                             </span>
                         </label>
                     </div>-->
-                    <select *ngSwitchCase="ParameterDataType.Enum" [formControlName]="Parameter.Descriptor.Id" class="form-control">
+                    <select *ngSwitchCase="ParameterDataType.Enum" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" class="form-control">
                         <option *ngFor="let EnumItem of (Parameter.Descriptor.EnumValues | orderBy)" [ngValue]="EnumItem">{{EnumItem}}</option>
                     </select>
                     <input *ngSwitchDefault type="text" readonly value="Unsupported property type" class="form-control" />

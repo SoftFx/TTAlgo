@@ -33,8 +33,6 @@ export class BotSetupComponent implements OnInit {
 
     applyConfig() {
         if (this.BotSetupForm.valid) {
-            this.applSetupForm();
-
             this._api.UpdateBotConfig(this.TradeBot.Id, this.Setup).subscribe(
                 tb => this.OnSaved.emit(tb),
                 err => this.notifyAboutError(err)
@@ -45,15 +43,6 @@ export class BotSetupComponent implements OnInit {
     cancel() {
         this.Setup = null;
         this.BotSetupForm.reset();
-    }
-
-    private applSetupForm() {
-        this.Setup.Account = this.BotSetupForm.value.Account;
-        this.Setup.Symbol = this.BotSetupForm.value.Symbol;
-        this.Setup.InstanceId = this.BotSetupForm.value.InstanceId;
-        this.Setup.Parameters.forEach(p => {
-            p.Value = this.BotSetupForm.value[p.Descriptor.Id];
-        })
     }
 
     private createGroupForm(setup: SetupModel) {

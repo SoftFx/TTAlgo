@@ -150,9 +150,11 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
         private PluginConfig CreateConfig(PluginSetupDto setup)
         {
-            var barConfig = new BarBasedConfig();
-            barConfig.MainSymbol = setup.Symbol;
-            barConfig.PriceType = BarPriceType.Ask;
+            var barConfig = new BarBasedConfig()
+            {
+                MainSymbol = setup.Symbol,
+                PriceType = BarPriceType.Ask
+            };
             foreach (var param in setup.Parameters)
             {
                 switch (param.DataType)

@@ -19,9 +19,9 @@ export class AccountsComponent implements OnInit {
 
     ngOnInit() {
         this.AccountForm = this._fBuilder.group({
-            "Login": ["", Validators.required],
-            "Password": ["", Validators.required],
-            "Server": ["", Validators.required]
+            Login: ["", Validators.required],
+            Password: ["", Validators.required],
+            Server: ["", Validators.required]
         });
 
         this.Accounts = [];

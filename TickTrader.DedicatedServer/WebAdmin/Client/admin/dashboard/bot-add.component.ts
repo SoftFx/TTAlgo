@@ -35,8 +35,6 @@ export class BotAddComponent implements OnInit {
 
     AddBot() {
         if (this.BotSetupForm.valid) {
-            this.applSetupForm();
-
             this._api.AddBot(this.Setup).subscribe(
                 tb => this.OnAdded.emit(tb),
                 err => this.notifyAboutError(err)
@@ -52,7 +50,7 @@ export class BotAddComponent implements OnInit {
 
     OnPluginSelected(plugin: PluginModel) {
         this.Setup = SetupModel.ForPlugin(plugin);
-        this.BotSetupForm = this.initSetupForm(this.Setup);
+        this.BotSetupForm = this.createSetupForm(this.Setup);
 
         let _localAutogenerateBotIdRef = ++this._autogenerateBotIdRef;
 
@@ -65,16 +63,7 @@ export class BotAddComponent implements OnInit {
         this._api.GetSymbols(account).subscribe(symbols => this.Symbols = symbols);
     }
 
-    private applSetupForm() {
-        this.Setup.Account = this.BotSetupForm.value.Account;
-        this.Setup.Symbol = this.BotSetupForm.value.Symbol;
-        this.Setup.InstanceId = this.BotSetupForm.value.InstanceId;
-        this.Setup.Parameters.forEach(p => {
-            p.Value = this.BotSetupForm.value[p.Descriptor.Id];
-        })
-    }
-
-    private initSetupForm(setup: SetupModel) {
+    private createSetupForm(setup: SetupModel) {
         let formGroup = this._fb.group({});
 
         formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, Validators.required));
