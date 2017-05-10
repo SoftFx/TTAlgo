@@ -52,12 +52,13 @@
                         </p>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="javascript:;"><i class="fa fa-android"></i> Add bot</a></li>
+                        <li *ngFor="let action of RouteInfo.actions"><a href="javascript:;" [routerLink]="action.Link"><i class="fa fa-android"></i>{{action.Name}}</a></li>
                         <li><a href="javascript:;"><i class="fa fa-user"></i> Add account</a></li>
                         <li class="divider"></li>
                         <li><a href="javascript:;">Separated link</a></li>
                     </ul>
                 </li>-->
+                <li *ngFor="let action of RouteInfo.actions"><a href="javascript:;" [routerLink]="action.Link"><p>{{action.Name}}</p></a></li>
                 <li>
                     <a href="javascript:;">
                         <p>{{UserName}}</p>
