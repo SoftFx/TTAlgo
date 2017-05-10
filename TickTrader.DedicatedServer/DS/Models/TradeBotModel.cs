@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
@@ -59,7 +57,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, ILogger log, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata, IAlgoGuiMetadata tradeMetadata)
+        public void Init(ClientModel client, ILogger log, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata)
         {
             _syncObj = syncObj;
             _client = client;
@@ -106,7 +104,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 if (State == BotStates.Broken)
                     throw new InvalidStateException("Trade bot is broken!");
 
-                if (State != BotStates.Offline && State != BotStates.Faulted)
+                if (!IsStopped())
                     throw new InvalidStateException("Trade bot has been already started!");
 
                 SetRunning(true);
