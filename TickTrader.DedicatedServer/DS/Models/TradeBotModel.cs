@@ -200,7 +200,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private async Task DoStop()
         {
-            await Task.Factory.StartNew(() => executor.Stop());
+            await Task.Factory.StartNew(() => executor?.Stop());
             lock (_syncObj) OnStopped(false);
         }
 

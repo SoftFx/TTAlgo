@@ -1,10 +1,9 @@
 ﻿import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
-
-import { Observable } from "rxjs/Rx";
-import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest } from '../../models/index';
+import { Location } from '@angular/common';
+import { Observable, Subject } from "rxjs/Rx";
+import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest, AccountInfo } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
-import { Router } from '@angular/router';
 
 @Component({
     selector: 'bot-add-cmp',
@@ -14,23 +13,35 @@ import { Router } from '@angular/router';
 
 export class BotAddComponent implements OnInit {
     private _autogenerateBotIdRef: number = 0;
+    private _loadSymbolsRef: number = 0;
+    private _pluginSelectedSubject = new Subject<PluginModel>();
+    private _accountSelectedSubject = new Subject<AccountModel>();
 
     public PackagesRequest: ObservableRequest<PackageModel[]>;
+    public AccountInfoRequest: ObservableRequest<AccountInfo>;
     public AccountsRequest: ObservableRequest<AccountModel[]>;
     public Symbols: string[];
-    public SelectedPlugin: PluginModel;
     public Setup: SetupModel;
     public BotSetupForm: FormGroup;
 
     @Output() OnAdded = new EventEmitter<TradeBotModel>();
 
-    constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService) { }
+    constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService, private _location: Location) { }
 
     ngOnInit() {
-        this.BotSetupForm = this._fb.group({});
+        this._pluginSelectedSubject
+            .debounceTime(200)
+            .distinctUntilChanged()
+            .subscribe(plugin => this.initSetupForm(plugin));
+
+        this._accountSelectedSubject
+            .debounceTime(200)
+            .distinctUntilChanged()
+            .subscribe(account => this.loadSymbols(account));
 
         this.PackagesRequest = new ObservableRequest(this._api.GetPackages()).Subscribe();
         this.AccountsRequest = new ObservableRequest(this._api.GetAccounts()).Subscribe();
+        this.AccountInfoRequest = new ObservableRequest(Observable.of(new AccountInfo())).Subscribe();
     }
 
     AddBot() {
@@ -43,24 +54,47 @@ export class BotAddComponent implements OnInit {
     }
 
     Cancel() {
-        this.SelectedPlugin = null;
-        this.Setup = null;
-        this.BotSetupForm.reset();
+        this._location.back();
     }
 
     OnPluginSelected(plugin: PluginModel) {
-        this.Setup = SetupModel.ForPlugin(plugin);
-        this.BotSetupForm = this.createSetupForm(this.Setup);
-
-        let _localAutogenerateBotIdRef = ++this._autogenerateBotIdRef;
-
-        this._api.AutogenerateBotId(plugin.DisplayName)
-            .filter(id => this._autogenerateBotIdRef == _localAutogenerateBotIdRef && !this.BotSetupForm.value.InstanceId)
-            .subscribe(id => this.BotSetupForm.patchValue({ "InstanceId": id }));
+        this._pluginSelectedSubject.next(plugin);
     }
 
     OnAccountChanged(account: AccountModel) {
-        this._api.GetSymbols(account).subscribe(symbols => this.Symbols = symbols);
+        this._accountSelectedSubject.next(account);
+    }
+
+    private initSetupForm(plugin: PluginModel) {
+        if (plugin) {
+            this.Setup = SetupModel.ForPlugin(plugin);
+            this.BotSetupForm = this.createSetupForm(this.Setup);
+
+            let localAutogenerateBotIdRef = ++this._autogenerateBotIdRef;
+
+            this._api.AutogenerateBotId(plugin.DisplayName)
+                .filter(id => this._autogenerateBotIdRef == localAutogenerateBotIdRef && this.BotSetupForm && !this.BotSetupForm.value.InstanceId)
+                .subscribe(id => { if (this.BotSetupForm) this.BotSetupForm.patchValue({ "InstanceId": id }) });
+        }
+        else {
+            this.Setup = null;
+            this.BotSetupForm = null;
+        }
+    }
+
+    private loadSymbols(account: AccountModel) {
+        this.Symbols = [];
+        this.BotSetupForm.controls.Symbol.reset();
+
+        if (account) {
+            let localLoadSymbolsRef = ++this._loadSymbolsRef;
+
+            this.AccountInfoRequest = new ObservableRequest(this._api.GetAccountInfo(account).filter(info => this._loadSymbolsRef == localLoadSymbolsRef))
+                .Subscribe(info => {
+                    this.Symbols = info.Symbols;
+                    this.BotSetupForm.patchValue({ Symbol: info.MainSymbol });
+                });
+        }
     }
 
     private createSetupForm(setup: SetupModel) {

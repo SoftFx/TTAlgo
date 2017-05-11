@@ -22,6 +22,7 @@
                         <select [(ngModel)]="Setup.Symbol" formControlName="Symbol" class="form-control">
                             <option *ngFor="let Symbol of (Symbols | orderBy)" [ngValue]="Symbol">{{Symbol}}</option>
                         </select>
+                        <p *ngIf="!AccountInfoRequest.IsCompleted" class="category">Loading...</p>
                         <div *ngIf="BotSetupForm.controls.Symbol.invalid && BotSetupForm.controls.Symbol.touched" class="alert alert-danger">
                             <span>{{ 'FieldIsRequired' | resx: ['Symbol'] }}</span>
                         </div>
@@ -30,7 +31,8 @@
             </div>
             <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm"></bot-parameters-cmp>
             <div class="pull-right">
-                <button [disabled]="!Setup || BotSetupForm.invalid" (click)="applyConfig(bot)" class="btn btn-primary" type="submit">Save</button>
+                <button [disabled]="!Setup || BotSetupForm.invalid" (click)="SaveConfig(bot)" class="btn btn-primary" type="submit">Save</button>
+                <button (click)="Cancel()" class="btn btn-primary" type="submit">Cancel</button>
             </div>
         </form>
     </div>

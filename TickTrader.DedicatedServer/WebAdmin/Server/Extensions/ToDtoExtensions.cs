@@ -4,12 +4,20 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
-using TickTrader.DedicatedServer.DS.Models;
+using TickTrader.DedicatedServer.DS.Info;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class ToDtoExtensions
     {
+        public static AccountInfoDto ToDto(this ConnectionInfo info)
+        {
+            return new AccountInfoDto
+            {
+                Symbols = info.Symbols.Select(s => s.Name).ToArray()
+            };
+        }
+
         public static TradeBotDto ToDto(this ITradeBot bot)
         {
             return new TradeBotDto()

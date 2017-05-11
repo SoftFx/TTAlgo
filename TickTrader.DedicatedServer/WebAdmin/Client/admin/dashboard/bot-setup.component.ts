@@ -1,10 +1,9 @@
 ﻿import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
-
+import { Location } from '@angular/common';
 import { Observable } from "rxjs/Rx";
-import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus } from '../../models/index';
+import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest, AccountInfo } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
-import { Router } from '@angular/router';
 
 @Component({
     selector: 'bot-setup-cmp',
@@ -13,6 +12,8 @@ import { Router } from '@angular/router';
 })
 
 export class BotSetupComponent implements OnInit {
+    public AccountInfoRequest : ObservableRequest<AccountInfo>;
+
     public Setup: SetupModel;
     public BotSetupForm: FormGroup;
     public Symbols: string[];
@@ -20,18 +21,16 @@ export class BotSetupComponent implements OnInit {
     @Input() TradeBot: TradeBotModel;
     @Output() OnSaved = new EventEmitter<TradeBotModel>();
 
-    constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService) { }
+    constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService, private _location: Location) { }
 
     ngOnInit() {
-        this.BotSetupForm = this._fb.group({});
+        this.initSetupForm();
 
-        this.Setup = SetupModel.ForTradeBot(this.TradeBot);
-        this.BotSetupForm = this.createGroupForm(this.Setup);
-
-        this._api.GetSymbols(this.Setup.Account).subscribe(symbols => this.Symbols = symbols);
+        this.AccountInfoRequest = new ObservableRequest(this._api.GetAccountInfo(this.Setup.Account))
+            .Subscribe(info => this.Symbols = info.Symbols);
     }
 
-    applyConfig() {
+    SaveConfig() {
         if (this.BotSetupForm.valid) {
             this._api.UpdateBotConfig(this.TradeBot.Id, this.Setup).subscribe(
                 tb => this.OnSaved.emit(tb),
@@ -40,9 +39,13 @@ export class BotSetupComponent implements OnInit {
         }
     }
 
-    cancel() {
-        this.Setup = null;
-        this.BotSetupForm.reset();
+    Cancel() {
+        this._location.back();
+    }
+
+    private initSetupForm() {
+        this.Setup = SetupModel.ForTradeBot(this.TradeBot);
+        this.BotSetupForm = this.createGroupForm(this.Setup);
     }
 
     private createGroupForm(setup: SetupModel) {

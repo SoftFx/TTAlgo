@@ -22,6 +22,27 @@ export class BotCardComponent implements OnInit {
         this._api.Feed.changeBotState.subscribe(botState => this.updateBotState(botState));
     }
 
+    public get CanStop(): boolean {
+        return this.TradeBot.State === TradeBotStates.Online
+            || this.TradeBot.State === TradeBotStates.Starting
+            || this.TradeBot.State === TradeBotStates.Started;
+    }
+
+    public get CanStart(): boolean {
+        return this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted;
+    }
+
+    public get CanDelete(): boolean {
+        return this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted;
+    }
+
+    public get CanConfigurate(): boolean {
+        return this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted;
+    }
+
     public Start() {
         this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': TradeBotStates.Starting }
 

@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
 using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.DS.Info

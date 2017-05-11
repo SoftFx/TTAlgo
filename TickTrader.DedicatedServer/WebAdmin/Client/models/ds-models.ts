@@ -1,5 +1,24 @@
 ﻿import { Serializable, Guid } from './index';
 
+export class AccountInfo implements Serializable<AccountInfo>{
+    public Symbols: string[];
+
+    public Deserialize(input: any): AccountInfo {
+        this.Symbols = input.Symbols;
+
+        return this;
+    }
+
+    public get MainSymbol(): string {
+        if (this.Symbols) {
+            let main = this.Symbols.find(s => s === "EURUSD" || s === "EUR/USD");
+            return main ? main : this.Symbols[0];
+        }
+        else
+            return "";
+    }
+}
+
 export class AccountModel implements Serializable<AccountModel> {
     public Login: string = "";
     public Server: string = "";
@@ -15,7 +34,7 @@ export class AccountModel implements Serializable<AccountModel> {
     }
 
     public toString = (): string => {
-        return `${this.Login} - ${this.Server}`;  
+        return `${this.Login} - ${this.Server}`;
     }
 }
 

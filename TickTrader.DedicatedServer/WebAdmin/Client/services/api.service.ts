@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, AuthCredentials } from "../models/index";
+import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, AuthCredentials, AccountInfo } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, RequestOptions, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 import { AuthService } from './auth.service';
@@ -97,6 +97,13 @@ export class ApiService {
 
 
     /* >>> API Accounts */
+    GetAccountInfo(acc: AccountModel): Observable<AccountInfo> {
+        return this._http
+            .get(this._accountsUrl + `/${encodeURIComponent(acc.Server)}/${encodeURIComponent(acc.Login)}/Info`, { headers: this.headers })
+            .map(res => new AccountInfo().Deserialize(res.json()))
+            .catch(this.handleServerError);
+    }
+
     GetAccounts(): Observable<AccountModel[]> {
         return this._http
             .get(this._accountsUrl, { headers: this.headers })
@@ -127,11 +134,6 @@ export class ApiService {
             .catch(this.handleServerError);
     }
     /* <<< API Accounts */
-
-    GetSymbols(account: AccountModel) {
-        return Observable.of(['EURUSD', 'AEDAUD', 'USDAFN', 'USDAMD']);
-    }
-
 
     private handleServerError(error: Response): Observable<any> {
         console.error('[ApiService] An error occurred' + error); //debug

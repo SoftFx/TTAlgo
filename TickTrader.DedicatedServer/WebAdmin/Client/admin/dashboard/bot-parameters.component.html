@@ -1,7 +1,7 @@
 ﻿<div *ngIf="Setup">
     <div [formGroup]="BotSetupForm">
        <div class="row">
-            <div *ngFor="let Parameter of Setup.Parameters" [ngSwitch]="Parameter.Descriptor.DataType" class="col-md-6">
+            <div *ngFor="let Parameter of Setup.Parameters" [ngSwitch]="Parameter.Descriptor.DataType" class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                 <div class="form-group">
                     <label>{{Parameter.Descriptor.DisplayName}}</label>
                     <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
