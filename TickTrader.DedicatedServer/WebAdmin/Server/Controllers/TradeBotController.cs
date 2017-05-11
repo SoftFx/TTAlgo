@@ -4,12 +4,15 @@ using Microsoft.Extensions.Logging;
 using TickTrader.DedicatedServer.DS;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using TickTrader.DedicatedServer.DS.Exceptions;
+using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class TradeBotController: Controller
+    public class TradeBotController : Controller
     {
         private readonly ILogger<TradeBotController> _logger;
         private readonly IDedicatedServer _dedicatedServer;
@@ -21,23 +24,33 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpPost]
-        public void Post([FromBody] BotCommand command)
+        public IActionResult Post([FromBody] BotCommand command)
         {
-            switch (command.Command.ToLower())
+            try
             {
-                case "start":
-                    StartBot(command.BotId);
-                    break;
-                case "stop":
-                    StopBot(command.BotId);
-                    break;
+                switch (command.Command.ToLower())
+                {
+                    case "start":
+                        StartBot(command.BotId);
+                        break;
+                    case "stop":
+                        StopBot(command.BotId);
+                        break;
+                }
             }
+            catch(DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
         }
 
         private void StartBot(string botId)
         {
             var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == botId);
-            if(bot != null)
+            if (bot != null)
             {
                 bot.Start();
             }
@@ -50,11 +63,5 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 bot.StopAsync();
             }
         }
-    }
-
-    public class BotCommand
-    {
-        public string Command { get; set; }
-        public string BotId { get; set; }
     }
 }

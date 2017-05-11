@@ -58,8 +58,7 @@ namespace TickTrader.Algo.CoreUsageSample
             executor.MainSymbolCode = "EURUSD";
             executor.InvokeStrategy = new PriorityInvokeStartegy();
             executor.TimeFrame = dataModel.TimeFrame;
-            executor.TimePeriodStart = DateTime.Parse("2015.11.02 00:25:00");
-            executor.TimePeriodEnd = DateTime.Parse("2015.11.03 3:00:00");
+            executor.InitTimeSpanBuffering(DateTime.Parse("2015.11.02 00:25:00"), DateTime.Parse("2015.11.03 3:00:00"));
 
             var feedCfg = executor.InitBarStrategy(dataModel, BarPriceType.Bid);
             feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);

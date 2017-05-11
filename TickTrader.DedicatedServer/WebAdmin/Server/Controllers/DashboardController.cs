@@ -6,6 +6,7 @@ using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS;
+using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 
@@ -32,14 +33,22 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpPost]
-        public TradeBotDto Post([FromBody]PluginSetupDto setup)
+        public IActionResult Post([FromBody]PluginSetupDto setup)
         {
-            var tradeBot = _dedicatedServer.AddBot(setup.InstanceId,
-                new AccountKey(setup.Account.Login, setup.Account.Server),
-                new PluginKey(setup.PackageName, setup.PluginId),
-                CreateConfig(setup));
+            try
+            {
+                var tradeBot = _dedicatedServer.AddBot(setup.InstanceId,
+                    new AccountKey(setup.Account.Login, setup.Account.Server),
+                    new PluginKey(setup.PackageName, setup.PluginId),
+                    CreateConfig(setup));
 
-            return tradeBot.ToDto();
+                return Ok(tradeBot.ToDto());
+            }
+            catch(DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
         }
 
         private PluginConfig CreateConfig(PluginSetupDto setup)
@@ -89,7 +98,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
             catch (InvalidStateException isex)
             {
-                return BadRequest(new { Message = isex.Message });
+                return BadRequest(isex.ToBadResult());
             }
         }
 

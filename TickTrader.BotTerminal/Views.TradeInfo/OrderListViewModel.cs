@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using Machinarium.Qnil;
 using Caliburn.Micro;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,8 +17,8 @@ namespace TickTrader.BotTerminal
     {
         private SymbolCollectionModel _symbols;
 
-        public OrderListViewModel(AccountModel model, SymbolCollectionModel symbols)
-            : base(model)
+        public OrderListViewModel(AccountModel model, SymbolCollectionModel symbols, ConnectionModel connection)
+            : base(model, connection)
         {
             _symbols = symbols;
 
