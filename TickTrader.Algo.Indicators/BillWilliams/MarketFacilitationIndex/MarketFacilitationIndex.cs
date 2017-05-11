@@ -13,16 +13,16 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "MFI Up Volume Up", DefaultColor = Colors.Lime, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "MFI Up Volume Up", Target = OutputTargets.Window1, DefaultColor = Colors.Lime, PlotType = PlotType.Histogram)]
         public DataSeries MfiUpVolumeUp { get; set; }
 
-        [Output(DisplayName = "MFI Down Volume Down", DefaultColor = Colors.SaddleBrown, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "MFI Down Volume Down", Target = OutputTargets.Window1, DefaultColor = Colors.SaddleBrown, PlotType = PlotType.Histogram)]
         public DataSeries MfiDownVolumeDown { get; set; }
 
-        [Output(DisplayName = "MFI Up Volume Down", DefaultColor = Colors.Blue, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "MFI Up Volume Down", Target = OutputTargets.Window1, DefaultColor = Colors.Blue, PlotType = PlotType.Histogram)]
         public DataSeries MfiUpVolumeDown { get; set; }
 
-        [Output(DisplayName = "MFI Down Volume Up", DefaultColor = Colors.Pink, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "MFI Down Volume Up", Target = OutputTargets.Window1, DefaultColor = Colors.Pink, PlotType = PlotType.Histogram)]
         public DataSeries MfiDownVolumeUp { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

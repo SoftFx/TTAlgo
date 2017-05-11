@@ -136,7 +136,6 @@ namespace TickTrader.Algo.Core.Metadata
             IndicatorAttribute indicatorAttr = algoCustomType.GetCustomAttribute<IndicatorAttribute>(false);
             if (indicatorAttr != null)
             {
-                IsOverlay = indicatorAttr.IsOverlay;
                 InspectAlgoPluginAttr(algoCustomType, indicatorAttr);
             }
         }
@@ -235,7 +234,6 @@ namespace TickTrader.Algo.Core.Metadata
         public AlgoTypes AlgoLogicType { get; private set; }
         public AlgoMetadataErrors? Error { get; private set; }
         public bool IsValid => Error == null;
-        public bool IsOverlay { get; private set; }
         public IEnumerable<AlgoPropertyDescriptor> AllProperties => allProperties;
         public IEnumerable<ParameterDescriptor> Parameters => parameters;
         public IEnumerable<InputDescriptor> Inputs => inputs;

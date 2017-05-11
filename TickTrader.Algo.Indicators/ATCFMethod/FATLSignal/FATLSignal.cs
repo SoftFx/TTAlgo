@@ -3,7 +3,7 @@ using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "FATLs", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "FATLs", Version = "1.0")]
     public class FatlSignal : Indicator
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
@@ -23,10 +23,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
 
         public DataSeries Price { get; private set; }
 
-        [Output(DisplayName = "Up", DefaultColor = Colors.Blue)]
+        [Output(DisplayName = "Up", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries Up { get; set; }
 
-        [Output(DisplayName = "Down", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Down", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries Down { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

@@ -16,10 +16,10 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "RVI Average", DefaultColor = Colors.Green)]
+        [Output(DisplayName = "RVI Average", Target = OutputTargets.Window1, DefaultColor = Colors.Green)]
         public DataSeries RviAverage { get; set; }
 
-        [Output(DisplayName = "Signal", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Signal", Target = OutputTargets.Window1, DefaultColor = Colors.Red)]
         public DataSeries Signal { get; set; }
 
         public int LastPositionChanged

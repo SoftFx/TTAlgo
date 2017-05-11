@@ -19,7 +19,10 @@ namespace TickTrader.Algo.Indicators.Other.News
         [Parameter(DefaultValue = "USD", DisplayName = "Currency")]
         public string Currency { get; set; }
 
-        [Output(DisplayName = "Currency Impact", DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Markers", Target = OutputTargets.Window1)]
+        public DataSeries<Marker> Markers { get; set; }
+
+        [Output(DisplayName = "Currency Impact", Target = OutputTargets.Window1, DefaultColor = Colors.Green, PlotType = PlotType.Histogram)]
         public DataSeries CurrencyImpact { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

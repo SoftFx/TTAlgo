@@ -18,4 +18,13 @@
       <ProjectItem ReplaceParameters="true" TargetFileName="$safeprojectname$.cs" OpenInEditor="true">Indicator.cs</ProjectItem>
     </Project>
   </TemplateContent>
+  <WizardExtension>
+    <Assembly>NuGet.VisualStudio.Interop, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Assembly>
+    <FullClassName>NuGet.VisualStudio.TemplateWizard</FullClassName>
+  </WizardExtension>
+  <WizardData>
+    <packages repository="extension" repositoryId="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1">
+      <package id="TickTrader.Algo.Api" version="1.0.16" />
+    </packages>
+  </WizardData>
 </VSTemplate>

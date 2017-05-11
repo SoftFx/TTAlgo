@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DefaultColor = Colors.MediumSeaGreen)]
+        [Output(DisplayName = "StdDev", Target = OutputTargets.Window1, DefaultColor = Colors.MediumSeaGreen)]
         public DataSeries StdDev { get; set; }
 
         public int LastPositionChanged { get { return _p2Shifter.Position; } }

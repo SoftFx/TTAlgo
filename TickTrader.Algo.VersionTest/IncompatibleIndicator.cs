@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.VersionTest
 {
-    [Indicator(IsOverlay = true, Category = "Test Plugin Setup", DisplayName = "Incompatible Indicator", Version = "1.0",
+    [Indicator(Category = "Test Plugin Setup", DisplayName = "Incompatible Indicator", Version = "1.0",
         Description = "Should display a warning that newer version of API was used to build this indicator")]
     public class IncompatibleIndicator : Indicator
     {
@@ -19,10 +19,10 @@ namespace TickTrader.Algo.VersionTest
         [Input]
         public DataSeries PriceInput { get; set; }
 
-        [Output(DisplayName = "Line 1", DefaultColor = Colors.LightSeaGreen)]
+        [Output(DisplayName = "Line 1", Target = OutputTargets.Overlay, DefaultColor = Colors.LightSeaGreen)]
         public DataSeries Ouput1 { get; set; }
 
-        [Output(DisplayName = "Line 2", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "Line 2", Target = OutputTargets.Window1, DefaultColor = Colors.Red)]
         public DataSeries Ouput2 { get; set; }
 
         protected override void Init()

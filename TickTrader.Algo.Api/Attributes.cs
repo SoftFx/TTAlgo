@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -20,6 +16,8 @@ namespace TickTrader.Algo.Api
         public OutputAttribute()
         {
             DefaultColor = Colors.Auto;
+            Target = OutputTargets.Overlay;
+            Precision = -1;
         }
 
         public string DisplayName { get; set; }
@@ -27,6 +25,8 @@ namespace TickTrader.Algo.Api
         public LineStyles DefaultLineStyle { get; set; }
         public float DefaultThickness { get; set; }
         public PlotType PlotType { get; set; }
+        public OutputTargets Target { get; set; }
+        public int Precision { get; set; }
     }
 
     [Serializable]
@@ -51,7 +51,6 @@ namespace TickTrader.Algo.Api
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class IndicatorAttribute : AlgoPluginAttribute
     {
-        public bool IsOverlay { get; set; }
     }
 
     [Serializable]
