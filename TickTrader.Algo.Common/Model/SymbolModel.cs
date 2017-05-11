@@ -11,9 +11,15 @@ namespace TickTrader.Algo.Common.Model
 {
     public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
     {
-        public SymbolModel(SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        private IFeedSubscription subscription;
+
+        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
         {
-            this.Descriptor = info;
+            Descriptor = info;
+            Distributor = distributor;
+
+            subscription = distributor.Subscribe(info.Name);
+            subscription.NewQuote += OnNewTick;
 
             BaseCurrency = currencies.GetOrDefault(info.Currency);
             QuoteCurrency = currencies.GetOrDefault(info.SettlementCurrency);
@@ -36,6 +42,8 @@ namespace TickTrader.Algo.Common.Model
         public double? CurrentBid { get; private set; }
         public double LotSize { get { return Descriptor.RoundLot; } }
         public double StopOrderMarginReduction => Descriptor.StopOrderMarginReduction ?? 0;
+
+        protected QuoteDistributor Distributor { get; private set; }
 
         #region ISymbolInfo
 
@@ -75,6 +83,7 @@ namespace TickTrader.Algo.Common.Model
 
         public virtual void Close()
         {
+            subscription.Dispose();
         }
 
         public virtual void Update(SymbolInfo newInfo)

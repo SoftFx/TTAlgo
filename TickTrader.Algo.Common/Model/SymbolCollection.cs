@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Common.Model
 
         protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
         {
-            return new SymbolModel(info, currencies);
+            return new SymbolModel(Distributor, info, currencies);
         }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }

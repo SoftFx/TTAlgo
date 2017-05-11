@@ -239,6 +239,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 var symbols = fCache.Symbols;
                 Currencies = fCache.Currencies.ToDictionary(c => c.Name);
                 _core.Init();
+                await Task.Delay(1500); // ugly fix! Need to wait till quotes snapshot is loaded. Normal solution will be possible after some updates in FDK
                 Account.Init();
             }
 
