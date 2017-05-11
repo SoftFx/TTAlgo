@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
             wndManager = new MdiWindowManager(this);
 
             cManager = new ConnectionManager(storage, eventJournal);
-            clientModel = new TraderClientModel(cManager.Connection);
+            clientModel = new TraderClientModel(cManager.Connection, eventJournal);
             algoEnv = new AlgoEnvironment(clientModel.ObservableSymbolList);
 
             ConnectionLock = new UiLock();

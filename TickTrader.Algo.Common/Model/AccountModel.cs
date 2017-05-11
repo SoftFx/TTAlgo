@@ -101,7 +101,7 @@ namespace TickTrader.Algo.Common.Model
             else if (Type == AccountType.Cash)
                 assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
             
-            AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency));
+            AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
         }
 
         private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)

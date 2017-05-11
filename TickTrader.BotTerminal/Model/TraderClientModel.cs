@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using TickTrader.BotTerminal.Lib;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,7 +19,10 @@ namespace TickTrader.BotTerminal
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public TraderClientModel(ConnectionModel connection)
+        private IAccountInfoProvider _accountInfo;
+        private EventJournal _journal;
+
+        public TraderClientModel(ConnectionModel connection, EventJournal journal)
         {
             this.Connection = connection;
 
@@ -31,6 +36,9 @@ namespace TickTrader.BotTerminal
             this.TradeApi = new TradeExecutor(this);
             this.Account = new AccountModel(this);
             this.Currencies = new Dictionary<string, CurrencyInfo>();
+
+            _accountInfo = Account;
+            _journal = journal;
         }
 
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
@@ -87,6 +95,9 @@ namespace TickTrader.BotTerminal
                     Currencies.Add(c.Name, c);
                 Symbols.Initialize(cache.Symbols, Currencies);
                 Account.Init(Currencies);
+                _accountInfo.BalanceUpdated += Account_BalanceUpdated;
+                _accountInfo.OrderUpdated += Account_OrderUpdated;
+                _accountInfo.PositionUpdated += Account_PositionUpdated;
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
             }
@@ -104,6 +115,9 @@ namespace TickTrader.BotTerminal
 
             try
             {
+                _accountInfo.BalanceUpdated -= Account_BalanceUpdated;
+                _accountInfo.OrderUpdated -= Account_OrderUpdated;
+                _accountInfo.PositionUpdated -= Account_PositionUpdated;
                 await Symbols.Deinit();
                 await Account.Deinit();
                 await History.Deinit();
@@ -114,6 +128,62 @@ namespace TickTrader.BotTerminal
             {
                 logger.Error(ex, "Connection_Deinitalizing() failed.");
             }
+        }
+
+        private void Account_BalanceUpdated(BalanceOperationReport report)
+        {
+            string action = report.Amount > 0 ? "Deposit" : "Withdrawal";
+            _journal.Trading($"{action} {report.Amount} {report.CurrencyCode}. Balance: {report.Balance} {report.CurrencyCode}");
+        }
+
+        private void Account_OrderUpdated(OrderExecReport report)
+        {
+            var order = report.OrderCopy;
+            switch(report.ExecAction)
+            {
+                case OrderExecAction.Opened:
+                    switch (order.Type)
+                    {
+                        case OrderType.Position:
+                            _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                            break;
+                        case OrderType.Limit:
+                        case OrderType.Stop:
+                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                    }
+                    break;
+                case OrderExecAction.Modified:
+                    switch (order.Type)
+                    {
+                        case OrderType.Position:
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                        case OrderType.Limit:
+                        case OrderType.Stop:
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                    }
+                    break;
+                case OrderExecAction.Closed:
+                    if (order.Type == Algo.Api.OrderType.Position)
+                    {
+                        _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.LastFillPrice}");
+                    }
+                    break;
+                case OrderExecAction.Canceled:
+                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                    break;
+                case OrderExecAction.Filled:
+                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                    break;
+            }
+        }
+
+        private void Account_PositionUpdated(PositionExecReport report)
+        {
+            var pos = report.PositionCopy;
+            _journal.Trading($"Position for {pos.Symbol} was {report.ExecAction.ToString().ToLower()}: {pos.Side} {pos.Amount} lots at {pos.Price}");
         }
 
         public bool IsConnecting { get; private set; }
