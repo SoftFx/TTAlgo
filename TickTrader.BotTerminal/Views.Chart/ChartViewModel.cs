@@ -40,6 +40,7 @@ namespace TickTrader.BotTerminal
         private readonly IShell shell;
         private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
+        private readonly SymbolModel smb;
 
         public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv)
         {
@@ -51,9 +52,10 @@ namespace TickTrader.BotTerminal
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            SymbolModel smb = (SymbolModel)clientModel.Symbols[symbol];
+            smb = (SymbolModel)clientModel.Symbols[symbol];
 
-            UpdateLabelFormat(smb);
+            Precision = smb.Descriptor.Precision;
+            UpdateLabelFormat();
 
             this.barChart = new BarChartModel(smb, algoEnv, clientModel);
             this.tickChart = new TickChartModel(smb, algoEnv, clientModel);
@@ -61,7 +63,7 @@ namespace TickTrader.BotTerminal
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
             var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
-            var indicatorViewModels = allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i, ChartWindowId));
+            var indicatorViewModels = allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i, ChartWindowId, smb));
             var overlayIndicators = indicatorViewModels.Chain().Where(i => i.Model.HasOverlayOutputs);
             var overlaySeries = overlayIndicators.Chain().SelectMany(i => i.Series);
             var allSeries = Dynamic.CombineChained(dataSeries, overlaySeries);
@@ -137,6 +139,7 @@ namespace TickTrader.BotTerminal
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
 
+        public int Precision { get; private set; }
         public string YAxisLabelFormat { get; private set; }
 
         #endregion
@@ -260,6 +263,12 @@ namespace TickTrader.BotTerminal
         private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
             NotifyOfPropertyChange("HasIndicators");
+            Precision = smb.Descriptor.Precision;
+            foreach (var indicator in Indicators.Where(i => i.Model.HasOverlayOutputs))
+            {
+                Precision = Math.Max(Precision, indicator.Precision);
+            }
+            UpdateLabelFormat();
         }
 
         private void InitChart()
@@ -298,9 +307,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void UpdateLabelFormat(SymbolModel smb)
+        private void UpdateLabelFormat()
         {
-            YAxisLabelFormat = $"n{smb.Descriptor.Precision}";
+            YAxisLabelFormat = $"n{Precision}";
             NotifyOfPropertyChange(nameof(YAxisLabelFormat));
         }
     }

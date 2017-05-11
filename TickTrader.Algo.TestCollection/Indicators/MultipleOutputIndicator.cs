@@ -1,5 +1,4 @@
-﻿using System;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Indicators
 {

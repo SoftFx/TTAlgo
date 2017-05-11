@@ -61,6 +61,7 @@
 
         <MenuItem Header="Add Indicator"
                   Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableIndicators}"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenPlugin($originalsourcecontext)">
             <MenuItem.Resources>
                 <CollectionViewSource x:Key="IndicatorsViewSrc" Source="{Binding Chart.AvailableIndicators}">
@@ -82,6 +83,7 @@
 
         <MenuItem Header="Add Bot Trader"
                   Visibility="{Binding Converter={StaticResource boolToVisibilityConverter}, Path=Chart.HasAvailableBotTraders}"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenPlugin($originalsourcecontext)">
             <MenuItem.Resources>
                 <CollectionViewSource x:Key="BotTradersViewSrc" Source="{Binding Chart.AvailableBotTraders}">

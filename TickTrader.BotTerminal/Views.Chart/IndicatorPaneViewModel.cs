@@ -22,15 +22,17 @@ namespace TickTrader.BotTerminal
         private IndicatorViewModel _indicator;
         private ChartModelBase _chart;
 
-        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, OutputTargets target)
+        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, OutputTargets target, SymbolModel symbol)
         {
             _chart = chartModel;
             _indicator = indicator;
             ChartWindowId = indicator.ChartWindowId;
+            Precision = 0;
 
             var series = new DynamicList<IRenderableSeriesViewModel>();
             foreach (OutputSetup output in indicator.Model.Setup.Outputs.Where(o => o.Target == target))
             {
+                Precision = Math.Max(Precision, output.Precision == -1 ? symbol.Descriptor.Precision : output.Precision);
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator.Model, output);
                 if (seriesViewModel != null)
                     series.Values.Add(seriesViewModel);
@@ -39,6 +41,7 @@ namespace TickTrader.BotTerminal
             Series = series.AsObservable();
 
             UpdateAxis();
+            UpdateLabelFormat();
 
             //Annotations = new AnnotationCollection();
 
@@ -59,11 +62,19 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange("TimeAxis");
         }
 
+        private void UpdateLabelFormat()
+        {
+            YAxisLabelFormat = $"n{Precision}";
+            NotifyOfPropertyChange(nameof(YAxisLabelFormat));
+        }
+
         public string ChartWindowId { get; private set; }
         public AxisBase TimeAxis { get; private set; }
         //public long IndicatorId { get { return indicator.Model.Id; } }
         public ChartModelBase Chart { get { return _chart; } }
         public IObservableListSource<IRenderableSeriesViewModel> Series { get; private set; }
         //public AnnotationCollection Annotations { get; private set; }
+        public int Precision { get; private set; }
+        public string YAxisLabelFormat { get; private set; }
     }
 }

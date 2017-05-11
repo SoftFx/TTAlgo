@@ -12,11 +12,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override Property Save() { return null; }
         public override void Reset() { }
         public OutputTargets Target { get; }
+        public int Precision { get; }
 
         public OutputSetup(OutputDescriptor descriptor)
         {
             SetMetadata(descriptor);
             Target = descriptor.Target;
+            Precision = descriptor.Precision;
         }
     }
 
