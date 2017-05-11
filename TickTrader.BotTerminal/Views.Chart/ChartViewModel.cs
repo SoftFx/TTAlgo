@@ -40,6 +40,7 @@ namespace TickTrader.BotTerminal
         private readonly IShell shell;
         private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
+        private readonly SymbolModel smb;
 
         public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv)
         {
@@ -51,7 +52,7 @@ namespace TickTrader.BotTerminal
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            SymbolModel smb = (SymbolModel)clientModel.Symbols[symbol];
+            smb = (SymbolModel)clientModel.Symbols[symbol];
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();
@@ -262,7 +263,11 @@ namespace TickTrader.BotTerminal
         private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
             NotifyOfPropertyChange("HasIndicators");
-            Precision = Indicators.Where(i => i.Model.HasOverlayOutputs).Max(i => i.Precision);
+            Precision = smb.Descriptor.Precision;
+            foreach (var indicator in Indicators.Where(i => i.Model.HasOverlayOutputs))
+            {
+                Precision = Math.Max(Precision, indicator.Precision);
+            }
             UpdateLabelFormat();
         }
 

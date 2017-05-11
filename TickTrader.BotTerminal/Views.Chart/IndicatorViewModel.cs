@@ -25,10 +25,7 @@ namespace TickTrader.BotTerminal
 
             foreach (OutputSetup output in indicator.Setup.Outputs.Where(o => o.Target == OutputTargets.Overlay))
             {
-                if (output.Precision == -1)
-                {
-                    Precision = Math.Max(Precision, symbol.Descriptor.Precision);
-                }
+                Precision = Math.Max(Precision, output.Precision == -1 ? symbol.Descriptor.Precision : output.Precision);
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator, output);
                 if (seriesViewModel != null)
                     Series.Values.Add(seriesViewModel);
