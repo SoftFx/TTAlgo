@@ -14,7 +14,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         {
             return new AccountInfoDto
             {
-                Symbols = info.Symbols.Select(s => s.Name).ToArray()
+                Symbols = info.Symbols.Select(s => s.Name).OrderBy(x => x).ToArray()
             };
         }
 
