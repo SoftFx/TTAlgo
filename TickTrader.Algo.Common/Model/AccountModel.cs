@@ -191,6 +191,11 @@ namespace TickTrader.Algo.Common.Model
                         else
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
+                    else if (report.OrderType == TradeRecordType.Market && Type == AccountType.Net)
+                    {
+                        // workaround to get order execution notification
+                        OnOrderRemoved(report, OrderExecAction.Filled);
+                    }
                     break;
             }
 

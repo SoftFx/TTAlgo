@@ -97,7 +97,6 @@ namespace TickTrader.BotTerminal
                 Account.Init(Currencies);
                 _accountInfo.BalanceUpdated += Account_BalanceUpdated;
                 _accountInfo.OrderUpdated += Account_OrderUpdated;
-                _accountInfo.PositionUpdated += Account_PositionUpdated;
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
             }
@@ -117,7 +116,6 @@ namespace TickTrader.BotTerminal
             {
                 _accountInfo.BalanceUpdated -= Account_BalanceUpdated;
                 _accountInfo.OrderUpdated -= Account_OrderUpdated;
-                _accountInfo.PositionUpdated -= Account_PositionUpdated;
                 await Symbols.Deinit();
                 await Account.Deinit();
                 await History.Deinit();
@@ -145,7 +143,7 @@ namespace TickTrader.BotTerminal
                     switch (order.Type)
                     {
                         case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
@@ -174,16 +172,13 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Canceled:
                     _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
                     break;
+                case OrderExecAction.Expired:
+                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                    break;
                 case OrderExecAction.Filled:
                     _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
                     break;
             }
-        }
-
-        private void Account_PositionUpdated(PositionExecReport report)
-        {
-            var pos = report.PositionCopy;
-            _journal.Trading($"Position for {pos.Symbol} was {report.ExecAction.ToString().ToLower()}: {pos.Side} {pos.Amount} lots at {pos.Price}");
         }
 
         public bool IsConnecting { get; private set; }
