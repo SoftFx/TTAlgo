@@ -76,16 +76,19 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void Configurate(PluginConfig cfg)
         {
-            if (State == BotStates.Broken)
-                return;
-
-            if (IsStopped())
+            lock (_syncObj)
             {
-                Config = cfg;
-                ConfigurationChanged?.Invoke(this);
+                if (State == BotStates.Broken)
+                    return;
+
+                if (IsStopped())
+                {
+                    Config = cfg;
+                    ConfigurationChanged?.Invoke(this);
+                }
+                else
+                    throw new InvalidOperationException("Make sure that the bot is stopped before installing a new configuration");
             }
-            else
-                throw new InvalidOperationException("Make sure that the bot is stopped before installing a new configuration");
             
         }
 
