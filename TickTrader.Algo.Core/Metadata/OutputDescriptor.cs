@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Metadata
@@ -33,28 +29,32 @@ namespace TickTrader.Algo.Core.Metadata
                 DataSeriesBaseType = propertyInfo.PropertyType.GetGenericArguments()[0];
             }
             else
-                SetError(Metadata.AlgoPropertyErrors.OutputIsNotDataSeries);
+                SetError(AlgoPropertyErrors.OutputIsNotDataSeries);
 
             if (DataSeriesBaseType != null && DataSeriesBaseType.IsInterface)
                 IsHiddenEntity = true;
 
-            this.DefaultThickness = attribute.DefaultThickness;
-            this.DefaultColor = attribute.DefaultColor;
-            this.DefaultLineStyle = attribute.DefaultLineStyle;
-            this.PlotType = attribute.PlotType;
+            DefaultThickness = attribute.DefaultThickness;
+            DefaultColor = attribute.DefaultColor;
+            DefaultLineStyle = attribute.DefaultLineStyle;
+            PlotType = attribute.PlotType;
+            Target = attribute.Target;
+            Precision = attribute.Precision;
 
             InitDisplayName(attribute.DisplayName);
         }
 
         public Type DataSeriesBaseType { get; private set; }
-        public string DataSeriesBaseTypeFullName { get { return DataSeriesBaseType.FullName; } }
+        public string DataSeriesBaseTypeFullName => DataSeriesBaseType.FullName;
         public bool IsShortDefinition { get; private set; }
         public bool IsHiddenEntity { get; private set; }
         public double DefaultThickness { get; private set; }
         public Colors DefaultColor { get; private set; }
         public LineStyles DefaultLineStyle { get; private set; }
         public PlotType PlotType { get; private set; }
-        public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.OutputSeries; } }
+        public override AlgoPropertyTypes PropertyType => AlgoPropertyTypes.OutputSeries;
+        public OutputTargets Target { get; private set; }
+        public int Precision { get; private set; }
 
         internal DataSeriesImpl<T> CreateOutput2<T>()
         {

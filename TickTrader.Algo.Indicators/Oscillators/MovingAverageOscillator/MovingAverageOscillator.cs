@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "OsMA", DefaultColor = Colors.Silver, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "OsMA", Target = OutputTargets.Window1, DefaultColor = Colors.Silver, PlotType = PlotType.Histogram)]
         public DataSeries OsMa { get; set; }
 
         public int LastPositionChanged { get { return _macd.LastPositionChanged; } }

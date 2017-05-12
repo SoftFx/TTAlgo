@@ -53,7 +53,8 @@
                            Annotations="{Binding Annotations}"
                            s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis GrowBy="0.0001, 0.00001" AutoRange="Always"
+                <s:NumericAxis AutoRange="Always"
+                               TextFormatting="{Binding YAxisLabelFormat}" CursorTextFormatting="{Binding YAxisLabelFormat}"
                                DrawMajorBands="False" DrawMajorTicks="False"
                                DrawMinorTicks="False" DrawMinorGridLines="False">
                     <s:NumericAxis.MajorGridLineStyle>

@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceFastTrendLine
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "Reference Fast Trend Line", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Reference Fast Trend Line", Version = "1.0")]
     public class ReferenceFastTrendLine : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceFastTrendLine
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RFTL", DefaultColor = Colors.Blue)]
+        [Output(DisplayName = "RFTL", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries Rftl { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

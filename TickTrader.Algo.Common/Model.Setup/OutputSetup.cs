@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using TickTrader.Algo.Api;
-using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Config;
 
@@ -17,10 +11,14 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override void Load(Property srcProperty) { }
         public override Property Save() { return null; }
         public override void Reset() { }
+        public OutputTargets Target { get; }
+        public int Precision { get; }
 
         public OutputSetup(OutputDescriptor descriptor)
         {
             SetMetadata(descriptor);
+            Target = descriptor.Target;
+            Precision = descriptor.Precision;
         }
     }
 

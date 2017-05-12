@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
 {
-    [Indicator(IsOverlay = true, Category = "AT&CF Method", DisplayName = "Fast Adaptive Trend Line", Version = "1.0")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Fast Adaptive Trend Line", Version = "1.0")]
     public class FastAdaptiveTrendLine : DigitalIndicatorBase
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "FATL", DefaultColor = Colors.Red)]
+        [Output(DisplayName = "FATL", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries Fatl { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

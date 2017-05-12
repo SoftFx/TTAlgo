@@ -34,19 +34,19 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RBCI", DefaultColor = Colors.Teal)]
+        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.Teal)]
         public DataSeries Rbci { get; set; }
 
-        [Output(DisplayName = "Upper Bound", DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Upper Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries UpperBound { get; set; }
 
-        [Output(DisplayName = "Lower Bound", DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Lower Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries LowerBound { get; set; }
 
-        [Output(DisplayName = "Upper Bound 2", DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Upper Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries UpperBound2 { get; set; }
 
-        [Output(DisplayName = "Lower Bound 2", DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Lower Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
         public DataSeries LowerBound2 { get; set; }
 
         public int LastPositionChanged { get { return 0; } }

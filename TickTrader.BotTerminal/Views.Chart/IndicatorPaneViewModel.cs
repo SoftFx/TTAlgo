@@ -12,24 +12,36 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {
     class IndicatorPaneViewModel : PropertyChangedBase
     {
-        private IndicatorViewModel indicator;
-        private ChartModelBase chart;
+        private IndicatorViewModel _indicator;
+        private ChartModelBase _chart;
 
-        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, string windowId)
+        public IndicatorPaneViewModel(IndicatorViewModel indicator, ChartModelBase chartModel, OutputTargets target, SymbolModel symbol)
         {
-            this.chart = chartModel;
-            this.indicator = indicator;
-            this.ChartWindowId = windowId;
+            _chart = chartModel;
+            _indicator = indicator;
+            ChartWindowId = indicator.ChartWindowId;
+            Precision = 0;
 
-            Series = indicator.Series.AsObservable();
+            var series = new DynamicList<IRenderableSeriesViewModel>();
+            foreach (OutputSetup output in indicator.Model.Setup.Outputs.Where(o => o.Target == target))
+            {
+                Precision = Math.Max(Precision, output.Precision == -1 ? symbol.Descriptor.Precision : output.Precision);
+                var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator.Model, output);
+                if (seriesViewModel != null)
+                    series.Values.Add(seriesViewModel);
+            }
+
+            Series = series.AsObservable();
 
             UpdateAxis();
+            UpdateLabelFormat();
 
             //Annotations = new AnnotationCollection();
 
@@ -45,16 +57,24 @@ namespace TickTrader.BotTerminal
 
         private void UpdateAxis()
         {
-            TimeAxis = chart.Navigator.CreateAxis();
+            TimeAxis = _chart.Navigator.CreateAxis();
             TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
             NotifyOfPropertyChange("TimeAxis");
+        }
+
+        private void UpdateLabelFormat()
+        {
+            YAxisLabelFormat = $"n{Precision}";
+            NotifyOfPropertyChange(nameof(YAxisLabelFormat));
         }
 
         public string ChartWindowId { get; private set; }
         public AxisBase TimeAxis { get; private set; }
         //public long IndicatorId { get { return indicator.Model.Id; } }
-        public ChartModelBase Chart { get { return chart; } }
+        public ChartModelBase Chart { get { return _chart; } }
         public IObservableListSource<IRenderableSeriesViewModel> Series { get; private set; }
         //public AnnotationCollection Annotations { get; private set; }
+        public int Precision { get; private set; }
+        public string YAxisLabelFormat { get; private set; }
     }
 }
