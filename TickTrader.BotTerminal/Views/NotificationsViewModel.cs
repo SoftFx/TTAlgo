@@ -131,7 +131,7 @@ namespace TickTrader.BotTerminal
                     {
                         case OrderType.Position:
                             header = $"Order {obj.OrderId} Filled at {obj.OrderCopy.Price}";
-                            body = $"Your request to {order.Side} {order.LastFillPrice} lots of {order.Symbol} was filled at {order.LastFillPrice}. Order #{order.Id}";
+                            body = $"Your request to {order.Side} {order.LastFillVolume} lots of {order.Symbol} was filled at {order.LastFillPrice}. Order #{order.Id}";
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
@@ -167,7 +167,7 @@ namespace TickTrader.BotTerminal
                     break;
                 case OrderExecAction.Filled:
                     header = $"Order {obj.OrderId} Filled at {order.LastFillPrice}";
-                    body = $"Your order #{order.Id} {order.Side} {order.Type} {order.LastFillVolume} lots of {order.Symbol} was filled at at {order.LastFillPrice}.";
+                    body = $"Your order #{order.Id} {order.Side} {order.Type} {order.LastFillVolume} lots of {order.Symbol} was filled at {order.LastFillPrice}.";
                     break;
             }
 
