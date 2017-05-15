@@ -26,8 +26,8 @@ export class AccountsComponent implements OnInit {
 
         this.Accounts = [];
 
-        this._api.Feed.addAccount.subscribe(acc => this.addAccount(acc));
-        this._api.Feed.deleteAccount.subscribe(acc => this.deleteAccount(acc));
+        this._api.Feed.AddAccount.subscribe(acc => this.addAccount(acc));
+        this._api.Feed.DeleteAccount.subscribe(acc => this.deleteAccount(acc));
 
         this._api.GetAccounts()
             .subscribe(result => this.Accounts = result);

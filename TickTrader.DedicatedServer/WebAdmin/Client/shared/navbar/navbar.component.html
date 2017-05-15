@@ -58,14 +58,14 @@
                         <li><a href="javascript:;">Separated link</a></li>
                     </ul>
                 </li>-->
-                <li *ngFor="let action of RouteInfo.actions"><a href="javascript:;" [routerLink]="action.Link"><p>{{action.Name}}</p></a></li>
+                <li *ngFor="let action of RouteInfo.actions"><a [routerLink]="[action.Link]"><p>{{action.Name}}</p></a></li>
                 <li>
                     <a href="javascript:;">
                         <p>{{UserName}}</p>
                     </a>
                 </li>
                 <li>
-                    <a (click)="logout()" href="javascript:;">
+                    <a  href="javascript:;" (click)="Logout()">
                         <p>Log out</p>
                     </a>
                 </li>
