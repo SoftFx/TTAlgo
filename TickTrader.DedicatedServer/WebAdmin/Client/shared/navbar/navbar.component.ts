@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 export class NavbarComponent implements OnInit {
     private listTitles: any[];
 
-    constructor(private _router: Router, private _authService: AuthService, private _feed: FeedService) { }
+    constructor(private _router: Router, private _authService: AuthService) { }
 
     ngOnInit() {
         this.listTitles = ROUTES.filter(listTitle => listTitle.menuType !== MenuType.BRAND);
