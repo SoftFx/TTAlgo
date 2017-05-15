@@ -12,7 +12,9 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
-        
+
+        private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
+
         public AppBootstrapper()
         {
             try
@@ -151,9 +153,19 @@ namespace TickTrader.BotTerminal
             Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
         }
 
+        protected override void OnExit(object sender, EventArgs e)
+        {
+            base.OnExit(sender, e);
+
+            _instanceRestrictor.Dispose();
+        }
+
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
-            DisplayRootViewFor<ShellViewModel>();
+            if (!_instanceRestrictor.EnsureSingleInstace())
+                Application.Current.Shutdown();
+            else
+                DisplayRootViewFor<ShellViewModel>();
         }
     }
 }
