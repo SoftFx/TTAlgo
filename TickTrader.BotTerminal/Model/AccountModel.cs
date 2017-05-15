@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
 
         private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
         {
-            var a = e.Report;
+            uiUpdater.SendAsync(() => OnTransactionReport(e.Report));
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
@@ -158,6 +158,11 @@ namespace TickTrader.BotTerminal
         public override void SyncInvoke(System.Action syncAction)
         {
             Caliburn.Micro.Execute.OnUIThread(syncAction);
+        }
+
+        protected override void OnBalanceChanged()
+        {
+            Calc.Recalculate();
         }
     }
 }

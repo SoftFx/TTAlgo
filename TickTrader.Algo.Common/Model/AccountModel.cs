@@ -104,9 +104,17 @@ namespace TickTrader.Algo.Common.Model
             AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
         }
 
-        private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
+        protected void OnTransactionReport(TradeTransactionReport report)
         {
-            var a = e.Report;
+            // Workaround. FDK does not provide balance changes in PositionReport
+            if (Type == AccountType.Net)
+            {
+                if (report.TradeTransactionReportType == TradeTransactionReportType.OrderFilled)
+                {
+                    Balance = report.AccountBalance;
+                    OnBalanceChanged();
+                }
+            }
         }
 
         protected void OnReport(Position report)
