@@ -267,6 +267,7 @@
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
+    <Compile Include="Infrustructure\AppInstanceRestrictor.cs" />
     <Compile Include="Infrustructure\AutoViewManager.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />

@@ -90,8 +90,6 @@ namespace TickTrader.BotTerminal
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
             SelectedPeriod = periodActivatos.ElementAt(8);
-            
-            ViewPort = new CustomViewPortManager();
 
             CloseCommand = new GenericCommand(o => TryClose());
         }
@@ -128,8 +126,6 @@ namespace TickTrader.BotTerminal
                 selectedPeriod.Value();
             }
         }
-
-        public IViewportManager ViewPort { get; private set; }
 
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; private set; }
         public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
@@ -292,19 +288,6 @@ namespace TickTrader.BotTerminal
         public bool CanDrop(object o)
         {
             return o is AlgoItemViewModel;
-        }
-
-        public class CustomViewPortManager : DefaultViewportManager
-        {
-            protected override IRange OnCalculateNewXRange(IAxis xAxis)
-            {
-                return base.OnCalculateNewXRange(xAxis);
-            }
-
-            protected override IRange OnCalculateNewYRange(IAxis yAxis, RenderPassInfo renderPassInfo)
-            {
-                return base.OnCalculateNewYRange(yAxis, renderPassInfo);
-            }
         }
 
         private void UpdateLabelFormat()
