@@ -129,6 +129,10 @@ export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
 
         return this;
     }
+
+    public toString = (): string => {
+        return `Bot '${this.Id}' ${TradeBotStates[this.State]}`;
+    }
 }
 
 export enum TradeBotStates { Offline, Starting, Started, Initializing, Faulted, Online, Stopping }
@@ -139,7 +143,7 @@ export class TradeBotConfig implements Serializable<TradeBotConfig>{
 
     public Deserialize(input: any): TradeBotConfig {
         this.Symbol = input["Symbol"] ? input.Symbol : "";
-        this.Parameters = input.Parameters.map(p => new Parameter(p.Value, new ParameterDescriptor().Deserialize(p.Descriptor)));
+        this.Parameters = input.Parameters.map(p => new Parameter(new ParameterDescriptor().Deserialize(p.Descriptor), p.Value));
         return this;
     }
 }
