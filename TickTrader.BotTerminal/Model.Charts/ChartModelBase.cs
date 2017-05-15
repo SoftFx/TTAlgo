@@ -311,8 +311,8 @@ namespace TickTrader.BotTerminal
             else if (stateController.Current == States.Online)
                 ApplyUpdate(tick);
 
-            this.CurrentAsk = tick.Ask;
-            this.CurrentBid = tick.Bid;
+            this.CurrentAsk = tick.GetNullableAsk();
+            this.CurrentBid = tick.GetNullableBid();
             NotifyOfPropertyChange(nameof(CurrentAsk));
             NotifyOfPropertyChange(nameof(CurrentBid));
         }

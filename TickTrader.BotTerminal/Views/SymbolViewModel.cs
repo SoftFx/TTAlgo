@@ -116,12 +116,8 @@ namespace TickTrader.BotTerminal
 
         private void OnRateUpdate(Quote tick)
         {
-            if (tick.HasBid)
-                Bid.Rate = tick.Bid;
-
-            if (tick.HasAsk)
-                Ask.Rate = tick.Ask;
-
+            Bid.Rate = tick.HasBid ? (double?)tick.Bid : null;
+            Ask.Rate = tick.HasAsk ? (double?)tick.Ask : null;
             QuoteTime = tick.CreatingTime;
         }
 
