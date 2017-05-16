@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Common.Model
             IDictionary<string, CurrencyInfo> currencies,
             IOrderDependenciesResolver orderResolver,
             IEnumerable<TradeRecord> orders,
-            IEnumerable<Position> positions, 
+            IEnumerable<Position> positions,
             IEnumerable<AssetInfo> assets)
         {
             _currencies = currencies;
@@ -99,8 +99,20 @@ namespace TickTrader.Algo.Common.Model
                 OnBalanceChanged();
             }
             else if (Type == AccountType.Cash)
-                assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
-            
+            {
+                if (e.Data.Balance > 0)
+                {
+                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
+                }
+                else
+                {
+                    if (assets.ContainsKey(e.Data.TransactionCurrency))
+                    {
+                        assets.Remove(e.Data.TransactionCurrency);
+                    }
+                }
+            }
+
             AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
         }
 
