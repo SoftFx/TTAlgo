@@ -21,11 +21,12 @@ export interface FeedClient {
 }
 
 export interface FeedServer {
-    
+
 }
 
 export enum ConnectionStatus {
     Connected = 1,
-    Disconnected = 2,
-    Error = 3
+    Reconnecting = 2,
+    Disconnected = 3,
+    Error = 4
 }

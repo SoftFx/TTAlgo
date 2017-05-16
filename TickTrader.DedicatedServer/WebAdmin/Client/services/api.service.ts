@@ -27,46 +27,46 @@ export class ApiService {
     AutogenerateBotId(name: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(name) + '/BotId', { headers: this.headers })
             .map(res => res.text())
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     GetTradeBot(id: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id), { headers: this.headers })
             .map(res => new TradeBotModel().Deserialize(res.json()))
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     GetTradeBots() {
         return this._http.get(this._tradeBotsUrl, { headers: this.headers })
             .map(res => res.json().map(tb => new TradeBotModel().Deserialize(tb)))
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     AddBot(setup: SetupModel) {
         return this._http.post(this._tradeBotsUrl, setup.Payload, { headers: this.headers })
             .map(res => new TradeBotModel().Deserialize(res.json()))
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     UpdateBotConfig(botId: string, setup: SetupModel) {
         return this._http.put(`${this._tradeBotsUrl}/` + encodeURIComponent(botId), setup.Payload, { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     DeleteBot(botId: string) {
         return this._http
             .delete(`${this._tradeBotsUrl}/` + encodeURIComponent(botId), { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     StartBot(botId: string) {
         return this._http.patch(`${this._tradeBotsUrl}/` + encodeURIComponent(botId) + "/Start", null, { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     StopBot(botId: string) {
         return this._http.patch(`${this._tradeBotsUrl}/` + encodeURIComponent(botId) + "/Stop", null, { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     /* >>> API Repository*/
@@ -78,20 +78,20 @@ export class ApiService {
 
         return this._http
             .post(this._packagesUrl, input, { headers: header })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     DeletePackage(name: string) {
         return this._http
             .delete(`${this._packagesUrl}/` + encodeURIComponent(name), { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     GetPackages(): Observable<PackageModel[]> {
         return this._http
             .get(this._packagesUrl, { headers: this.headers })
             .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
     /* <<< API Repository*/
 
@@ -101,42 +101,47 @@ export class ApiService {
         return this._http
             .get(this._accountsUrl + `/${encodeURIComponent(acc.Server)}/${encodeURIComponent(acc.Login)}/Info`, { headers: this.headers })
             .map(res => new AccountInfo().Deserialize(res.json()))
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     GetAccounts(): Observable<AccountModel[]> {
         return this._http
             .get(this._accountsUrl, { headers: this.headers })
             .map(res => res.json().map(i => new AccountModel().Deserialize(i)))
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     AddAccount(acc: AccountModel) {
         return this._http
             .post(this._accountsUrl, acc, { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     DeleteAccount(acc: AccountModel) {
         return this._http
             .delete(`${this._accountsUrl}/?` + $.param({ login: acc.Login, server: acc.Server }), { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     ChangeAccountPassword(acc: AccountModel) {
         return this._http
             .patch(this._accountsUrl, acc, { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
 
     TestAccount(acc: AccountModel) {
         return this._http.get(`${this._accountsUrl}/Test/?` + $.param({ login: acc.Login, server: acc.Server, password: acc.Password }), { headers: this.headers })
-            .catch(this.handleServerError);
+            .catch(err => this.handleServerError(err));
     }
     /* <<< API Accounts */
 
     private handleServerError(error: Response): Observable<any> {
         console.error('[ApiService] An error occurred' + error); //debug
+        let responseErr = new ResponseStatus(error);
+
+        if (responseErr.Status === 401)
+            this.Auth.LogOut();
+
         return Observable.throw(new ResponseStatus(error));
     }
 }

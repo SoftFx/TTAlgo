@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 export class NavbarComponent implements OnInit {
     private listTitles: any[];
 
-    constructor(private router: Router, private authService: AuthService) { }
+    constructor(private _router: Router, private _authService: AuthService) { }
 
     ngOnInit() {
         this.listTitles = ROUTES.filter(listTitle => listTitle.menuType !== MenuType.BRAND);
@@ -25,13 +25,13 @@ export class NavbarComponent implements OnInit {
                 return this.listTitles[item];
             }
         }
-        return { title: 'Dashboard', icon: 'fa fa-tachometer' };
+        return this.listTitles[0];
     }
 
     public get UserName(): string {
-        if (this.authService.IsAuthorized)
+        if (this._authService.IsAuthorized)
         {
-            return this.authService.AuthData.User;
+            return this._authService.AuthData.User;
         }
         else
         {
@@ -39,8 +39,7 @@ export class NavbarComponent implements OnInit {
         }
     }
 
-    public logout() {
-        this.authService.LogOut();
-        this.router.navigate(['login']);
+    public Logout() {
+        this._authService.LogOut();
     }
 }

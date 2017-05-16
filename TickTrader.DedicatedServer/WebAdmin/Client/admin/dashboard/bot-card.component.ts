@@ -19,7 +19,7 @@ export class BotCardComponent implements OnInit {
     constructor(private _api: ApiService, private _toastr: ToastrService, private _router: Router) { }
 
     ngOnInit() {
-        this._api.Feed.changeBotState.subscribe(botState => this.updateBotState(botState));
+        this._api.Feed.ChangeBotState.subscribe(botState => this.updateBotState(botState));
     }
 
     public get CanStop(): boolean {

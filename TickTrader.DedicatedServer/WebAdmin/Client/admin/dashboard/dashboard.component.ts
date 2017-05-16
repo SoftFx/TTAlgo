@@ -18,8 +18,8 @@ export class DashboardComponent implements OnInit {
     constructor(private _api: ApiService, private _route: ActivatedRoute, private _router: Router) { }
 
     ngOnInit() {
-        this._api.Feed.addBot.subscribe(bot => this.addBot(bot));
-        this._api.Feed.deleteBot.subscribe(id => this.deleteBot(id));
+        this._api.Feed.AddBot.subscribe(bot => this.addBot(bot));
+        this._api.Feed.DeleteBot.subscribe(id => this.deleteBot(id));
         this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 
