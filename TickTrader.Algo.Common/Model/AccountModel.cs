@@ -104,19 +104,6 @@ namespace TickTrader.Algo.Common.Model
             AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
         }
 
-        protected void OnTransactionReport(TradeTransactionReport report)
-        {
-            // Workaround. FDK does not provide balance changes in PositionReport
-            if (Type == AccountType.Net)
-            {
-                if (report.TradeTransactionReportType == TradeTransactionReportType.OrderFilled)
-                {
-                    Balance = report.AccountBalance;
-                    OnBalanceChanged();
-                }
-            }
-        }
-
         protected void OnReport(Position report)
         {
             if (IsEmpty(report))
@@ -205,6 +192,20 @@ namespace TickTrader.Algo.Common.Model
                         OnOrderRemoved(report, OrderExecAction.Filled);
                     }
                     break;
+            }
+
+            if (Type == AccountType.Net && report.ExecutionType == ExecutionType.Trade)
+            {
+                switch (report.OrderStatus)
+                {
+                    case OrderStatus.Calculated:
+                    case OrderStatus.Filled:
+                        if (!double.IsNaN(report.Balance))
+                        {
+                            Balance = report.Balance;
+                        }
+                        break;
+                }
             }
 
             if (Type == AccountType.Cash)

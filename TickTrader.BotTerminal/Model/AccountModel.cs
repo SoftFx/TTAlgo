@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
 
         private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
         {
-            uiUpdater.SendAsync(() => OnTransactionReport(e.Report));
+            var a = e.Report;
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
