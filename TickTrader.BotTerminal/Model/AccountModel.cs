@@ -147,7 +147,10 @@ namespace TickTrader.BotTerminal
 
         private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
         {
-            var a = e.Report;
+            //var a = e.Report;
+
+            // TODO: Remove after TTS 1.28 will be on live servers
+            uiUpdater.SendAsync(() => OnTransactionReport(e.Report));
         }
 
         void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
