@@ -91,7 +91,7 @@ export class FeedService {
             return;
 
         this._zone.run(() => {
-            console.log('[FeedService] Connection State: ' + ConnectionStatus[connectionState]);
+            console.log('[FeedService] ConnectionState: ', ConnectionStatus[connectionState]);
             this.CurrentState = connectionState;
             this.connectionStateSubject.next(connectionState);
         });

@@ -25,7 +25,7 @@ export class NavbarComponent implements OnInit {
                 return this.listTitles[item];
             }
         }
-        return { title: 'Dashboard', icon: 'fa fa-tachometer' };
+        return this.listTitles[0];
     }
 
     public get UserName(): string {
