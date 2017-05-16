@@ -98,8 +98,6 @@ namespace TickTrader.DedicatedServer.DS.Models
                 StartExecutor();
         }
 
-       
-
         public void Start()
         {
             lock (_syncObj)
@@ -128,12 +126,20 @@ namespace TickTrader.DedicatedServer.DS.Models
                     return Task.FromResult(this);
 
                 SetRunning(false);
-                ChangeState(BotStates.Stopping);
+                if (State == BotStates.Started)
+                {
+                    ChangeState(BotStates.Offline);
+                    OnStop();
+                    return Task.FromResult(this);
+                }
+                else
+                {
+                    ChangeState(BotStates.Stopping);
+                    if (TaskIsNullOrStopped(_stopTask))
+                        _stopTask = DoStop();
 
-                if (TaskIsNullOrStopped(_stopTask))
-                    _stopTask = DoStop();
-
-                return _stopTask;
+                    return _stopTask;
+                }
             }
         }
 
@@ -182,7 +188,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.Logger = _botLog;
                 _stopListener = new ListenerProxy(executor, () =>
                 {
-                    lock (_syncObj) OnStopped(false);
+                    lock (_syncObj) OnExecutorStopped(false);
                 });
 
                 executor.Start();
@@ -196,7 +202,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 {
                     Fault = ex;
                     FaultMessage = ex.Message;
-                    OnStopped(true);
+                    OnExecutorStopped(true);
                 }
             }
         }
@@ -204,10 +210,10 @@ namespace TickTrader.DedicatedServer.DS.Models
         private async Task DoStop()
         {
             await Task.Factory.StartNew(() => executor?.Stop());
-            lock (_syncObj) OnStopped(false);
+            lock (_syncObj) OnExecutorStopped(false);
         }
 
-        private void OnStopped(bool isFaulted)
+        private void OnExecutorStopped(bool isFaulted)
         {
             if (State != BotStates.Offline)
             {
@@ -216,7 +222,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     _stopListener.Dispose();
                     if (executor != null)
                         executor.Dispose();
-                    Package.DecrementRef();
+                    OnStop();
                 }
                 catch (Exception ex)
                 {
@@ -226,6 +232,11 @@ namespace TickTrader.DedicatedServer.DS.Models
                 ChangeState(isFaulted ? BotStates.Faulted : BotStates.Offline);
                 SetRunning(false);
             }
+        }
+
+        private void OnStop()
+        {
+            Package.DecrementRef();
         }
 
         private void ChangeState(BotStates newState, string errorMessage = null)
