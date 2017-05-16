@@ -284,6 +284,8 @@ namespace TickTrader.Algo.Common.Model
             algoReport.Action = entityAction;
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
+            if (report.Assets != null)
+                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
             AlgoEvent_OrderUpdated(algoReport);
         }
 
