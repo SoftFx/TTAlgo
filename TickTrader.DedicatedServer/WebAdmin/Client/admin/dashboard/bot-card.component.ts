@@ -22,10 +22,28 @@ export class BotCardComponent implements OnInit {
         this._api.Feed.ChangeBotState.subscribe(botState => this.updateBotState(botState));
     }
 
+    public get IsOnline(): boolean {
+        return this.TradeBot.State === TradeBotStates.Online;
+    }
+
+    public get IsProcessing(): boolean {
+        return this.TradeBot.State === TradeBotStates.Starting
+            || this.TradeBot.State === TradeBotStates.Reconnecting
+            || this.TradeBot.State === TradeBotStates.Stopping;
+    }
+
+    public get IsOffline(): boolean {
+        return this.TradeBot.State === TradeBotStates.Offline;
+    }
+
+    public get Faulted(): boolean {
+        return this.TradeBot.State === TradeBotStates.Faulted;
+    }
+
     public get CanStop(): boolean {
         return this.TradeBot.State === TradeBotStates.Online
             || this.TradeBot.State === TradeBotStates.Starting
-            || this.TradeBot.State === TradeBotStates.Started;
+            || this.TradeBot.State === TradeBotStates.Reconnecting;
     }
 
     public get CanStart(): boolean {
@@ -73,7 +91,7 @@ export class BotCardComponent implements OnInit {
 
     private updateBotState(botState: TradeBotStateModel) {
         if (this.TradeBot.Id === botState.Id) {
-            this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State }
+            this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
         }
     }
 

@@ -12,27 +12,23 @@
 }
 
 /*\/\/\/Bot States Colors*/
-.bot-state-offline {
+.state-offline {
     color: #808080 !important;
 }
 
-.bot-state-started {
+.state-connecting {
     color: yellow !important;
 }
 
-.bot-state-initializing {
+.state-disconnecting {
     color: yellow !important;
 }
 
-.bot-state-stopping {
-    color: yellow !important;
-}
-
-.bot-state-faulted {
+.state-faulted {
     color: #FB404B !important;
 }
 
-.bot-state-online {
+.state-online {
     color: #87CB16 !important;
 }
 

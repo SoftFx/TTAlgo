@@ -36,7 +36,7 @@ export class ObservableRequest<T>
 
         this.IsRunning = true;
 
-        this._task.subscribe(v => this.handleSuccess(v), e=> this.handleError(e), () => this.handleComplete());
+        this._task.finally(() => this.handleComplete()).subscribe(v => this.handleSuccess(v), e => this.handleError(e));
 
         return this;
     }
@@ -69,8 +69,6 @@ export class ObservableRequest<T>
 
         this._complete();
     }
-
-
 }
 
 export interface IDictionary<T> {

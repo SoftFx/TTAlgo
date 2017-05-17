@@ -197,11 +197,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             acc.BotStateChanged -= OnBotStateChanged;
         }
 
-        private void OnBotConfigurationChanged(TradeBotModel obj)
-        {
-            throw new NotImplementedException();
-        }
-
         private void OnBotStateChanged(TradeBotModel bot)
         {
             this.BotStateChanged?.Invoke(bot);

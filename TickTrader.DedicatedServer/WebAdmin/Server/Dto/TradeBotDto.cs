@@ -10,5 +10,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
         public AccountDto Account { get; set; }
         public string State { get; set; }
         public TradeBotConfigDto Config { get; set; }
+        public string FaultMessage { get; set; }
     }
 }

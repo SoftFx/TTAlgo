@@ -101,6 +101,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     public Status: string;
     public Account: AccountModel;
     public State: TradeBotStates;
+    public FaultMessage: string;
     public Config: TradeBotConfig;
 
     constructor() { }
@@ -110,6 +111,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
         this.Status = input["Status"] ? input.Status : "";
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
+        this.FaultMessage = input.FaultMessage;
         this.Config = new TradeBotConfig().Deserialize(input.Config);
 
         return this;
@@ -119,6 +121,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
     public Id: string;
     public State: TradeBotStates;
+    public FaultMessage: string;
 
     constructor() { }
 
@@ -126,16 +129,17 @@ export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
     public Deserialize(input: any): TradeBotStateModel {
         this.Id = input.Id;
         this.State = TradeBotStates[input.State as string];
+        this.FaultMessage = input.FaultMessage;
 
         return this;
     }
 
     public toString = (): string => {
-        return `Bot '${this.Id}' ${TradeBotStates[this.State]}`;
+        return `Bot '${this.Id}' ${TradeBotStates[this.State]} ${this.FaultMessage}`;
     }
 }
 
-export enum TradeBotStates { Offline, Starting, Started, Initializing, Faulted, Online, Stopping }
+export enum TradeBotStates { Offline, Starting, Faulted, Online, Stopping, Reconnecting }
 
 export class TradeBotConfig implements Serializable<TradeBotConfig>{
     public Symbol: string;

@@ -94,23 +94,15 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void Client_StateChanged(ClientModel client)
         {
-            lock (_syncObj)
+            if (!IsStopped() && client.ConnectionState == ConnectionStates.Offline)
             {
-                if (client.ConnectionState == ConnectionStates.Online)
+                if (client.Connection.LastError == ConnectionErrorCodes.InvalidCredentials)
                 {
-                    if (State == BotStates.Starting)
-                        StartExecutor();
-                    else if (State == BotStates.Reconnecting)
-                        ChangeState(BotStates.Online);
-                }
-                else if (client.ConnectionState == ConnectionStates.Disconnecting || client.ConnectionState == ConnectionStates.Offline)
-                {
-                    if (State == BotStates.Online && client.IsReconnecting)
-                        ChangeState(BotStates.Reconnecting);
-                    if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
-                        StopInternal(client.Connection.LastError.ToString());
+                    StopAsync();
                 }
             }
+            if (State == BotStates.Starting && client.ConnectionState == ConnectionStates.Online)
+                StartExecutor();
         }
 
         public void Start()
@@ -126,52 +118,35 @@ namespace TickTrader.DedicatedServer.DS.Models
                 SetRunning(true);
                 Package.IncrementRef();
 
-                ChangeState(BotStates.Starting);
-
                 if (_client.ConnectionState == ConnectionStates.Online)
                     StartExecutor();
+                else
+                    ChangeState(BotStates.Starting);
             }
         }
 
         public Task StopAsync()
         {
-            return StopInternal();
-        }
-
-        private Task StopInternal(string error = null, bool isExecutorStopped = false)
-        {
             lock (_syncObj)
             {
-                if (IsStopped())
-                    return Task.FromResult(true);
+                if (IsStopped() || State == BotStates.Stopping)
+                    return Task.FromResult(this);
 
-                if (State != BotStates.Stopping)
-                    _stopTask = DoStop(error, isExecutorStopped);
-
-                return _stopTask;
-            }
-        }
-
-        private async Task DoStop(string error, bool isExecutorStopped)
-        {
-            bool hasError = error != null;
-
-            SetRunning(false);
-
-            if (State == BotStates.Online || State == BotStates.Reconnecting)
-            {
-                if (!isExecutorStopped)
+                SetRunning(false);
+                if (State == BotStates.Started)
+                {
+                    ChangeState(BotStates.Offline);
+                    OnStop();
+                    return Task.FromResult(this);
+                }
+                else
                 {
                     ChangeState(BotStates.Stopping);
-                    await Task.Factory.StartNew(() => executor?.Stop());
-                }
-                DisposeExecutor();
-            }
+                    if (TaskIsNullOrStopped(_stopTask))
+                        _stopTask = DoStop();
 
-            lock (_syncObj)
-            {
-                ChangeState(hasError ? BotStates.Faulted : BotStates.Offline, error);
-                OnStop();
+                    return _stopTask;
+                }
             }
         }
 
@@ -220,7 +195,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.Logger = _botLog;
                 _stopListener = new ListenerProxy(executor, () =>
                 {
-                    StopInternal(null, true);
+                    lock (_syncObj) OnExecutorStopped(false);
                 });
 
                 executor.Start();
@@ -233,53 +208,55 @@ namespace TickTrader.DedicatedServer.DS.Models
                 lock (_syncObj)
                 {
                     Fault = ex;
-                    StopInternal(ex.Message, true);
+                    FaultMessage = ex.Message;
+                    OnExecutorStopped(true);
                 }
             }
         }
 
-        private async Task StopExecutor()
+        private async Task DoStop()
         {
-
-        }
-
-        private void DisposeExecutor()
-        {
-            _stopListener.Dispose();
-            executor?.Dispose();
-        }
-
-        private void OnExecutorStopped(string err = null)
-        {
-            lock (_syncObj)
+<<<<<<< Updated upstream
+            await Task.Factory.StartNew(() => executor?.Stop());
+            lock (_syncObj) OnExecutorStopped(false);
+=======
+            await Task.Factory.StartNew(() =>
             {
-                if (State == BotStates.Online)
+                try { executor?.Stop(); }
+                catch {}
+            });
+            lock (_syncObj) OnStopped(false);
+>>>>>>> Stashed changes
+        }
+
+        private void OnExecutorStopped(bool isFaulted)
+        {
+            if (State != BotStates.Offline)
+            {
+                try
                 {
-                    SetRunning(false);
-                    ChangeState(BotStates.Offline, err);
-                    DisposeExecutor();
+                    _stopListener.Dispose();
+                    if (executor != null)
+                        executor.Dispose();
+                    OnStop();
                 }
+                catch (Exception ex)
+                {
+                    _log.LogError("TradeBotModel.OnStopped() failed! {0}", ex);
+                }
+
+                ChangeState(isFaulted ? BotStates.Faulted : BotStates.Offline);
+                SetRunning(false);
             }
         }
 
         private void OnStop()
         {
-            try
-            {
-                Package.DecrementRef();
-            }
-            catch (Exception ex)
-            {
-                _log.LogError("TradeBotModel.OnStopped() failed! {0}", ex);
-            }
+            Package.DecrementRef();
         }
 
         private void ChangeState(BotStates newState, string errorMessage = null)
         {
-            if (string.IsNullOrWhiteSpace(errorMessage))
-                _log.LogDebug($"TradeBot '{Id}' State: {newState}");
-            else
-                _log.LogWarning($"TradeBot '{Id}' State: {newState} Error: {errorMessage}");
             State = newState;
             FaultMessage = errorMessage;
             StateChanged?.Invoke(this);

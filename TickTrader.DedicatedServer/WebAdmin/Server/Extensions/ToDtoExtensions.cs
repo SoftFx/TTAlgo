@@ -27,6 +27,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 Status = bot.Log.Status,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
+                FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto()
             };
         }
@@ -74,7 +75,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             return new BotStateDto
             {
                 Id = bot.Id,
-                State = bot.State.ToString()
+                State = bot.State.ToString(),
+                FaultMessage = bot.FaultMessage
             };
         }
 

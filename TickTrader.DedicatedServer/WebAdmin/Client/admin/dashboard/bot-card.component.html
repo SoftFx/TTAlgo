@@ -8,7 +8,7 @@
             </div>
         </div>
         <h4 class="title truncate">
-            <i class="fa fa-circle" [ngClass]="{'bot-state-offline': TradeBot.State === TradeBotState.Offline, 'bot-state-started': TradeBot.State === TradeBotState.Started, 'bot-state-initializing': TradeBot.State === TradeBotState.Initializing, 'bot-state-faulted': TradeBot.State === TradeBotState.Faulted, 'bot-state-stopping': TradeBot.State === TradeBotState.Stopping, 'bot-state-online': TradeBot.State === TradeBotState.Online }"></i>
+            <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': Faulted, 'state-online': IsOnline }"></i>
             {{TradeBot.Id}}
         </h4>
         <p class="category">{{TradeBotState[TradeBot.State]}}</p>
@@ -17,6 +17,7 @@
         <ul class="list-unstyled">
             <li class="card-text">Account: {{TradeBot.Account.Login}}</li>
             <li class="card-text">Server: {{TradeBot.Account.Server}}</li>
+            <li *ngIf="Faulted" class="card-text text-error">{{TradeBot.FaultMessage | resx}}</li>
         </ul>
         <div class="footer">
             <hr />
