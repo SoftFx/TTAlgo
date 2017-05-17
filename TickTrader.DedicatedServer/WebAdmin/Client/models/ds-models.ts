@@ -108,7 +108,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 
     public Deserialize(input: any): TradeBotModel {
         this.Id = input.Id;
-        this.Status = input["Status"] ? input.Status : "";
+        this.Status = input["SSetupModeltatus"] ? input.Status : "";
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
         this.FaultMessage = input.FaultMessage;
@@ -244,7 +244,7 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.Symbol = bot.Config.Symbol;
         setup.InstanceId = bot.Id;
-        setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Value, p.Descriptor));
+        setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Descriptor, p.Value));
         setup.Account = bot.Account;
 
         return setup;
