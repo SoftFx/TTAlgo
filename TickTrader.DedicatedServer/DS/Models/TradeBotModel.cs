@@ -106,7 +106,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 else if (client.ConnectionState == ConnectionStates.Disconnecting || client.ConnectionState == ConnectionStates.Offline)
                 {
                     if (State == BotStates.Online && client.IsReconnecting)
-                        ChangeState(BotStates.Reconnecting);
+                        ChangeState(BotStates.Reconnecting, client.Connection.HasError ? client.Connection.LastError.ToString() : null);
                     if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
                         StopInternal(client.Connection.LastError.ToString());
                 }
@@ -238,11 +238,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private async Task StopExecutor()
-        {
-
-        }
-
         private void DisposeExecutor()
         {
             _stopListener.Dispose();
@@ -277,9 +272,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         private void ChangeState(BotStates newState, string errorMessage = null)
         {
             if (string.IsNullOrWhiteSpace(errorMessage))
-                _log.LogDebug($"TradeBot '{Id}' State: {newState}");
+                _log.LogInformation("TradeBot '{0}' State: {1}", Id, newState);
             else
-                _log.LogWarning($"TradeBot '{Id}' State: {newState} Error: {errorMessage}");
+                _log.LogWarning("TradeBot '{0}' State: {1} Error: {2}", Id, newState, errorMessage);
             State = newState;
             FaultMessage = errorMessage;
             StateChanged?.Invoke(this);

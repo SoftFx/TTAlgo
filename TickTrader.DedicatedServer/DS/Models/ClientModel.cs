@@ -212,7 +212,6 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void ManageConnection()
         {
-            Console.WriteLine($"{ConnectionState.ToString()} -> stopRequested: {_stopRequested}, lostConnection: {_lostConnection}, _startedBotsCount: {_startedBotsCount}");
             if (ConnectionState == ConnectionStates.Offline)
             {
                 if (_requests.Count > 0 || _startedBotsCount > 0)
