@@ -18,6 +18,7 @@ namespace TickTrader.DedicatedServer.DS.Models
     public class TradeBotModel : ITradeBot
     {
         private ILogger _log;
+        private ILoggerFactory _loggerFactory;
         private object _syncObj;
         private ClientModel _client;
         private Task _stopTask;
@@ -57,18 +58,21 @@ namespace TickTrader.DedicatedServer.DS.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, ILogger log, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata)
+        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata)
         {
             _syncObj = syncObj;
             _client = client;
-            _log = log;
+
+            _loggerFactory = logFactory;
+            _log = _loggerFactory.CreateLogger<TradeBotModel>();
+
             _packageRepo = packageRepo;
             UpdatePackage();
 
             _packageRepo.PackageChanged += _packageRepo_PackageChanged;
             _client.StateChanged += Client_StateChanged;
 
-            _botLog = new BotLog(syncObj);
+            _botLog = new BotLog(Id, syncObj);
 
             if (IsRunning)
                 Start();

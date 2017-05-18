@@ -64,7 +64,7 @@ namespace TickTrader.DedicatedServer.DS
         IAccount Account { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }
-        string Descriptor { get;  }
+        string Descriptor { get; }
         BotStates State { get; }
         void Configurate(PluginConfig cfg);
         void Start();
@@ -81,8 +81,18 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
+    public  enum LogMessageType { Info, Trading, Error, Custom }
+
+    public interface ILogMessage
+    {
+        DateTime TimeUtc { get; }
+        LogMessageType Type { get; }
+        string Message { get; }
+    }
+
     public interface IBotLog
     {
+        IEnumerable<ILogMessage> Messages { get; }
         string Status { get; }
         event Action<string> StatusUpdated;
     }

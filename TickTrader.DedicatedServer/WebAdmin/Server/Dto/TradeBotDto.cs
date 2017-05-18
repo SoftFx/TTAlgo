@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
+﻿namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
 {
     public class TradeBotDto
     {

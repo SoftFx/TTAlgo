@@ -20,6 +20,7 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _sync;
         private ILogger _log;
+        private ILoggerFactory _loggerFactory;
         private CancellationTokenSource _connectCancellation;
         private CancellationTokenSource _requestCancellation;
         private List<Task> _requests;
@@ -46,7 +47,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             _sync = syncObj;
             _packageProvider = packageProvider;
-            _log = loggerFactory.CreateLogger<ClientModel>();
+            _loggerFactory = loggerFactory;
+            _log = _loggerFactory.CreateLogger<ClientModel>();
             _requests = new List<Task>();
             _requestCancellation = new CancellationTokenSource();
 
@@ -387,7 +389,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            bot.Init(this, _log, _sync, _packageProvider, null);
+            bot.Init(this, _loggerFactory, _sync, _packageProvider, null);
             BotInitialized?.Invoke(bot);
         }
 
