@@ -23,12 +23,32 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             return new TradeBotDto()
             {
                 Id = bot.Id,
-                IsRunning = bot.IsRunning,
-                Status = bot.Log.Status,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
+                PackageName = bot.Package.Name,
+                BotName = bot.Descriptor,
                 FaultMessage = bot.FaultMessage,
-                Config = bot.ToConfigDto()
+                Config = bot.ToConfigDto(),
+                Status = bot.Log.Status
+            };
+        }
+
+        public static TradeBotLogDto ToDto(this IBotLog botlog)
+        {
+            return new TradeBotLogDto
+            {
+                Snapshot = botlog.Messages.Select(e => e.ToDto()).ToArray(),
+                Files = new string[0]
+            };
+        }
+
+        public static LogEntryDto ToDto(this ILogEntry entry)
+        {
+            return new LogEntryDto
+            {
+                Time = entry.TimeUtc,
+                Type = entry.Type.ToString(),
+                Message = entry.Message
             };
         }
 

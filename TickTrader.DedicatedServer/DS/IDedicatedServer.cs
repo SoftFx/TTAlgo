@@ -81,18 +81,18 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
-    public  enum LogMessageType { Info, Trading, Error, Custom }
+    public  enum LogEntryType { Info, Trading, Error, Custom }
 
-    public interface ILogMessage
+    public interface ILogEntry
     {
         DateTime TimeUtc { get; }
-        LogMessageType Type { get; }
+        LogEntryType Type { get; }
         string Message { get; }
     }
 
     public interface IBotLog
     {
-        IEnumerable<ILogMessage> Messages { get; }
+        IEnumerable<ILogEntry> Messages { get; }
         string Status { get; }
         event Action<string> StatusUpdated;
     }

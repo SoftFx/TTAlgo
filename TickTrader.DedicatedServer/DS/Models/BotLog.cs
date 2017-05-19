@@ -14,7 +14,7 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _internalSync = new object();
         private object _sync;
-        private List<ILogMessage> _logMessages;
+        private List<ILogEntry> _logMessages;
         private ILogger _logger;
         private int _keepInmemory;
         private string _name;
@@ -24,13 +24,13 @@ namespace TickTrader.DedicatedServer.DS.Models
             _sync = sync;
             _name = name;
             _keepInmemory = keepInMemory;
-            _logMessages = new List<ILogMessage>(_keepInmemory);
+            _logMessages = new List<ILogEntry>(_keepInmemory);
             _logger = GetLogger(name);
         }
 
         public string Status { get; private set; }
 
-        public IEnumerable<ILogMessage> Messages
+        public IEnumerable<ILogEntry> Messages
         {
             get
             {
@@ -43,22 +43,22 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void OnError(Exception ex)
         {
-            WriteLog(LogMessageType.Error, ex.Message);
+            WriteLog(LogEntryType.Error, ex.Message);
         }
 
         public void OnExit()
         {
-            WriteLog(LogMessageType.Info, "Exit");
+            WriteLog(LogEntryType.Info, "Exit");
         }
 
         public void OnInitialized()
         {
-            WriteLog(LogMessageType.Info, "Initialized");
+            WriteLog(LogEntryType.Info, "Initialized");
         }
 
         public void OnPrint(string message)
         {
-            WriteLog(LogMessageType.Custom, message);
+            WriteLog(LogEntryType.Custom, message);
         }
 
         public void OnPrint(string message, params object[] parameters)
@@ -68,7 +68,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void OnPrintError(string message)
         {
-            WriteLog(LogMessageType.Error, message);
+            WriteLog(LogEntryType.Error, message);
         }
 
         public void OnPrintError(string message, params object[] parameters)
@@ -78,22 +78,22 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void OnPrintInfo(string message)
         {
-            WriteLog(LogMessageType.Info, message);
+            WriteLog(LogEntryType.Info, message);
         }
 
         public void OnPrintTrade(string message)
         {
-            WriteLog(LogMessageType.Trading, message);
+            WriteLog(LogEntryType.Trading, message);
         }
 
         public void OnStart()
         {
-            WriteLog(LogMessageType.Info, "Start");
+            WriteLog(LogEntryType.Info, "Start");
         }
 
         public void OnStop()
         {
-            WriteLog(LogMessageType.Info, "Stop");
+            WriteLog(LogEntryType.Info, "Stop");
         }
 
         public void UpdateStatus(string status)
@@ -105,18 +105,18 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private void WriteLog(LogMessageType type, string message)
+        private void WriteLog(LogEntryType type, string message)
         {
-            var msg = new LogMessage(type, message);
+            var msg = new LogEntry(type, message);
 
             switch (type)
             {
-                case LogMessageType.Custom:
-                case LogMessageType.Info:
-                case LogMessageType.Trading:
+                case LogEntryType.Custom:
+                case LogEntryType.Info:
+                case LogEntryType.Trading:
                     _logger.Info(msg.ToString());
                     break;
-                case LogMessageType.Error:
+                case LogEntryType.Error:
                     _logger.Error(msg.ToString());
                     break;
             }

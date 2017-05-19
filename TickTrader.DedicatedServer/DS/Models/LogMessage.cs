@@ -2,16 +2,16 @@
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class LogMessage : ILogMessage
+    public class LogEntry : ILogEntry
     {
-        public LogMessage(LogMessageType type, string message)
+        public LogEntry(LogEntryType type, string message)
         {
             TimeUtc = DateTime.UtcNow;
             Type = type;
             Message = message;
         }
 
-        public LogMessageType Type { get; private set; }
+        public LogEntryType Type { get; private set; }
 
         public string Message { get; private set; }
 

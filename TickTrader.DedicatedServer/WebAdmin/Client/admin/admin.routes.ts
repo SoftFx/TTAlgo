@@ -9,12 +9,12 @@ export const MODULE_ROUTES: Route[] = [
     {
         path: '', canActivate: [AuthGuard], component: AdminComponent,
         children: [
-            { path: 'dashboard', canActivate: [AuthGuard], component: DashboardComponent },
-            { path: 'repository', canActivate: [AuthGuard], component: RepositoryComponent },
-            { path: 'accounts', canActivate: [AuthGuard], component: AccountsComponent },
             { path: 'bot/:id', canActivate: [AuthGuard], component: BotDetailComponent },
             { path: 'configurate/:id', canActivate: [AuthGuard], component: BotConfigurationComponent },
             { path: 'configurate', canActivate: [AuthGuard], component: BotConfigurationComponent },
+            { path: 'dashboard', canActivate: [AuthGuard], component: DashboardComponent },
+            { path: 'repository', canActivate: [AuthGuard], component: RepositoryComponent },
+            { path: 'accounts', canActivate: [AuthGuard], component: AccountsComponent },
             { path: '', redirectTo: 'dashboard', pathMatch: "full" }
         ]
     }

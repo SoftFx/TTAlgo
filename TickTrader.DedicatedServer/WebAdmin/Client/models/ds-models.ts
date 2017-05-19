@@ -96,11 +96,41 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 }
 
+export enum LogEntryType { Info, Trading, Error, Custom }
+
+export class LogEntry implements Serializable<LogEntry> {
+    public Time: Date;
+    public Type: LogEntryType;
+    public Message: string;
+
+    public Deserialize(input: any): LogEntry {
+        this.Message = input.Message;
+        this.Type = LogEntryType[input.Type as string];
+        this.Time = new Date((input.Time as Date).toLocaleString());
+
+        return this;
+    }
+}
+
+export class TradeBotLog implements Serializable<TradeBotLog> {
+    public Snapshot: LogEntry[]; 
+    public Files: string[];
+
+    public Deserialize(input: any): TradeBotLog {
+        this.Snapshot = input.Snapshot.map(le => new LogEntry().Deserialize(le));
+        this.Files = input.Files;
+
+        return this;
+    }
+}
+
 export class TradeBotModel implements Serializable<TradeBotModel>{
     public Id: string;
-    public Status: string;
     public Account: AccountModel;
     public State: TradeBotStates;
+    public Status: string
+    public PackageName: string;
+    public BotName: string;
     public FaultMessage: string;
     public Config: TradeBotConfig;
 
@@ -108,13 +138,54 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 
     public Deserialize(input: any): TradeBotModel {
         this.Id = input.Id;
-        this.Status = input["SSetupModeltatus"] ? input.Status : "";
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
+        this.Status = input.Status;
+        this.PackageName = input.PackageName;
+        this.BotName = input.BotName;
         this.FaultMessage = input.FaultMessage;
         this.Config = new TradeBotConfig().Deserialize(input.Config);
 
         return this;
+    }
+
+    public get IsOnline(): boolean {
+        return this.State === TradeBotStates.Online;
+    }
+
+    public get IsProcessing(): boolean {
+        return this.State === TradeBotStates.Starting
+            || this.State === TradeBotStates.Reconnecting
+            || this.State === TradeBotStates.Stopping;
+    }
+
+    public get IsOffline(): boolean {
+        return this.State === TradeBotStates.Offline;
+    }
+
+    public get Faulted(): boolean {
+        return this.State === TradeBotStates.Faulted;
+    }
+
+    public get CanStop(): boolean {
+        return this.State === TradeBotStates.Online
+            || this.State === TradeBotStates.Starting
+            || this.State === TradeBotStates.Reconnecting;
+    }
+
+    public get CanStart(): boolean {
+        return this.State === TradeBotStates.Offline
+            || this.State === TradeBotStates.Faulted;
+    }
+
+    public get CanDelete(): boolean {
+        return this.State === TradeBotStates.Offline
+            || this.State === TradeBotStates.Faulted;
+    }
+
+    public get CanConfigurate(): boolean {
+        return this.State === TradeBotStates.Offline
+            || this.State === TradeBotStates.Faulted;
     }
 }
 

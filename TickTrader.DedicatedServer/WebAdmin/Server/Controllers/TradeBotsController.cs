@@ -35,12 +35,43 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
 
-            if (tradeBot != null)
                 return Ok(tradeBot.ToDto());
-            else
-                return NotFound((new BotNotFoundException($"Bot {id} not found")).ToBadResult());
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpGet("{id}/[Action]")]
+        public IActionResult Log(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+
+                return Ok(tradeBot.Log.ToDto());
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
         }
 
         [HttpGet("{botName}/[action]")]
@@ -73,18 +104,15 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
-
-                if(tradeBot != null)
-                {
-                    tradeBot.Configurate(CreateConfig(setup));
-                }
-                else
-                {
-                    return NotFound((new BotNotFoundException($"Bot {id} not found")).ToBadResult());
-                }
+                var tradeBot = GetBotOrThrow(id);
+                tradeBot.Configurate(CreateConfig(setup));
 
                 return Ok();
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {
@@ -113,19 +141,21 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == id);
-                if (bot != null)
-                {
-                    bot.Start();
-                }
-            }
-            catch (DSException dsex)
-            {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
-            }
+                var tradeBot = GetBotOrThrow(id);
+                tradeBot.Start();
 
-            return Ok();
+                return Ok();
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
         }
 
         [HttpPatch("{id}/[action]")]
@@ -133,19 +163,30 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == id);
-                if (bot != null)
-                {
-                    bot.StopAsync();
-                }
-            }
-            catch (DSException dsex)
-            {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
-            }
+                var tradeBot = GetBotOrThrow(id);
+                tradeBot.StopAsync();
 
-            return Ok();
+                return Ok();
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        private ITradeBot GetBotOrThrow(string id)
+        {
+            var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+            if (tradeBot == null)
+                throw new BotNotFoundException($"Bot {id} not found");
+            else
+                return tradeBot;
         }
 
         private PluginConfig CreateConfig(PluginSetupDto setup)

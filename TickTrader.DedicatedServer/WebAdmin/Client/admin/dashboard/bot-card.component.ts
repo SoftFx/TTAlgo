@@ -64,7 +64,7 @@ export class BotCardComponent implements OnInit {
     public Start() {
         this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': TradeBotStates.Starting }
 
-        this._api.StartBot(this.TradeBot.Id).subscribe(
+        this._api.StartBot(this.TradeBot.Id).subscribe( 
             ok => { },
             err => this.notifyAboutError(err)
         );
@@ -84,6 +84,11 @@ export class BotCardComponent implements OnInit {
         );
     }
 
+    public GoToDetails(instanceId: string) {
+        if (instanceId)
+            this._router.navigate(['/bot', instanceId]);
+    }
+
     public Configurate(instanceId: string) {
         if (instanceId)
             this._router.navigate(['/configurate', instanceId]);
@@ -91,7 +96,9 @@ export class BotCardComponent implements OnInit {
 
     private updateBotState(botState: TradeBotStateModel) {
         if (this.TradeBot.Id === botState.Id) {
-            this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
+            this.TradeBot.State = botState.State;
+            this.TradeBot.FaultMessage = botState.FaultMessage;
+            //this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
         }
     }
 
