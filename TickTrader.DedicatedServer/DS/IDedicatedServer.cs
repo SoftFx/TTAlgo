@@ -65,6 +65,7 @@ namespace TickTrader.DedicatedServer.DS
         PluginConfig Config { get; }
         PackageModel Package { get; }
         string Descriptor { get; }
+        string BotName { get; }
         BotStates State { get; }
         void Configurate(PluginConfig cfg);
         void Start();

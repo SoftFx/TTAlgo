@@ -74,6 +74,30 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
+        [HttpGet("{id}/[Action]")]
+        public IActionResult Status(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+
+                return Ok(new BotStatusDto {
+                    Status = tradeBot.Log.Status,
+                    BotId = tradeBot.Id
+                });
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
         [HttpGet("{botName}/[action]")]
         public string BotId(string botName)
         {

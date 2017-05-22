@@ -10,6 +10,7 @@ export class ObservableRequest<T>
 
     public IsRunning: boolean;
     public IsCompleted: boolean;
+    public IsFaulted: boolean;
     public Error: ResponseStatus;
     public Result: T;
 
@@ -22,6 +23,7 @@ export class ObservableRequest<T>
 
         this.IsRunning = false;
         this.IsCompleted = false;
+        this.IsFaulted = false;
     }
 
     public Subscribe(ok?: (value: T) => void, error?: (error: ResponseStatus) => void, complete?: () => void) {
@@ -47,10 +49,7 @@ export class ObservableRequest<T>
         else
             "";
     }
-    public get IsFaulted(): boolean {
-        return !!this.Error;
-    }
-
+  
     private handleSuccess(value: T) {
         this.Result = value;
 
@@ -59,6 +58,7 @@ export class ObservableRequest<T>
 
     private handleError(error: ResponseStatus) {
         this.Error = error;
+        this.IsFaulted = true;
 
         this._error(error);
     }

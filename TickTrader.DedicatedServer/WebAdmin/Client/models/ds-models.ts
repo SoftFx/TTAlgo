@@ -96,17 +96,29 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 }
 
-export enum LogEntryType { Info, Trading, Error, Custom }
+export enum LogEntryTypes { Info, Trading, Error, Custom }
 
 export class LogEntry implements Serializable<LogEntry> {
     public Time: Date;
-    public Type: LogEntryType;
+    public Type: LogEntryTypes;
     public Message: string;
 
     public Deserialize(input: any): LogEntry {
         this.Message = input.Message;
-        this.Type = LogEntryType[input.Type as string];
+        this.Type = LogEntryTypes[input.Type as string];
         this.Time = new Date((input.Time as Date).toLocaleString());
+
+        return this;
+    }
+}
+
+export class TradeBotStatus implements Serializable<TradeBotStatus> {
+    public Status: string;
+    public BotId: string;
+
+    public Deserialize(input: any): TradeBotStatus {
+        this.Status = input.Status;
+        this.BotId = input.BotId;
 
         return this;
     }
@@ -128,7 +140,6 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     public Id: string;
     public Account: AccountModel;
     public State: TradeBotStates;
-    public Status: string
     public PackageName: string;
     public BotName: string;
     public FaultMessage: string;
@@ -140,7 +151,6 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
         this.Id = input.Id;
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
-        this.Status = input.Status;
         this.PackageName = input.PackageName;
         this.BotName = input.BotName;
         this.FaultMessage = input.FaultMessage;

@@ -19,7 +19,9 @@ export class BotCardComponent implements OnInit {
     constructor(private _api: ApiService, private _toastr: ToastrService, private _router: Router) { }
 
     ngOnInit() {
-        this._api.Feed.ChangeBotState.subscribe(botState => this.updateBotState(botState));
+        this._api.Feed.ChangeBotState
+            .filter(botState => this.TradeBot && this.TradeBot.Id == botState.Id)
+            .subscribe(botState => this.updateBotState(botState));
     }
 
     public get IsOnline(): boolean {
@@ -64,7 +66,7 @@ export class BotCardComponent implements OnInit {
     public Start() {
         this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': TradeBotStates.Starting }
 
-        this._api.StartBot(this.TradeBot.Id).subscribe( 
+        this._api.StartBot(this.TradeBot.Id).subscribe(
             ok => { },
             err => this.notifyAboutError(err)
         );
@@ -95,11 +97,7 @@ export class BotCardComponent implements OnInit {
     }
 
     private updateBotState(botState: TradeBotStateModel) {
-        if (this.TradeBot.Id === botState.Id) {
-            this.TradeBot.State = botState.State;
-            this.TradeBot.FaultMessage = botState.FaultMessage;
-            //this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
-        }
+        this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
     }
 
     private notifyAboutError(response: ResponseStatus) {

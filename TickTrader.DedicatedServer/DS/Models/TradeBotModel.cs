@@ -53,6 +53,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         public string FaultMessage { get; private set; }
         public IAccount Account => _client;
         public IBotLog Log => _botLog;
+        public string BotName => _ref?.DisplayName;
 
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
