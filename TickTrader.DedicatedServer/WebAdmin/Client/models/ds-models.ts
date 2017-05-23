@@ -62,7 +62,7 @@ export class PluginModel implements Serializable<PluginModel>{
     public Id: string;
     public DisplayName: string;
     public Type: string;
-    public Parameters: ParameterDescriptor[];
+    public ParamDescriptors: ParameterDescriptor[];
     public Package: string;
 
     constructor(packageName?: string) {
@@ -90,7 +90,7 @@ export class PluginModel implements Serializable<PluginModel>{
         this.Id = input.Id;
         this.DisplayName = input.DisplayName;
         this.Type = input.Type;
-        this.Parameters = input.Parameters.map(p => new ParameterDescriptor().Deserialize(p));
+        this.ParamDescriptors = input.Parameters.map(p => new ParameterDescriptor().Deserialize(p));
 
         return this;
     }
@@ -255,7 +255,7 @@ export class TradeBotConfig implements Serializable<TradeBotConfig>{
 
     public Deserialize(input: any): TradeBotConfig {
         this.Symbol = input["Symbol"] ? input.Symbol : "";
-        this.Parameters = input.Parameters.map(p => new Parameter(new ParameterDescriptor().Deserialize(p.Descriptor), p.Value));
+        this.Parameters = input.Parameters.map(p => new Parameter(p.Id, p.Value, p.Descriptor ? new ParameterDescriptor().Deserialize(p.Descriptor) : null));
         return this;
     }
 }
@@ -263,34 +263,38 @@ export class TradeBotConfig implements Serializable<TradeBotConfig>{
 export class Parameter {
     private _value: any;
 
-    constructor(descriptor: ParameterDescriptor, value?: any) {
-        this.Descriptor = descriptor;
-        this.Value = value ? value : descriptor.DefaultValue;
-    }
-
+    public Id: string;
     public Descriptor: ParameterDescriptor;
 
+    constructor(id: string, value: any, descriptor: ParameterDescriptor) {
+        this.Descriptor = descriptor;
+        this.Id = id;
+        this.Value = value;
+    }
 
     public get Value() {
         return this._value;
     }
 
     public set Value(value: any) {
-        switch (this.Descriptor.DataType) {
-            case ParameterDataTypes.Int:
-                this._value = Math.floor(value);
-                break;
-            case ParameterDataTypes.Double:
-                this._value = value ? value : 0.0;
-                break;
-            default:
-                this._value = value;
+        if (!this.Descriptor)
+            this._value = value;
+        else {
+            switch (this.Descriptor.DataType) {
+                case ParameterDataTypes.Int:
+                    this._value = Math.floor(value);
+                    break;
+                case ParameterDataTypes.Double:
+                    this._value = value ? value : 0.0;
+                    break;
+                default:
+                    this._value = value;
+            }
         }
     }
 }
 
 export class ParameterDescriptor implements Serializable<ParameterDescriptor>{
-
     public Id: string;
     public DisplayName: string;
     public DataType: ParameterDataTypes;
@@ -352,7 +356,7 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.Symbol = bot.Config.Symbol;
         setup.InstanceId = bot.Id;
-        setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Descriptor, p.Value));
+        setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id, p.Value, p.Descriptor));
         setup.Account = bot.Account;
 
         return setup;
@@ -362,8 +366,7 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.PackageName = plugin.Package;
         setup.PluginId = plugin.Id;
-        //setup.InstanceId = `${plugin.DisplayName} [${Guid.New().substring(0, 4)}]`;
-        setup.Parameters = plugin.Parameters.map(p => new Parameter(p));
+        setup.Parameters = plugin.ParamDescriptors.map(p => new Parameter(p.Id, p.DefaultValue, p));
         setup.Account = null;
         setup.Symbol = "";
 

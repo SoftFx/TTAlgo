@@ -75,7 +75,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             _botLog = new BotLog(Id, syncObj);
 
-            if (IsRunning)
+            if (IsRunning && State != BotStates.Broken)
                 Start();
         }
 

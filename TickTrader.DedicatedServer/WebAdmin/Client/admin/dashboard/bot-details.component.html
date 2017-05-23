@@ -6,12 +6,15 @@
                     <div class="card max_height_400">
                         <div class="header">
                             <h4 class="title">
-                                <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': Faulted, 'state-online': IsOnline }"></i>
+                                <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': Faulted || Broken, 'state-online': IsOnline }"></i>
                                 {{Bot.Id}}
                             </h4>
                             <p class="category">{{TradeBotState[Bot.State]}}</p>
                         </div>
                         <div class="content">
+                            <ul class="list-unstyled">
+                                <li *ngIf="Faulted || Broken" class="card-text text-error">{{Bot.FaultMessage | resx}}</li>
+                            </ul>
                             <div class="btn-group btn-group-justified">
                                 <a (click)="Start(Bot.Id)" [class.disabled]="!CanStart" class="btn btn-simple"><span class="fa fa-play" [ngClass]="{'text-success': CanStart}"></span></a>
                                 <a (click)="Stop(Bot.Id)" [class.disabled]="!CanStop" class="btn btn-simple"><span class="fa fa-stop" [ngClass]="{'text-error': CanStop}"></span></a>
@@ -78,7 +81,7 @@
                             </div>
                             <ul class="list-unstyled">
                                 <li>Symbol: {{Bot.Config.Symbol}}</li>
-                                <li *ngFor="let param of Bot.Config.Parameters">{{param.Descriptor.DisplayName}}: {{param.Value}}</li>
+                                <li *ngFor="let param of Bot.Config.Parameters">{{param.Descriptor ? param.Descriptor.DisplayName : param.Id}}: {{param.Value}}</li>
                             </ul>
                         </div>
                     </div>

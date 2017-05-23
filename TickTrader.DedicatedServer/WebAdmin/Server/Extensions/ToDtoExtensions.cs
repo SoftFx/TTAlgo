@@ -60,6 +60,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 Parameters = bot.Config.Properties.Select(p =>
                 new ParameterDto()
                 {
+                    Id = p.Id,
                     Value = ((Parameter)p).ValObj,
                     Descriptor =  descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
                 }).ToArray()

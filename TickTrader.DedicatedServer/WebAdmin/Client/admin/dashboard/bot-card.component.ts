@@ -38,30 +38,34 @@ export class BotCardComponent implements OnInit {
         return this.TradeBot.State === TradeBotStates.Offline;
     }
 
-    public get FaultedOrBroken(): boolean {
-        return this.TradeBot.State === TradeBotStates.Faulted || this.TradeBot.State === TradeBotStates.Broken;
+    public get Faulted(): boolean {
+        return this.TradeBot.State === TradeBotStates.Faulted;
+    }
+
+    public get Broken(): boolean {
+        return this.TradeBot.State === TradeBotStates.Broken;
     }
 
     public get CanStop(): boolean {
-        return this.TradeBot.State === TradeBotStates.Online
+        return (this.TradeBot.State === TradeBotStates.Online
             || this.TradeBot.State === TradeBotStates.Starting
-            || this.TradeBot.State === TradeBotStates.Reconnecting;
+            || this.TradeBot.State === TradeBotStates.Reconnecting) && !this.Broken;
     }
 
     public get CanStart(): boolean {
-        return this.TradeBot.State === TradeBotStates.Offline
-            || this.TradeBot.State === TradeBotStates.Faulted;
+        return (this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public get CanDelete(): boolean {
         return this.TradeBot.State === TradeBotStates.Offline
             || this.TradeBot.State === TradeBotStates.Faulted
-            || this.TradeBot.State === TradeBotStates.Broken;
+            || this.Broken;
     }
 
     public get CanConfigurate(): boolean {
-        return this.TradeBot.State === TradeBotStates.Offline
-            || this.TradeBot.State === TradeBotStates.Faulted;
+        return (this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public Start() {

@@ -78,25 +78,30 @@ export class BotDetailsComponent implements OnInit {
         return this.Bot.State === TradeBotStates.Faulted;
     }
 
+    public get Broken(): boolean {
+        return this.Bot.State === TradeBotStates.Broken;
+    }
+
     public get CanStop(): boolean {
-        return this.Bot.State === TradeBotStates.Online
+        return (this.Bot.State === TradeBotStates.Online
             || this.Bot.State === TradeBotStates.Starting
-            || this.Bot.State === TradeBotStates.Reconnecting;
+            || this.Bot.State === TradeBotStates.Reconnecting) && !this.Broken;
     }
 
     public get CanStart(): boolean {
-        return this.Bot.State === TradeBotStates.Offline
-            || this.Bot.State === TradeBotStates.Faulted;
+        return (this.Bot.State === TradeBotStates.Offline
+            || this.Bot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public get CanDelete(): boolean {
         return this.Bot.State === TradeBotStates.Offline
-            || this.Bot.State === TradeBotStates.Faulted;
+            || this.Bot.State === TradeBotStates.Faulted
+            || this.Broken;
     }
 
     public get CanConfigurate(): boolean {
-        return this.Bot.State === TradeBotStates.Offline
-            || this.Bot.State === TradeBotStates.Faulted;
+        return (this.Bot.State === TradeBotStates.Offline
+            || this.Bot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public Start(botId: string) {
