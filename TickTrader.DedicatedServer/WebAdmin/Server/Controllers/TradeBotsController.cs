@@ -74,6 +74,29 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
+        [HttpGet("{id}/[Action]/{file}")]
+        public IActionResult Log(string id, string file)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+
+                var stream = tradeBot.Log.GetFile(file);
+                return File(stream, "text/plain", file);
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+
         [HttpGet("{id}/[Action]")]
         public IActionResult Status(string id)
         {
@@ -81,7 +104,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 var tradeBot = GetBotOrThrow(id);
 
-                return Ok(new BotStatusDto {
+                return Ok(new BotStatusDto
+                {
                     Status = tradeBot.Log.Status,
                     BotId = tradeBot.Id
                 });

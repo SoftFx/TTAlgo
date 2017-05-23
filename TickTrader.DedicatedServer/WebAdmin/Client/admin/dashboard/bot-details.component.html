@@ -113,9 +113,6 @@
                             </textarea>
                             <br />
                         </div>
-                        <div class="footer">
-                            <button [disabled]="!StatusRequest.IsCompleted && Bot" (click)="RefreshStatus(Bot.Id)" class="btn btn-primary pull-right" type="submit">Refresh</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -143,11 +140,10 @@
                         <div *ngIf="LogRequest.IsFaulted">
                             <span class="text-error">Failed to get history</span>
                         </div>
-                        <div *ngIf="LogRequest.IsCompleted && !LogRequest.IsFaulted">
+                        <div *ngIf="Bot && LogRequest.IsCompleted && !LogRequest.IsFaulted">
                             <div *ngFor="let logFile of Log.Files">
-                                <p>
-                                    {{logFile}}
-                                </p>
+                                <a [href]="DonwloadLogLink(Bot.Id, logFile.Name)">{{logFile}}</a>
+                                <br />
                             </div>
                         </div>
                     </div>
@@ -197,9 +193,6 @@
                                 </div>
                             </div>
                             <br />
-                        </div>
-                        <div class="footer">
-                            <button [disabled]="!LogRequest.IsCompleted && Bot" (click)="RefreshLog(Bot.Id)" class="btn btn-primary pull-right" type="submit">Refresh</button>
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,6 @@
     public class TradeBotLogDto
     {
         public LogEntryDto[] Snapshot { get; set; }
-        public string[] Files { get; set; }
+        public FileDto[] Files { get; set; }
     }
 }

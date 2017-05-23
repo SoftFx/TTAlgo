@@ -6,7 +6,9 @@ using NLog;
 using NLog.Targets;
 using NLog.Layouts;
 using NLog.Config;
-using TickTrader.Algo.Common.Lib;
+using System.IO;
+using TickTrader.DedicatedServer.Extensions;
+using System.Linq;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -18,11 +20,14 @@ namespace TickTrader.DedicatedServer.DS.Models
         private ILogger _logger;
         private int _keepInmemory;
         private string _name;
+        private string _logDirectory;
+        private readonly string _fileExtension = ".txt";
 
         public BotLog(string name, object sync, int keepInMemory = 100)
         {
             _sync = sync;
             _name = name;
+            _logDirectory = $"{ServerModel.Environment.BotLogFolder}/{_name.Escape()}/";
             _keepInmemory = keepInMemory;
             _logMessages = new List<ILogEntry>(_keepInmemory);
             _logger = GetLogger(name);
@@ -36,6 +41,20 @@ namespace TickTrader.DedicatedServer.DS.Models
             {
                 lock (_internalSync)
                     return _logMessages.ToArray();
+            }
+        }
+
+        public FileModel[] Files
+        {
+            get
+            {
+                if (Directory.Exists(_logDirectory))
+                {
+                    DirectoryInfo dInfo = new DirectoryInfo(_logDirectory);
+                    return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new FileModel(fInfo.Name, fInfo.Length)).ToArray();
+                }
+                else
+                    return new FileModel[0];
             }
         }
 
@@ -132,19 +151,18 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private ILogger GetLogger(string botId)
         {
-            var loggerName = PathEscaper.Escape(botId);
             var logTarget = $"all-{botId}";
             var errTarget = $"error-{botId}";
 
             var logFile = new FileTarget(logTarget)
             {
-                FileName = Layout.FromString($"{ServerModel.Environment.BotLogFolder}/{loggerName}/${{shortdate}}-log.txt"),
+                FileName = Layout.FromString($"{_logDirectory}${{shortdate}}-log{_fileExtension}"),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
             };
 
             var errorFile = new FileTarget(errTarget)
             {
-                FileName = Layout.FromString($"{ServerModel.Environment.BotLogFolder}/{loggerName}/${{shortdate}}-error.txt"),
+                FileName = Layout.FromString($"{_logDirectory}${{shortdate}}-error{_fileExtension}"),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
             };
 
@@ -157,6 +175,18 @@ namespace TickTrader.DedicatedServer.DS.Models
             var nlogFactory = new LogFactory(logConfig);
 
             return nlogFactory.GetLogger(botId);
+        }
+       
+        public Stream GetFile(string file)
+        {
+            if (file.IsFileNameValid())
+            {
+                var fullPath = Path.Combine(_logDirectory, file);
+
+                return File.Exists(fullPath) ? File.OpenRead(fullPath) : (Stream)new MemoryStream(new byte[0]);
+            }
+
+            throw new ArgumentException($"Incorrect file name {file}");
         }
     }
 }

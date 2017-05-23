@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
@@ -64,6 +65,7 @@ namespace TickTrader.DedicatedServer.DS
         IAccount Account { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }
+        string PackageName { get; }
         string Descriptor { get; }
         string BotName { get; }
         BotStates State { get; }
@@ -94,7 +96,10 @@ namespace TickTrader.DedicatedServer.DS
     public interface IBotLog
     {
         IEnumerable<ILogEntry> Messages { get; }
+        Stream GetFile(string file);
         string Status { get; }
+        FileModel[] Files { get; }
+
         event Action<string> StatusUpdated;
     }
 

@@ -25,7 +25,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 Id = bot.Id,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
-                PackageName = bot.Package.Name,
+                PackageName = bot.PackageName,
                 BotName = bot.BotName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto()
@@ -36,8 +36,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         {
             return new TradeBotLogDto
             {
-                Snapshot = botlog.Messages.OrderByDescending(le=>le.TimeUtc).Select(e => e.ToDto()).ToArray(),
-                Files = new string[0]
+                Snapshot = botlog.Messages.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
+                Files = botlog.Files.Select(fm => new FileDto { Name = fm.Name, Size = fm.Size }).ToArray()
             };
         }
 
@@ -61,7 +61,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 new ParameterDto()
                 {
                     Value = ((Parameter)p).ValObj,
-                    Descriptor = descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                    Descriptor =  descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
                 }).ToArray()
             };
             return config;

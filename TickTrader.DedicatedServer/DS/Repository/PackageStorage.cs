@@ -164,7 +164,7 @@ namespace TickTrader.DedicatedServer.DS.Repository
 
         private string GetFullPathToStorage(string path)
         {
-            return PathExtensions.IsPathAbsolute(path) ? path :
+            return path.IsPathAbsolute() ? path :
               Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), path);
         }
 

@@ -24,6 +24,11 @@ export class ApiService {
         });
     }
 
+    GetDownloadLogUrl(botId:string, file: string)
+    {
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Log/${file}?authorization-token=${this.Auth.AuthData.Token}`;
+    }
+
     AutogenerateBotId(name: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(name) + '/BotId', { headers: this.headers })
             .map(res => res.text())

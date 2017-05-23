@@ -38,8 +38,8 @@ export class BotCardComponent implements OnInit {
         return this.TradeBot.State === TradeBotStates.Offline;
     }
 
-    public get Faulted(): boolean {
-        return this.TradeBot.State === TradeBotStates.Faulted;
+    public get FaultedOrBroken(): boolean {
+        return this.TradeBot.State === TradeBotStates.Faulted || this.TradeBot.State === TradeBotStates.Broken;
     }
 
     public get CanStop(): boolean {
@@ -55,7 +55,8 @@ export class BotCardComponent implements OnInit {
 
     public get CanDelete(): boolean {
         return this.TradeBot.State === TradeBotStates.Offline
-            || this.TradeBot.State === TradeBotStates.Faulted;
+            || this.TradeBot.State === TradeBotStates.Faulted
+            || this.TradeBot.State === TradeBotStates.Broken;
     }
 
     public get CanConfigurate(): boolean {

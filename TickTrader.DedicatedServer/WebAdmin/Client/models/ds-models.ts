@@ -124,13 +124,40 @@ export class TradeBotStatus implements Serializable<TradeBotStatus> {
     }
 }
 
+export class File implements Serializable<File> {
+    public Name: string;
+    public Size: number;
+
+    public Deserialize(input: any): File {
+        this.Name = input.Name;
+        this.Size = input.Size;
+
+        return this;
+    }
+
+    public toString = (): string => {
+        return `${this.Name} (${this.calcSize()})`;
+    }
+
+    private calcSize(): string {
+        if (this.Size < 1024)
+            return `${this.Size} bytes`;
+        else if (this.Size < 1048576)
+            return `${Math.floor(this.Size / 1024 * 10) / 10} KB`;
+        else if (this.Size < 1073741824)
+            return `${Math.floor(this.Size / 1024 / 1024 * 10) / 10} MB`;
+        else
+            return `${Math.floor(this.Size / 1024 / 1024 / 1024 * 10) / 10} GB`;
+    }
+}
+
 export class TradeBotLog implements Serializable<TradeBotLog> {
-    public Snapshot: LogEntry[]; 
+    public Snapshot: LogEntry[];
     public Files: string[];
 
     public Deserialize(input: any): TradeBotLog {
         this.Snapshot = input.Snapshot.map(le => new LogEntry().Deserialize(le));
-        this.Files = input.Files;
+        this.Files = input.Files.map(f => new File().Deserialize(f));
 
         return this;
     }
@@ -220,7 +247,7 @@ export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
     }
 }
 
-export enum TradeBotStates { Offline, Starting, Faulted, Online, Stopping, Reconnecting }
+export enum TradeBotStates { Offline, Starting, Faulted, Online, Stopping, Reconnecting, Broken }
 
 export class TradeBotConfig implements Serializable<TradeBotConfig>{
     public Symbol: string;

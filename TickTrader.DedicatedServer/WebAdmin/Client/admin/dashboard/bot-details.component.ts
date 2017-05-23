@@ -55,21 +55,9 @@ export class BotDetailsComponent implements OnInit {
             .subscribe(botState => this.updateBotState(botState));
     }
 
-    public RefreshStatus(botId: string): void {
-        this.StatusRequest = new ObservableRequest(botId ?
-            this._api.GetTradeBotStatus(botId) :
-            Observable.of(<TradeBotStatus>null)
-        ).Subscribe(result => {
-            if (result) { this.Status = result.Status; }
-            else { this.Status = ""; }
-        });
-    }
-
-    public RefreshLog(botId: string): void {
-        this.LogRequest = new ObservableRequest(botId ?
-            this._api.GetTradeBotLog(botId) :
-            Observable.of(<TradeBotLog>null)
-       ).Subscribe(result => this.Log = result);
+    public DonwloadLogLink(botId: string, file: string)
+    {
+        return this._api.GetDownloadLogUrl(botId, file);
     }
 
     public get IsOnline(): boolean {

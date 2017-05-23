@@ -8,7 +8,7 @@
             </div>
         </div>
         <h4 class="title truncate">
-            <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': Faulted, 'state-online': IsOnline }"></i>
+            <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': FaultedOrBroken, 'state-online': IsOnline }"></i>
             <a (click)="GoToDetails(TradeBot.Id)" href="javascript:;">
                 {{TradeBot.Id}}
             </a>
@@ -19,7 +19,7 @@
         <ul class="list-unstyled">
             <li class="card-text">Account: {{TradeBot.Account.Login}}</li>
             <li class="card-text">Server: {{TradeBot.Account.Server}}</li>
-            <li *ngIf="Faulted" class="card-text text-error">{{TradeBot.FaultMessage | resx}}</li>
+            <li *ngIf="FaultedOrBroken" class="card-text text-error">{{TradeBot.FaultMessage | resx}}</li>
         </ul>
         <div class="footer">
             <hr />
