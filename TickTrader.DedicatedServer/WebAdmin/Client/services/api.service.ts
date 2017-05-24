@@ -70,9 +70,9 @@ export class ApiService {
             .catch(err => this.handleServerError(err));
     }
 
-    DeleteBot(botId: string) {
+    DeleteBot(botId: string, cleanLog: boolean) {
         return this._http
-            .delete(`${this._tradeBotsUrl}/` + encodeURIComponent(botId), { headers: this.headers })
+            .delete(`${this._tradeBotsUrl}/?` + $.param({ id: botId, clean_log: cleanLog }), { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
 

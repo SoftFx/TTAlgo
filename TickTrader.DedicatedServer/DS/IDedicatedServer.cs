@@ -36,7 +36,7 @@ namespace TickTrader.DedicatedServer.DS
         ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
 
         ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig);
-        void RemoveBot(string botId);
+        void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
     }
 
     public interface IAccount
@@ -50,7 +50,7 @@ namespace TickTrader.DedicatedServer.DS
         void ChangePassword(string password);
 
         ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig);
-        void RemoveBot(string botId);
+        void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
@@ -84,7 +84,7 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
-    public  enum LogEntryType { Info, Trading, Error, Custom }
+    public enum LogEntryType { Info, Trading, Error, Custom }
 
     public interface ILogEntry
     {
@@ -99,8 +99,8 @@ namespace TickTrader.DedicatedServer.DS
         Stream GetFile(string file);
         string Status { get; }
         FileModel[] Files { get; }
-
         event Action<string> StatusUpdated;
+        void Clean();
     }
 
     public class PluginInfo

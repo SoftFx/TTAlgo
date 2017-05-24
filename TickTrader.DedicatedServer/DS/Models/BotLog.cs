@@ -188,5 +188,32 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             throw new ArgumentException($"Incorrect file name {file}");
         }
+
+        public void Clean()
+        {
+            lock (_internalSync)
+                _logMessages.Clear();
+
+            DeleteFolder(_logDirectory);
+            
+        }
+
+        private void DeleteFolder(string logDirectory)
+        {
+            var dir = new DirectoryInfo(logDirectory);
+
+            foreach (FileInfo fi in dir.GetFiles())
+            {
+                fi.Delete();
+            }
+
+            foreach (DirectoryInfo di in dir.GetDirectories())
+            {
+                DeleteFolder(di.FullName);
+                di.Delete();
+            }
+
+            Directory.Delete(dir.FullName);
+        }
     }
 }

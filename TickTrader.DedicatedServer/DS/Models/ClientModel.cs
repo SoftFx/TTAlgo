@@ -351,7 +351,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             ManageConnection();
         }
 
-        public void RemoveBot(string botId)
+        public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
             lock (_sync)
             {
@@ -360,6 +360,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                 {
                     if (bot.IsRunning)
                         throw new InvalidStateException("Cannot remove running bot!");
+
+                    if (cleanLog)
+                        bot.Log.Clean();
+
                     _bots.Remove(bot);
                     DeinitBot(bot);
                     BotChanged?.Invoke(bot, ChangeAction.Removed);

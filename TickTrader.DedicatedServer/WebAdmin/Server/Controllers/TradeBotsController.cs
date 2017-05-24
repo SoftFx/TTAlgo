@@ -169,12 +169,12 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        [HttpDelete]
+        public IActionResult Delete(string id, bool clean_log = false, bool clean_algodata = false)
         {
             try
             {
-                _dedicatedServer.RemoveBot(id);
+                _dedicatedServer.RemoveBot(id, clean_log, clean_algodata);
 
                 return Ok();
             }

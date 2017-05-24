@@ -120,8 +120,8 @@ export class BotDetailsComponent implements OnInit {
         );
     }
 
-    public Delete(botId: string) {
-        this._api.DeleteBot(botId).subscribe(ok => {
+    public Delete(botId: string, cleanLog: boolean) {
+        this._api.DeleteBot(botId, cleanLog).subscribe(ok => {
             this._router.navigate(["/dashboard"]);
         },
             err => this.notifyAboutError(err)

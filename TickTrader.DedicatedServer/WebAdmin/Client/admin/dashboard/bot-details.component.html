@@ -26,12 +26,16 @@
                         <overlay-cmp *ngIf="confirmDeletion">
                             <div class="text-center">
                                 <p>Delete?</p>
+                                <div>
+                                    <label><input type="checkbox" (change)="clean_log = $event.target.checked" /> Clean log</label>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-xs-6 col-sm-6 col-md-6">
-                                        <button (click)="Delete(Bot.Id)" class="btn btn-primary">Delete</button>
+                                        <button (click)="Delete(Bot.Id, clean_log)" class="btn btn-primary ">Delete</button>
                                     </div>
                                     <div class="col-xs-6 col-sm-6 col-md-6">
-                                        <button (click)="confirmDeletion=false" class="btn btn-danger">Cancel</button>
+                                        <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
                                     </div>
                                 </div>
                             </div>

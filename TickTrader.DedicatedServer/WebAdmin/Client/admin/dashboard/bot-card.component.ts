@@ -84,8 +84,8 @@ export class BotCardComponent implements OnInit {
         );
     }
 
-    public Delete() {
-        this._api.DeleteBot(this.TradeBot.Id).subscribe(
+    public Delete(id: string, cleanLog: boolean) {
+        this._api.DeleteBot(id, cleanLog).subscribe(
             ok => this.OnDeleted.emit(this.TradeBot),
             err => this.notifyAboutError(err)
         );
