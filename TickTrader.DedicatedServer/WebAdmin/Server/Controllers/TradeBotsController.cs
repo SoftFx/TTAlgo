@@ -53,8 +53,30 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
+        [HttpDelete("{id}/Logs")]
+        public IActionResult DeleteLogs(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+                tradeBot.Log.Clean();
+
+                return Ok();
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
         [HttpGet("{id}/[Action]")]
-        public IActionResult Log(string id)
+        public IActionResult Logs(string id)
         {
             try
             {
@@ -75,7 +97,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpGet("{id}/[Action]/{file}")]
-        public IActionResult Log(string id, string file)
+        public IActionResult Logs(string id, string file)
         {
             try
             {
@@ -83,6 +105,28 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 var stream = tradeBot.Log.GetFile(file);
                 return File(stream, "text/plain", file);
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpDelete("{id}/Logs/{file}")]
+        public IActionResult DeleteLog(string id, string file)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+                tradeBot.Log.DeleteFile(file);
+
+                return Ok();
             }
             catch (BotNotFoundException nfex)
             {

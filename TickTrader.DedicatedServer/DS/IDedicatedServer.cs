@@ -101,6 +101,7 @@ namespace TickTrader.DedicatedServer.DS
         FileModel[] Files { get; }
         event Action<string> StatusUpdated;
         void Clean();
+        void DeleteFile(string file);
     }
 
     public class PluginInfo

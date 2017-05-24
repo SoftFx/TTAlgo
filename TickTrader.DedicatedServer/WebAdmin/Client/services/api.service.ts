@@ -26,7 +26,7 @@ export class ApiService {
 
     GetDownloadLogUrl(botId:string, file: string)
     {
-        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Log/${file}?authorization-token=${this.Auth.AuthData.Token}`;
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}?authorization-token=${this.Auth.AuthData.Token}`;
     }
 
     AutogenerateBotId(name: string) {
@@ -42,7 +42,7 @@ export class ApiService {
     }
 
     GetTradeBotLog(id: string) {
-        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/Log', { headers: this.headers })
+        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/Logs', { headers: this.headers })
             .map(res => new TradeBotLog().Deserialize(res.json()))
             .catch(err => this.handleServerError(err));
     }
@@ -73,6 +73,18 @@ export class ApiService {
     DeleteBot(botId: string, cleanLog: boolean) {
         return this._http
             .delete(`${this._tradeBotsUrl}/?` + $.param({ id: botId, clean_log: cleanLog }), { headers: this.headers })
+            .catch(err => this.handleServerError(err));
+    }
+
+    DeleteLog(botId: string) {
+        return this._http
+            .delete(`${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs`, { headers: this.headers })
+            .catch(err => this.handleServerError(err));
+    }
+
+    DeleteLogFile(botId: string, file: string) {
+        return this._http
+            .delete(`${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}`, { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
 

@@ -55,8 +55,7 @@ export class BotDetailsComponent implements OnInit {
             .subscribe(botState => this.updateBotState(botState));
     }
 
-    public DonwloadLogLink(botId: string, file: string)
-    {
+    public DonwloadLogLink(botId: string, file: string) {
         return this._api.GetDownloadLogUrl(botId, file);
     }
 
@@ -124,6 +123,13 @@ export class BotDetailsComponent implements OnInit {
         this._api.DeleteBot(botId, cleanLog).subscribe(ok => {
             this._router.navigate(["/dashboard"]);
         },
+            err => this.notifyAboutError(err)
+        );
+    }
+
+    public DeleteLogFile(botId: string, file: string) {
+        this._api.DeleteLogFile(botId, file).subscribe(
+            ok => this.Log.Files = this.Log.Files.filter(f => f.Name !== file),
             err => this.notifyAboutError(err)
         );
     }

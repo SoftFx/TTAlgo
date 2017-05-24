@@ -139,7 +139,7 @@
                             Log files
                         </h4>
                     </div>
-                    <div id="logFilesPanel" class="content vertical-autoscroll_400 collapse in">
+                    <div id="logFilesPanel" class="content collapse in">
                         <div *ngIf="LogRequest.IsRunning">
                             <span class="fa fa-circle-o-notch fa-spin black"></span>
                             Loading ...
@@ -148,9 +148,27 @@
                             <span class="text-error">Failed to get history</span>
                         </div>
                         <div *ngIf="Bot && LogRequest.IsCompleted && !LogRequest.IsFaulted">
-                            <div *ngFor="let logFile of Log.Files">
-                                <a [href]="DonwloadLogLink(Bot.Id, logFile.Name)">{{logFile}}</a>
-                                <br />
+                            <div class="table-responsive vertical-autoscroll_400">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>File</th>
+                                            <th>Size</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let logFile of Log.Files">
+                                            <td><a [href]="DonwloadLogLink(Bot.Id, logFile.Name)">{{logFile.Name}}</a></td>
+                                            <td>{{logFile.FormattedSize}}</td>
+                                            <td class="td-actions text-right">
+                                                <button (click)="DeleteLogFile(Bot.Id, logFile.Name)" type="button" rel="tooltip" title="Delete log file" class="btn btn-danger btn-simple btn-xs">
+                                                    <i class="fa fa-remove"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -169,7 +187,7 @@
                         <h4 class="title">
                             Log
                         </h4>
-                        <p class="category">Last 100 log messages</p>
+                        <p class="category">Last 100 messages</p>
                     </div>
                     <div id="botLogPanel" class="content vertical-autoscroll_600 collapse in">
                         <div *ngIf="LogRequest.IsRunning">
@@ -179,31 +197,32 @@
                         <div *ngIf="LogRequest.IsFaulted">
                             <span class="text-error">Failed to get history</span>
                         </div>
+
                         <div *ngIf="LogRequest.IsCompleted && !LogRequest.IsFaulted">
-                            <div class="row">
-                                <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
-                                    <strong>Time</strong>
-                                </div>
-                                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-                                    <strong>Message</strong>
-                                </div>
+                            <div class="table-responsive vertical-autoscroll_400">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th class="text-left">Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let logEntry of Log.Snapshot">
+                                            <td width="180px">
+                                                <i class="fa fa-circle" [ngClass]="{'log-info': logEntry.Type === LogEntryType.Info, 'log-trade': logEntry.Type === LogEntryType.Trading , 'log-error': logEntry.Type === LogEntryType.Error, 'log-custom': logEntry.Type === LogEntryType.Custom }"></i>
+                                                {{logEntry.Time | date:'dd/MM/y HH:mm:ss'}}
+                                            </td>
+                                            <td class="text-left">
+                                                {{logEntry.Message}}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="vertical-autoscroll_400" style="overflow-x: hidden">
-                                <div *ngFor="let logEntry of Log.Snapshot" class="row">
-                                    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
-                                        <i class="fa fa-circle" [ngClass]="{'log-info': logEntry.Type === LogEntryType.Info, 'log-trade': logEntry.Type === LogEntryType.Trading , 'log-error': logEntry.Type === LogEntryType.Error, 'log-custom': logEntry.Type === LogEntryType.Custom }"></i>
-                                        {{logEntry.Time | date:'dd/MM/y HH:mm:ss'}}
-                                    </div>
-                                    <div class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
-                                        {{logEntry.Message}}
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>

@@ -194,11 +194,11 @@ namespace TickTrader.DedicatedServer.DS.Models
             lock (_internalSync)
                 _logMessages.Clear();
 
-            DeleteFolder(_logDirectory);
-            
+            CleanFolder(_logDirectory);
+            Directory.Delete(_logDirectory);
         }
 
-        private void DeleteFolder(string logDirectory)
+        private void CleanFolder(string logDirectory)
         {
             var dir = new DirectoryInfo(logDirectory);
 
@@ -209,11 +209,14 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             foreach (DirectoryInfo di in dir.GetDirectories())
             {
-                DeleteFolder(di.FullName);
+                CleanFolder(di.FullName);
                 di.Delete();
             }
+        }
 
-            Directory.Delete(dir.FullName);
+        public void DeleteFile(string file)
+        {
+            File.Delete(Path.Combine(_logDirectory, file));
         }
     }
 }

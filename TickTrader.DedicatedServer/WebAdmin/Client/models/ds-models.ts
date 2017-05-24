@@ -135,6 +135,10 @@ export class File implements Serializable<File> {
         return this;
     }
 
+    public get FormattedSize(): string {
+        return this.calcSize();
+    }
+
     public toString = (): string => {
         return `${this.Name} (${this.calcSize()})`;
     }
@@ -153,7 +157,7 @@ export class File implements Serializable<File> {
 
 export class TradeBotLog implements Serializable<TradeBotLog> {
     public Snapshot: LogEntry[];
-    public Files: string[];
+    public Files: File[];
 
     public Deserialize(input: any): TradeBotLog {
         this.Snapshot = input.Snapshot.map(le => new LogEntry().Deserialize(le));
