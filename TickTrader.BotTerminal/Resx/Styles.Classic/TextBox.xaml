@@ -6,7 +6,7 @@
         <Border Name="border"
                 BorderThickness="1"
                 CornerRadius="3"
-                BorderBrush="Transparent"
+                BorderBrush="{DynamicResource Shell_SecondaryForeground}"
                 Background="{TemplateBinding Panel.Background}"
                 SnapsToDevicePixels="True">
             <Grid>
@@ -15,7 +15,7 @@
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Name="PART_ContentHost" Focusable="False" />
-                <Path Grid.Column="1" Name="LensIcon" Data="{DynamicResource MagnifyLens}" Width="10" Height="10"  Stretch="Fill" Margin="4 0 4 0"></Path>
+                <Path Grid.Column="1" Name="LensIcon" Data="{DynamicResource MagnifyLens}" Width="10" Height="10" Fill="{DynamicResource ToolBarItem_ForegroundBrush}" Stretch="Fill" Margin="4 0 4 0"></Path>
             </Grid>
             
         </Border>
