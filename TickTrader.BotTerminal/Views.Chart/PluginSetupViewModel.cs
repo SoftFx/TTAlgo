@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
             //this.host = host;
             this.setupFactory = setupFactory;
             this.catalog = catalog;
+            RunBot = true;
 
             catalog.AllPlugins.Updated += AllPlugins_Updated;
 
@@ -38,6 +39,7 @@ namespace TickTrader.BotTerminal
         public PluginSetup Setup { get; private set; }
         public PluginCatalogItem PluginItem { get; private set; }
         public bool SetupCanBeSkipped { get { return Setup.IsEmpty && Setup.Descriptor.IsValid; } }
+        public bool RunBot { get; set; }
 
         public void Reset()
         {

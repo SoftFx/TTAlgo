@@ -362,14 +362,15 @@ namespace TickTrader.BotTerminal
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = ClientModel.Account;
-            plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             if (string.IsNullOrEmpty(uniqueBotName))
             {
+                plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
                 plugin.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             }
             else
             {
-                plugin.BotWorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                plugin.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                plugin.BotWorkingFolder = plugin.WorkingFolder;
                 EnvService.Instance.EnsureFolder(plugin.BotWorkingFolder);
             }
         }
