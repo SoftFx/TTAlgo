@@ -5,7 +5,6 @@
     <ControlTemplate x:Key="SearchTextBox_Template" TargetType="TextBox">
         <Border Name="border"
                 BorderThickness="1"
-                CornerRadius="3"
                 BorderBrush="{DynamicResource Shell_SecondaryForeground}"
                 Background="{TemplateBinding Panel.Background}"
                 SnapsToDevicePixels="True">
