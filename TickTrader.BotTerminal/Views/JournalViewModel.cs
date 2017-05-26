@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
             if (data != null)
             {
                 if (!string.IsNullOrEmpty(filterString))
-                    return data.Time.ToString("dd/MM/yyyy HH:mm:ss.fff").IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
+                    return data.Time.ToString(FullDateTimeConverter.Format).IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
                         || data.Message.IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0;
                 return true;
             }
