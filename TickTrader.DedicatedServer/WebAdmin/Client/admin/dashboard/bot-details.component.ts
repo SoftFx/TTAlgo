@@ -48,8 +48,7 @@ export class BotDetailsComponent implements OnInit {
                     Observable.of(<File[]>[])
                 ).Subscribe(result => {
                     this.AlgoData = result;
-                    console.info(this.AlgoData);
-                    });
+                });
 
                 this.StatusRequest = new ObservableRequest(params['id'] ?
                     this._api.GetTradeBotStatus(params['id']) :
@@ -149,7 +148,7 @@ export class BotDetailsComponent implements OnInit {
     }
 
     public DeleteAlgoDataFile(botId: string, file: string) {
-        
+
     }
 
     public Configurate(botId: string) {
