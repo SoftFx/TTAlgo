@@ -14,6 +14,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 {
     public class BotLog : CrossDomainObject, IPluginLogger, IBotLog
     {
+        private object _internalSync = new object();
         private object _sync;
         private List<ILogEntry> _logMessages;
         private ILogger _logger;
@@ -125,24 +126,24 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void WriteLog(LogEntryType type, string message)
         {
-            var msg = new LogEntry(type, message);
-
-            switch (type)
+            lock (_internalSync)
             {
-                case LogEntryType.Custom:
-                case LogEntryType.Info:
-                case LogEntryType.Trading:
-                    _logger.Info(msg.ToString());
-                    break;
-                case LogEntryType.Error:
-                    _logger.Error(msg.ToString());
-                    break;
-            }
+                var msg = new LogEntry(type, message);
 
-            lock (_sync)
-            {
+                switch (type)
+                {
+                    case LogEntryType.Custom:
+                    case LogEntryType.Info:
+                    case LogEntryType.Trading:
+                        _logger.Info(msg.ToString());
+                        break;
+                    case LogEntryType.Error:
+                        _logger.Error(msg.ToString());
+                        break;
+                }
+
                 if (_logMessages.Count >= _keepInmemory)
-                    _logMessages.RemoveFisrt();
+                    _logMessages.RemoveAt(0);
 
                 _logMessages.Add(msg);
             }
