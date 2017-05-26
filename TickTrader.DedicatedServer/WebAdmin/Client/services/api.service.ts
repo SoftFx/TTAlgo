@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus } from "../models/index";
+import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus, File } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, RequestOptions, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 import { AuthService } from './auth.service';
@@ -24,9 +24,14 @@ export class ApiService {
         });
     }
 
-    GetDownloadLogUrl(botId:string, file: string)
-    {
-        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}?authorization-token=${this.Auth.AuthData.Token}`;
+    GetDownloadLogUrl(botId: string, file: string) {
+        var token = this.Auth.AuthData ? this.Auth.AuthData.Token : "";
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}?authorization-token=${token}`;
+    }
+
+    GetDownloadAlgoDataUrl(botId: string, file: string) {
+        var token = this.Auth.AuthData ? this.Auth.AuthData.Token : "";
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/AlgoData/${file}?authorization-token=${token}`;
     }
 
     AutogenerateBotId(name: string) {
@@ -38,6 +43,13 @@ export class ApiService {
     GetTradeBot(id: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id), { headers: this.headers })
             .map(res => new TradeBotModel().Deserialize(res.json()))
+            .catch(err => this.handleServerError(err));
+    }
+
+
+    GetTradeBotAlgoData(id: string) {
+        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/AlgoData', { headers: this.headers })
+            .map(res => res.json().map(f => new File().Deserialize(f)))
             .catch(err => this.handleServerError(err));
     }
 
@@ -70,9 +82,9 @@ export class ApiService {
             .catch(err => this.handleServerError(err));
     }
 
-    DeleteBot(botId: string, cleanLog: boolean) {
+    DeleteBot(botId: string, cleanLog: boolean, cleanAlgoData: boolean) {
         return this._http
-            .delete(`${this._tradeBotsUrl}/?` + $.param({ id: botId, clean_log: cleanLog }), { headers: this.headers })
+            .delete(`${this._tradeBotsUrl}/?` + $.param({ id: botId, clean_log: cleanLog, clean_algodata: cleanAlgoData }), { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
 

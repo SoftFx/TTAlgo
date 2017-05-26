@@ -364,6 +364,9 @@ namespace TickTrader.DedicatedServer.DS.Models
                     if (cleanLog)
                         bot.Log.Clean();
 
+                    if (cleanAlgoData)
+                        bot.DeleteWorkingDirectory();
+
                     _bots.Remove(bot);
                     DeinitBot(bot);
                     BotChanged?.Invoke(bot, ChangeAction.Removed);

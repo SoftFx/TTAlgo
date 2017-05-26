@@ -2,7 +2,7 @@
 import { Observable } from "rxjs/Rx";
 import { ApiService, ToastrService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus } from '../../models/index';
+import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, File } from '../../models/index';
 
 @Component({
     selector: 'bot-details-cmp',
@@ -15,10 +15,12 @@ export class BotDetailsComponent implements OnInit {
     public LogEntryType = LogEntryTypes;
     public Bot: TradeBotModel;
     public Log: TradeBotLog;
+    public AlgoData: File[];
     public Status: string;
 
     public BotRequest: ObservableRequest<TradeBotModel>;
     public LogRequest: ObservableRequest<TradeBotLog>;
+    public AlgoDataRequest: ObservableRequest<File[]>;
     public StatusRequest: ObservableRequest<TradeBotStatus>;
 
     constructor(
@@ -41,6 +43,14 @@ export class BotDetailsComponent implements OnInit {
                     Observable.of(<TradeBotLog>null)
                 ).Subscribe(result => this.Log = result);
 
+                this.AlgoDataRequest = new ObservableRequest(params['id'] ?
+                    this._api.GetTradeBotAlgoData(params['id']) :
+                    Observable.of(<File[]>[])
+                ).Subscribe(result => {
+                    this.AlgoData = result;
+                    console.info(this.AlgoData);
+                    });
+
                 this.StatusRequest = new ObservableRequest(params['id'] ?
                     this._api.GetTradeBotStatus(params['id']) :
                     Observable.of(<TradeBotStatus>null)
@@ -53,6 +63,10 @@ export class BotDetailsComponent implements OnInit {
         this._api.Feed.ChangeBotState
             .filter(state => this.Bot && this.Bot.Id == state.Id)
             .subscribe(botState => this.updateBotState(botState));
+    }
+
+    public DonwloadAlgoDataLink(botId: string, file: string) {
+        return this._api.GetDownloadAlgoDataUrl(botId, file);
     }
 
     public DonwloadLogLink(botId: string, file: string) {
@@ -119,8 +133,8 @@ export class BotDetailsComponent implements OnInit {
         );
     }
 
-    public Delete(botId: string, cleanLog: boolean) {
-        this._api.DeleteBot(botId, cleanLog).subscribe(ok => {
+    public Delete(botId: string, cleanLog: boolean, claenAlgoData: boolean) {
+        this._api.DeleteBot(botId, cleanLog, claenAlgoData).subscribe(ok => {
             this._router.navigate(["/dashboard"]);
         },
             err => this.notifyAboutError(err)
@@ -132,6 +146,10 @@ export class BotDetailsComponent implements OnInit {
             ok => this.Log.Files = this.Log.Files.filter(f => f.Name !== file),
             err => this.notifyAboutError(err)
         );
+    }
+
+    public DeleteAlgoDataFile(botId: string, file: string) {
+        
     }
 
     public Configurate(botId: string) {

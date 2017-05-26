@@ -14,7 +14,6 @@ namespace TickTrader.DedicatedServer.DS.Models
 {
     public class BotLog : CrossDomainObject, IPluginLogger, IBotLog
     {
-        private object _internalSync = new object();
         private object _sync;
         private List<ILogEntry> _logMessages;
         private ILogger _logger;
@@ -39,22 +38,22 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             get
             {
-                lock (_internalSync)
+                lock (_sync)
                     return _logMessages.ToArray();
             }
         }
 
-        public FileModel[] Files
+        public IFile[] Files
         {
             get
             {
                 if (Directory.Exists(_logDirectory))
                 {
                     DirectoryInfo dInfo = new DirectoryInfo(_logDirectory);
-                    return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new FileModel(fInfo.Name, fInfo.Length)).ToArray();
+                    return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new ReadOnlyFileModel(fInfo.FullName)).ToArray();
                 }
                 else
-                    return new FileModel[0];
+                    return new ReadOnlyFileModel[0];
             }
         }
 
@@ -140,7 +139,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     break;
             }
 
-            lock (_internalSync)
+            lock (_sync)
             {
                 if (_logMessages.Count >= _keepInmemory)
                     _logMessages.RemoveFisrt();
@@ -176,14 +175,14 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             return nlogFactory.GetLogger(botId);
         }
-       
-        public Stream GetFile(string file)
+
+        public IFile GetFile(string file)
         {
             if (file.IsFileNameValid())
             {
                 var fullPath = Path.Combine(_logDirectory, file);
 
-                return File.Exists(fullPath) ? File.OpenRead(fullPath) : (Stream)new MemoryStream(new byte[0]);
+                return new ReadOnlyFileModel(fullPath);
             }
 
             throw new ArgumentException($"Incorrect file name {file}");
@@ -191,11 +190,16 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void Clean()
         {
-            lock (_internalSync)
+            lock (_sync)
+            {
                 _logMessages.Clear();
 
-            CleanFolder(_logDirectory);
-            Directory.Delete(_logDirectory);
+                if (Directory.Exists(_logDirectory))
+                {
+                    new DirectoryInfo(_logDirectory).Clean();
+                    Directory.Delete(_logDirectory);
+                }
+            }
         }
 
         private void CleanFolder(string logDirectory)

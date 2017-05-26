@@ -28,11 +28,13 @@
                                 <p>Delete?</p>
                                 <div>
                                     <label><input type="checkbox" (change)="clean_log = $event.target.checked" /> Clean log</label>
+                                    <br />
+                                    <label><input type="checkbox" (change)="clean_algodata = $event.target.checked" /> Clean working directory</label>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-xs-6 col-sm-6 col-md-6">
-                                        <button (click)="Delete(Bot.Id, clean_log)" class="btn btn-primary ">Delete</button>
+                                        <button (click)="Delete(Bot.Id, clean_log, clean_algodata)" class="btn btn-primary ">Delete</button>
                                     </div>
                                     <div class="col-xs-6 col-sm-6 col-md-6">
                                         <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
@@ -43,55 +45,53 @@
                     </div>
                 </div>
 
-                <div *ngIf="Bot">
-                    <div class="card">
-                        <div class="header">
-                            <div class="btn-toolbar pull-right">
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#botInfoPanel" aria-expanded="true">
-                                        <span class="sr-only">Toggle Dropdown</span>
-                                        <i class="fa fa-chevron-down"></i>
-                                        <i class="fa fa-chevron-up"></i>
-                                    </button>
-                                </div>
+                <div id="botConfiguration" *ngIf="Bot" class="card">
+                    <div class="header">
+                        <div class="btn-toolbar pull-right">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#botInfoPanel" aria-expanded="true">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                    <i class="fa fa-chevron-down"></i>
+                                    <i class="fa fa-chevron-up"></i>
+                                </button>
                             </div>
-                            <h4 class="title">
-                                Information
-                            </h4>
                         </div>
-                        <div *ngIf="Bot" id="botInfoPanel" class="content vertical-autoscroll_600 collapse in">
-                            <div class="typo-line">
-                                <h6>
-                                    <p class="category">Plugin Info</p>
-                                </h6>
-                                <ul class="list-unstyled">
-                                    <li>Package: {{Bot.PackageName}}</li>
-                                    <li>Bot: {{Bot.BotName}}</li>
-                                </ul>
-                            </div>
-                            <div class="typo-line">
-                                <h6>
-                                    <p class="category">Account</p>
-                                </h6>
-                            </div>
+                        <h4 class="title">
+                            Information
+                        </h4>
+                    </div>
+                    <div *ngIf="Bot" id="botInfoPanel" class="content vertical-autoscroll_600 collapse in">
+                        <div class="typo-line">
+                            <h6>
+                                <p class="category">Plugin Info</p>
+                            </h6>
                             <ul class="list-unstyled">
-                                <li>Login: {{Bot.Account.Login}}</li>
-                                <li>Server: {{Bot.Account.Server}}</li>
-                            </ul>
-                            <div class="typo-line">
-                                <h6>
-                                    <p class="category">Parameters</p>
-                                </h6>
-                            </div>
-                            <ul class="list-unstyled">
-                                <li>Symbol: {{Bot.Config.Symbol}}</li>
-                                <li *ngFor="let param of Bot.Config.Parameters">{{param.Descriptor ? param.Descriptor.DisplayName : param.Id}}: {{param.Value}}</li>
+                                <li>Package: {{Bot.PackageName}}</li>
+                                <li>Bot: {{Bot.BotName}}</li>
                             </ul>
                         </div>
+                        <div class="typo-line">
+                            <h6>
+                                <p class="category">Account</p>
+                            </h6>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li>Login: {{Bot.Account.Login}}</li>
+                            <li>Server: {{Bot.Account.Server}}</li>
+                        </ul>
+                        <div class="typo-line">
+                            <h6>
+                                <p class="category">Parameters</p>
+                            </h6>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li>Symbol: {{Bot.Config.Symbol}}</li>
+                            <li *ngFor="let param of Bot.Config.Parameters">{{param.Descriptor ? param.Descriptor.DisplayName : param.Id}}: {{param.Value}}</li>
+                        </ul>
                     </div>
                 </div>
 
-                <div class="card">
+                <div id="botStatus" class="card">
                     <div class="header">
                         <div class="btn-toolbar pull-right">
                             <div class="btn-group btn-group-sm">
@@ -124,56 +124,7 @@
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">
-                <div class="card">
-                    <div class="header">
-                        <div class="btn-toolbar pull-right">
-                            <div class="btn-group btn-group-sm">
-                                <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#logFilesPanel" aria-expanded="true">
-                                    <span class="sr-only">Toggle Dropdown</span>
-                                    <i class="fa fa-chevron-down"></i>
-                                    <i class="fa fa-chevron-up"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <h4 class="title">
-                            Log files
-                        </h4>
-                    </div>
-                    <div id="logFilesPanel" class="content collapse in">
-                        <div *ngIf="LogRequest.IsRunning">
-                            <span class="fa fa-circle-o-notch fa-spin black"></span>
-                            Loading ...
-                        </div>
-                        <div *ngIf="LogRequest.IsFaulted">
-                            <span class="text-error">Failed to get history</span>
-                        </div>
-                        <div *ngIf="Bot && LogRequest.IsCompleted && !LogRequest.IsFaulted">
-                            <div class="table-responsive vertical-autoscroll_400">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>File</th>
-                                            <th>Size</th>
-                                            <th class="text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr *ngFor="let logFile of Log.Files">
-                                            <td><a [href]="DonwloadLogLink(Bot.Id, logFile.Name)">{{logFile.Name}}</a></td>
-                                            <td>{{logFile.FormattedSize}}</td>
-                                            <td class="td-actions text-right">
-                                                <button (click)="DeleteLogFile(Bot.Id, logFile.Name)" type="button" rel="tooltip" title="Delete log file" class="btn btn-danger btn-simple btn-xs">
-                                                    <i class="fa fa-remove"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
+                <div id="logMessages" class="card">
                     <div class="header">
                         <div class="btn-toolbar pull-right">
                             <div class="btn-group btn-group-sm">
@@ -216,6 +167,104 @@
                                             <td class="text-left">
                                                 {{logEntry.Message}}
                                             </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="logFiles" class="card">
+                    <div class="header">
+                        <div class="btn-toolbar pull-right">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#logFilesPanel" aria-expanded="true">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                    <i class="fa fa-chevron-down"></i>
+                                    <i class="fa fa-chevron-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h4 class="title">
+                            Log files
+                        </h4>
+                    </div>
+                    <div id="logFilesPanel" class="content collapse in">
+                        <div *ngIf="LogRequest.IsRunning">
+                            <span class="fa fa-circle-o-notch fa-spin black"></span>
+                            Loading ...
+                        </div>
+                        <div *ngIf="LogRequest.IsFaulted">
+                            <span class="text-error">Failed to get history</span>
+                        </div>
+                        <div *ngIf="Bot && LogRequest.IsCompleted && !LogRequest.IsFaulted">
+                            <div class="table-responsive vertical-autoscroll_400">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>File</th>
+                                            <th>Size</th>
+                                            <!--<th class="text-right">Actions</th>-->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let logFile of Log.Files">
+                                            <td><a [href]="DonwloadLogLink(Bot.Id, logFile.Name)">{{logFile.Name}}</a></td>
+                                            <td>{{logFile.FormattedSize}}</td>
+                                            <!--<td class="td-actions text-right">
+                                                <button (click)="DeleteLogFile(Bot.Id, logFile.Name)" type="button" rel="tooltip" title="Delete log file" class="btn btn-danger btn-simple btn-xs">
+                                                    <i class="fa fa-remove"></i>
+                                                </button>
+                                            </td>-->
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="algoDataFiles" class="card">
+                    <div class="header">
+                        <div class="btn-toolbar pull-right">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-simple dropdown-toggle" data-toggle="collapse" data-target="#algoDataFilesPanel" aria-expanded="true">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                    <i class="fa fa-chevron-down"></i>
+                                    <i class="fa fa-chevron-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h4 class="title">
+                            Working directory
+                        </h4>
+                    </div>
+                    <div id="algoDataFilesPanel" class="content collapse in">
+                        <div *ngIf="AlgoDataRequest.IsRunning">
+                            <span class="fa fa-circle-o-notch fa-spin black"></span>
+                            Loading ...
+                        </div>
+                        <div *ngIf="AlgoDataRequest.IsFaulted">
+                            <span class="text-error">Failed to get history</span>
+                        </div>
+                        <div *ngIf="Bot && AlgoDataRequest.IsCompleted && !AlgoDataRequest.IsFaulted">
+                            <div class="table-responsive vertical-autoscroll_400">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>File</th>
+                                            <th>Size</th>
+                                            <!--<th class="text-right">Actions</th>-->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let file of AlgoData">
+                                            <td><a [href]="DonwloadAlgoDataLink(Bot.Id, file.Name)">{{file.Name}}</a></td>
+                                            <td>{{file.FormattedSize}}</td>
+                                            <!--<td class="td-actions text-right">
+                                                <button (click)="DeleteAlgoDataFile(Bot.Id, logFile.Name)" type="button" rel="tooltip" title="Delete log file" class="btn btn-danger btn-simple btn-xs">
+                                                    <i class="fa fa-remove"></i>
+                                                </button>
+                                            </td>-->
                                         </tr>
                                     </tbody>
                                 </table>

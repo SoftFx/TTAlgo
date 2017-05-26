@@ -62,6 +62,7 @@ namespace TickTrader.DedicatedServer.DS
         bool IsRunning { get; }
         string FaultMessage { get; }
         IBotLog Log { get; }
+        string WorkingDirectory { get; }
         IAccount Account { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }
@@ -72,6 +73,7 @@ namespace TickTrader.DedicatedServer.DS
         void Configurate(PluginConfig cfg);
         void Start();
         Task StopAsync();
+        void DeleteWorkingDirectory();
     }
 
     public interface IPackage
@@ -96,9 +98,9 @@ namespace TickTrader.DedicatedServer.DS
     public interface IBotLog
     {
         IEnumerable<ILogEntry> Messages { get; }
-        Stream GetFile(string file);
+        IFile GetFile(string file);
         string Status { get; }
-        FileModel[] Files { get; }
+        IFile[] Files { get; }
         event Action<string> StatusUpdated;
         void Clean();
         void DeleteFile(string file);

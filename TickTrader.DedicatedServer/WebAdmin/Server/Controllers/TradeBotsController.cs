@@ -9,6 +9,8 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Api;
+using System.IO;
+using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
@@ -53,6 +55,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
+        #region Logs
         [HttpDelete("{id}/Logs")]
         public IActionResult DeleteLogs(string id)
         {
@@ -103,8 +106,9 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 var tradeBot = GetBotOrThrow(id);
 
-                var stream = tradeBot.Log.GetFile(file);
-                return File(stream, "text/plain", file);
+                var readOnlyFile = tradeBot.Log.GetFile(file);
+
+                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(file), file);
             }
             catch (BotNotFoundException nfex)
             {
@@ -139,7 +143,62 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 return BadRequest(ex.ToBadResult());
             }
         }
+        #endregion
 
+        #region AlgoData
+        [HttpGet("{id}/[Action]")]
+        public IActionResult AlgoData(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+
+                var botWorkDir = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id);
+                var dirInfo = new DirectoryInfo(botWorkDir);
+
+                var files = new FileDto[0];
+
+                if (dirInfo.Exists)
+                    files = dirInfo.GetFiles().Select(f => new FileDto { Name = f.Name, Size = f.Length }).ToArray();
+
+                return Ok(files);
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpGet("{id}/[Action]/{file}")]
+        public IActionResult AlgoData(string id, string file)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(id);
+
+                var filePath = Path.Combine(Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id), file);
+                var readOnlyFile = new ReadOnlyFileModel(filePath);
+
+                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(file), file);
+            }
+            catch (BotNotFoundException nfex)
+            {
+                _logger.LogError(nfex.Message);
+                return NotFound(nfex.ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+        #endregion
 
         [HttpGet("{id}/[Action]")]
         public IActionResult Status(string id)

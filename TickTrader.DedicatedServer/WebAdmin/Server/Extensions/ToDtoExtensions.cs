@@ -5,6 +5,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.DS.Info;
+using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
@@ -37,8 +38,13 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             return new TradeBotLogDto
             {
                 Snapshot = botlog.Messages.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
-                Files = botlog.Files.Select(fm => new FileDto { Name = fm.Name, Size = fm.Size }).ToArray()
+                Files = botlog.Files.Select(fm => fm.ToDto()).ToArray()
             };
+        }
+
+        public static FileDto ToDto(this IFile file)
+        {
+            return new FileDto { Name = file.Name, Size = file.Size };
         }
 
         public static LogEntryDto ToDto(this ILogEntry entry)

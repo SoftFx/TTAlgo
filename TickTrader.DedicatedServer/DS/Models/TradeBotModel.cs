@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
@@ -10,6 +11,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.DS.Repository;
+using TickTrader.DedicatedServer.Extensions;
 using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
@@ -17,6 +19,7 @@ namespace TickTrader.DedicatedServer.DS.Models
     [DataContract(Name = "tradeBot", Namespace = "")]
     public class TradeBotModel : ITradeBot
     {
+        private string _workingDirectory;
         private ILogger _log;
         private ILoggerFactory _loggerFactory;
         private object _syncObj;
@@ -55,6 +58,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IBotLog Log => _botLog;
         public string BotName => _ref?.DisplayName;
 
+        public string WorkingDirectory => _workingDirectory;
+
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
@@ -74,6 +79,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             _client.StateChanged += Client_StateChanged;
 
             _botLog = new BotLog(Id, syncObj);
+            _workingDirectory = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, Id.Escape());
 
             if (IsRunning && State != BotStates.Broken)
                 Start();
@@ -319,6 +325,18 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             if (pckg.NameEquals(PackageName))
                 UpdatePackage();
+        }
+
+        public void DeleteWorkingDirectory()
+        {
+            lock (_syncObj)
+            {
+                if (Directory.Exists(_workingDirectory))
+                {
+                    new DirectoryInfo(_workingDirectory).Clean();
+                    Directory.Delete(_workingDirectory);
+                }
+            }
         }
 
         private class ListenerProxy : CrossDomainObject
