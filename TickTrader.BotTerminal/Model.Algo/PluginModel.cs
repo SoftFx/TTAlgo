@@ -27,6 +27,7 @@ namespace TickTrader.BotTerminal
             this.Name = pSetup.Descriptor.DisplayName;
 
             executor = CreateExecutor();
+            Setup.SetWorkingFolder(executor.WorkingFolder);
             Setup.Apply(executor);
             
         }

@@ -195,7 +195,7 @@ namespace TickTrader.BotTerminal
                 //bot.MainSymbol = Chart.SymbolCode;
                 //bot.TimelineStart = Chart.TimelineStart;
                 //bot.TimelineEnd = DateTime.Now + TimeSpan.FromDays(100);
-                var viewModel = new BotControlViewModel(bot, shell.ToolWndManager);
+                var viewModel = new BotControlViewModel(bot, shell.ToolWndManager, setupModel.RunBot);
                 viewModel.Closed += BotClosed;
                 bots.Add(viewModel);
                 //bot.StateChanged += Bot_StateChanged;
