@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Common.Lib;
@@ -18,6 +19,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         private List<ParameterSetup> _parameters;
         private List<InputSetup> _inputs;
         private List<OutputSetup> _outputs;
+        private string _workingFolder;
 
         public PluginSetup(AlgoPluginRef pRef)
         {
@@ -62,12 +64,16 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public virtual void Load(PluginConfig cfg)
         {
+            this._workingFolder = cfg.WorkingFolder;
+
             foreach (var scrProperty in cfg.Properties)
             {
                 var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
                 if (thisProperty != null)
                     thisProperty.Load(scrProperty);
             }
+
+            PatchFileParams();
         }
 
         public virtual PluginConfig Save()
@@ -78,6 +84,17 @@ namespace TickTrader.Algo.Common.Model.Setup
             return cfg;
         }
 
+        private void PatchFileParams()
+        {
+            foreach (FileParamSetup fileParam in _parameters.Where(p => p is FileParamSetup))
+            {
+                if (Path.GetFullPath(fileParam.FilePath) != fileParam.FilePath)
+                {
+                    fileParam.FilePath = Path.Combine(_workingFolder, fileParam.FileName);
+                }
+            }
+        }
+        
         protected abstract PluginConfig SaveToConfig();
 
         public IEnumerable<ParameterSetup> Parameters => _parameters;

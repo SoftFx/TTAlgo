@@ -105,7 +105,7 @@ export class BotAddComponent implements OnInit {
         formGroup.addControl("Symbol", this._fb.control("", Validators.required));
 
         setup.Parameters.forEach(parameter => formGroup.addControl(parameter.Descriptor.Id,
-            this._fb.control(parameter.Descriptor.DefaultValue, parameter.Descriptor.IsRequired ? Validators.required : []))
+            this._fb.control(parameter.Value, parameter.Descriptor.IsRequired ? Validators.required : []))
         );
         return formGroup;
     }

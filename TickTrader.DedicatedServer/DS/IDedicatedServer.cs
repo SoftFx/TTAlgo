@@ -62,7 +62,6 @@ namespace TickTrader.DedicatedServer.DS
         bool IsRunning { get; }
         string FaultMessage { get; }
         IBotLog Log { get; }
-        string WorkingDirectory { get; }
         IAccount Account { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }

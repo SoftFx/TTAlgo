@@ -59,17 +59,17 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 
         public static TradeBotConfigDto ToConfigDto(this ITradeBot bot)
         {
-            var descriptor = bot.Package?.GetPluginRef(bot.Descriptor)?.Descriptor;
+            var pluginDescriptor = bot.Package?.GetPluginRef(bot.Descriptor)?.Descriptor;
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.MainSymbol,
                 Parameters = bot.Config.Properties.Select(p =>
-                new ParameterDto()
-                {
-                    Id = p.Id,
-                    Value = ((Parameter)p).ValObj,
-                    Descriptor =  descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
-                }).ToArray()
+                     new ParameterDto()
+                     {
+                         Id = p.Id,
+                         Value = ((Parameter)p).ValObj,
+                         Descriptor = pluginDescriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                     }).ToArray()
             };
             return config;
         }

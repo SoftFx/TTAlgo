@@ -7,16 +7,16 @@
                     <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
                     <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
                     <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
-                    <!--<div *ngSwitchCase="ParameterDataType.File" class="input-group">
-                        <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                    <div *ngSwitchCase="ParameterDataType.File" class="input-group">
+                        <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" [ngModelOptions]="{standalone: true}" type="text" class="form-control" placeholder="Select the file" readonly>
                         <input *ngIf="!Parameter.Value" type="text" class="form-control" placeholder="Select the file" readonly>
                         <label class="input-group-btn">
                             <span class="btn btn-primary btn-fill">
                                 <i class="fa fa-folder-o"></i>
-                                <input [(fileModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
+                                <input [(fileModel)]="Parameter.Value"  type="file" style="display: none;" accept="Parameter.Descriptor.FileFilter">
                             </span>
                         </label>
-                    </div>-->
+                    </div>
                     <select *ngSwitchCase="ParameterDataType.Enum" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" class="form-control">
                         <option *ngFor="let EnumItem of (Parameter.Descriptor.EnumValues | orderBy)" [ngValue]="EnumItem">{{EnumItem}}</option>
                     </select>

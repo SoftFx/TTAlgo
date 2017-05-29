@@ -2,7 +2,7 @@
 import { Observable } from "rxjs/Rx";
 import { ApiService, ToastrService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, File } from '../../models/index';
+import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, FileInfo } from '../../models/index';
 
 @Component({
     selector: 'bot-details-cmp',
@@ -15,12 +15,12 @@ export class BotDetailsComponent implements OnInit {
     public LogEntryType = LogEntryTypes;
     public Bot: TradeBotModel;
     public Log: TradeBotLog;
-    public AlgoData: File[];
+    public AlgoData: FileInfo[];
     public Status: string;
 
     public BotRequest: ObservableRequest<TradeBotModel>;
     public LogRequest: ObservableRequest<TradeBotLog>;
-    public AlgoDataRequest: ObservableRequest<File[]>;
+    public AlgoDataRequest: ObservableRequest<FileInfo[]>;
     public StatusRequest: ObservableRequest<TradeBotStatus>;
 
     constructor(
@@ -45,7 +45,7 @@ export class BotDetailsComponent implements OnInit {
 
                 this.AlgoDataRequest = new ObservableRequest(params['id'] ?
                     this._api.GetTradeBotAlgoData(params['id']) :
-                    Observable.of(<File[]>[])
+                    Observable.of(<FileInfo[]>[])
                 ).Subscribe(result => {
                     this.AlgoData = result;
                 });

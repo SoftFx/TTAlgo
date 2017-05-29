@@ -124,11 +124,11 @@ export class TradeBotStatus implements Serializable<TradeBotStatus> {
     }
 }
 
-export class File implements Serializable<File> {
+export class FileInfo implements Serializable<FileInfo> {
     public Name: string;
     public Size: number;
 
-    public Deserialize(input: any): File {
+    public Deserialize(input: any): FileInfo {
         this.Name = input.Name;
         this.Size = input.Size;
 
@@ -157,11 +157,11 @@ export class File implements Serializable<File> {
 
 export class TradeBotLog implements Serializable<TradeBotLog> {
     public Snapshot: LogEntry[];
-    public Files: File[];
+    public Files: FileInfo[];
 
     public Deserialize(input: any): TradeBotLog {
         this.Snapshot = input.Snapshot.map(le => new LogEntry().Deserialize(le));
-        this.Files = input.Files.map(f => new File().Deserialize(f));
+        this.Files = input.Files.map(f => new FileInfo().Deserialize(f));
 
         return this;
     }
@@ -360,7 +360,9 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.Symbol = bot.Config.Symbol;
         setup.InstanceId = bot.Id;
-        setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id, p.Value, p.Descriptor));
+        setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id,
+            p.Descriptor.DataType === ParameterDataTypes.File ? { FileName: p.Value, Size: 0, Data: null } : p.Value,
+            p.Descriptor));
         setup.Account = bot.Account;
 
         return setup;
@@ -370,7 +372,10 @@ export class SetupModel {
         let setup = new SetupModel();
         setup.PackageName = plugin.Package;
         setup.PluginId = plugin.Id;
-        setup.Parameters = plugin.ParamDescriptors.map(p => new Parameter(p.Id, p.DefaultValue, p));
+        setup.Parameters = plugin.ParamDescriptors.map(pDescriptor =>
+            new Parameter(pDescriptor.Id,
+                pDescriptor.DataType === ParameterDataTypes.File ? { FileName: pDescriptor.DefaultValue, Size: 0, Data: null } : pDescriptor.DefaultValue,
+                pDescriptor));
         setup.Account = null;
         setup.Symbol = "";
 

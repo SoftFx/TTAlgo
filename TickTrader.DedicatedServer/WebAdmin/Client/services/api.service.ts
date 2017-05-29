@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus, File } from "../models/index";
+import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus, FileInfo } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, RequestOptions, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 import { AuthService } from './auth.service';
@@ -49,7 +49,7 @@ export class ApiService {
 
     GetTradeBotAlgoData(id: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/AlgoData', { headers: this.headers })
-            .map(res => res.json().map(f => new File().Deserialize(f)))
+            .map(res => res.json().map(f => new FileInfo().Deserialize(f)))
             .catch(err => this.handleServerError(err));
     }
 

@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Common.Model.Config
 
         [DataMember(Name = "symbol")]
         public string MainSymbol { get; set; }
+
+        public string WorkingFolder { get;  set; }
     }
 
     [DataContract(Namespace = "")]

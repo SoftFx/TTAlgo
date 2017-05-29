@@ -19,7 +19,6 @@ namespace TickTrader.DedicatedServer.DS.Models
     [DataContract(Name = "tradeBot", Namespace = "")]
     public class TradeBotModel : ITradeBot
     {
-        private string _workingDirectory;
         private ILogger _log;
         private ILoggerFactory _loggerFactory;
         private object _syncObj;
@@ -58,8 +57,6 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IBotLog Log => _botLog;
         public string BotName => _ref?.DisplayName;
 
-        public string WorkingDirectory => _workingDirectory;
-
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
@@ -79,7 +76,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             _client.StateChanged += Client_StateChanged;
 
             _botLog = new BotLog(Id, syncObj);
-            _workingDirectory = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, Id.Escape());
 
             if (IsRunning && State != BotStates.Broken)
                 Start();
@@ -229,6 +225,9 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
                 executor.Logger = _botLog;
+                executor.BotWorkingFolder = Config.WorkingFolder;
+                executor.WorkingFolder = Config.WorkingFolder;
+
                 _stopListener = new ListenerProxy(executor, () =>
                 {
                     StopInternal(null, true);
@@ -331,10 +330,10 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             lock (_syncObj)
             {
-                if (Directory.Exists(_workingDirectory))
+                if (Directory.Exists(Config.WorkingFolder))
                 {
-                    new DirectoryInfo(_workingDirectory).Clean();
-                    Directory.Delete(_workingDirectory);
+                    new DirectoryInfo(Config.WorkingFolder).Clean();
+                    Directory.Delete(Config.WorkingFolder);
                 }
             }
         }

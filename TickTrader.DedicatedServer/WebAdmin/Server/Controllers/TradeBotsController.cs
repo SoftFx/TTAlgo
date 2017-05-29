@@ -11,6 +11,8 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Api;
 using System.IO;
 using TickTrader.DedicatedServer.DS.Models;
+using Newtonsoft.Json.Linq;
+using TickTrader.DedicatedServer.Extensions;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
@@ -345,7 +347,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             var barConfig = new BarBasedConfig()
             {
                 MainSymbol = setup.Symbol,
-                PriceType = BarPriceType.Ask
+                PriceType = BarPriceType.Ask,
+                WorkingFolder = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, setup.InstanceId.Escape())
             };
             foreach (var param in setup.Parameters)
             {
@@ -371,6 +374,23 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                         break;
                     case "Enum":
                         barConfig.Properties.Add(new EnumParameter() { Id = param.Id, Value = (string)param.Value });
+                        break;
+                    case "File":
+                        var jObject = param.Value as JObject;
+                        var fileName = jObject["FileName"]?.ToString();
+                        var data = jObject["Data"]?.ToString();
+
+                        if (!string.IsNullOrWhiteSpace(data))
+                        {
+                            var fileBytes = Convert.FromBase64String(data);
+                            var fullFileName = Path.Combine(barConfig.WorkingFolder, fileName);
+
+                            Directory.CreateDirectory(barConfig.WorkingFolder);
+                            System.IO.File.WriteAllBytes(fullFileName, fileBytes);
+                        }
+
+                        barConfig.Properties.Add(new FileParameter { Id = param.Id, FileName = fileName });
+
                         break;
                 }
             }
