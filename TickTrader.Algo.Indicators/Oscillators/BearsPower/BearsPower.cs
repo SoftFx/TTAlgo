@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
         [Input]
         public new BarSeries Bars { get; set; }
 
-        [Output(DisplayName = "Bears", Target = OutputTargets.Window1, DefaultColor = Colors.Silver)]
+        [Output(DisplayName = "Bears", Target = OutputTargets.Window1, DefaultColor = Colors.Silver, PlotType = PlotType.Histogram)]
         public DataSeries Bears { get; set; }
 
         public int LastPositionChanged { get { return _ema.LastPositionChanged; } }

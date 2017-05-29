@@ -33,6 +33,7 @@ namespace TickTrader.BotTerminal
                 AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
                 AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                AppLockFilePath = Path.Combine(AppDataFolder, "applock");
             }
             else
             {
@@ -47,8 +48,9 @@ namespace TickTrader.BotTerminal
                 AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
                 AppDataFolder = Path.Combine(AppFolder, "Settings");
+                AppLockFilePath = Path.Combine(AppFolder, "applock");
             }
-           
+
             EnsureFolder(AlgoRepositoryFolder);
             EnsureFolder(AlgoExtFolder);
             EnsureFolder(AlgoCommonRepositoryFolder);
@@ -81,6 +83,7 @@ namespace TickTrader.BotTerminal
         public string AlgoCommonRepositoryFolder { get; private set; }
         public string AlgoWorkingFolder { get; private set; }
         public string AppDataFolder { get; private set; }
+        public string AppLockFilePath { get; private set; }
         public IObjectStorage UserDataStorage { get; private set; }
         public IObjectStorage ProtectedUserDataStorage { get; private set; }
 

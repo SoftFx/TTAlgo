@@ -12,9 +12,6 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
 
-        [Parameter(DisplayName = "Point Size", DefaultValue = 1e-5)]
-        public double PointSize { get; set; }
-
         [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
         public AppliedPrice.Target TargetPrice { get; set; }
 
@@ -33,10 +30,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
 
         public FatlSignal() { }
 
-        public FatlSignal(BarSeries bars, double pointSize, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public FatlSignal(BarSeries bars, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
             Bars = bars;
-            PointSize = pointSize;
             TargetPrice = targetPrice;
 
             InitializeIndicator();
@@ -81,11 +77,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
                 {
                     if (_trend)
                     {
-                        Up[pos] = Bars.Low[pos] - 5*PointSize;
+                        Up[pos] = Bars.Low[pos] - 5*Symbol.Point;
                     }
                     else
                     {
-                        Down[pos] = Bars.High[pos] + 5*PointSize;
+                        Down[pos] = Bars.High[pos] + 5*Symbol.Point;
                     }
                 }
             }

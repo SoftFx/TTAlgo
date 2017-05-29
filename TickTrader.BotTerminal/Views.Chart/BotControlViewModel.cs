@@ -14,14 +14,17 @@ namespace TickTrader.BotTerminal
     {
         private ToolWindowsManager wndManager;
 
-        public BotControlViewModel(TradeBotModel2 model, ToolWindowsManager wndManager)
+        public BotControlViewModel(TradeBotModel2 model, ToolWindowsManager wndManager, bool runBot)
         {
             this.Model = model;
             this.wndManager = wndManager;
 
             model.StateChanged += Model_StateChanged;
 
-            StartStop();
+            if (runBot)
+            {
+                StartStop();
+            }
             OpenState();
         }
 

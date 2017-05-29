@@ -11,29 +11,29 @@ namespace TickTrader.BotTerminal
 
         public void Info(string message)
         {
-            Info(message, new object[0]);
+            Add(new EventMessage(message, JournalMessageType.Info));
         }
         public void Info(string message, params object[] args)
         {
-            Add(new EventMessage(string.Format(message, args), JournalMessageType.Info));
+            Info(string.Format(message, args));
         }
 
         public void Trading(string message)
         {
-            Trading(message, new object[0]);
+            Add(new EventMessage(message, JournalMessageType.Trading));
         }
         public void Trading(string message, params object[] args)
         {
-            Add(new EventMessage(string.Format(message, args), JournalMessageType.Trading));
+            Trading(string.Format(message, args));
         }
 
         public void Error(string message)
         {
-            Error(message, new object[0]);
+            Add(new EventMessage(message, JournalMessageType.Error));
         }
         public void Error(string message, params object[] args)
         {
-            Add(new EventMessage(string.Format(message, args), JournalMessageType.Error));
+            Error(string.Format(message, args));
         }
 
         public override void Add(EventMessage item)

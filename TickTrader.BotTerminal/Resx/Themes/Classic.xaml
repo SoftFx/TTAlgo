@@ -29,6 +29,9 @@
     <SolidColorBrush x:Key="ChartBackground" Color="White" />
     <SolidColorBrush x:Key="ChartGridLinesColor" Color="LightGray" />
 
+    <SolidColorBrush x:Key="ToolBarItem_ForegroundBrush" Color="#808080"/>
+    <SolidColorBrush x:Key="ToolBarItem_HighlightForegroundBrush" Color="#000000"/>
+
     <SolidColorBrush x:Key="SoftFxLogo_BackgroundBrush" Color="#FFCFD641"/>
 
     <ResourceDictionary.MergedDictionaries>
