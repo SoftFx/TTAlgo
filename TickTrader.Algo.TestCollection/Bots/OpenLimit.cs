@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Limit Script", Version = "1.2", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Limit Script", Version = "1.3", Category = "Test Orders",
         Description = "Opens limit order for current chart symbol with specified volume, side and options. " +
                       "Price is moved for specified number of pips into spread")]
     public class OpenLimit : TradeBotCommon
@@ -23,9 +23,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public string Tag { get; set; }
 
-        protected async override void Init()
+        protected override void Init()
         {
-            var ordPrice = await GetCurrentPrice(Side);
+            var ordPrice = GetCurrentPrice(Side);
             if (Side == OrderSide.Buy)
                 ordPrice -= Symbol.Point * PriceDelta;
             else
