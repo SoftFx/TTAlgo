@@ -204,23 +204,19 @@ namespace TickTrader.DedicatedServer.DS.Models
             {
                 executor = _ref.CreateExecutor();
 
-                if (Config is BarBasedConfig)
-                {
-                    var setupModel = new BarBasedPluginSetup(_ref);
-                    setupModel.Load(Config);
-                    setupModel.Apply(executor);
-
-                    var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
-                    executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
-                    executor.MainSymbolCode = setupModel.MainSymbol;
-                    executor.TimeFrame = Algo.Api.TimeFrames.M1;
-                    executor.Metadata = feedAdapter;
-                }
-                else
+                if (!(Config is BarBasedConfig))
                     throw new Exception("Unsupported configuration!");
 
-                executor.InitSlidingBuffering(1024);
+                var setupModel = new BarBasedPluginSetup(_ref);
+                setupModel.Load(Config);
+                setupModel.Apply(executor);
 
+                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
+                executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
+                executor.MainSymbolCode = setupModel.MainSymbol;
+                executor.TimeFrame = Algo.Api.TimeFrames.M1;
+                executor.Metadata = feedAdapter;
+                executor.InitSlidingBuffering(1024);
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;

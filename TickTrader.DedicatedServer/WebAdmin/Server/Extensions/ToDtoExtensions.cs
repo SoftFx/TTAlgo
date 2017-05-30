@@ -6,6 +6,7 @@ using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.DS.Models;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
@@ -134,14 +135,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         private static string GetDataType(ParameterDescriptor parameter)
         {
             if (parameter.IsEnum)
-                return "Enum";
+                return ParameterTypes.Enumeration;
 
             switch (parameter.DataType)
             {
-                case "System.Int32": return "Int";
-                case "System.Double": return "Double";
-                case "System.String": return "String";
-                case "TickTrader.Algo.Api.File": return "File";
+                case "System.Int32": return ParameterTypes.Integer;
+                case "System.Double": return ParameterTypes.Double;
+                case "System.String": return ParameterTypes.String;
+                case "TickTrader.Algo.Api.File": return ParameterTypes.File;
                 default: return "Unknown";
             }
         }

@@ -94,6 +94,11 @@ namespace TickTrader.DedicatedServer.DS
         string Message { get; }
     }
 
+    public interface IDirectoryNamingStrategy
+    {
+        string GetFullPath();
+    }
+
     public interface IBotLog
     {
         IEnumerable<ILogEntry> Messages { get; }

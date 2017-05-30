@@ -240,8 +240,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 var tradeBot = _dedicatedServer.AddBot(setup.InstanceId,
                     new AccountKey(setup.Account.Login, setup.Account.Server),
-                    new PluginKey(setup.PackageName, setup.PluginId),
-                    CreateConfig(setup));
+                    new PluginKey(setup.PackageName, setup.PluginId), setup.Parse(new WorkingDirectoryNamingStrategy(setup.InstanceId)));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -258,7 +257,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             try
             {
                 var tradeBot = GetBotOrThrow(id);
-                tradeBot.Configurate(CreateConfig(setup));
+                tradeBot.Configurate(setup.Parse(new WorkingDirectoryNamingStrategy(id)));
 
                 return Ok();
             }
@@ -340,62 +339,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 throw new BotNotFoundException($"Bot {id} not found");
             else
                 return tradeBot;
-        }
-
-        private PluginConfig CreateConfig(PluginSetupDto setup)
-        {
-            var barConfig = new BarBasedConfig()
-            {
-                MainSymbol = setup.Symbol,
-                PriceType = BarPriceType.Ask,
-                WorkingFolder = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, setup.InstanceId.Escape())
-            };
-            foreach (var param in setup.Parameters)
-            {
-                switch (param.DataType)
-                {
-                    case "Int":
-                        barConfig.Properties.Add(new IntParameter() { Id = param.Id, Value = (int)(long)param.Value });
-                        break;
-                    case "Double":
-                        switch (param.Value)
-                        {
-                            case Int64 l:
-                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (long)param.Value });
-                                break;
-                            case Double d:
-                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
-                                break;
-                            default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
-                        }
-                        break;
-                    case "String":
-                        barConfig.Properties.Add(new StringParameter() { Id = param.Id, Value = (string)param.Value });
-                        break;
-                    case "Enum":
-                        barConfig.Properties.Add(new EnumParameter() { Id = param.Id, Value = (string)param.Value });
-                        break;
-                    case "File":
-                        var jObject = param.Value as JObject;
-                        var fileName = jObject["FileName"]?.ToString();
-                        var data = jObject["Data"]?.ToString();
-
-                        if (!string.IsNullOrWhiteSpace(data))
-                        {
-                            var fileBytes = Convert.FromBase64String(data);
-                            var fullFileName = Path.Combine(barConfig.WorkingFolder, fileName);
-
-                            Directory.CreateDirectory(barConfig.WorkingFolder);
-                            System.IO.File.WriteAllBytes(fullFileName, fileBytes);
-                        }
-
-                        barConfig.Properties.Add(new FileParameter { Id = param.Id, FileName = fileName });
-
-                        break;
-                }
-            }
-
-            return barConfig;
         }
     }
 }

@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public virtual void Load(PluginConfig cfg)
         {
-            this._workingFolder = cfg.WorkingFolder;
+            _workingFolder = cfg.WorkingFolder;
 
             foreach (var scrProperty in cfg.Properties)
             {
@@ -73,7 +73,8 @@ namespace TickTrader.Algo.Common.Model.Setup
                     thisProperty.Load(scrProperty);
             }
 
-            PatchFileParams();
+            if (!string.IsNullOrWhiteSpace(_workingFolder))
+                PatchFileParams();
         }
 
         public virtual PluginConfig Save()
@@ -94,7 +95,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
             }
         }
-        
+
         protected abstract PluginConfig SaveToConfig();
 
         public IEnumerable<ParameterSetup> Parameters => _parameters;
