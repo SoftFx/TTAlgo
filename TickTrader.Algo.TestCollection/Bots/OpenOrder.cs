@@ -4,7 +4,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.2", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.3", Category = "Test Orders",
         Description = "Opens order for current chart symbol with specified volume, price, side, type, options, tag, SL, TP. " +
                       "Prints order execution result to bot status window. " +
                       "If price = 0 then it will be taken from symbol bid/ask (depending on order side). " +
@@ -35,9 +35,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Take Profit", DefaultValue = 0.0, IsRequired = false)]
         public double TakeProfit { get; set; }
 
-        protected async override void OnStart()
+        protected override void OnStart()
         {
-            var price = Price.Gt(Symbol.Point) ? Price : await GetCurrentPrice(Side);
+            var price = Price.Gt(Symbol.Point) ? Price : GetCurrentPrice(Side);
             var sl = StopLoss.Gt(Symbol.Point) ? StopLoss : (double?)null;
             var tp = TakeProfit.Gt(Symbol.Point) ? TakeProfit : (double?)null;
             if (double.IsNaN(price))

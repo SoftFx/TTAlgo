@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
@@ -8,15 +9,15 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
         public int Depth { get; protected set; }
         public int Deviation { get; protected set; }
         public int Backstep { get; protected set; }
-        public double PointSize { get; protected set; }
+        public int Digits { get; protected set; }
 
         public ZigZagTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath, int depth,
-            int deviation, int backstep, double pointSize) : base(indicatorType, symbol, quotesPath, answerPath, 8)
+            int deviation, int backstep, int digits) : base(indicatorType, symbol, quotesPath, answerPath, 8)
         {
             Depth = depth;
             Deviation = deviation;
             Backstep = backstep;
-            PointSize = pointSize;
+            Digits = digits;
         }
 
         protected override void SetupParameters()
@@ -24,7 +25,12 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
             SetParameter("Depth", Depth);
             SetParameter("Deviation", Deviation);
             SetParameter("Backstep", Backstep);
-            SetParameter("PointSize", PointSize);
+            Builder.Symbols.Add(new Core.SymbolEntity(Symbol)
+            {
+                Digits = Digits,
+                BaseCurrencyCode = string.Empty,
+                CounterCurrencyCode = string.Empty
+            }, new Dictionary<string, Core.CurrencyEntity>());
         }
 
         protected override void GetOutput()

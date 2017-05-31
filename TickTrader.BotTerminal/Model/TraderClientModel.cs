@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using TickTrader.BotTerminal.Lib;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,7 +20,10 @@ namespace TickTrader.BotTerminal
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientCore _core;
 
-        public TraderClientModel(ConnectionModel connection)
+        private IAccountInfoProvider _accountInfo;
+        private EventJournal _journal;
+
+        public TraderClientModel(ConnectionModel connection, EventJournal journal)
         {
             this.Connection = connection;
 
@@ -35,6 +40,9 @@ namespace TickTrader.BotTerminal
             this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
             this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
+
+            _accountInfo = Account;
+            _journal = journal;
         }
 
         private void State_StateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
@@ -88,6 +96,8 @@ namespace TickTrader.BotTerminal
                 await History.Init();
                 _core.Init();
                 Account.Init();
+                _accountInfo.BalanceUpdated += Account_BalanceUpdated;
+                _accountInfo.OrderUpdated += Account_OrderUpdated;
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
             }
@@ -114,6 +124,59 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 logger.Error(ex, "Connection_Deinitalizing() failed.");
+            }
+        }
+
+        private void Account_BalanceUpdated(BalanceOperationReport report)
+        {
+            string action = report.Amount > 0 ? "Deposit" : "Withdrawal";
+            _journal.Trading($"{action} {report.Amount} {report.CurrencyCode}. Balance: {report.Balance} {report.CurrencyCode}");
+        }
+
+        private void Account_OrderUpdated(OrderExecReport report)
+        {
+            var order = report.OrderCopy;
+            switch(report.ExecAction)
+            {
+                case OrderExecAction.Opened:
+                    switch (order.Type)
+                    {
+                        case OrderType.Position:
+                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                        case OrderType.Limit:
+                        case OrderType.Stop:
+                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                    }
+                    break;
+                case OrderExecAction.Modified:
+                    switch (order.Type)
+                    {
+                        case OrderType.Position:
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                        case OrderType.Limit:
+                        case OrderType.Stop:
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            break;
+                    }
+                    break;
+                case OrderExecAction.Closed:
+                    if (order.Type == Algo.Api.OrderType.Position)
+                    {
+                        _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.LastFillPrice}");
+                    }
+                    break;
+                case OrderExecAction.Canceled:
+                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                    break;
+                case OrderExecAction.Expired:
+                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                    break;
+                case OrderExecAction.Filled:
+                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                    break;
             }
         }
 

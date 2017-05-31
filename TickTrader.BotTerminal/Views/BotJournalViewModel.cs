@@ -144,7 +144,7 @@ namespace TickTrader.BotTerminal
                 return (JournalType == null || bMessage.Type == JournalType)
                      && (string.IsNullOrEmpty(BotFilter) || bMessage.Bot == BotFilter)
                      && (string.IsNullOrEmpty(TextFilter)
-                     || (bMessage.Time.ToString("dd/MM/yyyy HH:mm:ss.fff").IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
+                     || (bMessage.Time.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Message.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0));
             }

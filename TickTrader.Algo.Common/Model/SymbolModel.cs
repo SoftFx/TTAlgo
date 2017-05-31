@@ -96,8 +96,8 @@ namespace TickTrader.Algo.Common.Model
         {
             LastQuote = tick;
 
-            CurrentBid = LastQuote.HasBid ? LastQuote.Bid : (double?)null;
-            CurrentAsk = LastQuote.HasAsk ? LastQuote.Ask : (double?)null;
+            CurrentBid = tick.GetNullableBid();
+            CurrentAsk = tick.GetNullableAsk();
 
             RateUpdated(this);
         }

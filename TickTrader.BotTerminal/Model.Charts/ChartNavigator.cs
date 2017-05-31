@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
     internal abstract class ChartNavigator : PropertyChangedBase
     {
         private IRange visiableRange;
+        //private IRange visiableRangeLimit;
 
         public ChartNavigator()
         {
@@ -25,18 +26,43 @@ namespace TickTrader.BotTerminal
             get { return visiableRange; }
             set
             {
-                visiableRange = value;
-                NotifyOfPropertyChange("VisibleRange");
+                if (visiableRange == null || !visiableRange.Equals(value))
+                {
+                    System.Diagnostics.Debug.WriteLine("VisibleRange changed!");
+                    visiableRange = value;
+                    NotifyOfPropertyChange("VisibleRange");
+                }
             }
         }
+
+        //public IRange VisibleRangeLimit
+        //{
+        //    get { return visiableRangeLimit; }
+        //    set
+        //    {
+        //        if (visiableRangeLimit == null || !visiableRangeLimit.Equals(value))
+        //        {
+        //            System.Diagnostics.Debug.WriteLine("visiableRangeLimit changed!");
+        //            visiableRangeLimit = value;
+        //            NotifyOfPropertyChange("VisibleRangeLimit");
+        //        }
+        //    }
+        //}
 
         public AxisBase CreateAxis()
         {
             var axis = CreateAxisInternal();
+
             Binding rangeBinding = new Binding("VisibleRange");
             rangeBinding.Source = this;
             rangeBinding.Mode = BindingMode.TwoWay;
             axis.SetBinding(AxisBase.VisibleRangeProperty, rangeBinding);
+
+            //Binding rangeLimitBinding = new Binding("VisibleRangeLimit");
+            //rangeLimitBinding.Source = this;
+            //rangeLimitBinding.Mode = BindingMode.OneWay;
+            //axis.SetBinding(AxisBase.VisibleRangeLimitProperty, rangeLimitBinding);
+
             axis.DrawMajorBands = false;
             return axis;
         }
@@ -54,18 +80,34 @@ namespace TickTrader.BotTerminal
 
         protected override AxisBase CreateAxisInternal()
         {
-            return new CategoryDateTimeAxis();
+            return new CategoryDateTimeAxis() { AutoRange = AutoRange.Never};
         }
 
         public override void Init(int itemsCount, DateTime start, DateTime end)
         {
             this.itemsCount = itemsCount;
-            int pageStart = itemsCount - defPageSize - 1;
-            this.VisibleRange = new IndexRange(pageStart, itemsCount - 1);
+
+            if (itemsCount < defPageSize)
+                this.VisibleRange = new IndexRange(0, itemsCount - 1);
+            else
+            {
+                int pageStart = itemsCount - defPageSize - 1;
+
+                //if (pageStart < 0)
+                //    VisibleRangeLimit = new IndexRange(pageStart, itemsCount - 1);
+                //else
+                //    VisibleRangeLimit = new IndexRange(0, itemsCount - 1);
+
+                this.VisibleRange = new IndexRange(pageStart, itemsCount - 1);
+            }
         }
 
         public override void Extend(int newCount, DateTime newEnd)
         {
+            //var rangeLimit = VisibleRangeLimit as IndexRange;
+            //if (rangeLimit != null)
+            //    VisibleRangeLimit = new IndexRange(rangeLimit.Min, newCount - 1);
+
             var range = VisibleRange as IndexRange;
             if (range != null)
             {

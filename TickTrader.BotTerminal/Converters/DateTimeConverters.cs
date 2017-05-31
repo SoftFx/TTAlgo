@@ -11,11 +11,11 @@ namespace TickTrader.BotTerminal
     [ValueConversion(typeof(DateTime?), typeof(string))]
     public class FullDateTimeConverter : IValueConverter
     {
-        private const string _format = "dd/MM/yyyy HH:mm:ss.fff";
+        public const string Format = "yyyy.MM.dd HH:mm:ss.fff";
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return ((DateTime?)value)?.ToLocalTime().ToString(_format);
+            return ((DateTime?)value)?.ToLocalTime().ToString(Format);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -27,11 +27,11 @@ namespace TickTrader.BotTerminal
     [ValueConversion(typeof(DateTime?), typeof(string))]
     public class FullTimeConverter : IValueConverter
     {
-        private const string _format = "HH:mm:ss.fff";
+        public const string Format = "HH:mm:ss.fff";
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return ((DateTime?)value)?.ToLocalTime().ToString(_format);
+            return ((DateTime?)value)?.ToLocalTime().ToString(Format);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

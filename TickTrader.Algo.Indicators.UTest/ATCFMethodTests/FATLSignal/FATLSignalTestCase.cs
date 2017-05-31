@@ -1,22 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.FATLSignal
 {
     public class FatlSignalTestCase : DigitalIndicatorTestCase
     {
-        public double PointSize { get; protected set; }
+        public int Digits { get; protected set; }
 
         public FatlSignalTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            double pointSize) : base(indicatorType, symbol, quotesPath, answerPath, 16)
+            int digits) : base(indicatorType, symbol, quotesPath, answerPath, 16)
         {
-            PointSize = pointSize;
+            Digits = digits;
         }
 
         protected override void SetupParameters()
         {
             base.SetupParameters();
-            SetParameter("PointSize", PointSize);
+            Builder.Symbols.Add(new Core.SymbolEntity(Symbol)
+            {
+                Digits = Digits,
+                BaseCurrencyCode = string.Empty,
+                CounterCurrencyCode = string.Empty
+            }, new Dictionary<string, Core.CurrencyEntity>());
         }
 
         protected override void GetOutput()
