@@ -12,6 +12,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
+using System.IO;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -365,7 +366,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                         bot.Log.Clean();
 
                     if (cleanAlgoData)
-                        bot.DeleteWorkingDirectory();
+                        bot.AlgoData.Clean();
 
                     _bots.Remove(bot);
                     DeinitBot(bot);
@@ -396,7 +397,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            bot.Init(this, _loggerFactory, _sync, _packageProvider, null);
+            bot.Init(this, _loggerFactory, _sync, _packageProvider, null, ServerModel.GetWorkingFolderFor(bot.Id));
             BotInitialized?.Invoke(bot);
         }
 

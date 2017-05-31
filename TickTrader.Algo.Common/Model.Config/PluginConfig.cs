@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model.Config
@@ -20,9 +16,6 @@ namespace TickTrader.Algo.Common.Model.Config
 
         [DataMember(Name = "symbol")]
         public string MainSymbol { get; set; }
-
-        [DataMember(Name = "workingfolder")]
-        public string WorkingFolder { get;  set; }
     }
 
     [DataContract(Namespace = "")]

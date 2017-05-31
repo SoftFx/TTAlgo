@@ -62,6 +62,7 @@ namespace TickTrader.DedicatedServer.DS
         bool IsRunning { get; }
         string FaultMessage { get; }
         IBotLog Log { get; }
+        IAlgoData AlgoData { get; }
         IAccount Account { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }
@@ -72,7 +73,6 @@ namespace TickTrader.DedicatedServer.DS
         void Configurate(PluginConfig cfg);
         void Start();
         Task StopAsync();
-        void DeleteWorkingDirectory();
     }
 
     public interface IPackage
@@ -92,11 +92,6 @@ namespace TickTrader.DedicatedServer.DS
         DateTime TimeUtc { get; }
         LogEntryType Type { get; }
         string Message { get; }
-    }
-
-    public interface IDirectoryNamingStrategy
-    {
-        string GetFullPath();
     }
 
     public interface IBotLog

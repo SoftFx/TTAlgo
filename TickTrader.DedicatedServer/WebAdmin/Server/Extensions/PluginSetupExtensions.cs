@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
-using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 
@@ -12,16 +11,15 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class PluginSetupExtensions
     {
-        public static PluginConfig Parse(this PluginSetupDto setup, IDirectoryNamingStrategy dirNamingStrategy)
+        public static PluginConfig Parse(this PluginSetupDto setup, string workingFolder)
         {
             var barConfig = new BarBasedConfig()
             {
                 MainSymbol = setup.Symbol,
                 PriceType = BarPriceType.Ask,
-                WorkingFolder = dirNamingStrategy.GetFullPath()
             };
 
-            var parameters = ParseParameters(setup, barConfig.WorkingFolder);
+            var parameters = ParseParameters(setup, workingFolder);
 
             barConfig.Properties.AddRange(parameters);
 

@@ -26,6 +26,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private Task _stopTask;
         private PluginExecutor executor;
         private BotLog _botLog;
+        private AlgoData _algoData;
         private AlgoPluginRef _ref;
         private ListenerProxy _stopListener;
         private PackageStorage _packageRepo;
@@ -57,11 +58,13 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IBotLog Log => _botLog;
         public string BotName => _ref?.DisplayName;
 
+        public IAlgoData AlgoData => _algoData;
+
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata)
+        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata, string workingFolder)
         {
             _syncObj = syncObj;
             _client = client;
@@ -76,6 +79,8 @@ namespace TickTrader.DedicatedServer.DS.Models
             _client.StateChanged += Client_StateChanged;
 
             _botLog = new BotLog(Id, syncObj);
+
+            _algoData = new AlgoData(workingFolder, syncObj);
 
             if (IsRunning && State != BotStates.Broken)
                 Start();
@@ -209,6 +214,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 var setupModel = new BarBasedPluginSetup(_ref);
                 setupModel.Load(Config);
+                setupModel.SetWorkingFolder(AlgoData.FullPath);
                 setupModel.Apply(executor);
 
                 var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
@@ -222,8 +228,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
                 executor.Logger = _botLog;
-                executor.BotWorkingFolder = Config.WorkingFolder;
-                executor.WorkingFolder = Config.WorkingFolder;
+                executor.BotWorkingFolder = AlgoData.FullPath;
+                executor.WorkingFolder = AlgoData.FullPath;
 
                 _stopListener = new ListenerProxy(executor, () =>
                 {
@@ -321,18 +327,6 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             if (pckg.NameEquals(PackageName))
                 UpdatePackage();
-        }
-
-        public void DeleteWorkingDirectory()
-        {
-            lock (_syncObj)
-            {
-                if (Directory.Exists(Config.WorkingFolder))
-                {
-                    new DirectoryInfo(Config.WorkingFolder).Clean();
-                    Directory.Delete(Config.WorkingFolder);
-                }
-            }
         }
 
         private class ListenerProxy : CrossDomainObject

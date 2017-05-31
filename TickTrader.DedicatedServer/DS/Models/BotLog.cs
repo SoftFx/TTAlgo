@@ -203,22 +203,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private void CleanFolder(string logDirectory)
-        {
-            var dir = new DirectoryInfo(logDirectory);
-
-            foreach (FileInfo fi in dir.GetFiles())
-            {
-                fi.Delete();
-            }
-
-            foreach (DirectoryInfo di in dir.GetDirectories())
-            {
-                CleanFolder(di.FullName);
-                di.Delete();
-            }
-        }
-
         public void DeleteFile(string file)
         {
             File.Delete(Path.Combine(_logDirectory, file));

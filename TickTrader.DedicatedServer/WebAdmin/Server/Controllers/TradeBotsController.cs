@@ -153,13 +153,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
-                var botWorkDir = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id);
-                var dirInfo = new DirectoryInfo(botWorkDir);
-
-                var files = new FileDto[0];
-
-                if (dirInfo.Exists)
-                    files = dirInfo.GetFiles().Select(f => new FileDto { Name = f.Name, Size = f.Length }).ToArray();
+                var files = tradeBot.AlgoData.Files.Select(f => f.ToDto()).ToArray();
 
                 return Ok(files);
             }
@@ -181,11 +175,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             try
             {
                 var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-
                 var decodedFile = WebUtility.UrlDecode(file);
-
-                var filePath = Path.Combine(Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id), decodedFile);
-                var readOnlyFile = new ReadOnlyFileModel(filePath);
+                var readOnlyFile = tradeBot.AlgoData.GetFile(decodedFile);
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
@@ -240,7 +231,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 var tradeBot = _dedicatedServer.AddBot(setup.InstanceId,
                     new AccountKey(setup.Account.Login, setup.Account.Server),
-                    new PluginKey(setup.PackageName, setup.PluginId), setup.Parse(new WorkingDirectoryNamingStrategy(setup.InstanceId)));
+                    new PluginKey(setup.PackageName, setup.PluginId), setup.Parse(ServerModel.GetWorkingFolderFor(setup.InstanceId)));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -257,7 +248,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             try
             {
                 var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-                tradeBot.Configurate(setup.Parse(new WorkingDirectoryNamingStrategy(tradeBot.Id)));
+                tradeBot.Configurate(setup.Parse(ServerModel.GetWorkingFolderFor(tradeBot.Id)));
 
                 return Ok();
             }

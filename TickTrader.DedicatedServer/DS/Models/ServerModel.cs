@@ -13,6 +13,7 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
+using TickTrader.DedicatedServer.Extensions;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -34,6 +35,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         }
 
         public static EnvService Environment => envService;
+
+        public static string GetWorkingFolderFor(string botId)
+        {
+            return Path.Combine(Environment.AlgoWorkingFolder, botId.Escape());
+        }
 
         public object SyncObj { get; private set; }
 
