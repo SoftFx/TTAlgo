@@ -84,7 +84,7 @@ export class ApiService {
 
     DeleteBot(botId: string, cleanLog: boolean, cleanAlgoData: boolean) {
         return this._http
-            .delete(`${this._tradeBotsUrl}/?` + $.param({ id: botId, clean_log: cleanLog, clean_algodata: cleanAlgoData }), { headers: this.headers })
+            .delete(`${this._tradeBotsUrl}/${encodeURIComponent(botId)}?` + $.param({ clean_log: cleanLog, clean_algodata: cleanAlgoData }), { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
 

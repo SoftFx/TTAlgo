@@ -217,6 +217,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
                 executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(1024);
+
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;

@@ -7,12 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Api;
 using System.IO;
 using TickTrader.DedicatedServer.DS.Models;
-using Newtonsoft.Json.Linq;
-using TickTrader.DedicatedServer.Extensions;
+using System.Net;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
@@ -41,7 +38,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -63,7 +60,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
                 tradeBot.Log.Clean();
 
                 return Ok();
@@ -85,7 +82,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
                 return Ok(tradeBot.Log.ToDto());
             }
@@ -106,11 +103,12 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
-                var readOnlyFile = tradeBot.Log.GetFile(file);
+                var decodedFile = WebUtility.UrlDecode(file);
+                var readOnlyFile = tradeBot.Log.GetFile(decodedFile);
 
-                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(file), file);
+                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
             catch (BotNotFoundException nfex)
             {
@@ -129,8 +127,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
-                tradeBot.Log.DeleteFile(file);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.Log.DeleteFile(WebUtility.UrlDecode(file));
 
                 return Ok();
             }
@@ -153,7 +151,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
                 var botWorkDir = Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id);
                 var dirInfo = new DirectoryInfo(botWorkDir);
@@ -182,12 +180,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
-                var filePath = Path.Combine(Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id), file);
+                var decodedFile = WebUtility.UrlDecode(file);
+
+                var filePath = Path.Combine(Path.Combine(ServerModel.Environment.AlgoWorkingFolder, tradeBot.Id), decodedFile);
                 var readOnlyFile = new ReadOnlyFileModel(filePath);
 
-                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(file), file);
+                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
             catch (BotNotFoundException nfex)
             {
@@ -207,7 +207,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
                 return Ok(new BotStatusDto
                 {
@@ -230,7 +230,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpGet("{botName}/[action]")]
         public string BotId(string botName)
         {
-            return _dedicatedServer.AutogenerateBotId(botName);
+            return _dedicatedServer.AutogenerateBotId(WebUtility.UrlDecode(botName));
         }
 
         [HttpPost]
@@ -256,8 +256,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
-                tradeBot.Configurate(setup.Parse(new WorkingDirectoryNamingStrategy(id)));
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.Configurate(setup.Parse(new WorkingDirectoryNamingStrategy(tradeBot.Id)));
 
                 return Ok();
             }
@@ -273,12 +273,12 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
-        [HttpDelete]
-        public IActionResult Delete(string id, bool clean_log = false, bool clean_algodata = false)
+        [HttpDelete("{id}")]
+        public IActionResult Delete(string id, [FromQuery] bool clean_log = false, [FromQuery] bool clean_algodata = false)
         {
             try
             {
-                _dedicatedServer.RemoveBot(id, clean_log, clean_algodata);
+                _dedicatedServer.RemoveBot(WebUtility.UrlDecode(id), clean_log, clean_algodata);
 
                 return Ok();
             }
@@ -293,7 +293,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
                 tradeBot.Start();
 
                 return Ok();
@@ -315,7 +315,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(id);
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
                 tradeBot.StopAsync();
 
                 return Ok();

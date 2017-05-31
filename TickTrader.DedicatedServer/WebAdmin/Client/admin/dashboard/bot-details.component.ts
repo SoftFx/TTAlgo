@@ -2,7 +2,7 @@
 import { Observable } from "rxjs/Rx";
 import { ApiService, ToastrService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, FileInfo } from '../../models/index';
+import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, FileInfo, WebUtility } from '../../models/index';
 
 @Component({
     selector: 'bot-details-cmp',
@@ -153,7 +153,7 @@ export class BotDetailsComponent implements OnInit {
 
     public Configurate(botId: string) {
         if (botId)
-            this._router.navigate(['/configurate', botId]);
+            this._router.navigate(['/configurate', WebUtility.EncodeURIComponent(botId)]);
     }
 
     private updateBotState(botState: TradeBotStateModel) {

@@ -1,6 +1,6 @@
 ﻿import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { TradeBotModel, TradeBotStates, TradeBotStateModel, ResponseStatus } from '../../models/index';
+import { TradeBotModel, TradeBotStates, TradeBotStateModel, ResponseStatus, WebUtility } from '../../models/index';
 import { ApiService, ToastrService, FeedService } from '../../services/index';
 import { Router } from '@angular/router';
 
@@ -93,12 +93,12 @@ export class BotCardComponent implements OnInit {
 
     public GoToDetails(instanceId: string) {
         if (instanceId)
-            this._router.navigate(['/bot', instanceId]);
+            this._router.navigate(['/bot', WebUtility.EncodeURIComponent(instanceId)]);
     }
 
     public Configurate(instanceId: string) {
         if (instanceId)
-            this._router.navigate(['/configurate', instanceId]);
+            this._router.navigate(['/configurate', WebUtility.EncodeURIComponent(instanceId)]);
     }
 
     private updateBotState(botState: TradeBotStateModel) {

@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Common.Model.Config
         [DataMember(Name = "symbol")]
         public string MainSymbol { get; set; }
 
+        [DataMember(Name = "workingfolder")]
         public string WorkingFolder { get;  set; }
     }
 
