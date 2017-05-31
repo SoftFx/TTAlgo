@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Core
         private void StartStrategy()
         {
             Feed.Subscribe(Feed_FeedUpdated);
-            ExecContext.Enqueue(b => BatchBuild(BufferSize));
+            ExecContext.EnqueueTradeUpdate(b => BatchBuild(BufferSize));
 
             // apply snapshot
             foreach(var quote in Feed.GetSnapshot())
@@ -113,7 +113,7 @@ namespace TickTrader.Algo.Core
         private void Feed_FeedUpdated(QuoteEntity[] updates)
         {
             foreach (var update in updates)
-                ExecContext.Enqueue(update);
+                ExecContext.EnqueueQuote(update);
         }
 
         internal void ApplyUpdate(RateUpdate update)

@@ -36,9 +36,11 @@ namespace TickTrader.Algo.Core
 
         public abstract void Start();
         public abstract Task Stop(bool quick);
-        public abstract void Enqueue(QuoteEntity update);
-        public abstract void EnqueueCustomAction(Action<PluginBuilder> a);
-        public abstract void Enqueue(Action<PluginBuilder> a);
+        public abstract void EnqueueQuote(QuoteEntity update);
+        public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
+        public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
+        public abstract void EnqueueTradeEvent(Action<PluginBuilder> a);
+        public abstract void ProcessTradeEvents(CancellationToken cToken);
 
         protected virtual void OnInit() { }
 
@@ -65,19 +67,21 @@ namespace TickTrader.Algo.Core
         private Task currentTask;
         private Task stopTask;
         private FeedQueue feedQueue;
-        private Queue<Action<PluginBuilder>> defaultQueue;
+        private Queue<Action<PluginBuilder>> tradeQueue;
+        private Queue<Action<PluginBuilder>> eventQueue;
         private bool isStarted;
+        private bool isProcessingTrades;
         private bool execStopFlag;
 
         protected override void OnInit()
         {
             feedQueue = new FeedQueue();
-            defaultQueue = new Queue<Action<PluginBuilder>>();
+            tradeQueue = new Queue<Action<PluginBuilder>>();
         }
 
         public override int FeedQueueSize { get { return 0; } }
 
-        public override void Enqueue(QuoteEntity update)
+        public override void EnqueueQuote(QuoteEntity update)
         {
             lock (syncObj)
             {
@@ -86,22 +90,73 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public override void Enqueue(Action<PluginBuilder> a)
+        public override void EnqueueTradeUpdate(Action<PluginBuilder> a)
         {
             lock (syncObj)
             {
-                defaultQueue.Enqueue(a);
+                tradeQueue.Enqueue(a);
                 WakeUpWorker();
             }
         }
 
-        public override void EnqueueCustomAction(Action<PluginBuilder> a)
+        public override void EnqueueCustomInvoke(Action<PluginBuilder> a)
         {
             lock (syncObj)
             {
-                defaultQueue.Enqueue(a);
+                eventQueue.Enqueue(a);
                 WakeUpWorker();
             }
+        }
+
+        public override void EnqueueTradeEvent(Action<PluginBuilder> a)
+        {
+            lock (syncObj)
+            {
+                eventQueue.Enqueue(a);
+                if (isProcessingTrades)
+                    Monitor.Pulse(syncObj);
+                else
+                    WakeUpWorker();
+            }
+        }
+
+        public override void ProcessTradeEvents(CancellationToken cToken)
+        {
+            Action<PluginBuilder> action;
+
+            lock (syncObj)
+            {
+                cToken.Register(() => { lock (syncObj) { Monitor.Pulse(syncObj); } });
+                isProcessingTrades = true;
+
+                action = DequeueNextTrade(cToken);
+            }
+
+            while (true)
+            {
+                if (action == null)
+                    return;
+
+                ProcessItem(action);
+
+                lock (syncObj) action = DequeueNextTrade(cToken);
+            }
+        }
+
+        private Action<PluginBuilder> DequeueNextTrade(CancellationToken cToken)
+        {
+            if (tradeQueue.Count > 0)
+                return tradeQueue.Dequeue();
+
+            Monitor.Wait(syncObj);
+
+            if (cToken.IsCancellationRequested)
+            {
+                isProcessingTrades = false;
+                return null;
+            }
+
+            return tradeQueue.Dequeue();
         }
 
         private void WakeUpWorker()
@@ -136,21 +191,26 @@ namespace TickTrader.Algo.Core
                     }
                 }
 
-                try
-                {
-                    if (item is RateUpdate)
-                        OnFeedUpdate((RateUpdate)item);
-                    else if (item is Action<PluginBuilder>)
-                        ((Action<PluginBuilder>)item)(Builder);
-                }
-                catch (ExecutorException ex)
-                {
-                    OnError(ex);
-                }
-                catch (Exception ex)
-                {
-                    OnRuntimeException(ex);
-                }
+                ProcessItem(item);
+            }
+        }
+
+        private void ProcessItem(object item)
+        {
+            try
+            {
+                if (item is RateUpdate)
+                    OnFeedUpdate((RateUpdate)item);
+                else if (item is Action<PluginBuilder>)
+                    ((Action<PluginBuilder>)item)(Builder);
+            }
+            catch (ExecutorException ex)
+            {
+                OnError(ex);
+            }
+            catch (Exception ex)
+            {
+                OnRuntimeException(ex);
             }
         }
 
@@ -189,7 +249,7 @@ namespace TickTrader.Algo.Core
                 System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
 
                 TaskCompletionSource<object> asyncStopDoneEvent = new TaskCompletionSource<object>();
-                Enqueue(async b =>
+                EnqueueTradeUpdate(async b =>
                 {
                     await b.InvokeAsyncStop();
                     asyncStopDoneEvent.TrySetResult(this);
@@ -231,8 +291,10 @@ namespace TickTrader.Algo.Core
 
         private object DequeueNext()
         {
-            if (defaultQueue.Count > 0)
-                return defaultQueue.Dequeue();
+            if (eventQueue.Count > 0)
+                return eventQueue.Dequeue();
+            else if (tradeQueue.Count > 0)
+                return tradeQueue.Dequeue();
             else if (feedQueue.Count > 0)
                 return feedQueue.Dequeue();
             else

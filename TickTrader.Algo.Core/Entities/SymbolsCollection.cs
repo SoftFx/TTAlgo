@@ -62,6 +62,11 @@ namespace TickTrader.Algo.Core
             (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
         }
 
+        internal SymbolEntity GetOrDefault(string symbol)
+        {
+            return fixture.GetOrDefault(symbol);
+        }
+
         private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
         {
             private Dictionary<string, Api.Symbol> symbols = new Dictionary<string, Api.Symbol>();
