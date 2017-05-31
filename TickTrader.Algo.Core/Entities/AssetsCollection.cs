@@ -64,7 +64,17 @@ namespace TickTrader.Algo.Core
 
             public void Update(AssetEntity entity)
             {
-                assets[entity.Currency] = entity;
+                if (entity.Volume > 0)
+                {
+                    assets[entity.Currency] = entity;
+                }
+                else
+                {
+                    if (assets.ContainsKey(entity.Currency))
+                    {
+                        assets.Remove(entity.Currency);
+                    }
+                }
             }
 
             public void Remove(string currencyCode)

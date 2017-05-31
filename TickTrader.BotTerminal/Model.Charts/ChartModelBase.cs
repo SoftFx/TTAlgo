@@ -309,8 +309,8 @@ namespace TickTrader.BotTerminal
             else if (stateController.Current == States.Online)
                 ApplyUpdate(tick);
 
-            this.CurrentAsk = tick.Ask;
-            this.CurrentBid = tick.Bid;
+            this.CurrentAsk = tick.GetNullableAsk();
+            this.CurrentBid = tick.GetNullableBid();
             NotifyOfPropertyChange(nameof(CurrentAsk));
             NotifyOfPropertyChange(nameof(CurrentBid));
         }
@@ -360,14 +360,15 @@ namespace TickTrader.BotTerminal
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = ClientModel.Account;
-            plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             if (string.IsNullOrEmpty(uniqueBotName))
             {
+                plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
                 plugin.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             }
             else
             {
-                plugin.BotWorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                plugin.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                plugin.BotWorkingFolder = plugin.WorkingFolder;
                 EnvService.Instance.EnsureFolder(plugin.BotWorkingFolder);
             }
         }

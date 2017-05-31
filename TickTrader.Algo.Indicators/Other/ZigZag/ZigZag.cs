@@ -24,9 +24,6 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         [Parameter(DefaultValue = 3, DisplayName = "BackStep")]
         public int Backstep { get; set; }
 
-        [Parameter(DisplayName = "Point Size", DefaultValue = 1e-5)]
-        public double PointSize { get; set; }
-
         [Input]
         public new BarSeries Bars { get; set; }
 
@@ -45,13 +42,12 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
         {
         }
 
-        public ZigZag(BarSeries bars, int depth, int deviation, int backstep, double pointSize)
+        public ZigZag(BarSeries bars, int depth, int deviation, int backstep)
         {
             Bars = bars;
             Depth = depth;
             Deviation = deviation;
             Backstep = backstep;
-            PointSize = pointSize;
 
             InitializeIndicator();
         }
@@ -105,7 +101,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 else
                 {
                     _lastLow = extremum;
-                    if (Bars.Low[pos] - extremum > Deviation*PointSize)
+                    if (Bars.Low[pos] - extremum > Deviation*Symbol.Point)
                     {
                         extremum = double.NaN;
                     }
@@ -137,7 +133,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
                 else
                 {
                     _lastHigh = extremum;
-                    if (extremum - Bars.High[pos] > Deviation*PointSize)
+                    if (extremum - Bars.High[pos] > Deviation*Symbol.Point)
                     {
                         extremum = double.NaN;
                     }

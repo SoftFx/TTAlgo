@@ -191,6 +191,73 @@
                 </l:AvalonDockTemplateSelector>
             </dk:DockingManager.LayoutItemTemplateSelector>
 
+            <dk:DockingManager.AnchorableHeaderTemplateSelector>
+                <l:AvalonAnchorTemplateSelector>
+                    <l:AvalonAnchorTemplateSelector.AnchorTemplate>
+                        <DataTemplate>
+                            <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
+                        </DataTemplate>
+                    </l:AvalonAnchorTemplateSelector.AnchorTemplate>
+                    <l:AvalonAnchorTemplateSelector.TradesTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
+                                <Border Grid.Column="1" Margin="5 0 0 0" Name="PositionCountPane" Background="{DynamicResource Shell_SecondaryForeground}">
+                                    <Grid>
+                                        <TextBlock Margin="5 0" Text="{Binding Content.DataContext.Trade.Positions.Net.Positions.Count}" 
+                                                   Visibility="{Binding Content.DataContext.Trade.Positions.Net.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+                                        <TextBlock Margin="5 0" Text="{Binding Content.DataContext.Trade.Positions.Gross.Positions.Count}" 
+                                                   Visibility="{Binding Content.DataContext.Trade.Positions.Gross.IsEnabled, Converter={StaticResource BoolToVis}}"/>
+                                    </Grid>
+                                </Border>
+                                <Border Grid.Column="2" Margin="2 0 0 0" Name="OrderCountPane" Background="{DynamicResource Shell_SecondaryForeground}">
+                                    <TextBlock Margin="5 0" Text="{Binding Content.DataContext.Trade.Orders.Orders.Count}"/>
+                                </Border>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{l:BoolConverter ConversionMode=LeastOne}">
+                                            <Binding Path="Content.DataContext.Trade.Positions.Net.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
+                                            <Binding Path="Content.DataContext.Trade.Positions.Gross.Positions.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
+                                            <Binding Path="Content.DataContext.Trade.Assets.Assets.Count" Converter="{l:NumericalComparative ComparisonOption=AboveZero}"/>
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <Setter TargetName="PositionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Content.DataContext.Trade.Orders.Orders.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                    <Setter TargetName="OrderCountPane" Property="Background" Value="{DynamicResource RateUpColor}"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </l:AvalonAnchorTemplateSelector.TradesTemplate>
+                    <l:AvalonAnchorTemplateSelector.HistoryTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
+                                <Border Grid.Column="3" Margin="5 0 0 0" Name="TransactionCountPane" Background="{DynamicResource Shell_SecondaryForeground}">
+                                    <TextBlock Margin="5 0" Text="{Binding Content.DataContext.TradeHistory.TradesList.Count}"></TextBlock>
+                                </Border>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Content.DataContext.TradeHistory.TradesList.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                    <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </l:AvalonAnchorTemplateSelector.HistoryTemplate>
+                </l:AvalonAnchorTemplateSelector>
+            </dk:DockingManager.AnchorableHeaderTemplateSelector>
+
             <!--<dk:DockingManager.Theme>
                 <dk:AeroTheme/>
             </dk:DockingManager.Theme>-->

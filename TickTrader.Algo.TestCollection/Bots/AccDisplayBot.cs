@@ -27,10 +27,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
                 PrintBalance();
-
-            Status.WriteLine();
-
-            PrintPendingOrders();
+            else if (Account.Type == AccountTypes.Cash)
+                PrintAssets();
 
             Status.WriteLine();
 
@@ -38,8 +36,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                 PrintGrossPositions();
             else if (Account.Type == AccountTypes.Net)
                 PrintNetPositions();
-            else if (Account.Type == AccountTypes.Cash)
-                PrintAssets();
+
+            Status.WriteLine();
+
+            PrintPendingOrders();
         }
 
         private void PrintAccountInfo()

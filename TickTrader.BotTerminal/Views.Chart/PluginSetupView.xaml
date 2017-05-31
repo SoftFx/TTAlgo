@@ -339,6 +339,9 @@
 
                     <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
 
+                    <CheckBox Margin="10,4" Name="StartBox" Content="Start bot?"
+                              Visibility="Collapsed" IsChecked="{Binding RunBot}"/>
+
                 </StackPanel>
             </ScrollViewer>
 
@@ -359,8 +362,13 @@
                           Grid.Column="0" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>-->
             </Grid>
         </Grid>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
+                <Setter TargetName="StartBox" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
-    
+
     <!-- Button Style  (Classic) -->
 
     <Style x:Key="PluginSetupView.Classic.DlgButtonStyle" TargetType="Button">
@@ -404,6 +412,8 @@
                     <GroupBox Name="OutputsGroup" Header="Outputs" Margin="4">
                         <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
                     </GroupBox>
+                    <CheckBox Margin="10,4" Name="StartBox" Content="Start bot?"
+                              Visibility="Collapsed" IsChecked="{Binding RunBot}"/>
                 </StackPanel>
             </ScrollViewer>
 
@@ -433,6 +443,9 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding Setup.HasDescription}" Value="False">
                 <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
+                <Setter TargetName="StartBox" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>

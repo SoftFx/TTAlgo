@@ -200,7 +200,7 @@
                                     <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId}">
                                         <s:YAxisDragModifier/>
                                         <s:XAxisDragModifier/>
-                                        <!--<s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>-->
+                                        <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
                                         <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
                                         <s:TooltipModifier ShowTooltipOn="Always"/>
                                         <s:CursorModifier ShowTooltipOn="Always"
