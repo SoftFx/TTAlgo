@@ -8,7 +8,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class FeedStrategy : CrossDomainObject,  IFeedFixtureContext
+    public abstract class FeedStrategy : CrossDomainObject, IFeedFixtureContext, IFeedBuferStrategyContext
     {
         private SubscriptionManager dispenser;
         private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
@@ -27,9 +27,10 @@ namespace TickTrader.Algo.Core
         internal IPluginFeedProvider Feed { get; private set; }
 
         public abstract int BufferSize { get; }
-        public abstract ITimeRef TimeRef { get; }
+        public abstract IFeedBuffer MainBuffer { get; }
 
         internal abstract void OnInit();
+        public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
 
         public void OnUserSubscribe(string symbolCode, int depth)
@@ -56,12 +57,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal void Init(IFixtureContext executor)
+        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy)
         {
             ExecContext = executor;
+            BufferingStrategy = bStrategy;
             userSubscriptions.Clear();
             dispenser.Reset();
             OnInit();
+            BufferingStrategy.Init(this);
+            BufferingStrategy.Start();
             setupActions.ForEach(a => a());
         }
 
@@ -152,5 +156,16 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion IFeedStrategyContext
+
+        #region IFeedBufferController
+
+        IFeedBuffer IFeedBuferStrategyContext.MainBuffer => MainBuffer;
+
+        void IFeedBuferStrategyContext.TruncateBuffers(int bySize)
+        {
+            ExecContext.Builder.TruncateBuffers(bySize);
+        }
+
+        #endregion
     }
 }

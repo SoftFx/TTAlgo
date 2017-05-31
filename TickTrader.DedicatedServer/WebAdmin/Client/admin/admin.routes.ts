@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 import { AdminComponent } from './admin.component';
-import { DashboardComponent, BotRunComponent, PluginSetupComponent, BotDetailComponent, TradeBotCardComponent } from './dashboard/index';
+import { DashboardComponent, BotSetupComponent, BotAddComponent, BotParametersComponent, BotDetailComponent, BotConfigurationComponent, BotCardComponent } from './dashboard/index';
 import { RepositoryComponent, PackageCardComponent } from './repository/index';
 import { AccountsComponent, AccountCardComponent, ChangePasswordComponent, TestAccountComponent } from './accounts/index';
 import { AuthGuard } from '../services/index';
@@ -13,6 +13,8 @@ export const MODULE_ROUTES: Route[] = [
             { path: 'repository', canActivate: [AuthGuard], component: RepositoryComponent },
             { path: 'accounts', canActivate: [AuthGuard], component: AccountsComponent },
             { path: 'bot/:id', canActivate: [AuthGuard], component: BotDetailComponent },
+            { path: 'configurate/:id', canActivate: [AuthGuard], component: BotConfigurationComponent },
+            { path: 'configurate', canActivate: [AuthGuard], component: BotConfigurationComponent },
             { path: '', redirectTo: 'dashboard', pathMatch: "full" }
         ]
     }
@@ -28,7 +30,9 @@ export const MODULE_COMPONENTS = [
     RepositoryComponent,
     PackageCardComponent,
     BotDetailComponent,
-    BotRunComponent,
-    PluginSetupComponent,
-    TradeBotCardComponent
+    BotConfigurationComponent,
+    BotSetupComponent,
+    BotAddComponent,
+    BotParametersComponent,
+    BotCardComponent
 ]

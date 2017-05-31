@@ -1,20 +1,17 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.DS
 {
     public interface IDedicatedServer
     {
-        IPackage AddPackage(byte[] fileContent, string fileName);
+        IPackage UpdatePackage(byte[] fileContent, string fileName);
         IPackage[] GetPackages();
         void RemovePackage(string package);
         PluginInfo[] GetAllPlugins();
@@ -35,6 +32,8 @@ namespace TickTrader.DedicatedServer.DS
         ConnectionErrorCodes TestAccount(AccountKey accountId);
         ConnectionErrorCodes TestCreds(string login, string password, string server);
 
+        ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
+
         ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig);
         void RemoveBot(string botId);
     }
@@ -54,15 +53,20 @@ namespace TickTrader.DedicatedServer.DS
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
-    public enum BotStates { Offline, Started, Initializing, Faulted, Online, Stopping }
+    public enum BotStates { Offline, Starting, Faulted, Online, Stopping, Broken, Reconnecting }
 
     public interface ITradeBot
     {
         string Id { get; }
         bool IsRunning { get; }
+        string FaultMessage { get; }
         IBotLog Log { get; }
         IAccount Account { get; }
+        PluginConfig Config { get; }
+        PackageModel Package { get; }
+        string Descriptor { get;  }
         BotStates State { get; }
+        void Configurate(PluginConfig cfg);
         void Start();
         Task StopAsync();
     }
@@ -73,6 +77,7 @@ namespace TickTrader.DedicatedServer.DS
         DateTime Created { get; }
         bool IsValid { get; }
 
+        bool NameEquals(string name);
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 

@@ -6,45 +6,66 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core.Lib
 {
-    public class CircularList<T> : IReadOnlyList<T>
+    public class CircularList<T> : IReadOnlyList<T>, IList<T>
     {
         private static readonly T[] emptyBuffer = new T[0];
 
-        private int begin = 0;
+        private int begin = -1;
         private int end = -1;
-        private T[] innerBuffer;
+        private T[] buffer;
 
         public CircularList()
         {
-            innerBuffer = emptyBuffer;
+            buffer = emptyBuffer;
         }
 
         public CircularList(int capacity)
         {
-            innerBuffer = new T[capacity];
+            buffer = new T[capacity];
         }
 
+        public int Capacity { get { return buffer.Length; } }
+
         public void Enqueue(T item)
+        {
+            Add(item);
+        }
+
+        public void Add(T item)
         {
             if (Count == Capacity)
                 Expand();
 
-            if (++end >= Capacity)
+            if (Count == 0)
+            {
+                begin = 0;
                 end = 0;
+            }
+            else
+            {
+                if (++end >= Capacity)
+                    end = 0;
+            }
 
-            innerBuffer[end] = item;
+            buffer[end] = item;
             Count++;
         }
 
-        public int Capacity { get { return innerBuffer.Length; } }
+        public void AddRange(IEnumerable<T> recRange)
+        {
+            // TO DO : optimization in case recRange is IList or ICollection
+
+            foreach (T rec in recRange)
+                Add(rec);
+        }
 
         public T Dequeue()
         {
             if (Count == 0)
                 throw new InvalidOperationException("List is empty!");
 
-            T result = innerBuffer[begin];
-            innerBuffer[begin] = default(T);
+            T result = buffer[begin];
+            buffer[begin] = default(T);
 
             Count--;
 
@@ -56,29 +77,86 @@ namespace TickTrader.Algo.Core.Lib
 
         public void Clear()
         {
-            this.Count = 0;
-            begin = 0;
-            end = -1;
+            if (Count > 0)
+                TruncateNoCheck(Count);
+        }
+
+        public void TruncateStart(int tSize)
+        {
+            if (tSize == 0)
+                return;
+
+            if (tSize < 0 || tSize > Count)
+                throw new ArgumentOutOfRangeException();
+
+            TruncateNoCheck(tSize);
+        }
+
+        private void TruncateNoCheck(int tSize)
+        {
+            if (begin <= end)
+            {
+                Array.Clear(buffer, begin, tSize);
+                begin += tSize;
+            }
+            else
+            {
+                var firstPartLen = Capacity - begin;
+                if (tSize < firstPartLen)
+                {
+                    Array.Clear(buffer, begin, tSize);
+                    begin += tSize;
+                }
+                else if (tSize == firstPartLen)
+                {
+                    Array.Clear(buffer, begin, tSize);
+                    begin = 0;
+                }
+                else
+                {
+                    Array.Clear(buffer, begin, firstPartLen);
+                    begin = tSize - firstPartLen;
+                    Array.Clear(buffer, 0, begin);
+                }
+            }
+
+            Count -= tSize;
+
+            if (Count == 0)
+            {
+                begin = 0;
+                end = -1;
+            }
+        }
+
+        public void TruncateEnd(int count)
+        {
+            throw new NotImplementedException();
         }
 
         private void Expand()
         {
             int expandBy = Capacity > 0 ? Capacity : 4;
 
-            T[] oldBuffer = innerBuffer;
-            innerBuffer = new T[Capacity + expandBy];
+            var oldBuffer = buffer;
+            buffer = new T[Capacity + expandBy];
 
-            if (begin < end || Count == 0)
-                Array.Copy(oldBuffer, begin, innerBuffer, begin, Count);
-            else
+            if (Count != 0)
             {
-                // copy first part
-                Array.Copy(oldBuffer, begin, innerBuffer, begin + expandBy, oldBuffer.Length - begin);
-                // copy second part
-                Array.Copy(oldBuffer, innerBuffer, end + 1);
-
-                begin += expandBy;
+                if (begin <= end)
+                    Array.Copy(oldBuffer, begin, buffer, 0, Count);
+                else
+                {
+                    var firstPartLength = oldBuffer.Length - begin;
+                    // copy first part
+                    Array.Copy(oldBuffer, begin, buffer, 0, firstPartLength);
+                    // copy second part
+                    Array.Copy(oldBuffer, 0, buffer, firstPartLength, end + 1);
+                }
             }
+
+            begin = 0;
+            end = Count - 1;
         }
 
         private int CalculateBufferIndex(int queueIndex)
@@ -87,74 +165,71 @@ namespace TickTrader.Algo.Core.Lib
                 throw new ArgumentOutOfRangeException();
 
             int realIndex = begin + queueIndex;
-            if (realIndex >= innerBuffer.Length)
-                realIndex -= innerBuffer.Length;
+            if (realIndex >= buffer.Length)
+                realIndex -= buffer.Length;
             return realIndex;
         }
 
         public T this[int index]
         {
-            get { return innerBuffer[CalculateBufferIndex(index)]; }
-            set { innerBuffer[CalculateBufferIndex(index)] = value; }
+            get { return buffer[CalculateBufferIndex(index)]; }
+            set { buffer[CalculateBufferIndex(index)] = value; }
         }
 
         public int Count { get; private set; }
 
+        public bool IsReadOnly => false;
+
         public IEnumerator<T> GetEnumerator()
         {
-            return new QueueEnumarator(this);
+            if (begin <= end)
+            {
+                for (int i = begin; i <= end; i++)
+                    yield return buffer[i];
+            }
+            else
+            {
+                for (int i = begin; i < buffer.Length; i++)
+                    yield return buffer[i];
+
+                for (int i = 0; i <= end; i++)
+                    yield return buffer[i];
+            }
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return new QueueEnumarator(this);
+            return GetEnumerator();
         }
 
-        private struct QueueEnumarator : IEnumerator<T>
+        public int IndexOf(T item)
         {
-            private CircularList<T> list;
-            private int listIndex;
-            private int bufferIndex;
+            throw new NotImplementedException();
+        }
 
-            public T Current { get; private set; }
+        public void Insert(int index, T item)
+        {
+            throw new NotImplementedException();
+        }
 
-            public QueueEnumarator(CircularList<T> list) : this()
-            {
-                this.list = list;
-                Reset();
-            }
+        public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
 
-            public void Dispose()
-            {
-            }
+        public bool Contains(T item)
+        {
+            throw new NotImplementedException();
+        }
 
-            object System.Collections.IEnumerator.Current
-            {
-                get { return Current; }
-            }
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-            public bool MoveNext()
-            {
-                if (listIndex >= list.Count)
-                    return false;
-
-                Current = list.innerBuffer[bufferIndex];
-
-                listIndex++;
-                bufferIndex++;
-
-                if (bufferIndex >= list.innerBuffer.Length)
-                    bufferIndex = 0;
-
-                return true;
-            }
-
-            public void Reset()
-            {
-                listIndex = 0;
-                bufferIndex = list.begin;
-                Current = default(T);
-            }
+        public bool Remove(T item)
+        {
+            throw new NotImplementedException();
         }
     }
 }

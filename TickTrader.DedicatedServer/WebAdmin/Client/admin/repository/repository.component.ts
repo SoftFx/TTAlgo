@@ -25,8 +25,8 @@ export class RepositoryComponent implements OnInit {
     }
 
     ngOnInit() {
-        this._api.Feed.addPackage.subscribe(algoPackage => this.addPackage(algoPackage));
-        this._api.Feed.deletePackage.subscribe(pname => this.deletePackage(pname));
+        this._api.Feed.AddPackage.subscribe(algoPackage => this.addPackage(algoPackage));
+        this._api.Feed.DeletePackage.subscribe(pname => this.deletePackage(pname));
 
         this.loadPackages();
     }

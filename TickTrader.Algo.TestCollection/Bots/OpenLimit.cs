@@ -3,10 +3,10 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Limit Script", Version = "1.0", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Limit Script", Version = "1.3", Category = "Test Orders",
         Description = "Opens limit order for current chart symbol with specified volume, side and options. " +
                       "Price is moved for specified number of pips into spread")]
-    public class OpenLimit : TradeBot
+    public class OpenLimit : TradeBotCommon
     {
         [Parameter(DefaultValue = 1D)]
         public double Volume { get; set; }
@@ -25,12 +25,15 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            var ordPrice = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
+            var ordPrice = GetCurrentPrice(Side);
             if (Side == OrderSide.Buy)
                 ordPrice -= Symbol.Point * PriceDelta;
             else
                 ordPrice += Symbol.Point * PriceDelta;
-            OpenOrder(Symbol.Name, OrderType.Limit, Side, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, Option, Tag);
+            if (double.IsNaN(ordPrice))
+                PrintError("Cannot open order: off quotes for " + Symbol.Name);
+            else
+                OpenOrder(Symbol.Name, OrderType.Limit, Side, Volume, ordPrice, null, null, "OpenTimeComment " + DateTime.Now, Option, Tag);
             Exit();
         }
     }

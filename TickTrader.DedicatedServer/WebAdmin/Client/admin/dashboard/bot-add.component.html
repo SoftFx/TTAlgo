@@ -1,0 +1,63 @@
+﻿
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label>Bot</label>
+            <select class="form-control" [(ngModel)]="SelectedPlugin" (ngModelChange)="OnPluginSelected($event)">
+                <optgroup *ngFor="let Package of (PackagesRequest.Result | orderBy: ['Name'])" label="{{Package.Name}}">
+                    <option *ngFor="let Plugin of (Package.Plugins | orderBy: ['DisplayName'])" [ngValue]="Plugin">{{Plugin.DisplayName}}</option>
+                </optgroup>
+            </select>
+            <p *ngIf="!PackagesRequest.IsCompleted" class="category">Loading...</p>
+        </div>
+    </div>
+    <div *ngIf="Setup && BotSetupForm" class="col-md-12">
+        <form [formGroup]="BotSetupForm" novalidate>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Instance ID</label>
+                        <input [(ngModel)]="Setup.InstanceId" formControlName="InstanceId" type="text" class="form-control" />
+                        <div *ngIf="BotSetupForm.controls.InstanceId.invalid && BotSetupForm.controls.InstanceId.touched" class="alert alert-danger">
+                            <span>{{ 'FieldIsRequired' | resx: ['InstanceId'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Account</label>
+                        <select [(ngModel)]="Setup.Account" formControlName="Account" (ngModelChange)="OnAccountChanged($event)" class="form-control">
+                            <option *ngFor="let Account of AccountsRequest.Result" [ngValue]="Account">{{Account}}</option>
+                        </select>
+                        <p *ngIf="!AccountsRequest.IsCompleted" class="category">Loading...</p>
+                        <div *ngIf="BotSetupForm.controls.Account.invalid && BotSetupForm.controls.Account.touched" class="alert alert-danger">
+                            <span>{{ 'FieldIsRequired' | resx: ['Account'] }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Symbol</label>
+                        <select [(ngModel)]="Setup.Symbol" formControlName="Symbol" class="form-control">
+                            <option *ngFor="let Symbol of Symbols" [ngValue]="Symbol">{{Symbol}}</option>
+                        </select>
+                        <p *ngIf="!AccountInfoRequest.IsCompleted" class="category">Loading...</p>
+                        <div *ngIf="BotSetupForm.controls.Symbol.invalid && BotSetupForm.controls.Symbol.touched" class="alert alert-danger">
+                            <span>{{ 'FieldIsRequired' | resx: ['Symbol'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <bot-parameters-cmp [Setup]="Setup" [BotSetupForm]="BotSetupForm"></bot-parameters-cmp>
+            <div class="pull-right">
+                <button [disabled]="!Setup || BotSetupForm.invalid" (click)="AddBot(bot)" class="btn btn-primary" type="submit">Add</button>
+                <button (click)="Cancel()" class="btn btn-primary" type="submit">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+

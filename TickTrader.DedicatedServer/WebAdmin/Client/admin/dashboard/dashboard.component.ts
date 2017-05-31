@@ -11,16 +11,15 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
     styles: [require('../../app.component.css')],
 })
 
-export class DashboardComponent {
-    BotStatesType = TradeBotStates;
-    TradeBots: TradeBotModel[];
+export class DashboardComponent implements OnInit {
+    public BotStatesType = TradeBotStates;
+    public TradeBots: TradeBotModel[];
 
     constructor(private _api: ApiService, private _route: ActivatedRoute, private _router: Router) { }
 
     ngOnInit() {
-        this._api.Feed.addBot.subscribe(bot => this.addBot(bot));
-        this._api.Feed.deleteBot.subscribe(id => this.deleteBot(id));
-
+        this._api.Feed.AddBot.subscribe(bot => this.addBot(bot));
+        this._api.Feed.DeleteBot.subscribe(id => this.deleteBot(id));
         this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 
@@ -36,8 +35,11 @@ export class DashboardComponent {
     //    this.router.navigate(['/bot', bot.instanceId]);
     //}
 
-    private addBot(bot: TradeBotModel)
-    {
+    public Configurate() {
+        this._router.navigate(['/configurate']);
+    }
+
+    private addBot(bot: TradeBotModel) {
         if (!this.TradeBots.find(b => b.Id === bot.Id)) {
             this.TradeBots = this.TradeBots.concat(bot);
         }
@@ -46,5 +48,5 @@ export class DashboardComponent {
     private deleteBot(id: string) {
         this.TradeBots = this.TradeBots.filter(x => x.Id !== id);
     }
-    
+
 }

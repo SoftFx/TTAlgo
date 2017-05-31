@@ -12,26 +12,26 @@ import { Router } from '@angular/router';
 export class NavbarComponent implements OnInit {
     private listTitles: any[];
 
-    constructor(private router: Router, private authService: AuthService) { }
+    constructor(private _router: Router, private _authService: AuthService) { }
 
     ngOnInit() {
         this.listTitles = ROUTES.filter(listTitle => listTitle.menuType !== MenuType.BRAND);
     }
 
-    getTitle() {
+    public get RouteInfo(): any {
         var titlee = window.location.pathname;
         for (var item = 0; item < this.listTitles.length; item++) {
             if (this.listTitles[item].path === titlee) {
-                return this.listTitles[item].title;
+                return this.listTitles[item];
             }
         }
-        return 'Dashboard';
+        return this.listTitles[0];
     }
 
     public get UserName(): string {
-        if (this.authService.IsAuthorized)
+        if (this._authService.IsAuthorized)
         {
-            return this.authService.AuthData.User;
+            return this._authService.AuthData.User;
         }
         else
         {
@@ -39,8 +39,7 @@ export class NavbarComponent implements OnInit {
         }
     }
 
-    public logout() {
-        this.authService.LogOut();
-        this.router.navigate(['login']);
+    public Logout() {
+        this._authService.LogOut();
     }
 }
