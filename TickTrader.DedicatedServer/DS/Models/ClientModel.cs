@@ -13,6 +13,7 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
 using System.IO;
+using TickTrader.DedicatedServer.Extensions;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -22,6 +23,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private object _sync;
         private ILogger _log;
         private ILoggerFactory _loggerFactory;
+        private CancellationTokenSource _disconnectCancellation;
         private CancellationTokenSource _connectCancellation;
         private CancellationTokenSource _requestCancellation;
         private List<Task> _requests;
@@ -218,11 +220,36 @@ namespace TickTrader.DedicatedServer.DS.Models
             if (ConnectionState == ConnectionStates.Offline)
             {
                 if (_requests.Count > 0 || _startedBotsCount > 0)
+                {
+                    _disconnectCancellation?.Cancel();
+                    _disconnectCancellation = null;
+
                     Connect();
+                }
             }
             else if (ConnectionState == ConnectionStates.Online)
             {
+                if (_stopRequested || _lostConnection)
+                {
+                    _disconnectCancellation?.Cancel();
+                    _disconnectCancellation = null;
 
+                    Disconnect();
+                }
+                else if (_startedBotsCount == 0 && _disconnectCancellation == null)
+                {
+                    _disconnectCancellation = new CancellationTokenSource();
+                    DisconnectAfter(_disconnectCancellation.Token, TimeSpan.FromMinutes(1)).Forget();
+                }
+            }
+        }
+
+        private async Task DisconnectAfter(CancellationToken token, TimeSpan delay)
+        {
+            await Task.Delay(delay, token);
+            token.ThrowIfCancellationRequested();
+            lock (_sync)
+            {
                 if (_stopRequested || _lostConnection || _startedBotsCount == 0)
                     Disconnect();
             }
