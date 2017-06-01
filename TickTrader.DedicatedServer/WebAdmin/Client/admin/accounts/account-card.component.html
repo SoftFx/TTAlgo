@@ -6,10 +6,10 @@
                     <i class="fa fa-ellipsis-v"></i>
                 </button>
                 <ul class="dropdown-menu pull-right">
-                    <li><a (click)="TestAccount()" href="javascript:;">Test</a></li>
-                    <li><a (click)="ChangePassword()" href="javascript:;">Change Password</a></li>
+                    <li><a (click)="InitTestAccount()" href="javascript:;">Test</a></li>
+                    <li><a (click)="InitChangePassword()" href="javascript:;">Change Password</a></li>
                     <li class="divider"></li>
-                    <li><a (click)="confirmDeletion=true" href="javascript:;">Delete</a></li>
+                    <li><a (click)="InitDeletion()" href="javascript:;">Delete</a></li>
                 </ul>
             </div>
         </div>
@@ -26,25 +26,15 @@
     </div>
 
     <overlay-cmp *ngIf="ChangePasswordEnabled">
-           <change-password-cmp [Account]="Account" (OnChanged)="PasswordChangedOrCnaceled()" (OnCanceled)="PasswordChangedOrCnaceled()"></change-password-cmp>
-    </overlay-cmp>
-    
-    <overlay-cmp *ngIf="TestAccountEnabled">
-        <test-account-cmp [Account]="Account" (OnClosed)="TestAccountClosed()"></test-account-cmp>
+        <change-password-cmp [Account]="Account" (OnChanged)="PasswordChangedOrCnaceled()" (OnCanceled)="PasswordChangedOrCnaceled()"></change-password-cmp>
     </overlay-cmp>
 
-    <overlay-cmp *ngIf="confirmDeletion">
-        <div class="text-center">
-            <p>Delete?</p>
-            <div class="row">
-                <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="Delete()" class="btn btn-primary ">Delete</button>
-                </div>
-                <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
-                </div>
-            </div>
-        </div>
+    <overlay-cmp *ngIf="TestAccountEnabled">
+        <test-account-cmp [Account]="Account" (OnCanceled)="TestCanceled()"></test-account-cmp>
+    </overlay-cmp>
+
+    <overlay-cmp *ngIf="ConfirmDeletionEnabled">
+       <delete-account-cmp [Account]="Account" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></delete-account-cmp>
     </overlay-cmp>
 </div>
 

@@ -1,6 +1,6 @@
 ﻿import { Input, EventEmitter, Output, Component, OnInit } from '@angular/core';
-import { AccountModel, ConnectionErrorCodes, ConnectionTestResult } from '../../models/index';
-import { ApiService } from '../../services/index';
+import { AccountModel, ConnectionErrorCodes, ConnectionTestResult, ObservableRequest } from '../../models/index';
+import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
     selector: 'test-account-cmp',
@@ -11,37 +11,28 @@ import { ApiService } from '../../services/index';
 export class TestAccountComponent implements OnInit {
     public ConnectionErrorCode = ConnectionErrorCodes;
     public TestResult: ConnectionTestResult;
-    public ConnectionTestRunning: boolean;
 
-    constructor(private _api: ApiService) { }
+    public TestRequest: ObservableRequest<ConnectionTestResult>;
+
+    constructor(private _api: ApiService, private _toastr: ToastrService) { }
 
     @Input() Account: AccountModel;
     @Output() OnTested = new EventEmitter<ConnectionTestResult>();
-    @Output() OnClosed = new EventEmitter<void>();
+    @Output() OnCanceled = new EventEmitter<void>();
 
 
     ngOnInit() {
-        this.resetTestResult();
-        this.runTest();
-    }
-
-    public Close() {
-        this.OnClosed.emit();
-    }
-
-    private runTest() {
-        let accountClone = Object.assign(new AccountModel(), this.Account);
-        this.ConnectionTestRunning = true;
-
-        this._api.TestAccount(accountClone)
-            .finally(() => { this.ConnectionTestRunning = false; })
-            .subscribe(ok => {
-                this.TestResult = new ConnectionTestResult(ok.json());
-                this.OnTested.emit(this.TestResult);
+        this.TestRequest = new ObservableRequest(this._api.TestAccount(<AccountModel>{ ...this.Account }))
+            .Subscribe(ok => this.OnTested.emit(this.TestResult),
+            err => {
+                if (!err.Handled) {
+                    this._toastr.error(err.Message);
+                    this.Cancel();
+                }
             });
     }
 
-    private resetTestResult() {
-        this.TestResult = null;
+    public Cancel() {
+        this.OnCanceled.emit();
     }
 }

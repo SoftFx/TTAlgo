@@ -1,13 +1,19 @@
-﻿<div *ngIf="ConnectionTestRunning">
-    <span class="fa fa-circle-o-notch fa-spin black"></span>
-    Testing ...
-</div>
-
-<div *ngIf="TestResult">
-    <p [ngClass]="{'text-success': TestResult.ConnectionErrorCode === ConnectionErrorCode.None, 'text-error': TestResult.ConnectionErrorCode !== ConnectionErrorCode.None}">
-        {{TestResult.Message}}
-    </p>
-    <div class="text-center">
-        <button (click)="Close()" class="btn btn-primary">Ok</button>
+﻿<div class="text-center">
+    <div *ngIf="TestRequest && TestRequest.IsRunning">
+        <span class="fa fa-circle-o-notch fa-spin black"></span>
+        Testing ...
+    </div>
+    <div *ngIf="TestRequest && TestRequest.IsCompleted">
+        <div *ngIf="!TestRequest.IsFaulted">
+            <p [ngClass]="{'text-success': TestRequest.Result.ConnectionErrorCode === ConnectionErrorCode.None, 'text-error': TestRequest.Result.ConnectionErrorCode !== ConnectionErrorCode.None}">
+                {{TestRequest.Result.Message}}
+            </p>
+        </div>
+        <div *ngIf="TestRequest.IsFaulted && TestRequest.Error.Handled">
+            <p  class="text-error">
+                {{TestRequest.Error.Message}}
+            </p>
+        </div>
+        <button (click)="Cancel()" class="btn btn-primary">Ok</button>
     </div>
 </div>

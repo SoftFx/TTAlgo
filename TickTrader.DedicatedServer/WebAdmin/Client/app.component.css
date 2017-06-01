@@ -106,15 +106,16 @@
     border-radius: inherit;
     overflow: hidden;
     background-color: rgba(243,243,243,0.9);
-    z-index:200;
+    z-index: 200;
 }
 
     .overlay .content {
-        padding: 0px 0px 0px 0px;
+        padding: 10px 10px 10px 10px;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        width: inherit;
     }
 
         .overlay .content .text {
