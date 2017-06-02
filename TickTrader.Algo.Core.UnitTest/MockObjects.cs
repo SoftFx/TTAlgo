@@ -78,6 +78,14 @@ namespace TickTrader.Algo.Core.UnitTest
         public void EnqueueQuote(QuoteEntity update)
         {
         }
+
+        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        {
+        }
+
+        public void ProcessNextOrderUpdate()
+        {
+        }
     }
 
     internal class MockFeedFixtureContext : IFeedFixtureContext

@@ -27,7 +27,6 @@ namespace TickTrader.Algo.Core
         private DateTime periodStart;
         private DateTime periodEnd;
         private Api.TimeFrames timeframe;
-        private ITradeApi tradeApi;
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
@@ -155,15 +154,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public ITradeApi TradeApi
+        public ITradeExecutor TradeExecutor
         {
-            get { return tradeApi; }
+            get { return accFixture.Executor; }
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-                    tradeApi = value;
+                    accFixture.Executor = value;
                 }
             }
         }
@@ -238,7 +237,7 @@ namespace TickTrader.Algo.Core
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
                 InitWorkingFolder();
-                builder.TradeApi = tradeApi;
+                builder.TradeApi = accFixture;
                 builder.Diagnostics = this;
                 if (logger != null)
                     builder.Logger = logger;
@@ -506,6 +505,17 @@ namespace TickTrader.Algo.Core
         void IFixtureContext.EnqueueQuote(QuoteEntity update)
         {
             iStrategy.EnqueueQuote(update);
+        }
+
+        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        {
+            iStrategy.EnqueueTradeEvent(action);
+
+        }
+
+        public void ProcessNextOrderUpdate()
+        {
+            iStrategy.ProcessNextTrade();
         }
 
         //void IFixtureContext.AddSetupAction(Action setupAction)

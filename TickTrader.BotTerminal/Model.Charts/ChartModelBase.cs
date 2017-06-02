@@ -353,7 +353,7 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-        ITradeApi IAlgoPluginHost.GetTradeApi()
+        ITradeExecutor IAlgoPluginHost.GetTradeApi()
         {
             return ClientModel.TradeApi;
         }

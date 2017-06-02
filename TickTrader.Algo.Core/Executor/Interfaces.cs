@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -96,6 +97,8 @@ namespace TickTrader.Algo.Core
         IPluginLogger Logger { get; }
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
+        void EnqueueTradeEvent(Action<PluginBuilder> action);
+        void ProcessNextOrderUpdate();
         //void AddSetupAction(Action setupAction);
 
         //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);

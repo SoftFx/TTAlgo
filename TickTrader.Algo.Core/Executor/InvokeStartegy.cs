@@ -15,7 +15,6 @@ namespace TickTrader.Algo.Core
         private Action<ExecutorException> onCoreError;
         private Action<Exception> onRuntimeError;
         private Action<RateUpdate> onFeedUpdate;
-        private Action<RateUpdate> onRateUpdate;
 
         internal InvokeStartegy()
         {
@@ -40,7 +39,7 @@ namespace TickTrader.Algo.Core
         public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
         public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
         public abstract void EnqueueTradeEvent(Action<PluginBuilder> a);
-        public abstract void ProcessTradeEvents(CancellationToken cToken);
+        public abstract void ProcessNextTrade();
 
         protected virtual void OnInit() { }
 
@@ -77,6 +76,7 @@ namespace TickTrader.Algo.Core
         {
             feedQueue = new FeedQueue();
             tradeQueue = new Queue<Action<PluginBuilder>>();
+            eventQueue = new Queue<Action<PluginBuilder>>();
         }
 
         public override int FeedQueueSize { get { return 0; } }
@@ -95,7 +95,10 @@ namespace TickTrader.Algo.Core
             lock (syncObj)
             {
                 tradeQueue.Enqueue(a);
-                WakeUpWorker();
+                if (isProcessingTrades)
+                    Monitor.Pulse(syncObj);
+                else
+                    WakeUpWorker();
             }
         }
 
@@ -113,50 +116,37 @@ namespace TickTrader.Algo.Core
             lock (syncObj)
             {
                 eventQueue.Enqueue(a);
-                if (isProcessingTrades)
-                    Monitor.Pulse(syncObj);
-                else
-                    WakeUpWorker();
+                WakeUpWorker();
             }
         }
 
-        public override void ProcessTradeEvents(CancellationToken cToken)
+        public override void ProcessNextTrade()
         {
             Action<PluginBuilder> action;
 
             lock (syncObj)
             {
-                cToken.Register(() => { lock (syncObj) { Monitor.Pulse(syncObj); } });
                 isProcessingTrades = true;
-
-                action = DequeueNextTrade(cToken);
+                action = DequeueNextTrade();
             }
 
-            while (true)
-            {
-                if (action == null)
-                    return;
-
+            if (action != null)
                 ProcessItem(action);
 
-                lock (syncObj) action = DequeueNextTrade(cToken);
-            }
+            lock (syncObj) isProcessingTrades = false;
         }
 
-        private Action<PluginBuilder> DequeueNextTrade(CancellationToken cToken)
+        private Action<PluginBuilder> DequeueNextTrade()
         {
             if (tradeQueue.Count > 0)
                 return tradeQueue.Dequeue();
 
             Monitor.Wait(syncObj);
 
-            if (cToken.IsCancellationRequested)
-            {
-                isProcessingTrades = false;
-                return null;
-            }
+            if (tradeQueue.Count > 0)
+                return tradeQueue.Dequeue();
 
-            return tradeQueue.Dequeue();
+            return null;
         }
 
         private void WakeUpWorker()
@@ -282,6 +272,9 @@ namespace TickTrader.Algo.Core
 
             lock (syncObj)
             {
+                eventQueue.Clear();
+                tradeQueue.Clear();
+                feedQueue.Clear();
                 isStarted = false;
                 stopTask = null;
 

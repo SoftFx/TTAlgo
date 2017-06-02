@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Core
             (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
         }
 
-        internal SymbolEntity GetOrDefault(string symbol)
+        internal Symbol GetOrDefault(string symbol)
         {
             return fixture.GetOrDefault(symbol);
         }

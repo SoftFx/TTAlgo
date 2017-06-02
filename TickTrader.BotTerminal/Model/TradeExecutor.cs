@@ -12,7 +12,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeExecutor : CrossDomainObject, ITradeApi
+    internal class TradeExecutor : CrossDomainObject, ITradeExecutor
     {
         private static readonly NLog.ILogger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -34,180 +34,112 @@ namespace TickTrader.BotTerminal
             orderQueue.LinkTo(orderSender);
         }
 
-        public void OpenOrder(TaskProxy<OpenModifyResult> waitHandler, string symbol,
+        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
             OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
         {
-            var task = new Task<OpenModifyResult>(() =>
+            EnqueueTradeOp(callback, () =>
             {
-                try
-                {
-                    ValidatePrice(price);
-                    ValidateVolume(volume);
-                    ValidateTp(tp);
-                    ValidateSl(sl);
+                ValidatePrice(price);
+                ValidateVolume(volume);
+                ValidateTp(tp);
+                ValidateSl(sl);
 
-                    var px = type == OrderType.Stop ? default(double?) : price;
-                    var stopPx = type == OrderType.Stop ? price : default(double?);
+                var px = type == OrderType.Stop ? default(double?) : price;
+                var stopPx = type == OrderType.Stop ? price : default(double?);
 
-                    var record = conenction.TradeProxy.Server.SendOrder(symbol, Convert(type, options), Convert(side),
-                        volume, null, px, stopPx, sl, tp, null, comment, tag, null);
-                    return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(record, resolver).ToAlgoOrder());
-                }
-                catch (ValidatioException vex)
-                {
-                    return new OpenModifyResult(vex.Code, null);
-                }
-                catch (SoftFX.Extended.Errors.RejectException rex)
-                {
-                    return new OpenModifyResult(Convert(rex.Reason, rex.Message), null);
-                }
-                catch (SoftFX.Extended.Errors.LogoutException)
-                {
-                    return new OpenModifyResult(OrderCmdResultCodes.ConnectionError, null);
-                }
-                catch (SoftFX.Extended.Errors.TimeoutException)
-                {
-                    return new OpenModifyResult(OrderCmdResultCodes.Timeout, null);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "OpenOrder() failed!");
-                    return new OpenModifyResult(OrderCmdResultCodes.InternalError, null);
-                }
+                conenction.TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(type, options), Convert(side),
+                    volume, null, px, stopPx, sl, tp, null, comment, tag, null);
             });
-
-            waitHandler.Attach(task);
-            orderQueue.Post(task);
         }
 
-        public void CancelOrder(TaskProxy<CancelResult> waitHandler, string orderId, string clientOrderId, OrderSide side)
+        public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, OrderSide side)
         {
-            var task = new Task<CancelResult>(() =>
+            EnqueueTradeOp(callback, () =>
             {
-                try
-                {
-                    ValidateOrderId(orderId);
-
-                    conenction.TradeProxy.Server.DeletePendingOrder(orderId, Convert(side));
-                    return new CancelResult(OrderCmdResultCodes.Ok);
-                }
-                catch (ValidatioException vex)
-                {
-                    return new CancelResult(vex.Code);
-                }
-                catch (SoftFX.Extended.Errors.RejectException rex)
-                {
-                    return new CancelResult(Convert(rex.Reason, rex.Message));
-                }
-                catch (SoftFX.Extended.Errors.LogoutException)
-                {
-                    return new CancelResult(OrderCmdResultCodes.ConnectionError);
-                }
-                catch (SoftFX.Extended.Errors.TimeoutException)
-                {
-                    return new CancelResult(OrderCmdResultCodes.Timeout);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "CancelOrder() failed!");
-                    return new CancelResult(OrderCmdResultCodes.InternalError);
-                }
+                ValidateOrderId(orderId);
+                conenction.TradeProxy.Server.DeletePendingOrderEx(operationId, orderId, Convert(side));
             });
-
-            waitHandler.Attach(task);
-            orderQueue.Post(task);
         }
 
-        public void ModifyOrder(TaskProxy<OpenModifyResult> waitHandler, string orderId, string clientOrderId, string symbol,
+        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
             OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
-            var task = new Task<OpenModifyResult>(() =>
+            EnqueueTradeOp(callback, () =>
             {
-                try
-                {
-                    ValidateOrderId(orderId);
+                ValidateOrderId(orderId);
 
-                    var px = orderType == OrderType.Stop ? default(double?) : price;
-                    var stopPx = orderType == OrderType.Stop ? price : default(double?);
+                var px = orderType == OrderType.Stop ? default(double?) : price;
+                var stopPx = orderType == OrderType.Stop ? price : default(double?);
 
-                    var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
-                        ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
-                    if (!string.IsNullOrEmpty(result.OrderId)) // Ugly hack to make it work!
-                        return new OpenModifyResult(OrderCmdResultCodes.Ok, new OrderModel(result, resolver).ToAlgoOrder());
-                    return new OpenModifyResult(OrderCmdResultCodes.DealerReject, null);
-                }
-                catch (ValidatioException vex)
-                {
-                    return new OpenModifyResult(vex.Code, null);
-                }
-                catch (SoftFX.Extended.Errors.RejectException rex)
-                {
-                    return new OpenModifyResult(Convert(rex.Reason, rex.Message), null);
-                }
-                catch (SoftFX.Extended.Errors.LogoutException)
-                {
-                    return new OpenModifyResult(OrderCmdResultCodes.ConnectionError, null);
-                }
-                catch (SoftFX.Extended.Errors.TimeoutException)
-                {
-                    return new OpenModifyResult(OrderCmdResultCodes.Timeout, null);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "ModifyOrder() failed!");
-                    return new OpenModifyResult(OrderCmdResultCodes.InternalError, null);
-                }
+                var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
+                    ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
             });
-
-            waitHandler.Attach(task);
-            orderQueue.Post(task);
         }
 
-        public void CloseOrder(TaskProxy<CloseResult> waitHandler, string orderId, double? volume)
+        public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, double? volume)
         {
-            var task = new Task<CloseResult>(() =>
+            EnqueueTradeOp(callback, () =>
             {
-                try
-                {
-                    ValidateOrderId(orderId);
+                ValidateOrderId(orderId);
 
-                    if (volume == null)
-                    {
-                        var result = conenction.TradeProxy.Server.ClosePosition(orderId);
-                        return new CloseResult(OrderCmdResultCodes.Ok, result.ExecutedPrice, result.ExecutedVolume);
-                    }
-                    else
-                    {
-                        ValidateVolume(volume.Value);
-                        var result = conenction.TradeProxy.Server.ClosePositionPartially(orderId, volume.Value);
-                        return new CloseResult(OrderCmdResultCodes.Ok);
-                    }
-                }
-                catch (ValidatioException vex)
+                if (volume == null)
+                    conenction.TradeProxy.Server.ClosePositionEx(orderId, operationId);
+                else
                 {
-                    return new CloseResult(vex.Code);
-                }
-                catch (SoftFX.Extended.Errors.RejectException rex)
-                {
-                    return new CloseResult(Convert(rex.Reason, rex.Message));
-                }
-                catch (SoftFX.Extended.Errors.LogoutException)
-                {
-                    return new CloseResult(OrderCmdResultCodes.ConnectionError);
-                }
-                catch (SoftFX.Extended.Errors.TimeoutException)
-                {
-                    return new CloseResult(OrderCmdResultCodes.Timeout);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "CloseOrder() failed!");
-                    return new CloseResult(OrderCmdResultCodes.InternalError);
+                    ValidateVolume(volume.Value);
+                    conenction.TradeProxy.Server.ClosePositionPartiallyEx(orderId, volume.Value, operationId);
                 }
             });
+        }
 
-            waitHandler.Attach(task);
-            orderQueue.Post(task);
+        public void SendCloseOrderBy(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string byOrderId)
+        {
+            EnqueueTradeOp(callback, () =>
+            {
+                ValidateOrderId(orderId);
+                ValidateOrderId(byOrderId);
+
+                conenction.TradeProxy.Server.CloseByPositions(orderId, byOrderId);
+            });
+        }
+
+        private void EnqueueTradeOp(CrossDomainCallback<OrderCmdResultCodes> callback, Action tradeOpDef)
+        {
+            EnqueueTask(() =>
+            {
+                var result = HandleErrors(tradeOpDef);
+                callback.Invoke(result);
+            });
+        }
+
+        private OrderCmdResultCodes HandleErrors(Action tradeAction)
+        {
+            try
+            {
+                tradeAction();
+                return OrderCmdResultCodes.Ok;
+            }
+            catch (ValidationException vex)
+            {
+                return vex.Code;
+            }
+            catch (SoftFX.Extended.Errors.RejectException rex)
+            {
+                return Convert(rex.Reason, rex.Message);
+            }
+            catch (SoftFX.Extended.Errors.LogoutException)
+            {
+                return OrderCmdResultCodes.ConnectionError;
+            }
+            catch (SoftFX.Extended.Errors.TimeoutException)
+            {
+                return OrderCmdResultCodes.Timeout;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "CloseOrder() failed!");
+                return OrderCmdResultCodes.InternalError;
+            }
         }
 
         private TradeCommand Convert(OrderType type, OrderExecOptions options)
@@ -278,16 +210,23 @@ namespace TickTrader.BotTerminal
             return OrderCmdResultCodes.UnknownError;
         }
 
+        private Task EnqueueTask(Action taskDef)
+        {
+            var task = new Task(taskDef);
+            orderQueue.Post(task);
+            return task;
+        }
+
         private void ValidateVolume(double volume)
         {
             if (volume <= 0 || double.IsNaN(volume) || double.IsInfinity(volume))
-                throw new ValidatioException(OrderCmdResultCodes.IncorrectVolume);
+                throw new ValidationException(OrderCmdResultCodes.IncorrectVolume);
         }
 
         private void ValidatePrice(double price)
         {
             if (price <= 0 || double.IsNaN(price) || double.IsInfinity(price))
-                throw new ValidatioException(OrderCmdResultCodes.IncorrectPrice);
+                throw new ValidationException(OrderCmdResultCodes.IncorrectPrice);
         }
 
         private void ValidateTp(double? tp)
@@ -296,7 +235,7 @@ namespace TickTrader.BotTerminal
                 return;
 
             if (tp.Value <= 0 || double.IsNaN(tp.Value) || double.IsInfinity(tp.Value))
-                throw new ValidatioException(OrderCmdResultCodes.IncorrectTp);
+                throw new ValidationException(OrderCmdResultCodes.IncorrectTp);
         }
 
         private void ValidateSl(double? sl)
@@ -305,19 +244,19 @@ namespace TickTrader.BotTerminal
                 return;
 
             if (sl.Value <= 0 || double.IsNaN(sl.Value) || double.IsInfinity(sl.Value))
-                throw new ValidatioException(OrderCmdResultCodes.IncorrectSl);
+                throw new ValidationException(OrderCmdResultCodes.IncorrectSl);
         }
 
         private void ValidateOrderId(string orderId)
         {
             long parsedId;
             if (!long.TryParse(orderId, out parsedId))
-                throw new ValidatioException(OrderCmdResultCodes.IncorrectOrderId);
+                throw new ValidationException(OrderCmdResultCodes.IncorrectOrderId);
         }
 
-        private class ValidatioException : Exception
+        private class ValidationException : Exception
         {
-            public ValidatioException(OrderCmdResultCodes code)
+            public ValidationException(OrderCmdResultCodes code)
             {
                 this.Code = code;
             }

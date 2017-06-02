@@ -38,154 +38,145 @@ namespace TickTrader.Algo.Core
 
             LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
-            using (var waitHandler = new TaskProxy<OpenModifyResult>())
+            var result = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, tag);
+
+            if (result.ResultCode != OrderCmdResultCodes.Ok)
             {
-                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, tag);
-                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
-
-                TradeResultEntity resultEntity;
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                var orderToOpen = new OrderEntity("-1")
                 {
-                    account.Orders.Add(result.NewOrder);
-                    resultEntity = new TradeResultEntity(result.ResultCode, result.NewOrder);
-                }
-                else
-                {
-                    var orderToOpen = new OrderEntity("-1")
-                    {
-                        Symbol = symbol,
-                        Type = type,
-                        Side = side,
-                        RemainingVolume = volumeLots,
-                        RequestedVolume = volumeLots,
-                        Price = price,
-                        StopLoss = sl ?? double.NaN,
-                        TakeProfit = tp ?? double.NaN,
-                        Comment = comment,
-                        Tag = tag
-                    };
-                    resultEntity = new TradeResultEntity(result.ResultCode, orderToOpen);
-                }
-
-                LogOrderOpenResults(resultEntity);
-
-                return resultEntity;
+                    Symbol = symbol,
+                    Type = type,
+                    Side = side,
+                    RemainingVolume = volumeLots,
+                    RequestedVolume = volumeLots,
+                    Price = price,
+                    StopLoss = sl ?? double.NaN,
+                    TakeProfit = tp ?? double.NaN,
+                    Comment = comment,
+                    Tag = tag
+                };
+                result = new TradeResultEntity(result.ResultCode, orderToOpen);
             }
+
+            LogOrderOpenResults(result);
+
+            return result;
         }
 
         public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
-            return new TradeResultEntity(OrderCmdResultCodes.UnknownError, null);
+            Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
+            if (orderToCancel == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            //Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
-            //if (orderToCancel == null)
-            //    return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+            logger.PrintTrade("Canceling order #" + orderId);
 
-            //logger.PrintTrade("Canceling order #" + orderId);
+            var result = await api.CancelOrder(isAysnc, orderId, orderToCancel.Side);
 
-            //using (var waitHandler = new TaskProxy<CancelResult>())
-            //{
-            //    api.CancelOrder(waitHandler, orderId, ((OrderEntity)orderToCancel).ClientOrderId, orderToCancel.Side);
-            //    var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
+            {
+                account.Orders.Remove(orderId);
+                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
+            }
+            else
+                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
-            //    if (result.ResultCode == OrderCmdResultCodes.Ok)
-            //    {
-            //        account.Orders.Remove(orderId);
-            //        logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
-            //    }
-            //    else
-            //        logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
-
-            //    return new TradeResultEntity(result.ResultCode, orderToCancel);
-            //}
+            return new TradeResultEntity(result.ResultCode, orderToCancel);
         }
 
         public async Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
         {
-            return new TradeResultEntity(OrderCmdResultCodes.UnknownError, null);
+            double? closeVolume = null;
 
-            //double? closeVolume = null;
+            Order orderToClose = account.Orders.GetOrderOrNull(orderId);
+            if (orderToClose == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            //Order orderToClose = account.Orders.GetOrderOrNull(orderId);
-            //if (orderToClose == null)
-            //    return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+            if (closeVolumeLots != null)
+            {
+                var smbMetadata = symbols.List[orderToClose.Symbol];
+                if (smbMetadata.IsNull)
+                    return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
 
-            //if (closeVolumeLots != null)
-            //{
-            //    var smbMetadata = symbols.List[orderToClose.Symbol];
-            //    if (smbMetadata.IsNull)
-            //        return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
+                closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
+                closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
+            }
 
-            //    closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
-            //    closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
-            //}
+            logger.PrintTrade("Closing order #" + orderId);
 
-            //logger.PrintTrade("Closing order #" + orderId);
+            var result = await api.CloseOrder(isAysnc, orderId, closeVolume);
 
-            //using (var waitHandler = new TaskProxy<CloseResult>())
-            //{
-            //    api.CloseOrder(waitHandler, orderId, closeVolume);
-            //    var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
+            {
+                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
 
-            //    if (result.ResultCode == OrderCmdResultCodes.Ok)
-            //    {
-            //        var orderClone = new OrderEntity(orderToClose);
-            //        orderClone.RemainingVolume -= result.ExecVolume;
+                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
+            }
+            else
+            {
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToClose);
+            }
+        }
 
-            //        if (orderClone.RemainingVolume <= 0)
-            //            account.Orders.Remove(orderId);
-            //        else
-            //            account.Orders.Replace(orderClone);
+        public async Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        {
+            Order orderToClose = account.Orders.GetOrderOrNull(orderId);
+            if (orderToClose == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            //        logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
+            Order orderByClose = account.Orders.GetOrderOrNull(byOrderId);
+            if (orderByClose == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            //        return new TradeResultEntity(result.ResultCode, orderClone);
-            //    }
-            //    else
-            //    {
-            //        logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-            //        return new TradeResultEntity(result.ResultCode, orderToClose);
-            //    }
-            //}
+            logger.PrintTrade("Closing order #" + orderId + " by order #" + byOrderId);
+
+            var result = await api.CloseOrderBy(isAysnc, orderId, byOrderId);
+
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
+            {
+                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
+
+                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
+            }
+            else
+            {
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToClose);
+            }
         }
 
         public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return new TradeResultEntity(OrderCmdResultCodes.UnknownError, null);
+            Order orderToModify = account.Orders.GetOrderOrNull(orderId);
+            if (orderToModify == null)
+                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            //Order orderToModify = account.Orders.GetOrderOrNull(orderId);
-            //if (orderToModify == null)
-            //    return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+            var smbMetadata = symbols.List[orderToModify.Symbol];
+            if (smbMetadata.IsNull)
+                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
 
-            //var smbMetadata = symbols.List[orderToModify.Symbol];
-            //if (smbMetadata.IsNull)
-            //    return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
+            double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
+            price = RoundPrice(price, smbMetadata, orderToModify.Side);
+            sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
+            tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
 
-            //double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
-            //price = RoundPrice(price, smbMetadata, orderToModify.Side);
-            //sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
-            //tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
+            logger.PrintTrade("Modifying order #" + orderId);
 
-            //logger.PrintTrade("Modifying order #" + orderId);
+            var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
+                    orderVolume, price, tp, sl, comment);
 
-            //using (var waitHandler = new TaskProxy<OpenModifyResult>())
-            //{
-            //    api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-            //        price, orderVolume, tp, sl, comment);
-            //    var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
-
-            //    if (result.ResultCode == OrderCmdResultCodes.Ok)
-            //    {
-            //        account.Orders.Replace(result.NewOrder);
-            //        logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
-            //        return new TradeResultEntity(result.ResultCode, result.NewOrder);
-            //    }
-            //    else
-            //    {
-            //        logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
-            //        return new TradeResultEntity(result.ResultCode, orderToModify);
-            //    }
-            //}
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
+            {
+                account.Orders.Replace((OrderEntity)result.ResultingOrder);
+                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
+                return new TradeResultEntity(result.ResultCode, (OrderEntity)result.ResultingOrder);
+            }
+            else
+            {
+                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToModify);
+            }
         }
 
         private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)

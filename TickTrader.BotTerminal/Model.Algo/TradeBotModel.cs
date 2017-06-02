@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
 
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
-            executor.TradeApi = Host.GetTradeApi();
+            executor.TradeExecutor = Host.GetTradeApi();
             executor.Logger = new LogAdapter(Host.Journal, Name, s =>
             {
                 CustomStatus = s;

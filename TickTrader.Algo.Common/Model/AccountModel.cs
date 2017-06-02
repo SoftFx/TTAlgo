@@ -185,6 +185,10 @@ namespace TickTrader.Algo.Common.Model
                     OnOrderRemoved(report, OrderExecAction.Canceled);
                     break;
 
+                case ExecutionType.Rejected:
+                    OnOrderRejected(report, OrderExecAction.Rejected);
+                    break;
+
                 case ExecutionType.Trade:
                     if (report.OrderType == TradeRecordType.Limit
                         || report.OrderType == TradeRecordType.Stop)
@@ -244,6 +248,11 @@ namespace TickTrader.Algo.Common.Model
             ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
         }
 
+        private void OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
+        {
+            ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
+        }
+
         private void UpdateAsset(AssetInfo assetInfo)
         {
             if (IsEmpty(assetInfo))
@@ -279,6 +288,7 @@ namespace TickTrader.Algo.Common.Model
             OrderExecReport algoReport = new OrderExecReport();
             if (newOrder != null)
                 algoReport.OrderCopy = newOrder.ToAlgoOrder();
+            algoReport.OperationId = GetOperationId(report);
             algoReport.OrderId = report.OrderId;
             algoReport.ExecAction = action;
             algoReport.Action = entityAction;
@@ -287,6 +297,13 @@ namespace TickTrader.Algo.Common.Model
             if (report.Assets != null)
                 algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
             AlgoEvent_OrderUpdated(algoReport);
+        }
+
+        private string GetOperationId(ExecutionReport report)
+        {
+            if (!string.IsNullOrEmpty(report.ClosePositionRequestId))
+                return report.ClosePositionRequestId;
+            return report.ClientOrderId;
         }
 
         AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
