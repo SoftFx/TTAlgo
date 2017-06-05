@@ -12,8 +12,7 @@ import { Router } from '@angular/router';
 
 export class BotCardComponent implements OnInit {
     public TradeBotState = TradeBotStates;
-    public CleanLog: boolean;
-    public CleanAlgoData: boolean;
+    public ConfirmDeletionEnabled: boolean;
 
     @Input() TradeBot: TradeBotModel;
     @Output() OnDeleted = new EventEmitter<TradeBotModel>();
@@ -21,9 +20,6 @@ export class BotCardComponent implements OnInit {
     constructor(private _api: ApiService, private _toastr: ToastrService, private _router: Router) { }
 
     ngOnInit() {
-        this.CleanAlgoData = true;
-        this.CleanLog = true;
-
         this._api.Feed.ChangeBotState
             .filter(botState => this.TradeBot && this.TradeBot.Id == botState.Id)
             .subscribe(botState => this.updateBotState(botState));
@@ -89,11 +85,16 @@ export class BotCardComponent implements OnInit {
         );
     }
 
-    public Delete(id: string, cleanLog: boolean, cleanAlgoData: boolean) {
-        this._api.DeleteBot(id, cleanLog, cleanAlgoData).subscribe(
-            ok => this.OnDeleted.emit(this.TradeBot),
-            err => this.notifyAboutError(err)
-        );
+    public InitDeletion() {
+        this.ConfirmDeletionEnabled = true;
+    }
+
+    public DeletionCanceled() {
+        this.ConfirmDeletionEnabled = false;
+    }
+
+    public DeletionCompleted(tradeBot: TradeBotModel) {
+        this.OnDeleted.emit(tradeBot);
     }
 
     public GoToDetails(instanceId: string) {

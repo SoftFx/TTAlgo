@@ -11,6 +11,7 @@ import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBot
 })
 
 export class BotDetailsComponent implements OnInit {
+    public ConfirmDeletionEnabled: boolean;
     public TradeBotState = TradeBotStates;
     public LogEntryType = LogEntryTypes;
     public Bot: TradeBotModel;
@@ -23,9 +24,6 @@ export class BotDetailsComponent implements OnInit {
     public AlgoDataRequest: ObservableRequest<FileInfo[]>;
     public StatusRequest: ObservableRequest<TradeBotStatus>;
 
-    public CleanLog: boolean;
-    public CleanAlgoData: boolean;
-
     constructor(
         private _route: ActivatedRoute,
         private _api: ApiService,
@@ -34,9 +32,6 @@ export class BotDetailsComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.CleanAlgoData = true;
-        this.CleanLog = true;
-
         this._route.params
             .subscribe((params: Params) => {
                 this.BotRequest = new ObservableRequest(params['id'] ?
@@ -68,6 +63,18 @@ export class BotDetailsComponent implements OnInit {
         this._api.Feed.ChangeBotState
             .filter(state => this.Bot && this.Bot.Id == state.Id)
             .subscribe(botState => this.updateBotState(botState));
+    }
+
+    public InitDeletion() {
+        this.ConfirmDeletionEnabled = true;
+    }
+
+    public DeletionCanceled() {
+        this.ConfirmDeletionEnabled = false;
+    }
+
+    public DeletionCompleted(tradeBot: TradeBotModel) {
+        this._router.navigate(["/dashboard"]);
     }
 
     public DonwloadAlgoDataLink(botId: string, file: string) {
@@ -134,14 +141,6 @@ export class BotDetailsComponent implements OnInit {
     public Stop(botId: string) {
         this._api.StopBot(botId).subscribe(
             ok => { },
-            err => this.notifyAboutError(err)
-        );
-    }
-
-    public Delete(botId: string, cleanLog: boolean, claenAlgoData: boolean) {
-        this._api.DeleteBot(botId, cleanLog, claenAlgoData).subscribe(ok => {
-            this._router.navigate(["/dashboard"]);
-        },
             err => this.notifyAboutError(err)
         );
     }

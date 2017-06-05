@@ -19,28 +19,12 @@
                                 <a (click)="Start(Bot.Id)" [class.disabled]="!CanStart" class="btn btn-simple"><span class="fa fa-play" [ngClass]="{'text-success': CanStart}"></span></a>
                                 <a (click)="Stop(Bot.Id)" [class.disabled]="!CanStop" class="btn btn-simple"><span class="fa fa-stop" [ngClass]="{'text-error': CanStop}"></span></a>
                                 <a (click)="Configurate(Bot.Id)" [class.disabled]="!CanConfigurate" class="btn btn-simple"><span class="fa fa-edit" [ngClass]="{'text-info': CanConfigurate}"></span></a>
-                                <a (click)="confirmDeletion=true" [class.disabled]="!CanDelete" class="btn btn-simple"><span class="fa fa-remove"></span></a>
+                                <a (click)="InitDeletion()" [class.disabled]="!CanDelete" class="btn btn-simple"><span class="fa fa-remove"></span></a>
                             </div>
                         </div>
 
-                        <overlay-cmp *ngIf="confirmDeletion">
-                            <div class="text-center">
-                                <p>Delete?</p>
-                                <div>
-                                    <label><input type="checkbox" [(ngModel)]="CleanLog"  /> Clean log</label>
-                                    <br />
-                                    <label><input type="checkbox" [(ngModel)]="CleanAlgoData" /> Clean working directory</label>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-xs-6 col-sm-6 col-md-6">
-                                        <button (click)="Delete(Bot.Id, CleanLog, CleanAlgoData)" class="btn btn-primary ">Delete</button>
-                                    </div>
-                                    <div class="col-xs-6 col-sm-6 col-md-6">
-                                        <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
+                        <overlay-cmp *ngIf="ConfirmDeletionEnabled">
+                            <bot-delete-cmp [Bot]="Bot" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></bot-delete-cmp>
                         </overlay-cmp>
                     </div>
                 </div>
