@@ -22,6 +22,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             FullPath = path;
             _syncObj = syncObj;
+
+            EnsureDirectoryCreated();
         }
 
         public string FullPath { get; private set; }
@@ -62,6 +64,14 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
 
             throw new ArgumentException($"Incorrect file name {file}");
+        }
+
+        private void EnsureDirectoryCreated()
+        {
+            if (!Directory.Exists(FullPath))
+            {
+                var dinfo = Directory.CreateDirectory(FullPath);
+            }
         }
     }
 }
