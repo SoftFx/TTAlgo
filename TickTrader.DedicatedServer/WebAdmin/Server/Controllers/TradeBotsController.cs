@@ -42,11 +42,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return Ok(tradeBot.ToDto());
             }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
-            }
             catch (DSException ex)
             {
                 _logger.LogError(ex.Message);
@@ -65,11 +60,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
-            }
             catch (DSException ex)
             {
                 _logger.LogError(ex.Message);
@@ -85,11 +75,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
                 return Ok(tradeBot.Log.ToDto());
-            }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {
@@ -110,11 +95,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
-            }
             catch (DSException ex)
             {
                 _logger.LogError(ex.Message);
@@ -131,11 +111,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 tradeBot.Log.DeleteFile(WebUtility.UrlDecode(file));
 
                 return Ok();
-            }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {
@@ -157,11 +132,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return Ok(files);
             }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
-            }
             catch (DSException ex)
             {
                 _logger.LogError(ex.Message);
@@ -179,11 +149,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 var readOnlyFile = tradeBot.AlgoData.GetFile(decodedFile);
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
-            }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {
@@ -205,11 +170,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     Status = tradeBot.Log.Status,
                     BotId = tradeBot.Id
                 });
-            }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {
@@ -252,11 +212,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
-            }
             catch (DSException ex)
             {
                 _logger.LogError(ex.Message);
@@ -273,9 +228,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 
                 return Ok();
             }
-            catch (InvalidStateException isex)
+            catch (DSException ex)
             {
-                return BadRequest(isex.ToBadResult());
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
             }
         }
 
@@ -288,11 +244,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 tradeBot.Start();
 
                 return Ok();
-            }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {
@@ -310,11 +261,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 tradeBot.StopAsync();
 
                 return Ok();
-            }
-            catch (BotNotFoundException nfex)
-            {
-                _logger.LogError(nfex.Message);
-                return NotFound(nfex.ToBadResult());
             }
             catch (DSException ex)
             {

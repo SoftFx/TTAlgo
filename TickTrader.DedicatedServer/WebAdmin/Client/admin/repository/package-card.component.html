@@ -30,7 +30,7 @@
     </div>
 
     <overlay-cmp *ngIf="ConfirmDeletionEnabled">
-        <delete-package-cmp [Package]="Package" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></delete-package-cmp>
+        <package-delete-cmp [Package]="Package" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></package-delete-cmp>
     </overlay-cmp>
 </div>
 

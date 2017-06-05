@@ -4,12 +4,12 @@ import { ApiService, ToastrService } from '../../services/index';
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
 
 @Component({
-    selector: 'change-password-cmp',
-    template: require('./change-password.component.html'),
+    selector: 'account-change-password-cmp',
+    template: require('./account-change-password.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class ChangePasswordComponent implements OnInit {
+export class AccountChangePasswordComponent implements OnInit {
     public ChangePasswordForm: FormGroup;
 
     public ChangePasswordRequest: ObservableRequest<void>;

@@ -1,21 +1,21 @@
 ﻿import { Input, EventEmitter, Output, Component, OnInit } from '@angular/core';
-import { PackageModel, ObservableRequest } from '../../models/index';
+import { AccountModel, ObservableRequest} from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
-    selector: 'delete-package-cmp',
-    template: require('./delete-package.component.html'),
+    selector: 'account-delete-cmp',
+    template: require('./account-delete.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class DeletePacakgeComponent implements OnInit {
+export class AccountDeleteComponent implements OnInit {
 
     public DeleteRequest: ObservableRequest<void>;
 
     constructor(private _api: ApiService, private _toastr: ToastrService) { }
 
-    @Input() Package: PackageModel;
-    @Output() OnDeleted = new EventEmitter<PackageModel>();
+    @Input() Account: AccountModel;
+    @Output() OnDeleted = new EventEmitter<AccountModel>();
     @Output() OnCanceled = new EventEmitter<void>();
 
 
@@ -24,8 +24,8 @@ export class DeletePacakgeComponent implements OnInit {
     }
 
     public Delete() {
-        this.DeleteRequest = new ObservableRequest(this._api.DeletePackage(this.Package.Name))
-            .Subscribe(ok => this.OnDeleted.emit(this.Package),
+        this.DeleteRequest = new ObservableRequest(this._api.DeleteAccount(<AccountModel>{ ...this.Account }))
+            .Subscribe(ok => this.OnDeleted.emit(this.Account),
             err => {
                 if (!err.Handled) {
                     this._toastr.error(err.Message);
@@ -33,7 +33,7 @@ export class DeletePacakgeComponent implements OnInit {
                 }
             })
     }
-
+    
     public Cancel() {
         this.OnCanceled.emit();
     }

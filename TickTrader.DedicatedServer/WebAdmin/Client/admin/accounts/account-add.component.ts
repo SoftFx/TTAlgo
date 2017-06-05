@@ -4,12 +4,12 @@ import { ApiService, ToastrService } from '../../services/index';
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
 
 @Component({
-    selector: 'add-account-cmp',
-    template: require('./add-account.component.html'),
+    selector: 'account-add-cmp',
+    template: require('./account-add.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class AddAccountComponent implements OnInit {
+export class AccountAddComponent implements OnInit {
     public TestAccountEnabled: boolean;
     public AccountForm: FormGroup;
     public AddRequest: ObservableRequest<AccountModel>;

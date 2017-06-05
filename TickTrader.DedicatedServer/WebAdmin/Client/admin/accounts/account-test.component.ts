@@ -3,12 +3,12 @@ import { AccountModel, ConnectionErrorCodes, ConnectionTestResult, ObservableReq
 import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
-    selector: 'test-account-cmp',
-    template: require('./test-account.component.html'),
+    selector: 'account-test-cmp',
+    template: require('./account-test.component.html'),
     styles: [require('../../app.component.css')],
 })
 
-export class TestAccountComponent implements OnInit {
+export class AccountTestComponent implements OnInit {
     public ConnectionErrorCode = ConnectionErrorCodes;
     public TestResult: ConnectionTestResult;
 

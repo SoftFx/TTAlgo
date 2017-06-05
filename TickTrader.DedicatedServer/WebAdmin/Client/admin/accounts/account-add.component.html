@@ -60,6 +60,6 @@
     </overlay-cmp>
 
     <overlay-cmp *ngIf="TestAccountEnabled">
-        <test-account-cmp [Account]="AccountForm.value" (OnCanceled)="TestCanceled()"></test-account-cmp>
+        <account-test-cmp [Account]="AccountForm.value" (OnCanceled)="TestCanceled()"></account-test-cmp>
     </overlay-cmp>
 </div>
