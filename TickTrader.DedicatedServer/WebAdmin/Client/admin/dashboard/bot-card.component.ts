@@ -12,6 +12,8 @@ import { Router } from '@angular/router';
 
 export class BotCardComponent implements OnInit {
     public TradeBotState = TradeBotStates;
+    public CleanLog: boolean;
+    public CleanAlgoData: boolean;
 
     @Input() TradeBot: TradeBotModel;
     @Output() OnDeleted = new EventEmitter<TradeBotModel>();
@@ -19,6 +21,9 @@ export class BotCardComponent implements OnInit {
     constructor(private _api: ApiService, private _toastr: ToastrService, private _router: Router) { }
 
     ngOnInit() {
+        this.CleanAlgoData = true;
+        this.CleanLog = true;
+
         this._api.Feed.ChangeBotState
             .filter(botState => this.TradeBot && this.TradeBot.Id == botState.Id)
             .subscribe(botState => this.updateBotState(botState));

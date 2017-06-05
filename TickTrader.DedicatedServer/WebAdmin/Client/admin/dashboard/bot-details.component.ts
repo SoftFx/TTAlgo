@@ -23,6 +23,9 @@ export class BotDetailsComponent implements OnInit {
     public AlgoDataRequest: ObservableRequest<FileInfo[]>;
     public StatusRequest: ObservableRequest<TradeBotStatus>;
 
+    public CleanLog: boolean;
+    public CleanAlgoData: boolean;
+
     constructor(
         private _route: ActivatedRoute,
         private _api: ApiService,
@@ -31,6 +34,9 @@ export class BotDetailsComponent implements OnInit {
     ) { }
 
     ngOnInit() {
+        this.CleanAlgoData = true;
+        this.CleanLog = true;
+
         this._route.params
             .subscribe((params: Params) => {
                 this.BotRequest = new ObservableRequest(params['id'] ?
