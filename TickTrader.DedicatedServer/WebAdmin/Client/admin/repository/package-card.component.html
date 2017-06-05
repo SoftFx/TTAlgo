@@ -2,7 +2,7 @@
     <div class="header">
         <div class="btn-toolbar pull-right">
             <div class="btn-group btn-group-sm">
-                <button (click)="showConfirm=true" type="button" class="btn btn-simple">
+                <button (click)="InitDeletion()" type="button" class="btn btn-simple">
                     <i class="fa fa-remove"></i>
                 </button>
             </div>
@@ -29,18 +29,8 @@
         </div>
     </div>
 
-    <overlay-cmp *ngIf="showConfirm">
-        <div class="text-center">
-                <p>Delete?</p>
-            <div class="row">
-                <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="Delete()" class="btn btn-primary ">Delete</button>
-                </div>
-                <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="showConfirm=false" class="btn btn-danger ">Cancel</button>
-                </div>
-            </div>
-        </div>
+    <overlay-cmp *ngIf="ConfirmDeletionEnabled">
+        <delete-package-cmp [Package]="Package" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></delete-package-cmp>
     </overlay-cmp>
 </div>
 

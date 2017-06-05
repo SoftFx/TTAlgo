@@ -118,7 +118,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel(accountId.Server, accountId.Login,  password);
+                    var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
                     InitAccount(newAcc);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
@@ -129,7 +129,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void Validate(string login, string server, string password)
         {
-            if(string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
             {
                 throw new InvalidAccountException("Login, password and server are required");
             }
@@ -194,7 +194,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
         }
-       
+
         private void DeinitAccount(ClientModel acc)
         {
             acc.BotValidation -= OnBotValidation;
@@ -337,15 +337,21 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void RemovePackage(string package)
         {
-            var dPackage = _packageStorage.Get(package);
-            if (dPackage != null)
+            lock (SyncObj)
             {
-                var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
+                var dPackage = _packageStorage.Get(package);
+                if (dPackage != null)
+                {
+                    if (dPackage.IsLocked)
+                        throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
 
-                foreach (var bot in botsToDelete)
-                    bot.Account.RemoveBot(bot.Id);
+                    var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
 
-                _packageStorage.Remove(package);
+                    foreach (var bot in botsToDelete)
+                        bot.Account.RemoveBot(bot.Id);
+
+                    _packageStorage.Remove(package);
+                }
             }
         }
 

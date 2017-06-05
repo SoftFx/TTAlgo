@@ -1,6 +1,5 @@
 ﻿import { Input, EventEmitter, Output, Component } from '@angular/core';
 import { PackageModel, PluginModel } from '../../models/index';
-import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
     selector: 'package-card-cmp',
@@ -10,15 +9,20 @@ import { ApiService, ToastrService } from '../../services/index';
 
 export class PackageCardComponent {
 
-    constructor(private _api: ApiService, private _toastr: ToastrService){ }
-    
+    public ConfirmDeletionEnabled: boolean;
+
     @Input() Package: PackageModel;
     @Output() OnDeleted = new EventEmitter<PackageModel>();
 
-    public Delete() {
-        this._api
-            .DeletePackage(this.Package.Name)
-            .subscribe(() => this.OnDeleted.emit(this.Package),
-            err => this._toastr.error(`Error deleting package ${this.Package.Name}`));
+    public InitDeletion() {
+        this.ConfirmDeletionEnabled = true;
+    }
+
+    public DeletionCanceled() {
+        this.ConfirmDeletionEnabled = false;
+    }
+
+    public DeletionCompleted(packageModel: PackageModel) {
+        this.OnDeleted.emit(packageModel);
     }
 }

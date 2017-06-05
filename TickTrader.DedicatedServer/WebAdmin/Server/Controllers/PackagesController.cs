@@ -49,10 +49,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     {
                         var pacakge = _dedicatedServer.UpdatePackage(fileContent, file.FileName);
                     }
-                    catch (DuplicatePackageException dpe)
+                    catch (DSException dsex)
                     {
-                        _logger.LogError(dpe.Message);
-                        return BadRequest(dpe.ToBadResult());
+                        _logger.LogError(dsex.Message);
+                        return BadRequest(dsex.ToBadResult());
                     }
                 }
             }
@@ -61,9 +61,19 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{name}")]
-        public void Delete(string name)
+        public IActionResult Delete(string name)
         {
-            _dedicatedServer.RemovePackage(WebUtility.UrlDecode(name));
+            try
+            {
+                _dedicatedServer.RemovePackage(WebUtility.UrlDecode(name));
+            }
+            catch (DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
         }
     }
 }

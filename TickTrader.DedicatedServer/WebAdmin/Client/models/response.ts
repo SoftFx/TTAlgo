@@ -35,7 +35,6 @@ export class ResponseStatus {
 export enum ResponseCode {
     None = -1,
     InvalidCredentials = 100,
-    DuplicatePackage = 1000,
     PackageNotFound = 1001,
     PackageIsLocked = 1002,
     DuplicateAccount = 2000,
