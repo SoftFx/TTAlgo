@@ -1,6 +1,11 @@
 ﻿<div class="text-center">
     <div *ngIf="!DeleteRequest" id="delConfirmation">
-        <p>Delete?</p>
+        <p>
+            Delete?
+            <br />
+            <small>Also, all related bots will be deleted.</small>
+        </p>
+
         <button (click)="Delete()" class="btn btn-primary">Delete</button>
         <button (click)="Cancel()" class="btn btn-danger">Cancel</button>
     </div>

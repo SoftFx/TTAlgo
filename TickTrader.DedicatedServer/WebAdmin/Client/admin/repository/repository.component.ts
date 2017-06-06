@@ -1,7 +1,6 @@
-import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ViewChild} from '@angular/core';
 import { ApiService, FeedService, ToastrService } from '../../services/index';
 import { PackageModel, PluginModel, ResponseStatus, ObservableRequest } from '../../models/index';
-import { ViewChild } from '@angular/core';
 
 @Component({
     selector: 'repository-cmp',
