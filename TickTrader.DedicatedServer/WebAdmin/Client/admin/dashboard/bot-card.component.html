@@ -27,7 +27,7 @@
                 <div class="btn-group btn-group-sm btn-group-justified">
                     <a (click)="Start()" [class.disabled]="!CanStart" class="btn btn-simple"><span class="fa fa-play" [ngClass]="{'text-success': CanStart}"></span></a>
                     <a (click)="Stop()" [class.disabled]="!CanStop" class="btn btn-simple"><span class="fa fa-stop" [ngClass]="{'text-error': CanStop}"></span></a>
-                    <a (click)="Configurate(TradeBot.Id)" [class.disabled]="!TradeBot.CanConfigurate" class="btn btn-simple"><span class="fa fa-edit" [ngClass]="{'text-info': CanConfigurate}"></span></a>
+                    <a (click)="Configurate(TradeBot.Id)" [class.disabled]="!CanConfigurate" class="btn btn-simple"><span class="fa fa-edit" [ngClass]="{'text-info': CanConfigurate}"></span></a>
                 </div>
             </div>
         </div>
