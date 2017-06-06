@@ -9,8 +9,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
         public string DisplayName { get; internal set; }
         public List<string> EnumValues { get; internal set; }
         public string FileFilter { get; internal set; }
-        public string Id { get; internal set; }
         public bool IsEnum { get; internal set; }
         public bool IsRequired { get; internal set; }
+        public string Id { get; internal set; }
     }
 }

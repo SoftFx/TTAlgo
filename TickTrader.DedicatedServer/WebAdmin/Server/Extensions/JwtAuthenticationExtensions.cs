@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
-    public static class SignalRAuthenticationExtensions
+    public static class JwtAuthenticationExtensions
     {
         public static void UseJwtAuthentication(this IApplicationBuilder app)
         {

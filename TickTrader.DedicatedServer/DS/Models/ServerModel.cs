@@ -13,6 +13,7 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
+using TickTrader.DedicatedServer.Extensions;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -34,6 +35,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         }
 
         public static EnvService Environment => envService;
+
+        public static string GetWorkingFolderFor(string botId)
+        {
+            return Path.Combine(Environment.AlgoWorkingFolder, botId.Escape());
+        }
 
         public object SyncObj { get; private set; }
 
@@ -247,10 +253,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                 return GetAccountOrThrow(accountId).AddBot(botId, pluginId, botConfig);
         }
 
-        public void RemoveBot(string botId)
+        public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
             lock (SyncObj)
-                _allBots.GetOrDefault(botId)?.Account.RemoveBot(botId);
+                _allBots.GetOrDefault(botId)?.Account.RemoveBot(botId, cleanLog, cleanAlgoData);
         }
 
         public string AutogenerateBotId(string botDescriptorName)

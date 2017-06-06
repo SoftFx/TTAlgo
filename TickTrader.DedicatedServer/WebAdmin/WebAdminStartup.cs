@@ -20,6 +20,7 @@ using System;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 using NLog.Extensions.Logging;
 using NLog.Web;
+using Microsoft.AspNetCore.Http;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
@@ -41,6 +42,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
             services.AddTransient<ITokenOptions>(x => new TokenOptions

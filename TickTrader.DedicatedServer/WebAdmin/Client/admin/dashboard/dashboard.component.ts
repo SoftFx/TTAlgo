@@ -31,22 +31,20 @@ export class DashboardComponent implements OnInit {
         this.deleteBot(bot.Id);
     }
 
-    //gotoDetails(bot: ExtBotModel) {
-    //    this.router.navigate(['/bot', bot.instanceId]);
-    //}
-
     public Configurate() {
         this._router.navigate(['/configurate']);
     }
 
     private addBot(bot: TradeBotModel) {
+        if (!this.TradeBots) this.TradeBots = new TradeBotModel[0];
+
         if (!this.TradeBots.find(b => b.Id === bot.Id)) {
             this.TradeBots = this.TradeBots.concat(bot);
         }
     }
 
     private deleteBot(id: string) {
-        this.TradeBots = this.TradeBots.filter(x => x.Id !== id);
+        if (this.TradeBots)
+            this.TradeBots = this.TradeBots.filter(x => x.Id !== id);
     }
-
 }

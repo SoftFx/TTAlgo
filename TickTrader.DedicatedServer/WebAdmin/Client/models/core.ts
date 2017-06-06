@@ -10,6 +10,7 @@ export class ObservableRequest<T>
 
     public IsRunning: boolean;
     public IsCompleted: boolean;
+    public IsFaulted: boolean;
     public Error: ResponseStatus;
     public Result: T;
 
@@ -22,6 +23,7 @@ export class ObservableRequest<T>
 
         this.IsRunning = false;
         this.IsCompleted = false;
+        this.IsFaulted = false;
     }
 
     public Subscribe(ok?: (value: T) => void, error?: (error: ResponseStatus) => void, complete?: () => void) {
@@ -47,9 +49,6 @@ export class ObservableRequest<T>
         else
             "";
     }
-    public get IsFaulted(): boolean {
-        return !!this.Error;
-    }
 
     private handleSuccess(value: T) {
         this.Result = value;
@@ -59,6 +58,7 @@ export class ObservableRequest<T>
 
     private handleError(error: ResponseStatus) {
         this.Error = error;
+        this.IsFaulted = true;
 
         this._error(error);
     }
@@ -144,6 +144,14 @@ export class Guid {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
+        });
+    }
+}
+
+export class WebUtility {
+    public static EncodeURIComponent(str: string): string {
+        return encodeURIComponent(str).replace(/[!'(.)*]/g, function (c) {
+            return '%' + c.charCodeAt(0).toString(16);
         });
     }
 }
