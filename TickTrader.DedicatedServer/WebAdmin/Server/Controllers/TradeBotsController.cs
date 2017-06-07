@@ -56,7 +56,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             try
             {
                 var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-                tradeBot.Log.Clean();
+                tradeBot.Log.Clear();
 
                 return Ok();
             }

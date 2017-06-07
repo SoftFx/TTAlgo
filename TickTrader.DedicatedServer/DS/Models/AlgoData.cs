@@ -7,11 +7,12 @@ namespace TickTrader.DedicatedServer.DS.Models
 {
     public interface IAlgoData
     {
-        string FullPath { get; }
+        string Folder { get; }
         IFile[] Files { get; }
 
-        void Clean();
+        void Clear();
         IFile GetFile(string decodedFile);
+        void DeleteFile(string name);
     }
 
     public class AlgoData : IAlgoData
@@ -20,21 +21,21 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public AlgoData(string path, object syncObj)
         {
-            FullPath = path;
+            Folder = path;
             _syncObj = syncObj;
 
             EnsureDirectoryCreated();
         }
 
-        public string FullPath { get; private set; }
+        public string Folder { get; private set; }
 
         public IFile[] Files
         {
             get
             {
-                if (Directory.Exists(FullPath))
+                if (Directory.Exists(Folder))
                 {
-                    var dInfo = new DirectoryInfo(FullPath);
+                    var dInfo = new DirectoryInfo(Folder);
                     return dInfo.GetFiles().Select(fInfo => new ReadOnlyFileModel(fInfo.FullName)).ToArray();
                 }
                 else
@@ -42,23 +43,28 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        public void Clean()
+        public void Clear()
         {
             lock (_syncObj)
             {
-                if (Directory.Exists(FullPath))
+                if (Directory.Exists(Folder))
                 {
-                    new DirectoryInfo(FullPath).Clean();
-                    Directory.Delete(FullPath);
+                    new DirectoryInfo(Folder).Clean();
+                    Directory.Delete(Folder);
                 }
             }
+        }
+
+        public void DeleteFile(string file)
+        {
+            File.Delete(Path.Combine(Folder, file));
         }
 
         public IFile GetFile(string file)
         {
             if (file.IsFileNameValid())
             {
-                var fullPath = Path.Combine(FullPath, file);
+                var fullPath = Path.Combine(Folder, file);
 
                 return new ReadOnlyFileModel(fullPath);
             }
@@ -68,9 +74,9 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void EnsureDirectoryCreated()
         {
-            if (!Directory.Exists(FullPath))
+            if (!Directory.Exists(Folder))
             {
-                var dinfo = Directory.CreateDirectory(FullPath);
+                var dinfo = Directory.CreateDirectory(Folder);
             }
         }
     }

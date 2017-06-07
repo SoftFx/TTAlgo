@@ -390,10 +390,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                         throw new InvalidStateException("Cannot remove running bot!");
 
                     if (cleanLog)
-                        bot.Log.Clean();
+                        bot.ClearLog();
 
                     if (cleanAlgoData)
-                        bot.AlgoData.Clean();
+                        bot.ClearWorkingFolder();
 
                     _bots.Remove(bot);
                     DeinitBot(bot);

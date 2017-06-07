@@ -98,10 +98,11 @@ namespace TickTrader.DedicatedServer.DS
     {
         IEnumerable<ILogEntry> Messages { get; }
         IFile GetFile(string file);
+        string Folder { get; }
         string Status { get; }
         IFile[] Files { get; }
         event Action<string> StatusUpdated;
-        void Clean();
+        void Clear();
         void DeleteFile(string file);
     }
 
