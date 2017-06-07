@@ -220,7 +220,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id, [FromQuery] bool clean_log = false, [FromQuery] bool clean_algodata = false)
+        public IActionResult Delete(string id, [FromQuery] bool clean_log = true, [FromQuery] bool clean_algodata = true)
         {
             try
             {

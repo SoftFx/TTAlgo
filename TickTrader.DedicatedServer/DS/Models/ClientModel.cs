@@ -412,6 +412,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 foreach (var bot in _bots)
                 {
                     DeinitBot(bot);
+                    bot.ClearLog();
+                    bot.ClearWorkingFolder();
                     BotChanged?.Invoke(bot, ChangeAction.Removed);
                 }
 
