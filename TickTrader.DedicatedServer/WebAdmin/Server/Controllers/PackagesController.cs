@@ -34,6 +34,17 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             return packages.Select(p => p.ToDto()).ToArray();
         }
 
+        [HttpHead("{name}")]
+        public IActionResult Head(string name)
+        {
+            var packages = _dedicatedServer.GetPackages();
+
+            if (_dedicatedServer.GetPackages().Any(p => p.Name == name))
+                return Ok();
+
+            return NotFound();
+        }
+
         [HttpPost]
         public IActionResult Post(IFormFile file)
         {

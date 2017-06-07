@@ -128,10 +128,15 @@ export class ApiService {
             .catch(err => this.handleServerError(err));
     }
 
-    GetPackages(): Observable<PackageModel[]> {
+    GetPackages() {
         return this._http
             .get(this._packagesUrl, { headers: this.headers })
             .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
+            .catch(err => this.handleServerError(err));
+    }
+
+    PackageExists(name: string) {
+        return this._http.head(`${this._packagesUrl}/` + encodeURIComponent(name), { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
     /* <<< API Repository*/

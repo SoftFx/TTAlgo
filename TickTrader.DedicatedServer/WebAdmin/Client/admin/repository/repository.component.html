@@ -34,9 +34,24 @@
                         </div>
 
                         <div class="pull-right">
-                            <button [disabled]="!CanUpload" (click)="UploadPackage()" class="btn btn-primary">Upload</button>
+                            <button [disabled]="!CanUpload" (click)="InitUploadPackage()" class="btn btn-primary">Upload</button>
                         </div>
                     </div>
+
+                    <overlay-cmp *ngIf="CheckPackageRequest && CheckPackageRequest.IsRunning">
+                        <div class="text-center">
+                            <span class="fa fa-circle-o-notch fa-spin black"></span>
+                            Checking package ...
+                        </div>
+                    </overlay-cmp>
+
+                    <overlay-cmp *ngIf="CheckPackageRequest && CheckPackageRequest.IsCompleted && !CheckPackageRequest.IsFaulted">
+                        <div class="text-center">
+                            <p class="text-info">Package with same name already exists on the server. Do you want to update the existing package?</p>
+                            <button (click)="UploadPackage()" class="btn btn-primary">Upload</button>
+                            <button (click)="CancelUploadingPackage()" class="btn btn-danger">Cancel</button>
+                        </div>
+                    </overlay-cmp>
 
                     <overlay-cmp *ngIf="UploadRequest && UploadRequest.IsFaulted && UploadRequest.Error.Handled">
                         <div class="text-center">

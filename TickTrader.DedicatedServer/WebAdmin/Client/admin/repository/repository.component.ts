@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ViewChild} from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ApiService, FeedService, ToastrService } from '../../services/index';
-import { PackageModel, PluginModel, ResponseStatus, ObservableRequest } from '../../models/index';
+import { PackageModel, PluginModel, ResponseStatus, ObservableRequest, ResponseCode } from '../../models/index';
 
 @Component({
     selector: 'repository-cmp',
@@ -10,10 +10,9 @@ import { PackageModel, PluginModel, ResponseStatus, ObservableRequest } from '..
 
 export class RepositoryComponent implements OnInit {
     public UploadRequest: ObservableRequest<void>;
+    public CheckPackageRequest: ObservableRequest<void>;
     public SelectedFile: any;
     public Packages: PackageModel[];
-    public Uploading: boolean = false;
-
 
     @ViewChild('PackageInput')
     PackageInput: any;
@@ -23,6 +22,7 @@ export class RepositoryComponent implements OnInit {
 
     ngOnInit() {
         this.UploadRequest = null;
+        this.CheckPackageRequest = null;
 
         this._api.Feed.AddPackage.subscribe(algoPackage => this.addPackage(algoPackage));
         this._api.Feed.DeletePackage.subscribe(pname => this.deletePackage(pname));
@@ -41,7 +41,23 @@ export class RepositoryComponent implements OnInit {
         this.deletePackage(algoPackage.Name);
     }
 
+    public InitUploadPackage() {
+        this.CheckPackageRequest = new ObservableRequest(this._api.PackageExists(this.SelectedFileName))
+            .Subscribe(ok => { },
+            err => {
+                if (err.Status !== 404)
+                {
+                    this.CheckPackageRequest = null;
+                    this._toastr.error(err.Message);
+                }
+                else if (err.Status === 404)
+                    this.UploadPackage();
+            });
+    }
+
     public UploadPackage() {
+        this.CheckPackageRequest = null;
+
         this.UploadRequest = new ObservableRequest(this._api.UploadPackage(this.SelectedFile))
             .Subscribe(ok => {
                 this.SelectedFile = null;
@@ -54,11 +70,16 @@ export class RepositoryComponent implements OnInit {
             })
     }
 
+    CancelUploadingPackage() {
+        this.CheckPackageRequest = null;
+    }
+
     public OnFileInputChange(event) {
         this.UploadRequest = null;
+        this.CheckPackageRequest = null;
         this.SelectedFile = event.target.files[0];
     }
-   
+
     public get CanUpload() {
         return !!this.SelectedFile && (!this.UploadRequest || this.UploadRequest && this.UploadRequest.IsCompleted);
     }
