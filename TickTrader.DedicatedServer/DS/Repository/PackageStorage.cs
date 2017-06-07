@@ -57,7 +57,7 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 if (existing != null)
                 {
                     if (existing.IsLocked)
-                        throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade robots from this package is being executed! Please stop all robots and try again!");
+                        throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
                     RemovePackage(existing);
                 }
