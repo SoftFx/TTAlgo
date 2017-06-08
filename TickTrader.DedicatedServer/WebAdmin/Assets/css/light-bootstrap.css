@@ -1105,6 +1105,16 @@ input:focus {
   padding: 12px 8px;
   vertical-align: middle;
 }
+
+.table.table-sm > thead > tr > th,
+.table.table-sm > tbody > tr > th,
+.table.table-sm > tfoot > tr > th,
+.table.table-sm > thead > tr > td,
+.table.table-sm > tbody > tr > td,
+.table.table-sm > tfoot > tr > td {
+    padding: .3rem;
+}
+
 .table > thead > tr > th {
   border-bottom-width: 1px;
   font-size: 12px;
