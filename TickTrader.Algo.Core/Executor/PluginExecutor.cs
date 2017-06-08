@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
@@ -33,6 +30,7 @@ namespace TickTrader.Algo.Core
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
+        private string botInstanceId;
         private States state;
 
         public PluginExecutor(string pluginId)
@@ -192,6 +190,20 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public string InstanceId
+        {
+            get { return botInstanceId; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    botInstanceId = value;
+                }
+            }
+        }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
@@ -211,6 +223,7 @@ namespace TickTrader.Algo.Core
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
                 InitWorkingFolder();
+                builder.InstanceId = botInstanceId;
                 builder.TradeApi = tradeApi;
                 builder.Diagnostics = this;
                 if (logger != null)

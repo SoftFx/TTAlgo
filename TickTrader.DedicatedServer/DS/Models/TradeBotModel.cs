@@ -228,8 +228,9 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
                 executor.Logger = _botLog;
-                executor.BotWorkingFolder = AlgoData.FullPath;
-                executor.WorkingFolder = AlgoData.FullPath;
+                executor.BotWorkingFolder = AlgoData.Folder;
+                executor.WorkingFolder = AlgoData.Folder;
+                executor.InstanceId = Id;
 
                 _stopListener = new ListenerProxy(executor, () =>
                 {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 
@@ -40,7 +39,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginAdapter PluginProxy { get; private set; }
-
+        public string InstanceId { get; set; }
         public string MainSymbol { get; set; }
         public SymbolsCollection Symbols { get; private set; }
         public CurrenciesCollection Currencies { get; private set; }
@@ -246,6 +245,8 @@ namespace TickTrader.Algo.Core
         EnvironmentInfo IPluginContext.Environment => this;
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
+
+       
 
         void IPluginContext.OnExit()
         {
