@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus, FileInfo } from "../models/index";
+import { PackageModel, ConnectionTestResult, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus, FileInfo } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, RequestOptions, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 import { AuthService } from './auth.service';
@@ -128,10 +128,15 @@ export class ApiService {
             .catch(err => this.handleServerError(err));
     }
 
-    GetPackages(): Observable<PackageModel[]> {
+    GetPackages() {
         return this._http
             .get(this._packagesUrl, { headers: this.headers })
             .map(res => res.json().map(i => new PackageModel().Deserialize(i)))
+            .catch(err => this.handleServerError(err));
+    }
+
+    PackageExists(name: string) {
+        return this._http.head(`${this._packagesUrl}/` + encodeURIComponent(name), { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
     /* <<< API Repository*/
@@ -172,12 +177,13 @@ export class ApiService {
 
     TestAccount(acc: AccountModel) {
         return this._http.get(`${this._accountsUrl}/Test/?` + $.param({ login: acc.Login, server: acc.Server, password: acc.Password }), { headers: this.headers })
+            .map(res => new ConnectionTestResult(res.json()))
             .catch(err => this.handleServerError(err));
     }
     /* <<< API Accounts */
 
     private handleServerError(error: Response): Observable<any> {
-        console.error('[ApiService] An error occurred' + error); //debug
+        console.error('[ApiService] An error occurred', error);
         let responseErr = new ResponseStatus(error);
 
         if (responseErr.Status === 401)

@@ -55,7 +55,12 @@ namespace TickTrader.DedicatedServer.DS.Repository
                 var key = GetPackageKey(packageName);
                 var existing = _packages.GetOrDefault(key);
                 if (existing != null)
+                {
+                    if (existing.IsLocked)
+                        throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
+
                     RemovePackage(existing);
+                }
 
                 var packageFileInfo = SavePackage(packageName, packageContent);
                 var package = ReadPackage(packageFileInfo);

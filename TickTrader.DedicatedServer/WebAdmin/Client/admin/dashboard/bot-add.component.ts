@@ -2,7 +2,7 @@
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Observable, Subject } from "rxjs/Rx";
-import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest, AccountInfo } from '../../models/index';
+import { PackageModel, PluginModel, ParameterDataTypes, AccountModel, SetupModel, TradeBotModel, ResponseStatus, ObservableRequest, AccountInfo, ResponseCode } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
 
 @Component({
@@ -17,6 +17,7 @@ export class BotAddComponent implements OnInit {
     private _pluginSelectedSubject = new Subject<PluginModel>();
     private _accountSelectedSubject = new Subject<AccountModel>();
 
+    public AddBotRequest: ObservableRequest<TradeBotModel>;
     public PackagesRequest: ObservableRequest<PackageModel[]>;
     public AccountInfoRequest: ObservableRequest<AccountInfo>;
     public AccountsRequest: ObservableRequest<AccountModel[]>;
@@ -29,6 +30,8 @@ export class BotAddComponent implements OnInit {
     constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService, private _location: Location) { }
 
     ngOnInit() {
+        this.AddBotRequest = null;
+
         this._pluginSelectedSubject
             .debounceTime(200)
             .distinctUntilChanged()
@@ -46,15 +49,25 @@ export class BotAddComponent implements OnInit {
 
     AddBot() {
         if (this.BotSetupForm.valid) {
-            this._api.AddBot(this.Setup).subscribe(
-                tb => this.OnAdded.emit(tb),
-                err => this.notifyAboutError(err)
-            );
+            this.AddBotRequest = new ObservableRequest(this._api.AddBot(this.Setup))
+                .Subscribe(result => this.OnAdded.emit(result),
+                err => {
+                    if (!err.Handled)
+                        this._toastr.error(err.Message);
+                    else if (err.Code === ResponseCode.DuplicateBot)
+                    {
+                        err.Message = `Bot with ID '${this.Setup.InstanceId}' already exists! Please type another ID.`;
+                    }
+                });
         }
     }
 
     Cancel() {
         this._location.back();
+    }
+
+    ResetError() {
+        this.AddBotRequest = null;
     }
 
     OnPluginSelected(plugin: PluginModel) {
