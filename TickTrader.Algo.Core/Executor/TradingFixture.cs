@@ -145,21 +145,21 @@ namespace TickTrader.Algo.Core
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
                 var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                CallListener(eReport);
                 if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(eReport.OrderCopy));
+                    CallListener(eReport);
+                    context.EnqueueTradeEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(eReport.OrderCopy)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Canceled)
             {
                 var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                CallListener(eReport);
                 if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(eReport.OrderCopy));
+                    CallListener(eReport);
+                    context.EnqueueTradeEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(eReport.OrderCopy)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Expired)
@@ -168,26 +168,37 @@ namespace TickTrader.Algo.Core
                 if (oldOrder != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(eReport.OrderCopy));
+                    var args = new OrderCanceledEventArgsImpl(eReport.OrderCopy);
+                    context.EnqueueTradeEvent(b => orderCollection.FireOrderExpired(args));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)
             {
                 var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                CallListener(eReport);
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, eReport.OrderCopy));
+                    CallListener(eReport);
+                    context.EnqueueTradeEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, eReport.OrderCopy)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Filled)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                if (oldOrder != null && eReport.OrderCopy != null)
+                if (eReport.OrderCopy.Type == OrderType.Market)
                 {
-                    ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, eReport.OrderCopy));
+                    // market orders
+                    CallListener(eReport);
+                    context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(null, eReport.OrderCopy)));
+                }
+                else
+                {
+                    // pending orders
+                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                    if (oldOrder != null && eReport.OrderCopy != null)
+                    {
+                        ApplyOrderEntity(eReport, orderCollection);
+                        context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, eReport.OrderCopy)));
+                    }
                 }
             }
         }
@@ -201,7 +212,7 @@ namespace TickTrader.Algo.Core
                 if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
                 {
                     acc.Balance = eReport.NewBalance.Value;
-                    acc.FireBalanceUpdateEvent();
+                    context.EnqueueTradeEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }
             else if (acc.Type == Api.AccountTypes.Cash)
@@ -211,7 +222,8 @@ namespace TickTrader.Algo.Core
                     foreach (var asset in eReport.Assets)
                     {
                         acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency, currencies));
-                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.Currency, currencies)));
+                        var args = new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.Currency, currencies));
+                        context.EnqueueTradeEvent(b => acc.Assets.FireModified(args));
                     }
                 }
             }
@@ -236,7 +248,7 @@ namespace TickTrader.Algo.Core
 
         public Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
         {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendCloseOrderBy(cbk, id, orderId, byOrderId));
+            return ExecDoubleOrderTradeRequest(isAysnc, (id, cbk) => _executor.SendCloseOrderBy(cbk, id, orderId, byOrderId));
         }
 
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double price, double? sl, double? tp, string comment)
@@ -256,6 +268,40 @@ namespace TickTrader.Algo.Core
             {
                 reportListeners.Remove(operationId);
                 resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+            });
+
+            var callback = new CrossDomainCallback<OrderCmdResultCodes>(code =>
+            {
+                if (code != OrderCmdResultCodes.Ok)
+                    context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
+            });
+
+            executorInvoke(operationId, callback);
+
+            if (!isAsync)
+            {
+                while (!resultTask.Task.IsCompleted)
+                    context.ProcessNextOrderUpdate();
+            }
+
+            return resultTask.Task;
+        }
+
+        private Task<OrderCmdResult> ExecDoubleOrderTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+        {
+            var resultTask = new TaskCompletionSource<OrderCmdResult>();
+            var resultContainer = new List<OrderEntity>(2);
+
+            string operationId = Guid.NewGuid().ToString();
+
+            reportListeners.Add(operationId, rep =>
+            {
+                resultContainer.Add(rep.OrderCopy);
+                if (resultContainer.Count == 2)
+                {
+                    reportListeners.Remove(operationId);
+                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                }
             });
 
             var callback = new CrossDomainCallback<OrderCmdResultCodes>(code =>

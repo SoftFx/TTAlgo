@@ -189,6 +189,11 @@ namespace TickTrader.Algo.Common.Model
                     OnOrderRejected(report, OrderExecAction.Rejected);
                     break;
 
+                case ExecutionType.None:
+                    if (report.OrderStatus == OrderStatus.Rejected)
+                        OnOrderRejected(report, OrderExecAction.Rejected);
+                    break;
+
                 case ExecutionType.Trade:
                     if (report.OrderType == TradeRecordType.Limit
                         || report.OrderType == TradeRecordType.Stop)
@@ -207,10 +212,10 @@ namespace TickTrader.Algo.Common.Model
                         else
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == TradeRecordType.Market && Type == AccountType.Net)
+                    else if (report.OrderType == TradeRecordType.Market 
+                        && (Type == AccountType.Net || Type == AccountType.Cash))
                     {
-                        // workaround to get order execution notification
-                        OnOrderRemoved(report, OrderExecAction.Filled);
+                        OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
@@ -233,6 +238,12 @@ namespace TickTrader.Algo.Common.Model
         {
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
+        }
+
+        private void OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
+        {
+            var order = new OrderModel(report, orderResolver);
+            ExecReportToAlgo(algoAction, OrderEntityAction.None, report, order);
         }
 
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
@@ -303,6 +314,8 @@ namespace TickTrader.Algo.Common.Model
         {
             if (!string.IsNullOrEmpty(report.ClosePositionRequestId))
                 return report.ClosePositionRequestId;
+            if (!string.IsNullOrEmpty(report.TradeRequestId))
+                return report.TradeRequestId;
             return report.ClientOrderId;
         }
 

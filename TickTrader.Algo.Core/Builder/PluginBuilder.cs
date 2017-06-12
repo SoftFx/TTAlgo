@@ -297,6 +297,7 @@ namespace TickTrader.Algo.Core
 
             OnBeforeInvoke();
             var oldContext = SynchronizationContext.Current;
+            var oldStatic = AlgoPlugin.staticContext;
             AlgoPlugin.staticContext = this;
             SynchronizationContext.SetSynchronizationContext(syncContext);
             try
@@ -307,7 +308,7 @@ namespace TickTrader.Algo.Core
             {
                 pluginException = ex;
             }
-            AlgoPlugin.staticContext = null;
+            AlgoPlugin.staticContext = oldStatic;
             SynchronizationContext.SetSynchronizationContext(oldContext);
             OnAfterInvoke();
 

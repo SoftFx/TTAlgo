@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
                 var px = orderType == OrderType.Stop ? default(double?) : price;
                 var stopPx = orderType == OrderType.Stop ? price : default(double?);
 
-                var result = conenction.TradeProxy.Server.ModifyTradeRecord(orderId, symbol,
+                conenction.TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
                     ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
             });
         }
@@ -99,7 +99,9 @@ namespace TickTrader.BotTerminal
                 ValidateOrderId(orderId);
                 ValidateOrderId(byOrderId);
 
-                conenction.TradeProxy.Server.CloseByPositions(orderId, byOrderId);
+                var result = conenction.TradeProxy.Server.CloseByPositionsEx(operationId, orderId, byOrderId, -1);
+                if (!result)
+                    throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now.");
             });
         }
 
