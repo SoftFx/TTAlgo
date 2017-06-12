@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Common.Model
         public async Task Init()
         {
             fdkStorage = await Task.Factory.StartNew(
-                () => new DataFeedStorage(_dataFolder, StorageProvider.Ntfs, 2, connection.FeedProxy, false, false));
+                () => new DataFeedStorage(_dataFolder, StorageProvider.Ntfs, 3, connection.FeedProxy, false, false));
             pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
         }
 

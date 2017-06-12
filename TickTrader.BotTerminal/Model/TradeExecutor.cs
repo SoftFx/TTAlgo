@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
         public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
             OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
         {
-            EnqueueTradeOp(callback, () =>
+            EnqueueTradeOp("OpenOrder", callback, () =>
             {
                 ValidatePrice(price);
                 ValidateVolume(volume);
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, OrderSide side)
         {
-            EnqueueTradeOp(callback, () =>
+            EnqueueTradeOp("CancelOrder", callback, () =>
             {
                 ValidateOrderId(orderId);
                 conenction.TradeProxy.Server.DeletePendingOrderEx(operationId, orderId, Convert(side));
@@ -64,7 +64,7 @@ namespace TickTrader.BotTerminal
         public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
             OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
-            EnqueueTradeOp(callback, () =>
+            EnqueueTradeOp("ModifyOrder", callback, () =>
             {
                 ValidateOrderId(orderId);
 
@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
 
         public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, double? volume)
         {
-            EnqueueTradeOp(callback, () =>
+            EnqueueTradeOp("CloseOrder", callback, () =>
             {
                 ValidateOrderId(orderId);
 
@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
 
         public void SendCloseOrderBy(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string byOrderId)
         {
-            EnqueueTradeOp(callback, () =>
+            EnqueueTradeOp("CloseOrderBy", callback, () =>
             {
                 ValidateOrderId(orderId);
                 ValidateOrderId(byOrderId);
@@ -105,16 +105,16 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void EnqueueTradeOp(CrossDomainCallback<OrderCmdResultCodes> callback, Action tradeOpDef)
+        private void EnqueueTradeOp(string opName, CrossDomainCallback<OrderCmdResultCodes> callback, Action tradeOpDef)
         {
             EnqueueTask(() =>
             {
-                var result = HandleErrors(tradeOpDef);
+                var result = HandleErrors(opName, tradeOpDef);
                 callback.Invoke(result);
             });
         }
 
-        private OrderCmdResultCodes HandleErrors(Action tradeAction)
+        private OrderCmdResultCodes HandleErrors(string opName, Action tradeAction)
         {
             try
             {
@@ -139,7 +139,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "CloseOrder() failed!");
+                logger.Error(ex, opName + "() failed!");
                 return OrderCmdResultCodes.InternalError;
             }
         }
