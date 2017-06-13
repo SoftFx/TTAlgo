@@ -216,7 +216,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
-                executor.TradeApi = _client.TradeApi;
+                executor.TradeExecutor = _client.TradeApi;
                 executor.Logger = _botLog;
                 _stopListener = new ListenerProxy(executor, () =>
                 {

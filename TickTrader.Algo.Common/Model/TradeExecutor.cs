@@ -10,21 +10,21 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.Common.Model
 {
-    internal class TradeExecutor : CrossDomainObject, ITradeExecutor
+    public class TradeExecutor : CrossDomainObject, ITradeExecutor
     {
-        private static readonly NLog.ILogger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<TradeExecutor>();
 
         private BufferBlock<Task> orderQueue;
         private ActionBlock<Task> orderSender;
         private ConnectionModel conenction;
         private IOrderDependenciesResolver resolver;
 
-        public TradeExecutor(TraderClientModel trader)
+        public TradeExecutor(ClientCore client)
         {
-            this.conenction = trader.Connection;
-            this.resolver = trader.Symbols;
+            this.conenction = client.Connection;
+            this.resolver = client.Symbols;
 
             orderQueue = new BufferBlock<Task>();
 
