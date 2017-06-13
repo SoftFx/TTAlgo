@@ -19,13 +19,12 @@ namespace TickTrader.Algo.Core
         private IPluginLogger logger;
         private IPluginMetadata metadata;
         private FeedStrategy fStrategy;
+        private FeedBufferStrategy bStrategy;
         private InvokeStartegy iStrategy;
         private TradingFixture accFixture;
         private StatusFixture statusFixture;
         private string mainSymbol;
         private PluginBuilder builder;
-        private DateTime periodStart;
-        private DateTime periodEnd;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
@@ -111,32 +110,6 @@ namespace TickTrader.Algo.Core
                         throw new InvalidOperationException("MainSymbolCode cannot be null or empty string!");
 
                     mainSymbol = value;
-                }
-            }
-        }
-
-        public DateTime TimePeriodStart
-        {
-            get { return periodStart; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-                    periodStart = value;
-                }
-            }
-        }
-
-        public DateTime TimePeriodEnd
-        {
-            get { return periodEnd; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-                    periodEnd = value;
                 }
             }
         }
@@ -250,7 +223,7 @@ namespace TickTrader.Algo.Core
                 // Setup strategy
 
                 iStrategy.Init(builder, OnInternalException, OnRuntimeException, OnFeedUpdate);
-                fStrategy.Init(this);
+                fStrategy.Init(this, bStrategy);
                 fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
@@ -360,6 +333,26 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void InitSlidingBuffering(int size)
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                //ThrowIfAlreadyHasBufferStrategy();
+                this.bStrategy = new SlidingBufferStrategy(size);
+            }
+        }
+
+        public void InitTimeSpanBuffering(DateTime from, DateTime to)
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                //ThrowIfAlreadyHasBufferStrategy();
+                this.bStrategy = new TimeSpanStrategy(from, to);
+            }
+        }
+
         public void SetParameter(string name, object value)
         {
             lock (_sync)
@@ -393,10 +386,13 @@ namespace TickTrader.Algo.Core
             //    throw new InvalidOperationException("Feed provider is not specified!");
 
             if (fStrategy == null)
-                throw new ExecutorException("Feed strategy is not specified!");
+                throw new ExecutorException("Feed strategy is not set!");
+
+            if (bStrategy == null)
+                throw new ExecutorException("Buffering strategy is not set!");
 
             if (iStrategy == null)
-                throw new ExecutorException("Invoke strategy is not specified!");
+                throw new ExecutorException("Invoke strategy is not set!");
 
             if (string.IsNullOrEmpty(mainSymbol))
                 throw new ExecutorException("Main symbol is not specified!");
@@ -410,9 +406,15 @@ namespace TickTrader.Algo.Core
 
         private void ThrowIfAlreadyHasFStrategy()
         {
-            if (state != States.Idle)
+            if (fStrategy != null)
                 throw new InvalidOperationException("Feed has beed already initialized!");
         }
+
+        //private void ThrowIfAlreadyHasBufferStrategy()
+        //{
+        //    if (bStrategy != null)
+        //        throw new InvalidOperationException("Buffering strategy has beed already initialized!");
+        //}
 
         private void ChangeState(States newState)
         {
@@ -470,7 +472,7 @@ namespace TickTrader.Algo.Core
             {
                 var outputBuffer = builder.GetOutput(fixtureEntry.Key);
                 if (outputBuffer != null)
-                    fixtureEntry.Value.BindTo(outputBuffer, fStrategy.TimeRef);
+                    fixtureEntry.Value.BindTo(outputBuffer, fStrategy.MainBuffer);
             }
         }
 

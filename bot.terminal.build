@@ -68,7 +68,8 @@
     <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}">
       <arg value="restore" />
       <arg value="Algo.sln" />
-      <arg value="-NoCache" />
+	  <arg value="-Recursive" />
+	  <arg value="-NonInteractive" />
     </exec>
 
     <exec program="${MSBuildDir}msbuild.exe" >

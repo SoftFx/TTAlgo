@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core
         }
 
         public BarPriceType MainPriceType { get; private set; }
-        public override ITimeRef TimeRef { get { return mainSeriesFixture; } }
+        public override IFeedBuffer MainBuffer { get { return mainSeriesFixture; } }
         public override int BufferSize { get { return mainSeriesFixture.Count; } }
 
         internal override void OnInit()
@@ -43,6 +43,7 @@ namespace TickTrader.Algo.Core
             {
                 fixture = new BarSeriesFixture(key.Item1, key.Item2, this, null, mainSeriesFixture);
                 fixtures.Add(key, fixture);
+                BufferingStrategy.InitBuffer(fixture);
             }
         }
 

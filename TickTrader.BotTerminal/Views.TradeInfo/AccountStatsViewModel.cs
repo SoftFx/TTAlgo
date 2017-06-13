@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -31,13 +32,13 @@ namespace TickTrader.BotTerminal
 
         private void Calc_Updated(AccountCalculatorModel calc)
         {
-            Balance = FormatNumber(account.Balance);
-            Equity = FormatNumber(calc.Equity);
-            Margin = FormatNumber(calc.Margin);
-            Profit = FormatNumber(calc.Profit);
-            Floating = FormatNumber(calc.Floating);
-            MarginLevel = FormatPrecent(calc.MarginLevel);
-            FreeMargin = FormatNumber(calc.Equity - calc.Margin);
+            Balance = FormatNumber(FloorNumber(account.Balance, account.BalanceDigits));
+            Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
+            Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
+            Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
+            Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
+            MarginLevel = FormatPrecent(FloorNumber(calc.MarginLevel, 2));
+            FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
             IsFloatingLoss = calc.Floating < 0;
 
             NotifyOfPropertyChange(nameof(Balance));
@@ -63,6 +64,24 @@ namespace TickTrader.BotTerminal
         private string FormatPrecent(decimal number)
         {
             return string.Format(NumberFormat.AmountNumberInfo, precentFormatStr, number);
+        }
+
+        private double FloorNumber(double number, int precision)
+        {
+            var exp = Math.Pow(10, precision);
+            return Math.Floor(number * exp) / exp;
+        }
+
+        private decimal FloorNumber(decimal number, int precision)
+        {
+            var exp = (decimal)Math.Pow(10, precision);
+            return Math.Floor(number * exp) / exp;
+        }
+
+        private decimal CeilNumber(decimal number, int precision)
+        {
+            var exp = (decimal)Math.Pow(10, precision);
+            return Math.Ceiling(number * exp) / exp;
         }
 
         public bool IsStatsVisible { get; private set; }

@@ -18,7 +18,7 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public abstract class AccountModel : CrossDomainObject, IAccountInfoProvider
+    public class AccountModel : CrossDomainObject, IAccountInfoProvider
     {
         private readonly DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
         private readonly DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
@@ -26,9 +26,17 @@ namespace TickTrader.Algo.Common.Model
         private AccountType? accType;
         private IOrderDependenciesResolver orderResolver;
         private IDictionary<string, CurrencyInfo> _currencies;
+        private ClientCore _client;
+        private bool _isCalcEnabled;
 
-        public AccountModel()
+        public AccountModel(ClientCore client, AccountModelOptions options)
         {
+            _client = client;
+            _isCalcEnabled = options.HasFlag(AccountModelOptions.EnableCalculator);
+
+            _client.BalanceReceived += OnBalanceOperation;
+            _client.ExecutionReportReceived += OnReport;
+            _client.PositionReportReceived += OnReport;
         }
 
         public event System.Action AccountTypeChanged = delegate { };
@@ -54,8 +62,32 @@ namespace TickTrader.Algo.Common.Model
         public int BalanceDigits { get; private set; }
         public string Account { get; private set; }
         public int Leverage { get; private set; }
+        public AccountCalculatorModel Calc { get; private set; }
 
-        public void Init(AccountInfo accInfo,
+        public void Init()
+        {
+            var cache = _client.TradeProxy.Cache;
+            var currencies = _client.Currencies;
+            var accInfo = cache.AccountInfo;
+            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+            
+
+            UpdateData(accInfo, currencies, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
+
+            if (_isCalcEnabled)
+            {
+                Calc = AccountCalculatorModel.Create(this, _client);
+                Calc.Recalculate();
+            }
+        }
+
+        public void Deinit()
+        {
+            if (_isCalcEnabled)
+                Calc.Dispose();
+        }
+
+        private void UpdateData(AccountInfo accInfo,
             IDictionary<string, CurrencyInfo> currencies,
             IOrderDependenciesResolver orderResolver,
             IEnumerable<TradeRecord> orders,
@@ -89,9 +121,11 @@ namespace TickTrader.Algo.Common.Model
                 this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, currencies));
         }
 
-        protected virtual void OnBalanceChanged() { }
+        protected void OnBalanceChanged()
+        {
+        }
 
-        public void OnBalanceOperation(object sender, SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
+        private void OnBalanceOperation(SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
         {
             if (Type == AccountType.Gross || Type == AccountType.Net)
             {
@@ -116,13 +150,24 @@ namespace TickTrader.Algo.Common.Model
             AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
         }
 
-        private void TradeProxy_TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
+        protected void OnTransactionReport(TradeTransactionReport report)
         {
-            var a = e.Report;
+            // TODO: Remove after TTS 1.28 will be on live servers
+            // Workaround. FDK does not provide balance changes in PositionReport
+            if (Type == AccountType.Net)
+            {
+                if (report.TradeTransactionReportType == TradeTransactionReportType.OrderFilled)
+                {
+                    Balance = report.AccountBalance;
+                    OnBalanceChanged();
+                }
+            }
         }
 
-        protected void OnReport(Position report)
+        protected void OnReport(SoftFX.Extended.Events.PositionReportEventArgs e)
         {
+            var report = e.Report;
+
             if (IsEmpty(report))
                 OnPositionRemoved(report);
             else if (!positions.ContainsKey(report.Symbol))
@@ -162,8 +207,10 @@ namespace TickTrader.Algo.Common.Model
             return positionModel;
         }
 
-        protected void OnReport(ExecutionReport report)
+        private void OnReport(SoftFX.Extended.Events.ExecutionReportEventArgs e)
         {
+            var report = e.Report;
+
             switch (report.ExecutionType)
             {
                 case ExecutionType.Calculated:
@@ -219,6 +266,21 @@ namespace TickTrader.Algo.Common.Model
                     }
                     break;
             }
+
+            // TODO: Enable after TTS 1.28 will be on live servers
+            //if (Type == AccountType.Net && report.ExecutionType == ExecutionType.Trade)
+            //{
+            //    switch (report.OrderStatus)
+            //    {
+            //        case OrderStatus.Calculated:
+            //        case OrderStatus.Filled:
+            //            if (!double.IsNaN(report.Balance))
+            //            {
+            //                Balance = report.Balance;
+            //            }
+            //            break;
+            //    }
+            //}
 
             if (Type == AccountType.Cash)
             {
@@ -321,7 +383,10 @@ namespace TickTrader.Algo.Common.Model
 
         AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
 
-        public abstract void SyncInvoke(Action syncAction);
+        void IAccountInfoProvider.SyncInvoke(Action syncAction)
+        {
+            _client.TradeSync.Invoke(syncAction);
+        }
 
         List<OrderEntity> IAccountInfoProvider.GetOrders()
         {
@@ -357,5 +422,12 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #endregion
+    }
+
+    [Flags]
+    public enum AccountModelOptions
+    {
+        None = 0,
+        EnableCalculator = 1
     }
 }

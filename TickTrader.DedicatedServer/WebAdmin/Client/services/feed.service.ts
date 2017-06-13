@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { Injectable, NgZone } from '@angular/core';
 import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from "rxjs/Observable";
@@ -11,22 +11,19 @@ import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, Packa
 
 @Injectable()
 export class FeedService {
-    currentState = ConnectionStatus.Disconnected;
-    connectionState: Observable<ConnectionStatus>;
+    public CurrentState = ConnectionStatus.Disconnected;
+    public ConnectionState: Observable<ConnectionStatus>;
 
-    addPackage: Observable<PackageModel>;
-    deletePackage: Observable<string>;
-    addAccount: Observable<AccountModel>;
-    deleteAccount: Observable<AccountModel>;
-    addBot: Observable<TradeBotModel>;
-    deleteBot: Observable<string>;
-    updateBot: Observable<TradeBotModel>;
-
-    changeBotState: Observable<TradeBotStateModel>;
+    public AddPackage: Observable<PackageModel>;
+    public DeletePackage: Observable<string>;
+    public AddAccount: Observable<AccountModel>;
+    public DeleteAccount: Observable<AccountModel>;
+    public AddBot: Observable<TradeBotModel>;
+    public DeleteBot: Observable<string>;
+    public UpdateBot: Observable<TradeBotModel>;
+    public ChangeBotState: Observable<TradeBotStateModel>;
 
     private connectionStateSubject = new Subject<ConnectionStatus>();
-
-
     private addPackageSubject = new Subject<PackageModel>();
     private deletePackageSubject = new Subject<string>();
     private addAccountSubject = new Subject<AccountModel>();
@@ -36,95 +33,123 @@ export class FeedService {
     private deleteBotSubject = new Subject<string>();
     private updateBotSubject = new Subject<TradeBotModel>();
 
-    constructor(private _http: Http) {
-        this.connectionState = this.connectionStateSubject.asObservable();
+    constructor(private _zone: NgZone) {
+        this.ConnectionState = this.connectionStateSubject.asObservable();
 
-        this.deletePackage = this.deletePackageSubject.asObservable();
-        this.addPackage = this.addPackageSubject.asObservable();
-        this.addAccount = this.addAccountSubject.asObservable();
-        this.deleteAccount = this.deleteAccountSubject.asObservable();
-        this.changeBotState = this.changeBotStateSubject.asObservable();
-        this.addBot = this.addBotSubject.asObservable();
-        this.deleteBot = this.deleteBotSubject.asObservable();
-        this.updateBot = this.updateBotSubject.asObservable();
+        this.DeletePackage = this.deletePackageSubject.asObservable();
+        this.AddPackage = this.addPackageSubject.asObservable();
+        this.AddAccount = this.addAccountSubject.asObservable();
+        this.DeleteAccount = this.deleteAccountSubject.asObservable();
+        this.ChangeBotState = this.changeBotStateSubject.asObservable();
+        this.AddBot = this.addBotSubject.asObservable();
+        this.DeleteBot = this.deleteBotSubject.asObservable();
+        this.UpdateBot = this.updateBotSubject.asObservable();
     }
 
     public start(debug: boolean, token?: string): Observable<ConnectionStatus> {
-        if (token) {
-            $.connection.hub.qs = { 'authorization-token': token };
+        if (this.CurrentState !== ConnectionStatus.Connected) {
+            if (token) {
+                $.connection.hub.qs = { 'authorization-token': token };
+            }
+
+            $.connection.hub.logging = debug;
+
+            let connection = <FeedSignalR>$.connection;
+            let feedHub = connection.dSFeed;
+
+            feedHub.client.addPackage = x => this.onAddPackage(new PackageModel().Deserialize(x));
+            feedHub.client.deletePackage = x => this.onDeletePackage(x);
+            feedHub.client.addAccount = x => this.onAddAccount(new AccountModel().Deserialize(x));
+            feedHub.client.deleteAccount = x => this.onDeleteAccount(new AccountModel().Deserialize(x));
+            feedHub.client.changeBotState = x => this.onChangeBotState(new TradeBotStateModel().Deserialize(x));
+            feedHub.client.addBot = x => this.onBotAdded(new TradeBotModel().Deserialize(x));
+            feedHub.client.deleteBot = x => this.onBotDeleted(x);
+            feedHub.client.updateBot = x => this.onBotUpdated(new TradeBotModel().Deserialize(x));
+
+            $.connection.hub.disconnected(() => this.setConnectionState(ConnectionStatus.Disconnected));
+            $.connection.hub.reconnecting(() => this.setConnectionState(ConnectionStatus.Reconnecting));
+            $.connection.hub.start()
+                .done(response => this.setConnectionState(ConnectionStatus.Connected))
+                .fail(error => this._zone.run(() => this.connectionStateSubject.error(error)));
         }
 
-        $.connection.hub.logging = debug;
-        
-        let connection = <FeedSignalR>$.connection;
-        let feedHub = connection.dSFeed;
-
-        feedHub.client.addPackage = x => this.onAddPackage(new PackageModel().Deserialize(x));
-        feedHub.client.deletePackage = x => this.onDeletePackage(x);
-        feedHub.client.addAccount = x => this.onAddAccount(new AccountModel().Deserialize(x));
-        feedHub.client.deleteAccount = x => this.onDeleteAccount(new AccountModel().Deserialize(x));
-        feedHub.client.changeBotState = x => this.onChangeBotState(new TradeBotStateModel().Deserialize(x));
-        feedHub.client.addBot = x => this.onBotAdded(new TradeBotModel().Deserialize(x));
-        feedHub.client.deleteBot = x => this.onBotDeleted(x);
-        feedHub.client.updateBot = x => this.onBotUpdated(new TradeBotModel().Deserialize(x));
-
-        $.connection.hub.start()
-            .done(response => this.setConnectionState(ConnectionStatus.Connected))
-            .fail(error => this.connectionStateSubject.error(error));
-
-        return this.connectionState;
+        return this.ConnectionState;
     }
 
     public stop(): Observable<ConnectionStatus> {
-        $.connection.hub.stop(true, true);
-        $.connection.hub.qs = {};
-        this.setConnectionState(ConnectionStatus.Disconnected);
-        return this.connectionState;
+        if (this.CurrentState !== ConnectionStatus.Disconnected) {
+
+            $.connection.hub.stop(true, true);
+            $.connection.hub.qs = {};
+            this.setConnectionState(ConnectionStatus.Disconnected);
+        }
+        return this.ConnectionState;
     }
 
     private setConnectionState(connectionState: ConnectionStatus) {
-        console.log('connection state changed to: ' + connectionState);
-        this.currentState = connectionState;
-        this.connectionStateSubject.next(connectionState);
+        if (this.CurrentState == connectionState)
+            return;
+
+        this._zone.run(() => {
+            console.log('[FeedService] ConnectionState: ', ConnectionStatus[connectionState]);
+            this.CurrentState = connectionState;
+            this.connectionStateSubject.next(connectionState);
+        });
     }
 
     private onAddPackage(algoPackage: PackageModel) {
-        console.info('[FeedService] onAddPackage', algoPackage);
-        this.addPackageSubject.next(algoPackage);
+        this._zone.run(() => {
+            console.info('[FeedService] onAddPackage', algoPackage);
+            this.addPackageSubject.next(algoPackage);
+        });
     }
 
     private onDeletePackage(name: string) {
-        console.info('[FeedService] onDeletePackage', name);
-        this.deletePackageSubject.next(name);
+        this._zone.run(() => {
+            console.info('[FeedService] onDeletePackage', name);
+            this.deletePackageSubject.next(name);
+        });
     }
 
     private onAddAccount(account: AccountModel) {
-        console.info('[FeedService] onAddAccount', account);
-        this.addAccountSubject.next(account);
+        this._zone.run(() => {
+            console.info('[FeedService] onAddAccount', account);
+            this.addAccountSubject.next(account);
+        });
     }
 
     private onDeleteAccount(account: AccountModel) {
-        console.info('[FeedService] onDeleteAccount', account);
-        this.deleteAccountSubject.next(account);
+        this._zone.run(() => {
+            console.info('[FeedService] onDeleteAccount', account);
+            this.deleteAccountSubject.next(account);
+        });
     }
 
     private onChangeBotState(botState: TradeBotStateModel) {
-        console.info('[FeedService] onChangeBotState', botState);
-        this.changeBotStateSubject.next(botState);
+        this._zone.run(() => {
+            console.info('[FeedService] onChangeBotState -> ' + botState.toString());
+            this.changeBotStateSubject.next(botState);
+        });
     }
 
     private onBotAdded(bot: TradeBotModel) {
-        console.info('[FeedService] onBotAdded', bot);
-        this.addBotSubject.next(bot);
+        this._zone.run(() => {
+            console.info('[FeedService] onBotAdded', bot);
+            this.addBotSubject.next(bot);
+        });
     }
 
     private onBotDeleted(botId: string) {
-        console.info('[FeedService] onBotDeleted', botId);
-        this.deleteBotSubject.next(botId);
+        this._zone.run(() => {
+            console.info('[FeedService] onBotDeleted', botId);
+            this.deleteBotSubject.next(botId);
+        });
     }
 
     private onBotUpdated(bot: TradeBotModel) {
-        console.info('[FeedService] onBotUpdated', bot);
-        this.updateBotSubject.next(bot);
+        this._zone.run(() => {
+            console.info('[FeedService] onBotUpdated', bot);
+            this.updateBotSubject.next(bot);
+        });
     }
 }

@@ -1,6 +1,4 @@
-﻿import { PackageModel } from './package-model';
-import { AccountModel } from './account-model';
-import { TradeBotStateModel, TradeBotModel } from './trade-bot-model';
+﻿import { PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from './ds-models';
 
 export interface FeedSignalR extends SignalR {
     dSFeed: FeedProxy;
@@ -23,11 +21,12 @@ export interface FeedClient {
 }
 
 export interface FeedServer {
-    
+
 }
 
 export enum ConnectionStatus {
     Connected = 1,
-    Disconnected = 2,
-    Error = 3
+    Reconnecting = 2,
+    Disconnected = 3,
+    Error = 4
 }

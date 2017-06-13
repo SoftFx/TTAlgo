@@ -65,9 +65,9 @@ namespace TickTrader.Algo.Core
             return inputs[id];
         }
 
-        public DataSeriesProxy<T> GetInput<T>(string id)
+        public DataSeriesImpl<T> GetInput<T>(string id)
         {
-            return (DataSeriesProxy<T>)inputs[id];
+            return (DataSeriesImpl<T>)inputs[id];
         }
 
         public IDataSeriesProxy GetOutput(string id)

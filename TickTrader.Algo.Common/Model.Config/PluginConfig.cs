@@ -17,14 +17,14 @@ namespace TickTrader.Algo.Common.Model.Config
         private List<Property> properties = new List<Property>();
 
         public List<Property> Properties => properties;
+
+        [DataMember(Name = "symbol")]
+        public string MainSymbol { get; set; }
     }
 
     [DataContract(Namespace = "")]
     public class BarBasedConfig : PluginConfig
     {
-        [DataMember(Name = "symbol")]
-        public string MainSymbol { get; set; }
-
         [DataMember(Name = "price")]
         public BarPriceType PriceType { get; set; }
     }
@@ -32,7 +32,5 @@ namespace TickTrader.Algo.Common.Model.Config
     [DataContract(Namespace = "")]
     public class QuoteBasedConfig : PluginConfig
     {
-        [DataMember(Name = "symbol")]
-        public string MainSymbol { get; set; }
     }
 }

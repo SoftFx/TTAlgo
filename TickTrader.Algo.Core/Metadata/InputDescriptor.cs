@@ -58,18 +58,18 @@ namespace TickTrader.Algo.Core.Metadata
         public InputAttribute Attribute { get; private set; }
         public override AlgoPropertyTypes PropertyType { get { return AlgoPropertyTypes.InputSeries; } }
 
-        internal DataSeriesProxy<T> CreateInput2<T>()
+        internal DataSeriesImpl<T> CreateInput2<T>()
         {
             if (typeof(T) == typeof(double) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new DataSeriesProxy();
+                return (DataSeriesImpl<T>)(object)new DataSeriesProxy();
             else if (typeof(T) == typeof(DateTime) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new TimeSeriesProxy();
+                return (DataSeriesImpl<T>)(object)new TimeSeriesProxy();
             else if (typeof(T) == typeof(Api.Bar) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new BarSeriesProxy();
+                return (DataSeriesImpl<T>)(object)new BarSeriesProxy();
             else if (typeof(T) == typeof(Api.Quote) && IsShortDefinition)
-                return (DataSeriesProxy<T>)(object)new QuoteSeriesProxy();
+                return (DataSeriesImpl<T>)(object)new QuoteSeriesProxy();
             else
-                return new DataSeriesProxy<T>();
+                return new DataSeriesImpl<T>();
         }
     }
 }

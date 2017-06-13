@@ -44,11 +44,9 @@ namespace TickTrader.BotTerminal
         private bool isIndicatorsOnline;
         private bool isLoading;
         private bool isUpdateRequired;
-        private bool isCloseRequested;
         private bool isConnected;
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
         private ChartNavigator navigator;
-        private TimelineTypes timelineType;
         private long indicatorNextId = 1;
         private AxisBase timeAxis;
         private bool isCrosshairEnabled;
@@ -362,14 +360,15 @@ namespace TickTrader.BotTerminal
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = ClientModel.Account;
-            plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             if (string.IsNullOrEmpty(uniqueBotName))
             {
+                plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
                 plugin.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             }
             else
             {
-                plugin.BotWorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                plugin.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
+                plugin.BotWorkingFolder = plugin.WorkingFolder;
                 EnvService.Instance.EnsureFolder(plugin.BotWorkingFolder);
             }
         }
@@ -378,8 +377,7 @@ namespace TickTrader.BotTerminal
         {
             plugin.TimeFrame = TimeFrame;
             plugin.MainSymbolCode = SymbolCode;
-            plugin.TimePeriodStart = TimelineStart;
-            plugin.TimePeriodEnd = DateTime.Now + TimeSpan.FromDays(100);
+            plugin.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }

@@ -16,7 +16,6 @@ namespace TickTrader.Algo.TestCollection.Indicators
         [Output(DisplayName = "Delayed Price", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries DelayedPrice { get; set; }
 
-
         protected override void Calculate()
         {
             if (IsUpdate)

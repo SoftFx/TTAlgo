@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -45,6 +46,21 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
             sb.AppendLine();
             return sb.ToString();
+        }
+
+        protected double GetCurrentPrice(BarPriceType type, int timeoutMs = 1000)
+        {
+            return GetPrice(type);
+        }
+
+        protected double GetCurrentPrice(OrderSide side)
+        {
+            return GetCurrentPrice(side == OrderSide.Buy ? BarPriceType.Ask : BarPriceType.Bid);
+        }
+
+        private double GetPrice(BarPriceType type)
+        {
+            return type == BarPriceType.Ask ? Symbol.Ask : Symbol.Bid;
         }
     }
 }

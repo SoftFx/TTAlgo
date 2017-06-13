@@ -66,7 +66,7 @@
     <Compile Include="Entities\BalanceOperationReport.cs" />
     <Compile Include="Entities\BarEntity.cs" />
     <Compile Include="Buffers\BuffersCoordinator.cs" />
-    <Compile Include="Buffers\CachingProxyBuffer.cs" />
+    <Compile Include="Buffers\BufferProxy.cs" />
     <Compile Include="Buffers\EmptyBuffer.cs" />
     <Compile Include="Buffers\InputBuffer.cs" />
     <Compile Include="Buffers\Interfaces.cs" />
@@ -92,6 +92,7 @@
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
     <Compile Include="Executor\Exceptions.cs" />
+    <Compile Include="Executor\FeedBufferStrategy.cs" />
     <Compile Include="Executor\FeedFixture.cs" />
     <Compile Include="Executor\FeedQueue.cs" />
     <Compile Include="Executor\FeedStrategy.cs" />
@@ -136,7 +137,7 @@
     <Compile Include="Repository\FileWatcher.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Buffers\DataSeriesProxy.cs" />
+    <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\RepositoryKey.cs" />
   </ItemGroup>

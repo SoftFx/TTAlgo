@@ -7,16 +7,16 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">{{getTitle()}}</a>
+            <a class="navbar-brand" href="javascript:;">{{RouteInfo.title}}</a>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav navbar-left">
-                <li>
+                <!--<li>
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-dashboard"></i>
-                        <p class="hidden-lg hidden-md">{{getTitle()}}</p>
+                        <i [class]="RouteInfo.icon"></i>
+                        <p class="hidden-lg hidden-md">{{RouteInfo.title}}</p>
                     </a>
-                </li>
+                </li>-->
                 <!--<li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-globe"></i>
@@ -44,30 +44,28 @@
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
+                <!--<li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <p>
+                            Actions
+                            <b class="caret"></b>
+                        </p>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li *ngFor="let action of RouteInfo.actions"><a href="javascript:;" [routerLink]="action.Link"><i class="fa fa-android"></i>{{action.Name}}</a></li>
+                        <li><a href="javascript:;"><i class="fa fa-user"></i> Add account</a></li>
+                        <li class="divider"></li>
+                        <li><a href="javascript:;">Separated link</a></li>
+                    </ul>
+                </li>-->
+                <li *ngFor="let action of RouteInfo.actions"><a [routerLink]="[action.Link]"><p>{{action.Name}}</p></a></li>
                 <li>
                     <a href="javascript:;">
                         <p>{{UserName}}</p>
                     </a>
                 </li>
-                <!--<li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <p>
-                            Dropdown
-                            <b class="caret"></b>
-                        </p>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="javascript:;">Action</a></li>
-                        <li><a href="javascript:;">Another action</a></li>
-                        <li><a href="javascript:;">Something</a></li>
-                        <li><a href="javascript:;">Another action</a></li>
-                        <li><a href="javascript:;">Something</a></li>
-                        <li class="divider"></li>
-                        <li><a href="javascript:;">Separated link</a></li>
-                    </ul>
-                </li>-->
                 <li>
-                    <a (click)="logout()" href="javascript:;">
+                    <a  href="javascript:;" (click)="Logout()">
                         <p>Log out</p>
                     </a>
                 </li>

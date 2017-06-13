@@ -41,7 +41,9 @@ namespace TickTrader.Algo.Core
         ISynchronizationContext Sync { get; }
         IEnumerable<QuoteEntity> GetSnapshot();
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame);
+        List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame);
         List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
+        List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth);
         void Subscribe(Action<QuoteEntity[]> FeedUpdated);
         void Unsubscribe();
         void SetSymbolDepth(string symbolCode, int depth);
@@ -92,8 +94,6 @@ namespace TickTrader.Algo.Core
         PluginBuilder Builder { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
-        DateTime TimePeriodStart { get; }
-        DateTime TimePeriodEnd { get; }
         IPluginLogger Logger { get; }
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
@@ -115,6 +115,7 @@ namespace TickTrader.Algo.Core
     {
         IFixtureContext ExecContext { get; }
         IPluginFeedProvider Feed { get; }
+        FeedBufferStrategy BufferingStrategy { get; }
         void Add(IFeedFixture subscriber);
         void Remove(IFeedFixture subscriber);
     }

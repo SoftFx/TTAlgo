@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Common.Lib;
@@ -76,6 +77,17 @@ namespace TickTrader.Algo.Common.Model.Setup
             foreach (var property in _allProperties)
                 cfg.Properties.Add(property.Save());
             return cfg;
+        }
+
+        public virtual void SetWorkingFolder(string workingfolder)
+        {
+            foreach (FileParamSetup fileParam in _parameters.Where(p => p is FileParamSetup))
+            {
+                if (!Path.IsPathRooted(fileParam.FilePath))
+                {
+                    fileParam.FilePath = Path.Combine(workingfolder, fileParam.FileName);
+                }
+            }
         }
 
         protected abstract PluginConfig SaveToConfig();
