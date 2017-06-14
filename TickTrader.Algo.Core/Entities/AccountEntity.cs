@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using BO = TickTrader.BusinessObjects;
+using BL = TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
 {
-    public class AccountEntity : AccountDataProvider
+    public class AccountEntity : AccountDataProvider, BL.IMarginAccountInfo, BL.ICashAccountInfo
     {
         private PluginBuilder builder;
         private Dictionary<string, OrderFilteredCollection> bySymbolFilterCache;
@@ -86,6 +88,21 @@ namespace TickTrader.Algo.Core
             return collection;
         }
 
+        public void LogInfo(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LogWarn(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LogError(string message)
+        {
+            throw new NotImplementedException();
+        }
+
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
 
@@ -99,6 +116,25 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        #region BO
+
+        long BL.IAccountInfo.Id => throw new NotImplementedException();
+        public BO.AccountingTypes AccountingType => throw new NotImplementedException();
+        decimal BL.IMarginAccountInfo.Balance => throw new NotImplementedException();
+        public int Leverage => throw new NotImplementedException();
+
+        IEnumerable<BL.IOrderModel> BL.IAccountInfo.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
+        public IEnumerable<BL.IPositionModel> Positions => throw new NotImplementedException();
+        IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => throw new NotImplementedException();
+
+        public event Action<BL.IOrderModel> OrderAdded { add { Orders.Added += value; } remove { Orders.Added -= value; } }
+        public event Action<IEnumerable<BL.IOrderModel>> OrdersAdded { add { } remove { } }
+        public event Action<BL.IOrderModel> OrderRemoved { add { Orders.Removed += value; } remove { Orders.Removed -= value; } }
+        public event Action<BL.IOrderModel> OrderReplaced { add { Orders.Replaced += value; } remove { Orders.Replaced -= value; } }
         public event Action BalanceUpdated = delegate { };
+        public event Action<BL.IPositionModel, BL.PositionChageTypes> PositionChanged;
+        public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
+
+        #endregion
     }
 }

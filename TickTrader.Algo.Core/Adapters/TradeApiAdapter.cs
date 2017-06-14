@@ -46,8 +46,8 @@ namespace TickTrader.Algo.Core
                 TradeResultEntity resultEntity;
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    account.Orders.Add(result.NewOrder);
-                    resultEntity = new TradeResultEntity(result.ResultCode, result.NewOrder);
+                    var orderModel = account.Orders.Add(result.NewOrder);
+                    resultEntity = new TradeResultEntity(result.ResultCode, orderModel);
                 }
                 else
                 {
@@ -64,7 +64,8 @@ namespace TickTrader.Algo.Core
                         Comment = comment,
                         Tag = tag
                     };
-                    resultEntity = new TradeResultEntity(result.ResultCode, orderToOpen);
+                    var orderModel = new OrderAccessor(orderToOpen);
+                    resultEntity = new TradeResultEntity(result.ResultCode, orderModel);
                 }
 
                 LogOrderOpenResults(resultEntity);
@@ -75,7 +76,7 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
-            Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
+            var orderToCancel = account.Orders.GetOrderOrNull(orderId);
             if (orderToCancel == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
@@ -83,7 +84,7 @@ namespace TickTrader.Algo.Core
 
             using (var waitHandler = new TaskProxy<CancelResult>())
             {
-                api.CancelOrder(waitHandler, orderId, ((OrderEntity)orderToCancel).ClientOrderId, orderToCancel.Side);
+                api.CancelOrder(waitHandler, orderId, orderToCancel.Entity.ClientOrderId, orderToCancel.Side);
                 var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
@@ -102,7 +103,7 @@ namespace TickTrader.Algo.Core
         {
             double? closeVolume = null;
 
-            Order orderToClose = account.Orders.GetOrderOrNull(orderId);
+            var orderToClose = account.Orders.GetOrderOrNull(orderId);
             if (orderToClose == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
@@ -125,17 +126,14 @@ namespace TickTrader.Algo.Core
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    var orderClone = new OrderEntity(orderToClose);
-                    orderClone.RemainingVolume -= result.ExecVolume;
+                    orderToClose.Entity.RemainingVolume -= result.ExecVolume;
 
-                    if (orderClone.RemainingVolume <= 0)
+                    if (orderToClose.RemainingVolume <= 0)
                         account.Orders.Remove(orderId);
-                    else
-                        account.Orders.Replace(orderClone);
 
                     logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
 
-                    return new TradeResultEntity(result.ResultCode, orderClone);
+                    return new TradeResultEntity(result.ResultCode, orderToClose);
                 }
                 else
                 {
@@ -147,7 +145,7 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            Order orderToModify = account.Orders.GetOrderOrNull(orderId);
+            var orderToModify = account.Orders.GetOrderOrNull(orderId);
             if (orderToModify == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
@@ -164,7 +162,7 @@ namespace TickTrader.Algo.Core
 
             using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
-                api.ModifyOrder(waitHandler, orderId, ((OrderEntity)orderToModify).ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
+                api.ModifyOrder(waitHandler, orderId, orderToModify.Entity.ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
                     price, orderVolume, tp, sl, comment);
                 var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
@@ -172,7 +170,7 @@ namespace TickTrader.Algo.Core
                 {
                     account.Orders.Replace(result.NewOrder);
                     logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
-                    return new TradeResultEntity(result.ResultCode, result.NewOrder);
+                    return new TradeResultEntity(result.ResultCode, orderToModify);
                 }
                 else
                 {

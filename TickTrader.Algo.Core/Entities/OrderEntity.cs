@@ -8,14 +8,14 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class OrderEntity : Order
+    public class OrderEntity
     {
         public OrderEntity(string orderId)
         {
             this.Id = orderId;
         }
 
-        public OrderEntity(Order src)
+        public OrderEntity(OrderEntity src)
         {
             this.Id = src.Id;
             this.ClientOrderId = ((OrderEntity)src).ClientOrderId;
@@ -30,6 +30,8 @@ namespace TickTrader.Algo.Core
             this.Comment = src.Comment;
             this.Created = src.Created;
             this.Modified = src.Modified;
+            this.Swap = src.Swap;
+            this.Commision = src.Commision;
         }
 
         public string Id { get; private set; }
@@ -51,6 +53,8 @@ namespace TickTrader.Algo.Core
         public double ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
         public double LastFillVolume { get; set; }
+        public double Swap { get; set; }
+        public double Commision { get; set; }
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
@@ -77,5 +81,7 @@ namespace TickTrader.Algo.Core
         public double ExecVolume { get { return double.NaN; } }
         public double LastFillPrice { get { return double.NaN; } }
         public double LastFillVolume { get { return double.NaN; } }
+        public double Margin => double.NaN;
+        public double Profit => double.NaN;
     }
 }

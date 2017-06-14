@@ -115,51 +115,54 @@ namespace TickTrader.Algo.Core
             if (eReport.ExecAction == OrderExecAction.Opened)
             {
                 ApplyOrderEntity(eReport, orderCollection);
-                orderCollection.FireOrderOpened(new OrderOpenedEventArgsImpl(eReport.OrderCopy));
+                var newOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                orderCollection.FireOrderOpened(new OrderOpenedEventArgsImpl(newOrder));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                if (oldOrder != null)
+                var order = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (order != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(eReport.OrderCopy));
+                    orderCollection.FireOrderClosed(new OrderClosedEventArgsImpl(order));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Canceled)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                if (oldOrder != null)
+                var order = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (order != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(eReport.OrderCopy));
+                    orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(order));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Expired)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                if (oldOrder != null)
+                var order = orderCollection.GetOrderOrNull(eReport.OrderId);
+                if (order != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(eReport.OrderCopy));
+                    orderCollection.FireOrderExpired(new OrderCanceledEventArgsImpl(order));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                var order = orderCollection.GetOrderOrNull(eReport.OrderId);
+                var oldOrder = order.Clone();
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, eReport.OrderCopy));
+                    orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, order));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Filled)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                if (oldOrder != null && eReport.OrderCopy != null)
+                var order = orderCollection.GetOrderOrNull(eReport.OrderId);
+                var oldOrder = order.Clone();
+                if (order != null && eReport.OrderCopy != null)
                 {
                     ApplyOrderEntity(eReport, orderCollection);
-                    orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, eReport.OrderCopy));
+                    orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, order));
                 }
             }
         }
