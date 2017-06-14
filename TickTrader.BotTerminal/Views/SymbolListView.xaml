@@ -12,6 +12,25 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
+            <Grid Grid.Row="0" Margin="5,5,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="22"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="24"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="1" Text="Symbol"/>
+                <TextBlock Grid.Column="2" Text="Bid" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="4" Text="Ask" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="6" Text="Time"/>
+
+            </Grid>
+
             <ListBox Name="Symbols"
                  Grid.Row="1"
                  Style="{DynamicResource SymbolListBox_Style}"
