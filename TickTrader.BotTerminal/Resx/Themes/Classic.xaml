@@ -8,6 +8,9 @@
     <SolidColorBrush x:Key="Shell_WarningForeground" Color="#DA5A3A"/>
     <SolidColorBrush x:Key="Shell_ErrorForeground" Color="#9F4747"/>
 
+    <SolidColorBrush x:Key="Shell_PrimaryBackground" Color="White"/>
+    <SolidColorBrush x:Key="Shell_SecondaryBackground" Color="LightGray"/>
+
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateUpHighlightColor" Color="#006836"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>
