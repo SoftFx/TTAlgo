@@ -9,9 +9,6 @@
 
     <Menu x:Key="ShellMenu" x:Shared="False">
         <MenuItem Header="{l:Resx Menu_BotTrader}" >
-            <MenuItem Header="{l:Resx Menu_NewOrder}" IsEnabled="False"/>
-            <MenuItem Header="{l:Resx Menu_NewChart}" IsEnabled="False"/>
-            <Separator/>
             <MenuItem Header="{l:Resx Menu_LogIn}" cal:Message.Attach="Connect" />
             <MenuItem Header="{l:Resx Menu_LogOut}" cal:Message.Attach="Disconnect" />
             <Separator/>
