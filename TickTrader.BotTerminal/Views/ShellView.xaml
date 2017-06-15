@@ -12,7 +12,7 @@
             <MenuItem Header="{l:Resx Menu_LogIn}" cal:Message.Attach="Connect" />
             <MenuItem Header="{l:Resx Menu_LogOut}" cal:Message.Attach="Disconnect" />
             <Separator/>
-            <MenuItem Header="{l:Resx Menu_ExitBotTrader}"/>
+            <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Preferences}">
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"

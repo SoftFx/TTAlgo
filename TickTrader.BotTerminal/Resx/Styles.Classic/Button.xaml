@@ -4,6 +4,8 @@
 
     <ControlTemplate x:Key="FlatButton_Template" TargetType="{x:Type ButtonBase}">
         <Border Name="Border" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=CornerRadius}"
+                BorderBrush="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=BorderBrush}"
+                BorderThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=BorderThickness}"
                 IsHitTestVisible="{TemplateBinding IsHitTestVisible}"
                 Background="{TemplateBinding Background}">
             <ContentPresenter Margin="{TemplateBinding Padding}"
