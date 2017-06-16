@@ -134,6 +134,11 @@ namespace TickTrader.BotTerminal
         {
             var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
             wndManager.ShowDialog(exit);
+            if (exit.HasStartedBots && exit.IsConfirmed)
+            {
+                var shutdown = new ShutdownDialogViewModel(Charts);
+                wndManager.ShowDialog(shutdown);
+            }
             callback(exit.IsConfirmed);
         }
 

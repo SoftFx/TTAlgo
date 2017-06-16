@@ -451,6 +451,10 @@
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\NotificationsViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
+    <Compile Include="Views\ShutdownDialogView.xaml.cs">
+      <DependentUpon>ShutdownDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ShutdownDialogViewModel.cs" />
     <Compile Include="Views\SymbolDetailsView.xaml.cs">
       <DependentUpon>SymbolDetailsView.xaml</DependentUpon>
     </Compile>
@@ -887,6 +891,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ShellView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ShutdownDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
