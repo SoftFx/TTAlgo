@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
@@ -35,7 +34,8 @@ namespace TickTrader.DedicatedServer.DS
 
         ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
 
-        ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig);
+        ITradeBot AddBot(TradeBotModelConfig config);
+
         void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
     }
 
@@ -49,7 +49,7 @@ namespace TickTrader.DedicatedServer.DS
         Task<ConnectionErrorCodes> TestConnection();
         void ChangePassword(string password);
 
-        ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig);
+        ITradeBot AddBot(TradeBotModelConfig config);
         void RemoveBot(string botId, bool cleanLog = true, bool cleanAlgoData = true);
     }
 
@@ -59,6 +59,7 @@ namespace TickTrader.DedicatedServer.DS
     public interface ITradeBot
     {
         string Id { get; }
+        bool Isolated { get; }
         bool IsRunning { get; }
         string FaultMessage { get; }
         IBotLog Log { get; }
@@ -70,7 +71,7 @@ namespace TickTrader.DedicatedServer.DS
         string Descriptor { get; }
         string BotName { get; }
         BotStates State { get; }
-        void Configurate(PluginConfig cfg);
+        void Configurate(PluginConfig cfg, bool isolated);
         void Start();
         Task StopAsync();
     }

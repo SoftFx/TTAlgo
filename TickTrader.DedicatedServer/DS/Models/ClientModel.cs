@@ -350,16 +350,16 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         #region Bot Management
 
-        public ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig)
+        public ITradeBot AddBot(TradeBotModelConfig config)
         {
             lock (_sync)
             {
-                var package = _packageProvider.Get(pluginId.PackageName);
+                var package = _packageProvider.Get(config.Plugin.PackageName);
 
                 if (package == null)
-                    throw new PackageNotFoundException($"Package '{pluginId.PackageName}' cannot be found!");
+                    throw new PackageNotFoundException($"Package '{config.Plugin.PackageName}' cannot be found!");
 
-                var newBot = new TradeBotModel(botId, pluginId, botConfig);
+                var newBot = new TradeBotModel(config);
                 BotValidation?.Invoke(newBot);
                 InitBot(newBot);
                 _bots.Add(newBot);
@@ -454,6 +454,8 @@ namespace TickTrader.DedicatedServer.DS.Models
             var toRemove = _bots.Where(b => b.Package == package).ToList();
             toRemove.ForEach(b => _bots.Remove(b));
         }
+
+       
 
         #endregion
     }

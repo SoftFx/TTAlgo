@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Entities;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
     public class OrderEntity : Order
     {
+        private string _userTag;
+        private string _tag;
+
         public OrderEntity(string orderId)
         {
             this.Id = orderId;
@@ -43,14 +43,28 @@ namespace TickTrader.Algo.Core
         public double StopLoss { get; set; }
         public double TakeProfit { get; set; }
         public string Comment { get; set; }
-        public string Tag { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
+        public string Tag
+        {
+            get { return _tag; }
+            set
+            {
+                _tag = value;
+
+                if (CompositeTag.TryParse(_tag, out CompositeTag compositeTag))
+                    _userTag = compositeTag.Tag;
+                else
+                    _userTag = _tag;
+            }
+        }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
         public double ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
         public double LastFillVolume { get; set; }
+
+        string Order.Tag => _userTag;
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }

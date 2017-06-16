@@ -169,6 +169,7 @@ export class TradeBotLog implements Serializable<TradeBotLog> {
 
 export class TradeBotModel implements Serializable<TradeBotModel>{
     public Id: string;
+    public Isolated: boolean;
     public Account: AccountModel;
     public State: TradeBotStates;
     public PackageName: string;
@@ -180,6 +181,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 
     public Deserialize(input: any): TradeBotModel {
         this.Id = input.Id;
+        this.Isolated = input.Isolated;
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
         this.PackageName = input.PackageName;
@@ -335,6 +337,7 @@ export class SetupModel {
     public PackageName: string;
     public PluginId: string;
     public InstanceId: string;
+    public Isolated: boolean;
     public Account: AccountModel;
     public Symbol: string;
 
@@ -347,6 +350,7 @@ export class SetupModel {
             PackageName: this.PackageName,
             PluginId: this.PluginId,
             InstanceId: this.InstanceId,
+            Isolated: this.Isolated,
             Account: this.Account,
             Symbol: this.Symbol,
             Parameters: this.Parameters.map(p => this.PayloadParameter(p))
@@ -358,6 +362,7 @@ export class SetupModel {
 
     public static ForTradeBot(bot: TradeBotModel) {
         let setup = new SetupModel();
+        setup.Isolated = bot.Isolated;
         setup.Symbol = bot.Config.Symbol;
         setup.InstanceId = bot.Id;
         setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id,
@@ -378,6 +383,7 @@ export class SetupModel {
                 pDescriptor));
         setup.Account = null;
         setup.Symbol = "";
+        setup.Isolated = false;
 
         return setup;
     }

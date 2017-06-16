@@ -11,7 +11,29 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class PluginSetupExtensions
     {
-        public static PluginConfig Parse(this PluginSetupDto setup, string workingFolder)
+        public static void EnsureFiles(this PluginSetupDto setup, string workingFolder)
+        {
+            foreach (var param in setup.Parameters)
+            {
+                switch (param.DataType)
+                {
+                    case "File":
+                        var jObject = param.Value as JObject;
+                        var fileName = jObject["FileName"]?.ToString();
+                        var base64data = jObject["Data"]?.ToString();
+
+                        if (!string.IsNullOrWhiteSpace(base64data))
+                        {
+                            var fullFileName = Path.Combine(workingFolder, fileName);
+                            PutFileInWorkingDirectory(fullFileName, base64data);
+                        }
+
+                        break;
+                }
+            }
+        }
+
+        public static PluginConfig Parse(this PluginSetupDto setup)
         {
             var barConfig = new BarBasedConfig()
             {
@@ -19,14 +41,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 PriceType = BarPriceType.Ask,
             };
 
-            var parameters = ParseParameters(setup, workingFolder);
+            var parameters = ParseParameters(setup);
 
             barConfig.Properties.AddRange(parameters);
 
             return barConfig;
         }
 
-        private static IEnumerable<Property> ParseParameters(PluginSetupDto setup, string workingDirectory)
+        private static IEnumerable<Property> ParseParameters(PluginSetupDto setup)
         {
             foreach (var param in setup.Parameters)
             {
@@ -56,13 +78,6 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                     case "File":
                         var jObject = param.Value as JObject;
                         var fileName = jObject["FileName"]?.ToString();
-                        var base64data = jObject["Data"]?.ToString();
-
-                        if (!string.IsNullOrWhiteSpace(base64data))
-                        {
-                            var fullFileName = Path.Combine(workingDirectory, fileName);
-                            PutFileInWorkingDirectory(fullFileName, base64data);
-                        }
 
                         yield return new FileParameter { Id = param.Id, FileName = fileName };
 

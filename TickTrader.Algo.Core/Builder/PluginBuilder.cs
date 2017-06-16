@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Core
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
         private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
+        private bool _isolated;
+        private string _instanceId;
 
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
@@ -39,7 +41,6 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginAdapter PluginProxy { get; private set; }
-        public string InstanceId { get; set; }
         public string MainSymbol { get; set; }
         public SymbolsCollection Symbols { get; private set; }
         public CurrenciesCollection Currencies { get; private set; }
@@ -60,6 +61,24 @@ namespace TickTrader.Algo.Core
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
+        public bool Isolated
+        {
+            get { return _isolated; }
+            set
+            {
+                _isolated = value;
+                Account.Isolated = _isolated;
+            }
+        }
+        public string Id
+        {
+            get { return _instanceId; }
+            set
+            {
+                _instanceId = value;
+                Account.InstanceId = _instanceId;
+            }
+        }
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -236,7 +255,8 @@ namespace TickTrader.Algo.Core
             {
                 if (TradeApi == null)
                     return new NullTradeApi();
-                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter);
+
+                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Id);
             }
         }
 
@@ -246,7 +266,7 @@ namespace TickTrader.Algo.Core
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
 
-       
+
 
         void IPluginContext.OnExit()
         {
@@ -560,7 +580,7 @@ namespace TickTrader.Algo.Core
         {
             private StringBuilder statusBuilder = new StringBuilder();
             private bool hasChanges;
-            
+
             public string Status { get; private set; }
             public Action<string> Updated { get; set; }
 

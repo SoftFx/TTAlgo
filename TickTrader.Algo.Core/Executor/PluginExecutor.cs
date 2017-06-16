@@ -30,7 +30,8 @@ namespace TickTrader.Algo.Core
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
-        private string botInstanceId;
+        private string _botInstanceId;
+        private bool _isolated;
         private States state;
 
         public PluginExecutor(string pluginId)
@@ -113,7 +114,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public Api.TimeFrames TimeFrame
+        public TimeFrames TimeFrame
         {
             get { return timeframe; }
             set
@@ -192,14 +193,28 @@ namespace TickTrader.Algo.Core
 
         public string InstanceId
         {
-            get { return botInstanceId; }
+            get { return _botInstanceId; }
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
 
-                    botInstanceId = value;
+                    _botInstanceId = value;
+                }
+            }
+        }
+
+        public bool Isolated 
+        {
+            get { return _isolated; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    _isolated = value;
                 }
             }
         }
@@ -223,7 +238,8 @@ namespace TickTrader.Algo.Core
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
                 InitWorkingFolder();
-                builder.InstanceId = botInstanceId;
+                builder.Id = _botInstanceId;
+                builder.Isolated = _isolated;
                 builder.TradeApi = tradeApi;
                 builder.Diagnostics = this;
                 if (logger != null)

@@ -8,7 +8,6 @@ using System.Xml;
 using TickTrader.Algo.Common.Model;
 using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
@@ -247,10 +246,10 @@ namespace TickTrader.DedicatedServer.DS.Models
         public event Action<ITradeBot, ChangeAction> BotChanged;
         public event Action<ITradeBot> BotStateChanged;
 
-        public ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig)
+        public ITradeBot AddBot(TradeBotModelConfig config)
         {
             lock (SyncObj)
-                return GetAccountOrThrow(accountId).AddBot(botId, pluginId, botConfig);
+                return GetAccountOrThrow(config.Account).AddBot(config);
         }
 
         public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
@@ -374,6 +373,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 .ToArray();
             }
         }
+
 
         #endregion
     }
