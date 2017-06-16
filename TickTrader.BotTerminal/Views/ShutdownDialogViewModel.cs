@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
         public const int Delay = 1000;
 
 
-        public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(60);
 
 
         private ChartCollectionViewModel _charts;
@@ -57,12 +57,12 @@ namespace TickTrader.BotTerminal
         {
             _charts.Items.Foreach(c => c.StopBots());
 
-            StoppedBots = _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+            StoppedBots = TotalBots - _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
             var startTime = DateTime.Now;
             while (_charts.Items.Any(c => c.HasStartedBots) && DateTime.Now - startTime < WaitTimeout)
             {
                 await Task.Delay(Delay);
-                StoppedBots = _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+                StoppedBots = TotalBots - _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
             }
 
             TryClose();
