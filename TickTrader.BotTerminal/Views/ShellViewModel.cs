@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel();
+            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
             wndManager.ShowDialog(exit);
             callback(exit.IsConfirmed);
         }
@@ -331,6 +331,11 @@ namespace TickTrader.BotTerminal
         public void CloseWindow(object wndKey)
         {
             GetWindow(wndKey)?.TryClose();
+        }
+
+        public bool? ShowDialog(IScreen dlgModel)
+        {
+            return wndManager.ShowDialog(dlgModel);
         }
 
         #endregion

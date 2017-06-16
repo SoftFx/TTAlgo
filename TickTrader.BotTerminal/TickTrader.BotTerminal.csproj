@@ -372,6 +372,10 @@
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
     <Compile Include="Views.Chart\BotControlViewModel.cs" />
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
+    <Compile Include="Views.Chart\CloseChartDialogViewModel.cs" />
+    <Compile Include="Views.Chart\CloseChartDialogView.xaml.cs">
+      <DependentUpon>CloseChartDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
       <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
     </Compile>
@@ -787,6 +791,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Chart\BotStateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\CloseChartDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
