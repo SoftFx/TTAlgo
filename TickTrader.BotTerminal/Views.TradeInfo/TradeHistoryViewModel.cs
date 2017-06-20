@@ -224,8 +224,13 @@ namespace TickTrader.BotTerminal
                 else
                 {
                     var key = GetTransactionKey(tradeTransaction);
-                    if (tradeTransaction.CloseTime.ToLocalTime().Between(From, To) && !_tradesList.ContainsKey(key))
+                    if (!_tradesList.ContainsKey(key) &&
+                        (Period == TimePeriod.LastHour
+                            ? tradeTransaction.CloseTime.ToLocalTime() > From
+                            : tradeTransaction.CloseTime.ToLocalTime().Between(From, To)))
+                    {
                         _tradesList.Add(key, tradeTransaction);
+                    }
                 }
             }
             catch (Exception ex)
