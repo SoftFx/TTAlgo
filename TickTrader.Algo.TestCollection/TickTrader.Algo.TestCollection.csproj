@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\EnvironmentInfoBot.cs" />
+    <Compile Include="Bots\JournalStressTest.cs" />
     <Compile Include="Bots\OpenOrder.cs" />
     <Compile Include="Bots\OrderEventsBot.cs" />
     <Compile Include="Bots\TradeBotCommon.cs" />

@@ -98,6 +98,7 @@
     <Compile Include="Executor\FeedStrategy.cs" />
     <Compile Include="Executor\Interfaces.cs" />
     <Compile Include="Executor\InvokeStartegy.cs" />
+    <Compile Include="Executor\LogFixture.cs" />
     <Compile Include="Executor\OutputFixture.cs" />
     <Compile Include="Executor\PluginExecutor.cs" />
     <Compile Include="Executor\StatusFixture.cs" />

@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class BotLog : CrossDomainObject, IPluginLogger, IBotLog
+    public class BotLog : IBotLog
     {
         private object _sync;
 
@@ -20,48 +20,19 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public event Action<string> StatusUpdated;
 
-        public void OnError(Exception ex)
+        internal void Update(BotLogRecord[] recrods)
         {
-        }
-
-        public void OnExit()
-        {
-        }
-
-        public void OnInitialized()
-        {
-        }
-
-        public void OnPrint(string entry)
-        {
-        }
-
-        public void OnPrint(string entry, params object[] parameters)
-        {
-        }
-
-        public void OnPrintError(string entry)
-        {
-        }
-
-        public void OnPrintError(string entry, params object[] parameters)
-        {
-        }
-
-        public void OnPrintInfo(string info)
-        {
-        }
-
-        public void OnPrintTrade(string entry)
-        {
-        }
-
-        public void OnStart()
-        {
-        }
-
-        public void OnStop()
-        {
+            lock (_sync)
+            {
+                foreach (var rec in recrods)
+                {
+                    if (rec.Severity == LogSeverities.CustomStatus)
+                    {
+                        Status = rec.Message;
+                        StatusUpdated?.Invoke(rec.Message);
+                    }
+                }
+            }
         }
 
         public void UpdateStatus(string status)

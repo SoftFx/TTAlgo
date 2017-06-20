@@ -33,6 +33,7 @@
         </DockPanel>
 
         <DataGrid Name="Orders" Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
+                  EnableRowVirtualization="True"
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 

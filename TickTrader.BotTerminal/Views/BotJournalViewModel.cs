@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Data;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,18 +23,19 @@ namespace TickTrader.BotTerminal
         {
             _botJournal = journal;
 
-            Journal = CollectionViewSource.GetDefaultView(_botJournal.Records.AsObservable());
+            Journal = CollectionViewSource.GetDefaultView(_botJournal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
 
-            _botNameFilterEntries.Add(new BotNameFilterEntry("All", true));
+            _botNameFilterEntries.Add(new BotNameFilterEntry("Nothing", BotNameFilterType.Nothing));
+            _botNameFilterEntries.Add(new BotNameFilterEntry("All",  BotNameFilterType.All));
 
-            _botJournal.Statistics.Items.Updated += args =>
+            _botJournal.BotNames.Updated += args =>
             {
                 if (args.Action == DLinqAction.Insert)
-                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.NewItem.Name, false));
+                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.NewItem, BotNameFilterType.SpecifiedName));
                 else if (args.Action == DLinqAction.Remove)
                 {
-                    var entry = _botNameFilterEntries.FirstOrDefault((e) => !e.IsEmpty && e.Name == args.OldItem.Name);
+                    var entry = _botNameFilterEntries.FirstOrDefault((e) => e.Type == BotNameFilterType.SpecifiedName && e.Name == args.OldItem);
 
                     if (selectedBotNameFilter == entry)
                         SelectedBotNameFilter = _botNameFilterEntries.First();
@@ -50,12 +52,12 @@ namespace TickTrader.BotTerminal
         public ObservableCollection<BotNameFilterEntry> BotNameFilterEntries { get { return _botNameFilterEntries; } }
         public MessageTypeFilter TypeFilter
         {
-            get { return _botJournalFilter.MessageTypeFilter; }
+            get { return _botJournalFilter.MessageTypeCondition; }
             set
             {
-                if (_botJournalFilter.MessageTypeFilter != value)
+                if (_botJournalFilter.MessageTypeCondition != value)
                 {
-                    _botJournalFilter.MessageTypeFilter = value;
+                    _botJournalFilter.MessageTypeCondition = value;
                     NotifyOfPropertyChange(nameof(TypeFilter));
                     ApplyFilter();
                 }
@@ -81,7 +83,7 @@ namespace TickTrader.BotTerminal
             get { return selectedBotNameFilter; }
             set
             {
-                _botJournalFilter.BotFilter = value.IsEmpty ? "" : value.Name;
+                _botJournalFilter.BotCondition = value;
 
                 selectedBotNameFilter = value;
                 NotifyOfPropertyChange(nameof(SelectedBotNameFilter));
@@ -98,7 +100,13 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_botJournalFilter.BotFilter));
+                string logDir;
+
+                if (_botJournalFilter.BotCondition == null || _botJournalFilter.BotCondition.Type != BotNameFilterType.SpecifiedName)
+                    logDir = EnvService.Instance.BotLogFolder;
+                else
+                    logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_botJournalFilter.BotCondition.Name));
+
                 Directory.CreateDirectory(logDir);
                 Process.Start(logDir);
             }
@@ -130,19 +138,19 @@ namespace TickTrader.BotTerminal
     {
         public BotMessageFilter()
         {
-            MessageTypeFilter = MessageTypeFilter.All;
+            MessageTypeCondition = MessageTypeFilter.All;
         }
 
         public string TextFilter { get; set; }
-        public MessageTypeFilter MessageTypeFilter { get; set; }
-        public string BotFilter { get; set; }
+        public MessageTypeFilter MessageTypeCondition { get; set; }
+        public BotNameFilterEntry BotCondition { get; set; }
 
         public bool Filter(BotMessage bMessage)
         {
             if (bMessage != null)
             {
-                return (JournalType == null || bMessage.Type == JournalType)
-                     && (string.IsNullOrEmpty(BotFilter) || bMessage.Bot == BotFilter)
+                return (BotCondition == null || BotCondition.Matches(BotCondition.Name))
+                     && (JournalType == null || bMessage.Type == JournalType)
                      && (string.IsNullOrEmpty(TextFilter)
                      || (bMessage.Time.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
@@ -155,7 +163,7 @@ namespace TickTrader.BotTerminal
         {
             get
             {
-                switch (MessageTypeFilter)
+                switch (MessageTypeCondition)
                 {
                     case MessageTypeFilter.Info: return JournalMessageType.Info;
                     case MessageTypeFilter.Trading: return JournalMessageType.Trading;
@@ -169,13 +177,30 @@ namespace TickTrader.BotTerminal
 
     public class BotNameFilterEntry
     {
-        public BotNameFilterEntry(string name, bool isEmpty)
+        public BotNameFilterEntry(string name, BotNameFilterType type)
         {
             Name = name;
-            IsEmpty = isEmpty;
+            Type = type;
         }
 
         public string Name { get; private set; }
-        public bool IsEmpty { get; private set; }
+        public BotNameFilterType Type { get; private set; }
+
+        public bool Matches(string botName)
+        {
+            if (Type == BotNameFilterType.Nothing)
+                return false;
+            else if (Type == BotNameFilterType.All)
+                return true;
+            else
+                return Name == botName;
+        }
+    }
+
+    public enum BotNameFilterType
+    {
+        Nothing,
+        All,
+        SpecifiedName
     }
 }

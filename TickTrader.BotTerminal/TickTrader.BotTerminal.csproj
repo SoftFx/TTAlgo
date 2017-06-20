@@ -276,6 +276,7 @@
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
+    <Compile Include="Lib\ObservableCircularList.cs" />
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
@@ -284,14 +285,12 @@
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
-    <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolModel.cs" />
-    <Compile Include="Model\SymbolObserver.cs" />
     <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
@@ -343,7 +342,6 @@
     <Compile Include="Model.Charts\ChartNavigator.cs" />
     <Compile Include="Model.Algo\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\IndicatorModel.cs" />
-    <Compile Include="Model.Algo\IndicatorsCollection.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />
     <Compile Include="Model.Charts\TimelineModel.cs" />
     <Compile Include="Model.Algo\Interfaces.cs" />
@@ -919,10 +917,6 @@
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.QuoteCache\TickTrader.QuoteCache.csproj">
-      <Project>{d12e86d0-7ded-4555-a87c-759a2abdca0f}</Project>
-      <Name>TickTrader.QuoteCache</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
       <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>

@@ -41,6 +41,7 @@
             <DockPanel Grid.Row="0" Margin="4" Style="{DynamicResource DockPanelAsToolBarStyle}">
                 <TextBox DockPanel.Dock="Left" Text="{Binding FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}"
                      Width="200" Style="{DynamicResource SearchTextBox_Style}"/>
+                <CheckBox DockPanel.Dock="Left" Content="Enable" IsChecked="{Binding IsJournalEnabled}" Margin="5 0 0 0" />
                 <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
                               Style="{DynamicResource PanelActionButtonStyle}"
                               cal:Message.Attach="Browse"/>

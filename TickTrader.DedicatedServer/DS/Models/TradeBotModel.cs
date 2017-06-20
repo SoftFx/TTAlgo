@@ -217,7 +217,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
-                executor.Logger = _botLog;
+                executor.InitLogging().NewRecords += TradeBotModel_NewRecords;
                 _stopListener = new ListenerProxy(executor, () =>
                 {
                     StopInternal(null, true);
@@ -236,6 +236,11 @@ namespace TickTrader.DedicatedServer.DS.Models
                     StopInternal(ex.Message, true);
                 }
             }
+        }
+
+        private void TradeBotModel_NewRecords(BotLogRecord[] recs)
+        {
+            _botLog.Update(recs);
         }
 
         private void DisposeExecutor()

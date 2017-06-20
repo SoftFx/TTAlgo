@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
+using System.Threading.Tasks.Dataflow;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,6 +17,9 @@ namespace TickTrader.BotTerminal
         public TradeBotModel2(PluginSetup pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
+            Name = _uniqueNameGenerator.GenerateFrom(Name);
+
+            host.Journal.RegisterBotLog(Name);
         }
 
         public void Start()
@@ -37,6 +43,7 @@ namespace TickTrader.BotTerminal
 
         public void Remove()
         {
+            Host.Journal.UnregisterBotLog(Name);
             Removed(this);
         }
 
@@ -54,18 +61,55 @@ namespace TickTrader.BotTerminal
         public event System.Action<TradeBotModel2> Removed = delegate { };
 
         protected override PluginExecutor CreateExecutor()
-        {
-            Name = _uniqueNameGenerator.GenerateFrom(Name); //Dirty Workaround
-
+        {            
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
             executor.TradeApi = Host.GetTradeApi();
-            executor.Logger = new LogAdapter(Host.Journal, Name, s =>
-            {
-                CustomStatus = s;
-                CustomStatusChanged(this);
-            });
+            executor.InitLogging().NewRecords += TradeBotModel2_NewRecords;
             return executor;
+        }
+
+        private void TradeBotModel2_NewRecords(BotLogRecord[] records)
+        {
+            List<BotMessage> messages = new List<BotMessage>(records.Length);
+            string status = null;
+
+            foreach (var rec in records)
+            {
+                if (rec.Severity != LogSeverities.CustomStatus)
+                    messages.Add(Convert(rec));
+                else
+                    status = rec.Message;
+            }
+
+            if (messages.Count > 0)
+                Host.Journal.Add(messages);
+
+            if (status != null)
+            {
+                Execute.OnUIThread(() =>
+                {
+                    CustomStatus = status;
+                    CustomStatusChanged?.Invoke(this);
+                });
+            }
+        }
+
+        private BotMessage Convert(BotLogRecord record)
+        {
+            return new BotMessage(record.Time, Name, record.Message, Convert(record.Severity)) { Details = record.Details };
+        }
+
+        private JournalMessageType Convert(LogSeverities severity)
+        {
+            switch (severity)
+            {
+                case LogSeverities.Info: return JournalMessageType.Info;
+                case LogSeverities.Error: return JournalMessageType.Error;
+                case LogSeverities.Custom: return JournalMessageType.Custom;
+                case LogSeverities.Trade: return JournalMessageType.Trading;
+                default: return JournalMessageType.Info;
+            }
         }
 
         private void Executor_IsRunningChanged(PluginExecutor pluginExecutor)
@@ -78,94 +122,6 @@ namespace TickTrader.BotTerminal
                     Host.Unlock();
                 }
             });
-        }
-
-        private class LogAdapter : CrossDomainObject, IPluginLogger
-        {
-            private Action<string> statusChanged;
-            private BotJournal journal;
-            private string botName;
-
-            public LogAdapter(BotJournal journal, string botName, Action<string> statusChangedHandler)
-            {
-                this.journal = journal;
-                this.botName = botName;
-                this.statusChanged = statusChangedHandler;
-            }
-
-            public void UpdateStatus(string status)
-            {
-                statusChanged(status);
-            }
-
-            public void OnPrint(string entry)
-            {
-                journal.Custom(botName, entry);
-            }
-
-            public void OnPrint(string entry, object[] parameters)
-            {
-                string msg = entry;
-                try
-                {
-                    msg = string.Format(entry, parameters);
-                }
-                catch { }
-
-                journal.Custom(botName, msg);
-            }
-
-            public void OnPrintError(string entry)
-            {
-                journal.Error(botName, entry);
-            }
-
-            public void OnPrintError(string entry, object[] parameters)
-            {
-                string msg = entry;
-                try
-                {
-                    msg = string.Format(entry, parameters);
-                }
-                catch { }
-
-                journal.Error(botName, msg);
-            }
-
-            public void OnPrintInfo(string entry)
-            {
-                journal.Info(botName, entry);
-            }
-
-            public void OnError(Exception ex)
-            {
-                journal.Error(botName, "Exception: " + ex.Message);
-            }
-
-            public void OnInitialized()
-            {
-                journal.Info(botName, "Bot initialized");
-            }
-
-            public void OnStart()
-            {
-                journal.Info(botName, "Bot started");
-            }
-
-            public void OnStop()
-            {
-                journal.Info(botName, "Bot stopped");
-            }
-
-            public void OnExit()
-            {
-                journal.Info(botName, "Bot exited");
-            }
-
-            public void OnPrintTrade(string entry)
-            {
-                journal.Trading(botName, entry);
-            }
         }
     }
 }

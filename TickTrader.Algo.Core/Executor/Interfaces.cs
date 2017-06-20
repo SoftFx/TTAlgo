@@ -78,6 +78,8 @@ namespace TickTrader.Algo.Core
         IPluginLogger Logger { get; }
         void Enqueue(QuoteEntity update);
         void Enqueue(Action<PluginBuilder> action);
+        void OnInternalException(Exception ex);
+
         //void AddSetupAction(Action setupAction);
 
         //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);

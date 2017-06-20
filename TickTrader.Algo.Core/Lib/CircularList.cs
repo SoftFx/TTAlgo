@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core.Lib
     {
         private static readonly T[] emptyBuffer = new T[0];
 
-        private int begin = -1;
+        private int begin = 0;
         private int end = -1;
         private T[] buffer;
 
@@ -31,21 +31,13 @@ namespace TickTrader.Algo.Core.Lib
             Add(item);
         }
 
-        public void Add(T item)
+        public virtual void Add(T item)
         {
             if (Count == Capacity)
                 Expand();
 
-            if (Count == 0)
-            {
-                begin = 0;
+            if (++end >= Capacity)
                 end = 0;
-            }
-            else
-            {
-                if (++end >= Capacity)
-                    end = 0;
-            }
 
             buffer[end] = item;
             Count++;
@@ -59,7 +51,7 @@ namespace TickTrader.Algo.Core.Lib
                 Add(rec);
         }
 
-        public T Dequeue()
+        public virtual T Dequeue()
         {
             if (Count == 0)
                 throw new InvalidOperationException("List is empty!");
@@ -75,13 +67,13 @@ namespace TickTrader.Algo.Core.Lib
             return result;
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             if (Count > 0)
-                TruncateNoCheck(Count);
+                DoTruncateStart(Count);
         }
 
-        public void TruncateStart(int tSize)
+        public virtual void TruncateStart(int tSize)
         {
             if (tSize == 0)
                 return;
@@ -89,10 +81,10 @@ namespace TickTrader.Algo.Core.Lib
             if (tSize < 0 || tSize > Count)
                 throw new ArgumentOutOfRangeException();
 
-            TruncateNoCheck(tSize);
+            DoTruncateStart(tSize);
         }
 
-        private void TruncateNoCheck(int tSize)
+        protected virtual void DoTruncateStart(int tSize)
         {
             if (begin <= end)
             {
@@ -182,18 +174,21 @@ namespace TickTrader.Algo.Core.Lib
 
         public IEnumerator<T> GetEnumerator()
         {
-            if (begin <= end)
+            if (Count != 0)
             {
-                for (int i = begin; i <= end; i++)
-                    yield return buffer[i];
-            }
-            else
-            {
-                for (int i = begin; i < buffer.Length; i++)
-                    yield return buffer[i];
+                if (begin <= end)
+                {
+                    for (int i = begin; i <= end; i++)
+                        yield return buffer[i];
+                }
+                else
+                {
+                    for (int i = begin; i < buffer.Length; i++)
+                        yield return buffer[i];
 
-                for (int i = 0; i <= end; i++)
-                    yield return buffer[i];
+                    for (int i = 0; i <= end; i++)
+                        yield return buffer[i];
+                }
             }
         }
 
