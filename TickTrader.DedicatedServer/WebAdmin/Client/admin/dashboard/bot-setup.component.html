@@ -20,7 +20,7 @@
                     <div class="form-group">
                         <label>Symbol</label>
                         <select [(ngModel)]="Setup.Symbol" formControlName="Symbol" class="form-control">
-                            <option *ngIf="!AccountInfoRequest.IsCompleted">{{Setup.Symbol}}</option>
+                            <option *ngIf="!AccountInfoRequest.IsCompleted || AccountInfoRequest.IsFaulted">{{Setup.Symbol}}</option>
                             <option *ngFor="let Symbol of (Symbols | orderBy)" [ngValue]="Symbol">{{Symbol}}</option>
                         </select>
                         <p *ngIf="!AccountInfoRequest.IsCompleted" class="category">Loading...</p>

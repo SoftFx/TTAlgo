@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable } from "rxjs/Rx";
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, AuthCredentials, AccountInfo } from "../models/index";
+import { PackageModel, PluginModel, SetupModel, Guid, AccountModel, ResponseStatus, ResponseCode, TradeBotModel, TradeBotLog, AuthCredentials, AccountInfo, TradeBotStatus, FileInfo } from "../models/index";
 import { Http, Request, Response, RequestOptionsArgs, RequestOptions, Headers } from '@angular/http';
 import { FeedService } from './feed.service';
 import { AuthService } from './auth.service';
@@ -24,6 +24,16 @@ export class ApiService {
         });
     }
 
+    GetDownloadLogUrl(botId: string, file: string) {
+        var token = this.Auth.AuthData ? this.Auth.AuthData.Token : "";
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}?authorization-token=${token}`;
+    }
+
+    GetDownloadAlgoDataUrl(botId: string, file: string) {
+        var token = this.Auth.AuthData ? this.Auth.AuthData.Token : "";
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/AlgoData/${file}?authorization-token=${token}`;
+    }
+
     AutogenerateBotId(name: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(name) + '/BotId', { headers: this.headers })
             .map(res => res.text())
@@ -33,6 +43,25 @@ export class ApiService {
     GetTradeBot(id: string) {
         return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id), { headers: this.headers })
             .map(res => new TradeBotModel().Deserialize(res.json()))
+            .catch(err => this.handleServerError(err));
+    }
+
+
+    GetTradeBotAlgoData(id: string) {
+        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/AlgoData', { headers: this.headers })
+            .map(res => res.json().map(f => new FileInfo().Deserialize(f)))
+            .catch(err => this.handleServerError(err));
+    }
+
+    GetTradeBotLog(id: string) {
+        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/Logs', { headers: this.headers })
+            .map(res => new TradeBotLog().Deserialize(res.json()))
+            .catch(err => this.handleServerError(err));
+    }
+
+    GetTradeBotStatus(id: string) {
+        return this._http.get(`${this._tradeBotsUrl}/` + encodeURIComponent(id) + '/Status', { headers: this.headers })
+            .map(res => new TradeBotStatus().Deserialize(res.json()))
             .catch(err => this.handleServerError(err));
     }
 
@@ -53,9 +82,21 @@ export class ApiService {
             .catch(err => this.handleServerError(err));
     }
 
-    DeleteBot(botId: string) {
+    DeleteBot(botId: string, cleanLog: boolean, cleanAlgoData: boolean) {
         return this._http
-            .delete(`${this._tradeBotsUrl}/` + encodeURIComponent(botId), { headers: this.headers })
+            .delete(`${this._tradeBotsUrl}/${encodeURIComponent(botId)}?` + $.param({ clean_log: cleanLog, clean_algodata: cleanAlgoData }), { headers: this.headers })
+            .catch(err => this.handleServerError(err));
+    }
+
+    DeleteLog(botId: string) {
+        return this._http
+            .delete(`${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs`, { headers: this.headers })
+            .catch(err => this.handleServerError(err));
+    }
+
+    DeleteLogFile(botId: string, file: string) {
+        return this._http
+            .delete(`${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}`, { headers: this.headers })
             .catch(err => this.handleServerError(err));
     }
 

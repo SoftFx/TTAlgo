@@ -8,6 +8,7 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using TickTrader.Algo.Common.Model;
 using TickTrader.DedicatedServer.DS.Info;
+using System.Net;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
@@ -33,7 +34,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpGet("{server}/{login}/[action]")]
         public IActionResult Info(string server, string login)
         {
-            if (_dedicatedServer.GetAccountInfo(new AccountKey(login, server), out ConnectionInfo info) == ConnectionErrorCodes.None)
+            if (_dedicatedServer.GetAccountInfo(new AccountKey(WebUtility.UrlDecode(login), WebUtility.UrlDecode(server)), out ConnectionInfo info) == ConnectionErrorCodes.None)
                 return Ok(info.ToDto());
 
             return BadRequest();

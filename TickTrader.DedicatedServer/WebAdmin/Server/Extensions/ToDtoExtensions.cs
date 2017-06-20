@@ -5,6 +5,8 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.DS.Info;
+using TickTrader.DedicatedServer.DS.Models;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
@@ -23,27 +25,52 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             return new TradeBotDto()
             {
                 Id = bot.Id,
-                IsRunning = bot.IsRunning,
-                Status = bot.Log.Status,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
+                PackageName = bot.PackageName,
+                BotName = bot.BotName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto()
             };
         }
 
+        public static TradeBotLogDto ToDto(this IBotLog botlog)
+        {
+            return new TradeBotLogDto
+            {
+                Snapshot = botlog.Messages.OrderByDescending(le => le.TimeUtc).Select(e => e.ToDto()).ToArray(),
+                Files = botlog.Files.Select(fm => fm.ToDto()).ToArray()
+            };
+        }
+
+        public static FileDto ToDto(this IFile file)
+        {
+            return new FileDto { Name = file.Name, Size = file.Size };
+        }
+
+        public static LogEntryDto ToDto(this ILogEntry entry)
+        {
+            return new LogEntryDto
+            {
+                Time = entry.TimeUtc,
+                Type = entry.Type.ToString(),
+                Message = entry.Message
+            };
+        }
+
         public static TradeBotConfigDto ToConfigDto(this ITradeBot bot)
         {
-            var descriptor = bot.Package.GetPluginRef(bot.Descriptor).Descriptor;
+            var pluginDescriptor = bot.Package?.GetPluginRef(bot.Descriptor)?.Descriptor;
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.MainSymbol,
                 Parameters = bot.Config.Properties.Select(p =>
-                new ParameterDto()
-                {
-                    Value = ((Parameter)p).ValObj,
-                    Descriptor = descriptor.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
-                }).ToArray()
+                     new ParameterDto()
+                     {
+                         Id = p.Id,
+                         Value = ((Parameter)p).ValObj,
+                         Descriptor = pluginDescriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                     }).ToArray()
             };
             return config;
         }
@@ -108,14 +135,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         private static string GetDataType(ParameterDescriptor parameter)
         {
             if (parameter.IsEnum)
-                return "Enum";
+                return ParameterTypes.Enumeration;
 
             switch (parameter.DataType)
             {
-                case "System.Int32": return "Int";
-                case "System.Double": return "Double";
-                case "System.String": return "String";
-                case "TickTrader.Algo.Api.File": return "File";
+                case "System.Int32": return ParameterTypes.Integer;
+                case "System.Double": return ParameterTypes.Double;
+                case "System.String": return ParameterTypes.String;
+                case "TickTrader.Algo.Api.File": return ParameterTypes.File;
                 default: return "Unknown";
             }
         }

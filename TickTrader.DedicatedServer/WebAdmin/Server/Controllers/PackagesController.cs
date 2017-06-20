@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using TickTrader.DedicatedServer.DS;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
@@ -62,7 +63,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpDelete("{name}")]
         public void Delete(string name)
         {
-            _dedicatedServer.RemovePackage(name);
+            _dedicatedServer.RemovePackage(WebUtility.UrlDecode(name));
         }
     }
 }
