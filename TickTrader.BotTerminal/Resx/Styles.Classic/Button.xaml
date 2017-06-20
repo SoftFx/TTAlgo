@@ -39,6 +39,8 @@
         <Setter Property="HighlightBackground" Value="Red" />
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
         <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialog_ButtonBorderColor}" />
+        <Setter Property="BorderThickness" Value="2" />
     </Style>
 
     <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}"/>

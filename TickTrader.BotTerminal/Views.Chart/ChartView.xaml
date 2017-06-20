@@ -107,7 +107,8 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
-                        <l:FlatButton Margin="5,0" Width="14" Height="14" Padding="0" Content="X" VerticalAlignment="Center" cal:Message.Attach="Close" FontFamily="Consolas"/>
+                        <l:FlatButton Margin="5,0" Width="14" Height="14" Padding="0" Content="X" BorderThickness="0"
+                                      VerticalAlignment="Center" cal:Message.Attach="Close" FontFamily="Consolas"/>
                     </StackPanel>
                 </DataTemplate>
             </MenuItem.ItemTemplate>

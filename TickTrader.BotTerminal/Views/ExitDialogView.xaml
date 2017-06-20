@@ -28,17 +28,13 @@
                       Content="Yes"
                       IsDefault="True"
                       Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
-                      BorderBrush="{DynamicResource Dialog_ButtonBorderColor}"
-                      BorderThickness="2" />
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}" />
             <l:FlatButton Grid.Column="1" Margin="5"
                       x:Name="Cancel"
                       Content="No"
                       IsCancel="True"
                       Background="{DynamicResource Dialog_ButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"
-                      BorderBrush="{DynamicResource Dialog_ButtonBorderColor}"
-                      BorderThickness="2" />
+                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}" />
         </Grid>
     </Grid>
 </Window>
