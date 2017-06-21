@@ -1,6 +1,5 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
 using TickTrader.DedicatedServer.WebAdmin;
 using Microsoft.Extensions.Configuration;
 using TickTrader.DedicatedServer.DS.Models;
@@ -11,11 +10,11 @@ using TickTrader.DedicatedServer.DS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Info;
+using System.Diagnostics;
 
 namespace TickTrader.DedicatedServer
 {
@@ -23,25 +22,40 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
-            if (args.Length != 1 || args[0] != "console")
+            bool isService = true;
+
+            if (Debugger.IsAttached || args.Contains("console"))
+                isService = false;
+
+            var pathToContentRoot = Directory.GetCurrentDirectory();
+            
+            if (isService)
             {
-                var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("WebAdmin/appsettings.json", optional: true)
-                    .AddEnvironmentVariables();
-                var config = builder.Build();
-
-                var host = new WebHostBuilder()
-                    .UseConfiguration(config)
-                    .UseKestrel()
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseStartup<WebAdminStartup>()
-                    .Build();
-
-                host.Run();
+                var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+                pathToContentRoot = Path.GetDirectoryName(pathToExe);
             }
+
+            var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
+
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("WebAdmin/appsettings.json", optional: true)
+                .AddEnvironmentVariables();
+            var config = builder.Build();
+
+            var host = new WebHostBuilder()
+                .UseConfiguration(config)
+                .UseKestrel()
+                .UseContentRoot(pathToContentRoot)
+                .UseWebRoot(Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot"))
+                .UseStartup<WebAdminStartup>()
+                .Build();
+
+            Console.WriteLine($"Web root path: {pathToWebRoot}");
+
+            if (isService)
+                host.RunAsCustomService();
             else
-                RunConsole();
+                host.Run();
         }
 
         private static void RunConsole()
@@ -130,7 +144,7 @@ namespace TickTrader.DedicatedServer
                             Console.WriteLine("Error = " + acc.TestConnection().Result);
                         break;
                 }
- 
+
             });
 
             cmdEngine.RegsiterCommand("trade bot", () =>

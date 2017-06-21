@@ -38,6 +38,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private bool _stopRequested;
         private bool _lostConnection;
         private int _startedBotsCount;
+        private bool _shutdownRequested;
 
         public ClientModel(string address, string username, string password)
         {
@@ -180,6 +181,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         #region Connection Management
 
+
+
         public Task<ConnectionErrorCodes> TestConnection()
         {
             lock (_sync)
@@ -215,7 +218,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private void ManageConnection()
+        private async Task ManageConnection()
         {
             if (ConnectionState == ConnectionStates.Offline)
             {
@@ -224,17 +227,17 @@ namespace TickTrader.DedicatedServer.DS.Models
                     _disconnectCancellation?.Cancel();
                     _disconnectCancellation = null;
 
-                    Connect();
+                    await Connect();
                 }
             }
             else if (ConnectionState == ConnectionStates.Online)
             {
-                if (_stopRequested || _lostConnection)
+                if (_stopRequested || _lostConnection || _shutdownRequested)
                 {
                     _disconnectCancellation?.Cancel();
                     _disconnectCancellation = null;
 
-                    Disconnect();
+                    await Disconnect();
                 }
                 else if (_startedBotsCount == 0 && _disconnectCancellation == null)
                 {
@@ -255,7 +258,23 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
-        private async void Disconnect()
+        public async Task ShutdownAsync()
+        {
+            Task[] stopBots;
+            lock (_sync)
+            {
+                if (_shutdownRequested)
+                    return;
+
+                _shutdownRequested = true;
+                stopBots = TradeBots.Select(tb => tb.StopAsync()).ToArray();
+            }
+
+            await Task.WhenAll(stopBots);
+            await ManageConnection();
+        }
+
+        private async Task Disconnect()
         {
             ChangeState(ConnectionStates.Disconnecting);
 
@@ -266,6 +285,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             lock (_sync)
             {
                 ChangeState(ConnectionStates.Offline);
+                _shutdownRequested = false;
                 _stopRequested = false;
                 _lostConnection = false;
                 ManageConnection();
@@ -278,7 +298,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             StateChanged?.Invoke(this);
         }
 
-        private async void Connect()
+        private async Task Connect()
         {
             _currentErrorCode = ConnectionErrorCodes.None;
 
@@ -375,8 +395,12 @@ namespace TickTrader.DedicatedServer.DS.Models
                 _startedBotsCount++;
             else
                 _startedBotsCount--;
-            BotChanged?.Invoke(bot, ChangeAction.Modified);
-            ManageConnection();
+
+            if (!_shutdownRequested)
+            {
+                BotChanged?.Invoke(bot, ChangeAction.Modified);
+                ManageConnection();
+            }
         }
 
         public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)

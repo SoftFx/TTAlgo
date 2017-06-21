@@ -18,7 +18,7 @@
   <property name="ToolsFolder"			value="${SourcesDir}tools\"  />
 
   <target name="help">
-    <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Publish|Clean]"/>
+    <echo message="Use: nant.exe -buildfile:bot.terminal.build [Build|Publish|Clean]"/>
   </target>
 
   <target name="Build" >

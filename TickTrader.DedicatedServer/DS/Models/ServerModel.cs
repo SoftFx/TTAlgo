@@ -375,6 +375,16 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
+        public Task ShutdownAsync()
+        {
+            lock (SyncObj)
+            {
+                _logger.LogDebug("ServerModel shut down...");
+                var shutdonwTasks = Accounts.Select(ac => ac.ShutdownAsync()).ToArray();
+                return Task.WhenAll(shutdonwTasks);
+            }
+        }
+
         #endregion
     }
 
