@@ -29,14 +29,16 @@
 
             <l:FlatButton Grid.Column="0" Margin="5"
                       x:Name="OK"
-                      Content="Yes" 
-                      Background="{DynamicResource Dialog_ButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+                      Content="Yes"
+                      IsDefault="True"
+                      Background="{DynamicResource Dialog_OkButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}" />
             <l:FlatButton Grid.Column="1" Margin="5"
                       x:Name="Cancel"
-                      Content="No" 
-                      Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                      Content="No"
+                      IsCancel="True"
+                      Background="{DynamicResource Dialog_ButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}" />
         </Grid>
     </Grid>
 </Window>

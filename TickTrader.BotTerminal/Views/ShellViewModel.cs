@@ -170,6 +170,11 @@ namespace TickTrader.BotTerminal
             wndManager.ShowDialog(model);
         }
 
+        public void Exit()
+        {
+            TryClose();
+        }
+
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
         public AlgoListViewModel AlgoList { get; set; }

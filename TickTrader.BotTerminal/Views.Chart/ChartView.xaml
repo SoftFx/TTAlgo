@@ -35,8 +35,6 @@
 
     <ContextMenu x:Key="MainChartPanelContextMenu" Style="{DynamicResource ContextMenu_Style}">
 
-        <MenuItem Header="{l:Resx ContextMenu_OpenOrder}" cal:Message.Attach="OpenOrder"></MenuItem>
-
         <l:MenuItemSelector Header="{l:Resx ContextMenu_Periods}"
                                 ItemsSource="{Binding AvailablePeriods}"
                                 SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
@@ -109,7 +107,8 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
-                        <l:FlatButton Content="x" VerticalAlignment="Center" cal:Message.Attach="Close"/>
+                        <l:FlatButton Margin="5,0" Width="14" Height="14" Padding="0" Content="X" BorderThickness="0"
+                                      VerticalAlignment="Center" cal:Message.Attach="Close" FontFamily="Consolas"/>
                     </StackPanel>
                 </DataTemplate>
             </MenuItem.ItemTemplate>

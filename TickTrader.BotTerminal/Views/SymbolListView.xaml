@@ -12,6 +12,25 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
+            <Grid Grid.Row="0" Margin="5,5,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="22"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="24"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="1" Text="Symbol"/>
+                <TextBlock Grid.Column="2" Text="Bid" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="4" Text="Ask" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="6" Text="Time"/>
+
+            </Grid>
+
             <ListBox Name="Symbols"
                  Grid.Row="1"
                  Style="{DynamicResource SymbolListBox_Style}"
@@ -27,7 +46,7 @@
         </Grid>
     </ControlTemplate>
 
-    <Style x:Key="DataGridCell.Classic" TargetType="TextBlock">
+    <Style x:Key="DataGridCell.Text.Classic" TargetType="TextBlock">
         <Setter Property="Margin" Value="3"/>
     </Style>
 
@@ -35,7 +54,7 @@
         <Setter Property="Margin" Value="10,3,10,3"/>
     </Style>
 
-    <Style x:Key="BidTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Classic}">
+    <Style x:Key="BidTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Text.Classic}">
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Bid.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
@@ -47,7 +66,7 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="AskTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Classic}">
+    <Style x:Key="AskTextStyle.Classic" TargetType="TextBlock" BasedOn="{StaticResource DataGridCell.Text.Classic}">
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Ask.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
@@ -59,8 +78,29 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="DataGridCell.Classic" TargetType="{x:Type DataGridCell}">
+        <Setter Property="Background" Value="{DynamicResource Shell_PrimaryBackground}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridCell}">
+                    <Border Background="{TemplateBinding Background}">
+                        <ContentPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Shell_SecondaryBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <ControlTemplate x:Key="SymbolListView.Classic">
-        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}">
+        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}" CellStyle="{StaticResource DataGridCell.Classic}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
                 <DataGridTextColumn Header="Bid" Width="Auto" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False">
@@ -79,7 +119,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding QuoteTime, Converter={StaticResource FullTimeFormat}}" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Classic}" CanUserResize="False" />
+                <DataGridTextColumn Binding="{Binding QuoteTime, Converter={StaticResource FullTimeFormat}}" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False" />
             </DataGrid.Columns>
         </DataGrid>
     </ControlTemplate>
