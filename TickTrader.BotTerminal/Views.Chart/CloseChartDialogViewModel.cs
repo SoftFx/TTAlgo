@@ -1,34 +1,36 @@
 ﻿using Caliburn.Micro;
-using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 
 namespace TickTrader.BotTerminal
 {
-    class ExitDialogViewModel : Screen
+    class CloseChartDialogViewModel : Screen
     {
         public bool IsConfirmed { get; private set; }
 
         public bool HasStartedBots { get; }
 
+        public string Message { get; }
 
-        public ExitDialogViewModel(bool hasStartedBots)
+        
+        public CloseChartDialogViewModel(ChartViewModel chart)
         {
-            HasStartedBots = hasStartedBots;
+            HasStartedBots = chart.HasStartedBots;
 
-            DisplayName = "Exit - " + EnvService.Instance.ApplicationName;
+            DisplayName = $"Close chart '{chart.DisplayName}'";
+            Message = $"Are you sure you want to close chart '{chart.DisplayName}'?";
         }
 
 
-        public void OK()
+        public void Ok()
         {
             IsConfirmed = true;
             TryClose();
         }
+
         public void Cancel()
         {
             IsConfirmed = false;

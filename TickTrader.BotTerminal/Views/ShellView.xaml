@@ -9,13 +9,10 @@
 
     <Menu x:Key="ShellMenu" x:Shared="False">
         <MenuItem Header="{l:Resx Menu_BotTrader}" >
-            <MenuItem Header="{l:Resx Menu_NewOrder}" IsEnabled="False"/>
-            <MenuItem Header="{l:Resx Menu_NewChart}" IsEnabled="False"/>
-            <Separator/>
             <MenuItem Header="{l:Resx Menu_LogIn}" cal:Message.Attach="Connect" />
             <MenuItem Header="{l:Resx Menu_LogOut}" cal:Message.Attach="Disconnect" />
             <Separator/>
-            <MenuItem Header="{l:Resx Menu_ExitBotTrader}"/>
+            <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Preferences}">
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
@@ -172,7 +169,7 @@
                 <l:AvalonDockStyleSelector>
                     <l:AvalonDockStyleSelector.DocumentStyle>
                         <Style TargetType="{x:Type dkctrl:LayoutItem}">
-                            <Setter Property="Title" Value="{Binding Model.Symbol}" />
+                            <Setter Property="Title" Value="{Binding Model.DisplayName}" />
                             <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
                             <!--<Setter Property="CanClose" Value="{Binding Model.CanClose}" />-->
                         </Style>

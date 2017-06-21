@@ -49,6 +49,7 @@
     <SolidColorBrush x:Key="Dialog_OkButtonHighlightBackground" Color="#00BA61"/>
     <SolidColorBrush x:Key="Dialog_ButtonBackground" Color="#525252"/>
     <SolidColorBrush x:Key="Dialog_ButtonHighlightBackground" Color="#292929"/>
+    <SolidColorBrush x:Key="Dialog_ErrorForeground" Color="Red"/>
 
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateUpHighlightColor" Color="#006836"/>

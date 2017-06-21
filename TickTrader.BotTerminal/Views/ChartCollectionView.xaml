@@ -16,7 +16,6 @@
                     <l:FlatButton Content="x"
                                   Style="{DynamicResource FlatButtonMainStyle}"
                                   cal:Message.Attach="CloseItem($dataContext)"
-                                  IsEnabled="{Binding UiLock.IsNotLocked}"
                                   Padding="2"
                                   Margin="5,0,3,0"
                                   Background="Transparent"
