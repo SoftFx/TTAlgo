@@ -59,6 +59,7 @@ namespace TickTrader.Algo.Core
         string BalanceCurrency { get; }
         Api.AccountTypes AccountType { get; }
         string Account { get; }
+        int Leverage { get; }
 
         void SyncInvoke(Action action);
 
@@ -78,54 +79,34 @@ namespace TickTrader.Algo.Core
         IPluginLogger Logger { get; }
         void Enqueue(QuoteEntity update);
         void Enqueue(Action<PluginBuilder> action);
-        //void AddSetupAction(Action setupAction);
-
-        //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        //IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to);
-        //IEnumerable<QuoteEntityL2> QueryTicksL2(string symbolCode, DateTime from, DateTime to);
-        //void Add(IFeedFixture subscriber);
-        //void Remove(IFeedFixture subscriber);
-        //void Subscribe(string symbolCode, int depth);
-        //void Unsubscribe(string symbolCode);
-        //void InvokeUpdateOnCustomSubscription(QuoteEntity update);
-    }
-
-    internal interface IFeedFixtureContext
-    {
-        IFixtureContext ExecContext { get; }
-        IPluginFeedProvider Feed { get; }
+        IPluginFeedProvider FeedProvider { get; }
+        SubscriptionManager Dispenser { get; }
         FeedBufferStrategy BufferingStrategy { get; }
-        void Add(IFeedFixture subscriber);
-        void Remove(IFeedFixture subscriber);
+        //void Subscribe(IRateSubscription subscriber);
+        //void Unsubscribe(IRateSubscription subscriber);
+        //void Subscribe(IAllRatesSubscription subscriber);
+        //void Unsubscribe(IAllRatesSubscription subscriber);
     }
 
-
-    //public interface IPluginInvoker
+    //internal interface IFeedFixtureContext
     //{
-    //    void StartBatch();
-    //    void StopBatch();
-    //    void InvokeInit();
-    //    void IncreaseVirtualPosition();
-    //    void InvokeOnStart();
-    //    void InvokeOnStop();
-    //    void InvokeCalculate(bool isUpdate);
-    //    void InvokeOnQuote(QuoteEntity quote);
+    //    IFixtureContext ExecContext { get; }
+        
+    //    //void Add(IRateSubscription subscriber);
+    //    //void Remove(IRateSubscription subscriber);
     //}
 
-    //public interface IInvokeStrategyContext
+    //internal interface IRateSubscription 
     //{
-    //    IPluginInvoker Builder { get; }
-    //    BufferUpdateResults UpdateBuffers(FeedUpdate update);
-    //    void InvokeFeedEvents(FeedUpdate update);
+    //    string SymbolCode { get; }
+    //    int Depth { get; }
+    //    void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
     //}
 
-    internal interface IFeedFixture 
-    {
-        string SymbolCode { get; }
-        int Depth { get; }
-        //void OnBufferUpdated(Quote quote); // called always
-        void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
-    }
+    //internal interface IAllRatesSubscription
+    //{
+    //    void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
+    //}
 
     public interface ITimeRef
     {

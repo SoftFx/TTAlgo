@@ -56,8 +56,8 @@ namespace TickTrader.Algo.Core
                         Symbol = symbol,
                         Type = type,
                         Side = side,
-                        RemainingVolume = volumeLots,
-                        RequestedVolume = volumeLots,
+                        RemainingVolume = new TradeVolume(volume, volumeLots),
+                        RequestedVolume = new TradeVolume(volume, volumeLots),
                         Price = price,
                         StopLoss = sl ?? double.NaN,
                         TakeProfit = tp ?? double.NaN,
@@ -107,12 +107,12 @@ namespace TickTrader.Algo.Core
             if (orderToClose == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
+            var smbMetadata = symbols.List[orderToClose.Symbol];
+            if (smbMetadata.IsNull)
+                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
+
             if (closeVolumeLots != null)
             {
-                var smbMetadata = symbols.List[orderToClose.Symbol];
-                if (smbMetadata.IsNull)
-                    return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
-
                 closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
                 closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
             }
@@ -126,7 +126,7 @@ namespace TickTrader.Algo.Core
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    orderToClose.Entity.RemainingVolume -= result.ExecVolume;
+                    orderToClose.Entity.RemainingVolume = ModifyVolume(orderToClose.Entity.RemainingVolume, -result.ExecVolume, smbMetadata);
 
                     if (orderToClose.RemainingVolume <= 0)
                         account.Orders.Remove(orderId);
@@ -208,6 +208,13 @@ namespace TickTrader.Algo.Core
         private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
         {
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+        }
+
+        private TradeVolume ModifyVolume(TradeVolume oldVol, double byLots, Symbol smbInfo)
+        {
+            var lotSize = smbInfo.ContractSize;
+            var byUnits = lotSize * byLots;
+            return new TradeVolume(oldVol.Units - byUnits, oldVol.Lots - byLots);
         }
 
         #region Logging

@@ -114,8 +114,8 @@ namespace TickTrader.Algo.Common.Model
                 MarginHedged = info.MarginHedge,
                 MarginMode = Convert(info.MarginCalcMode),
                 SwapEnabled = true, // ???
-                SwapSizeLong =  (float)info.SwapSizeLong,
-                SwapSizeShort = (float)info.SwapSizeShort,
+                SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
+                SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
                 Security = info.SecurityName,
                 SortOrder = 0 // ??
             };

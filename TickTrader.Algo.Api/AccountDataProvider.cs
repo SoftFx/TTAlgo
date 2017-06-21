@@ -19,6 +19,9 @@ namespace TickTrader.Algo.Api
         double Balance { get; }
         string BalanceCurrency { get; }
         double Equity { get; }
+        double Margin { get; }
+        double MarginLevel { get; }
+        double Profit { get; }
         AccountTypes Type { get; }
         OrderList Orders { get; }
         NetPositionList NetPositions { get; }

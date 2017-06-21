@@ -41,7 +41,6 @@ namespace TickTrader.Algo.Core
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
-
             if (accType == Api.AccountTypes.Cash)
             {
                 builder.Account.Balance = double.NaN;
@@ -51,6 +50,7 @@ namespace TickTrader.Algo.Core
             {
                 builder.Account.Balance = (double)DataProvider.Balance;
                 builder.Account.BalanceCurrency = DataProvider.BalanceCurrency;
+                builder.Account.Leverage = DataProvider.Leverage;
             }
             
             foreach (var order in DataProvider.GetOrders())

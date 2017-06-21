@@ -8,12 +8,12 @@ using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class SymbolAccessor : Api.Symbol, BO.ISymbolInfo
+    public class SymbolAccessor : Api.Symbol, BO.ISymbolInfo
     {
         private SymbolEntity entity;
         private IPluginSubscriptionHandler handler;
 
-        public SymbolAccessor(SymbolEntity entity, IPluginSubscriptionHandler handler, Dictionary<string, CurrencyEntity> currencies)
+        internal SymbolAccessor(SymbolEntity entity, IPluginSubscriptionHandler handler, Dictionary<string, CurrencyEntity> currencies)
         {
             this.entity = entity;
             this.handler = handler;

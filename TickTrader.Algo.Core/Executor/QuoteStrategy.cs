@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Core
         public override IFeedBuffer MainBuffer { get { return null; } }
         public override int BufferSize { get { return mainSeries.Count; } }
 
-        public QuoteStrategy(IPluginFeedProvider feed) : base(feed)
+        public QuoteStrategy()
         {
         }
 
@@ -47,16 +47,16 @@ namespace TickTrader.Algo.Core
 
         internal override void OnInit()
         {
-            if (mainSeries != null)
-                mainSeries.Dispose();
+            //if (mainSeries != null)
+            //    mainSeries.Dispose();
 
-            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, this, mainSerieData);
+            mainSeries = new QuoteSeriesFixture(ExecContext.MainSymbolCode, ExecContext, mainSerieData);
         }
 
         internal override void Stop()
         {
             base.Stop();
-            mainSeries.Dispose();
+            //mainSeries.Dispose();
         }
     }
 }

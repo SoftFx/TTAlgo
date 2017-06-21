@@ -16,8 +16,8 @@ namespace TickTrader.Algo.Core
         internal OrderAccessor(OrderEntity entity)
         {
             _entity = entity;
-            Margin = double.NaN;
-            Profit = double.NaN;
+            Margin = 0;
+            Profit = 0;
         }
 
         internal void Update(OrderEntity entity)
@@ -37,8 +37,8 @@ namespace TickTrader.Algo.Core
 
         public string Id => _entity.Id;
         public string Symbol => _entity.Symbol;
-        public double RequestedVolume => _entity.RequestedVolume;
-        public double RemainingVolume => _entity.RemainingVolume;
+        public double RequestedVolume => _entity.RequestedVolume.Lots;
+        public double RemainingVolume => _entity.RemainingVolume.Lots;
         public OrderType Type => _entity.Type;
         public OrderSide Side => _entity.Side;
         public double Price => _entity.Price;
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
         public DateTime Modified => _entity.Modified;
         public DateTime Created => _entity.Created;
         public double ExecPrice => _entity.ExecPrice;
-        public double ExecVolume => _entity.ExecVolume;
+        public double ExecVolume => _entity.ExecVolume.Lots;
         public double LastFillPrice => _entity.LastFillPrice;
         public double LastFillVolume => _entity.LastFillVolume;
         public double Margin { get; set; }
@@ -64,14 +64,14 @@ namespace TickTrader.Algo.Core
 
         public BL.OrderError CalculationError { get; set; }
         public BL.OrderCalculator Calculator { get; set; }
-        public bool IsCalculated => CalculationError != null;
+        public bool IsCalculated => CalculationError == null;
         public decimal? MarginRateCurrent { get; set; }
         public decimal? Swap => (decimal)_entity.Swap;
         public decimal? Commission => (decimal)_entity.Commision;
         public decimal? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
         public decimal Amount { get => (decimal)RequestedVolume; set => throw new NotImplementedException(); }
-        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => throw new NotImplementedException(); }
+        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume.Units; set => throw new NotImplementedException(); }
         decimal? BL.IOrderModel.Profit { get => (decimal)Profit; set => Profit = (double)value; }
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => Convert(_entity.Type); set => throw new NotImplementedException(); }

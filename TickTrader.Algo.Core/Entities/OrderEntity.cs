@@ -36,8 +36,8 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public double RequestedVolume { get; set; }
-        public double RemainingVolume { get; set; }
+        public TradeVolume RequestedVolume { get; set; }
+        public TradeVolume RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
         public DateTime Modified { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
-        public double ExecVolume { get; set; }
+        public TradeVolume ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
         public double LastFillVolume { get; set; }
         public double Swap { get; set; }
@@ -58,6 +58,19 @@ namespace TickTrader.Algo.Core
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
+    }
+
+    [Serializable]
+    public struct TradeVolume
+    {
+        public TradeVolume(double units, double lots)
+        {
+            Lots = lots;
+            Units = units;
+        }
+
+        public double Lots { get; private set; }
+        public double Units { get; private set; }
     }
 
     [Serializable]

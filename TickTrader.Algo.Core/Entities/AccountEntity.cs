@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
         public string Id { get; set; }
         public double Balance { get; set; }
         public string BalanceCurrency { get; set; }
+        public int Leverage { get; set; }
         public AccountTypes Type { get; set; }
 
         internal void FireBalanceUpdateEvent()
@@ -90,23 +91,24 @@ namespace TickTrader.Algo.Core
 
         public void LogInfo(string message)
         {
-            throw new NotImplementedException();
         }
 
         public void LogWarn(string message)
         {
-            throw new NotImplementedException();
         }
 
         public void LogError(string message)
         {
-            throw new NotImplementedException();
         }
 
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
 
         public double Equity { get; set; }
+        public double Margin { get; set; }
+        public double MarginLevel { get; set; }
+        public double Profit { get; set; }
+        public double Commision { get; set; }
 
         public NetPositionList NetPositions
         {
@@ -118,14 +120,12 @@ namespace TickTrader.Algo.Core
 
         #region BO
 
-        long BL.IAccountInfo.Id => throw new NotImplementedException();
-        public BO.AccountingTypes AccountingType => throw new NotImplementedException();
-        decimal BL.IMarginAccountInfo.Balance => throw new NotImplementedException();
-        public int Leverage => throw new NotImplementedException();
-
+        long BL.IAccountInfo.Id => 0;
+        public BO.AccountingTypes AccountingType => TickTraderToAlgo.Convert(Type);
+        decimal BL.IMarginAccountInfo.Balance => (decimal)Balance;
         IEnumerable<BL.IOrderModel> BL.IAccountInfo.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
-        public IEnumerable<BL.IPositionModel> Positions => throw new NotImplementedException();
-        IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => throw new NotImplementedException();
+        public IEnumerable<BL.IPositionModel> Positions => Enumerable.Empty<BL.IPositionModel>();
+        IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => Enumerable.Empty<BL.IAssetModel>();
 
         public event Action<BL.IOrderModel> OrderAdded { add { Orders.Added += value; } remove { Orders.Added -= value; } }
         public event Action<IEnumerable<BL.IOrderModel>> OrdersAdded { add { } remove { } }

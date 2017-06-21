@@ -7,11 +7,11 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class SubscriptionFixture : IFeedFixture
+    internal class SubscriptionFixture
     {
-        private IFeedFixtureContext context;
+        private IFixtureContext context;
 
-        public SubscriptionFixture(IFeedFixtureContext context, string symbol, int depth)
+        public SubscriptionFixture(IFixtureContext context, string symbol, int depth)
         {
             this.context = context;
             this.Depth = depth;
@@ -21,13 +21,9 @@ namespace TickTrader.Algo.Core
         public int Depth { get; private set; }
         public string SymbolCode { get; private set; }
 
-        public void OnBufferUpdated(Quote quote)
-        {
-        }
-
         public void OnUpdateEvent(Quote quote)
         {
-            context.ExecContext.Builder.InvokeOnQuote(quote);
+            context.Builder.InvokeOnQuote(quote);
         }
     }
 }

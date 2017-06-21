@@ -13,8 +13,7 @@ namespace TickTrader.Algo.Core
         private List<BarEntity> mainSeries;
         private Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture> fixtures;
 
-        public BarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
-            : base(feed)
+        public BarStrategy(BarPriceType mainPirceTipe)
         {
             this.MainPriceType = mainPirceTipe;
         }
@@ -26,7 +25,7 @@ namespace TickTrader.Algo.Core
         internal override void OnInit()
         {
             fixtures = new Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture>();
-            mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, this, mainSeries);
+            mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
 
             fixtures.Add(GetKey(ExecContext.MainSymbolCode, MainPriceType), mainSeriesFixture);
         }
@@ -41,7 +40,7 @@ namespace TickTrader.Algo.Core
             BarSeriesFixture fixture;
             if (!fixtures.TryGetValue(key, out fixture))
             {
-                fixture = new BarSeriesFixture(key.Item1, key.Item2, this, null, mainSeriesFixture);
+                fixture = new BarSeriesFixture(key.Item1, key.Item2, ExecContext, null, mainSeriesFixture);
                 fixtures.Add(key, fixture);
                 BufferingStrategy.InitBuffer(fixture);
             }
@@ -130,8 +129,8 @@ namespace TickTrader.Algo.Core
         {
             base.Stop();
 
-            foreach (var fixture in fixtures.Values)
-                fixture.Dispose();
+            //foreach (var fixture in fixtures.Values)
+            //    fixture.Dispose();
         }
     }
 }

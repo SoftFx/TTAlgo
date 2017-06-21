@@ -100,6 +100,7 @@
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\AccDataFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
+    <Compile Include="Executor\CalculatorFixture.cs" />
     <Compile Include="Executor\Exceptions.cs" />
     <Compile Include="Executor\FeedBufferStrategy.cs" />
     <Compile Include="Executor\FeedFixture.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\RepositoryKey.cs" />
+    <Compile Include="TickTraderToAlgo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
