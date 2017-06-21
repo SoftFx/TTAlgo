@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Api;
+﻿using System.Text;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
@@ -8,7 +9,10 @@ namespace TickTrader.Algo.TestCollection.Bots
     {
         protected override void Init()
         {
-            Status.WriteLine(ToObjectPropertiesString("Environment Info", typeof(EnvironmentInfo), Enviroment));
+            var sbuilder = new StringBuilder();
+            sbuilder.AppendLine($"Bot Instance ID: {Id}");
+            sbuilder.AppendLine(ToObjectPropertiesString("Environment Info", typeof(EnvironmentInfo), Enviroment));
+            Status.WriteLine(sbuilder.ToString());
         }
     }
 }
