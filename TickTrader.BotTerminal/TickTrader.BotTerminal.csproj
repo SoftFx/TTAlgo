@@ -125,6 +125,7 @@
       <HintPath>..\packages\SoftFX.FDK.1.19.841\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -313,7 +314,6 @@
     <Compile Include="Model.Algo\PluginCatalogItem.cs" />
     <Compile Include="Model.Algo\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
-    <Compile Include="Model\UniqueNameGenerator.cs" />
     <Compile Include="Model\VsIntegration.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>

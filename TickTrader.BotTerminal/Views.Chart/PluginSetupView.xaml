@@ -317,8 +317,32 @@
                       Style="{DynamicResource DialogScrollViewer_Style}">
                 <StackPanel>
 
-                    <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="3"
                        Foreground="{DynamicResource Shell_PrimaryForeground}"/>
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+
+                    <Grid Margin="3" Name="BotSpecificData" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="5"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding InstanceId, Delay=500}" />
+                        <Label Grid.Row="2" Grid.Column="0" Content="Start bot?" />
+                        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                        <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot?" />
+                        <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                    </Grid>
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
 
                     <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
                               ItemTemplate="{StaticResource LabeledPropertySetup}">
@@ -338,9 +362,6 @@
                     <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
 
                     <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
-
-                    <CheckBox Margin="10,4" Name="StartBox" Content="Start bot?"
-                              Visibility="Collapsed" IsChecked="{Binding RunBot}"/>
 
                 </StackPanel>
             </ScrollViewer>
@@ -364,7 +385,7 @@
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
-                <Setter TargetName="StartBox" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="BotSpecificData" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -394,6 +415,27 @@
                     <GroupBox Name="DescriptionGroup" Header="Description">
                         <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
                     </GroupBox>
+                    <GroupBox Name="GeneralGroup" Header="General" Margin="4">
+                        <Grid Margin="3" Name="BotSpecificData">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="5"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding InstanceId, Delay=500}" />
+                            <Label Grid.Row="2" Grid.Column="0" Content="Start bot?" />
+                            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding RunBot}" />
+                            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot?" />
+                            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" />
+                        </Grid>
+                    </GroupBox>
                     <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
                         <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
                               ItemTemplate="{StaticResource LabeledPropertySetup}">
@@ -412,8 +454,6 @@
                     <GroupBox Name="OutputsGroup" Header="Outputs" Margin="4">
                         <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
                     </GroupBox>
-                    <CheckBox Margin="10,4" Name="StartBox" Content="Start bot?"
-                              Visibility="Collapsed" IsChecked="{Binding RunBot}"/>
                 </StackPanel>
             </ScrollViewer>
 
@@ -445,7 +485,7 @@
                 <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
-                <Setter TargetName="StartBox" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>

@@ -15,20 +15,31 @@ namespace TickTrader.BotTerminal
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private StateMachine<States> stateControl = new StateMachine<States>();
-        private PluginExecutor executor;
-        private IAlgoPluginHost host;
+        private StateMachine<States> _stateControl = new StateMachine<States>();
+        private PluginExecutor _executor;
+        private IAlgoPluginHost _host;
 
-        public PluginModel(PluginSetup pSetup, IAlgoPluginHost host)
+        public AlgoPluginRef PluginRef { get; }
+
+        public PluginSetup Setup { get; }
+
+        public string InstanceId { get; }
+
+        public bool Isolated { get; }
+
+        public IAlgoPluginHost Host => _host;
+
+        public PluginModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
         {
-            this.host = host;
-            this.Setup = pSetup;
-            this.PluginRef = pSetup.PluginRef;
-            this.Name = pSetup.Descriptor.DisplayName;
+            _host = host;
+            Setup = pSetup.Setup;
+            PluginRef = Setup.PluginRef;
+            InstanceId = pSetup.InstanceId;
+            Isolated = pSetup.Isolated;
 
-            executor = CreateExecutor();
-            Setup.SetWorkingFolder(executor.WorkingFolder);
-            Setup.Apply(executor);
+            _executor = CreateExecutor();
+            Setup.SetWorkingFolder(_executor.WorkingFolder);
+            Setup.Apply(_executor);
             
         }
 
@@ -36,8 +47,8 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                host.UpdatePlugin(executor);
-                executor.Start();
+                _host.UpdatePlugin(_executor);
+                _executor.Start();
                 return true;
             }
             catch (Exception ex)
@@ -49,25 +60,28 @@ namespace TickTrader.BotTerminal
 
         protected Task StopExecutor()
         {
-            return Task.Factory.StartNew(() => executor.Stop());
+            return Task.Factory.StartNew(() => _executor.Stop());
         }
-
-        public AlgoPluginRef PluginRef { get; private set; }
-        public PluginSetup Setup { get; private set; }
-        public IAlgoPluginHost Host { get { return host; } }
-        public string Name { get; set; }
 
         protected virtual PluginExecutor CreateExecutor()
         {
             var executor = PluginRef.CreateExecutor();
+
             executor.OnRuntimeError += Executor_OnRuntimeError;
-            host.InitializePlugin(executor, (this as TradeBotModel2)?.Name);
+
+            executor.InstanceId = InstanceId;
+            executor.Isolated = Isolated;
+            executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+
+            _host.InitializePlugin(executor);
+
             return executor;
         }
 
         private void Executor_OnRuntimeError(Exception ex)
         {
-            logger.Error(ex, "Exception in Algo executor! Name=" + Name);
+            logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
         }
     }
 

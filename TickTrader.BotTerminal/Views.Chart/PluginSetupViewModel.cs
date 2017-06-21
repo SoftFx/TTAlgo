@@ -9,26 +9,59 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
+using System.ComponentModel.DataAnnotations;
 
 namespace TickTrader.BotTerminal
 {
     internal class PluginSetupViewModel : Screen, IWindowModel
     {
-        private Logger logger;
-        //private IIndicatorSetup cfg;
-        //private IIndicatorHost host;
-        private bool dlgResult;
-        private PluginCatalog catalog;
-        private IAlgoSetupFactory setupFactory;
+        private Logger _logger;
+        private bool _dlgResult;
+        private PluginCatalog _catalog;
+        private IAlgoSetupFactory _setupFactory;
 
-        public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory)
+
+        public PluginSetup Setup { get; private set; }
+
+        public PluginCatalogItem PluginItem { get; private set; }
+
+        public bool CanOk { get; private set; }
+
+        public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid;
+
+        [Required(ErrorMessage = "Instance Id is required")]
+        [StringLength(30, ErrorMessage = "Instance Id is too long")]
+        public string InstanceId { get; set; }
+
+        public bool Isolated { get; set; }
+
+        public bool RunBot { get; set; }
+
+
+        public event Action<PluginSetupViewModel, bool> Closed = delegate { };
+
+
+        public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory, PluginIdProvider idProvider)
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
+            _logger = NLog.LogManager.GetCurrentClassLogger();
             this.DisplayName = $"Settings - {item.DisplayName}";
             this.PluginItem = item;
-            //this.host = host;
-            this.setupFactory = setupFactory;
-            this.catalog = catalog;
+            this._setupFactory = setupFactory;
+            this._catalog = catalog;
+
+            switch (item.Descriptor.AlgoLogicType)
+            {
+                case AlgoTypes.Indicator:
+                    InstanceId = idProvider.GenerateIndicatorId(item.Descriptor.DisplayName);
+                    break;
+                case AlgoTypes.Robot:
+                    InstanceId = idProvider.GenerateBotId(item.Descriptor.DisplayName);
+                    break;
+                default:
+                    InstanceId = idProvider.GeneratePluginId(item.Descriptor.DisplayName);
+                    break;
+            }
+            Isolated = false;
             RunBot = true;
 
             catalog.AllPlugins.Updated += AllPlugins_Updated;
@@ -36,46 +69,29 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public PluginSetup Setup { get; private set; }
-        public PluginCatalogItem PluginItem { get; private set; }
-        public bool SetupCanBeSkipped { get { return Setup.IsEmpty && Setup.Descriptor.IsValid; } }
-        public bool RunBot { get; set; }
 
         public void Reset()
         {
             Setup.Reset();
         }
 
-        public bool CanOk { get; private set; }
-
-        public event Action<PluginSetupViewModel, bool> Closed = delegate { };
-
         public void Ok()
         {
-            dlgResult = true;
-
-            //try
-            //{
-            //    host.AddOrUpdateIndicator(cfg);
-            //}
-            //catch (Exception ex)
-            //{
-            //    logger.Error(ex);
-            //}
+            _dlgResult = true;
 
             TryClose();
         }
 
         public void Cancel()
         {
-            dlgResult = false;
+            _dlgResult = false;
             TryClose();
         }
 
         public override void CanClose(Action<bool> callback)
         {
             callback(true);
-            Closed(this, dlgResult);
+            Closed(this, _dlgResult);
             Dispose();
         }
 
@@ -84,11 +100,11 @@ namespace TickTrader.BotTerminal
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
 
-            Setup = setupFactory.CreateSetup(PluginItem.Ref);
+            Setup = _setupFactory.CreateSetup(PluginItem.Ref);
             Setup.ValidityChanged += Validate;
             Validate();
 
-            logger.Debug("Init "
+            _logger.Debug("Init "
                  + Setup.Parameters.Count() + " params "
                  + Setup.Inputs.Count() + " inputs "
                  + Setup.Outputs.Count() + " outputs ");
@@ -121,7 +137,7 @@ namespace TickTrader.BotTerminal
 
         private void Dispose()
         {
-            catalog.AllPlugins.Updated -= AllPlugins_Updated;
+            _catalog.AllPlugins.Updated -= AllPlugins_Updated;
         }
     }
 }
