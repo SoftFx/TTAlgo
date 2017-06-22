@@ -210,12 +210,16 @@ namespace TickTrader.BotTerminal
         {
             var indicator = CreateIndicator(setup);
             indicators.Add(indicator);
+            algoEnv.IdProvider.AddPlugin(indicator);
         }
 
         public void RemoveIndicator(IndicatorModel i)
         {
             if (indicators.Remove(i))
+            {
+                algoEnv.IdProvider.RemovePlugin(i.InstanceId);
                 i.Dispose();
+            }
         }
 
         protected long GetNextIndicatorId()

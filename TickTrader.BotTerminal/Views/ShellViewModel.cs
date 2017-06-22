@@ -12,7 +12,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager, PluginIdProvider
+    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -176,7 +176,6 @@ namespace TickTrader.BotTerminal
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public ToolWindowsManager ToolWndManager { get { return this; } }
-        public PluginIdProvider IdProvider => this;
 
         public NotificationsViewModel Notifications { get; private set; }
 
@@ -332,34 +331,6 @@ namespace TickTrader.BotTerminal
         public void CloseWindow(object wndKey)
         {
             GetWindow(wndKey)?.TryClose();
-        }
-
-        #endregion
-
-        #region PluginIdProvider implementation
-
-        public string GeneratePluginId(string pluginName)
-        {
-            return pluginName;
-        }
-
-        public string GenerateIndicatorId(string indicatorName)
-        {
-            return GeneratePluginId(indicatorName);
-        }
-
-        public string GenerateBotId(string botName)
-        {
-            var seed = 1;
-
-            while (true)
-            {
-                var botId = $"{botName} {seed}";
-                if (!Charts.Items.Any(c => c.Bots.Any(b => b.Model.InstanceId == botId)))
-                    return botId;
-
-                seed++;
-            }
         }
 
         #endregion

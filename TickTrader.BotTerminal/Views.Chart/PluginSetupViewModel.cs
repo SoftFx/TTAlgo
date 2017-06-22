@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
-using System.ComponentModel.DataAnnotations;
 
 namespace TickTrader.BotTerminal
 {
@@ -27,10 +26,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanOk { get; private set; }
 
-        public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid;
+        public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid && Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot;
 
-        [Required(ErrorMessage = "Instance Id is required")]
-        [StringLength(30, ErrorMessage = "Instance Id is too long")]
         public string InstanceId { get; set; }
 
         public bool Isolated { get; set; }
@@ -41,26 +38,15 @@ namespace TickTrader.BotTerminal
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
 
 
-        public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory, PluginIdProvider idProvider)
+        public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory, string instanceId)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
-            this.DisplayName = $"Settings - {item.DisplayName}";
-            this.PluginItem = item;
-            this._setupFactory = setupFactory;
-            this._catalog = catalog;
+            DisplayName = $"Settings - {item.DisplayName}";
+            PluginItem = item;
+            _setupFactory = setupFactory;
+            _catalog = catalog;
+            InstanceId = instanceId;
 
-            switch (item.Descriptor.AlgoLogicType)
-            {
-                case AlgoTypes.Indicator:
-                    InstanceId = idProvider.GenerateIndicatorId(item.Descriptor.DisplayName);
-                    break;
-                case AlgoTypes.Robot:
-                    InstanceId = idProvider.GenerateBotId(item.Descriptor.DisplayName);
-                    break;
-                default:
-                    InstanceId = idProvider.GeneratePluginId(item.Descriptor.DisplayName);
-                    break;
-            }
             Isolated = false;
             RunBot = true;
 

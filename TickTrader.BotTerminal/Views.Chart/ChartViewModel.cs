@@ -166,7 +166,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new PluginSetupViewModel(algoEnv.Repo, item, Chart, shell.IdProvider);
+                var model = new PluginSetupViewModel(algoEnv.Repo, item, Chart, algoEnv.IdProvider.GeneratePluginId(item.Descriptor));
                 if (!model.SetupCanBeSkipped)
                     shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
                 else
@@ -194,6 +194,7 @@ namespace TickTrader.BotTerminal
                 var viewModel = new BotControlViewModel(bot, shell.ToolWndManager, setupModel.RunBot);
                 viewModel.Closed += BotClosed;
                 bots.Add(viewModel);
+                algoEnv.IdProvider.AddPlugin(bot);
             }
         }
 
@@ -207,6 +208,7 @@ namespace TickTrader.BotTerminal
         private void BotClosed(BotControlViewModel sender)
         {
             bots.Remove(sender);
+            algoEnv.IdProvider.RemovePlugin(sender.Model.InstanceId);
             sender.Dispose();
             sender.Closed -= BotClosed;
             //sender.Model.StateChanged -= Bot_StateChanged;

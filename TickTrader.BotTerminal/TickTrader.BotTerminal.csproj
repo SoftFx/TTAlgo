@@ -125,7 +125,6 @@
       <HintPath>..\packages\SoftFX.FDK.1.19.841\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -284,6 +283,7 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
+    <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
