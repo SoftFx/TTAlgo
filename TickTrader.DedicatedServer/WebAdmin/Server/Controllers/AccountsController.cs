@@ -34,10 +34,28 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpGet("{server}/{login}/[action]")]
         public IActionResult Info(string server, string login)
         {
-            if (_dedicatedServer.GetAccountInfo(new AccountKey(WebUtility.UrlDecode(login), WebUtility.UrlDecode(server)), out ConnectionInfo info) == ConnectionErrorCodes.None)
-                return Ok(info.ToDto());
+            try
+            {
+                var connErrorCode = _dedicatedServer.GetAccountInfo(new AccountKey(WebUtility.UrlDecode(login), WebUtility.UrlDecode(server)), out ConnectionInfo info);
 
-            return BadRequest();
+                if (connErrorCode == ConnectionErrorCodes.None)
+                {
+                    return Ok(info.ToDto());
+                }
+                else
+                {
+                    var communicationExc = new CommunicationException($"Connection error: {connErrorCode}", connErrorCode);
+
+                    _logger.LogError(communicationExc.Message);
+
+                    return BadRequest(communicationExc.ToBadResult());
+                }
+            }
+            catch (DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
         }
 
         [HttpPost]
@@ -57,9 +75,19 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpDelete]
-        public void Delete(string login, string server)
+        public IActionResult Delete(string login, string server)
         {
-            _dedicatedServer.RemoveAccount(new AccountKey(login ?? "", server ?? ""));
+            try
+            {
+                _dedicatedServer.RemoveAccount(new AccountKey(login ?? "", server ?? ""));
+            }
+            catch (DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
         }
 
         [HttpPatch]
@@ -79,11 +107,21 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpGet("[action]")]
-        public ConnectionErrorCodes Test(string login, string server, string password)
+        public IActionResult Test(string login, string server, string password)
         {
-            return string.IsNullOrWhiteSpace(password) ?
-                _dedicatedServer.TestAccount(new AccountKey(login, server)) :
-                _dedicatedServer.TestCreds(login, password, server);
+            try
+            {
+                var testResult = string.IsNullOrWhiteSpace(password) ?
+                    _dedicatedServer.TestAccount(new AccountKey(login, server)) :
+                    _dedicatedServer.TestCreds(login, password, server);
+
+                return Ok(testResult);
+            }
+            catch (DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
         }
     }
 }

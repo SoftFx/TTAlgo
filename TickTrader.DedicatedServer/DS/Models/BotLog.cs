@@ -35,6 +35,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public string Status { get; private set; }
 
+        public string Folder => _logDirectory;
+
         public IEnumerable<ILogEntry> Messages
         {
             get
@@ -189,7 +191,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             throw new ArgumentException($"Incorrect file name {file}");
         }
 
-        public void Clean()
+        public void Clear()
         {
             lock (_sync)
             {

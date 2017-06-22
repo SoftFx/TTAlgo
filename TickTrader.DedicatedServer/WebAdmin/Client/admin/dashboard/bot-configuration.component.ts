@@ -34,7 +34,7 @@ export class BotConfigurationComponent implements OnInit {
             err => { this.ErrorMessage = err.Message; });
     }
 
-    public OnSaved(bot: TradeBotModel) {
+    public OnSaved() {
         this._location.back();
     }
 

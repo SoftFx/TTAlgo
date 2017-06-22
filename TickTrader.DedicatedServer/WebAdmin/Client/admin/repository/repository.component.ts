@@ -1,7 +1,6 @@
-import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ApiService, FeedService, ToastrService } from '../../services/index';
-import { PackageModel, PluginModel, ResponseStatus } from '../../models/index';
-import { ViewChild } from '@angular/core';
+import { PackageModel, PluginModel, ResponseStatus, ObservableRequest, ResponseCode } from '../../models/index';
 
 @Component({
     selector: 'repository-cmp',
@@ -10,13 +9,10 @@ import { ViewChild } from '@angular/core';
 })
 
 export class RepositoryComponent implements OnInit {
-    private _isFileDuplicated: boolean = false;
-    private _uploadingError: ResponseStatus;
-
+    public UploadRequest: ObservableRequest<void>;
+    public CheckPackageRequest: ObservableRequest<void>;
     public SelectedFile: any;
-    public Packages: PackageModel[] = [];
-    public Uploading: boolean = false;
-
+    public Packages: PackageModel[];
 
     @ViewChild('PackageInput')
     PackageInput: any;
@@ -25,7 +21,10 @@ export class RepositoryComponent implements OnInit {
     }
 
     ngOnInit() {
-        this._api.Feed.AddPackage.subscribe(algoPackage => this.addPackage(algoPackage));
+        this.UploadRequest = null;
+        this.CheckPackageRequest = null;
+
+        this._api.Feed.AddOrUpdatePackage.subscribe(algoPackage => this.addOrUpdatePackage(algoPackage));
         this._api.Feed.DeletePackage.subscribe(pname => this.deletePackage(pname));
 
         this.loadPackages();
@@ -39,64 +38,73 @@ export class RepositoryComponent implements OnInit {
     }
 
     public OnPackageDeleted(algoPackage: PackageModel) {
-        //this.deletePackage(algoPackage.Name);
+        this.deletePackage(algoPackage.Name);
+    }
+
+    public InitUploadPackage() {
+        this.CheckPackageRequest = new ObservableRequest(this._api.PackageExists(this.SelectedFileName))
+            .Subscribe(ok => { },
+            err => {
+                if (err.Status !== 404) {
+                    this.CheckPackageRequest = null;
+                    this._toastr.error(err.Message);
+                }
+                else if (err.Status === 404)
+                    this.UploadPackage();
+            });
     }
 
     public UploadPackage() {
-        this._uploadingError = null;
-        this.Uploading = true;
+        this.CheckPackageRequest = null;
 
-        this._api
-            .UploadPackage(this.SelectedFile)
-            .finally(() => { this.Uploading = false; })
-            .subscribe(res => {
+        this.UploadRequest = new ObservableRequest(this._api.UploadPackage(this.SelectedFile))
+            .Subscribe(ok => {
                 this.SelectedFile = null;
                 this.PackageInput.nativeElement.value = "";
             },
             err => {
-                this._uploadingError = err;
-                if (!this._uploadingError.Handled)
-                    this._toastr.error(this._uploadingError.Message);
-            });
+                if (!err.Handled) {
+                    this._toastr.error(err.Message);
+                }
+            })
+    }
+
+    CancelUploadingPackage() {
+        this.CheckPackageRequest = null;
     }
 
     public OnFileInputChange(event) {
-        this._uploadingError = null;
+        this.UploadRequest = null;
+        this.CheckPackageRequest = null;
         this.SelectedFile = event.target.files[0];
     }
 
-    public get FileInputError() {
-        if ((this._uploadingError != null && this._uploadingError['Code'] && this._uploadingError.Code == 1000) || this.isFileDuplicated) {
-            return 'DuplicatePackage';
-        }
-        return null;
-    }
-
-    public get IsFileNameVaild(): boolean {
-        let a = this.SelectedFile && !this.SelectedFile.name && !this.isFileDuplicated;
-        return a;
-    }
-
     public get CanUpload() {
-        return !this.Uploading
-            && this.SelectedFileName
-            && !this.isFileDuplicated
-            && (!this._uploadingError || !this._uploadingError['Code'] || this._uploadingError['Code'] != 1000);
+        return !!this.SelectedFile && (!this.UploadRequest || this.UploadRequest && this.UploadRequest.IsCompleted);
     }
 
-    private get isFileDuplicated(): boolean {
-        return this.Packages.find(p => this.SelectedFile && p.Name == this.SelectedFile.name) != null;
+    public Cancel() {
+        this.UploadRequest = null;
     }
 
     private loadPackages() {
         this._api.GetPackages()
-            .subscribe(res => this.Packages = res);
+            .subscribe(res => {
+                if (!this.Packages)
+                    this.Packages = res
+                else
+                    res.forEach(p => this.addOrUpdatePackage(p));
+            });
     }
 
-    private addPackage(packageModel: PackageModel) {
-        if (!this.Packages.find(p => p.Name === packageModel.Name)) {
+    private addOrUpdatePackage(packageModel: PackageModel) {
+        let index = -1;
+        let fpackage = this.Packages.find((p, i) => { index = i; return p.Name === packageModel.Name });
+
+        if (fpackage)
+            this.Packages[index] = packageModel;
+        else
             this.Packages = this.Packages.concat(packageModel);
-        }
     }
 
     private deletePackage(packageName: string) {

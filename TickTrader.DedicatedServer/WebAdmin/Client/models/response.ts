@@ -35,15 +35,16 @@ export class ResponseStatus {
 export enum ResponseCode {
     None = -1,
     InvalidCredentials = 100,
-    DuplicatePackage = 1000,
     PackageNotFound = 1001,
     PackageIsLocked = 1002,
     DuplicateAccount = 2000,
     AccountNotFound = 2001,
     InvalidAccount = 2002,
+    AccountIsLocked = 2003,
     DuplicateBot = 3000,
     BotNotFound = 3001,
-	InvalidState = 10000
+    CommunicationError = 4000,
+    InvalidState = 10000
 }
 
 export enum ConnectionErrorCodes {

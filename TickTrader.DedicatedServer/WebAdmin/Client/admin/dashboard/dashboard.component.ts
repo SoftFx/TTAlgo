@@ -36,7 +36,8 @@ export class DashboardComponent implements OnInit {
     }
 
     private addBot(bot: TradeBotModel) {
-        if (!this.TradeBots) this.TradeBots = new TradeBotModel[0];
+        if (!this.TradeBots)
+            this.TradeBots = [];
 
         if (!this.TradeBots.find(b => b.Id === bot.Id)) {
             this.TradeBots = this.TradeBots.concat(bot);

@@ -12,31 +12,41 @@ import { ApiService, ToastrService } from '../../services/index';
 })
 
 export class BotSetupComponent implements OnInit {
-    public AccountInfoRequest : ObservableRequest<AccountInfo>;
+    public AccountInfoRequest: ObservableRequest<AccountInfo>;
+    public SaveConfigRequest: ObservableRequest<void>;
 
     public Setup: SetupModel;
     public BotSetupForm: FormGroup;
     public Symbols: string[];
 
     @Input() TradeBot: TradeBotModel;
-    @Output() OnSaved = new EventEmitter<TradeBotModel>();
+    @Output() OnSaved = new EventEmitter<void>();
 
     constructor(private _fb: FormBuilder, private _api: ApiService, private _toastr: ToastrService, private _location: Location) { }
 
     ngOnInit() {
+        this.SaveConfigRequest = null;
         this.initSetupForm();
-
         this.AccountInfoRequest = new ObservableRequest(this._api.GetAccountInfo(this.Setup.Account))
             .Subscribe(info => this.Symbols = info.Symbols);
     }
 
     SaveConfig() {
         if (this.BotSetupForm.valid) {
-            this._api.UpdateBotConfig(this.TradeBot.Id, this.Setup).subscribe(
-                tb => this.OnSaved.emit(tb),
-                err => this.notifyAboutError(err)
-            );
+
+            this.SaveConfigRequest = new ObservableRequest(this._api.UpdateBotConfig(this.TradeBot.Id, this.Setup))
+                .Subscribe(ok => this.OnSaved.emit(),
+                err => {
+                    if (!err.Handled)
+                    {
+                        this._toastr.error(err.Message);
+                    }
+                })
         }
+    }
+
+    ResetError() {
+        this.SaveConfigRequest = null;
     }
 
     Cancel() {

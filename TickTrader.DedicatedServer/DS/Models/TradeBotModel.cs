@@ -11,7 +11,6 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.DS.Repository;
-using TickTrader.DedicatedServer.Extensions;
 using TickTrader.DedicatedServer.Infrastructure;
 
 namespace TickTrader.DedicatedServer.DS.Models
@@ -99,7 +98,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     ConfigurationChanged?.Invoke(this);
                 }
                 else
-                    throw new InvalidOperationException("Make sure that the bot is stopped before installing a new configuration");
+                    throw new InvalidStateException("Make sure that the bot is stopped before installing a new configuration");
             }
 
         }
@@ -122,6 +121,54 @@ namespace TickTrader.DedicatedServer.DS.Models
                     if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
                         StopInternal(client.Connection.LastError.ToString());
                 }
+            }
+        }
+
+        public void ClearLog()
+        {
+            lock (_syncObj)
+            {
+                foreach (var file in Log.Files)
+                {
+                    try
+                    {
+                        Log.DeleteFile(file.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogWarning(0, ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
+                    }
+                }
+                try
+                {
+                    if (Directory.Exists(Log.Folder))
+                        Directory.Delete(Log.Folder);
+                }
+                catch { }
+            }
+        }
+
+        public void ClearWorkingFolder()
+        {
+            lock (_syncObj)
+            {
+                foreach (var file in AlgoData.Files)
+                {
+                    try
+                    {
+                        AlgoData.DeleteFile(file.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogWarning(0, ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
+                    }
+                }
+                try
+                {
+                    if (Directory.Exists(AlgoData.Folder))
+                        Directory.Delete(AlgoData.Folder);
+                }
+                catch { }
             }
         }
 
@@ -214,7 +261,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 var setupModel = new BarBasedPluginSetup(_ref);
                 setupModel.Load(Config);
-                setupModel.SetWorkingFolder(AlgoData.FullPath);
+                setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
                 var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
@@ -228,8 +275,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
                 executor.Logger = _botLog;
-                executor.BotWorkingFolder = AlgoData.FullPath;
-                executor.WorkingFolder = AlgoData.FullPath;
+                executor.BotWorkingFolder = AlgoData.Folder;
+                executor.WorkingFolder = AlgoData.Folder;
 
                 _stopListener = new ListenerProxy(executor, () =>
                 {
@@ -353,5 +400,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 base.Dispose(disposing);
             }
         }
+
+
     }
 }

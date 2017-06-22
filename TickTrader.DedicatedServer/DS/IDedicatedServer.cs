@@ -50,7 +50,7 @@ namespace TickTrader.DedicatedServer.DS
         void ChangePassword(string password);
 
         ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig);
-        void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
+        void RemoveBot(string botId, bool cleanLog = true, bool cleanAlgoData = true);
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
@@ -98,10 +98,11 @@ namespace TickTrader.DedicatedServer.DS
     {
         IEnumerable<ILogEntry> Messages { get; }
         IFile GetFile(string file);
+        string Folder { get; }
         string Status { get; }
         IFile[] Files { get; }
         event Action<string> StatusUpdated;
-        void Clean();
+        void Clear();
         void DeleteFile(string file);
     }
 

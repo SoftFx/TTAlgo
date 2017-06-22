@@ -2,23 +2,18 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-5">
-                <div class="card">
-                    <div class="header">
-                        <h4 *ngIf="IsCreateMode" class="title truncate">
-                            Add New Bot
-                        </h4>
-                        <h4 *ngIf="IsEditMode" class="title truncate">
-                            Edit Bot Configuration
-                        </h4>
-                        <h4 *ngIf="ErrorMessage" class="title truncate">
-                            Error
-                        </h4>
-                        <!--<p class="category">Select and configure a new bot bot instance</p>-->
-                    </div>
-                    <div id="quickRunPanel" class="content">
-                        <bot-add-cmp *ngIf="IsCreateMode" (OnAdded)="OnAdded($event)"></bot-add-cmp>
-                        <bot-setup-cmp *ngIf="IsEditMode" [TradeBot]="Bot" (OnSaved)="OnSaved($event)"></bot-setup-cmp>
-                        <div *ngIf="ErrorMessage">{{ErrorMessage}}</div>
+                <bot-add-cmp *ngIf="IsCreateMode" (OnAdded)="OnAdded($event)"></bot-add-cmp>
+                <bot-setup-cmp *ngIf="IsEditMode" [TradeBot]="Bot" (OnSaved)="OnSaved()"></bot-setup-cmp>
+                <div *ngIf="ErrorMessage">
+                    <div class="card">
+                        <div class="header">
+                            <h4 class="title truncate">
+                                Error
+                            </h4>
+                        </div>
+                        <div id="reconfigurateBot" class="content">
+                            {{ErrorMessage}}
+                        </div>
                     </div>
                 </div>
             </div>
