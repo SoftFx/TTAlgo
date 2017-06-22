@@ -24,7 +24,7 @@ export class RepositoryComponent implements OnInit {
         this.UploadRequest = null;
         this.CheckPackageRequest = null;
 
-        this._api.Feed.AddPackage.subscribe(algoPackage => this.addPackage(algoPackage));
+        this._api.Feed.AddOrUpdatePackage.subscribe(algoPackage => this.addOrUpdatePackage(algoPackage));
         this._api.Feed.DeletePackage.subscribe(pname => this.deletePackage(pname));
 
         this.loadPackages();
@@ -45,8 +45,7 @@ export class RepositoryComponent implements OnInit {
         this.CheckPackageRequest = new ObservableRequest(this._api.PackageExists(this.SelectedFileName))
             .Subscribe(ok => { },
             err => {
-                if (err.Status !== 404)
-                {
+                if (err.Status !== 404) {
                     this.CheckPackageRequest = null;
                     this._toastr.error(err.Message);
                 }
@@ -94,14 +93,18 @@ export class RepositoryComponent implements OnInit {
                 if (!this.Packages)
                     this.Packages = res
                 else
-                    res.forEach(p => this.addPackage(p));
+                    res.forEach(p => this.addOrUpdatePackage(p));
             });
     }
 
-    private addPackage(packageModel: PackageModel) {
-        if (!this.Packages.find(p => p.Name === packageModel.Name)) {
+    private addOrUpdatePackage(packageModel: PackageModel) {
+        let index = -1;
+        let fpackage = this.Packages.find((p, i) => { index = i; return p.Name === packageModel.Name });
+
+        if (fpackage)
+            this.Packages[index] = packageModel;
+        else
             this.Packages = this.Packages.concat(packageModel);
-        }
     }
 
     private deletePackage(packageName: string) {

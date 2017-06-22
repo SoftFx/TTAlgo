@@ -14,7 +14,7 @@ export class FeedService {
     public CurrentState = ConnectionStatus.Disconnected;
     public ConnectionState: Observable<ConnectionStatus>;
 
-    public AddPackage: Observable<PackageModel>;
+    public AddOrUpdatePackage: Observable<PackageModel>;
     public DeletePackage: Observable<string>;
     public AddAccount: Observable<AccountModel>;
     public DeleteAccount: Observable<AccountModel>;
@@ -24,7 +24,7 @@ export class FeedService {
     public ChangeBotState: Observable<TradeBotStateModel>;
 
     private connectionStateSubject = new Subject<ConnectionStatus>();
-    private addPackageSubject = new Subject<PackageModel>();
+    private addOrUpdatePackageSubject = new Subject<PackageModel>();
     private deletePackageSubject = new Subject<string>();
     private addAccountSubject = new Subject<AccountModel>();
     private deleteAccountSubject = new Subject<AccountModel>();
@@ -37,7 +37,7 @@ export class FeedService {
         this.ConnectionState = this.connectionStateSubject.asObservable();
 
         this.DeletePackage = this.deletePackageSubject.asObservable();
-        this.AddPackage = this.addPackageSubject.asObservable();
+        this.AddOrUpdatePackage = this.addOrUpdatePackageSubject.asObservable();
         this.AddAccount = this.addAccountSubject.asObservable();
         this.DeleteAccount = this.deleteAccountSubject.asObservable();
         this.ChangeBotState = this.changeBotStateSubject.asObservable();
@@ -57,7 +57,7 @@ export class FeedService {
             let connection = <FeedSignalR>$.connection;
             let feedHub = connection.dSFeed;
 
-            feedHub.client.addPackage = x => this.onAddPackage(new PackageModel().Deserialize(x));
+            feedHub.client.addOrUpdatePackage = x => this.onAddOrUpdatePackage(new PackageModel().Deserialize(x));
             feedHub.client.deletePackage = x => this.onDeletePackage(x);
             feedHub.client.addAccount = x => this.onAddAccount(new AccountModel().Deserialize(x));
             feedHub.client.deleteAccount = x => this.onDeleteAccount(new AccountModel().Deserialize(x));
@@ -97,10 +97,10 @@ export class FeedService {
         });
     }
 
-    private onAddPackage(algoPackage: PackageModel) {
+    private onAddOrUpdatePackage(algoPackage: PackageModel) {
         this._zone.run(() => {
-            console.info('[FeedService] onAddPackage', algoPackage);
-            this.addPackageSubject.next(algoPackage);
+            console.info('[FeedService] onAddOrUpdatePackage', algoPackage);
+            this.addOrUpdatePackageSubject.next(algoPackage);
         });
     }
 
