@@ -11,9 +11,18 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel : PluginModel
     {
-        private Dictionary<string, IXyDataSeries> series = new Dictionary<string, IXyDataSeries>();
+        private Dictionary<string, IXyDataSeries> _series = new Dictionary<string, IXyDataSeries>();
 
-        public IndicatorModel(PluginSetup pSetup, IAlgoPluginHost host)
+
+        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Target == OutputTargets.Overlay); } }
+        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Target != OutputTargets.Overlay); } }
+
+
+        private bool IsRunning { get; set; }
+        private bool IsStopping { get; set; }
+
+
+        public IndicatorModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
             host.StartEvent += Host_StartEvent;
@@ -23,18 +32,22 @@ namespace TickTrader.BotTerminal
                 StartIndicator();
         }
 
-        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Target == OutputTargets.Overlay); } }
-        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Target != OutputTargets.Overlay); } }
 
         public IXyDataSeries GetOutputSeries(string id)
         {
-            return series[id];
+            return _series[id];
         }
 
-        private void Host_StartEvent()
+        public override void Dispose()
         {
-            StartIndicator();
+            base.Dispose();
+
+            Host.StartEvent -= Host_StartEvent;
+            Host.StopEvent -= Host_StopEvent;
+            if (IsRunning)
+                StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
+
 
         protected override PluginExecutor CreateExecutor()
         {
@@ -46,21 +59,19 @@ namespace TickTrader.BotTerminal
                 {
                     var buffer = executor.GetOutput<double>(outputSetup.Id);
                     var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetup)outputSetup);
-                    series.Add(outputSetup.Id, adapter.SeriesData);
+                    _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
                 else if (outputSetup is MarkerSeriesOutputSetup)
                 {
                     var buffer = executor.GetOutput<Marker>(outputSetup.Id);
                     var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetup)outputSetup);
-                    series.Add(outputSetup.Id, adapter.SeriesData);
+                    _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
             }
 
             return executor;
         }
 
-        private bool IsRunning { get; set; }
-        private bool IsStopping { get; set; }
 
         private void StartIndicator()
         {
@@ -78,19 +89,14 @@ namespace TickTrader.BotTerminal
                 await StopExecutor();
                 IsRunning = false;
                 IsStopping = false;
-                foreach (var dataLine in this.series.Values)
+                foreach (var dataLine in this._series.Values)
                     dataLine.Clear();
             }
         }
 
-        public override void Dispose()
+        private void Host_StartEvent()
         {
-            base.Dispose();
-
-            Host.StartEvent -= Host_StartEvent;
-            Host.StopEvent -= Host_StopEvent;
-            if (IsRunning)
-                StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
+            StartIndicator();
         }
 
         private Task Host_StopEvent(object sender, CancellationToken cToken)

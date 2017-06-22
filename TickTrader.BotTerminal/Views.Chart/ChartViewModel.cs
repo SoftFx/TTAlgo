@@ -166,7 +166,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new PluginSetupViewModel(algoEnv.Repo, item, Chart);
+                var model = new PluginSetupViewModel(algoEnv.Repo, item, Chart, shell.IdProvider);
                 if (!model.SetupCanBeSkipped)
                     shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
                 else
@@ -186,19 +186,14 @@ namespace TickTrader.BotTerminal
 
             if (pluginType == AlgoTypes.Indicator)
             {
-                Chart.AddIndicator(setupModel.Setup);
+                Chart.AddIndicator(setupModel);
             }
             else if (pluginType == AlgoTypes.Robot)
             {
-                var bot = new TradeBotModel2(setupModel.Setup, Chart);
-                //bot.TimeFrame = Chart.TimeFrame;
-                //bot.MainSymbol = Chart.SymbolCode;
-                //bot.TimelineStart = Chart.TimelineStart;
-                //bot.TimelineEnd = DateTime.Now + TimeSpan.FromDays(100);
+                var bot = new TradeBotModel(setupModel, Chart);
                 var viewModel = new BotControlViewModel(bot, shell.ToolWndManager, setupModel.RunBot);
                 viewModel.Closed += BotClosed;
                 bots.Add(viewModel);
-                //bot.StateChanged += Bot_StateChanged;
             }
         }
 

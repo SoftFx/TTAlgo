@@ -21,10 +21,18 @@ namespace TickTrader.BotTerminal
         void CloseWindow(object wndKey);
     }
 
+    internal interface PluginIdProvider
+    {
+        string GeneratePluginId(string pluginName);
+        string GenerateIndicatorId(string indicatorName);
+        string GenerateBotId(string botName);
+    }
+
     internal interface IShell : IWindowModel
     {
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
         ToolWindowsManager ToolWndManager { get; }
+        PluginIdProvider IdProvider { get; }
     }
 }

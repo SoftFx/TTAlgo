@@ -206,7 +206,7 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsLocked = delegate { };
         public event System.Action ParamsUnlocked = delegate { };
 
-        public void AddIndicator(PluginSetup setup)
+        public void AddIndicator(PluginSetupViewModel setup)
         {
             var indicator = CreateIndicator(setup);
             indicators.Add(indicator);
@@ -228,7 +228,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel CreateIndicator(PluginSetup setup);
+        protected abstract IndicatorModel CreateIndicator(PluginSetupViewModel setup);
         protected abstract void ApplyUpdate(Quote update);
 
         protected void Support(SelectableChartTypes chartType)
@@ -356,21 +356,10 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeApi;
         }
 
-        public virtual void InitializePlugin(PluginExecutor plugin, string uniqueBotName)
+        public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = ClientModel.Account;
-            if (string.IsNullOrEmpty(uniqueBotName))
-            {
-                plugin.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
-                plugin.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
-            }
-            else
-            {
-                plugin.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(uniqueBotName));
-                plugin.BotWorkingFolder = plugin.WorkingFolder;
-                EnvService.Instance.EnsureFolder(plugin.BotWorkingFolder);
-            }
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)
