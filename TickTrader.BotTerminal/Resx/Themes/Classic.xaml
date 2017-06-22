@@ -8,6 +8,9 @@
     <SolidColorBrush x:Key="Shell_WarningForeground" Color="#DA5A3A"/>
     <SolidColorBrush x:Key="Shell_ErrorForeground" Color="#9F4747"/>
 
+    <SolidColorBrush x:Key="Shell_PrimaryBackground" Color="White"/>
+    <SolidColorBrush x:Key="Shell_SecondaryBackground" Color="LightGray"/>
+
     <SolidColorBrush x:Key="RateUpColor" Color="#009344"/>
     <SolidColorBrush x:Key="RateUpHighlightColor" Color="#006836"/>
     <SolidColorBrush x:Key="RateDownColor" Color="#F15923"/>
@@ -17,6 +20,13 @@
 
     <SolidColorBrush x:Key="Dialog_Background" Color="White"/>
     <SolidColorBrush x:Key="Dialog_ErrorBackground" Color="#FCB1B2"/>
+    <SolidColorBrush x:Key="Dialog_ErrorForeground" Color="Red"/>
+    <SolidColorBrush x:Key="Dialog_ControlDisabledBackground" Color="LightGray"/>
+    <SolidColorBrush x:Key="Dialog_OkButtonBackground" Color="White"/>
+    <SolidColorBrush x:Key="Dialog_OkButtonHighlightBackground" Color="LightGray"/>
+    <SolidColorBrush x:Key="Dialog_ButtonBackground" Color="White"/>
+    <SolidColorBrush x:Key="Dialog_ButtonHighlightBackground" Color="LightGray"/>
+    <SolidColorBrush x:Key="Dialog_ButtonBorderColor" Color="Gray"/>
 
     <SolidColorBrush x:Key="Chart_BotControl_Background" Color="#3B3B3B" />
     <SolidColorBrush x:Key="Chart_BotControl_HighlightBackground" Color="#292929" />
