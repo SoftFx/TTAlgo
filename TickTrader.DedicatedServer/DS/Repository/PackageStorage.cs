@@ -68,6 +68,8 @@ namespace TickTrader.DedicatedServer.DS.Repository
 
                 if (existing == null)
                     PackageChanged?.Invoke(package, ChangeAction.Added);
+                else
+                    PackageChanged?.Invoke(package, ChangeAction.Modified);
 
                 return package;
             }
@@ -183,13 +185,13 @@ namespace TickTrader.DedicatedServer.DS.Repository
             try
             {
                 var container = PluginContainer.Load(fileInfo.FullName);
-                return new PackageModel(fileInfo.Name, fileInfo.CreationTime, container);
+                return new PackageModel(fileInfo.Name, fileInfo.LastWriteTime, container);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to read package {fileInfo.Name}: {ex}");
 
-                return new PackageModel(fileInfo.Name, fileInfo.CreationTime, null);
+                return new PackageModel(fileInfo.Name, fileInfo.LastWriteTime, null);
             }
         }
 

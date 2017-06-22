@@ -12,7 +12,7 @@ import { ApiService, ToastrService } from '../../services/index';
 })
 
 export class BotAddComponent implements OnInit {
-    private _autogenerateBotIdRef: number = 0;
+    private _botIRequestdRef: number = 0;
     private _loadSymbolsRef: number = 0;
     private _pluginSelectedSubject = new Subject<PluginModel>();
     private _accountSelectedSubject = new Subject<AccountModel>();
@@ -43,7 +43,7 @@ export class BotAddComponent implements OnInit {
             .subscribe(account => this.loadSymbols(account));
 
         this.PackagesRequest = new ObservableRequest(this._api.GetPackages()).Subscribe();
-        this.AccountsRequest = new ObservableRequest(this._api.GetAccounts()).Subscribe();
+        this.AccountsRequest = new ObservableRequest(this._api.GetAccounts()).Subscribe(ok => this.setDefaultAccount());
         this.AccountInfoRequest = new ObservableRequest(Observable.of(new AccountInfo())).Subscribe();
     }
 
@@ -54,8 +54,7 @@ export class BotAddComponent implements OnInit {
                 err => {
                     if (!err.Handled)
                         this._toastr.error(err.Message);
-                    else if (err.Code === ResponseCode.DuplicateBot)
-                    {
+                    else if (err.Code === ResponseCode.DuplicateBot) {
                         err.Message = `Bot with ID '${this.Setup.InstanceId}' already exists! Please type another ID.`;
                     }
                 });
@@ -70,7 +69,7 @@ export class BotAddComponent implements OnInit {
         this.AddBotRequest = null;
     }
 
-    OnPluginSelected(plugin: PluginModel) {
+    OnPluginChanged(plugin: PluginModel) {
         this._pluginSelectedSubject.next(plugin);
     }
 
@@ -78,16 +77,30 @@ export class BotAddComponent implements OnInit {
         this._accountSelectedSubject.next(account);
     }
 
+    private setDefaultAccount() {
+        if (this.Setup && !this.Setup.Account)
+            if (this.AccountsRequest.Result && this.AccountsRequest.Result.length === 1) {
+                this.Setup.Account = this.AccountsRequest.Result[0];
+
+                if (this.AccountInfoRequest.Result) {
+                    this.Setup.Symbol = this.AccountInfoRequest.Result.MainSymbol;
+                }
+            }
+    }
+
     private initSetupForm(plugin: PluginModel) {
         if (plugin) {
             this.Setup = SetupModel.ForPlugin(plugin);
+
+            this.setDefaultAccount();
+
             this.BotSetupForm = this.createSetupForm(this.Setup);
 
-            let localAutogenerateBotIdRef = ++this._autogenerateBotIdRef;
+            let localBotIdRequestRef = ++this._botIRequestdRef;
 
             this._api.AutogenerateBotId(plugin.DisplayName)
-                .filter(id => this._autogenerateBotIdRef == localAutogenerateBotIdRef && this.BotSetupForm && !this.BotSetupForm.value.InstanceId)
-                .subscribe(id => { if (this.BotSetupForm) this.BotSetupForm.patchValue({ "InstanceId": id }) });
+                .filter(id => this._botIRequestdRef == localBotIdRequestRef && this.Setup && !this.Setup.InstanceId)
+                .subscribe(id => { if (this.Setup) this.Setup.InstanceId = id });
         }
         else {
             this.Setup = null;
@@ -105,7 +118,7 @@ export class BotAddComponent implements OnInit {
             this.AccountInfoRequest = new ObservableRequest(this._api.GetAccountInfo(account).filter(info => this._loadSymbolsRef == localLoadSymbolsRef))
                 .Subscribe(info => {
                     this.Symbols = info.Symbols;
-                    this.BotSetupForm.patchValue({ Symbol: info.MainSymbol });
+                    this.Setup.Symbol = info.MainSymbol;
                 });
         }
     }
@@ -115,8 +128,8 @@ export class BotAddComponent implements OnInit {
 
         formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, [Validators.required, Validators.maxLength(30)]));
         formGroup.addControl("Isolated", this._fb.control(setup.Isolated));
-        formGroup.addControl("Account", this._fb.control(null, Validators.required));
-        formGroup.addControl("Symbol", this._fb.control("", Validators.required));
+        formGroup.addControl("Account", this._fb.control(setup.Account, Validators.required));
+        formGroup.addControl("Symbol", this._fb.control(setup.Symbol, Validators.required));
 
         setup.Parameters.forEach(parameter => formGroup.addControl(parameter.Descriptor.Id,
             this._fb.control(parameter.Value, parameter.Descriptor.IsRequired ? Validators.required : []))

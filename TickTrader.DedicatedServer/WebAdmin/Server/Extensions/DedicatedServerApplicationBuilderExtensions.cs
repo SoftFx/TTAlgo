@@ -79,7 +79,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             switch (action)
             {
                 case ChangeAction.Added:
-                    Hub.Clients.All.AddPackage(package.ToDto());
+                case ChangeAction.Modified:
+                    Hub.Clients.All.AddOrUpdatePackage(package.ToDto());
                     break;
                 case ChangeAction.Removed:
                     Hub.Clients.All.DeletePackage(package.Name);
