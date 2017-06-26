@@ -194,7 +194,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new PluginSetupViewModel(algoEnv.Repo, item, Chart, algoEnv.IdProvider.GeneratePluginId(item.Descriptor));
+                var model = new PluginSetupViewModel(algoEnv, item, Chart);
                 if (!model.SetupCanBeSkipped)
                     shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
                 else

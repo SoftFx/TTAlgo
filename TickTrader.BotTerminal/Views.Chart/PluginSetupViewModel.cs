@@ -18,6 +18,8 @@ namespace TickTrader.BotTerminal
         private bool _dlgResult;
         private PluginCatalog _catalog;
         private IAlgoSetupFactory _setupFactory;
+        private PluginIdProvider _idProvider;
+        private string _instanceId;
 
 
         public PluginSetup Setup { get; private set; }
@@ -28,7 +30,19 @@ namespace TickTrader.BotTerminal
 
         public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid && Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot;
 
-        public string InstanceId { get; set; }
+        public string InstanceId
+        {
+            get { return _instanceId; }
+            set
+            {
+                _instanceId = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(IsInstanceIdValid));
+                Validate();
+            }
+        }
+
+        public bool IsInstanceIdValid => _idProvider.IsValidPluginId(PluginItem.Descriptor, InstanceId);
 
         public bool Isolated { get; set; }
 
@@ -38,19 +52,16 @@ namespace TickTrader.BotTerminal
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
 
 
-        public PluginSetupViewModel(PluginCatalog catalog, PluginCatalogItem item, IAlgoSetupFactory setupFactory, string instanceId)
+        public PluginSetupViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupFactory setupFactory)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             DisplayName = $"Settings - {item.DisplayName}";
             PluginItem = item;
             _setupFactory = setupFactory;
-            _catalog = catalog;
-            InstanceId = instanceId;
+            _catalog = algoEnv.Repo;
+            _idProvider = algoEnv.IdProvider;
 
-            Isolated = false;
-            RunBot = true;
-
-            catalog.AllPlugins.Updated += AllPlugins_Updated;
+            _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
             Init();
         }
@@ -86,11 +97,15 @@ namespace TickTrader.BotTerminal
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
 
+            _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
+            Isolated = false;
+            RunBot = true;
+
             Setup = _setupFactory.CreateSetup(PluginItem.Ref);
             Setup.ValidityChanged += Validate;
             Validate();
 
-            _logger.Debug("Init "
+            _logger.Debug($"Init {Setup.Descriptor.DisplayName} "
                  + Setup.Parameters.Count() + " params "
                  + Setup.Inputs.Count() + " inputs "
                  + Setup.Outputs.Count() + " outputs ");
@@ -100,7 +115,7 @@ namespace TickTrader.BotTerminal
 
         private void Validate()
         {
-            CanOk = Setup.IsValid;
+            CanOk = Setup.IsValid && IsInstanceIdValid;
             NotifyOfPropertyChange(nameof(CanOk));
         }
 

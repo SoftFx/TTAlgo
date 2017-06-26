@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 
@@ -10,6 +11,7 @@ namespace TickTrader.BotTerminal
     internal class PluginIdProvider
     {
         public const int MaxIdLength = 30;
+        public const string AllowedCharacters = "a-zA-Z0-9";
 
 
         private Dictionary<string, int> _bots;
@@ -26,11 +28,30 @@ namespace TickTrader.BotTerminal
             switch (descriptor.AlgoLogicType)
             {
                 case AlgoTypes.Indicator:
-                    return GenerateIndicatorId(descriptor.DisplayName);
+                    return GenerateIndicatorId(descriptor.UserDisplayName);
                 case AlgoTypes.Robot:
-                    return GenerateBotId(descriptor.DisplayName);
+                    return GenerateBotId(descriptor.UserDisplayName);
                 default:
-                    return GenerateId(descriptor.DisplayName);
+                    return GenerateId(descriptor.UserDisplayName);
+            }
+        }
+
+        public bool IsValidPluginId(AlgoPluginDescriptor descriptor, string pluginId)
+        {
+            var match = Regex.Match(pluginId, $"^[{AllowedCharacters}]{{1,{MaxIdLength}}}$");
+            if (!match.Success)
+            {
+                return false;
+            }
+
+            switch (descriptor.AlgoLogicType)
+            {
+                case AlgoTypes.Indicator:
+                    return true;
+                case AlgoTypes.Robot:
+                    return !_bots.ContainsKey(pluginId);
+                default:
+                    return true;
             }
         }
 
@@ -53,10 +74,13 @@ namespace TickTrader.BotTerminal
 
         private string GenerateId(string pluginName, string suffix = "")
         {
-            if (pluginName.Length + suffix.Length > MaxIdLength)
+            var matches = Regex.Matches(pluginName, $"[{AllowedCharacters}]*");
+            var pluginIdBuilder = new StringBuilder();
+            foreach (Match match in matches)
             {
-                pluginName = pluginName.Substring(0, MaxIdLength - suffix.Length);
+                pluginIdBuilder.Append(match.Value);
             }
+            pluginName = pluginIdBuilder.ToString(0, Math.Min(MaxIdLength - suffix.Length, pluginIdBuilder.Length));
             return $"{pluginName}{suffix}";
         }
 
@@ -71,7 +95,7 @@ namespace TickTrader.BotTerminal
 
             while (true)
             {
-                var botId = GenerateId(botName, $" {seed}");
+                var botId = GenerateId(botName, $"{seed}");
                 if (!_bots.ContainsKey(botId))
                     return botId;
 
