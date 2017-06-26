@@ -1,6 +1,5 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Entities;
 
 namespace TickTrader.Algo.Core
 {
@@ -45,19 +44,8 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
-        public string Tag
-        {
-            get { return _tag; }
-            set
-            {
-                _tag = value;
-
-                if (CompositeTag.TryParse(_tag, out CompositeTag compositeTag))
-                    _userTag = compositeTag.Tag;
-                else
-                    _userTag = _tag;
-            }
-        }
+        public string Tag { get; set; }
+        public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
         public double ExecVolume { get; set; }
@@ -84,6 +72,7 @@ namespace TickTrader.Algo.Core
         public double TakeProfit { get { return double.NaN; } }
         public string Comment { get { return ""; } }
         public string Tag { get { return ""; } }
+        public string InstanceId { get { return ""; } }
         public DateTime Created { get { return DateTime.MinValue; } }
         public DateTime Modified { get { return DateTime.MinValue; } }
         public bool IsNull { get { return true; } }

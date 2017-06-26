@@ -63,6 +63,10 @@ namespace TickTrader.BotTerminal
 
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
+            _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
+            Isolated = false;
+            RunBot = true;
+
             Init();
         }
 
@@ -96,10 +100,6 @@ namespace TickTrader.BotTerminal
         {
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
-
-            _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
-            Isolated = false;
-            RunBot = true;
 
             Setup = _setupFactory.CreateSetup(PluginItem.Ref);
             Setup.ValidityChanged += Validate;
