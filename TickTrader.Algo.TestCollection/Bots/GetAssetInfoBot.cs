@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Get Asset Info Bot", Version = "1.0", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Get Asset Info Bot", Version = "1.1", Category = "Test Plugin Info",
         Description = "Prints info about asset with specified currency code to bot status window")]
     public class GetAssetInfoBot : TradeBotCommon
     {
@@ -12,7 +12,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            Status.WriteLine(ToObjectPropertiesString(CurrencyCode, Account.Assets[CurrencyCode]));
+            Status.WriteLine(ToObjectPropertiesString(CurrencyCode, typeof(Asset), Account.Assets[CurrencyCode]));
 
             Exit();
         }
