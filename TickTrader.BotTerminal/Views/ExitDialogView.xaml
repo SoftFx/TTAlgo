@@ -11,11 +11,15 @@
         Background="{DynamicResource Dialog_Background}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="70"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Label Grid.Row="0" Content="Are you sure you want to exit the application?" VerticalAlignment="Center" Margin="10"/>
+        <StackPanel Orientation="Vertical" Grid.Row="0" Margin="10" VerticalAlignment="Center">
+            <Label Content="Are you sure you want to exit the application?" />
+            <Label Content="All running bots will be stopped!" Padding="0" HorizontalAlignment="Center"
+                   Foreground="{DynamicResource Dialog_ErrorForeground}" Visibility="{Binding HasStartedBots, Converter={StaticResource BoolToVis}}"/>
+        </StackPanel>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -25,14 +29,16 @@
 
             <l:FlatButton Grid.Column="0" Margin="5"
                       x:Name="OK"
-                      Content="Yes" 
-                      Background="{DynamicResource Dialog_ButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+                      Content="Yes"
+                      IsDefault="True"
+                      Background="{DynamicResource Dialog_OkButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}" />
             <l:FlatButton Grid.Column="1" Margin="5"
                       x:Name="Cancel"
-                      Content="No" 
-                      Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                      Content="No"
+                      IsCancel="True"
+                      Background="{DynamicResource Dialog_ButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}" />
         </Grid>
     </Grid>
 </Window>

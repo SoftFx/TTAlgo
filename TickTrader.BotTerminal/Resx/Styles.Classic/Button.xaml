@@ -2,8 +2,48 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <Style TargetType="l:FlatButton">
+    <ControlTemplate x:Key="FlatButton_Template" TargetType="{x:Type ButtonBase}">
+        <Border Name="Border" CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=CornerRadius}"
+                BorderBrush="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=BorderBrush}"
+                BorderThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=BorderThickness}"
+                IsHitTestVisible="{TemplateBinding IsHitTestVisible}"
+                Background="{TemplateBinding Background}">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Control.IsMouseOver" Value="True">
+                <Setter TargetName="Border" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=HighlightBackground}"/>
+            </Trigger>
+            <Trigger Property="Control.IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay, Path=DisabledBackground}"/>
+                <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="ButtonBaseStyle" TargetType="ButtonBase" >
+        <Setter Property="Template" Value="{StaticResource FlatButton_Template}"></Setter>
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="IsHitTestVisible" Value="True" />
     </Style>
+
+    <Style x:Key="FlatButtonMainStyle" TargetType="l:FlatButton" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{DynamicResource Shell_SecondaryBackground}"/>
+        <Setter Property="HighlightBackground" Value="Red" />
+        <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialog_ButtonBorderColor}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <Style TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}"/>
 
     <Style x:Key="BotControlStartStopButtonStyle" TargetType="l:FlatButton" x:Shared="False">
         <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StartBackground}"/>

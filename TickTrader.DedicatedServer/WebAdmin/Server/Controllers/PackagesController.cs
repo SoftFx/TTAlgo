@@ -34,6 +34,17 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             return packages.Select(p => p.ToDto()).ToArray();
         }
 
+        [HttpHead("{name}")]
+        public IActionResult Head(string name)
+        {
+            var packages = _dedicatedServer.GetPackages();
+
+            if (_dedicatedServer.GetPackages().Any(p => p.Name == name))
+                return Ok();
+
+            return NotFound();
+        }
+
         [HttpPost]
         public IActionResult Post(IFormFile file)
         {
@@ -49,10 +60,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     {
                         var pacakge = _dedicatedServer.UpdatePackage(fileContent, file.FileName);
                     }
-                    catch (DuplicatePackageException dpe)
+                    catch (DSException dsex)
                     {
-                        _logger.LogError(dpe.Message);
-                        return BadRequest(dpe.ToBadResult());
+                        _logger.LogError(dsex.Message);
+                        return BadRequest(dsex.ToBadResult());
                     }
                 }
             }
@@ -61,9 +72,19 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{name}")]
-        public void Delete(string name)
+        public IActionResult Delete(string name)
         {
-            _dedicatedServer.RemovePackage(WebUtility.UrlDecode(name));
+            try
+            {
+                _dedicatedServer.RemovePackage(WebUtility.UrlDecode(name));
+            }
+            catch (DSException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
         }
     }
 }

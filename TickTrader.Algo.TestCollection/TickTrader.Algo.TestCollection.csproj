@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
+    <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\EnvironmentInfoBot.cs" />
     <Compile Include="Bots\OpenOrder.cs" />
     <Compile Include="Bots\OrderEventsBot.cs" />
@@ -53,7 +54,7 @@
     <Compile Include="Bots\CancelAll.cs" />
     <Compile Include="Bots\CloseAll.cs" />
     <Compile Include="Bots\CurrencyInfoBot.cs" />
-    <Compile Include="Bots\DelayBot.cs" />
+    <Compile Include="Bots\DelayOnQuoteBot.cs" />
     <Compile Include="Bots\ExceptionBot.cs" />
     <Compile Include="Bots\ExitBot.cs" />
     <Compile Include="Bots\GetAssetInfoBot.cs" />

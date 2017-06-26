@@ -1,0 +1,19 @@
+﻿<div class="text-center">
+    <div *ngIf="!DeleteRequest" id="delConfirmation">
+        <p>
+            Delete?
+            <br />
+            <small>Also, all related bots will be deleted.</small>
+        </p>
+        <button (click)="Delete()" class="btn btn-primary">Delete</button>
+        <button (click)="Cancel()" class="btn btn-danger">Cancel</button>
+    </div>
+    <div *ngIf="DeleteRequest && DeleteRequest.IsRunning">
+        <span class="fa fa-circle-o-notch fa-spin black"></span>
+        Deleting ...
+    </div>
+    <div id="delError" *ngIf="DeleteRequest && DeleteRequest.IsFaulted && DeleteRequest.Error.Handled">
+        <p class="text-error">{{DeleteRequest.Error.Message}}</p>
+        <button (click)="Cancel()" class="btn btn-primary ">Ok</button>
+    </div>
+</div>
