@@ -99,12 +99,7 @@ namespace TickTrader.Algo.Core
 
         private bool TagFilter(Order order)
         {
-            var orderEntity = (OrderEntity)order;
-
-            if (CompositeTag.TryParse(orderEntity.Tag, out CompositeTag compositeTag))
-                return InstanceId == compositeTag.Key;
-
-            return false;
+            return InstanceId == order.InstanceId;
         }
 
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
