@@ -63,12 +63,11 @@
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
-    <Compile Include="Calculator\CalculatorAdapter.cs" />
-    <Compile Include="Calculator\Interfaces.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
+    <Compile Include="Entities\AssetAccessor.cs" />
     <Compile Include="Entities\AssetEntity.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
     <Compile Include="Entities\BalanceOperationReport.cs" />
@@ -87,6 +86,7 @@
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
+    <Compile Include="Entities\PositionCollection.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrderExecReport.cs" />

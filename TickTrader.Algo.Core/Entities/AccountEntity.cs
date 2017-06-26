@@ -21,10 +21,17 @@ namespace TickTrader.Algo.Core
             this.builder = builder;
 
             Orders = new OrdersCollection(builder);
+            NetPositions = new PositionCollection(builder);
             Assets = new AssetsCollection(builder);
+
+            NetPositions.PositionUpdated += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.AddedModified);
+            NetPositions.PositionRemoved += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.Removed);
+
+            Assets.AssetChanged += (a, c) => AssetsChanged?.Invoke(a, TickTraderToAlgo.Convert(c));
         }
 
         public OrdersCollection Orders { get; private set; }
+        public PositionCollection NetPositions { get; private set; }
         public AssetsCollection Assets { get; private set; }
 
         public string Id { get; set; }
@@ -103,6 +110,7 @@ namespace TickTrader.Algo.Core
 
         OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
+        NetPositionList AccountDataProvider.NetPositions { get { return NetPositions.PositionListImpl; } }
 
         public double Equity { get; set; }
         public double Margin { get; set; }
@@ -110,22 +118,14 @@ namespace TickTrader.Algo.Core
         public double Profit { get; set; }
         public double Commision { get; set; }
 
-        public NetPositionList NetPositions
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         #region BO
 
         long BL.IAccountInfo.Id => 0;
         public BO.AccountingTypes AccountingType => TickTraderToAlgo.Convert(Type);
         decimal BL.IMarginAccountInfo.Balance => (decimal)Balance;
         IEnumerable<BL.IOrderModel> BL.IAccountInfo.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
-        public IEnumerable<BL.IPositionModel> Positions => Enumerable.Empty<BL.IPositionModel>();
-        IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => Enumerable.Empty<BL.IAssetModel>();
+        IEnumerable<BL.IPositionModel> BL.IMarginAccountInfo.Positions => NetPositions;
+        IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => Assets;
 
         public event Action<BL.IOrderModel> OrderAdded { add { Orders.Added += value; } remove { Orders.Added -= value; } }
         public event Action<IEnumerable<BL.IOrderModel>> OrdersAdded { add { } remove { } }

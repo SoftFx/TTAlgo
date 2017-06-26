@@ -58,8 +58,6 @@ namespace TickTrader.Algo.TestCollection.Bots
                 PrintBalance();
                 PrintMarginAccSummary();
             }
-            else if (Account.Type == AccountTypes.Cash)
-                PrintAssets();
 
             Status.WriteLine();
 
@@ -67,6 +65,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                 PrintGrossPositions();
             else if (Account.Type == AccountTypes.Net)
                 PrintNetPositions();
+            else if (Account.Type == AccountTypes.Cash)
+                PrintAssets();
 
             Status.WriteLine();
 
@@ -136,6 +136,21 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintNetPositions()
         {
+            var positions = Account.NetPositions;
+
+            if (positions.Count > 0)
+            {
+                Status.WriteLine("{0} positions:", positions.Count);
+                foreach (var pos in positions)
+                {
+                    Status.Write("#{0} {1} {2}", pos.Symbol, pos.Side, pos.Volume);
+                    if (printCalcData)
+                        Status.Write(" margin={0:0.00} profit={1:0.00}", pos.Margin, pos.Profit);
+                    Status.WriteLine();
+                }
+            }
+            else
+                Status.WriteLine("No positions");
         }
 
         private void PrintAssets()
@@ -144,9 +159,16 @@ namespace TickTrader.Algo.TestCollection.Bots
             {
                 Status.WriteLine("{0} assets:", Account.Assets.Count);
                 foreach (var asset in Account.Assets)
+                {
                     if (asset.CurrencyInfo.IsNull)
-                        Status.WriteLine("{0} {1}", asset.Currency, asset.Volume);
-                    else Status.WriteLine("{0} {1}", asset.Currency, asset.Volume.ToString($"F{asset.CurrencyInfo.Digits}"));
+                        Status.Write("{0} {1}", asset.Currency, asset.Volume);
+                    else
+                        Status.Write("{0} {1}", asset.Currency, asset.Volume.ToString($"F{asset.CurrencyInfo.Digits}"));
+
+                    Status.Write(" locked={0:F2} free={1:F2}", asset.LockedVolume, asset.FreeVolume);
+
+                    Status.WriteLine();
+                }
             }
             else
                 Status.WriteLine("No assets");

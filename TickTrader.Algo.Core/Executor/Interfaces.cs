@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Core
         void SyncInvoke(Action action);
 
         List<OrderEntity> GetOrders();
-        IEnumerable<OrderEntity> GetPosition();
+        IEnumerable<PositionExecReport> GetPositions();
         IEnumerable<AssetEntity> GetAssets();
         event Action<OrderExecReport> OrderUpdated;
         event Action<PositionExecReport> PositionUpdated;

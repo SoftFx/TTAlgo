@@ -55,8 +55,10 @@ namespace TickTrader.Algo.Core
             
             foreach (var order in DataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
+            foreach (var position in DataProvider.GetPositions())
+                builder.Account.NetPositions.UpdatePosition(position);
             foreach (var asset in DataProvider.GetAssets())
-                builder.Account.Assets.Update(asset);
+                builder.Account.Assets.Update(asset, currencies);
         }
 
         public void Stop()
@@ -81,22 +83,37 @@ namespace TickTrader.Algo.Core
 
         private void DataProvider_BalanceUpdated(BalanceOperationReport report)
         {
-            var accProxy = context.Builder.Account;
+            context.Enqueue(b =>
+            {
+                var accProxy = context.Builder.Account;
 
-            if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
-            {
-                accProxy.Balance = report.Balance;
-                accProxy.FireBalanceUpdateEvent();
-            }
-            else if (accProxy.Type == Api.AccountTypes.Cash)
-            {
-                accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode, currencies));
-                accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(report.Balance, report.CurrencyCode, currencies)));
-            }
+                if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
+                {
+                    accProxy.Balance = report.Balance;
+                    accProxy.FireBalanceUpdateEvent();
+                }
+                else if (accProxy.Type == Api.AccountTypes.Cash)
+                {
+                    var asset = accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode), currencies);
+                    accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset));
+                }
+            });
         }
 
         private void DataProvider_PositionUpdated(PositionExecReport report)
         {
+            context.Enqueue(b =>
+            {
+                var accProxy = context.Builder.Account;
+                var positions = accProxy.NetPositions;
+
+                var oldPos = positions.GetPositionOrNull(report.Symbol);
+                var clone = oldPos?.Clone() ?? PositionEntity.CreateEmpty(report.Symbol);
+                var pos = positions.UpdatePosition(report);
+                var isClosed = report.ExecAction == OrderExecAction.Closed;
+
+                positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed));
+            });
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -183,10 +200,10 @@ namespace TickTrader.Algo.Core
             {
                 if (eReport.Assets != null)
                 {
-                    foreach (var asset in eReport.Assets)
+                    foreach (var repAsset in eReport.Assets)
                     {
-                        acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency, currencies));
-                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(new AssetEntity(asset.Volume, asset.Currency, currencies)));
+                        var asset = acc.Assets.Update(new AssetEntity(repAsset.Volume, repAsset.Currency), currencies);
+                        acc.Assets.FireModified(new AssetUpdateEventArgsImpl(asset));
                     }
                 }
             }

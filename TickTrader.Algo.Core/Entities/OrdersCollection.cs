@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
         internal OrderList OrderListImpl { get { return fixture; } }
         internal bool IsEnabled { get { return true; } }
 
-        public OrdersCollection(PluginBuilder builder)
+        internal OrdersCollection(PluginBuilder builder)
         {
             this.builder = builder;
         }
