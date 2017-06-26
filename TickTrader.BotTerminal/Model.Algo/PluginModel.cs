@@ -21,6 +21,8 @@ namespace TickTrader.BotTerminal
 
         public AlgoPluginRef PluginRef { get; }
 
+        public string PluginFilePath { get; }
+
         public PluginSetup Setup { get; }
 
         public string InstanceId { get; }
@@ -34,6 +36,7 @@ namespace TickTrader.BotTerminal
             _host = host;
             Setup = pSetup.Setup;
             PluginRef = Setup.PluginRef;
+            PluginFilePath = pSetup.PluginItem.FilePath;
             InstanceId = pSetup.InstanceId;
             Isolated = pSetup.Isolated;
 
