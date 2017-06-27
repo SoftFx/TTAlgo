@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Core
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
+        protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
 
         public void OnUserSubscribe(string symbolCode, int depth)
         {
@@ -122,7 +123,7 @@ namespace TickTrader.Algo.Core
 
         internal void ApplyUpdate(RateUpdate update)
         {
-            var lastQuote = update.LastQuotes[0];
+            var lastQuote = update.LastQuote;
 
             ExecContext.Builder.Symbols.SetRate(lastQuote);
 
@@ -138,6 +139,11 @@ namespace TickTrader.Algo.Core
             }
 
             dispenser.OnUpdateEvent(lastQuote);
+        }
+
+        internal RateUpdate InvokeAggregate(RateUpdate last, QuoteEntity quote)
+        {
+            return Aggregate(last, quote);
         }
 
         #region IFeedStrategyContext

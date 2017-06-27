@@ -21,12 +21,12 @@ namespace TickTrader.Algo.Core
 
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
-            BufferUpdateResult overallResult = new BufferUpdateResult();
+            return mainSeries.Update(update.LastQuote);
+        }
 
-            foreach (var quote in update.LastQuotes)
-                overallResult += mainSeries.Update(quote);
-
-            return overallResult;
+        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
+        {
+            return quote;
         }
 
         public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)

@@ -61,6 +61,16 @@ namespace TickTrader.Algo.Core
             Volume += volume;
         }
 
+        public void Append(BarEntity anotherBar)
+        {
+            Close = anotherBar.Close;
+            if (anotherBar.High > High)
+                High = anotherBar.High;
+            if (anotherBar.Low < Low)
+                Low = anotherBar.Low;
+            Volume += anotherBar.Volume;
+        }
+
         public BarEntity CopyAndAppend(double price, double volume)
         {
             var clone = Clone();
