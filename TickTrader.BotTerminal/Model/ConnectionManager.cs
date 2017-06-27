@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
         internal void RemoveAccount(AccountAuthEntry entry)
         {
             authStorage.Remove(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
-            authStorage.TriggerSave();
+            authStorage.Save();
         }
 
         private bool HasRequest { get { return currentConnectionRequest != null; } }
@@ -220,7 +220,7 @@ namespace TickTrader.BotTerminal
         {
             authStorage.Update(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.UpdateLast(entry.Login, entry.Server.Address);
-            authStorage.TriggerSave();
+            authStorage.Save();
         }
 
         private void Storage_Changed(ListUpdateArgs<AccountSorageEntry> e)

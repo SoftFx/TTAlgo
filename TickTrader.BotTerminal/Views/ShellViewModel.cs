@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
 
             TradeHistory = new TradeHistoryViewModel(clientModel);
 
-            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager);
+            Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
@@ -60,6 +60,7 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
+            cManager.StateChanged += (o, n) => UpdateProfile();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
@@ -102,6 +103,16 @@ namespace TickTrader.BotTerminal
             CanDisconnect = state == ConnectionManager.States.Online && !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
+        }
+
+        private void UpdateProfile()
+        {
+            if (cManager.State == ConnectionManager.States.Online)
+            {
+                storage.ProfileStorage.Login = cManager.Creds.Login;
+                storage.ProfileStorage.Server = cManager.Creds.Server.Address;
+                storage.ProfileStorage.Save();
+            }
         }
 
         public bool CanConnect { get; private set; }

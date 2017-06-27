@@ -15,14 +15,17 @@ namespace TickTrader.BotTerminal
         private IAccountInfoProvider _accountInfo;
         private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
+        private ProfileStorageModel _profile;
 
-        public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionManager connectionManager)
+        public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionManager connectionManager, PersistModel storage)
         {
             _accountInfo = accountInfo;
             _connectionModel = connectionManager;
             _notificationCenter = notificationCenter;
+            _profile = storage.ProfileStorage;
 
-            SoundsEnabled = true;
+            SoundsEnabled = _profile.Settings.EnableSounds;
+            NotificationsEnabled = _profile.Settings.EnableNotifications;
         }
 
         public bool NotificationsEnabled
@@ -48,8 +51,10 @@ namespace TickTrader.BotTerminal
                 }
 
                 _notificationCenter.PopupNotification.Enabled = value;
-
                 NotifyOfPropertyChange(nameof(NotificationsEnabled));
+
+                _profile.Settings.EnableNotifications = value;
+                _profile.Save();
             }
         }
         public bool SoundsEnabled
@@ -69,8 +74,10 @@ namespace TickTrader.BotTerminal
                     _connectionModel.StateChanged -= ConnectionStateChanged;
 
                 _notificationCenter.SoundNotification.Enabled = value;
-
                 NotifyOfPropertyChange(nameof(SoundsEnabled));
+
+                _profile.Settings.EnableSounds = value;
+                _profile.Save();
             }
         }
 

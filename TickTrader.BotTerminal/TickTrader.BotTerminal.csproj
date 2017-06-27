@@ -272,6 +272,7 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Infrustructure\StorageModelBase.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
@@ -284,6 +285,10 @@
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Auth\AuthStorageEntry.cs" />
+    <Compile Include="Model.Profiles\ProfileManager.cs" />
+    <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
+    <Compile Include="Model.Profiles\SettingsModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
