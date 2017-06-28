@@ -165,7 +165,7 @@
 		<arg value="Brand=Soft-FX" />
 		<arg value="Service=Dedicated Server Service" />
 		<arg value="License=${ServerBinDir}license.txt" />
-		<arg value="Installer=${OutpuFolder}DedicatedServerInstall.exe" />
+		<arg value="Installer=${OutpuFolder}DedicatedServerInstall ${Build}.exe" />
 	</exec>
 	
     <exec program="${NSIS_Path}\makensis.exe" >
