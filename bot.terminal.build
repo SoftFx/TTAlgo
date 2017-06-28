@@ -168,7 +168,7 @@
 		<arg value="Installer=${OutpuFolder}DedicatedServerInstall.exe" />
 	</exec>
 	
-    <exec program="${NSIS_Path}makensis.exe" >
+    <exec program="${NSIS_Path}\makensis.exe" >
       <arg value="${SourcesDir}Dedicated Server.nsi" />
     </exec>
   </target>
