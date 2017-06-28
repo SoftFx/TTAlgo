@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.Text;
 
 namespace TickTrader.DedicatedServer.CmdUtil
@@ -272,13 +271,19 @@ namespace TickTrader.DedicatedServer.CmdUtil
             //nsisScript.AppendLine($"\tDelete \"$SMPROGRAMS\\{_appName}\\{_appLnk}\"");
 
             if (!string.IsNullOrWhiteSpace(_brand))
+            {
                 nsisScript.AppendLine($"\tDelete \"$SMPROGRAMS\\{_brand}\\{_appName}\\Uninstall.lnk\"");
+                nsisScript.AppendLine($"RMDir \"$SMPROGRAMS\\{_brand}\\{_appName}\"");
+            }
             else
+            {
                 nsisScript.AppendLine($"\tDelete \"$SMPROGRAMS\\{_appName}\\Uninstall.lnk\"");
+                nsisScript.AppendLine($"RMDir \"$SMPROGRAMS\\{_appName}\"");
+            }
 
             CleanUpInstallDir(new DirectoryInfo(_appDir), nsisScript, "$INSTDIR");
 
-            nsisScript.AppendLine($"RMDir \"$SMPROGRAMS\\{_brand}\\{_appName}\"");
+            
             nsisScript.AppendLine("SectionEnd");
         }
 
