@@ -11,11 +11,19 @@ namespace TickTrader.BotTerminal
 {
     class ExitDialogViewModel : Screen
     {
-        public ExitDialogViewModel()
+        public bool IsConfirmed { get; private set; }
+
+        public bool HasStartedBots { get; }
+
+
+        public ExitDialogViewModel(bool hasStartedBots)
         {
+            HasStartedBots = hasStartedBots;
+
             DisplayName = "Exit - " + EnvService.Instance.ApplicationName;
         }
-        public bool IsConfirmed { get; private set; }
+
+
         public void OK()
         {
             IsConfirmed = true;

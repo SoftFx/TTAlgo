@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Common.Model.Config
     [KnownType(typeof(DoubleParameter))]
     [KnownType(typeof(StringParameter))]
     [KnownType(typeof(EnumParameter))]
+    [KnownType(typeof(FileParameter))]
     public abstract class Property
     {
         [DataMember(Name = "key")]

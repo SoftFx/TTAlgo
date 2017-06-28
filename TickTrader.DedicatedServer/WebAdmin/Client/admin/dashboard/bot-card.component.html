@@ -2,14 +2,16 @@
     <div class="header">
         <div class="btn-toolbar pull-right">
             <div class="btn-group btn-group-sm">
-                <a (click)="confirmDeletion=true" [class.disabled]="!CanDelete" class="btn btn-simple">
+                <a (click)="InitDeletion()" [class.disabled]="!CanDelete" class="btn btn-simple">
                     <i class="fa fa-remove"></i>
                 </a>
             </div>
         </div>
         <h4 class="title truncate">
-            <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': Faulted, 'state-online': IsOnline }"></i>
-            {{TradeBot.Id}}
+            <i class="fa fa-circle" [ngClass]="{'state-offline': IsOffline, 'state-connecting': IsProcessing , 'state-faulted': Faulted || Broken, 'state-online': IsOnline }"></i>
+            <a (click)="GoToDetails(TradeBot.Id)" href="javascript:;">
+                {{TradeBot.Id}}
+            </a>
         </h4>
         <p class="category">{{TradeBotState[TradeBot.State]}}</p>
     </div>
@@ -17,7 +19,7 @@
         <ul class="list-unstyled">
             <li class="card-text">Account: {{TradeBot.Account.Login}}</li>
             <li class="card-text">Server: {{TradeBot.Account.Server}}</li>
-            <li *ngIf="Faulted" class="card-text text-error">{{TradeBot.FaultMessage | resx}}</li>
+            <li *ngIf="Faulted || Broken" class="card-text text-error">{{TradeBot.FaultMessage | resx}}</li>
         </ul>
         <div class="footer">
             <hr />
@@ -31,23 +33,7 @@
         </div>
     </div>
 
-    <overlay-cmp *ngIf="false">
-        <div class="text-center">
-            <span class="fa fa-circle-o-notch fa-spin black"></span>
-        </div>
-    </overlay-cmp>
-
-    <overlay-cmp *ngIf="confirmDeletion">
-        <div class="text-center">
-            <p>Delete?</p>
-            <div class="row">
-                <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="Delete()" class="btn btn-primary ">Delete</button>
-                </div>
-                <div class="col-xs-6 col-sm-6 col-md-6">
-                    <button (click)="confirmDeletion=false" class="btn btn-danger ">Cancel</button>
-                </div>
-            </div>
-        </div>
+    <overlay-cmp *ngIf="ConfirmDeletionEnabled">
+        <bot-delete-cmp [Bot]="TradeBot" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></bot-delete-cmp>
     </overlay-cmp>
 </div>

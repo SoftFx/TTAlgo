@@ -79,13 +79,13 @@ namespace TickTrader.Algo.Common.Model.Setup
             return cfg;
         }
 
-        public virtual void SetWorkingFolder(string workingfolder)
+        public void SetWorkingFolder(string workingFolder)
         {
             foreach (FileParamSetup fileParam in _parameters.Where(p => p is FileParamSetup))
             {
-                if (!Path.IsPathRooted(fileParam.FilePath))
+                if (Path.GetFullPath(fileParam.FilePath) != fileParam.FilePath)
                 {
-                    fileParam.FilePath = Path.Combine(workingfolder, fileParam.FileName);
+                    fileParam.FilePath = Path.Combine(workingFolder, fileParam.FileName);
                 }
             }
         }

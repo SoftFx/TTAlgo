@@ -12,6 +12,8 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
+using System.IO;
+using TickTrader.DedicatedServer.Extensions;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -20,6 +22,8 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _sync;
         private ILogger _log;
+        private ILoggerFactory _loggerFactory;
+        private CancellationTokenSource _disconnectCancellation;
         private CancellationTokenSource _connectCancellation;
         private CancellationTokenSource _requestCancellation;
         private List<Task> _requests;
@@ -46,7 +50,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             _sync = syncObj;
             _packageProvider = packageProvider;
-            _log = loggerFactory.CreateLogger<ClientModel>();
+            _loggerFactory = loggerFactory;
+            _log = _loggerFactory.CreateLogger<ClientModel>();
             _requests = new List<Task>();
             _requestCancellation = new CancellationTokenSource();
 
@@ -215,11 +220,36 @@ namespace TickTrader.DedicatedServer.DS.Models
             if (ConnectionState == ConnectionStates.Offline)
             {
                 if (_requests.Count > 0 || _startedBotsCount > 0)
+                {
+                    _disconnectCancellation?.Cancel();
+                    _disconnectCancellation = null;
+
                     Connect();
+                }
             }
             else if (ConnectionState == ConnectionStates.Online)
             {
+                if (_stopRequested || _lostConnection)
+                {
+                    _disconnectCancellation?.Cancel();
+                    _disconnectCancellation = null;
 
+                    Disconnect();
+                }
+                else if (_startedBotsCount == 0 && _disconnectCancellation == null)
+                {
+                    _disconnectCancellation = new CancellationTokenSource();
+                    DisconnectAfter(_disconnectCancellation.Token, TimeSpan.FromMinutes(1)).Forget();
+                }
+            }
+        }
+
+        private async Task DisconnectAfter(CancellationToken token, TimeSpan delay)
+        {
+            await Task.Delay(delay, token);
+            token.ThrowIfCancellationRequested();
+            lock (_sync)
+            {
                 if (_stopRequested || _lostConnection || _startedBotsCount == 0)
                     Disconnect();
             }
@@ -349,7 +379,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             ManageConnection();
         }
 
-        public void RemoveBot(string botId)
+        public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
             lock (_sync)
             {
@@ -358,6 +388,13 @@ namespace TickTrader.DedicatedServer.DS.Models
                 {
                     if (bot.IsRunning)
                         throw new InvalidStateException("Cannot remove running bot!");
+
+                    if (cleanLog)
+                        bot.ClearLog();
+
+                    if (cleanAlgoData)
+                        bot.ClearWorkingFolder();
+
                     _bots.Remove(bot);
                     DeinitBot(bot);
                     BotChanged?.Invoke(bot, ChangeAction.Removed);
@@ -375,6 +412,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                 foreach (var bot in _bots)
                 {
                     DeinitBot(bot);
+                    bot.ClearLog();
+                    bot.ClearWorkingFolder();
                     BotChanged?.Invoke(bot, ChangeAction.Removed);
                 }
 
@@ -387,7 +426,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            bot.Init(this, _log, _sync, _packageProvider, null);
+            bot.Init(this, _loggerFactory, _sync, _packageProvider, null, ServerModel.GetWorkingFolderFor(bot.Id));
             BotInitialized?.Invoke(bot);
         }
 

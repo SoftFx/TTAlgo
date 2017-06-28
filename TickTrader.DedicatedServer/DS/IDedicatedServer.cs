@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
@@ -35,7 +36,7 @@ namespace TickTrader.DedicatedServer.DS
         ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
 
         ITradeBot AddBot(string botId, AccountKey accountId, PluginKey pluginId, PluginConfig botConfig);
-        void RemoveBot(string botId);
+        void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
     }
 
     public interface IAccount
@@ -49,7 +50,7 @@ namespace TickTrader.DedicatedServer.DS
         void ChangePassword(string password);
 
         ITradeBot AddBot(string botId, PluginKey pluginId, PluginConfig botConfig);
-        void RemoveBot(string botId);
+        void RemoveBot(string botId, bool cleanLog = true, bool cleanAlgoData = true);
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
@@ -61,10 +62,13 @@ namespace TickTrader.DedicatedServer.DS
         bool IsRunning { get; }
         string FaultMessage { get; }
         IBotLog Log { get; }
+        IAlgoData AlgoData { get; }
         IAccount Account { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }
-        string Descriptor { get;  }
+        string PackageName { get; }
+        string Descriptor { get; }
+        string BotName { get; }
         BotStates State { get; }
         void Configurate(PluginConfig cfg);
         void Start();
@@ -81,10 +85,25 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
+    public enum LogEntryType { Info, Trading, Error, Custom }
+
+    public interface ILogEntry
+    {
+        DateTime TimeUtc { get; }
+        LogEntryType Type { get; }
+        string Message { get; }
+    }
+
     public interface IBotLog
     {
+        IEnumerable<ILogEntry> Messages { get; }
+        IFile GetFile(string file);
+        string Folder { get; }
         string Status { get; }
+        IFile[] Files { get; }
         event Action<string> StatusUpdated;
+        void Clear();
+        void DeleteFile(string file);
     }
 
     public class PluginInfo

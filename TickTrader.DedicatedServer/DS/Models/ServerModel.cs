@@ -13,6 +13,7 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
+using TickTrader.DedicatedServer.Extensions;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -34,6 +35,11 @@ namespace TickTrader.DedicatedServer.DS.Models
         }
 
         public static EnvService Environment => envService;
+
+        public static string GetWorkingFolderFor(string botId)
+        {
+            return Path.Combine(Environment.AlgoWorkingFolder, botId.Escape());
+        }
 
         public object SyncObj { get; private set; }
 
@@ -112,7 +118,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel(accountId.Server, accountId.Login,  password);
+                    var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
                     InitAccount(newAcc);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
@@ -123,7 +129,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void Validate(string login, string server, string password)
         {
-            if(string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(password))
             {
                 throw new InvalidAccountException("Login, password and server are required");
             }
@@ -188,7 +194,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
         }
-       
+
         private void DeinitAccount(ClientModel acc)
         {
             acc.BotValidation -= OnBotValidation;
@@ -247,10 +253,10 @@ namespace TickTrader.DedicatedServer.DS.Models
                 return GetAccountOrThrow(accountId).AddBot(botId, pluginId, botConfig);
         }
 
-        public void RemoveBot(string botId)
+        public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
             lock (SyncObj)
-                _allBots.GetOrDefault(botId)?.Account.RemoveBot(botId);
+                _allBots.GetOrDefault(botId)?.Account.RemoveBot(botId, cleanLog, cleanAlgoData);
         }
 
         public string AutogenerateBotId(string botDescriptorName)
@@ -331,15 +337,21 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public void RemovePackage(string package)
         {
-            var dPackage = _packageStorage.Get(package);
-            if (dPackage != null)
+            lock (SyncObj)
             {
-                var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
+                var dPackage = _packageStorage.Get(package);
+                if (dPackage != null)
+                {
+                    if (dPackage.IsLocked)
+                        throw new PackageLockedException("Cannot remove package: one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
-                foreach (var bot in botsToDelete)
-                    bot.Account.RemoveBot(bot.Id);
+                    var botsToDelete = _allBots.Values.Where(b => b.Package == dPackage).ToList();
 
-                _packageStorage.Remove(package);
+                    foreach (var bot in botsToDelete)
+                        bot.Account.RemoveBot(bot.Id);
+
+                    _packageStorage.Remove(package);
+                }
             }
         }
 

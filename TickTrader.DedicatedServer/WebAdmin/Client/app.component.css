@@ -1,17 +1,24 @@
-/*region Colors*/
-.black {
-    color: black;
+/*Log entry type color*/
+
+.log-info {
+    color: gray;
 }
 
-.offline {
-    color: #FB404B;
+.log-trade {
+    color: skyblue;
 }
 
-.online {
-    color: #87CB16;
+.log-error {
+    color: red;
 }
 
-/*\/\/\/Bot States Colors*/
+.log-custom {
+    color: violet;
+}
+
+/*Log entry type color*/
+
+/*Bot States Colors*/
 .state-offline {
     color: #808080 !important;
 }
@@ -32,12 +39,12 @@
     color: #87CB16 !important;
 }
 
+/*Bot States Colors*/
 
-/*/\/\/\Bot States Colors*/
 .text-error {
     color: red;
 }
-/*endregion Colors*/
+
 
 .fixed_height_160 {
     height: 160px;
@@ -51,6 +58,14 @@
     height: 400px;
 }
 
+.fixed_height_600 {
+    height: 614px;
+}
+
+.max_height_600 {
+    max-height: 614px;
+}
+
 .max_height_400 {
     max-height: 400px;
 }
@@ -60,13 +75,6 @@
     overflow-y: auto;
 }
 
-.fixed_height_600 {
-    height: 614px;
-}
-
-.max_height_600 {
-    max-height: 614px;
-}
 
 .vertical-autoscroll_600 {
     max-height: 554px;
@@ -98,15 +106,16 @@
     border-radius: inherit;
     overflow: hidden;
     background-color: rgba(243,243,243,0.9);
-    z-index:200;
+    z-index: 200;
 }
 
     .overlay .content {
-        padding: 0px 0px 0px 0px;
+        padding: 10px 10px 10px 10px;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        width: inherit;
     }
 
         .overlay .content .text {

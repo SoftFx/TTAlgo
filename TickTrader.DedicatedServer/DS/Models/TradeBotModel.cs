@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
@@ -18,11 +19,13 @@ namespace TickTrader.DedicatedServer.DS.Models
     public class TradeBotModel : ITradeBot
     {
         private ILogger _log;
+        private ILoggerFactory _loggerFactory;
         private object _syncObj;
         private ClientModel _client;
         private Task _stopTask;
         private PluginExecutor executor;
         private BotLog _botLog;
+        private AlgoData _algoData;
         private AlgoPluginRef _ref;
         private ListenerProxy _stopListener;
         private PackageStorage _packageRepo;
@@ -52,25 +55,33 @@ namespace TickTrader.DedicatedServer.DS.Models
         public string FaultMessage { get; private set; }
         public IAccount Account => _client;
         public IBotLog Log => _botLog;
+        public string BotName => _ref?.DisplayName;
+
+        public IAlgoData AlgoData => _algoData;
 
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, ILogger log, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata)
+        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata, string workingFolder)
         {
             _syncObj = syncObj;
             _client = client;
-            _log = log;
+
+            _loggerFactory = logFactory;
+            _log = _loggerFactory.CreateLogger<TradeBotModel>();
+
             _packageRepo = packageRepo;
             UpdatePackage();
 
             _packageRepo.PackageChanged += _packageRepo_PackageChanged;
             _client.StateChanged += Client_StateChanged;
 
-            _botLog = new BotLog(syncObj);
+            _botLog = new BotLog(Id, syncObj);
 
-            if (IsRunning)
+            _algoData = new AlgoData(workingFolder, syncObj);
+
+            if (IsRunning && State != BotStates.Broken)
                 Start();
         }
 
@@ -87,7 +98,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                     ConfigurationChanged?.Invoke(this);
                 }
                 else
-                    throw new InvalidOperationException("Make sure that the bot is stopped before installing a new configuration");
+                    throw new InvalidStateException("Make sure that the bot is stopped before installing a new configuration");
             }
 
         }
@@ -110,6 +121,54 @@ namespace TickTrader.DedicatedServer.DS.Models
                     if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
                         StopInternal(client.Connection.LastError.ToString());
                 }
+            }
+        }
+
+        public void ClearLog()
+        {
+            lock (_syncObj)
+            {
+                foreach (var file in Log.Files)
+                {
+                    try
+                    {
+                        Log.DeleteFile(file.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogWarning(0, ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
+                    }
+                }
+                try
+                {
+                    if (Directory.Exists(Log.Folder))
+                        Directory.Delete(Log.Folder);
+                }
+                catch { }
+            }
+        }
+
+        public void ClearWorkingFolder()
+        {
+            lock (_syncObj)
+            {
+                foreach (var file in AlgoData.Files)
+                {
+                    try
+                    {
+                        AlgoData.DeleteFile(file.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogWarning(0, ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
+                    }
+                }
+                try
+                {
+                    if (Directory.Exists(AlgoData.Folder))
+                        Directory.Delete(AlgoData.Folder);
+                }
+                catch { }
             }
         }
 
@@ -197,27 +256,27 @@ namespace TickTrader.DedicatedServer.DS.Models
             {
                 executor = _ref.CreateExecutor();
 
-                if (Config is BarBasedConfig)
-                {
-                    var setupModel = new BarBasedPluginSetup(_ref);
-                    setupModel.Load(Config);
-                    setupModel.Apply(executor);
-
-                    var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
-                    executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
-                    executor.MainSymbolCode = setupModel.MainSymbol;
-                    executor.TimeFrame = Algo.Api.TimeFrames.M1;
-                    executor.Metadata = feedAdapter;
-                }
-                else
+                if (!(Config is BarBasedConfig))
                     throw new Exception("Unsupported configuration!");
 
+                var setupModel = new BarBasedPluginSetup(_ref);
+                setupModel.Load(Config);
+                setupModel.SetWorkingFolder(AlgoData.Folder);
+                setupModel.Apply(executor);
+
+                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
+                executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
+                executor.MainSymbolCode = setupModel.MainSymbol;
+                executor.TimeFrame = Algo.Api.TimeFrames.M1;
+                executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(1024);
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
                 executor.InitLogging().NewRecords += TradeBotModel_NewRecords;
+                executor.BotWorkingFolder = AlgoData.Folder;
+                executor.WorkingFolder = AlgoData.Folder;
                 _stopListener = new ListenerProxy(executor, () =>
                 {
                     StopInternal(null, true);
@@ -345,5 +404,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 base.Dispose(disposing);
             }
         }
+
+
     }
 }

@@ -15,8 +15,9 @@ export class FileModelDirective {
 
     constructor() {
         this._fileReader = new FileReader();
-        this._fileReader.onload = (file)=> {
-            let base64Encoded = this._fileReader.result;
+        this._fileReader.onload = (file) => {
+            let binaryString = this._fileReader.result;
+            let base64Encoded = btoa(binaryString);
             this.file = { FileName: this._file.name, Type: this._file.type, Size: this._file.size, Data: base64Encoded };
             this.fileModelChange.emit(this.file);
         }
@@ -28,6 +29,6 @@ export class FileModelDirective {
     }
 
     private encodeFile(file: File) {
-        this._fileReader.readAsDataURL(file);
+        this._fileReader.readAsBinaryString(file);
     }
 }

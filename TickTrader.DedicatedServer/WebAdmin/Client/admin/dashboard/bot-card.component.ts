@@ -1,6 +1,6 @@
 ﻿import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { TradeBotModel, TradeBotStates, TradeBotStateModel, ResponseStatus } from '../../models/index';
+import { TradeBotModel, TradeBotStates, TradeBotStateModel, ResponseStatus, WebUtility } from '../../models/index';
 import { ApiService, ToastrService, FeedService } from '../../services/index';
 import { Router } from '@angular/router';
 
@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 
 export class BotCardComponent implements OnInit {
     public TradeBotState = TradeBotStates;
+    public ConfirmDeletionEnabled: boolean;
 
     @Input() TradeBot: TradeBotModel;
     @Output() OnDeleted = new EventEmitter<TradeBotModel>();
@@ -19,7 +20,9 @@ export class BotCardComponent implements OnInit {
     constructor(private _api: ApiService, private _toastr: ToastrService, private _router: Router) { }
 
     ngOnInit() {
-        this._api.Feed.ChangeBotState.subscribe(botState => this.updateBotState(botState));
+        this._api.Feed.ChangeBotState
+            .filter(botState => this.TradeBot && this.TradeBot.Id == botState.Id)
+            .subscribe(botState => this.updateBotState(botState));
     }
 
     public get IsOnline(): boolean {
@@ -40,25 +43,30 @@ export class BotCardComponent implements OnInit {
         return this.TradeBot.State === TradeBotStates.Faulted;
     }
 
+    public get Broken(): boolean {
+        return this.TradeBot.State === TradeBotStates.Broken;
+    }
+
     public get CanStop(): boolean {
-        return this.TradeBot.State === TradeBotStates.Online
+        return (this.TradeBot.State === TradeBotStates.Online
             || this.TradeBot.State === TradeBotStates.Starting
-            || this.TradeBot.State === TradeBotStates.Reconnecting;
+            || this.TradeBot.State === TradeBotStates.Reconnecting) && !this.Broken;
     }
 
     public get CanStart(): boolean {
-        return this.TradeBot.State === TradeBotStates.Offline
-            || this.TradeBot.State === TradeBotStates.Faulted;
+        return (this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public get CanDelete(): boolean {
         return this.TradeBot.State === TradeBotStates.Offline
-            || this.TradeBot.State === TradeBotStates.Faulted;
+            || this.TradeBot.State === TradeBotStates.Faulted
+            || this.Broken;
     }
 
     public get CanConfigurate(): boolean {
-        return this.TradeBot.State === TradeBotStates.Offline
-            || this.TradeBot.State === TradeBotStates.Faulted;
+        return (this.TradeBot.State === TradeBotStates.Offline
+            || this.TradeBot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public Start() {
@@ -77,22 +85,30 @@ export class BotCardComponent implements OnInit {
         );
     }
 
-    public Delete() {
-        this._api.DeleteBot(this.TradeBot.Id).subscribe(
-            ok => this.OnDeleted.emit(this.TradeBot),
-            err => this.notifyAboutError(err)
-        );
+    public InitDeletion() {
+        this.ConfirmDeletionEnabled = true;
+    }
+
+    public DeletionCanceled() {
+        this.ConfirmDeletionEnabled = false;
+    }
+
+    public DeletionCompleted(tradeBot: TradeBotModel) {
+        this.OnDeleted.emit(tradeBot);
+    }
+
+    public GoToDetails(instanceId: string) {
+        if (instanceId)
+            this._router.navigate(['/bot', WebUtility.EncodeURIComponent(instanceId)]);
     }
 
     public Configurate(instanceId: string) {
         if (instanceId)
-            this._router.navigate(['/configurate', instanceId]);
+            this._router.navigate(['/configurate', WebUtility.EncodeURIComponent(instanceId)]);
     }
 
     private updateBotState(botState: TradeBotStateModel) {
-        if (this.TradeBot.Id === botState.Id) {
-            this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
-        }
+        this.TradeBot = <TradeBotModel>{ ...this.TradeBot, 'State': botState.State, 'FaultMessage': botState.FaultMessage }
     }
 
     private notifyAboutError(response: ResponseStatus) {

@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Api;
+using System.IO;
+using TickTrader.DedicatedServer.DS.Models;
+using System.Net;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
@@ -35,18 +36,152 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
-            if (tradeBot != null)
                 return Ok(tradeBot.ToDto());
-            else
-                return NotFound((new BotNotFoundException($"Bot {id} not found")).ToBadResult());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        #region Logs
+        [HttpDelete("{id}/Logs")]
+        public IActionResult DeleteLogs(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.Log.Clear();
+
+                return Ok();
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpGet("{id}/[Action]")]
+        public IActionResult Logs(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+
+                return Ok(tradeBot.Log.ToDto());
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpGet("{id}/[Action]/{file}")]
+        public IActionResult Logs(string id, string file)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+
+                var decodedFile = WebUtility.UrlDecode(file);
+                var readOnlyFile = tradeBot.Log.GetFile(decodedFile);
+
+                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpDelete("{id}/Logs/{file}")]
+        public IActionResult DeleteLog(string id, string file)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.Log.DeleteFile(WebUtility.UrlDecode(file));
+
+                return Ok();
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+        #endregion
+
+        #region AlgoData
+        [HttpGet("{id}/[Action]")]
+        public IActionResult AlgoData(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+
+                var files = tradeBot.AlgoData.Files.Select(f => f.ToDto()).ToArray();
+
+                return Ok(files);
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+
+        [HttpGet("{id}/[Action]/{file}")]
+        public IActionResult AlgoData(string id, string file)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var decodedFile = WebUtility.UrlDecode(file);
+                var readOnlyFile = tradeBot.AlgoData.GetFile(decodedFile);
+
+                return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
+        }
+        #endregion
+
+        [HttpGet("{id}/[Action]")]
+        public IActionResult Status(string id)
+        {
+            try
+            {
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+
+                return Ok(new BotStatusDto
+                {
+                    Status = tradeBot.Log.Status,
+                    BotId = tradeBot.Id
+                });
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
         }
 
         [HttpGet("{botName}/[action]")]
         public string BotId(string botName)
         {
-            return _dedicatedServer.AutogenerateBotId(botName);
+            return _dedicatedServer.AutogenerateBotId(WebUtility.UrlDecode(botName));
         }
 
         [HttpPost]
@@ -56,8 +191,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             {
                 var tradeBot = _dedicatedServer.AddBot(setup.InstanceId,
                     new AccountKey(setup.Account.Login, setup.Account.Server),
-                    new PluginKey(setup.PackageName, setup.PluginId),
-                    CreateConfig(setup));
+                    new PluginKey(setup.PackageName, setup.PluginId), setup.Parse(ServerModel.GetWorkingFolderFor(setup.InstanceId)));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -73,16 +207,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
-
-                if(tradeBot != null)
-                {
-                    tradeBot.Configurate(CreateConfig(setup));
-                }
-                else
-                {
-                    return NotFound((new BotNotFoundException($"Bot {id} not found")).ToBadResult());
-                }
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.Configurate(setup.Parse(ServerModel.GetWorkingFolderFor(tradeBot.Id)));
 
                 return Ok();
             }
@@ -94,17 +220,18 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public IActionResult Delete(string id, [FromQuery] bool clean_log = true, [FromQuery] bool clean_algodata = true)
         {
             try
             {
-                _dedicatedServer.RemoveBot(id);
+                _dedicatedServer.RemoveBot(WebUtility.UrlDecode(id), clean_log, clean_algodata);
 
                 return Ok();
             }
-            catch (InvalidStateException isex)
+            catch (DSException ex)
             {
-                return BadRequest(isex.ToBadResult());
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
             }
         }
 
@@ -113,19 +240,16 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == id);
-                if (bot != null)
-                {
-                    bot.Start();
-                }
-            }
-            catch (DSException dsex)
-            {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
-            }
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.Start();
 
-            return Ok();
+                return Ok();
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
         }
 
         [HttpPatch("{id}/[action]")]
@@ -133,57 +257,25 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
-                var bot = _dedicatedServer.TradeBots.FirstOrDefault(b => b.Id == id);
-                if (bot != null)
-                {
-                    bot.StopAsync();
-                }
-            }
-            catch (DSException dsex)
-            {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
-            }
+                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                tradeBot.StopAsync();
 
-            return Ok();
+                return Ok();
+            }
+            catch (DSException ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.ToBadResult());
+            }
         }
 
-        private PluginConfig CreateConfig(PluginSetupDto setup)
+        private ITradeBot GetBotOrThrow(string id)
         {
-            var barConfig = new BarBasedConfig()
-            {
-                MainSymbol = setup.Symbol,
-                PriceType = BarPriceType.Ask
-            };
-            foreach (var param in setup.Parameters)
-            {
-                switch (param.DataType)
-                {
-                    case "Int":
-                        barConfig.Properties.Add(new IntParameter() { Id = param.Id, Value = (int)(long)param.Value });
-                        break;
-                    case "Double":
-                        switch (param.Value)
-                        {
-                            case Int64 l:
-                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (long)param.Value });
-                                break;
-                            case Double d:
-                                barConfig.Properties.Add(new DoubleParameter() { Id = param.Id, Value = (double)param.Value });
-                                break;
-                            default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
-                        }
-                        break;
-                    case "String":
-                        barConfig.Properties.Add(new StringParameter() { Id = param.Id, Value = (string)param.Value });
-                        break;
-                    case "Enum":
-                        barConfig.Properties.Add(new EnumParameter() { Id = param.Id, Value = (string)param.Value });
-                        break;
-                }
-            }
-
-            return barConfig;
+            var tradeBot = _dedicatedServer.TradeBots.FirstOrDefault(tb => tb.Id == id);
+            if (tradeBot == null)
+                throw new BotNotFoundException($"Bot {id} not found");
+            else
+                return tradeBot;
         }
     }
 }
