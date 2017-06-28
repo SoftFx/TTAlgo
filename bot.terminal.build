@@ -107,6 +107,11 @@
         <include name="*.zip" />
       </fileset>
     </delete>
+	<delete>
+      <fileset basedir="${OutpuFolder}">
+        <include name="*.exe" />
+      </fileset>
+    </delete>
     <delete>
       <fileset basedir="${OutpuFolder}">
         <include name="*.ttalgo" />
