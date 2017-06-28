@@ -24,13 +24,17 @@
                             <div class="form-group">
                                 <label>Instance ID</label>
                                 <input [(ngModel)]="Setup.InstanceId" formControlName="InstanceId" type="text" class="form-control" />
-                                <div *ngIf="BotSetupForm.controls.InstanceId.hasError('required') && BotSetupForm.controls.InstanceId.touched" class="alert alert-danger">
-                                    <span>{{ 'FieldIsRequired' | resx: ['InstanceId'] }}</span>
+                                <div *ngIf="BotSetupForm.controls.InstanceId.invalid" class="alert alert-danger">
+                                    <div *ngIf="BotSetupForm.controls.InstanceId.hasError('required')">
+                                        <span>{{ 'FieldIsRequired' | resx: ['InstanceId'] }}</span>
+                                    </div>
+                                    <div *ngIf="BotSetupForm.controls.InstanceId.hasError('maxlength')">
+                                        <span>Instance ID cannot exceed 30 characters</span>
+                                    </div>
+                                    <div *ngIf="BotSetupForm.controls.InstanceId.hasError('pattern')">
+                                        <span>Allowed characters a-z A-z 0-9</span>
+                                    </div>
                                 </div>
-                                <div *ngIf="BotSetupForm.controls.InstanceId.hasError('maxlength')" class="alert alert-danger">
-                                    <span>Instance ID cannot exceed 30 characters</span>
-                                </div>
-                                
                             </div>
                         </div>
                     </div>

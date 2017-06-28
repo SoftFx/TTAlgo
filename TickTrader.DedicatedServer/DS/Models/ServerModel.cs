@@ -13,12 +13,16 @@ using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.Extensions;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
     [DataContract(Name = "server.config", Namespace = "")]
     public class ServerModel : IDedicatedServer
     {
+        private const string botIdPattern = "[^A-Za-z0-9 ]";
+        private const int BotIdMaxLength = 30;
         private static readonly EnvService envService = new EnvService();
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
@@ -266,7 +270,13 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 while (true)
                 {
-                    var botId = botDescriptorName + " " + seed;
+                    var botIdBulder = new StringBuilder(Regex.Replace(botDescriptorName, botIdPattern, ""));
+                    var delta = botIdBulder.Length + seed.ToString().Length + 1 - BotIdMaxLength;
+                    if (delta > 0)
+                        botIdBulder.Length -= delta;
+                    botIdBulder.Append(" ").Append(seed);
+
+                    var botId = botIdBulder.ToString();
                     if (!_allBots.ContainsKey(botId))
                         return botId;
 
