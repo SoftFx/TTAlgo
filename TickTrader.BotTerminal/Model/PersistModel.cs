@@ -9,20 +9,18 @@ namespace TickTrader.BotTerminal
     internal class PersistModel
     {
         private List<IPersistController> _controllers = new List<IPersistController>();
-        private ObjectPersistController<ProfileStorageModel> _profileStorageController;
 
 
         public AuthStorageModel AuthSettingsStorage { get; private set; }
 
-        public ProfileStorageModel ProfileStorage { get; private set; }
+        public ProfileManager ProfileManager { get; private set; }
 
 
         public PersistModel()
         {
             var loginController = CreateStorageController<AuthStorageModel>("UserAuthSettings", EnvService.Instance.ProtectedUserDataStorage);
             AuthSettingsStorage = loginController.Value;
-            _profileStorageController = CreateStorageController<ProfileStorageModel>("CurrentProfile", EnvService.Instance.UserDataStorage);
-            ProfileStorage = _profileStorageController.Value;
+            ProfileManager = new ProfileManager(CreateStorageController<ProfileStorageModel>(ProfileManager.CurrentProfileFileName, EnvService.Instance.ProfilesCacheStorage));
         }
 
 

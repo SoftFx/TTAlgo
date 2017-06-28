@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
-            cManager.StateChanged += (o, n) => UpdateProfile();
+            cManager.StateChanged += (o, n) => LoadConnectionProfile();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
@@ -105,13 +105,11 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
 
-        private void UpdateProfile()
+        private void LoadConnectionProfile()
         {
             if (cManager.State == ConnectionManager.States.Online)
             {
-                storage.ProfileStorage.Login = cManager.Creds.Login;
-                storage.ProfileStorage.Server = cManager.Creds.Server.Address;
-                storage.ProfileStorage.Save();
+                storage.ProfileManager.LoadCachedProfile(cManager.Creds.Server.Address, cManager.Creds.Login);
             }
         }
 

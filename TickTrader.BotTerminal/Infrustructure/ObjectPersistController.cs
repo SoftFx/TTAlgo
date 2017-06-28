@@ -64,6 +64,15 @@ namespace TickTrader.BotTerminal
                 return Task.FromResult<T>(null);
         }
 
+        public void Reopen()
+        {
+            Value = null;
+
+            Load();
+
+            _isClosed = false;
+        }
+
 
         private void Load()
         {
@@ -95,11 +104,12 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            _backgroundTask = SaveLoop();           
+            _backgroundTask = SaveLoop();
         }
 
         private async Task SaveLoop()
         {
+            _isSaving = true;
             T cloneToSave = Value.GetCopyToSave();
             _isChanged = false;
 
@@ -129,6 +139,8 @@ namespace TickTrader.BotTerminal
                 });
             }
             while (cloneToSave != null);
+
+            Execute.OnUIThread(() => _isSaving = false);
         }
     }
 }

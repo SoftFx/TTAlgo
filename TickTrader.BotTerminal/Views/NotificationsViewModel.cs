@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         private IAccountInfoProvider _accountInfo;
         private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
-        private ProfileStorageModel _profile;
+        private ProfileManager _profileManager;
 
 
         public bool SoundsEnabled
@@ -36,12 +36,19 @@ namespace TickTrader.BotTerminal
             _accountInfo = accountInfo;
             _connectionModel = connectionManager;
             _notificationCenter = notificationCenter;
-            _profile = storage.ProfileStorage;
+            _profileManager = storage.ProfileManager;
 
-            ToggleSounds(_profile.Settings.EnableSounds, true);
-            ToggleNotifications(_profile.Settings.EnableNotifications, true);
+            _profileManager.ProfileUpdated += LoadSettings;
+
+            LoadSettings();
         }
 
+
+        private void LoadSettings()
+        {
+            ToggleSounds(_profileManager.CurrentProfile.Settings.EnableSounds, true);
+            ToggleNotifications(_profileManager.CurrentProfile.Settings.EnableNotifications, true);
+        }
 
         private void ToggleSounds(bool enableSounds, bool isInit)
         {
@@ -62,8 +69,8 @@ namespace TickTrader.BotTerminal
 
             if (!isInit)
             {
-                _profile.Settings.EnableSounds = enableSounds;
-                _profile.Save();
+                _profileManager.CurrentProfile.Settings.EnableSounds = enableSounds;
+                _profileManager.CurrentProfile.Save();
             }
         }
 
@@ -88,8 +95,8 @@ namespace TickTrader.BotTerminal
 
             if (!isInit)
             {
-                _profile.Settings.EnableNotifications = enableNotifications;
-                _profile.Save();
+                _profileManager.CurrentProfile.Settings.EnableNotifications = enableNotifications;
+                _profileManager.CurrentProfile.Save();
             }
         }
 

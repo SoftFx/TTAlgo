@@ -10,13 +10,18 @@ namespace TickTrader.BotTerminal
         private SettingsModel _settings;
 
 
-        [DataMember]
-        public string Server { get; set; }
+        public SettingsModel Settings
+        {
+            get
+            {
+                if (_settings == null)
+                {
+                    _settings = new SettingsModel();
+                }
 
-        [DataMember]
-        public string Login { get; set; }
-
-        public SettingsModel Settings => _settings;
+                return _settings;
+            }
+        }
 
 
         public ProfileStorageModel()
@@ -24,16 +29,10 @@ namespace TickTrader.BotTerminal
             _settings = new SettingsModel();
         }
 
-        public ProfileStorageModel(string server, string login) : this()
-        {
-            Server = server;
-            Login = login;
-        }
-
 
         public override ProfileStorageModel Clone()
         {
-            return new ProfileStorageModel(Server, Login)
+            return new ProfileStorageModel()
             {
                 _settings = Settings.Clone()
             };
