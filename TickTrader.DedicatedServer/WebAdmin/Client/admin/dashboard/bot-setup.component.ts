@@ -62,6 +62,7 @@ export class BotSetupComponent implements OnInit {
         let formGroup = this._fb.group({});
 
         formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, Validators.required));
+        formGroup.addControl("Isolated", this._fb.control(setup.Isolated));
         formGroup.addControl("Account", this._fb.control(setup.Account, Validators.required));
         formGroup.addControl("Symbol", this._fb.control(setup.Symbol, Validators.required));
 

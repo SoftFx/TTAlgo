@@ -4,14 +4,22 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
+using System.IO;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeBotModel2 : PluginModel
+    internal class TradeBotModel : PluginModel
     {
-        private static readonly INameGenerator _uniqueNameGenerator = new UniqueNameGenerator();
+        public BotModelStates State { get; private set; }
+        public string CustomStatus { get; private set; }
 
-        public TradeBotModel2(PluginSetup pSetup, IAlgoPluginHost host)
+
+        public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
+        public event System.Action<TradeBotModel> StateChanged = delegate { };
+        public event System.Action<TradeBotModel> Removed = delegate { };
+
+
+        public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
         }
@@ -40,32 +48,31 @@ namespace TickTrader.BotTerminal
             Removed(this);
         }
 
-        private void ChangeState(BotModelStates newState)
-        {
-            State = newState;
-            StateChanged(this);
-        }
-
-        public BotModelStates State { get; private set; }
-        public string CustomStatus { get; private set; }
-
-        public event System.Action<TradeBotModel2> CustomStatusChanged = delegate { };
-        public event System.Action<TradeBotModel2> StateChanged = delegate { };
-        public event System.Action<TradeBotModel2> Removed = delegate { };
 
         protected override PluginExecutor CreateExecutor()
         {
-            Name = _uniqueNameGenerator.GenerateFrom(Name); //Dirty Workaround
-
             var executor = base.CreateExecutor();
+
             executor.IsRunningChanged += Executor_IsRunningChanged;
+
             executor.TradeApi = Host.GetTradeApi();
-            executor.Logger = new LogAdapter(Host.Journal, Name, s =>
+            executor.Logger = new LogAdapter(Host.Journal, InstanceId, s =>
             {
                 CustomStatus = s;
                 CustomStatusChanged(this);
             });
+            executor.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
+            executor.BotWorkingFolder = executor.WorkingFolder;
+            EnvService.Instance.EnsureFolder(executor.WorkingFolder);
+
             return executor;
+        }
+
+
+        private void ChangeState(BotModelStates newState)
+        {
+            State = newState;
+            StateChanged(this);
         }
 
         private void Executor_IsRunningChanged(PluginExecutor pluginExecutor)
@@ -80,27 +87,30 @@ namespace TickTrader.BotTerminal
             });
         }
 
+
         private class LogAdapter : CrossDomainObject, IPluginLogger
         {
-            private Action<string> statusChanged;
-            private BotJournal journal;
-            private string botName;
+            private Action<string> _statusChanged;
+            private BotJournal _journal;
+            private string _botId;
 
-            public LogAdapter(BotJournal journal, string botName, Action<string> statusChangedHandler)
+
+            public LogAdapter(BotJournal journal, string botId, Action<string> statusChangedHandler)
             {
-                this.journal = journal;
-                this.botName = botName;
-                this.statusChanged = statusChangedHandler;
+                this._journal = journal;
+                this._botId = botId;
+                this._statusChanged = statusChangedHandler;
             }
+
 
             public void UpdateStatus(string status)
             {
-                statusChanged(status);
+                _statusChanged(status);
             }
 
             public void OnPrint(string entry)
             {
-                journal.Custom(botName, entry);
+                _journal.Custom(_botId, entry);
             }
 
             public void OnPrint(string entry, object[] parameters)
@@ -112,12 +122,12 @@ namespace TickTrader.BotTerminal
                 }
                 catch { }
 
-                journal.Custom(botName, msg);
+                _journal.Custom(_botId, msg);
             }
 
             public void OnPrintError(string entry)
             {
-                journal.Error(botName, entry);
+                _journal.Error(_botId, entry);
             }
 
             public void OnPrintError(string entry, object[] parameters)
@@ -129,42 +139,42 @@ namespace TickTrader.BotTerminal
                 }
                 catch { }
 
-                journal.Error(botName, msg);
+                _journal.Error(_botId, msg);
             }
 
             public void OnPrintInfo(string entry)
             {
-                journal.Info(botName, entry);
+                _journal.Info(_botId, entry);
             }
 
             public void OnError(Exception ex)
             {
-                journal.Error(botName, "Exception: " + ex.Message);
+                _journal.Error(_botId, "Exception: " + ex.Message);
             }
 
             public void OnInitialized()
             {
-                journal.Info(botName, "Bot initialized");
+                _journal.Info(_botId, "Bot initialized");
             }
 
             public void OnStart()
             {
-                journal.Info(botName, "Bot started");
+                _journal.Info(_botId, "Bot started");
             }
 
             public void OnStop()
             {
-                journal.Info(botName, "Bot stopped");
+                _journal.Info(_botId, "Bot stopped");
             }
 
             public void OnExit()
             {
-                journal.Info(botName, "Bot exited");
+                _journal.Info(_botId, "Bot exited");
             }
 
             public void OnPrintTrade(string entry)
             {
-                journal.Trading(botName, entry);
+                _journal.Trading(_botId, entry);
             }
         }
     }

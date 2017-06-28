@@ -8,6 +8,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
         public string PluginId { get; set; }
         public string InstanceId { get; set; }
         public string Symbol { get; set; }
+        public bool Isolated { get; set; }
         public AccountDto Account { get; set; }
         public PluginSetupParameter[] Parameters { get; set; }
     }

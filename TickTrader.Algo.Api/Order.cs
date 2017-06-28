@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Api
         bool IsNull { get; }
         string Comment { get; }
         string Tag { get; }
+        string InstanceId { get; }
         DateTime Modified { get; }
         DateTime Created { get; }
         double ExecPrice { get; }

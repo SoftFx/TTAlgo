@@ -9,5 +9,6 @@
         public string BotName { get; internal set; }
         public string FaultMessage { get; set; }
         public TradeBotConfigDto Config { get; set; }
+        public bool Isolated { get; internal set; }
     }
 }
