@@ -17,6 +17,20 @@ namespace TickTrader.BotTerminal
         private INotificationCenter _notificationCenter;
         private ProfileStorageModel _profile;
 
+
+        public bool SoundsEnabled
+        {
+            get { return _notificationCenter.SoundNotification.Enabled; }
+            private set { ToggleSounds(value, false); }
+        }
+
+        public bool NotificationsEnabled
+        {
+            get { return _notificationCenter.PopupNotification.Enabled; }
+            private set { ToggleNotifications(value, false); }
+        }
+
+
         public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionManager connectionManager, PersistModel storage)
         {
             _accountInfo = accountInfo;
@@ -24,70 +38,68 @@ namespace TickTrader.BotTerminal
             _notificationCenter = notificationCenter;
             _profile = storage.ProfileStorage;
 
-            SoundsEnabled = _profile.Settings.EnableSounds;
-            NotificationsEnabled = _profile.Settings.EnableNotifications;
+            ToggleSounds(_profile.Settings.EnableSounds, true);
+            ToggleNotifications(_profile.Settings.EnableNotifications, true);
         }
 
-        public bool NotificationsEnabled
+
+        private void ToggleSounds(bool enableSounds, bool isInit)
         {
-            get
+            if (_notificationCenter.SoundNotification.Enabled == enableSounds)
+                return;
+
+            if (enableSounds)
             {
-                return _notificationCenter.PopupNotification.Enabled;
+                _connectionModel.StateChanged += ConnectionStateChanged;
             }
-            private set
+            else
             {
-                if (_notificationCenter.PopupNotification.Enabled == value)
-                    return;
+                _connectionModel.StateChanged -= ConnectionStateChanged;
+            }
 
-                if (value)
-                {
-                    _accountInfo.OrderUpdated += PopupNotificationOnOrderUpdated;
-                    _accountInfo.PositionUpdated += PopupNotificationOnPositionUpdated;
-                }
-                else
-                {
-                    _accountInfo.OrderUpdated -= PopupNotificationOnOrderUpdated;
-                    _accountInfo.PositionUpdated -= PopupNotificationOnPositionUpdated;
-                }
+            _notificationCenter.SoundNotification.Enabled = enableSounds;
+            NotifyOfPropertyChange(nameof(SoundsEnabled));
 
-                _notificationCenter.PopupNotification.Enabled = value;
-                NotifyOfPropertyChange(nameof(NotificationsEnabled));
-
-                _profile.Settings.EnableNotifications = value;
+            if (!isInit)
+            {
+                _profile.Settings.EnableSounds = enableSounds;
                 _profile.Save();
             }
         }
-        public bool SoundsEnabled
+
+        private void ToggleNotifications(bool enableNotifications, bool isInit)
         {
-            get
+            if (_notificationCenter.PopupNotification.Enabled == enableNotifications)
+                return;
+
+            if (enableNotifications)
             {
-                return _notificationCenter.SoundNotification.Enabled;
+                _accountInfo.OrderUpdated += PopupNotificationOnOrderUpdated;
+                _accountInfo.PositionUpdated += PopupNotificationOnPositionUpdated;
             }
-            private set
+            else
             {
-                if (_notificationCenter.SoundNotification.Enabled == value)
-                    return;
+                _accountInfo.OrderUpdated -= PopupNotificationOnOrderUpdated;
+                _accountInfo.PositionUpdated -= PopupNotificationOnPositionUpdated;
+            }
 
-                if (value)
-                    _connectionModel.StateChanged += ConnectionStateChanged;
-                else
-                    _connectionModel.StateChanged -= ConnectionStateChanged;
+            _notificationCenter.PopupNotification.Enabled = enableNotifications;
+            NotifyOfPropertyChange(nameof(NotificationsEnabled));
 
-                _notificationCenter.SoundNotification.Enabled = value;
-                NotifyOfPropertyChange(nameof(SoundsEnabled));
-
-                _profile.Settings.EnableSounds = value;
+            if (!isInit)
+            {
+                _profile.Settings.EnableNotifications = enableNotifications;
                 _profile.Save();
             }
         }
 
         private void ConnectionStateChanged(ConnectionManager.States oldState, ConnectionManager.States newState)
         {
-            if(newState == ConnectionManager.States.Online)
+            if (newState == ConnectionManager.States.Online)
             {
                 _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
             }
-            else if(newState == ConnectionManager.States.Offline)
+            else if (newState == ConnectionManager.States.Offline)
             {
                 _notificationCenter.SoundNotification.Notify(AppSounds.NegativeLong);
             }
@@ -97,12 +109,14 @@ namespace TickTrader.BotTerminal
         {
             _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
         }
+
         private void PopupNotificationOnOrderUpdated(OrderExecReport obj)
         {
             var message = NotificationBuilder.BuildMessage(obj);
             if (!message.IsEmpty)
                 _notificationCenter.PopupNotification.Notify(new InfoMessage(message.Header, message.Body));
         }
+
         private void PopupNotificationOnPositionUpdated(PositionExecReport obj)
         {
             var message = NotificationBuilder.BuildMessage(obj);
@@ -111,20 +125,25 @@ namespace TickTrader.BotTerminal
         }
     }
 
+
     public class NotificationBuilder
     {
         public class Message
         {
+            public string Body { get; private set; }
+
+            public string Header { get; private set; }
+
+            public bool IsEmpty => string.IsNullOrWhiteSpace(Body) && string.IsNullOrWhiteSpace(Header);
+
+
             public Message(string header, string body)
             {
                 Header = header;
                 Body = body;
             }
-
-            public string Body { get; private set; }
-            public string Header { get; private set; }
-            public bool IsEmpty => string.IsNullOrWhiteSpace(Body) && string.IsNullOrWhiteSpace(Header);
         }
+
 
         public static Message BuildMessage(OrderExecReport obj)
         {
@@ -180,6 +199,7 @@ namespace TickTrader.BotTerminal
 
             return new Message(header, body);
         }
+
         public static Message BuildMessage(PositionExecReport obj)
         {
             var position = obj.PositionCopy;

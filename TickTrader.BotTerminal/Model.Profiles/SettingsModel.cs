@@ -14,6 +14,7 @@ namespace TickTrader.BotTerminal
 
         public SettingsModel()
         {
+            EnableSounds = true;
         }
 
 

@@ -9,7 +9,7 @@ namespace TickTrader.BotTerminal
     internal class AuthStorageModel : StorageModelBase<AuthStorageModel>
     {
         [DataMember(Name = "Accounts")]
-        private DynamicList<AccountSorageEntry> _accounts;
+        private DynamicList<AccountStorageEntry> _accounts;
 
 
         [DataMember]
@@ -18,12 +18,12 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public string LastServer { get; set; }
 
-        public DynamicList<AccountSorageEntry> Accounts => _accounts;
+        public DynamicList<AccountStorageEntry> Accounts => _accounts;
 
 
         public AuthStorageModel()
         {
-            _accounts = new DynamicList<AccountSorageEntry>();
+            _accounts = new DynamicList<AccountStorageEntry>();
         }
 
 
@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
             {
                 LastLogin = LastLogin,
                 LastServer = LastServer,
-                _accounts = new DynamicList<AccountSorageEntry>(_accounts.Values.Select(a => a.Clone())),
+                _accounts = new DynamicList<AccountStorageEntry>(_accounts.Values.Select(a => a.Clone())),
             };
         }
 
@@ -44,14 +44,14 @@ namespace TickTrader.BotTerminal
             LastServer = server;
         }
 
-        public void Remove(AccountSorageEntry account)
+        public void Remove(AccountStorageEntry account)
         {
             var index = _accounts.Values.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
             if (index != -1)
                 _accounts.RemoveAt(index);
         }
 
-        public void Update(AccountSorageEntry account)
+        public void Update(AccountStorageEntry account)
         {
             int index = _accounts.Values.IndexOf(a => a.Login == account.Login && a.ServerAddress == account.ServerAddress);
             if (index < 0)

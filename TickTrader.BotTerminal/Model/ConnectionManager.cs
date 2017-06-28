@@ -131,7 +131,7 @@ namespace TickTrader.BotTerminal
 
         internal void RemoveAccount(AccountAuthEntry entry)
         {
-            authStorage.Remove(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
+            authStorage.Remove(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.Save();
         }
 
@@ -218,12 +218,12 @@ namespace TickTrader.BotTerminal
 
         private void SaveLogin(AccountAuthEntry entry)
         {
-            authStorage.Update(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
+            authStorage.Update(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.UpdateLast(entry.Login, entry.Server.Address);
             authStorage.Save();
         }
 
-        private void Storage_Changed(ListUpdateArgs<AccountSorageEntry> e)
+        private void Storage_Changed(ListUpdateArgs<AccountStorageEntry> e)
         {
             if (e.Action == DLinqAction.Insert)
                 Accounts.Add(CreateEntry(e.NewItem));
@@ -241,10 +241,10 @@ namespace TickTrader.BotTerminal
 
         private AccountAuthEntry CreateEntry(string login, string password, string server)
         {
-            return CreateEntry(new AccountSorageEntry(login, password, server));
+            return CreateEntry(new AccountStorageEntry(login, password, server));
         }
 
-        private AccountAuthEntry CreateEntry(AccountSorageEntry record)
+        private AccountAuthEntry CreateEntry(AccountStorageEntry record)
         {
             return new AccountAuthEntry(record, GetServer(record.ServerAddress));
         }

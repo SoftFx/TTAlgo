@@ -3,8 +3,8 @@ using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "")]
-    public class AccountSorageEntry // removing this typo will cause deserialization failure (no accounts will be loaded)
+    [DataContract(Namespace = "", Name = "AccountSorageEntry")] // Removed typo from type name. This will keep existing account info deserializable.
+    public class AccountStorageEntry
     {
         [DataMember]
         public string Login { get; set; }
@@ -18,11 +18,11 @@ namespace TickTrader.BotTerminal
         public string Password { get; set; }
 
 
-        public AccountSorageEntry()
+        public AccountStorageEntry()
         {
         }
 
-        public AccountSorageEntry(string login, string password, string server)
+        public AccountStorageEntry(string login, string password, string server)
         {
             Login = login;
             Password = password;
@@ -30,9 +30,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public AccountSorageEntry Clone()
+        public AccountStorageEntry Clone()
         {
-            return new AccountSorageEntry(Login, Password, ServerAddress);
+            return new AccountStorageEntry(Login, Password, ServerAddress);
         }
     }
 }
