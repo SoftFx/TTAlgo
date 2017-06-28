@@ -12,7 +12,7 @@
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
 
   <property name="WinScpPath"			value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
-
+  
   <property name="OutpuFolder"			value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
   <property name="ToolsFolder"			value="${SourcesDir}tools\"  />
@@ -35,6 +35,7 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
+	 <call target="CreateDSInstaller" />
   </target>
 
   <target name="Publish" >
@@ -151,6 +152,27 @@
     </zip>
 	
   </target>
+   
+   
+   <target name="CreateDSInstaller">
+   <property name="UtilDir" value="${SourcesDir}TickTrader.DedicatedServer.CmdUtil\bin\Release\" />
+   <property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
+   
+	<exec program="${UtilDir}TickTrader.DedicatedServer.CmdUtil.exe">
+		<arg value="AppName=Dedicated Server" />
+		<arg value="AppDir=${ServerBinDir}" />
+		<arg value="AppExe=TickTrader.DedicatedServer.exe" />
+		<arg value="Brand=Soft-FX" />
+		<arg value="Service=Dedicated Server Service" />
+		<arg value="License=${ServerBinDir}license.txt" />
+		<arg value="Installer=${OutpuFolder}DedicatedServerInstall.exe" />
+	</exec>
+	
+    <exec program="${NSIS_Path}makensis.exe" >
+      <arg value="${SourcesDir}Dedicated Server.nsi" />
+    </exec>
+  </target>
+   
    
   <target name="FtpPublish">
     <exec program="${WinScpPath}" verbose="true">
