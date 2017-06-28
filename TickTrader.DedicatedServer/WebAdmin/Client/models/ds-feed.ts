@@ -11,7 +11,7 @@ export interface FeedProxy {
 
 export interface FeedClient {
     deletePackage: (packageName: string) => void;
-    addPackage: (algoPackage: PackageModel) => void;
+    addOrUpdatePackage: (algoPackage: PackageModel) => void;
     deleteAccount: (account: AccountModel) => void;
     addAccount: (account: AccountModel) => void;
     changeBotState: (state: TradeBotStateModel) => void;

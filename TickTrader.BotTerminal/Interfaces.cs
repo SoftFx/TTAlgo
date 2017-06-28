@@ -19,6 +19,7 @@ namespace TickTrader.BotTerminal
         IScreen GetWindow(object key);
         void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false);
         void CloseWindow(object wndKey);
+        bool? ShowDialog(IScreen dlgModel);
     }
 
     internal interface IShell : IWindowModel

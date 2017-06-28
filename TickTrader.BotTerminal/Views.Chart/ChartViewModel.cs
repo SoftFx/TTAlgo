@@ -123,6 +123,7 @@ namespace TickTrader.BotTerminal
             {
                 selectedPeriod = value;
                 NotifyOfPropertyChange("SelectedPeriod");
+                DisplayName = $"{Symbol}, {SelectedPeriod.Key}";
                 selectedPeriod.Value();
             }
         }
@@ -134,6 +135,7 @@ namespace TickTrader.BotTerminal
         public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
+        public bool HasStartedBots => Bots.Any(b => b.IsStarted);
 
         public int Precision { get; private set; }
         public string YAxisLabelFormat { get; private set; }
@@ -145,6 +147,20 @@ namespace TickTrader.BotTerminal
 
         public override void TryClose(bool? dialogResult = null)
         {
+            if (dialogResult == null && HasStartedBots)
+            {
+                var closeDlg = new CloseChartDialogViewModel(this);
+                shell.ToolWndManager.ShowDialog(closeDlg);
+                dialogResult = closeDlg.IsConfirmed;
+            }
+
+            if (dialogResult == false)
+            {
+                return;
+            }
+
+            StopBots();
+
             base.TryClose(dialogResult);
 
             shell.ToolWndManager.CloseWindow(this);
@@ -160,6 +176,18 @@ namespace TickTrader.BotTerminal
         public void OpenPlugin(object descriptorObj)
         {
             OpenAlgoSetup((PluginCatalogItem)descriptorObj);
+        }
+
+        public void StopBots()
+        {
+            foreach (var bot in Bots)
+            {
+                if (bot.IsStarted)
+                {
+                    bot.StartStop();
+                }
+                shell.ToolWndManager.CloseWindow(bot.Model);
+            }
         }
 
         private void OpenAlgoSetup(PluginCatalogItem item)

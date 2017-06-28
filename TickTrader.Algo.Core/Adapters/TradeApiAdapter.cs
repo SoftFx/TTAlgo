@@ -217,7 +217,7 @@ namespace TickTrader.Algo.Core
         private void LogOrderOpening(string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)
         {
             StringBuilder logEntry = new StringBuilder();
-            logEntry.Append("Executing ");
+            logEntry.Append("Opening ");
             AppendOrderParams(logEntry, " Order to ", symbol, type, side, volumeLots, price, sl, tp);
             logger.PrintTrade(logEntry.ToString());
         }
@@ -251,7 +251,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                logEntry.Append("→ FAILED Executing ");
+                logEntry.Append("→ FAILED Opening ");
                 if (order != null)
                 {
                     AppendOrderParams(logEntry, " Order to ", order.Symbol, order.Type, order.Side,
