@@ -232,6 +232,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void OnBotValidation(TradeBotModel bot)
         {
+            if (Regex.IsMatch(bot.Id, botIdPattern))
+                throw new InvalidBotException("InstanceID contains invalid characters. Available Characters: a-z A-Z 0-9 and space");
             if (_allBots.ContainsKey(bot.Id))
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
