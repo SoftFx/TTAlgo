@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Common.Model
         private DateTime? expiration;
         private string comment;
         private string tag;
+        private string userTag;
+        private string instanceId;
         private double? stopLoss;
         private double? takeProfit;
         private decimal? profit;
@@ -195,13 +197,38 @@ namespace TickTrader.Algo.Common.Model
         }
         public string Tag
         {
-            get { return tag; }
+            get { return userTag; }
             private set
             {
                 if (tag != value)
                 {
                     tag = value;
+
+                    if (CompositeTag.TryParse(tag, out CompositeTag compositeTag))
+                    {
+                        userTag = compositeTag.Tag;
+                        instanceId = compositeTag.Key;
+                    }
+                    else
+                    {
+                        userTag = tag;
+                        instanceId = "";
+                    }
+
                     NotifyOfPropertyChange(nameof(Tag));
+                    NotifyOfPropertyChange(nameof(InstanceId));
+                }
+            }
+        }
+        public string InstanceId
+        {
+            get { return instanceId; }
+            private set
+            {
+                if (instanceId != value)
+                {
+                    instanceId = value;
+                    NotifyOfPropertyChange(nameof(InstanceId));
                 }
             }
         }
@@ -407,6 +434,7 @@ namespace TickTrader.Algo.Common.Model
                 TakeProfit = takeProfit ?? double.NaN,
                 Comment = this.Comment,
                 Tag = this.Tag,
+                InstanceId = this.InstanceId,
                 Created = this.Created ?? DateTime.MinValue,
                 Modified = this.Modified ?? DateTime.MinValue,
                 ExecPrice = ExecPrice ?? double.NaN,

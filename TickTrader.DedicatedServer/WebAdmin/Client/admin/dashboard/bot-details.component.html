@@ -69,6 +69,7 @@
                             </h6>
                         </div>
                         <ul class="list-unstyled">
+                            <li>Isolated: {{Bot.Isolated}}</li>
                             <li>Symbol: {{Bot.Config.Symbol}}</li>
                             <li *ngFor="let param of Bot.Config.Parameters">{{param.Descriptor ? param.Descriptor.DisplayName : param.Id}}: {{param.Value}}</li>
                         </ul>

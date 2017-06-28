@@ -43,6 +43,7 @@ export enum ResponseCode {
     AccountIsLocked = 2003,
     DuplicateBot = 3000,
     BotNotFound = 3001,
+    InvalidBot = 3002,
     CommunicationError = 4000,
     InvalidState = 10000
 }
