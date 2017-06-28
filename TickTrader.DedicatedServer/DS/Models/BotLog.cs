@@ -64,97 +64,6 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         internal void Update(BotLogRecord[] recrods)
         {
-        }
-
-        public void OnExit()
-        {
-        }
-
-        public void OnInitialized()
-        {
-        }
-
-        public void OnPrint(string entry)
-        {
-        }
-
-        public void OnPrint(string entry, params object[] parameters)
-        {
-        }
-
-        public void OnPrintError(string entry)
-        {
-        }
-
-        public void OnPrintError(string entry, params object[] parameters)
-        {
-        }
-
-        public void OnPrintInfo(string info)
-        {
-        }
-
-        public void OnPrintTrade(string entry)
-        {
-        }
-
-        public void OnStart()
-        {
-        }
-
-        public void OnStop()
-        {
-            WriteLog(LogEntryType.Error, ex.Message);
-        }
-
-        public void OnExit()
-        {
-            WriteLog(LogEntryType.Info, "Exit");
-        }
-
-        public void OnInitialized()
-        {
-            WriteLog(LogEntryType.Info, "Initialized");
-        }
-
-        public void OnPrint(string message)
-        {
-            WriteLog(LogEntryType.Custom, message);
-        }
-
-        public void OnPrint(string message, params object[] parameters)
-        {
-            OnPrint(string.Format(message, parameters));
-        }
-
-        public void OnPrintError(string message)
-        {
-            WriteLog(LogEntryType.Error, message);
-        }
-
-        public void OnPrintError(string message, params object[] parameters)
-        {
-            OnPrintError(string.Format(message, parameters));
-        }
-
-        public void OnPrintInfo(string message)
-        {
-            WriteLog(LogEntryType.Info, message);
-        }
-
-        public void OnPrintTrade(string message)
-        {
-            WriteLog(LogEntryType.Trading, message);
-        }
-
-        public void OnStart()
-        {
-            WriteLog(LogEntryType.Info, "Start");
-        }
-
-        public void OnStop()
-        {
-            WriteLog(LogEntryType.Info, "Stop");
             lock (_sync)
             {
                 foreach (var rec in recrods)
@@ -164,6 +73,8 @@ namespace TickTrader.DedicatedServer.DS.Models
                         Status = rec.Message;
                         StatusUpdated?.Invoke(rec.Message);
                     }
+                    else
+                        WriteLog(Convert(rec.Severity), rec.Message);
                 }
             }
         }
@@ -259,6 +170,18 @@ namespace TickTrader.DedicatedServer.DS.Models
         public void DeleteFile(string file)
         {
             File.Delete(Path.Combine(_logDirectory, file));
+        }
+
+        private static LogEntryType Convert(LogSeverities severity)
+        {
+            switch (severity)
+            {
+                case LogSeverities.Custom: return LogEntryType.Custom;
+                case LogSeverities.Error: return LogEntryType.Error;
+                case LogSeverities.Info: return LogEntryType.Info;
+                case LogSeverities.Trade: return LogEntryType.Trading;
+                default: return LogEntryType.Info;
+            }
         }
     }
 }
