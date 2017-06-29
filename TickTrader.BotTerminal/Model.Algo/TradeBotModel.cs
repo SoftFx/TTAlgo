@@ -25,9 +25,7 @@ namespace TickTrader.BotTerminal
         public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
-            Name = _uniqueNameGenerator.GenerateFrom(Name);
-
-            host.Journal.RegisterBotLog(Name);
+            host.Journal.RegisterBotLog(InstanceId);
         }
 
         public void Start()
@@ -51,10 +49,9 @@ namespace TickTrader.BotTerminal
 
         public void Remove()
         {
-            Host.Journal.UnregisterBotLog(Name);
+            Host.Journal.UnregisterBotLog(InstanceId);
             Removed(this);
         }
-
 
         protected override PluginExecutor CreateExecutor()
         {
@@ -72,62 +69,27 @@ namespace TickTrader.BotTerminal
 
 
         private void ChangeState(BotModelStates newState)
-        private void TradeBotModel2_NewRecords(BotLogRecord[] records)
         {
-            State = newState;
-            StateChanged(this);
         }
 
+        private void TradeBotModel2_NewRecords(BotLogRecord[] records)
         {
             List<BotMessage> messages = new List<BotMessage>(records.Length);
             string status = null;
 
-        private class LogAdapter : CrossDomainObject, IPluginLogger
-        {
-            private Action<string> statusChanged;
-            private BotJournal journal;
-            private string botName;
-
-            public LogAdapter(BotJournal journal, string botName, Action<string> statusChangedHandler)
-
-        private class LogAdapter : CrossDomainObject, IPluginLogger
-        {
-            private Action<string> _statusChanged;
-            private BotJournal _journal;
-            private string _botId;
-
-
-            public LogAdapter(BotJournal journal, string botId, Action<string> statusChangedHandler)
             foreach (var rec in records)
             {
-                this.journal = journal;
-                this.botName = botName;
-                this.statusChanged = statusChangedHandler;
-                this._journal = journal;
-                this._botId = botId;
-                this._statusChanged = statusChangedHandler;
                 if (rec.Severity != LogSeverities.CustomStatus)
                     messages.Add(Convert(rec));
                 else
                     status = rec.Message;
             }
 
-
-            public void UpdateStatus(string status)
-            {
-                statusChanged(status);
-            }
-            public void UpdateStatus(string status)
-            {
-                _statusChanged(status);
-            }
             if (messages.Count > 0)
                 Host.Journal.Add(messages);
 
             if (status != null)
             {
-                journal.Custom(botName, entry);
-                _journal.Custom(_botId, entry);
                 Execute.OnUIThread(() =>
                 {
                     CustomStatus = status;
@@ -138,23 +100,13 @@ namespace TickTrader.BotTerminal
 
         private BotMessage Convert(BotLogRecord record)
         {
-            return new BotMessage(record.Time, Name, record.Message, Convert(record.Severity)) { Details = record.Details };
+            return new BotMessage(record.Time, InstanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
         }
 
-                journal.Custom(botName, msg);
-            }
-
-            public void OnPrintError(string entry)
-                _journal.Custom(_botId, msg);
-            }
-
-            public void OnPrintError(string entry)
         private JournalMessageType Convert(LogSeverities severity)
         {
             switch (severity)
             {
-                journal.Error(botName, entry);
-                _journal.Error(_botId, entry);
                 case LogSeverities.Info: return JournalMessageType.Info;
                 case LogSeverities.Error: return JournalMessageType.Error;
                 case LogSeverities.Custom: return JournalMessageType.Custom;
@@ -172,84 +124,6 @@ namespace TickTrader.BotTerminal
                     ChangeState(BotModelStates.Stopped);
                     Host.Unlock();
                 }
-                catch { }
-
-                journal.Error(botName, msg);
-            }
-
-            public void OnPrintInfo(string entry)
-            {
-                journal.Info(botName, entry);
-            }
-
-            public void OnError(Exception ex)
-            {
-                journal.Error(botName, "Exception: " + ex.Message);
-            }
-
-            public void OnInitialized()
-            {
-                journal.Info(botName, "Bot initialized");
-            }
-
-            public void OnStart()
-            {
-                journal.Info(botName, "Bot started");
-            }
-
-            public void OnStop()
-            {
-                journal.Info(botName, "Bot stopped");
-            }
-
-            public void OnExit()
-            {
-                journal.Info(botName, "Bot exited");
-            }
-
-            public void OnPrintTrade(string entry)
-            {
-                journal.Trading(botName, entry);
-            }
-                catch { }
-
-                _journal.Error(_botId, msg);
-            }
-
-            public void OnPrintInfo(string entry)
-            {
-                _journal.Info(_botId, entry);
-            }
-
-            public void OnError(Exception ex)
-            {
-                _journal.Error(_botId, "Exception: " + ex.Message);
-            }
-
-            public void OnInitialized()
-            {
-                _journal.Info(_botId, "Bot initialized");
-            }
-
-            public void OnStart()
-            {
-                _journal.Info(_botId, "Bot started");
-            }
-
-            public void OnStop()
-            {
-                _journal.Info(_botId, "Bot stopped");
-            }
-
-            public void OnExit()
-            {
-                _journal.Info(_botId, "Bot exited");
-            }
-
-            public void OnPrintTrade(string entry)
-            {
-                _journal.Trading(_botId, entry);
-            }
             });
         }
     }
