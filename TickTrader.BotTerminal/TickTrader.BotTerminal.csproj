@@ -289,7 +289,7 @@
     <Compile Include="Model.Auth\AuthStorageEntry.cs" />
     <Compile Include="Model.Profiles\ProfileManager.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
-    <Compile Include="Model.Profiles\SettingsModel.cs" />
+    <Compile Include="Model.Profiles\SettingsStorageModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />

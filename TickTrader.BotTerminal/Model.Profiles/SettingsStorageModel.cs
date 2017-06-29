@@ -2,8 +2,8 @@
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "")]
-    public class SettingsModel
+    [DataContract(Namespace = "", Name = "Preferences")]
+    internal class SettingsStorageModel : StorageModelBase<SettingsStorageModel>
     {
         [DataMember]
         public bool EnableSounds { get; set; }
@@ -12,15 +12,15 @@ namespace TickTrader.BotTerminal
         public bool EnableNotifications { get; set; }
 
 
-        public SettingsModel()
+        public SettingsStorageModel()
         {
             EnableSounds = true;
         }
 
 
-        public SettingsModel Clone()
+        public override SettingsStorageModel Clone()
         {
-            return new SettingsModel
+            return new SettingsStorageModel
             {
                 EnableSounds = EnableSounds,
                 EnableNotifications = EnableNotifications,

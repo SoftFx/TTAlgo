@@ -13,6 +13,8 @@ namespace TickTrader.BotTerminal
 
         public AuthStorageModel AuthSettingsStorage { get; private set; }
 
+        public SettingsStorageModel SettingsStorage { get; private set; }
+
         public ProfileManager ProfileManager { get; private set; }
 
 
@@ -20,6 +22,8 @@ namespace TickTrader.BotTerminal
         {
             var loginController = CreateStorageController<AuthStorageModel>("UserAuthSettings", EnvService.Instance.ProtectedUserDataStorage);
             AuthSettingsStorage = loginController.Value;
+            var settingsController = CreateStorageController<SettingsStorageModel>("Preferences", EnvService.Instance.UserDataStorage);
+            SettingsStorage = settingsController.Value;
             ProfileManager = new ProfileManager(CreateStorageController<ProfileStorageModel>(ProfileManager.CurrentProfileFileName, EnvService.Instance.ProfilesCacheStorage));
         }
 

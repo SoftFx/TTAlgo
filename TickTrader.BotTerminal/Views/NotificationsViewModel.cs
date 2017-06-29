@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         private IAccountInfoProvider _accountInfo;
         private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
-        private ProfileManager _profileManager;
+        private SettingsStorageModel _settingsStorage;
 
 
         public bool SoundsEnabled
@@ -36,9 +36,7 @@ namespace TickTrader.BotTerminal
             _accountInfo = accountInfo;
             _connectionModel = connectionManager;
             _notificationCenter = notificationCenter;
-            _profileManager = storage.ProfileManager;
-
-            _profileManager.ProfileUpdated += LoadSettings;
+            _settingsStorage = storage.SettingsStorage;
 
             LoadSettings();
         }
@@ -46,8 +44,8 @@ namespace TickTrader.BotTerminal
 
         private void LoadSettings()
         {
-            ToggleSounds(_profileManager.CurrentProfile.Settings.EnableSounds, true);
-            ToggleNotifications(_profileManager.CurrentProfile.Settings.EnableNotifications, true);
+            ToggleSounds(_settingsStorage.EnableSounds, true);
+            ToggleNotifications(_settingsStorage.EnableNotifications, true);
         }
 
         private void ToggleSounds(bool enableSounds, bool isInit)
@@ -69,8 +67,8 @@ namespace TickTrader.BotTerminal
 
             if (!isInit)
             {
-                _profileManager.CurrentProfile.Settings.EnableSounds = enableSounds;
-                _profileManager.CurrentProfile.Save();
+                _settingsStorage.EnableSounds = enableSounds;
+                _settingsStorage.Save();
             }
         }
 
@@ -95,8 +93,8 @@ namespace TickTrader.BotTerminal
 
             if (!isInit)
             {
-                _profileManager.CurrentProfile.Settings.EnableNotifications = enableNotifications;
-                _profileManager.CurrentProfile.Save();
+                _settingsStorage.EnableNotifications = enableNotifications;
+                _settingsStorage.Save();
             }
         }
 
