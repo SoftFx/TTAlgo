@@ -287,6 +287,7 @@
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Auth\AuthStorageEntry.cs" />
+    <Compile Include="Model.Profiles\ChartStorageEntry.cs" />
     <Compile Include="Model.Profiles\ProfileManager.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <Compile Include="Model.Profiles\SettingsStorageModel.cs" />
@@ -399,6 +400,10 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views.Profiles\ProfileLoadingDialogView.xaml.cs">
+      <DependentUpon>ProfileLoadingDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>
@@ -824,6 +829,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Order\OpenOrderDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Profiles\ProfileLoadingDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

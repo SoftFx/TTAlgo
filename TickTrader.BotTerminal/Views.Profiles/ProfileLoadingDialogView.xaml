@@ -1,0 +1,26 @@
+﻿<Window x:Class="TickTrader.BotTerminal.ProfileLoadingDialogView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:TickTrader.BotTerminal"
+        mc:Ignorable="d"
+        Icon="{StaticResource MainAppIcon}"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        Background="{DynamicResource Dialog_Background}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Content="Loading profile" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+        <ProgressBar Grid.Row="1" Margin="5" IsIndeterminate="True" />
+
+    </Grid>
+</Window>

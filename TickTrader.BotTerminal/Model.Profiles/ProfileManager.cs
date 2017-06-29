@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
@@ -39,13 +40,19 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void LoadCachedProfile(string server, string login)
+        public async Task<bool> StopCurrentProfile(string server, string login)
         {
             if (Server == server && Login == login)
             {
-                return;
+                return false;
             }
 
+            await _storageController.Close();
+            return true;
+        }
+
+        public void LoadCachedProfile(string server, string login)
+        {
             if (!string.IsNullOrEmpty(Server) && !string.IsNullOrEmpty(Login))
             {
                 try
@@ -91,8 +98,6 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                _storageController.Close().Wait();
-
                 File.Delete(CurrentProfilePath);
                 if (File.Exists(newProfilePath))
                 {
@@ -100,7 +105,6 @@ namespace TickTrader.BotTerminal
                 }
 
                 _storageController.Reopen();
-                CurrentProfile.Save();
 
                 OnProfileUpdated();
             }

@@ -106,11 +106,19 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
 
-        private void LoadConnectionProfile()
+        private async void LoadConnectionProfile()
         {
             if (cManager.State == ConnectionManager.States.Online)
             {
+                if (!await storage.ProfileManager.StopCurrentProfile(cManager.Creds.Server.Address, cManager.Creds.Login))
+                {
+                    return;
+                }
+
                 storage.ProfileManager.LoadCachedProfile(cManager.Creds.Server.Address, cManager.Creds.Login);
+
+                var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager);
+                wndManager.ShowDialog(loading);
             }
         }
 
@@ -176,6 +184,7 @@ namespace TickTrader.BotTerminal
 
         public void About()
         {
+            Charts.SaveProfile(storage.ProfileManager.CurrentProfile);
             AboutDialogViewModel model = new AboutDialogViewModel();
             wndManager.ShowDialog(model);
         }
