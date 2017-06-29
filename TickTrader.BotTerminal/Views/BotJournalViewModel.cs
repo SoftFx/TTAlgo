@@ -29,13 +29,13 @@ namespace TickTrader.BotTerminal
             _botNameFilterEntries.Add(new BotNameFilterEntry("Nothing", BotNameFilterType.Nothing));
             _botNameFilterEntries.Add(new BotNameFilterEntry("All",  BotNameFilterType.All));
 
-            _botJournal.BotNames.Updated += args =>
+            _botJournal.Statistics.Items.Updated += args =>
             {
                 if (args.Action == DLinqAction.Insert)
-                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.NewItem, BotNameFilterType.SpecifiedName));
+                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.Key, BotNameFilterType.SpecifiedName));
                 else if (args.Action == DLinqAction.Remove)
                 {
-                    var entry = _botNameFilterEntries.FirstOrDefault((e) => e.Type == BotNameFilterType.SpecifiedName && e.Name == args.OldItem);
+                    var entry = _botNameFilterEntries.FirstOrDefault((e) => e.Type == BotNameFilterType.SpecifiedName && e.Name == args.Key);
 
                     if (selectedBotNameFilter == entry)
                         SelectedBotNameFilter = _botNameFilterEntries.First();
@@ -149,7 +149,7 @@ namespace TickTrader.BotTerminal
         {
             if (bMessage != null)
             {
-                return (BotCondition == null || BotCondition.Matches(BotCondition.Name))
+                return (BotCondition == null || BotCondition.Matches(bMessage.Bot))
                      && (JournalType == null || bMessage.Type == JournalType)
                      && (string.IsNullOrEmpty(TextFilter)
                      || (bMessage.Time.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0

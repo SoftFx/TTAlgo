@@ -38,12 +38,19 @@ namespace TickTrader.BotTerminal
             });
         }
 
+        protected virtual void OnAppended(T item) { }
+        protected virtual void OnRemoved(T item) { }
+
         protected virtual void Append(T item)
         {
             if (IsJournalFull)
-                items.Dequeue();
+            {
+                var removed = items.Dequeue();
+                OnRemoved(removed);
+            }
 
             items.Add(item);
+            OnAppended(item);
         }
 
         public void Clear()

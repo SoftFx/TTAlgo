@@ -8,10 +8,10 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Journal Stress Test", Version = "1.0", Category = "Plugin Stress Tests",
-       Description = "")]
+    [TradeBot(DisplayName = "[T] Bot Log Writer", Version = "1.0", Category = "Plugin Stress Tests",
+       Description = "Writes messages to log with specified rate per second.")]
 
-    public class JournalStressTest : TradeBot
+    public class BotLogWriter : TradeBot
     {
         [Parameter(DefaultValue = 100)]
         public int PrintsPerSecond { get; set; }

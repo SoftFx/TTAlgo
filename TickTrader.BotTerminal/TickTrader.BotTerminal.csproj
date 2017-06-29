@@ -285,6 +285,7 @@
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\NotificationCenter.cs" />

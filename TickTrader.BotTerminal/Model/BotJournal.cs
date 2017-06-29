@@ -9,14 +9,14 @@ namespace TickTrader.BotTerminal
     internal class BotJournal : Journal<BotMessage>
     {
         private Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>();
-        private DynamicList<string> botNames = new DynamicList<string>();
 
         public BotJournal() : this(500) { }
 
-        public IDynamicListSource<string> BotNames => botNames;
+        public BotNameAggregator Statistics { get; private set; }
 
         public BotJournal(int journalSize) : base(journalSize)
         {
+            Statistics = new BotNameAggregator();
         }
 
         public override void Add(BotMessage item)
@@ -34,14 +34,23 @@ namespace TickTrader.BotTerminal
                 WriteToLogger(item);
         }
 
+        protected override void OnAppended(BotMessage item)
+        {
+            Statistics.Register(item);
+        }
+
+        protected override void OnRemoved(BotMessage item)
+        {
+            Statistics.UnRegister(item);
+        }
+
         public void RegisterBotLog(string botName)
         {
-            botNames.Add(botName);
         }
 
         public void UnregisterBotLog(string botName)
         {
-            botNames.Remove(botName);
+            _loggers.Remove(botName);
         }
 
         private void WriteToLogger(BotMessage message)
