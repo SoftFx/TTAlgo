@@ -162,19 +162,16 @@
    <target name="CreateDSInstaller">
    <property name="UtilDir" value="${SourcesDir}TickTrader.DedicatedServer.CmdUtil\bin\Release\" />
    <property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
-   
+   	
 	<exec program="${UtilDir}TickTrader.DedicatedServer.CmdUtil.exe">
-		<arg value="AppName=Dedicated Server" />
+		<arg value="Mode=uninstall" />
 		<arg value="AppDir=${ServerBinDir}" />
-		<arg value="AppExe=TickTrader.DedicatedServer.exe" />
-		<arg value="Brand=Soft-FX" />
-		<arg value="Service=Dedicated Server Service" />
-		<arg value="License=${ServerBinDir}license.txt" />
-		<arg value="Installer=${OutpuFolder}DedicatedServerInstall ${Build}.exe" />
+		<arg value="OutFile=${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.Uninstall.nsi" />
 	</exec>
-	
-    <exec program="${NSIS_Path}\makensis.exe" >
-      <arg value="${SourcesDir}Dedicated Server.nsi" />
+    
+	<exec program="${NSIS_Path}\makensis.exe" >
+	  <arg value="/DPRODUCT_BUILD=${Build}" />
+      <arg value="${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.nsi" />
     </exec>
   </target>
    

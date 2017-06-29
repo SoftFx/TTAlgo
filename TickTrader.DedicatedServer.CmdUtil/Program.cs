@@ -14,11 +14,32 @@ namespace TickTrader.DedicatedServer.CmdUtil
         private const string License = "License=";
         private const string ServiceName = "Service=";
         private const string ServiceDisplayName = "ServiceDispName=";
+        private const string OutFile = "OutFile=";
+        private const string Mode = "Mode=";
 
         static void Main(string[] args)
         {
             Console.WriteLine("Working Directory: {0}", Directory.GetCurrentDirectory());
 
+
+            switch(ReadMode(args).ToLower())
+            {
+                case "uninstall":
+                case "u":
+                    CreateUninstallScript(args);
+                    break;
+                case "full":
+                case "f":
+                    CreateFullInstallationScript(args);
+                    break;
+                default:
+                    Console.WriteLine("Mode not selected. Please choose one of 'full' or  'uninstall'");
+                    break;
+            }
+        }
+
+        private static void CreateFullInstallationScript(string[] args)
+        {
             var scriptBuilder = new InstallScriptBuilder();
 
             scriptBuilder.UseApplicationName(ReadAppName(args))
@@ -34,13 +55,42 @@ namespace TickTrader.DedicatedServer.CmdUtil
             {
                 var script = scriptBuilder.Build();
 
-                var scriptFile = Path.Combine(Directory.GetCurrentDirectory(), $"{ReadAppName(args)}.nsi");
+                var scriptFile = Path.Combine(Directory.GetCurrentDirectory(), $"{ReadOutFile(args)}");
                 File.WriteAllText(scriptFile, script);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        private static void CreateUninstallScript(string[] args)
+        {
+            var scriptBuilder = new UninstallScriptBuilder();
+
+            scriptBuilder.UseAppDir(ReadAppDir(args));
+
+            try
+            {
+                var script = scriptBuilder.Build();
+
+                var scriptFile = Path.Combine(Directory.GetCurrentDirectory(), $"{ReadOutFile(args)}");
+                File.WriteAllText(scriptFile, script);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static string ReadMode(string[] args)
+        {
+            return args.Read(Mode);
+        }
+
+        private static string ReadOutFile(string[] args)
+        {
+            return args.Read(OutFile);
         }
 
         private static string ReadServiceName(string[] args)
