@@ -170,7 +170,16 @@ namespace TickTrader.DedicatedServer
                             {
                                 var botConfig = SetupBot(botToAdd.Descriptor);
                                 var botId = server.AutogenerateBotId(botToAdd.Descriptor.DisplayName);
-                                acc.AddBot(botId, botToAdd.Id, botConfig);
+
+                                TradeBotModelConfig botCfg = new TradeBotModelConfig
+                                {
+                                    InstanceId = botId,
+                                    Plugin = botToAdd.Id,
+                                    PluginConfig = botConfig,
+                                    Isolated = false
+                                };
+
+                                acc.AddBot(botCfg);
                             }
                             else
                                 Console.WriteLine("Cannot add bot: bot is invalid!");

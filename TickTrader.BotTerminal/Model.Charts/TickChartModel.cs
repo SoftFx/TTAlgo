@@ -110,14 +110,14 @@ namespace TickTrader.BotTerminal
             return new TickBasedPluginSetup(catalogItem, SymbolCode);
         }
 
-        protected override IndicatorModel CreateIndicator(PluginSetup setup)
+        protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)
         {
             return new IndicatorModel(setup, this);
         }
 
-        public override void InitializePlugin(PluginExecutor plugin, string uniqueBotName)
+        public override void InitializePlugin(PluginExecutor plugin)
         {
-            base.InitializePlugin(plugin, uniqueBotName);
+            base.InitializePlugin(plugin);
 
             var feedProvider = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies, new DispatcherSync());
             plugin.InitQuoteStrategy(feedProvider);

@@ -23,7 +23,7 @@
                             ContextMenu="{StaticResource ContextMenu}">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>
-                            <TextBlock Text="{Binding Model.Name}" Width="180" cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]"/>
+                            <TextBlock Text="{Binding Model.InstanceId}" Width="180" cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]"/>
                             <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
                             <l:FlatButton cal:Message.Attach="Close" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
                         </StackPanel>
@@ -46,7 +46,7 @@
                         </Border.Background>
                         <StackPanel Orientation="Horizontal">
                             <!--<Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>-->
-                            <TextBlock Text="{Binding Model.Name}" Width="180"/>
+                            <TextBlock Text="{Binding Model.InstanceId}" Width="180"/>
                             <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
                             <l:FlatButton cal:Message.Attach="Close" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
                         </StackPanel>

@@ -107,7 +107,10 @@ namespace TickTrader.Algo.Core.Metadata
                 Error = AlgoMetadataErrors.HasInvalidProperties;
 
             if (string.IsNullOrWhiteSpace(DisplayName))
+            {
                 DisplayName = algoCustomType.Name;
+                UserDisplayName = algoCustomType.Name;
+            }
 
             this.Id = algoCustomType.FullName;
 
@@ -166,6 +169,7 @@ namespace TickTrader.Algo.Core.Metadata
                 DisplayName = string.IsNullOrWhiteSpace(pluginAttr.DisplayName) ?
                     $"{algoCustomType.Name}{version}" :
                     $"{pluginAttr.DisplayName}{version}";
+                UserDisplayName = string.IsNullOrWhiteSpace(pluginAttr.DisplayName) ? algoCustomType.Name : pluginAttr.DisplayName;
                 Category = string.IsNullOrWhiteSpace(pluginAttr.Category) ? "Misc" : pluginAttr.Category;
                 Version = pluginAttr.Version;
                 Description = pluginAttr.Description;
@@ -227,6 +231,7 @@ namespace TickTrader.Algo.Core.Metadata
         public Version ApiVersion => apiVersion;
         public string Id { get; private set; }
         public string DisplayName { get; private set; }
+        public string UserDisplayName { get; private set; }
         public string Category { get; private set; }
         public string Version { get; private set; }
         public string Description { get; private set; }

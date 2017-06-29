@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
         }
 
         public IndicatorModel Model { get; private set; }
-        public string DisplayName { get { return Model.Name; } }
+        public string DisplayName { get { return Model.InstanceId; } }
         public DynamicList<IRenderableSeriesViewModel> Series { get; private set; }
         public DynamicList<IndicatorPaneViewModel> Panes { get; private set; }
         public string ChartWindowId { get; private set; }

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -15,17 +13,21 @@ namespace TickTrader.Algo.Core
         private SymbolProvider symbols;
         private AccountEntity account;
         private PluginLoggerAdapter logger;
+        private string _isolationTag;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger)
+        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger, string isolationTag)
         {
             this.api = api;
             this.symbols = symbols;
             this.account = account;
             this.logger = logger;
+            this._isolationTag = isolationTag;
         }
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
+            string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
+
             var smbMetadata = symbols.List[symbol];
             if (smbMetadata.IsNull)
                 return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
@@ -40,7 +42,7 @@ namespace TickTrader.Algo.Core
 
             using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
-                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, tag);
+                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
                 var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
                 TradeResultEntity resultEntity;
@@ -62,7 +64,7 @@ namespace TickTrader.Algo.Core
                         StopLoss = sl ?? double.NaN,
                         TakeProfit = tp ?? double.NaN,
                         Comment = comment,
-                        Tag = tag
+                        Tag = isolationTag
                     };
                     resultEntity = new TradeResultEntity(result.ResultCode, orderToOpen);
                 }

@@ -92,14 +92,14 @@ namespace TickTrader.BotTerminal
             return new BarBasedPluginSetup(catalogItem, SymbolCode, Algo.Api.BarPriceType.Bid, AlgoEnv);
         }
 
-        protected override IndicatorModel CreateIndicator(PluginSetup setup)
+        protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)
         {
             return new IndicatorModel(setup, this);
         }
 
-        public override void InitializePlugin(PluginExecutor plugin, string uniqueBotName)
+        public override void InitializePlugin(PluginExecutor plugin)
         {
-            base.InitializePlugin(plugin, uniqueBotName);
+            base.InitializePlugin(plugin);
             var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies, new DispatcherSync());
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;

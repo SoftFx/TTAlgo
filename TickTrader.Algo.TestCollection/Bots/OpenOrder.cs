@@ -4,7 +4,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.3", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.4", Category = "Test Orders",
         Description = "Opens order for current chart symbol with specified volume, price, side, type, options, tag, SL, TP. " +
                       "Prints order execution result to bot status window. " +
                       "If price = 0 then it will be taken from symbol bid/ask (depending on order side). " +
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 var res = OpenOrder(Symbol.Name, Type, Side, Volume, price, sl, tp, "Open Order Bot " + DateTime.Now, Options, Tag);
                 Status.WriteLine($"ResultCode = {res.ResultCode}");
                 if (res.ResultingOrder != null)
-                    Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
+                    Status.WriteLine(ToObjectPropertiesString(typeof(Order), res.ResultingOrder));
             }
             Exit();
         }

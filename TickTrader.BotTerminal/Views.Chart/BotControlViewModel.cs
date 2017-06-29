@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private ToolWindowsManager wndManager;
 
-        public BotControlViewModel(TradeBotModel2 model, ToolWindowsManager wndManager, bool runBot)
+        public BotControlViewModel(TradeBotModel model, ToolWindowsManager wndManager, bool runBot)
         {
             this.Model = model;
             this.wndManager = wndManager;
@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
                 Model.Start();
         }
 
-        public TradeBotModel2 Model { get; private set; }
+        public TradeBotModel Model { get; private set; }
 
         public void Close()
         {
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
                 wndManager.OpenWindow(Model, new BotStateViewModel(Model));
         }
 
-        private void Model_StateChanged(TradeBotModel2 model)
+        private void Model_StateChanged(TradeBotModel model)
         {
             NotifyOfPropertyChange(nameof(CanBeClosed));
             NotifyOfPropertyChange(nameof(CanStartStop));

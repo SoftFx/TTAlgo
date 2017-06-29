@@ -3,15 +3,21 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Close All Positions Script", Version = "1.0", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Close All Positions Script", Version = "1.1", Category = "Test Orders",
         Description = "Closes all positions for gross accounts")]
     public class CloseAll : TradeBot
     {
+        [Parameter(DisplayName = "Target Instance Id", DefaultValue = "")]
+        public string TargetInstanceId { get; set; }
+
+
         protected async override void OnStart()
         {
             if (Account.Type == AccountTypes.Gross)
             {
-                var positions = Account.Orders.Where(o => o.Type == OrderType.Position).ToList();
+                var positions = string.IsNullOrEmpty(TargetInstanceId)
+                ? Account.Orders.Where(o => o.Type == OrderType.Position).ToList()
+                : Account.Orders.Where(o => o.Type == OrderType.Position && o.InstanceId == TargetInstanceId).ToList();
 
                 foreach (var pos in positions)
                     await CloseOrderAsync(pos.Id);

@@ -9,25 +9,25 @@ namespace TickTrader.BotTerminal
 {
     internal class BotStateViewModel : Screen, IWindowModel
     {
-        public BotStateViewModel(TradeBotModel2 bot)
+        public BotStateViewModel(TradeBotModel bot)
         {
             this.Bot = bot;
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
             Bot.CustomStatusChanged += Bot_CustomStatusChanged;
-            DisplayName = "Status: " + bot.Name;
-            BotName = string.Format("{0} ({1}, {2})", Bot.Name, "", "");
+            DisplayName = "Status: " + bot.InstanceId;
+            BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
             Bot_CustomStatusChanged(Bot);
         }
 
-        public TradeBotModel2 Bot { get; private set; }
+        public TradeBotModel Bot { get; private set; }
         public string BotName { get; private set; }
         public string ExecStatus { get; private set; }
         public string CustomStatus { get; private set; }
         public bool IsStarted { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopping; } }
         public bool CanStartStop { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopped; } }
-        public string ParamsStr => string.Join(Environment.NewLine, Bot.Setup.Parameters.Select(x => x.ToString()).OrderBy(x=>x).ToArray());
+        public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public bool HasParams => Bot.Setup.Parameters.Any();
 
         public override void TryClose(bool? dialogResult = default(bool?))
@@ -49,18 +49,18 @@ namespace TickTrader.BotTerminal
                 throw new Exception("StartStop() cannot be called when Bot is stopping!");
         }
 
-        private void Bot_Removed(TradeBotModel2 bot)
+        private void Bot_Removed(TradeBotModel bot)
         {
             TryClose();
         }
 
-        private void Bot_CustomStatusChanged(TradeBotModel2 bot)
+        private void Bot_CustomStatusChanged(TradeBotModel bot)
         {
             CustomStatus = bot.CustomStatus;
             NotifyOfPropertyChange(nameof(CustomStatus));
         }
 
-        private void Bot_StateChanged(TradeBotModel2 bot)
+        private void Bot_StateChanged(TradeBotModel bot)
         {
             switch (bot.State)
             {
@@ -72,8 +72,27 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(ExecStatus));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(IsStarted));
-            NotifyOfPropertyChange(nameof(ParamsStr));
+            NotifyOfPropertyChange(nameof(BotInfo));
             NotifyOfPropertyChange(nameof(HasParams));
+        }
+
+        private IEnumerable<string> GetBotInfo()
+        {
+            var res = new List<string>();
+            res.Add($"Instance Id: {Bot.InstanceId}");
+            res.Add($"Isolation: {(Bot.Isolated ? "Enabled" : "Disabled")}");
+            res.Add("");
+            res.Add("------------ Plugin Info ------------");
+            res.Add($"Name: {Bot.Setup.Descriptor.UserDisplayName}");
+            res.Add($"Version: {Bot.Setup.Descriptor.Version}");
+            res.Add($"File Path: {Bot.PluginFilePath}");
+            if (Bot.Setup.HasParams)
+            {
+                res.Add("");
+                res.Add("------------ Parameters ------------");
+                res.AddRange(Bot.Setup.Parameters.Select(x => x.ToString()).OrderBy(x => x).ToArray());
+            }
+            return res;
         }
     }
 }

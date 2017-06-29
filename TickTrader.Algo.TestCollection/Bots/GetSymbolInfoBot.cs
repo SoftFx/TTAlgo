@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Get Symbol Info Bot", Version = "1.0", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Get Symbol Info Bot", Version = "1.1", Category = "Test Plugin Info",
         Description = "Prints info about symbol with specified name to bot status window")]
     public class GetSymbolInfoBot : TradeBotCommon
     {
@@ -12,7 +12,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            Status.WriteLine(ToObjectPropertiesString(SymbolName, Symbols[SymbolName]));
+            Status.WriteLine(ToObjectPropertiesString(SymbolName, typeof(Symbol), Symbols[SymbolName]));
 
             Exit();
         }

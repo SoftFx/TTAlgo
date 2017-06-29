@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
@@ -33,6 +30,8 @@ namespace TickTrader.Algo.Core
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
+        private string _botInstanceId;
+        private bool _isolated;
         private States state;
 
         public PluginExecutor(string pluginId)
@@ -97,7 +96,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public Api.TimeFrames TimeFrame
+        public TimeFrames TimeFrame
         {
             get { return timeframe; }
             set
@@ -174,6 +173,34 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public string InstanceId
+        {
+            get { return _botInstanceId; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    _botInstanceId = value;
+                }
+            }
+        }
+
+        public bool Isolated 
+        {
+            get { return _isolated; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    _isolated = value;
+                }
+            }
+        }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
@@ -193,6 +220,8 @@ namespace TickTrader.Algo.Core
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
                 InitWorkingFolder();
+                builder.Id = _botInstanceId;
+                builder.Isolated = _isolated;
                 builder.TradeApi = tradeApi;
                 builder.Diagnostics = this;
                 builder.Logger = pluginLogger ?? Null.Logger;

@@ -15,7 +15,6 @@ namespace TickTrader.DedicatedServer.Infrastructure
             AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
             FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
             AppDataFolder = Path.Combine(AppFolder, "Settings");
-
             EnsureFolder(AlgoRepositoryFolder);
             EnsureFolder(AlgoExtFolder);
             EnsureFolder(AlgoWorkingFolder);
