@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Core
             fixture.Replace(entity, IsEnabled);
         }
 
-        public Order GetOrderOrNull(string id)
+        public OrderEntity GetOrderOrNull(string id)
         {
-            return fixture[id];
+            return fixture.GetOrNull(id);
         }
 
         public void Remove(string orderId)
@@ -87,6 +87,13 @@ namespace TickTrader.Algo.Core
                         return Null.Order;
                     return entity;
                 }
+            }
+
+            public OrderEntity GetOrNull(string id)
+            {
+                OrderEntity entity;
+                orders.TryGetValue(id, out entity);
+                return entity;
             }
 
             public void Add(OrderEntity entity)
