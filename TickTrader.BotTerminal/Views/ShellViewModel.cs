@@ -34,6 +34,7 @@ namespace TickTrader.BotTerminal
             notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);
             storage = new PersistModel();
+            ThemeSelector.Instance.InitializeSettings(storage);
 
             wndManager = new MdiWindowManager(this);
 
@@ -207,6 +208,8 @@ namespace TickTrader.BotTerminal
                 await cManager.Disconnect();
             }
             catch (Exception) { }
+
+            await storage.Stop();
 
             App.Current.Shutdown();
         }

@@ -11,11 +11,11 @@ namespace TickTrader.BotTerminal
         private List<IPersistController> _controllers = new List<IPersistController>();
 
 
-        public AuthStorageModel AuthSettingsStorage { get; private set; }
+        public AuthStorageModel AuthSettingsStorage { get; }
 
-        public SettingsStorageModel SettingsStorage { get; private set; }
+        public SettingsStorageModel SettingsStorage { get; }
 
-        public ProfileManager ProfileManager { get; private set; }
+        public ProfileManager ProfileManager { get; }
 
 
         public PersistModel()

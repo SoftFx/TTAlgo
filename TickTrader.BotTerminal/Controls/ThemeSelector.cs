@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
     public class ThemeSelector : ResourceDictionary
     {
         private Theme _selectedTheme;
+        private SettingsStorageModel _settingsStorage;
 
 
         public static ThemeSelector Instance => (ThemeSelector)App.Current.Resources.MergedDictionaries.FirstOrDefault(d => d is ThemeSelector);
@@ -35,6 +36,8 @@ namespace TickTrader.BotTerminal
                     if (toApply == null)
                         throw new ArgumentException("Theme not found: " + value);
                     Activate(toApply);
+                    _settingsStorage.Theme = SelectedTheme;
+                    _settingsStorage.Save();
                 }
             }
         }
@@ -45,6 +48,21 @@ namespace TickTrader.BotTerminal
             var collection = new ObservableCollection<Theme>();
             collection.CollectionChanged += (s, a) => EnsureDefaultTheme();
             Themes = collection;
+        }
+
+
+        internal void InitializeSettings(PersistModel storage)
+        {
+            _settingsStorage = storage.SettingsStorage;
+            if (ThemeNames.Contains(_settingsStorage.Theme))
+            {
+                SelectedTheme = _settingsStorage.Theme;
+            }
+            else
+            {
+                _settingsStorage.Theme = SelectedTheme;
+                _settingsStorage.Save();
+            }
         }
 
 
