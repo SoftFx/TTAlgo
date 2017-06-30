@@ -232,7 +232,7 @@ namespace TickTrader.Algo.Core
 
                 // Setup strategy
 
-                iStrategy.Init(builder, OnInternalException, OnRuntimeException, OnFeedUpdate);
+                iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
                 fStrategy.Init(this, bStrategy);
                 fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
@@ -485,11 +485,6 @@ namespace TickTrader.Algo.Core
                 if (state != States.Idle)
                     iStrategy.EnqueueCustomInvoke(b => b.InvokeAsyncAction(asyncAction));
             }
-        }
-
-        private void OnFeedUpdate(RateUpdate update)
-        {
-            fStrategy.ApplyUpdate(update);
         }
 
         private void BindAllOutputs()

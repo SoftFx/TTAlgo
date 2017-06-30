@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote
+    public class QuoteEntity : Api.Quote, RateUpdate
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
@@ -22,6 +22,17 @@ namespace TickTrader.Algo.Core
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
+
+        #region RateUpdate
+
+        double RateUpdate.AskHigh => Ask;
+        double RateUpdate.AskLow => Ask;
+        double RateUpdate.BidHigh => Bid;
+        double RateUpdate.BidLow => Bid;
+        double RateUpdate.NumberOfQuotes => 1;
+        Quote RateUpdate.LastQuote => this;
+
+        #endregion
 
         public override string ToString()
         {

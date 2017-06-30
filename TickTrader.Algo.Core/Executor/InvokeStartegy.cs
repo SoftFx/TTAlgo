@@ -14,22 +14,22 @@ namespace TickTrader.Algo.Core
     {
         private Action<ExecutorException> onCoreError;
         private Action<Exception> onRuntimeError;
-        private Action<RateUpdate> onFeedUpdate;
 
         internal InvokeStartegy()
         {
         }
 
-        public void Init(PluginBuilder builder, Action<ExecutorException> onCoreError, Action<Exception> onRuntimeError, Action<RateUpdate> onFeedUpdate)
+        public void Init(PluginBuilder builder, Action<ExecutorException> onCoreError, Action<Exception> onRuntimeError, FeedStrategy fStrategy)
         {
             this.Builder = builder;
             this.onCoreError = onCoreError;
             this.onRuntimeError = onRuntimeError;
-            this.onFeedUpdate = onFeedUpdate;
+            FStartegy = fStrategy;
             OnInit();
         }
 
         protected PluginBuilder Builder { get; private set; }
+        protected FeedStrategy FStartegy { get; private set; }
 
         public abstract int FeedQueueSize { get; }
 
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core
 
         protected void OnFeedUpdate(RateUpdate update)
         {
-            onFeedUpdate?.Invoke(update);
+            FStartegy.ApplyUpdate(update);
         }
 
         protected void OnError(ExecutorException ex)
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Core
 
         protected override void OnInit()
         {
-            feedQueue = new FeedQueue();
+            feedQueue = new FeedQueue(FStartegy);
             tradeQueue = new Queue<Action<PluginBuilder>>();
             eventQueue = new Queue<Action<PluginBuilder>>();
         }

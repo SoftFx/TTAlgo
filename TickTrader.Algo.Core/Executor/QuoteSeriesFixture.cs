@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
         public bool IsLoaded { get; private set; }
         public int LastIndex => buffer.Count - 1;
 
-        public event Action Appended;
+        public event Action Appended { add { } remove { } }
 
         public DateTime? GetTimeAtIndex(int index)
         {

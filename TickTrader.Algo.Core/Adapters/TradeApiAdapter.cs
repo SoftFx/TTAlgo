@@ -44,32 +44,21 @@ namespace TickTrader.Algo.Core
 
             if (result.ResultCode != OrderCmdResultCodes.Ok)
             {
-                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
-                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
-
-                TradeResultEntity resultEntity;
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                var orderToOpen = new OrderEntity("-1")
                 {
-                    account.Orders.Add(result.NewOrder);
-                    resultEntity = new TradeResultEntity(result.ResultCode, result.NewOrder);
-                }
-                else
-                {
-                    var orderToOpen = new OrderEntity("-1")
-                    {
-                        Symbol = symbol,
-                        Type = type,
-                        Side = side,
-                        RemainingVolume = volumeLots,
-                        RequestedVolume = volumeLots,
-                        Price = price,
-                        StopLoss = sl ?? double.NaN,
-                        TakeProfit = tp ?? double.NaN,
-                        Comment = comment,
-                        Tag = isolationTag
-                    };
-                    resultEntity = new TradeResultEntity(result.ResultCode, orderToOpen);
-                }
+                    Symbol = symbol,
+                    Type = type,
+                    Side = side,
+                    RemainingVolume = volumeLots,
+                    RequestedVolume = volumeLots,
+                    Price = price,
+                    StopLoss = sl ?? double.NaN,
+                    TakeProfit = tp ?? double.NaN,
+                    Comment = comment,
+                    Tag = isolationTag
+                };
+                result = new TradeResultEntity(result.ResultCode, orderToOpen);
+            }
 
             LogOrderOpenResults(result);
 
@@ -181,7 +170,6 @@ namespace TickTrader.Algo.Core
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
-                account.Orders.Replace((OrderEntity)result.ResultingOrder);
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
                 return new TradeResultEntity(result.ResultCode, (OrderEntity)result.ResultingOrder);
             }

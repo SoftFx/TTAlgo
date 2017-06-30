@@ -90,6 +90,31 @@ namespace TickTrader.Algo.Core
             return new BufferUpdateResult() { ExtendedBy = 1 };
         }
 
+        public BufferUpdateResult Update(BarEntity bar)
+        {
+            var barOpenTime = bar.OpenTime;
+
+            if (!Context.BufferingStrategy.InBoundaries(barOpenTime))
+                return new BufferUpdateResult();
+
+            if (Count > 0)
+            {
+                var lastBar = LastBar;
+
+                // validate agains last bar
+                if (barOpenTime < lastBar.OpenTime)
+                    return new BufferUpdateResult();
+                else if (barOpenTime == lastBar.OpenTime)
+                {
+                    lastBar.Append(bar);
+                    return new BufferUpdateResult() { IsLastUpdated = true };
+                }
+            }
+
+            AppendBar(bar);
+            return new BufferUpdateResult() { ExtendedBy = 1 };
+        }
+
         private void RefTimeline_Appended()
         {
             var atIndex = refTimeline.LastIndex;

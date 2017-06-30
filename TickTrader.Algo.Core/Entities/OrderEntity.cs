@@ -44,7 +44,19 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
-        public string Tag { get; set; }
+        public string Tag
+        {
+            get { return _tag; }
+            set
+            {
+                _tag = value;
+
+                if (CompositeTag.TryParse(_tag, out CompositeTag compositeTag))
+                    _userTag = compositeTag.Tag;
+                else
+                    _userTag = _tag;
+            }
+        }
         public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
