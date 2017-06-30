@@ -163,6 +163,11 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
+        public Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        {
+            return rejectResult;
+        }
+
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? tp, double? sl, string comment)
         {
             return rejectResult;

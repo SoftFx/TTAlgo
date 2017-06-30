@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -53,6 +54,24 @@ namespace TickTrader.Algo.Core
         void Invoke(Action action);
     }
 
+    public interface IIsolationContext
+    {
+        T ActivateIsolated<T>() where T : MarshalByRefObject, new();
+        ILink<T> CreateInLink<T>();
+        ILink<T> CreateOutLink<T>();
+    }
+
+    public interface ILink<T> : IDisposable
+    {
+        void Write(T msg);
+        ILinkOutput<T> Output { get; }
+    }
+
+    public interface ILinkOutput<T> : IDisposable
+    {
+        event Action<T> MsgReceived;
+    }
+
     public interface IAccountInfoProvider
     {
         double Balance { get; }
@@ -76,8 +95,10 @@ namespace TickTrader.Algo.Core
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         IPluginLogger Logger { get; }
-        void Enqueue(QuoteEntity update);
-        void Enqueue(Action<PluginBuilder> action);
+        void EnqueueQuote(QuoteEntity update);
+        void EnqueueTradeUpdate(Action<PluginBuilder> action);
+        void EnqueueTradeEvent(Action<PluginBuilder> action);
+        void ProcessNextOrderUpdate();
         void OnInternalException(Exception ex);
 
         //void AddSetupAction(Action setupAction);

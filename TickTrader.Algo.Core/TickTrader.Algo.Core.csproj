@@ -93,7 +93,7 @@
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
-    <Compile Include="Executor\AccDataFixture.cs" />
+    <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
     <Compile Include="Executor\Exceptions.cs" />
     <Compile Include="Executor\FeedBufferStrategy.cs" />
@@ -110,6 +110,9 @@
     <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Executor\QuoteStrategy.cs" />
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
+    <Compile Include="Isolation\IsolationContext.cs" />
+    <Compile Include="Isolation\Link.cs" />
+    <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Container\PlguinContainer.cs" />

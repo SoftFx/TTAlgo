@@ -18,12 +18,11 @@ namespace TickTrader.Algo.Core
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
         private InvokeStartegy iStrategy;
-        private AccDataFixture accFixture;
+        private TradingFixture accFixture;
         private StatusFixture statusFixture;
         private string mainSymbol;
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
-        private ITradeApi tradeApi;
         private List<Action> setupActions = new List<Action>();
         private AlgoPluginDescriptor descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
@@ -37,7 +36,7 @@ namespace TickTrader.Algo.Core
         public PluginExecutor(string pluginId)
         {
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
-            this.accFixture = new AccDataFixture(this);
+            this.accFixture = new TradingFixture(this);
             this.statusFixture = new StatusFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
@@ -109,15 +108,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public ITradeApi TradeApi
+        public ITradeExecutor TradeExecutor
         {
-            get { return tradeApi; }
+            get { return accFixture.Executor; }
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-                    tradeApi = value;
+                    accFixture.Executor = value;
                 }
             }
         }
@@ -220,9 +219,9 @@ namespace TickTrader.Algo.Core
                 builder.MainSymbol = MainSymbolCode;
                 InitMetadata();
                 InitWorkingFolder();
+                builder.TradeApi = accFixture;
                 builder.Id = _botInstanceId;
                 builder.Isolated = _isolated;
-                builder.TradeApi = tradeApi;
                 builder.Diagnostics = this;
                 builder.Logger = pluginLogger ?? Null.Logger;
                 builder.OnAsyncAction = OnAsyncAction;
@@ -238,7 +237,7 @@ namespace TickTrader.Algo.Core
                 fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
-                iStrategy.Enqueue(b => b.InvokeInit()); // enqueue init
+                iStrategy.EnqueueTradeUpdate(b => b.InvokeInit()); // enqueue init
 
                 // Start
 
@@ -247,7 +246,7 @@ namespace TickTrader.Algo.Core
                 accFixture.Start();
                 fStrategy.Start(); // enqueue build action
 
-                iStrategy.Enqueue(b => b.InvokeOnStart());
+                iStrategy.EnqueueTradeUpdate(b => b.InvokeOnStart());
 
                 iStrategy.Start(); // Must be last action! It starts queue processing.
 
@@ -484,7 +483,7 @@ namespace TickTrader.Algo.Core
             lock (_sync)
             {
                 if (state != States.Idle)
-                    iStrategy.EnqueueCustomAction(b => b.InvokeAsyncAction(asyncAction));
+                    iStrategy.EnqueueCustomInvoke(b => b.InvokeAsyncAction(asyncAction));
             }
         }
 
@@ -527,14 +526,24 @@ namespace TickTrader.Algo.Core
         PluginBuilder IFixtureContext.Builder => builder;
         IPluginLogger IFixtureContext.Logger => pluginLogger;
 
-        void IFixtureContext.Enqueue(Action<PluginBuilder> action)
+        void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
-            iStrategy.Enqueue(action);
+            iStrategy.EnqueueTradeUpdate(action);
         }
 
-        void IFixtureContext.Enqueue(QuoteEntity update)
+        void IFixtureContext.EnqueueQuote(QuoteEntity update)
         {
-            iStrategy.Enqueue(update);
+            iStrategy.EnqueueQuote(update);
+        }
+
+        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        {
+            iStrategy.EnqueueTradeEvent(action);
+        }
+
+        public void ProcessNextOrderUpdate()
+        {
+            iStrategy.ProcessNextTrade();
         }
 
         void IFixtureContext.OnInternalException(Exception ex)

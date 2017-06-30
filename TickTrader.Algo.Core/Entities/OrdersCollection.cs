@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Core
                 {
                     OrderEntity entity;
                     if (!orders.TryGetValue(id, out entity))
-                        return null;
+                        return Null.Order;
                     return entity;
                 }
             }

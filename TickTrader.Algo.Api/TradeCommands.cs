@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Api
         Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
         Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
         Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
+        Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
     }
 
     public interface OrderCmdResult

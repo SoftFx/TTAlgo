@@ -71,11 +71,19 @@ namespace TickTrader.Algo.Core.UnitTest
         public DateTime TimePeriodEnd { get; set; }
         public DateTime TimePeriodStart { get; set; }
 
-        public void Enqueue(Action<PluginBuilder> action)
+        public void EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
         }
 
-        public void Enqueue(QuoteEntity update)
+        public void EnqueueQuote(QuoteEntity update)
+        {
+        }
+
+        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        {
+        }
+
+        public void ProcessNextOrderUpdate()
         {
         }
 
