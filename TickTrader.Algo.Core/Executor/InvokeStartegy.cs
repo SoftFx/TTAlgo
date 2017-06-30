@@ -239,7 +239,6 @@ namespace TickTrader.Algo.Core
         }
     }
 
-
     //[Serializable]
     //public class DataflowInvokeStartegy : InvokeStartegy
     //{

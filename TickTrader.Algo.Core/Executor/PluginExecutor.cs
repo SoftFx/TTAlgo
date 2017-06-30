@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
         public enum States { Idle, Running, Stopping }
 
         private object _sync = new object();
-        private IPluginLogger logger;
+        private LogFixture pluginLogger;
         private IPluginMetadata metadata;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
@@ -39,7 +39,6 @@ namespace TickTrader.Algo.Core
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
             this.accFixture = new AccDataFixture(this);
             this.statusFixture = new StatusFixture(this);
-            this.logger = Null.Logger;
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -59,23 +58,6 @@ namespace TickTrader.Algo.Core
                 {
                     ThrowIfRunning();
                     accFixture.DataProvider = value;
-                }
-            }
-        }
-
-        public IPluginLogger Logger
-        {
-            get { return logger; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    if (value == null)
-                        throw new InvalidOperationException("Logger cannot be null!");
-
-                    logger = value;
                 }
             }
         }
@@ -242,8 +224,7 @@ namespace TickTrader.Algo.Core
                 builder.Isolated = _isolated;
                 builder.TradeApi = tradeApi;
                 builder.Diagnostics = this;
-                if (logger != null)
-                    builder.Logger = logger;
+                builder.Logger = pluginLogger ?? Null.Logger;
                 builder.OnAsyncAction = OnAsyncAction;
                 builder.OnSubscribe = fStrategy.OnUserSubscribe;
                 builder.OnUnsubscribe = fStrategy.OnUserUnsubscribe;
@@ -261,6 +242,7 @@ namespace TickTrader.Algo.Core
 
                 // Start
 
+                pluginLogger?.Start();
                 statusFixture.Start();
                 accFixture.Start();
                 fStrategy.Start(); // enqueue build action
@@ -301,7 +283,11 @@ namespace TickTrader.Algo.Core
         {
             try
             {
+                builder.SetStopped();
+
                 await iStrategy.Stop(qucik).ConfigureAwait(false);
+                if (pluginLogger != null)
+                    await pluginLogger.Stop();
 
                 System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
 
@@ -403,6 +389,17 @@ namespace TickTrader.Algo.Core
             return (OutputFixture<T>)fixture;
         }
 
+        public LogFixture InitLogging()
+        {
+            lock (_sync)
+            {
+                ThrowIfRunning();
+                if (pluginLogger == null)
+                    pluginLogger = new LogFixture(this);
+                return pluginLogger;
+            }
+        }
+
         #endregion
 
         private void Validate()
@@ -472,9 +469,9 @@ namespace TickTrader.Algo.Core
             OnExit();
         }
 
-        private void OnInternalException(ExecutorException ex)
+        private void OnInternalException(Exception ex)
         {
-            OnRuntimeError?.Invoke(ex);
+            //OnRuntimeError?.Invoke(ex);
         }
 
         private void OnRuntimeException(Exception ex)
@@ -527,7 +524,8 @@ namespace TickTrader.Algo.Core
 
         #region IFeedStrategyContext
 
-        PluginBuilder IFixtureContext.Builder { get { return builder; } }
+        PluginBuilder IFixtureContext.Builder => builder;
+        IPluginLogger IFixtureContext.Logger => pluginLogger;
 
         void IFixtureContext.Enqueue(Action<PluginBuilder> action)
         {
@@ -537,6 +535,11 @@ namespace TickTrader.Algo.Core
         void IFixtureContext.Enqueue(QuoteEntity update)
         {
             iStrategy.Enqueue(update);
+        }
+
+        void IFixtureContext.OnInternalException(Exception ex)
+        {
+            OnInternalException(ex);
         }
 
         //void IFixtureContext.AddSetupAction(Action setupAction)

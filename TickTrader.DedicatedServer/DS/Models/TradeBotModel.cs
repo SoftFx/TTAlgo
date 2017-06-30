@@ -278,16 +278,11 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
-                executor.Logger = _botLog;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;
                 executor.InstanceId = Id;
-
-                _stopListener = new ListenerProxy(executor, () =>
-                {
-                    StopInternal(null, true);
-                });
+                _stopListener = new ListenerProxy(executor, () => StopInternal(null, true), logRecs => _botLog.Update(logRecs));
 
                 executor.Start();
 
@@ -386,12 +381,20 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             private PluginExecutor _executor;
             private Action _onStopped;
+            private Action<BotLogRecord[]> _onLogRecords;
 
-            public ListenerProxy(PluginExecutor executor, Action onStopped)
+            public ListenerProxy(PluginExecutor executor, Action onStopped, Action<BotLogRecord[]> onLogRecords)
             {
                 _executor = executor;
                 _onStopped = onStopped;
+                _onLogRecords = onLogRecords;
                 executor.IsRunningChanged += Executor_IsRunningChanged1;
+                executor.InitLogging().NewRecords += ListenerProxy_NewRecords;
+            }
+
+            private void ListenerProxy_NewRecords(BotLogRecord[] recs)
+            {
+                _onLogRecords(recs);
             }
 
             private void Executor_IsRunningChanged1(PluginExecutor exec)
@@ -403,10 +406,9 @@ namespace TickTrader.DedicatedServer.DS.Models
             protected override void Dispose(bool disposing)
             {
                 _executor.IsRunningChanged -= Executor_IsRunningChanged1;
+                _executor.InitLogging().NewRecords -= ListenerProxy_NewRecords;
                 base.Dispose(disposing);
             }
         }
-
-
     }
 }
