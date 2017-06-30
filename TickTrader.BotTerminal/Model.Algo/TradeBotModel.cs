@@ -67,9 +67,10 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
-
         private void ChangeState(BotModelStates newState)
         {
+            State = newState;
+            StateChanged(this);
         }
 
         private void TradeBotModel2_NewRecords(BotLogRecord[] records)
