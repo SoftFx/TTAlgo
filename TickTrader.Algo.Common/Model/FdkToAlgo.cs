@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -107,7 +108,30 @@ namespace TickTrader.Algo.Common.Model
                 CommissionChargeMethod = Convert(info.CommissionChargeMethod),
                 CommissionChargeType = Convert(info.CommissionChargeType),
                 CommissionType = Convert(info.CommissionType),
+                ContractSizeFractional = info.RoundLot,
+                MarginFactorFractional = info.MarginFactorFractional ?? 1,
+                StopOrderMarginReduction = info.StopOrderMarginReduction ?? 0,
+                MarginHedged = info.MarginHedge,
+                MarginMode = Convert(info.MarginCalcMode),
+                SwapEnabled = true, // ???
+                SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
+                SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
+                Security = info.SecurityName,
+                SortOrder = 0 // ??
             };
+        }
+
+        public static TickTrader.BusinessObjects.MarginCalculationModes Convert(MarginCalcMode mode)
+        {
+            switch (mode)
+            {
+                case MarginCalcMode.Cfd: return BusinessObjects.MarginCalculationModes.CFD;
+                case MarginCalcMode.CfdIndex: return BusinessObjects.MarginCalculationModes.CFD_Index;
+                case MarginCalcMode.CfdLeverage: return BusinessObjects.MarginCalculationModes.CFD_Leverage;
+                case MarginCalcMode.Forex: return BusinessObjects.MarginCalculationModes.Forex;
+                case MarginCalcMode.Futures: return BusinessObjects.MarginCalculationModes.Futures;
+                default: throw new NotImplementedException();
+            }
         }
 
         public static CurrencyEntity Convert(CurrencyInfo info)
@@ -115,6 +139,7 @@ namespace TickTrader.Algo.Common.Model
             return new CurrencyEntity(info.Name)
             {
                 Digits = info.Precision,
+                SortOrder = info.SortOrder
             };
         }
 

@@ -25,10 +25,12 @@ namespace TickTrader.Algo.Common.Model
         private double price;
         private double amount;
         private DateTime? modified;
+        private SymbolModel _symbolModel;
 
-        public PositionModel(Position position)
+        public PositionModel(Position position, IOrderDependenciesResolver resolver)
         {
             Symbol = position.Symbol;
+            _symbolModel = resolver.GetSymbolOrNull(position.Symbol);
             Update(position);
         }
 
@@ -120,13 +122,16 @@ namespace TickTrader.Algo.Common.Model
             get { return amount; }
             private set
             {
-                if (amount != value)
+                if (this.amount != value)
                 {
-                    amount = value;
+                    this.amount = value;
+                    this.AmountLots = AmountToLots(value);
                     NotifyOfPropertyChange(nameof(Amount));
+                    NotifyOfPropertyChange(nameof(AmountLots));
                 }
             }
         }
+        public double AmountLots { get; private set; } = 0;
 
         public double Price
         {
@@ -257,6 +262,14 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
+        private double AmountToLots(double volume)
+        {
+            if (_symbolModel == null)
+                return double.NaN;
+
+            return volume / _symbolModel.LotSize;
+        }
+
         public class PositionSide : IPositionSide
         {
             private decimal margin;
@@ -295,16 +308,17 @@ namespace TickTrader.Algo.Common.Model
             public System.Action MarginUpdated;
         }
 
-        internal PositionEntity ToAlgoPosition()
+        internal PositionExecReport ToReport(OrderExecAction action)
         {
-            return new PositionEntity()
+            return new PositionExecReport()
             {
+                ExecAction = action,
                 Symbol = this.Symbol,
                 AgentCommission = (double)this.AgentCommission,
                 Commission = (double)this.Commission,
                 SettlementPrice = this.SettlementPrice,
                 Side = FdkToAlgo.Convert(this.Side),
-                Amount = this.Amount,
+                Volume = new TradeVolume(this.Amount, AmountLots),
                 Swap = (double)this.Swap,
                 Price = (double)this.Price
             };

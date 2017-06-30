@@ -57,6 +57,7 @@ namespace TickTrader.Algo.Core
                     Comment = comment,
                     Tag = isolationTag
                 };
+                var orderModel = new OrderAccessor(orderToOpen);
                 result = new TradeResultEntity(result.ResultCode, orderToOpen);
             }
 
@@ -67,7 +68,7 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
-            Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
+            var orderToCancel = account.Orders.GetOrderOrNull(orderId);
             if (orderToCancel == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
@@ -77,11 +78,8 @@ namespace TickTrader.Algo.Core
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
-                account.Orders.Remove(orderId);
-                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
-            }
-            else
-                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
+                api.CancelOrder(waitHandler, orderId, orderToCancel.Entity.ClientOrderId, orderToCancel.Side);
+                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
 
             return new TradeResultEntity(result.ResultCode, orderToCancel);
         }
@@ -90,16 +88,16 @@ namespace TickTrader.Algo.Core
         {
             double? closeVolume = null;
 
-            Order orderToClose = account.Orders.GetOrderOrNull(orderId);
+            var orderToClose = account.Orders.GetOrderOrNull(orderId);
             if (orderToClose == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
+            var smbMetadata = symbols.List[orderToClose.Symbol];
+            if (smbMetadata.IsNull)
+                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
+
             if (closeVolumeLots != null)
             {
-                var smbMetadata = symbols.List[orderToClose.Symbol];
-                if (smbMetadata.IsNull)
-                    return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
-
                 closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
                 closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
             }
@@ -131,26 +129,33 @@ namespace TickTrader.Algo.Core
             if (orderByClose == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            logger.PrintTrade("Closing order #" + orderId + " by order #" + byOrderId);
+                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                {
+                    orderToClose.Entity.RemainingVolume = ModifyVolume(orderToClose.Entity.RemainingVolume, -result.ExecVolume, smbMetadata);
 
+                    if (orderClone.RemainingVolume <= 0)
+                        account.Orders.Remove(orderId);
+                    if (orderToClose.RemainingVolume <= 0)
+                        account.Orders.Remove(orderId);
             var result = await api.CloseOrderBy(isAysnc, orderId, byOrderId);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
 
-                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
-            }
-            else
-            {
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToClose);
+                    return new TradeResultEntity(result.ResultCode, orderToClose);
+                }
+                else
+                {
+                    logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                    return new TradeResultEntity(result.ResultCode, orderToClose);
+                }
             }
         }
 
         public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            Order orderToModify = account.Orders.GetOrderOrNull(orderId);
+            var orderToModify = account.Orders.GetOrderOrNull(orderId);
             if (orderToModify == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
@@ -175,8 +180,21 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToModify);
+                api.ModifyOrder(waitHandler, orderId, orderToModify.Entity.ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
+                    price, orderVolume, tp, sl, comment);
+                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
+
+                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                {
+                    account.Orders.Replace(result.NewOrder);
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
+                    return new TradeResultEntity(result.ResultCode, orderToModify);
+                }
+                else
+                {
+                    logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
+                    return new TradeResultEntity(result.ResultCode, orderToModify);
+                }
             }
         }
 
@@ -208,6 +226,13 @@ namespace TickTrader.Algo.Core
         private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
         {
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+        }
+
+        private TradeVolume ModifyVolume(TradeVolume oldVol, double byLots, Symbol smbInfo)
+        {
+            var lotSize = smbInfo.ContractSize;
+            var byUnits = lotSize * byLots;
+            return new TradeVolume(oldVol.Units - byUnits, oldVol.Lots - byLots);
         }
 
         #region Logging

@@ -11,12 +11,9 @@ namespace TickTrader.Algo.Core
     {
         private InputBuffer<Quote> buffer;
 
-        public QuoteSeriesFixture(string symbolCode, IFeedFixtureContext context, List<QuoteEntity> data = null) : base(symbolCode, context)
+        public QuoteSeriesFixture(string symbolCode, IFixtureContext context, List<QuoteEntity> data = null) : base(symbolCode, context)
         {
-            var execContext = context.ExecContext;
-            var feed = context.Feed;
-
-            buffer = execContext.Builder.GetBuffer<Quote>(SymbolCode);
+            buffer = context.Builder.GetBuffer<Quote>(SymbolCode);
             if (data != null)
                 AppendData(data);
         }
@@ -37,20 +34,20 @@ namespace TickTrader.Algo.Core
 
         public void LoadFeed(DateTime from, DateTime to)
         {
-            var data = Context.Feed.QueryTicks(SymbolCode, from, to, 1);
+            var data = Context.FeedProvider.QueryTicks(SymbolCode, from, to, 1);
             AppendData(data);
         }
 
         public void LoadFeed(int size)
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
-            var data = Context.Feed.QueryTicks(SymbolCode, size, to, 1);
+            var data = Context.FeedProvider.QueryTicks(SymbolCode, size, to, 1);
             AppendData(data);
         }
 
         public void LoadFeed(DateTime to, int size)
         {
-            var data = Context.Feed.QueryTicks(SymbolCode, size, to, 1);
+            var data = Context.FeedProvider.QueryTicks(SymbolCode, size, to, 1);
             AppendData(data);
         }
 

@@ -228,8 +228,11 @@ namespace TickTrader.Algo.Core
 
         public string Currency { get; }
         public Currency CurrencyInfo => Null.Currency;
-        public double Volume => double.NaN;
+        public double Volume => 0;
+        public double LockedVolume => 0;
+        public double FreeVolume => 0;
         public bool IsNull => true;
+
         public override string ToString() { return "{null}"; }
     }
 }

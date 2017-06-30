@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class OrderEntity : Order
+    public class OrderEntity
     {
         private string _userTag;
         private string _tag;
@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
             this.Id = orderId;
         }
 
-        public OrderEntity(Order src)
+        public OrderEntity(OrderEntity src)
         {
             this.Id = src.Id;
             this.ClientOrderId = ((OrderEntity)src).ClientOrderId;
@@ -29,12 +29,14 @@ namespace TickTrader.Algo.Core
             this.Comment = src.Comment;
             this.Created = src.Created;
             this.Modified = src.Modified;
+            this.Swap = src.Swap;
+            this.Commision = src.Commision;
         }
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public double RequestedVolume { get; set; }
-        public double RemainingVolume { get; set; }
+        public TradeVolume RequestedVolume { get; set; }
+        public TradeVolume RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
@@ -60,14 +62,29 @@ namespace TickTrader.Algo.Core
         public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
-        public double ExecVolume { get; set; }
+        public TradeVolume ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
         public double LastFillVolume { get; set; }
+        public double Swap { get; set; }
+        public double Commision { get; set; }
 
         string Order.Tag => _userTag;
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
+    }
+
+    [Serializable]
+    public struct TradeVolume
+    {
+        public TradeVolume(double units, double lots)
+        {
+            Lots = lots;
+            Units = units;
+        }
+
+        public double Lots { get; private set; }
+        public double Units { get; private set; }
     }
 
     [Serializable]
@@ -92,5 +109,7 @@ namespace TickTrader.Algo.Core
         public double ExecVolume { get { return double.NaN; } }
         public double LastFillPrice { get { return double.NaN; } }
         public double LastFillVolume { get { return double.NaN; } }
+        public double Margin => double.NaN;
+        public double Profit => double.NaN;
     }
 }

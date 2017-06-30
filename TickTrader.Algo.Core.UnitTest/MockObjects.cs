@@ -58,10 +58,15 @@ namespace TickTrader.Algo.Core.UnitTest
 
     internal class MockFixtureContext : IFixtureContext
     {
+        private SubscriptionManager dispenser;
+        private FeedBufferStrategy bStrategy;
+
         public MockFixtureContext()
         {
+            dispenser = new SubscriptionManager(this);
             Builder = new PluginBuilder(new Metadata.AlgoPluginDescriptor(typeof(MockBot)));
             Logger = new NullLogger();
+            bStrategy = new TimeSpanStrategy(TimePeriodStart, TimePeriodEnd);
         }
 
         public PluginBuilder Builder { get; private set; }
@@ -70,6 +75,9 @@ namespace TickTrader.Algo.Core.UnitTest
         public TimeFrames TimeFrame { get; set; }
         public DateTime TimePeriodEnd { get; set; }
         public DateTime TimePeriodStart { get; set; }
+        public IPluginFeedProvider FeedProvider => throw new NotImplementedException();
+        public FeedBufferStrategy BufferingStrategy => bStrategy;
+        public SubscriptionManager Dispenser => dispenser;
 
         public void EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
@@ -89,30 +97,6 @@ namespace TickTrader.Algo.Core.UnitTest
 
         public void OnInternalException(Exception ex)
         {
-        }
-    }
-
-    internal class MockFeedFixtureContext : IFeedFixtureContext
-    {
-        public MockFeedFixtureContext(MockFixtureContext execContext)
-        {
-            this.ExecContext = execContext;
-            BufferingStrategy = new SlidingBufferStrategy(100);
-        }
-
-        public IFixtureContext ExecContext { get; private set; }
-        public IPluginFeedProvider Feed { get; set; }
-
-        public FeedBufferStrategy BufferingStrategy { get; }
-
-        public void Add(IFeedFixture subscriber)
-        {
-
-        }
-
-        public void Remove(IFeedFixture subscriber)
-        {
-
         }
     }
 }

@@ -112,7 +112,7 @@ namespace TickTrader.Algo.Common.Model
             BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
 
             foreach (var fdkPosition in positions)
-                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition));
+                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, orderResolver));
 
             foreach (var fdkOrder in orders)
                 this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, orderResolver));
@@ -176,32 +176,32 @@ namespace TickTrader.Algo.Common.Model
                 OnPositionUpdated(report);
         }
 
-        private void OnPositionUpdated(Position report)
+        private void OnPositionUpdated(Position position)
         {
-            var position = UpsertPosition(report);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Modified, position.ToAlgoPosition()));
+            var model = UpsertPosition(position);
+            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Modified));
         }
 
-        private void OnPositionAdded(Position report)
+        private void OnPositionAdded(Position position)
         {
-            var position = UpsertPosition(report);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Opened, position.ToAlgoPosition()));
+            var model = UpsertPosition(position);
+            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Opened));
         }
 
-        private void OnPositionRemoved(Position report)
+        private void OnPositionRemoved(Position position)
         {
-            PositionModel position;
+            PositionModel model;
 
-            if (!positions.TryGetValue(report.Symbol, out position))
+            if (!positions.TryGetValue(position.Symbol, out model))
                 return;
 
-            positions.Remove(report.Symbol);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Closed, position.ToAlgoPosition()));
+            positions.Remove(model.Symbol);
+            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Closed));
         }
 
         private PositionModel UpsertPosition(Position position)
         {
-            var positionModel = new PositionModel(position);
+            var positionModel = new PositionModel(position, orderResolver);
             positions[position.Symbol] = positionModel;
 
             return positionModel;
@@ -393,9 +393,9 @@ namespace TickTrader.Algo.Common.Model
             return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
         }
 
-        IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
+        IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions()
         {
-            throw new NotImplementedException();
+            return Positions.Snapshot.Select(pair => pair.Value.ToReport(OrderExecAction.Opened)).ToList();
         }
 
         IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()

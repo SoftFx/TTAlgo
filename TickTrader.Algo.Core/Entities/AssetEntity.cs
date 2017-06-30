@@ -8,25 +8,15 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class AssetEntity : Api.Asset
+    public class AssetEntity 
     {
-        public AssetEntity(double balance, string currency, Dictionary<string, Currency> currencies)
+        public AssetEntity(double balance, string currency)
         {
             this.Currency = currency;
-            this.Volume = balance;
-            this.CurrencyInfo = currencies.ContainsKey(currency) ? currencies[currency] : new NullCurrency(currency);
-        }
-
-        public AssetEntity(double balance, string currency, Currency currencyInfo)
-        {
-            this.Currency = currency;
-            this.Volume = balance;
-            this.CurrencyInfo = currencyInfo;
+            this.Volume = balance;   
         }
 
         public string Currency { get; set; }
-        public Currency CurrencyInfo { get; }
         public double Volume { get; set; }
-        public bool IsNull => false;
     }
 }

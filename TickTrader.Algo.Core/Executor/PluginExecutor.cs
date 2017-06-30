@@ -15,9 +15,12 @@ namespace TickTrader.Algo.Core
         private object _sync = new object();
         private LogFixture pluginLogger;
         private IPluginMetadata metadata;
+        private IPluginFeedProvider feedProvider;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
+        private SubscriptionManager dispenser;
         private InvokeStartegy iStrategy;
+        private CalculatorFixture calcFixture;
         private TradingFixture accFixture;
         private StatusFixture statusFixture;
         private string mainSymbol;
@@ -38,6 +41,9 @@ namespace TickTrader.Algo.Core
             this.descriptor = AlgoPluginDescriptor.Get(pluginId);
             this.accFixture = new TradingFixture(this);
             this.statusFixture = new StatusFixture(this);
+            calcFixture = new CalculatorFixture(this);
+            dispenser = new SubscriptionManager(this);
+            logger = Null.Logger;
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -233,7 +239,7 @@ namespace TickTrader.Algo.Core
                 // Setup strategy
 
                 iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
-                fStrategy.Init(this, bStrategy);
+                fStrategy.Init(this, bStrategy, ApplyNewRate);
                 fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
@@ -244,6 +250,7 @@ namespace TickTrader.Algo.Core
                 pluginLogger?.Start();
                 statusFixture.Start();
                 accFixture.Start();
+                calcFixture.Start();
                 fStrategy.Start(); // enqueue build action
 
                 iStrategy.EnqueueTradeUpdate(b => b.InvokeOnStart());
@@ -291,6 +298,7 @@ namespace TickTrader.Algo.Core
                 System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
 
                 fStrategy.Stop();
+                calcFixture.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
             }
@@ -330,7 +338,8 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                var strategy = new BarStrategy(feed, mainPirceTipe);
+                this.feedProvider = feed;
+                var strategy = new BarStrategy(mainPirceTipe);
                 this.fStrategy = strategy;
                 return strategy;
             }
@@ -342,7 +351,8 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                var strategy = new QuoteStrategy(feed);
+                this.feedProvider = feed;
+                var strategy = new QuoteStrategy();
                 this.fStrategy = strategy;
                 return strategy;
             }
@@ -400,6 +410,11 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
+
+        private void ApplyNewRate(QuoteEntity quote)
+        {
+            calcFixture.UpdateRate(quote);
+        }
 
         private void Validate()
         {
@@ -516,8 +531,14 @@ namespace TickTrader.Algo.Core
             builder.BotDataFolder = !string.IsNullOrEmpty(botWorkingFolder) ? botWorkingFolder : System.IO.Directory.GetCurrentDirectory();
         }
 
-        #region IFeedStrategyContext
-
+        #region IFixtureContext
+        PluginBuilder IFixtureContext.Builder { get { return builder; } }
+        IPluginLogger IFixtureContext.Logger => logger;
+        IPluginFeedProvider IFixtureContext.FeedProvider => feedProvider;
+        SubscriptionManager IFixtureContext.Dispenser => dispenser;
+        FeedBufferStrategy IFixtureContext.BufferingStrategy => fStrategy.BufferingStrategy;
+        string IFixtureContext.MainSymbolCode => mainSymbol;
+        TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
         IPluginLogger IFixtureContext.Logger => pluginLogger;
 
@@ -545,6 +566,26 @@ namespace TickTrader.Algo.Core
         {
             OnInternalException(ex);
         }
+
+        //void IFixtureContext.Subscribe(IRateSubscription subscriber)
+        //{
+        //    fStrategy.RateDispenser.Add(subscriber);
+        //}
+
+        //void IFixtureContext.Unsubscribe(IRateSubscription subscriber)
+        //{
+        //    fStrategy.RateDispenser.Remove(subscriber);
+        //}
+
+        //void IFixtureContext.Subscribe(IAllRatesSubscription subscriber)
+        //{
+        //    fStrategy.RateDispenser.Add(subscriber);
+        //}
+
+        //void IFixtureContext.Unsubscribe(IAllRatesSubscription subscriber)
+        //{
+        //    fStrategy.RateDispenser.Remove(subscriber);
+        //}
 
         //void IFixtureContext.AddSetupAction(Action setupAction)
         //{

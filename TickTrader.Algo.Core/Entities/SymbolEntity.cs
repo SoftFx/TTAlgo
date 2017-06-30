@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
@@ -29,5 +30,16 @@ namespace TickTrader.Algo.Core
         public CommissionChargeMethod CommissionChargeMethod { get; set; }
         public CommissionChargeType CommissionChargeType { get; set; }
         public CommissionType CommissionType { get; set; }
+        public double ContractSizeFractional { get; set; }
+        public double MarginFactorFractional { get; set; }
+        public double StopOrderMarginReduction { get; set; }
+        public double MarginHedged { get; set; }
+        public BO.MarginCalculationModes MarginMode { get; set; }
+        public bool SwapEnabled { get; set; }
+        public float SwapSizeLong { get; set; }
+        public float SwapSizeShort { get; set; }
+        public string Security { get; set; }
+        public int SortOrder { get; set; }
+
     }
 }

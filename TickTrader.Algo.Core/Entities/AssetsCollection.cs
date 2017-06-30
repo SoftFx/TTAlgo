@@ -8,7 +8,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class AssetsCollection
+    public class AssetsCollection : IEnumerable<AssetAccessor>
     {
         private PluginBuilder builder;
         private AssetsFixture fixture = new AssetsFixture();
@@ -25,21 +25,37 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.FireModified(args));
         }
 
-        public void Update(AssetEntity entity)
+        public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies)
         {
-            builder.InvokePluginMethod(() => fixture.Update(entity));
+            AssetChangeType cType;
+            var result = fixture.Update(entity, currencies, out cType);
+            AssetChanged?.Invoke(result, cType);
+            return result;
         }
 
         public void Remove(string currencyCode)
         {
-            builder.InvokePluginMethod(() => fixture.Remove(currencyCode));
+            fixture.Remove(currencyCode);
         }
+
+        public IEnumerator<AssetAccessor> GetEnumerator()
+        {
+            return fixture.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return fixture.Values.GetEnumerator();
+        }
+
+        public event Action<AssetAccessor, AssetChangeType> AssetChanged;
 
         internal class AssetsFixture : AssetList
         {
-            private Dictionary<string, Asset> assets = new Dictionary<string, Asset>();
+            private Dictionary<string, AssetAccessor> assets = new Dictionary<string, AssetAccessor>();
 
             public int Count { get { return assets.Count; } }
+            public IEnumerable<AssetAccessor> Values => assets.Values;
 
             public Asset this[string currencyCode]
             {
@@ -48,7 +64,7 @@ namespace TickTrader.Algo.Core
                     if (string.IsNullOrEmpty(currencyCode))
                         return Null.Asset;
 
-                    Asset asset;
+                    AssetAccessor asset;
                     if (!assets.TryGetValue(currencyCode, out asset))
                         return new NullAsset(currencyCode);
                     return asset;
@@ -62,19 +78,25 @@ namespace TickTrader.Algo.Core
 
             public event Action<AssetModifiedEventArgs> Modified = delegate { };
 
-            public void Update(AssetEntity entity)
+            public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
             {
-                if (entity.Volume > 0)
+                AssetAccessor asset;
+                if (!assets.TryGetValue(entity.Currency, out asset))
                 {
-                    assets[entity.Currency] = entity;
+                    asset = new AssetAccessor(entity, currencies);
+                    assets.Add(entity.Currency, asset);
+                    cType = AssetChangeType.Added;
                 }
                 else
+                    cType = AssetChangeType.Updated;
+
+                if (entity.Volume <= 0)
                 {
-                    if (assets.ContainsKey(entity.Currency))
-                    {
-                        assets.Remove(entity.Currency);
-                    }
+                    assets.Remove(entity.Currency);
+                    cType = AssetChangeType.Removed;
                 }
+
+                return asset;
             }
 
             public void Remove(string currencyCode)
@@ -93,4 +115,6 @@ namespace TickTrader.Algo.Core
             }
         }
     }
+
+    public enum AssetChangeType { Added, Updated, Removed }
 }

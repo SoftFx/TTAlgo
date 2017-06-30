@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Common.Business;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote, RateUpdate
+    public class QuoteEntity : Api.Quote, ISymbolRate, RateUpdate
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
@@ -22,6 +23,11 @@ namespace TickTrader.Algo.Core
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
+
+        decimal ISymbolRate.Ask => (decimal)Ask;
+        decimal ISymbolRate.Bid => (decimal)Bid;
+        decimal? ISymbolRate.NullableAsk => double.IsNaN(Ask) ? null : (decimal?)Ask;
+        decimal? ISymbolRate.NullableBid => double.IsNaN(Bid) ? null : (decimal?)Bid;
 
         #region RateUpdate
 
