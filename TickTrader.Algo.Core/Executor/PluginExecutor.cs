@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Core
         private string botWorkingFolder;
         private string _botInstanceId;
         private bool _isolated;
+        private BotPermissions _permissions;
         private States state;
 
         public PluginExecutor(string pluginId)
@@ -201,6 +202,20 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public BotPermissions Permissions
+        {
+            get { return _permissions; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+
+                    _permissions = value;
+                }
+            }
+        }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
@@ -222,6 +237,7 @@ namespace TickTrader.Algo.Core
                 InitWorkingFolder();
                 builder.Id = _botInstanceId;
                 builder.Isolated = _isolated;
+                builder.Permissions = _permissions;
                 builder.TradeApi = tradeApi;
                 builder.Diagnostics = this;
                 builder.Logger = pluginLogger ?? Null.Logger;
@@ -582,6 +598,7 @@ namespace TickTrader.Algo.Core
         #region DiagnosticInfo
 
         int DiagnosticInfo.FeedQueueSize { get { return iStrategy.FeedQueueSize; } }
+
 
         #endregion
 

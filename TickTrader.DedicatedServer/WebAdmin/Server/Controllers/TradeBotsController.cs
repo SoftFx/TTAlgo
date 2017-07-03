@@ -189,16 +189,20 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         {
             try
             {
+                var pluginCfg = setup.Parse();
+
                 var config = new TradeBotModelConfig
                 {
                     InstanceId = setup.InstanceId,
                     Account = new AccountKey(setup.Account.Login, setup.Account.Server),
                     Plugin = new PluginKey(setup.PackageName, setup.PluginId),
-                    PluginConfig = setup.Parse(),
-                    Isolated = setup.Isolated
+                    PluginConfig = pluginCfg,
+                    Isolated = setup.Isolated,
+                    Permissions = setup.Permissions ?? new TradeBotPermissions()
                 };
 
                 var tradeBot = _dedicatedServer.AddBot(config);
+                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -217,9 +221,15 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
 
                 var pluginCfg = setup.Parse();
-                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));
+                var config = new TradeBotModelConfig
+                {
+                    PluginConfig = pluginCfg,
+                    Isolated = setup.Isolated,
+                    Permissions = setup.Permissions ?? new TradeBotPermissions()
+                };
 
-                tradeBot.Configurate(pluginCfg, setup.Isolated);
+                tradeBot.Configurate(config);
+                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));
 
                 return Ok();
             }

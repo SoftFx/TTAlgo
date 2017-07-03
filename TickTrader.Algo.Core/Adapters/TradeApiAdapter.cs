@@ -1,31 +1,38 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
-using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
     internal class TradeApiAdapter : TradeCommands
     {
+        private Lazy<OrderCmdResult> _tradeNotAllowed = new Lazy<OrderCmdResult>(() => new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, OrderEntity.Null), true);
+
         private ITradeApi api;
         private SymbolProvider symbols;
         private AccountEntity account;
         private PluginLoggerAdapter logger;
         private string _isolationTag;
+        private ITradePermissions _permissions;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger, string isolationTag)
+        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
         {
             this.api = api;
             this.symbols = symbols;
             this.account = account;
             this.logger = logger;
             this._isolationTag = isolationTag;
+            this._permissions = tradePermissions;
         }
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
+            if (!_permissions.TradeAllowed)
+                return _tradeNotAllowed.Value;
+
             string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
 
             var smbMetadata = symbols.List[symbol];
@@ -77,6 +84,9 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
+            if (!_permissions.TradeAllowed)
+                return _tradeNotAllowed.Value;
+
             Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
             if (orderToCancel == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
@@ -102,6 +112,9 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
         {
+            if (!_permissions.TradeAllowed)
+                return _tradeNotAllowed.Value;
+
             double? closeVolume = null;
 
             Order orderToClose = account.Orders.GetOrderOrNull(orderId);
@@ -149,6 +162,9 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
+            if (!_permissions.TradeAllowed)
+                return _tradeNotAllowed.Value;
+
             Order orderToModify = account.Orders.GetOrderOrNull(orderId);
             if (orderToModify == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);

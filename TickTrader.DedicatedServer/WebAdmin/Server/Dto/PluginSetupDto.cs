@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
 {
@@ -9,6 +10,8 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
         public string InstanceId { get; set; }
         public string Symbol { get; set; }
         public bool Isolated { get; set; }
+        public TradeBotPermissions Permissions { get; set; }
+        public bool TradeIs { get; set; }
         public AccountDto Account { get; set; }
         public PluginSetupParameter[] Parameters { get; set; }
     }

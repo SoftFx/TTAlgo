@@ -76,7 +76,7 @@ namespace TickTrader.DedicatedServer.DS
         string Descriptor { get; }
         string BotName { get; }
         BotStates State { get; }
-        void Configurate(PluginConfig cfg, bool isolated);
+        void Configurate(TradeBotModelConfig config);
         void Start();
         Task StopAsync();
     }

@@ -37,6 +37,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             PackageName = config.Plugin.PackageName;
             Descriptor =  config.Plugin.DescriptorId;
             Isolated = config.Isolated;
+            Permissions = config.Permissions;
         }
 
         [DataMember(Name = "configuration")]
@@ -51,6 +52,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         public bool IsRunning { get; private set; }
         [DataMember(Name = "isolated")]
         public bool Isolated { get; private set; }
+        [DataMember(Name = "permissions")]
+        public TradeBotPermissions Permissions { get; private set; }
 
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
@@ -88,7 +91,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 Start();
         }
 
-        public void Configurate(PluginConfig cfg, bool isolated)
+        public void Configurate(TradeBotModelConfig config)
         {
             lock (_syncObj)
             {
@@ -97,8 +100,9 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 if (IsStopped())
                 {
-                    Config = cfg;
-                    Isolated = isolated;
+                    Config = config.PluginConfig;
+                    Isolated = config.Isolated;
+                    Permissions = config.Permissions;
                     ConfigurationChanged?.Invoke(this);
                 }
                 else
@@ -277,11 +281,17 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
+
                 executor.TradeApi = _client.TradeApi;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;
                 executor.InstanceId = Id;
+
+                var permissions = new BotPermissions();
+                permissions.AllowTrade(Permissions.TradeAllowed);
+
+                executor.Permissions = permissions;
                 _stopListener = new ListenerProxy(executor, () => StopInternal(null, true), logRecs => _botLog.Update(logRecs));
 
                 executor.Start();

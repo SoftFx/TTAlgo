@@ -59,6 +59,7 @@
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
+    <Compile Include="BotPermissions.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
