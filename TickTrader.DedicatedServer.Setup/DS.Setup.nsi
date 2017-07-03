@@ -138,13 +138,6 @@ SectionEnd
 Section Uninstall
 	; Stop and Remove DS Service
 	${UninstallService} "${SERVICE_NAME}" 80
-	
-	; Remove from registry...
-	DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
-	DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
-	
-	; Delete self
-	Delete "$INSTDIR\uninstall.exe"
 		
 	; Clear InstallDir
 	!include DS.Setup.Uninstall.nsi
@@ -152,6 +145,13 @@ Section Uninstall
 	; Delete Shortcuts
 	Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
 	RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
+	
+	; Delete self
+	Delete "$INSTDIR\uninstall.exe"
+	
+	; Remove from registry...
+	DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
+	DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
 
 SectionEnd
 
