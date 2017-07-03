@@ -29,10 +29,12 @@ namespace TickTrader.Algo.Core
             return result;
         }
 
-        public void Replace(OrderEntity entity)
+        public OrderAccessor Replace(OrderEntity entity)
         {
             var order = fixture.Replace(entity, IsEnabled);
-            Replaced?.Invoke(order);
+            if (order != null)
+                Replaced?.Invoke(order);
+            return order;
         }
 
         public OrderAccessor GetOrderOrNull(string id)
@@ -40,10 +42,12 @@ namespace TickTrader.Algo.Core
             return fixture.GetOrNull(id);
         }
 
-        public void Remove(string orderId)
+        public OrderAccessor Remove(string orderId)
         {
             var order = fixture.Remove(orderId);
-            Removed(order);
+            if (order != null)
+                Removed(order);
+            return order;
         }
 
         public void FireOrderOpened(OrderOpenedEventArgs args)

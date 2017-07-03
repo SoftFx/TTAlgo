@@ -49,16 +49,17 @@ namespace TickTrader.Algo.Core
                     Symbol = symbol,
                     Type = type,
                     Side = side,
-                    RemainingVolume = volumeLots,
-                    RequestedVolume = volumeLots,
+                    RemainingVolume = new TradeVolume(volume, volumeLots),
+                    RequestedVolume = new TradeVolume(volume, volumeLots),
                     Price = price,
                     StopLoss = sl ?? double.NaN,
                     TakeProfit = tp ?? double.NaN,
                     Comment = comment,
                     Tag = isolationTag
                 };
+
                 var orderModel = new OrderAccessor(orderToOpen);
-                result = new TradeResultEntity(result.ResultCode, orderToOpen);
+                result = new TradeResultEntity(result.ResultCode, orderModel);
             }
 
             LogOrderOpenResults(result);
@@ -76,10 +77,13 @@ namespace TickTrader.Algo.Core
 
             var result = await api.CancelOrder(isAysnc, orderId, orderToCancel.Side);
 
-            if (result.ResultCode == OrderCmdResultCodes.Ok)
+            if (result.ResultCode != OrderCmdResultCodes.Ok)
             {
-                api.CancelOrder(waitHandler, orderId, orderToCancel.Entity.ClientOrderId, orderToCancel.Side);
-                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
+                account.Orders.Remove(orderId);
+                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
+            }
+            else
+                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
             return new TradeResultEntity(result.ResultCode, orderToCancel);
         }
@@ -129,27 +133,18 @@ namespace TickTrader.Algo.Core
             if (orderByClose == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
-                {
-                    orderToClose.Entity.RemainingVolume = ModifyVolume(orderToClose.Entity.RemainingVolume, -result.ExecVolume, smbMetadata);
-
-                    if (orderClone.RemainingVolume <= 0)
-                        account.Orders.Remove(orderId);
-                    if (orderToClose.RemainingVolume <= 0)
-                        account.Orders.Remove(orderId);
             var result = await api.CloseOrderBy(isAysnc, orderId, byOrderId);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
 
-                    return new TradeResultEntity(result.ResultCode, orderToClose);
-                }
-                else
-                {
-                    logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new TradeResultEntity(result.ResultCode, orderToClose);
-                }
+                return new TradeResultEntity(result.ResultCode, orderToClose);
+            }
+            else
+            {
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToClose);
             }
         }
 
@@ -176,25 +171,12 @@ namespace TickTrader.Algo.Core
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
-                return new TradeResultEntity(result.ResultCode, (OrderEntity)result.ResultingOrder);
+                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
             }
             else
             {
-                api.ModifyOrder(waitHandler, orderId, orderToModify.Entity.ClientOrderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    price, orderVolume, tp, sl, comment);
-                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
-
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
-                {
-                    account.Orders.Replace(result.NewOrder);
-                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
-                    return new TradeResultEntity(result.ResultCode, orderToModify);
-                }
-                else
-                {
-                    logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
-                    return new TradeResultEntity(result.ResultCode, orderToModify);
-                }
+                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToModify);
             }
         }
 

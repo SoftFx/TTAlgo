@@ -67,9 +67,7 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get; set; }
         public double Swap { get; set; }
         public double Commision { get; set; }
-
-        string Order.Tag => _userTag;
-
+        public string UserTag => _userTag;
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
     }

@@ -43,7 +43,6 @@ namespace TickTrader.Algo.Core
             this.statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
-            logger = Null.Logger;
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -532,8 +531,7 @@ namespace TickTrader.Algo.Core
         }
 
         #region IFixtureContext
-        PluginBuilder IFixtureContext.Builder { get { return builder; } }
-        IPluginLogger IFixtureContext.Logger => logger;
+
         IPluginFeedProvider IFixtureContext.FeedProvider => feedProvider;
         SubscriptionManager IFixtureContext.Dispenser => dispenser;
         FeedBufferStrategy IFixtureContext.BufferingStrategy => fStrategy.BufferingStrategy;

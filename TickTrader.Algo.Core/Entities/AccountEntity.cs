@@ -130,6 +130,18 @@ namespace TickTrader.Algo.Core
         IEnumerable<BL.IPositionModel> BL.IMarginAccountInfo.Positions => NetPositions;
         IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => Assets;
 
+        void BL.IAccountInfo.LogInfo(string message)
+        {
+        }
+
+        void BL.IAccountInfo.LogWarn(string message)
+        {
+        }
+
+        void BL.IAccountInfo.LogError(string message)
+        {
+        }
+
         public event Action<BL.IOrderModel> OrderAdded { add { Orders.Added += value; } remove { Orders.Added -= value; } }
         public event Action<IEnumerable<BL.IOrderModel>> OrdersAdded { add { } remove { } }
         public event Action<BL.IOrderModel> OrderRemoved { add { Orders.Removed += value; } remove { Orders.Removed -= value; } }

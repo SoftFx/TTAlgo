@@ -46,7 +46,8 @@ namespace TickTrader.Algo.Core
         public double TakeProfit => _entity.TakeProfit;
         public bool IsNull => false;
         public string Comment => _entity.Comment;
-        public string Tag => _entity.Tag;
+        public string Tag => _entity.UserTag;
+        public string InstanceId => _entity.InstanceId;
         public DateTime Modified => _entity.Modified;
         public DateTime Created => _entity.Created;
         public double ExecPrice => _entity.ExecPrice;
