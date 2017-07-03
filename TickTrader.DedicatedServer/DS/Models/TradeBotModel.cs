@@ -30,12 +30,13 @@ namespace TickTrader.DedicatedServer.DS.Models
         private ListenerProxy _stopListener;
         private PackageStorage _packageRepo;
 
-        public TradeBotModel(string id, PluginKey key, PluginConfig cfg)
+        public TradeBotModel(TradeBotModelConfig config)
         {
-            Id = id;
-            Config = cfg;
-            PackageName = key.PackageName;
-            Descriptor = key.DescriptorId;
+            Id = config.InstanceId;
+            Config = config.PluginConfig;
+            PackageName = config.Plugin.PackageName;
+            Descriptor =  config.Plugin.DescriptorId;
+            Isolated = config.Isolated;
         }
 
         [DataMember(Name = "configuration")]
@@ -48,6 +49,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         public string Descriptor { get; private set; }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
+        [DataMember(Name = "isolated")]
+        public bool Isolated { get; private set; }
 
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
@@ -85,7 +88,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 Start();
         }
 
-        public void Configurate(PluginConfig cfg)
+        public void Configurate(PluginConfig cfg, bool isolated)
         {
             lock (_syncObj)
             {
@@ -95,6 +98,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 if (IsStopped())
                 {
                     Config = cfg;
+                    Isolated = isolated;
                     ConfigurationChanged?.Invoke(this);
                 }
                 else
@@ -274,14 +278,11 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeApi = _client.TradeApi;
-                executor.Logger = _botLog;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
-
-                _stopListener = new ListenerProxy(executor, () =>
-                {
-                    StopInternal(null, true);
-                });
+                executor.Isolated = Isolated;
+                executor.InstanceId = Id;
+                _stopListener = new ListenerProxy(executor, () => StopInternal(null, true), logRecs => _botLog.Update(logRecs));
 
                 executor.Start();
 
@@ -380,12 +381,20 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             private PluginExecutor _executor;
             private Action _onStopped;
+            private Action<BotLogRecord[]> _onLogRecords;
 
-            public ListenerProxy(PluginExecutor executor, Action onStopped)
+            public ListenerProxy(PluginExecutor executor, Action onStopped, Action<BotLogRecord[]> onLogRecords)
             {
                 _executor = executor;
                 _onStopped = onStopped;
+                _onLogRecords = onLogRecords;
                 executor.IsRunningChanged += Executor_IsRunningChanged1;
+                executor.InitLogging().NewRecords += ListenerProxy_NewRecords;
+            }
+
+            private void ListenerProxy_NewRecords(BotLogRecord[] recs)
+            {
+                _onLogRecords(recs);
             }
 
             private void Executor_IsRunningChanged1(PluginExecutor exec)
@@ -397,10 +406,9 @@ namespace TickTrader.DedicatedServer.DS.Models
             protected override void Dispose(bool disposing)
             {
                 _executor.IsRunningChanged -= Executor_IsRunningChanged1;
+                _executor.InitLogging().NewRecords -= ListenerProxy_NewRecords;
                 base.Dispose(disposing);
             }
         }
-
-
     }
 }

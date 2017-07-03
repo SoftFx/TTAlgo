@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
@@ -10,6 +6,9 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class OrderEntity : Order
     {
+        private string _userTag;
+        private string _tag;
+
         public OrderEntity(string orderId)
         {
             this.Id = orderId;
@@ -43,14 +42,17 @@ namespace TickTrader.Algo.Core
         public double StopLoss { get; set; }
         public double TakeProfit { get; set; }
         public string Comment { get; set; }
-        public string Tag { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
+        public string Tag { get; set; }
+        public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
         public double ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
         public double LastFillVolume { get; set; }
+
+        string Order.Tag => _userTag;
 
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
@@ -70,6 +72,7 @@ namespace TickTrader.Algo.Core
         public double TakeProfit { get { return double.NaN; } }
         public string Comment { get { return ""; } }
         public string Tag { get { return ""; } }
+        public string InstanceId { get { return ""; } }
         public DateTime Created { get { return DateTime.MinValue; } }
         public DateTime Modified { get { return DateTime.MinValue; } }
         public bool IsNull { get { return true; } }

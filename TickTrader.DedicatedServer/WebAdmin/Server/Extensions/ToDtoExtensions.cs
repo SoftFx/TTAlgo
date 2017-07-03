@@ -25,6 +25,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             return new TradeBotDto()
             {
                 Id = bot.Id,
+                Isolated = bot.Isolated,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
                 PackageName = bot.PackageName,

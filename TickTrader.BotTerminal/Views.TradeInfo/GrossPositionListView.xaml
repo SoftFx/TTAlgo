@@ -94,6 +94,7 @@
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
                 <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" />
+                <DataGridTextColumn Header="Instance Id" Width="*" Binding="{Binding Order.InstanceId}" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

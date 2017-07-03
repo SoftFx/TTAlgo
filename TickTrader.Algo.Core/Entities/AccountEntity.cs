@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Entities;
 
 namespace TickTrader.Algo.Core
 {
@@ -29,6 +27,8 @@ namespace TickTrader.Algo.Core
         public double Balance { get; set; }
         public string BalanceCurrency { get; set; }
         public AccountTypes Type { get; set; }
+        public bool Isolated { get; set; }
+        public string InstanceId { get; set; }
 
         internal void FireBalanceUpdateEvent()
         {
@@ -86,7 +86,22 @@ namespace TickTrader.Algo.Core
             return collection;
         }
 
-        OrderList AccountDataProvider.Orders { get { return Orders.OrderListImpl; } }
+        OrderList AccountDataProvider.Orders
+        {
+            get
+            {
+                if (!Isolated)
+                    return Orders.OrderListImpl;
+                else
+                    return OrdersBy(TagFilter);
+            }
+        }
+
+        private bool TagFilter(Order order)
+        {
+            return InstanceId == order.InstanceId;
+        }
+
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
 
         public double Equity { get; set; }

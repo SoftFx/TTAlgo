@@ -37,7 +37,6 @@
     
     <Style x:Key="FlatButtonMainStyle" TargetType="l:FlatButton" BasedOn="{StaticResource ButtonBaseStyle}">
         <Setter Property="Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
-        <Setter Property="HighlightBackground" Value="Red" />
         <Setter Property="DisabledBackground" Value="{DynamicResource Dialog_ControlDisabledBackground}" />
         <Setter Property="CornerRadius" Value="3"></Setter>
     </Style>
