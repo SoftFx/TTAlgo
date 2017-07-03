@@ -60,7 +60,7 @@
 
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define DS_ADDRESS "http://localhost:8080"
+!define DS_ADDRESS "http://localhost:8015"
 
 ;--------------------------
 ; Main Install settings
@@ -93,20 +93,45 @@ OutFile "..\build.ouput\${SETUP_FILENAME}"
 ; Auto-uninstall old before installing new
 
 Function .onInit
- 
-  ReadRegStr $R0 HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
-  ${If} $R0 != "" 
-	MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "$(UninstallPrev) $\n$\nClick OK to remove the previous version or Cancel to cancel this upgrade." IDOK uninst IDCANCEL uninstcancel
- 	uninst:
-		ClearErrors
-		Exec '$R0'
-	uninstcancel:
-		Abort
-  ${EndIf}
 
 FunctionEnd
 
+!macro UninstallDSMacro un
+	Function ${un}UninstallDS
+		; Stop and Remove DS Service
+		${UninstallService} "${SERVICE_NAME}" 80
+		
+		; Clear InstallDir
+		!include DS.Setup.Uninstall.nsi
+	
+		; Delete Shortcuts
+		Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
+		RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
+	
+		; Delete self
+		Delete "$INSTDIR\uninstall.exe"
+	
+		; Remove from registry...
+		DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
+		DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+	FunctionEnd
+!macroend
+
+!insertmacro UninstallDSMacro ""
+!insertmacro UninstallDSMacro "un."
+
 Section "TickTrader Dedicated Server" Section1
+
+	ReadRegStr $R0 HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
+	${If} $R0 != "" 
+	MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "$(UninstallPrev) $\n$\nClick OK to remove the previous version or Cancel to cancel this upgrade." IDOK uninst IDCANCEL uninstcancel
+ 	uninstcancel:
+		Quit
+	uninst:
+		ClearErrors
+		Call UninstallDS
+	${EndIf}
+
 	; Set Section properties
 	SetOverwrite on
 	; Set Section Files and Shortcuts
@@ -136,23 +161,7 @@ SectionEnd
 
 ; Uninstall section
 Section Uninstall
-	; Stop and Remove DS Service
-	${UninstallService} "${SERVICE_NAME}" 80
-		
-	; Clear InstallDir
-	!include DS.Setup.Uninstall.nsi
-	
-	; Delete Shortcuts
-	Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
-	RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
-	
-	; Delete self
-	Delete "$INSTDIR\uninstall.exe"
-	
-	; Remove from registry...
-	DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
-	DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
-
+	Call un.UninstallDS
 SectionEnd
 
 BrandingText "${PRODUCT_PUBLISHER}"

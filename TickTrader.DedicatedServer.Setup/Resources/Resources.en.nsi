@@ -3,7 +3,7 @@
 LangString InstallationCanceledMessage 	${LANG_ENGLISH} "Installation cancelled."
 LangString InstallationAbortedMessage 	${LANG_ENGLISH} "Installation aborted. Error code:"
 
-LangString UninstallPrev 			${LANG_ENGLISH} "Previous installed Tick Trader Dedicated Server found. Do you want uninstall it?"
+LangString UninstallPrev 			${LANG_ENGLISH} "Previous installed Tick Trader Dedicated Server will be uninstalled. Continue?"
 LangString UninstallPrevComplete	${LANG_ENGLISH} "Previous version of the Tick Trader Dedicated Server was uninstalled!"
 
 LangString UninstallPrompt 			${LANG_ENGLISH} "Are you sure you want to completely remove Trading Platfrom and all of its components?"

@@ -109,10 +109,15 @@ Call openLinkNewWindow
   SimpleSC::ExistsService ${Name}
   Pop $0
   ${If} $0 == 0
-    SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+	SimpleSC::ServiceIsStopped ${Name}
 	Pop $0
-    ${If} $0 != 0
-      Abort "$(ServiceStopFailMessage) $0"
+	Pop $1
+	${If} $1 == 0
+      SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+	  Pop $0
+      ${If} $0 != 0
+        Abort "$(ServiceStopFailMessage) $0"
+      ${EndIf}
     ${EndIf}
    
     SimpleSC::RemoveService ${Name}
