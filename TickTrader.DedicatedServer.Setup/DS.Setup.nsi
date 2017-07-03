@@ -99,7 +99,7 @@ Function .onInit
 	MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "$(UninstallPrev) $\n$\nClick OK to remove the previous version or Cancel to cancel this upgrade." IDOK uninst IDCANCEL uninstcancel
  	uninst:
 		ClearErrors
-		ExecWait '$R0'
+		Exec '$R0'
 	uninstcancel:
 		Abort
   ${EndIf}
@@ -145,13 +145,12 @@ Section Uninstall
 	
 	; Delete self
 	Delete "$INSTDIR\uninstall.exe"
-	
-	; Delete Shortcuts
-	Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
-	
+		
 	; Clear InstallDir
 	!include DS.Setup.Uninstall.nsi
 	
+	; Delete Shortcuts
+	Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
 	RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
 
 SectionEnd
