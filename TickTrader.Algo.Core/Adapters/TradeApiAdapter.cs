@@ -9,8 +9,6 @@ namespace TickTrader.Algo.Core
 {
     internal class TradeApiAdapter : TradeCommands
     {
-        private Lazy<OrderCmdResult> _tradeNotAllowed = new Lazy<OrderCmdResult>(() => new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, OrderEntity.Null), true);
-
         private ITradeApi api;
         private SymbolProvider symbols;
         private AccountEntity account;
@@ -30,62 +28,70 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
-            if (!_permissions.TradeAllowed)
-                return _tradeNotAllowed.Value;
-
+            TradeResultEntity resultEntity;
             string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
+
+            var orderToOpen = new OrderEntity("-1")
+            {
+                Symbol = symbol,
+                Type = type,
+                Side = side,
+                RemainingVolume = volumeLots,
+                RequestedVolume = volumeLots,
+                Price = price,
+                StopLoss = sl ?? double.NaN,
+                TakeProfit = tp ?? double.NaN,
+                Comment = comment,
+                Tag = isolationTag
+            };
 
             var smbMetadata = symbols.List[symbol];
             if (smbMetadata.IsNull)
-                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
-
-            volumeLots = RoundVolume(volumeLots, smbMetadata);
-            double volume = ConvertVolume(volumeLots, smbMetadata);
-            price = RoundPrice(price, smbMetadata, side);
-            sl = RoundPrice(sl, smbMetadata, side);
-            tp = RoundPrice(tp, smbMetadata, side);
-
-            LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
-
-            using (var waitHandler = new TaskProxy<OpenModifyResult>())
             {
-                api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
-                var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
-
-                TradeResultEntity resultEntity;
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
-                {
-                    account.Orders.Add(result.NewOrder);
-                    resultEntity = new TradeResultEntity(result.ResultCode, result.NewOrder);
-                }
-                else
-                {
-                    var orderToOpen = new OrderEntity("-1")
-                    {
-                        Symbol = symbol,
-                        Type = type,
-                        Side = side,
-                        RemainingVolume = volumeLots,
-                        RequestedVolume = volumeLots,
-                        Price = price,
-                        StopLoss = sl ?? double.NaN,
-                        TakeProfit = tp ?? double.NaN,
-                        Comment = comment,
-                        Tag = isolationTag
-                    };
-                    resultEntity = new TradeResultEntity(result.ResultCode, orderToOpen);
-                }
-
-                LogOrderOpenResults(resultEntity);
-
-                return resultEntity;
+                resultEntity = new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound, orderToOpen);
             }
+            else if (!_permissions.TradeAllowed)
+            {
+                resultEntity = new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, orderToOpen);
+            }
+            else
+            {
+                volumeLots = RoundVolume(volumeLots, smbMetadata);
+                double volume = ConvertVolume(volumeLots, smbMetadata);
+                price = RoundPrice(price, smbMetadata, side);
+                sl = RoundPrice(sl, smbMetadata, side);
+                tp = RoundPrice(tp, smbMetadata, side);
+                LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
+
+                using (var waitHandler = new TaskProxy<OpenModifyResult>())
+                {
+
+                    api.OpenOrder(waitHandler, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
+                    var result = await waitHandler.LocalTask.ConfigureAwait(isAysnc);
+
+                    if (result.ResultCode == OrderCmdResultCodes.Ok)
+                    {
+                        account.Orders.Add(result.NewOrder);
+                        resultEntity = new TradeResultEntity(result.ResultCode, result.NewOrder);
+                    }
+                    else
+                    {
+                        resultEntity = new TradeResultEntity(result.ResultCode, orderToOpen);
+                    }
+                }
+            }
+
+            LogOrderOpenResults(resultEntity);
+            return resultEntity;
         }
 
         public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
             if (!_permissions.TradeAllowed)
-                return _tradeNotAllowed.Value;
+            {
+                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
+                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
+            }
 
             Order orderToCancel = account.Orders.GetOrderOrNull(orderId);
             if (orderToCancel == null)
@@ -113,7 +119,10 @@ namespace TickTrader.Algo.Core
         public async Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
         {
             if (!_permissions.TradeAllowed)
-                return _tradeNotAllowed.Value;
+            {
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
+                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
+            }
 
             double? closeVolume = null;
 
@@ -163,7 +172,10 @@ namespace TickTrader.Algo.Core
         public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
             if (!_permissions.TradeAllowed)
-                return _tradeNotAllowed.Value;
+            {
+                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
+                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
+            }
 
             Order orderToModify = account.Orders.GetOrderOrNull(orderId);
             if (orderToModify == null)
@@ -171,7 +183,10 @@ namespace TickTrader.Algo.Core
 
             var smbMetadata = symbols.List[orderToModify.Symbol];
             if (smbMetadata.IsNull)
+            {
+                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + OrderCmdResultCodes.SymbolNotFound);
                 return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
+            }
 
             double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
             price = RoundPrice(price, smbMetadata, orderToModify.Side);
@@ -290,7 +305,7 @@ namespace TickTrader.Algo.Core
                 .Append(" ").Append(volumeLots)
                 .Append(" ").Append(symbol);
 
-            if (tp != null || sl != null)
+            if ((tp != null && !double.IsNaN(tp.Value)) || ( sl != null && !double.IsNaN(sl.Value) ))
             {
                 logEntry.Append(" (");
                 if (sl != null)
