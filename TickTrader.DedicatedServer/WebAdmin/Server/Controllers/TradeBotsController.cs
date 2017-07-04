@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
-using System.IO;
 using TickTrader.DedicatedServer.DS.Models;
 using System.Net;
+using TickTrader.DedicatedServer.DS.Builders;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {
@@ -198,7 +199,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                     Plugin = new PluginKey(setup.PackageName, setup.PluginId),
                     PluginConfig = pluginCfg,
                     Isolated = setup.Isolated,
-                    Permissions = setup.Permissions ?? new TradeBotPermissions()
+                    Permissions = ConvertToPluginPermissions(setup.Permissions)
                 };
 
                 var tradeBot = _dedicatedServer.AddBot(config);
@@ -213,6 +214,17 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
             }
         }
 
+        private PluginPermissions ConvertToPluginPermissions(PermissionsDto permissions)
+        {
+            if (permissions != null)
+                return new PluginPermissions
+                {
+                    TradeAllowed = permissions.TradeAllowed
+                };
+
+            return new DefaultPermissionsBuilder().Build();
+        }
+
         [HttpPut("{id}")]
         public IActionResult Put(string id, [FromBody]PluginSetupDto setup)
         {
@@ -225,7 +237,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
                 {
                     PluginConfig = pluginCfg,
                     Isolated = setup.Isolated,
-                    Permissions = setup.Permissions ?? new TradeBotPermissions()
+                    Permissions = ConvertToPluginPermissions(setup.Permissions)
                 };
 
                 tradeBot.Configurate(config);

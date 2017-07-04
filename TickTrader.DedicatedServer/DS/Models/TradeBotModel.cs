@@ -9,6 +9,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.DedicatedServer.DS.Builders;
 using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.DS.Repository;
 using TickTrader.DedicatedServer.Infrastructure;
@@ -53,7 +54,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         [DataMember(Name = "isolated")]
         public bool Isolated { get; private set; }
         [DataMember(Name = "permissions")]
-        public TradeBotPermissions Permissions { get; private set; }
+        public PluginPermissions Permissions { get; private set; }
 
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
@@ -76,6 +77,9 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             _loggerFactory = logFactory;
             _log = _loggerFactory.CreateLogger<TradeBotModel>();
+
+            if (Permissions == null)
+                Permissions = new DefaultPermissionsBuilder().Build();
 
             _packageRepo = packageRepo;
             UpdatePackage();
@@ -287,11 +291,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;
                 executor.InstanceId = Id;
-
-                var permissions = new BotPermissions();
-                permissions.AllowTrade(Permissions.TradeAllowed);
-
-                executor.Permissions = permissions;
+                executor.Permissions = Permissions;
                 _stopListener = new ListenerProxy(executor, () => StopInternal(null, true), logRecs => _botLog.Update(logRecs));
 
                 executor.Start();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.DS.Models;
@@ -70,6 +71,7 @@ namespace TickTrader.DedicatedServer.DS
         IBotLog Log { get; }
         IAlgoData AlgoData { get; }
         IAccount Account { get; }
+        PluginPermissions Permissions { get; }
         PluginConfig Config { get; }
         PackageModel Package { get; }
         string PackageName { get; }

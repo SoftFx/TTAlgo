@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core
         private string botWorkingFolder;
         private string _botInstanceId;
         private bool _isolated;
-        private BotPermissions _permissions;
+        private PluginPermissions _permissions;
         private States state;
 
         public PluginExecutor(string pluginId)
@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public BotPermissions Permissions
+        public PluginPermissions Permissions
         {
             get { return _permissions; }
             set

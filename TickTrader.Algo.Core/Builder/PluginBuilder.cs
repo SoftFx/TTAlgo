@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
-        public BotPermissions Permissions { get; set; }
+        public PluginPermissions Permissions { get; set; }
         public bool Isolated
         {
             get { return _isolated; }
