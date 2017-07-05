@@ -51,6 +51,10 @@
   !define APPEXE "TickTrader.DedicatedServer.exe"
 !endif
 
+!ifndef APPSETTINGS
+  !define APPSETTINGS "WebAdmin\appsettings.json"
+!endif
+
 !ifndef PRODUCT_PUBLISHER
   !define PRODUCT_PUBLISHER "SoftFX"
 !endif
@@ -60,7 +64,7 @@
 
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define DS_ADDRESS "http://localhost:8015"
+;!define DS_DEFAULT_ADDRESS "http://localhost:5000"
 
 ;--------------------------
 ; Main Install settings
@@ -150,8 +154,18 @@ Section - FinishSection
 	; Install Service
 	${InstallService} "${SERVICE_NAME}" "${SERVICE_DISPLAY_NAME}" "16" "2" "$INSTDIR\${APPEXE}" 80
 	${StartService} "${SERVICE_NAME}" 30
-	${OpenURL} "${DS_ADDRESS}"
-
+	
+	Sleep 5000
+	
+	nsJSON::Set /file "$INSTDIR\${APPSETTINGS}"
+	ClearErrors
+	nsJSON::Get `server.urls` /end
+	${IfNot} ${Errors}
+		Pop $R0
+		DetailPrint `server.urls = $R0`
+		${OpenURL} "$R0"
+    ${EndIf}
+	
 SectionEnd
 
 ; Modern install component descriptions

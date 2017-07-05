@@ -15,6 +15,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Info;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace TickTrader.DedicatedServer
 {
@@ -28,7 +29,7 @@ namespace TickTrader.DedicatedServer
                 isService = false;
 
             var pathToContentRoot = Directory.GetCurrentDirectory();
-            
+
             if (isService)
             {
                 var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
@@ -36,17 +37,15 @@ namespace TickTrader.DedicatedServer
             }
 
             var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
+            var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
 
-            var builder = new ConfigurationBuilder()
-                .AddJsonFile("WebAdmin/appsettings.json", optional: true)
-                .AddEnvironmentVariables();
-            var config = builder.Build();
+            var config = EnsureDefaultConfiguration(pathToAppSettings);
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseKestrel()
                 .UseContentRoot(pathToContentRoot)
-                .UseWebRoot(Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot"))
+                .UseWebRoot(pathToWebRoot)
                 .UseStartup<WebAdminStartup>()
                 .Build();
 
@@ -56,6 +55,30 @@ namespace TickTrader.DedicatedServer
                 host.RunAsCustomService();
             else
                 host.Run();
+        }
+
+        private static IConfiguration EnsureDefaultConfiguration(string configFile)
+        {
+            if (!System.IO.File.Exists(configFile))
+            {
+                CreateDefaultConfig(configFile);
+            }
+
+            var builder = new ConfigurationBuilder()
+              .AddJsonFile(configFile, optional: false)
+              .AddEnvironmentVariables();
+
+            return builder.Build();
+        }
+
+        private static void CreateDefaultConfig(string configFile)
+        {
+            var appConfig = new AppSettings
+            {
+                ServerUrls = @"http://localhost:5000/"
+            };
+
+            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appConfig));
         }
 
         private static void RunConsole()
