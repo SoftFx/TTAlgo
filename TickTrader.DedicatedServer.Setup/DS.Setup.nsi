@@ -60,7 +60,7 @@
 
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define DS_ADDRESS "http://localhost:8015"
+!define DS_ADDRESS "http://localhost:5000"
 
 ;--------------------------
 ; Main Install settings
