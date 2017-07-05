@@ -255,9 +255,13 @@ namespace TickTrader.Algo.Core
                 {
                     foreach (var asset in eReport.Assets)
                     {
-                        var assetModel = acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency), currencies);
-                        var args = new AssetUpdateEventArgsImpl(assetModel);
-                        context.EnqueueTradeEvent(b => acc.Assets.FireModified(args));
+                        AssetChangeType assetChange;
+                        var assetModel = acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency), currencies, out assetChange);
+                        if (assetChange != AssetChangeType.NoChanges)
+                        {
+                            var args = new AssetUpdateEventArgsImpl(assetModel);
+                            context.EnqueueTradeEvent(b => acc.Assets.FireModified(args));
+                        }
                     }
                 }
             }

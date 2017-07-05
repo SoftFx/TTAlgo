@@ -34,7 +34,8 @@ namespace TickTrader.Algo.Core
         public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
         {
             var result = fixture.Update(entity, currencies, out cType);
-            AssetChanged?.Invoke(result, cType);
+            if (cType != AssetChangeType.NoChanges)
+                AssetChanged?.Invoke(result, cType);
             return result;
         }
 

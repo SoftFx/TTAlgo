@@ -77,11 +77,8 @@ namespace TickTrader.Algo.Core
 
             var result = await api.CancelOrder(isAysnc, orderId, orderToCancel.Side);
 
-            if (result.ResultCode != OrderCmdResultCodes.Ok)
-            {
-                account.Orders.Remove(orderId);
+            if (result.ResultCode == OrderCmdResultCodes.Ok)
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
-            }
             else
                 logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
@@ -113,7 +110,6 @@ namespace TickTrader.Algo.Core
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
-
                 return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
             }
             else
@@ -138,7 +134,6 @@ namespace TickTrader.Algo.Core
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
-
                 return new TradeResultEntity(result.ResultCode, orderToClose);
             }
             else
