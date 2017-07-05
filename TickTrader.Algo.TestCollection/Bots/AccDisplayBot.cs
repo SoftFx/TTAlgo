@@ -11,12 +11,22 @@ namespace TickTrader.Algo.TestCollection.Bots
         private const string GenericDoubleFormat = "0.#########";
 
         private bool printCalcData;
+        private string _baseCurrFormat;
 
         [Parameter(DefaultValue = AccUpdateTypes.ByTimer)]
         public AccUpdateTypes Refresh { get; set; }
 
         [Parameter(DefaultValue = BoolEnum.False)]
         public BoolEnum DisplayComments { get; set; }
+
+        protected override void Init()
+        {
+            if (Account.Type != AccountTypes.Cash)
+            {
+                var currInfo = Currencies[Account.BalanceCurrency];
+                _baseCurrFormat = $"F{currInfo.Digits}";
+            }
+        }
 
         protected override void OnStart()
         {
@@ -93,7 +103,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.Write("#{0} {1} {2:0.#########}/{3:0.#########}", order.Symbol, order.Side,
                         order.RemainingVolume, order.RequestedVolume);
                     if (printCalcData)
-                        Status.Write(" margin={0:0.00}", order.Margin);
+                        Status.Write(" margin={0}", order.Margin.ToString(_baseCurrFormat));
                     if (DisplayComments == BoolEnum.True)
                     {
                         if (!string.IsNullOrEmpty(order.Comment))
@@ -118,10 +128,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                 {
                     var tag = string.IsNullOrEmpty(order.Tag) ? "" : "[" + order.Tag + "]";
 
-                    Status.Write("#{0} {1} {2} {3}/{4}", order.Id, order.Symbol, order.Side,
+                    Status.Write("#{0} {1} {2} {3:0.#########}/{4:0.#########}", order.Id, order.Symbol, order.Side,
                         order.RemainingVolume, order.RequestedVolume);
                     if (printCalcData)
-                        Status.Write(" margin={0:0.00} profit={1:0.00}", order.Margin, order.Profit);
+                        Status.Write(" margin={0} profit={1}", order.Margin.ToString(_baseCurrFormat), order.Profit.ToString(_baseCurrFormat));
                     if (DisplayComments == BoolEnum.True)
                     {
                         if (!string.IsNullOrEmpty(order.Comment))
@@ -145,9 +155,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Status.WriteLine("{0} positions:", positions.Count);
                 foreach (var pos in positions)
                 {
-                    Status.Write("#{0} {1} {2}", pos.Symbol, pos.Side, pos.Volume);
+                    Status.Write("#{0} {1} {2:0.#########}", pos.Symbol, pos.Side, pos.Volume);
                     if (printCalcData)
-                        Status.Write(" margin={0:0.00} profit={1:0.00}", pos.Margin, pos.Profit);
+                        Status.Write(" margin={0} profit={1}", pos.Margin.ToString(_baseCurrFormat), pos.Profit.ToString(_baseCurrFormat));
                     Status.WriteLine();
                 }
             }
@@ -180,23 +190,17 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintBalance()
         {
-            var currInfo = Currencies[Account.BalanceCurrency];
-            var currFormat = $"F{currInfo.Digits}";
-
-            Status.WriteLine("Balance: {0} {1}", Account.Balance.ToString(currFormat), Account.BalanceCurrency);
+            Status.WriteLine("Balance: {0} {1}", Account.Balance.ToString(_baseCurrFormat), Account.BalanceCurrency);
         }
 
         private void PrintMarginAccSummary()
         {
             if (printCalcData)
             {
-                var currInfo = Currencies[Account.BalanceCurrency];
-                var currFormat = $"F{currInfo.Digits}";
-
-                Status.WriteLine("Equity: {0} {1}", Account.Equity.ToString(currFormat), Account.BalanceCurrency);
-                Status.WriteLine("Margin: {0} {1}", Account.Margin.ToString(currFormat), Account.BalanceCurrency);
-                Status.WriteLine("Profit: {0} {1}", Account.Profit.ToString(currFormat), Account.BalanceCurrency);
-                Status.WriteLine("Margin Level: {0:0.0}%", Account.MarginLevel);
+                Status.WriteLine("Equity: {0} {1}", Account.Equity.ToString(_baseCurrFormat), Account.BalanceCurrency);
+                Status.WriteLine("Margin: {0} {1}", Account.Margin.ToString(_baseCurrFormat), Account.BalanceCurrency);
+                Status.WriteLine("Profit: {0} {1}", Account.Profit.ToString(_baseCurrFormat), Account.BalanceCurrency);
+                Status.WriteLine("Margin Level: {0:0.00}%", Account.MarginLevel);
             }
         }
     }
