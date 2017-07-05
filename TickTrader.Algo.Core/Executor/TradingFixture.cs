@@ -231,6 +231,10 @@ namespace TickTrader.Algo.Core
                     }
                 }
             }
+            else if (eReport.ExecAction == OrderExecAction.Rejected)
+            {
+                CallListener(eReport);
+            }
         }
 
         private void UpdateBalance(PluginBuilder builder, OrderExecReport eReport)

@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (SoftFX.Extended.Errors.RejectException rex)
             {
-                return Convert(rex.Reason, rex.Message);
+                return FdkToAlgo.Convert(rex.Reason, rex.Message);
             }
             catch (SoftFX.Extended.Errors.LogoutException)
             {
@@ -184,32 +184,6 @@ namespace TickTrader.Algo.Common.Model
             }
 
             throw new Exception("Not Supported: " + side);
-        }
-
-        private OrderCmdResultCodes Convert(RejectReason reason, string message)
-        {
-            switch (reason)
-            {
-                case RejectReason.DealerReject: return OrderCmdResultCodes.DealerReject;
-                case RejectReason.UnknownSymbol: return OrderCmdResultCodes.SymbolNotFound;
-                case RejectReason.UnknownOrder: return OrderCmdResultCodes.OrderNotFound;
-                case RejectReason.IncorrectQuantity: return OrderCmdResultCodes.IncorrectVolume;
-                case RejectReason.OffQuotes: return OrderCmdResultCodes.OffQuotes;
-                case RejectReason.OrderExceedsLImit: return OrderCmdResultCodes.NotEnoughMoney;
-                case RejectReason.Other:
-                    {
-                        if (message == "Trade Not Allowed")
-                            return OrderCmdResultCodes.TradeNotAllowed;
-                        break;
-                    }
-                case RejectReason.None:
-                    {
-                        if (message.StartsWith("Order Not Found"))
-                            return OrderCmdResultCodes.OrderNotFound;
-                        break;
-                    }
-            }
-            return OrderCmdResultCodes.UnknownError;
         }
 
         private Task EnqueueTask(Action taskDef)

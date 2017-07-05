@@ -37,6 +37,8 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
+        public Order GetOrderOrNull(string id)
+        public OrderEntity GetOrderOrNull(string id)
         public OrderAccessor GetOrderOrNull(string id)
         {
             return fixture.GetOrNull(id);
@@ -99,6 +101,13 @@ namespace TickTrader.Algo.Core
                         return Null.Order;
                     return entity;
                 }
+            }
+
+            public OrderEntity GetOrNull(string id)
+            {
+                OrderEntity entity;
+                orders.TryGetValue(id, out entity);
+                return entity;
             }
 
             public OrderAccessor Add(OrderEntity entity)

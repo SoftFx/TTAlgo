@@ -365,6 +365,8 @@ namespace TickTrader.Algo.Common.Model
             algoReport.OrderId = report.OrderId;
             algoReport.ExecAction = action;
             algoReport.Action = entityAction;
+            if (algoReport.ExecAction == OrderExecAction.Rejected)
+                algoReport.ResultCode = FdkToAlgo.Convert(report.RejectReason, report.Text);
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
             if (report.Assets != null)

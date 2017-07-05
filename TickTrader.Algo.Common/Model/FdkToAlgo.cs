@@ -236,5 +236,31 @@ namespace TickTrader.Algo.Common.Model
                 default: throw new ArgumentException("Unsupported commission charge method: " + fdkChargeMethod);
             }
         }
+
+        public static Api.OrderCmdResultCodes Convert(RejectReason reason, string message)
+        {
+            switch (reason)
+            {
+                case RejectReason.DealerReject: return Api.OrderCmdResultCodes.DealerReject;
+                case RejectReason.UnknownSymbol: return Api.OrderCmdResultCodes.SymbolNotFound;
+                case RejectReason.UnknownOrder: return Api.OrderCmdResultCodes.OrderNotFound;
+                case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
+                case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
+                case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
+                case RejectReason.Other:
+                    {
+                        if (message == "Trade Not Allowed")
+                            return Api.OrderCmdResultCodes.TradeNotAllowed;
+                        break;
+                    }
+                case RejectReason.None:
+                    {
+                        if (message.StartsWith("Order Not Found"))
+                            return Api.OrderCmdResultCodes.OrderNotFound;
+                        break;
+                    }
+            }
+            return Api.OrderCmdResultCodes.UnknownError;
+        }
     }
 }
