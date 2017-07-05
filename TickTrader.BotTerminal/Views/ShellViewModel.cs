@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Repository;
@@ -61,10 +62,10 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
-            cManager.StateChanged += (o, n) => LoadConnectionProfile();
             SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
+            clientModel.Initializing += LoadConnectionProfile;
             clientModel.Connected += OpenDefaultChart;
 
             LogStateLoop();
@@ -106,19 +107,29 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
 
-        private async void LoadConnectionProfile()
+        private async Task LoadConnectionProfile(object sender, CancellationToken token)
         {
-            if (cManager.State == ConnectionManager.States.Online)
+            try
             {
                 if (!await storage.ProfileManager.StopCurrentProfile(cManager.Creds.Server.Address, cManager.Creds.Login))
                 {
                     return;
                 }
 
+                token.ThrowIfCancellationRequested();
+
                 storage.ProfileManager.LoadCachedProfile(cManager.Creds.Server.Address, cManager.Creds.Login);
 
-                var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager);
+                token.ThrowIfCancellationRequested();
+
+                var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
                 wndManager.ShowDialog(loading);
+            }
+            catch (TaskCanceledException) { }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Failed to load connection profile for {cManager.Creds.Server.Address} {cManager.Creds.Login}");
             }
         }
 

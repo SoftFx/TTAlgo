@@ -1,4 +1,7 @@
 ﻿using Caliburn.Micro;
+using NLog;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
@@ -8,14 +11,18 @@ namespace TickTrader.BotTerminal
         public const int Delay = 100;
 
 
+        private Logger _logger;
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
+        private CancellationToken _token;
 
 
-        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager)
+        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token)
         {
+            _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
             _profileManager = profileManager;
+            _token = token;
         }
 
 
@@ -29,23 +36,35 @@ namespace TickTrader.BotTerminal
 
         private async void ApplyProfile()
         {
-            await Task.Delay(1000);
-
-            if (_profileManager.CurrentProfile.Charts == null)
+            try
             {
-                _profileManager.CurrentProfile.Save();
-                TryClose();
-                return;
+                await Task.Delay(1000, _token);
+
+                _charts.CloseAllItems(_token);
+
+                _token.ThrowIfCancellationRequested();
+
+                if (_profileManager.CurrentProfile.Charts == null)
+                {
+                    _profileManager.CurrentProfile.Save();
+                    TryClose();
+                    return;
+                }
+
+                while (_charts.Items.Count > 0)
+                {
+                    _token.ThrowIfCancellationRequested();
+                    await Task.Delay(Delay);
+                }
+
+                _charts.LoadProfile(_profileManager.CurrentProfile, _token);
             }
-
-            _charts.CloseAllItems();
-
-            while (_charts.Items.Count > 0)
+            catch (TaskCanceledException) { }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
             {
-                await Task.Delay(Delay);
+                _logger.Error(ex, "Failed to apply profile");
             }
-
-            _charts.LoadProfile(_profileManager.CurrentProfile);
 
             TryClose();
         }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
@@ -57,10 +58,14 @@ namespace TickTrader.BotTerminal
             chart.TryClose();
         }
 
-        public void CloseAllItems()
+        public void CloseAllItems(CancellationToken token)
         {
             while (Items.Count > 0)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
                 var first = Items.FirstOrDefault();
                 if (first != null)
                 {
@@ -93,12 +98,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void LoadProfile(ProfileStorageModel profileStorage)
+        public void LoadProfile(ProfileStorageModel profileStorage, CancellationToken token)
         {
             try
             {
                 foreach (var chart in profileStorage.Charts.Where(c => _clientModel.Symbols.GetOrDefault(c.Symbol) != null))
                 {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
                     Open(chart.Symbol);
                     var item = SelectedChartProxy as ChartViewModel;
                     if (item != null)
