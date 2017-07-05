@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
 
             IRange result;
 
-            if (totalRange.Diff == 0)
+            if (totalRange == null || totalRange.Diff == 0)
                 result = xAxis.VisibleRange;
             else
             {

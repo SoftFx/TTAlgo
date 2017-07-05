@@ -41,14 +41,16 @@ namespace TickTrader.BotTerminal
         private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
         private readonly SymbolModel smb;
+        private SettingsStorageModel _settingsStorage;
 
-        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv)
+        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.clientModel = clientModel;
             this.algoEnv = algoEnv;
             this.shell = shell;
+            _settingsStorage = storage.SettingsStorage;
 
             ChartWindowId = "Chart" + ++idSeed;
 
@@ -163,12 +165,75 @@ namespace TickTrader.BotTerminal
 
             base.TryClose(dialogResult);
 
+            Indicators.Foreach(i => algoEnv.IdProvider.RemovePlugin(i.Model.InstanceId));
+            Bots.Foreach(b => algoEnv.IdProvider.RemovePlugin(b.Model.InstanceId));
+
             shell.ToolWndManager.CloseWindow(this);
         }
 
         public void OpenOrder()
         {
             shell.OrderCommands.OpenMarkerOrder(Symbol);
+        }
+
+        public ChartStorageEntry GetSnapshot()
+        {
+            return new ChartStorageEntry
+            {
+                Symbol = Symbol,
+                SelectedPeriod = SelectedPeriod.Key,
+                SelectedChartType = Chart.SelectedChartType,
+                CrosshairEnabled = Chart.IsCrosshairEnabled,
+                Indicators = Indicators.Select(i => new IndicatorStorageEntry
+                {
+                    DescriptorId = i.Model.Setup.Descriptor.Id,
+                    PluginFilePath = i.Model.PluginFilePath,
+                    InstanceId = i.Model.InstanceId,
+                    Isolated = i.Model.Isolated,
+                }).ToList(),
+                Bots = Bots.Select(i => new TradeBotStorageEntry
+                {
+                    DescriptorId = i.Model.Setup.Descriptor.Id,
+                    PluginFilePath = i.Model.PluginFilePath,
+                    InstanceId = i.Model.InstanceId,
+                    Isolated = i.Model.Isolated,
+                    Started = i.Model.State == BotModelStates.Running,
+                }).ToList(),
+            };
+        }
+
+        public void RestoreFromSnapshot(ChartStorageEntry snapshot)
+        {
+            if (Symbol != snapshot.Symbol)
+            {
+                return;
+            }
+
+            SelectedPeriod = AvailablePeriods.FirstOrDefault(p => p.Key == snapshot.SelectedPeriod);
+            Chart.SelectedChartType = snapshot.SelectedChartType;
+            Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
+            snapshot.Indicators?.ForEach(i => AttachPlugin(RestorePlugin(i)));
+            snapshot.Bots?.ForEach(b => AttachPlugin(RestorePlugin(b)));
+        }
+
+        private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
+        {
+            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.Descriptor.Id == snapshot.DescriptorId &&
+                i.FilePath == snapshot.PluginFilePath).Snapshot.FirstOrDefault().Value;
+            if (catalogItem == null)
+            {
+                return null;
+            }
+            var setupModel = new PluginSetupViewModel(algoEnv, catalogItem, Chart)
+            {
+                InstanceId = snapshot.InstanceId,
+                Isolated = snapshot.Isolated,
+            };
+            if (snapshot is TradeBotStorageEntry)
+            {
+                setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _settingsStorage.RestartBotsOnStartup;
+            }
+            return setupModel;
         }
 
         #region Algo
@@ -210,6 +275,11 @@ namespace TickTrader.BotTerminal
 
         private void AttachPlugin(PluginSetupViewModel setupModel)
         {
+            if (setupModel == null)
+            {
+                return;
+            }
+
             var pluginType = setupModel.Setup.Descriptor.AlgoLogicType;
 
             if (pluginType == AlgoTypes.Indicator)

@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
-            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
+            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(algoEnv.BotJournal);

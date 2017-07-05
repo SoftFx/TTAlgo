@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,6 +19,12 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public bool CrosshairEnabled { get; set; }
 
+        [DataMember]
+        public List<IndicatorStorageEntry> Indicators { get; set; }
+
+        [DataMember]
+        public List<TradeBotStorageEntry> Bots { get; set; }
+
 
         public ChartStorageEntry()
         {
@@ -31,6 +39,8 @@ namespace TickTrader.BotTerminal
                 SelectedPeriod = SelectedPeriod,
                 SelectedChartType = SelectedChartType,
                 CrosshairEnabled = CrosshairEnabled,
+                Indicators = Indicators != null ? new List<IndicatorStorageEntry>(Indicators.Select(c => c.Clone())) : null,
+                Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
             };
         }
     }

@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await Task.Delay(1000, _token);
+                await Task.Delay(Delay, _token);
 
                 _charts.CloseAllItems(_token);
 
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
                 while (_charts.Items.Count > 0)
                 {
                     _token.ThrowIfCancellationRequested();
-                    await Task.Delay(Delay);
+                    await Task.Delay(Delay, _token);
                 }
 
                 _charts.LoadProfile(_profileManager.CurrentProfile, _token);

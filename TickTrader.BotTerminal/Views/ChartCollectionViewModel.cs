@@ -16,6 +16,7 @@ namespace TickTrader.BotTerminal
         private TraderClientModel _clientModel;
         private IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
+        private PersistModel _storage;
 
 
         public object SelectedChartProxy
@@ -30,12 +31,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv)
+        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, PersistModel storage)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
-            this._clientModel = clientModel;
-            this._algoEnv = algoEnv;
-            this._shell = shell;
+            _clientModel = clientModel;
+            _algoEnv = algoEnv;
+            _shell = shell;
+            _storage = storage;
 
             clientModel.Symbols.Updated += Symbols_Updated;
         }
@@ -50,7 +52,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv));
+            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _storage));
         }
 
         public void CloseItem(ChartViewModel chart)
@@ -80,16 +82,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.SelectedChart = (SelectedChartProxy as ChartViewModel)?.Symbol;
                 profileStorage.Charts = new List<ChartStorageEntry>();
-                Items.Foreach(i =>
-                {
-                    profileStorage.Charts.Add(new ChartStorageEntry
-                    {
-                        Symbol = i.Symbol,
-                        SelectedPeriod = i.SelectedPeriod.Key,
-                        SelectedChartType = i.Chart.SelectedChartType,
-                        CrosshairEnabled = i.Chart.IsCrosshairEnabled
-                    });
-                });
+                Items.Foreach(i => profileStorage.Charts.Add(i.GetSnapshot()));
                 profileStorage.Save();
             }
             catch (Exception ex)
@@ -108,14 +101,9 @@ namespace TickTrader.BotTerminal
                     {
                         return;
                     }
-                    Open(chart.Symbol);
-                    var item = SelectedChartProxy as ChartViewModel;
-                    if (item != null)
-                    {
-                        item.SelectedPeriod = item.AvailablePeriods.FirstOrDefault(p => p.Key == chart.SelectedPeriod);
-                        item.Chart.SelectedChartType = chart.SelectedChartType;
-                        item.Chart.IsCrosshairEnabled = chart.CrosshairEnabled;
-                    }
+                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _storage);
+                    item.RestoreFromSnapshot(chart);
+                    ActivateItem(item);
                 }
 
                 var selectedItem = Items.FirstOrDefault(c => c.Symbol == profileStorage.SelectedChart);
