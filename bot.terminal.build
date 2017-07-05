@@ -13,7 +13,6 @@
 
   <property name="WinScpPath"			value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
   
-  <property name="NSIS_Path"			value="C:\Program Files (x86)\NSIS" unless="${property::exists('NSIS_Path')}" />
   <property name="DSDir"				value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" unless="${property::exists('DSDir')}" />
   
   <property name="OutpuFolder"			value="${SourcesDir}build.ouput\" />
