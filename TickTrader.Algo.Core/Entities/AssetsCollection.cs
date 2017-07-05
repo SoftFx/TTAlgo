@@ -28,6 +28,11 @@ namespace TickTrader.Algo.Core
         public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies)
         {
             AssetChangeType cType;
+            return Update(entity, currencies, out cType);
+        }
+
+        public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
+        {
             var result = fixture.Update(entity, currencies, out cType);
             AssetChanged?.Invoke(result, cType);
             return result;
@@ -87,13 +92,20 @@ namespace TickTrader.Algo.Core
                     assets.Add(entity.Currency, asset);
                     cType = AssetChangeType.Added;
                 }
-                else
-                    cType = AssetChangeType.Updated;
-
-                if (entity.Volume <= 0)
+                else if (entity.Volume <= 0)
                 {
-                    assets.Remove(entity.Currency);
-                    cType = AssetChangeType.Removed;
+                    if (assets.Remove(entity.Currency))
+                        cType = AssetChangeType.Removed;
+                    else
+                        cType = AssetChangeType.NoChanges;
+                }
+                else
+                {
+
+                    if (asset.Update(entity.Volume))
+                        cType = AssetChangeType.Updated;
+                    else
+                        cType = AssetChangeType.NoChanges;
                 }
 
                 return asset;
@@ -116,5 +128,5 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public enum AssetChangeType { Added, Updated, Removed }
+    public enum AssetChangeType { NoChanges, Added, Updated, Removed }
 }

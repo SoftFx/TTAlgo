@@ -10,18 +10,28 @@ namespace TickTrader.Algo.Core
 {
     public class AssetAccessor : Api.Asset, BusinessLogic.IAssetModel
     {
-        private AssetEntity _entity;
         private double _margin;
 
-        public AssetAccessor(AssetEntity entity, Dictionary<string, Currency> currencies)
+        internal AssetAccessor(AssetEntity entity, Dictionary<string, Currency> currencies)
         {
-            _entity = entity;
+            Currency = entity.Currency;
+            Volume = entity.Volume;
             CurrencyInfo = currencies.ContainsKey(Currency) ? currencies[Currency] : new NullCurrency(Currency);
         }
 
+        internal bool Update(double newVol)
+        {
+            if (Volume != newVol)
+            {
+                Volume = newVol;
+                return true;
+            }
+            return false;
+        }
+
         public Currency CurrencyInfo { get; }
-        public string Currency => _entity.Currency;
-        public double Volume => _entity.Volume;
+        public string Currency { get; private set; }
+        public double Volume { get; private set; }
         public double LockedVolume => _margin;
         public double FreeVolume => Volume - _margin;
         public bool IsNull => false;

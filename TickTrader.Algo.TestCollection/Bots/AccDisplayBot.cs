@@ -8,6 +8,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         Description = "Prints account info to bot status window. This include account id, type, balance, assets, pending orders, positions")]
     public class AccDisplayBot : TradeBot
     {
+        private const string GenericDoubleFormat = "0.#########";
+
         private bool printCalcData;
 
         [Parameter(DefaultValue = AccUpdateTypes.ByTimer)]
@@ -88,7 +90,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 {
                     var tag = string.IsNullOrEmpty(order.Tag) ? "" : "[" + order.Tag + "]";
 
-                    Status.Write("#{0} {1} {2}/{3}", order.Symbol, order.Side,
+                    Status.Write("#{0} {1} {2:0.#########}/{3:0.#########}", order.Symbol, order.Side,
                         order.RemainingVolume, order.RequestedVolume);
                     if (printCalcData)
                         Status.Write(" margin={0:0.00}", order.Margin);
@@ -160,12 +162,14 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Status.WriteLine("{0} assets:", Account.Assets.Count);
                 foreach (var asset in Account.Assets)
                 {
+                    var currFormat = $"F{asset.CurrencyInfo.Digits}";
+
                     if (asset.CurrencyInfo.IsNull)
                         Status.Write("{0} {1}", asset.Currency, asset.Volume);
                     else
-                        Status.Write("{0} {1}", asset.Currency, asset.Volume.ToString($"F{asset.CurrencyInfo.Digits}"));
+                        Status.Write("{0} {1}", asset.Currency, asset.Volume.ToString(currFormat));
 
-                    Status.Write(" locked={0:F2} free={1:F2}", asset.LockedVolume, asset.FreeVolume);
+                    Status.Write(" locked={0} free={1}", asset.LockedVolume.ToString(currFormat), asset.FreeVolume.ToString(currFormat));
 
                     Status.WriteLine();
                 }
@@ -176,16 +180,22 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintBalance()
         {
-            Status.WriteLine("Balance: {0} {1}", Account.Balance, Account.BalanceCurrency);
+            var currInfo = Currencies[Account.BalanceCurrency];
+            var currFormat = $"F{currInfo.Digits}";
+
+            Status.WriteLine("Balance: {0} {1}", Account.Balance.ToString(currFormat), Account.BalanceCurrency);
         }
 
         private void PrintMarginAccSummary()
         {
             if (printCalcData)
             {
-                Status.WriteLine("Equity: {0:0.00} {1}", Account.Equity, Account.BalanceCurrency);
-                Status.WriteLine("Margin: {0:0.00} {1}", Account.Margin, Account.BalanceCurrency);
-                Status.WriteLine("Profit: {0:0.00} {1}", Account.Profit, Account.BalanceCurrency);
+                var currInfo = Currencies[Account.BalanceCurrency];
+                var currFormat = $"F{currInfo.Digits}";
+
+                Status.WriteLine("Equity: {0} {1}", Account.Equity.ToString(currFormat), Account.BalanceCurrency);
+                Status.WriteLine("Margin: {0} {1}", Account.Margin.ToString(currFormat), Account.BalanceCurrency);
+                Status.WriteLine("Profit: {0} {1}", Account.Profit.ToString(currFormat), Account.BalanceCurrency);
                 Status.WriteLine("Margin Level: {0:0.0}%", Account.MarginLevel);
             }
         }
