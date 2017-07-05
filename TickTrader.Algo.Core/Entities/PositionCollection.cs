@@ -23,12 +23,18 @@ namespace TickTrader.Algo.Core
 
         public PositionEntity UpdatePosition(PositionExecReport eReport)
         {
-            var pos = _fixture.UpdatePosition(eReport);
+            PositionEntity pos;
 
             if (eReport.ExecAction == OrderExecAction.Closed)
+            {
+                pos = _fixture.RemovePosition(eReport.Symbol);
                 PositionRemoved?.Invoke(pos);
+            }
             else
+            {
+                pos = _fixture.UpdatePosition(eReport);
                 PositionUpdated?.Invoke(pos);
+            }
 
             return pos;
         }
@@ -94,6 +100,13 @@ namespace TickTrader.Algo.Core
                 else
                     pos.Update(eReport);
 
+                return pos;
+            }
+
+            public PositionEntity RemovePosition(string symbol)
+            {
+                PositionEntity pos;
+                _positions.TryRemove(symbol, out pos);
                 return pos;
             }
 

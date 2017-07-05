@@ -216,7 +216,7 @@ namespace TickTrader.Algo.Core
                     // market orders
                     CallListener(eReport);
                     var order = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    var clone = order.Clone();
+                    var clone = order?.Clone() ?? new OrderAccessor(eReport.OrderCopy);
                     context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                 }
                 else
