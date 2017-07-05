@@ -104,7 +104,8 @@ namespace TickTrader.Algo.Core
             public OrderAccessor Add(OrderEntity entity)
             {
                 var accessor = new OrderAccessor(entity);
-                orders.TryAdd(entity.Id, accessor);
+                if (!orders.TryAdd(entity.Id, accessor))
+                    throw new ArgumentException("Order #" + entity.Id + " already exist!");
                 return accessor;
             }
 

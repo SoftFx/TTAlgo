@@ -81,6 +81,8 @@ namespace TickTrader.Algo.Core
         private void Deinit()
         {
             DataProvider.OrderUpdated -= DataProvider_OrderUpdated;
+            DataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
+            DataProvider.PositionUpdated -= DataProvider_PositionUpdated;
         }
 
         private void CallListener(OrderExecReport eReport)
@@ -156,6 +158,8 @@ namespace TickTrader.Algo.Core
 
         private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
         {
+            System.Diagnostics.Debug.WriteLine("ER: " + eReport.Action + " #" + eReport.OrderCopy.Id + " " + eReport.OrderCopy.Type);
+
             var orderCollection = builder.Account.Orders;
 
             if (eReport.ExecAction == OrderExecAction.Opened)

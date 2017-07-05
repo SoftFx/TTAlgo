@@ -40,7 +40,16 @@ namespace TickTrader.Algo.Core
         public void Stop()
         {
             _state = null;
-            cashCalc.Dispose();
+            if (cashCalc != null)
+            {
+                cashCalc.Dispose();
+                cashCalc = null;
+            }
+            if (marginCalc != null)
+            {
+                marginCalc.Dispose();
+                marginCalc = null;
+            }
         }
 
         private class MarginCalcAdapter : BL.AccountCalculator
