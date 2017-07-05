@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Core
                 overallResult += askFixture.Update(aggregation.AskBar);
 
             if (bidFixture != null)
-                overallResult += bidFixture.Update(aggregation.AskBar);
+                overallResult += bidFixture.Update(aggregation.BidBar);
 
             return overallResult;
         }
