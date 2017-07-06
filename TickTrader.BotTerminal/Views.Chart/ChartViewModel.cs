@@ -190,14 +190,16 @@ namespace TickTrader.BotTerminal
                     PluginFilePath = i.Model.PluginFilePath,
                     InstanceId = i.Model.InstanceId,
                     Isolated = i.Model.Isolated,
+                    Config = i.Model.Setup.Save(),
                 }).ToList(),
-                Bots = Bots.Select(i => new TradeBotStorageEntry
+                Bots = Bots.Select(b => new TradeBotStorageEntry
                 {
-                    DescriptorId = i.Model.Setup.Descriptor.Id,
-                    PluginFilePath = i.Model.PluginFilePath,
-                    InstanceId = i.Model.InstanceId,
-                    Isolated = i.Model.Isolated,
-                    Started = i.Model.State == BotModelStates.Running,
+                    DescriptorId = b.Model.Setup.Descriptor.Id,
+                    PluginFilePath = b.Model.PluginFilePath,
+                    InstanceId = b.Model.InstanceId,
+                    Isolated = b.Model.Isolated,
+                    Started = b.Model.State == BotModelStates.Running,
+                    Config = b.Model.Setup.Save(),
                 }).ToList(),
             };
         }
@@ -232,6 +234,10 @@ namespace TickTrader.BotTerminal
             if (snapshot is TradeBotStorageEntry)
             {
                 setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _settingsStorage.RestartBotsOnStartup;
+            }
+            if (snapshot.Config != null)
+            {
+                setupModel.Setup.Load(snapshot.Config);
             }
             return setupModel;
         }

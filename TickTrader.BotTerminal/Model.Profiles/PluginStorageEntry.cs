@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
@@ -18,8 +19,8 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public bool Isolated { get; set; }
 
-        //[DataMember]
-        //public PluginSetup Setup { get; set; }
+        [DataMember]
+        public PluginConfig Config { get; set; }
 
 
         public virtual T Clone()
@@ -30,7 +31,7 @@ namespace TickTrader.BotTerminal
                 PluginFilePath = PluginFilePath,
                 InstanceId = InstanceId,
                 Isolated = Isolated,
-                //Setup = Setup,
+                Config = Config,
             };
         }
     }

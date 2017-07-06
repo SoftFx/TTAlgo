@@ -16,15 +16,18 @@ namespace TickTrader.BotTerminal
         private BotJournal _botJournal = new BotJournal(1000);
         private PluginIdProvider _idProvider = new PluginIdProvider();
 
-        public AlgoEnvironment(IReadOnlyList<SymbolModel> symbolList)
+        public AlgoEnvironment()
         {
-            Symbols = symbolList;
-
             _catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
             _algoExt.LoadExtentions(EnvService.Instance.AlgoExtFolder, new AlgoLogAdapter("Extensions"));
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
                 _catalog.AddFolder(EnvService.Instance.AlgoCommonRepositoryFolder);
             _catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
+        }
+
+        public void Init(IReadOnlyList<SymbolModel> symbolList)
+        {
+            Symbols = symbolList;
         }
 
         public BotJournal BotJournal => _botJournal;

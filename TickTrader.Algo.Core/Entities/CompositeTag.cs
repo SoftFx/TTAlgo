@@ -37,7 +37,11 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                compositeTag = JsonConvert.DeserializeObject<CompositeTag>(tag);
+                compositeTag = null;
+                if (tag?.StartsWith("{") ?? false) // hack to reduce number of exceptions
+                {
+                    compositeTag = JsonConvert.DeserializeObject<CompositeTag>(tag);
+                }
                 return compositeTag != null;
             }
             catch

@@ -29,8 +29,9 @@ namespace TickTrader.BotTerminal
         private Task connectTask;
         private IDelayCounter connectionDelay;
         private CancellationTokenSource recconectTokenSource;
+        private bool _catalogInitialized;
 
-        public ConnectionManager(PersistModel appStorage, EventJournal journal)
+        public ConnectionManager(PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
@@ -38,13 +39,14 @@ namespace TickTrader.BotTerminal
             this.journal = journal;
             this.connectionDelay = new ConnectionDelayCounter(TimeSpan.FromSeconds(2), TimeSpan.FromMinutes(1));
 
+            InitCatalog(algoEnv.Repo);
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
 
             InitAuthData();
 
-            internalStateControl.AddTransition(InStates.Offline, () => HasRequest, InStates.Connecting);
+            internalStateControl.AddTransition(InStates.Offline, () => HasRequest && _catalogInitialized, InStates.Connecting);
             internalStateControl.AddTransition(InStates.Connecting, InEvents.Connected, InStates.Online);
             internalStateControl.AddTransition(InStates.Connecting, () => HasRequest, InStates.Disconnecting);
             internalStateControl.AddTransition(InStates.Connecting, InEvents.FailedToConnect, InStates.Offline);
@@ -92,6 +94,12 @@ namespace TickTrader.BotTerminal
                 logger.Debug("INTERNAL STATE {0}", to);
             };
             internalStateControl.EventFired += e => logger.Debug("EVENT {0}", e);
+        }
+
+        private async void InitCatalog(PluginCatalog catalog)
+        {
+            await catalog.Init();
+            internalStateControl.ModifyConditions(() => _catalogInitialized = true);
         }
 
         private async Task RecconectAfter(CancellationToken token, TimeSpan delay)
