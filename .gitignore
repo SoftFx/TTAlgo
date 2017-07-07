@@ -249,3 +249,4 @@ algo.metadata
 /TickTrader.BotTerminal/Redist
 /TickTrader.DedicatedServer/server.config.xml
 /build.ouput
+/TickTrader.DedicatedServer/WebAdmin/appsettings.json

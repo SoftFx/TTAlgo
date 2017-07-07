@@ -1,8 +1,6 @@
-﻿using Newtonsoft.Json;
-
-namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
+﻿namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
 {
-    public class ServerCredentials
+    public class ServerCredentials : IServerCredentials
     {
         public ServerCredentials()
         {
@@ -15,9 +13,13 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
             Password = password;
         }
 
-        [JsonProperty("login")]
         public string Login { get; set; }
-        [JsonProperty("password")]
         public string Password { get; set; }
+    }
+
+    public interface IServerCredentials
+    {
+       string Login { get; }
+       string Password { get; }
     }
 }

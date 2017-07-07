@@ -5,10 +5,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Core.Auth
 {
     public interface ITokenOptions
     {
-        string Issuer { get; set; }
-        string Audience { get; set; }
-        TimeSpan Expiration { get; set; }
-        SigningCredentials SigningCredentials { get; set; }
-        Func<string> UniqIdGenerator { get; set; }
+        string Issuer { get; }
+        string Audience { get; }
+        TimeSpan Expiration { get; }
+        SigningCredentials SigningCredentials { get; }
+        Func<string> UniqIdGenerator { get; }
     }
 }

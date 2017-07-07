@@ -64,6 +64,20 @@ namespace TickTrader.DedicatedServer
             {
                 CreateDefaultConfig(configFile);
             }
+            else
+            {
+                var appSettings = JsonConvert.DeserializeObject<AppSettings>(System.IO.File.ReadAllText(configFile));
+
+                if (appSettings == null)
+                {
+                    CreateDefaultConfig(configFile);
+                }
+                else if (string.IsNullOrWhiteSpace(appSettings.SecretKey))
+                {
+                    appSettings.SecretKey = AppSettings.RandomSecretKey;
+                    System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings));
+                }
+            }
 
             var builder = new ConfigurationBuilder()
               .AddJsonFile(configFile, optional: false)
@@ -74,12 +88,9 @@ namespace TickTrader.DedicatedServer
 
         private static void CreateDefaultConfig(string configFile)
         {
-            var appConfig = new AppSettings
-            {
-                ServerUrls = @"http://localhost:5000/"
-            };
+            var appSettings = AppSettings.Default;
 
-            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appConfig));
+            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings));
         }
 
         private static void RunConsole()

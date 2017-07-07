@@ -24,8 +24,6 @@ namespace TickTrader.DedicatedServer.WebAdmin
 {
     public class WebAdminStartup
     {
-        private static readonly string jwtKey = "Hu68yowUs4anwe04u48uKNDuweALKSWEUjnenasd";
-
         public WebAdminStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -39,12 +37,14 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+            services.Configure<ServerCredentials>(Configuration.GetSection(nameof(AppSettings.Credentials)));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
             services.AddTransient<ITokenOptions>(x => new TokenOptions
             {
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSecretKey())),
                     SecurityAlgorithms.HmacSha256)
             });
             services.AddTransient<IAuthManager, AuthManager>();
@@ -103,7 +103,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSecretKey())),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }
