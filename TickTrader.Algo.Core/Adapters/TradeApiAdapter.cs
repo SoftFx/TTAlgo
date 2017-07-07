@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
-            TradeResultEntity resultEntity;
+            OrderCmdResult resultEntity;
             string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
 
             var orderToOpen = new OrderEntity("-1")
@@ -36,8 +36,8 @@ namespace TickTrader.Algo.Core
                 Symbol = symbol,
                 Type = type,
                 Side = side,
-                RemainingVolume = volumeLots,
-                RequestedVolume = volumeLots,
+                RemainingVolume = new TradeVolume(0, volumeLots),
+                RequestedVolume = new TradeVolume(0, volumeLots),
                 Price = price,
                 StopLoss = sl ?? double.NaN,
                 TakeProfit = tp ?? double.NaN,
@@ -63,16 +63,12 @@ namespace TickTrader.Algo.Core
                 tp = RoundPrice(tp, smbMetadata, side);
                 LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
-                
-            	var result = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, tag);
 
-            	if (result.ResultCode != OrderCmdResultCodes.Ok)
+                resultEntity = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, tag);
+
+            	if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
             	{
-             	   resultEntity = new TradeResultEntity(result.ResultCode, new OrderAccessor(orderToOpen));
-            	}
-				else
-            	{
-            	    resultEntity = new TradeResultEntity(result.ResultCode, new OrderAccessor(orderToOpen));
+             	   resultEntity = new TradeResultEntity(resultEntity.ResultCode, new OrderAccessor(orderToOpen));
             	}
             }
 
