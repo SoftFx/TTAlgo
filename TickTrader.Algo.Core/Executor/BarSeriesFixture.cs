@@ -15,20 +15,18 @@ namespace TickTrader.Algo.Core
         private ITimeRef refTimeline;
         private BarPriceType priceType;
 
-        public BarSeriesFixture(string symbolCode, IFeedFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
+        public BarSeriesFixture(string symbolCode, IFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
             : this(symbolCode, BarPriceType.Bid, context, data, refTimeline)
         {
         }
 
-        public BarSeriesFixture(string symbolCode, BarPriceType priceType, IFeedFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
+        public BarSeriesFixture(string symbolCode, BarPriceType priceType, IFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
             : base(symbolCode, context)
         {
             this.refTimeline = refTimeline;
             this.priceType = priceType;
 
-            var execContext = context.ExecContext;
-
-            sampler = BarSampler.Get(execContext.TimeFrame);
+            sampler = BarSampler.Get(context.TimeFrame);
 
             if (refTimeline != null)
             {
@@ -37,7 +35,7 @@ namespace TickTrader.Algo.Core
             }
 
             var key = BarStrategy.GetKey(SymbolCode, priceType);
-            Buffer = execContext.Builder.GetBarBuffer(key);
+            Buffer = context.Builder.GetBarBuffer(key);
 
             if (data != null)
                 AppendData(data);
@@ -87,6 +85,31 @@ namespace TickTrader.Algo.Core
 
             var newBar = new BarEntity(barOpenTime, barBoundaries.Close, price, 1);
             AppendBar(newBar);
+            return new BufferUpdateResult() { ExtendedBy = 1 };
+        }
+
+        public BufferUpdateResult Update(BarEntity bar)
+        {
+            var barOpenTime = bar.OpenTime;
+
+            if (!Context.BufferingStrategy.InBoundaries(barOpenTime))
+                return new BufferUpdateResult();
+
+            if (Count > 0)
+            {
+                var lastBar = LastBar;
+
+                // validate agains last bar
+                if (barOpenTime < lastBar.OpenTime)
+                    return new BufferUpdateResult();
+                else if (barOpenTime == lastBar.OpenTime)
+                {
+                    lastBar.Append(bar);
+                    return new BufferUpdateResult() { IsLastUpdated = true };
+                }
+            }
+
+            AppendBar(bar);
             return new BufferUpdateResult() { ExtendedBy = 1 };
         }
 
@@ -159,20 +182,20 @@ namespace TickTrader.Algo.Core
 
         public void LoadFeed(DateTime from, DateTime to)
         {
-            var data = Context.Feed.QueryBars(SymbolCode, priceType, from, to, Context.ExecContext.TimeFrame);
+            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
             AppendData(data);
         }
 
         public void LoadFeed(int size)
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
-            var data = Context.Feed.QueryBars(SymbolCode, priceType, to, -size, Context.ExecContext.TimeFrame);
+            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
             AppendData(data);
         }
 
         public void LoadFeed(DateTime to, int size)
         {
-            var data = Context.Feed.QueryBars(SymbolCode, priceType, to, -size, Context.ExecContext.TimeFrame);
+            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
             AppendData(data);
         }
     }

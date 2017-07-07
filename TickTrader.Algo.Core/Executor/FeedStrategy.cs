@@ -8,23 +8,19 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class FeedStrategy : CrossDomainObject, IFeedFixtureContext, IFeedBuferStrategyContext
+    public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext
     {
-        private SubscriptionManager dispenser;
-        private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
+        private Action<QuoteEntity> _rateUpdateCallback;
+
         private List<Action> setupActions = new List<Action>();
 
-        public FeedStrategy(IPluginFeedProvider feed)
+        public FeedStrategy()
         {
-            if (feed == null)
-                throw new ArgumentNullException("feed");
-
-            this.dispenser = new SubscriptionManager(feed);
-            this.Feed = feed;
         }
 
         internal IFixtureContext ExecContext { get; private set; }
         internal IPluginFeedProvider Feed { get; private set; }
+        internal SubscriptionManager RateDispenser => ExecContext.Dispenser;
 
         public abstract int BufferSize { get; }
         public abstract IFeedBuffer MainBuffer { get; }
@@ -32,37 +28,25 @@ namespace TickTrader.Algo.Core
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
+        protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
 
         public void OnUserSubscribe(string symbolCode, int depth)
         {
-            SubscriptionFixture fixture;
-            if (userSubscriptions.TryGetValue(symbolCode, out fixture))
-            {
-                if (fixture.Depth == depth)
-                    return;
-                dispenser.Remove(fixture);
-            }
-            fixture = new SubscriptionFixture(this, symbolCode, depth);
-            userSubscriptions[symbolCode] = fixture;
-            dispenser.Add(fixture);
+            RateDispenser.SetUserSubscription(symbolCode, depth);
         }
 
         public void OnUserUnsubscribe(string symbolCode)
         {
-            SubscriptionFixture fixture;
-            if (userSubscriptions.TryGetValue(symbolCode, out fixture))
-            {
-                userSubscriptions.Remove(symbolCode);
-                dispenser.Remove(fixture);
-            }
+            RateDispenser.RemoveUserSubscription(symbolCode);
         }
 
-        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy)
+        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, Action<QuoteEntity> rateUpdateCallback)
         {
             ExecContext = executor;
+            _rateUpdateCallback = rateUpdateCallback;
+            Feed = executor.FeedProvider;
             BufferingStrategy = bStrategy;
-            userSubscriptions.Clear();
-            dispenser.Reset();
+            RateDispenser.ClearUserSubscriptions();
             OnInit();
             BufferingStrategy.Init(this);
             BufferingStrategy.Start();
@@ -71,11 +55,13 @@ namespace TickTrader.Algo.Core
 
         internal virtual void Start()
         {
+            RateDispenser.Start();
             Feed.Sync.Invoke(StartStrategy);
         }
 
         internal virtual void Stop()
         {
+            RateDispenser.Stop();
             Feed.Sync.Invoke(StopStrategy);
         }
 
@@ -87,11 +73,14 @@ namespace TickTrader.Algo.Core
         private void StartStrategy()
         {
             Feed.Subscribe(Feed_FeedUpdated);
-            ExecContext.Enqueue(b => BatchBuild(BufferSize));
+            ExecContext.EnqueueTradeUpdate(b => BatchBuild(BufferSize));
 
             // apply snapshot
-            foreach(var quote in Feed.GetSnapshot())
+            foreach (var quote in Feed.GetSnapshot())
+            {
                 ExecContext.Builder.Symbols.SetRate(quote);
+                _rateUpdateCallback(quote);
+            }
         }
 
         private void StopStrategy()
@@ -117,12 +106,12 @@ namespace TickTrader.Algo.Core
         private void Feed_FeedUpdated(QuoteEntity[] updates)
         {
             foreach (var update in updates)
-                ExecContext.Enqueue(update);
+                ExecContext.EnqueueQuote(update);
         }
 
         internal void ApplyUpdate(RateUpdate update)
         {
-            var lastQuote = update.LastQuotes[0];
+            var lastQuote = update.LastQuote;
 
             ExecContext.Builder.Symbols.SetRate(lastQuote);
 
@@ -137,23 +126,29 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.InvokeCalculate(false);
             }
 
-            dispenser.OnUpdateEvent(lastQuote);
+            _rateUpdateCallback((QuoteEntity)lastQuote);
+
+            RateDispenser.OnUpdateEvent(lastQuote);
+        }
+
+        internal RateUpdate InvokeAggregate(RateUpdate last, QuoteEntity quote)
+        {
+            return Aggregate(last, quote);
         }
 
         #region IFeedStrategyContext
 
-        IFixtureContext IFeedFixtureContext.ExecContext { get { return ExecContext; } }
-        IPluginFeedProvider IFeedFixtureContext.Feed { get { return Feed; } }
+        //IPluginFeedProvider IFeedFixtureContext.Feed { get { return Feed; } }
 
-        void IFeedFixtureContext.Add(IFeedFixture subscriber)
-        {
-            dispenser.Add(subscriber);
-        }
+        //void IFeedFixtureContext.Add(IRateSubscription subscriber)
+        //{
+        //    dispenser.Add(subscriber);
+        //}
 
-        void IFeedFixtureContext.Remove(IFeedFixture subscriber)
-        {
-            dispenser.Remove(subscriber);
-        }
+        //void IFeedFixtureContext.Remove(IRateSubscription subscriber)
+        //{
+        //    dispenser.Remove(subscriber);
+        //}
 
         #endregion IFeedStrategyContext
 

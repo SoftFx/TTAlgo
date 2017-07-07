@@ -112,7 +112,7 @@ namespace TickTrader.Algo.Common.Model
             BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
 
             foreach (var fdkPosition in positions)
-                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition));
+                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, orderResolver));
 
             foreach (var fdkOrder in orders)
                 this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, orderResolver));
@@ -176,32 +176,32 @@ namespace TickTrader.Algo.Common.Model
                 OnPositionUpdated(report);
         }
 
-        private void OnPositionUpdated(Position report)
+        private void OnPositionUpdated(Position position)
         {
-            var position = UpsertPosition(report);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Modified, position.ToAlgoPosition()));
+            var model = UpsertPosition(position);
+            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Modified));
         }
 
-        private void OnPositionAdded(Position report)
+        private void OnPositionAdded(Position position)
         {
-            var position = UpsertPosition(report);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Opened, position.ToAlgoPosition()));
+            var model = UpsertPosition(position);
+            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Opened));
         }
 
-        private void OnPositionRemoved(Position report)
+        private void OnPositionRemoved(Position position)
         {
-            PositionModel position;
+            PositionModel model;
 
-            if (!positions.TryGetValue(report.Symbol, out position))
+            if (!positions.TryGetValue(position.Symbol, out model))
                 return;
 
-            positions.Remove(report.Symbol);
-            AlgoEvent_PositionUpdated(new PositionExecReport(OrderExecAction.Closed, position.ToAlgoPosition()));
+            positions.Remove(model.Symbol);
+            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Closed));
         }
 
         private PositionModel UpsertPosition(Position position)
         {
-            var positionModel = new PositionModel(position);
+            var positionModel = new PositionModel(position, orderResolver);
             positions[position.Symbol] = positionModel;
 
             return positionModel;
@@ -232,6 +232,15 @@ namespace TickTrader.Algo.Common.Model
                     OnOrderRemoved(report, OrderExecAction.Canceled);
                     break;
 
+                case ExecutionType.Rejected:
+                    OnOrderRejected(report, OrderExecAction.Rejected);
+                    break;
+
+                case ExecutionType.None:
+                    if (report.OrderStatus == OrderStatus.Rejected)
+                        OnOrderRejected(report, OrderExecAction.Rejected);
+                    break;
+
                 case ExecutionType.Trade:
                     if (report.OrderType == TradeRecordType.Limit
                         || report.OrderType == TradeRecordType.Stop)
@@ -243,17 +252,18 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == TradeRecordType.Position)
                     {
-                        Balance = report.Balance;
+                        if (!double.IsNaN(report.Balance))
+                            Balance = report.Balance;
 
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Closed);
                         else
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == TradeRecordType.Market && Type == AccountType.Net)
+                    else if (report.OrderType == TradeRecordType.Market 
+                        && (Type == AccountType.Net || Type == AccountType.Cash))
                     {
-                        // workaround to get order execution notification
-                        OnOrderRemoved(report, OrderExecAction.Filled);
+                        OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
@@ -293,6 +303,12 @@ namespace TickTrader.Algo.Common.Model
             ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
         }
 
+        private void OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
+        {
+            var order = new OrderModel(report, orderResolver);
+            ExecReportToAlgo(algoAction, OrderEntityAction.None, report, order);
+        }
+
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
         {
             orders.Remove(report.OrderId);
@@ -304,6 +320,11 @@ namespace TickTrader.Algo.Common.Model
         {
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
+        }
+
+        private void OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
+        {
+            ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
         }
 
         private void UpdateAsset(AssetInfo assetInfo)
@@ -341,14 +362,26 @@ namespace TickTrader.Algo.Common.Model
             OrderExecReport algoReport = new OrderExecReport();
             if (newOrder != null)
                 algoReport.OrderCopy = newOrder.ToAlgoOrder();
+            algoReport.OperationId = GetOperationId(report);
             algoReport.OrderId = report.OrderId;
             algoReport.ExecAction = action;
             algoReport.Action = entityAction;
+            if (algoReport.ExecAction == OrderExecAction.Rejected)
+                algoReport.ResultCode = FdkToAlgo.Convert(report.RejectReason, report.Text);
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
             if (report.Assets != null)
                 algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
             AlgoEvent_OrderUpdated(algoReport);
+        }
+
+        private string GetOperationId(ExecutionReport report)
+        {
+            if (!string.IsNullOrEmpty(report.ClosePositionRequestId))
+                return report.ClosePositionRequestId;
+            if (!string.IsNullOrEmpty(report.TradeRequestId))
+                return report.TradeRequestId;
+            return report.ClientOrderId;
         }
 
         AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
@@ -363,9 +396,9 @@ namespace TickTrader.Algo.Common.Model
             return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
         }
 
-        IEnumerable<OrderEntity> IAccountInfoProvider.GetPosition()
+        IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions()
         {
-            throw new NotImplementedException();
+            return Positions.Snapshot.Select(pair => pair.Value.ToReport(OrderExecAction.Opened)).ToList();
         }
 
         IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()

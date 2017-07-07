@@ -33,8 +33,8 @@ namespace TickTrader.BotTerminal
     internal abstract class ChartModelBase : PropertyChangedBase, IAlgoSetupFactory, IDisposable, IAlgoPluginHost
     {
         private Logger logger;
-        private enum States { Idle, LoadingData, Online, Stopping, Closed }
-        private enum Events { Loaded, Stopped }
+        private enum States { Idle, LoadingData, Online, Stopping, Closed, Faulted }
+        private enum Events { Loaded, LoadFailed, Stopped }
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
@@ -80,7 +80,9 @@ namespace TickTrader.BotTerminal
 
             stateController.AddTransition(States.Idle, () => isUpdateRequired && isConnected, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
+            stateController.AddTransition(States.LoadingData, Events.LoadFailed, States.Faulted);
             stateController.AddTransition(States.Online, () => isUpdateRequired && isConnected, States.Stopping);
+            stateController.AddTransition(States.Faulted, () => isUpdateRequired && isConnected, States.Stopping);
             //stateController.AddTransition(States.Stopping, () => isUpdateRequired && isConnected, States.LoadingData);
             stateController.AddTransition(States.Stopping, Events.Stopped, States.Idle);
 
@@ -253,13 +255,13 @@ namespace TickTrader.BotTerminal
                 await LoadData(cToken);
                 ApplyQueue();
                 StartEvent();
+                stateController.PushEvent(Events.Loaded);
             }
             catch (Exception ex)
             {
                 logger.Error("Update ERROR " + ex);
+                stateController.PushEvent(Events.LoadFailed);
             }
-
-            stateController.PushEvent(Events.Loaded);
 
             this.IsLoading = false;
         }
@@ -355,7 +357,7 @@ namespace TickTrader.BotTerminal
             ParamsUnlocked();
         }
 
-        ITradeApi IAlgoPluginHost.GetTradeApi()
+        ITradeExecutor IAlgoPluginHost.GetTradeApi()
         {
             return ClientModel.TradeApi;
         }

@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Common.Model
                 historyFolder = Path.Combine(historyFolder, PathEscaper.Escape(connection.CurrentLogin));
 
             fdkStorage = await Task.Factory.StartNew(
-                () => new DataFeedStorage(historyFolder, StorageProvider.Ntfs, 2, connection.FeedProxy, false, false));
+                () => new DataFeedStorage(historyFolder, StorageProvider.Ntfs, 3, connection.FeedProxy, false, false));
             pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
         }
 

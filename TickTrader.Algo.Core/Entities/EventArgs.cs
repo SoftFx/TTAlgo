@@ -61,9 +61,23 @@ namespace TickTrader.Algo.Core
         public Order Order { get; private set; }
     }
 
+    public class PositionModifiedEventArgsImpl : NetPositionModifiedEventArgs
+    {
+        public PositionModifiedEventArgsImpl(NetPosition oldPos, NetPosition newPos, bool isClosed)
+        {
+            OldPosition = oldPos;
+            NewPosition = newPos;
+            IsClosed = isClosed;
+        }
+
+        public NetPosition OldPosition { get; private set; }
+        public NetPosition NewPosition { get; private set; }
+        public bool IsClosed { get; private set; }
+    }
+
     public class AssetUpdateEventArgsImpl : AssetModifiedEventArgs
     {
-        public AssetUpdateEventArgsImpl(AssetEntity newAsset)
+        public AssetUpdateEventArgsImpl(Asset newAsset)
         {
             this.NewAsset = newAsset;
         }

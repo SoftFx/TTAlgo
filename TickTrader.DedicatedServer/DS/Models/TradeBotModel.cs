@@ -285,8 +285,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
-
-                executor.TradeApi = _client.TradeApi;
+                executor.TradeExecutor = _client.TradeApi;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;

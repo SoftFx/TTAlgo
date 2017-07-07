@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
+    <Compile Include="Bots\LogBot.cs" />
     <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\EnvironmentInfoBot.cs" />
     <Compile Include="Bots\BotLogWriter.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Bots\OpenMarket.cs" />
     <Compile Include="Bots\SubscriptionTestBot.cs" />
     <Compile Include="Bots\SymbolInfoBot.cs" />
+    <Compile Include="Bots\TradeCommandsTest.cs" />
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
     <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Indicators\MultiplePrecisionIndicator.cs" />

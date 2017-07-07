@@ -57,8 +57,7 @@ namespace TickTrader.BotTerminal
         {
             var executor = base.CreateExecutor();
             executor.IsRunningChanged += Executor_IsRunningChanged;
-
-            executor.TradeApi = Host.GetTradeApi();
+            executor.TradeExecutor = Host.GetTradeApi();
             executor.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
             executor.BotWorkingFolder = executor.WorkingFolder;
             EnvService.Instance.EnsureFolder(executor.WorkingFolder);
