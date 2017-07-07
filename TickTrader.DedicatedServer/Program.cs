@@ -16,6 +16,7 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Info;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 
 namespace TickTrader.DedicatedServer
 {

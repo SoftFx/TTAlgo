@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TickTrader.DedicatedServer.WebAdmin
+namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
 {
     public class AppSettings
     {

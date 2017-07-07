@@ -31,7 +31,6 @@ namespace TickTrader.DedicatedServer.WebAdmin
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"WebAdmin/appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
