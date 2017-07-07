@@ -5,8 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Razor;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
 using TickTrader.DedicatedServer.WebAdmin.Server.Core;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
@@ -64,8 +62,11 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     .AddStorageOptions(Configuration.GetSection("PackageStorage"));
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
+
+            appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
+
             loggerFactory.AddNLog();
             app.AddNLogWeb();
 
@@ -85,10 +86,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"WebAdmin/wwwroot")),
-            });
+            app.UseStaticFiles();
 
             app.UseJwtAuthentication();
             
@@ -125,5 +123,12 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     defaults: new { controller = "Home", action = "Index" });
             });
         }
+
+        private void Shutdown(IServiceProvider services)
+        {
+            var server = services.GetRequiredService<IDedicatedServer>();
+
+            server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
+        }       
     }
 }

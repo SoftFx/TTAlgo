@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
-using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core

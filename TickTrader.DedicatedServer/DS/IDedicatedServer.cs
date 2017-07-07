@@ -20,6 +20,9 @@ namespace TickTrader.DedicatedServer.DS
         IEnumerable<IAccount> Accounts { get; }
         IEnumerable<ITradeBot> TradeBots { get; }
         event Action<IAccount, ChangeAction> AccountChanged;
+
+        Task ShutdownAsync();
+
         event Action<ITradeBot, ChangeAction> BotChanged;
         event Action<ITradeBot> BotStateChanged;
         event Action<IPackage, ChangeAction> PackageChanged;
@@ -51,6 +54,8 @@ namespace TickTrader.DedicatedServer.DS
 
         ITradeBot AddBot(TradeBotModelConfig config);
         void RemoveBot(string botId, bool cleanLog = true, bool cleanAlgoData = true);
+        Task ShutdownAsync();
+
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
