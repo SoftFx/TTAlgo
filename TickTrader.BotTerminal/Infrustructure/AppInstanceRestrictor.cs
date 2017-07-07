@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
                     return BitConverter.ToInt32(buffer, 0);
                 }
             }
-            catch (IOException iex)
+            catch (IOException)
             {
                 return null;
             }

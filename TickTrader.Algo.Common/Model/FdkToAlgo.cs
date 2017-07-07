@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -107,7 +108,30 @@ namespace TickTrader.Algo.Common.Model
                 CommissionChargeMethod = Convert(info.CommissionChargeMethod),
                 CommissionChargeType = Convert(info.CommissionChargeType),
                 CommissionType = Convert(info.CommissionType),
+                ContractSizeFractional = info.RoundLot,
+                MarginFactorFractional = info.MarginFactorFractional ?? 1,
+                StopOrderMarginReduction = info.StopOrderMarginReduction ?? 0,
+                MarginHedged = info.MarginHedge,
+                MarginMode = Convert(info.MarginCalcMode),
+                SwapEnabled = true, // ???
+                SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
+                SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
+                Security = info.SecurityName,
+                SortOrder = 0 // ??
             };
+        }
+
+        public static TickTrader.BusinessObjects.MarginCalculationModes Convert(MarginCalcMode mode)
+        {
+            switch (mode)
+            {
+                case MarginCalcMode.Cfd: return BusinessObjects.MarginCalculationModes.CFD;
+                case MarginCalcMode.CfdIndex: return BusinessObjects.MarginCalculationModes.CFD_Index;
+                case MarginCalcMode.CfdLeverage: return BusinessObjects.MarginCalculationModes.CFD_Leverage;
+                case MarginCalcMode.Forex: return BusinessObjects.MarginCalculationModes.Forex;
+                case MarginCalcMode.Futures: return BusinessObjects.MarginCalculationModes.Futures;
+                default: throw new NotImplementedException();
+            }
         }
 
         public static CurrencyEntity Convert(CurrencyInfo info)
@@ -115,6 +139,7 @@ namespace TickTrader.Algo.Common.Model
             return new CurrencyEntity(info.Name)
             {
                 Digits = info.Precision,
+                SortOrder = info.SortOrder
             };
         }
 
@@ -210,6 +235,32 @@ namespace TickTrader.Algo.Common.Model
 
                 default: throw new ArgumentException("Unsupported commission charge method: " + fdkChargeMethod);
             }
+        }
+
+        public static Api.OrderCmdResultCodes Convert(RejectReason reason, string message)
+        {
+            switch (reason)
+            {
+                case RejectReason.DealerReject: return Api.OrderCmdResultCodes.DealerReject;
+                case RejectReason.UnknownSymbol: return Api.OrderCmdResultCodes.SymbolNotFound;
+                case RejectReason.UnknownOrder: return Api.OrderCmdResultCodes.OrderNotFound;
+                case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
+                case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
+                case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
+                case RejectReason.Other:
+                    {
+                        if (message == "Trade Not Allowed")
+                            return Api.OrderCmdResultCodes.TradeNotAllowed;
+                        break;
+                    }
+                case RejectReason.None:
+                    {
+                        if (message.StartsWith("Order Not Found"))
+                            return Api.OrderCmdResultCodes.OrderNotFound;
+                        break;
+                    }
+            }
+            return Api.OrderCmdResultCodes.UnknownError;
         }
     }
 }

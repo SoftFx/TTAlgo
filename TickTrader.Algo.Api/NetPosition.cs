@@ -11,10 +11,15 @@ namespace TickTrader.Algo.Api
         string Symbol { get; }
         double Volume { get; }
         OrderSide Side { get; }
+        double Margin { get; }
+        double Profit { get; }
+        double Commission { get; }
+        double Swap { get; }
     }
 
     public interface NetPositionList : IEnumerable<NetPosition>
     {
+        int Count { get; }
         NetPosition this[string symbol] { get; }
 
         event Action<NetPositionModifiedEventArgs> Modified;

@@ -27,6 +27,8 @@ namespace TickTrader.Algo.Api
         double ExecVolume { get; }
         double LastFillPrice { get; }
         double LastFillVolume { get; }
+        double Margin { get; }
+        double Profit { get; }
     }
 
     public enum OrderType { Market, Limit, Stop, StopLimit, Position }

@@ -10,17 +10,27 @@ namespace TickTrader.Algo.Core
 {
     internal class SubscriptionManager
     {
-        private IPluginFeedProvider feed;
-        private Dictionary<string, SubscriptionSummary> subscribers = new Dictionary<string, SubscriptionSummary>();
+        private IFixtureContext _context;
+        //private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
+        //private HashSet<IAllRatesSubscription> allSymbolsSubscribers = new HashSet<IAllRatesSubscription>();
+        private Dictionary<string, SubscriptionCollection> subscribersBySymbol = new Dictionary<string, SubscriptionCollection>();
 
-        public SubscriptionManager(IPluginFeedProvider feed)
+        public SubscriptionManager(IFixtureContext context)
         {
-            this.feed = feed;
+            _context = context;
         }
 
-        public void Reset()
+        public void Start()
         {
-            subscribers.Clear();
+            foreach (var entry in subscribersBySymbol)
+            {
+                if (entry.Value.GetMaxDepth() != 1)
+                    UpdateSubscription(entry.Key, entry.Value);
+            }
+        }
+
+        public void Stop()
+        {
         }
 
         public void OnUpdateEvent(Quote quote)
@@ -28,19 +38,73 @@ namespace TickTrader.Algo.Core
             GetListOrNull(quote.Symbol)?.OnUpdate(quote);
         }
 
-        public void Add(IFeedFixture fixture)
+        public void SetUserSubscription(string symbol, int depth)
         {
-            var list = GetOrAddList(fixture.SymbolCode);
-            list.Add(fixture);
-            UpdateSubscription(fixture.SymbolCode, list);
+            var list = GetOrAddList(symbol);
+            if (list.UserSubscription != null && list.UserSubscription.Depth == depth)
+                return;
+            list.UserSubscription = new SubscriptionFixture(_context, symbol, depth);
+            UpdateSubscription(symbol, list);
         }
 
-        public void Remove(IFeedFixture fixture)
+        public void RemoveUserSubscription(string symbol)
         {
-            var list = GetOrAddList(fixture.SymbolCode);
-            list.Remove(fixture);
-            UpdateSubscription(fixture.SymbolCode, list);
+            var list = GetOrAddList(symbol);
+            list.UserSubscription = null;
+            UpdateSubscription(symbol, list);
         }
+
+        public void ClearUserSubscriptions()
+        {
+            foreach (var collection in subscribersBySymbol.Values)
+                collection.UserSubscription = null;
+        }
+
+        private void UpdateSubscription(string symbol, SubscriptionCollection subscribers)
+        {
+            if (_context == null)
+                return;
+
+            int newDepth = subscribers.GetMaxDepth();
+            if (newDepth != subscribers.CurrentDepth)
+            {
+                var request = new CrossdomainRequest() { Feed = _context.FeedProvider, Symbol = symbol, Depth = newDepth };
+                _context.FeedProvider.Sync.Invoke(request.SetDepth);
+            }
+        }
+
+        private SubscriptionCollection GetOrAddList(string symbolCode)
+        {
+            SubscriptionCollection list;
+            if (!subscribersBySymbol.TryGetValue(symbolCode, out list))
+            {
+                list = new SubscriptionCollection();
+                subscribersBySymbol.Add(symbolCode, list);
+            }
+            return list;
+        }
+
+        private SubscriptionCollection GetListOrNull(string symbolCode)
+        {
+            SubscriptionCollection list;
+            subscribersBySymbol.TryGetValue(symbolCode, out list);
+            return list;
+        }
+
+        //private static int GetMaxDepth(List<IRateSubscription> subscribersList)
+        //{
+        //    int max = 1;
+
+        //    foreach (var s in subscribersList)
+        //    {
+        //        if (s.Depth == 0)
+        //            return 0;
+        //        if (s.Depth > max)
+        //            max = s.Depth;
+        //    }
+
+        //    return max;
+        //}
 
         [Serializable]
         private class CrossdomainRequest
@@ -60,88 +124,41 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private void UpdateSubscription(string symbol, SubscriptionSummary subscribers)
+        private class SubscriptionCollection
         {
-            int newDepth = subscribers.GetMaxDepth();
-            if (newDepth != subscribers.CurrentDepth)
+            public SubscriptionCollection()
             {
-                var request = new CrossdomainRequest() { Feed = feed, Symbol = symbol, Depth = newDepth };
-                feed.Sync.Invoke(request.SetDepth);
-            }
-        }
-
-        private SubscriptionSummary GetOrAddList(string symbolCode)
-        {
-            SubscriptionSummary list;
-            if (!subscribers.TryGetValue(symbolCode, out list))
-            {
-                list = new SubscriptionSummary();
-                subscribers.Add(symbolCode, list);
-            }
-            return list;
-        }
-
-        private SubscriptionSummary GetListOrNull(string symbolCode)
-        {
-            SubscriptionSummary list;
-            subscribers.TryGetValue(symbolCode, out list);
-            return list;
-        }
-
-        private static int GetMaxDepth(List<IFeedFixture> subscribersList)
-        {
-            int max = 1;
-
-            foreach (var s in subscribersList)
-            {
-                if (s.Depth == 0)
-                    return 0;
-                if (s.Depth > max)
-                    max = s.Depth;
-            }
-
-            return max;
-        }
-
-        private class SubscriptionSummary
-        {
-            public SubscriptionSummary()
-            {
-                Subscribers = new List<IFeedFixture>();
                 CurrentDepth = 1;
             }
 
-            public List<IFeedFixture> Subscribers { get; private set; }
+            public SubscriptionFixture UserSubscription { get; set; }
             public int CurrentDepth { get; private set; }
-
-            public void Add(IFeedFixture fixture)
-            {
-                Subscribers.Add(fixture);
-            }
-
-            public void Remove(IFeedFixture fixture)
-            {
-                Subscribers.Remove(fixture);
-            }
 
             public void OnUpdate(Quote quote)
             {
-                Subscribers.ForEach(s => s.OnUpdateEvent(quote));
+                UserSubscription?.OnUpdateEvent(quote);
             }
 
             public int GetMaxDepth()
             {
-                int max = 1;
+                //int max = 1;
 
-                foreach (var s in Subscribers)
-                {
-                    if (s.Depth == 0)
-                        return 0;
-                    if (s.Depth > max)
-                        max = s.Depth;
-                }
+                //foreach (var s in UseSubscriptions)
+                //{
+                //    if (s.Depth == 0)
+                //        return 0;
+                //    if (s.Depth > max)
+                //        max = s.Depth;
+                //}
 
-                return max;
+                //return max;
+
+                var result = UserSubscription?.Depth;
+
+                if (result == null || result < 0)
+                    return 1;
+
+                return result.Value;
             }
         }
     }

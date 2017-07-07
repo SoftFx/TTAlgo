@@ -102,6 +102,16 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.CloseOrder(true, orderId, volume);
         }
 
+        public OrderCmdResult CloseOrderBy(string orderId, string byOrderId)
+        {
+            return context.TradeApi.CloseOrderBy(false, orderId, byOrderId).Result;
+        }
+
+        public Task<OrderCmdResult> CloseOrderByAsync(string orderId, string byOrderId)
+        {
+            return context.TradeApi.CloseOrderBy(true, orderId, byOrderId);
+        }
+
         public OrderCmdResult CancelOrder(string orderId)
         {
             return context.TradeApi.CancelOrder(false, orderId).Result;
