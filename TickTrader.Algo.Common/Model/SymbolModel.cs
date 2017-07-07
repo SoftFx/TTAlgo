@@ -62,18 +62,7 @@ namespace TickTrader.Algo.Common.Model
 
         TickTrader.BusinessObjects.MarginCalculationModes ISymbolInfo.MarginMode
         {
-            get
-            {
-                switch (Descriptor.MarginCalcMode)
-                {
-                    case MarginCalcMode.Cfd: return BusinessObjects.MarginCalculationModes.CFD;
-                    case MarginCalcMode.CfdIndex: return BusinessObjects.MarginCalculationModes.CFD_Index;
-                    case MarginCalcMode.CfdLeverage: return BusinessObjects.MarginCalculationModes.CFD_Leverage;
-                    case MarginCalcMode.Forex: return BusinessObjects.MarginCalculationModes.Forex;
-                    case MarginCalcMode.Futures: return BusinessObjects.MarginCalculationModes.Futures;
-                    default: throw new NotImplementedException();
-                }
-            }
+            get { return FdkToAlgo.Convert(Descriptor.MarginCalcMode); }
         }
 
         #endregion

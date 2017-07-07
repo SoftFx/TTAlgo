@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Core.UnitTest
             Assert.AreEqual(DateTime.Parse("2017-01-16 18:32"), secondFixture.Buffer[2].OpenTime);
         }
 
-        private static IFeedFixtureContext CreateBarBasedContext()
+        private static IFixtureContext CreateBarBasedContext()
         {
             var context = new MockFixtureContext()
             {
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Core.UnitTest
                 TimePeriodEnd = DateTime.MaxValue
             };
 
-            return new MockFeedFixtureContext(context);
+            return context;
         }
     }
 }

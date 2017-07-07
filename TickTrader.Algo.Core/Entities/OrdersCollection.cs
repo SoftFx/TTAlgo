@@ -17,29 +17,37 @@ namespace TickTrader.Algo.Core
         internal OrderList OrderListImpl { get { return fixture; } }
         internal bool IsEnabled { get { return true; } }
 
-        public OrdersCollection(PluginBuilder builder)
+        internal OrdersCollection(PluginBuilder builder)
         {
             this.builder = builder;
         }
 
-        public void Add(OrderEntity entity)
+        public OrderAccessor Add(OrderEntity entity)
         {
-            fixture.Add(entity);
+            var result = fixture.Add(entity);
+            Added?.Invoke(result);
+            return result;
         }
 
-        public void Replace(OrderEntity entity)
+        public OrderAccessor Replace(OrderEntity entity)
         {
-            fixture.Replace(entity, IsEnabled);
+            var order = fixture.Replace(entity, IsEnabled);
+            if (order != null)
+                Replaced?.Invoke(order);
+            return order;
         }
 
-        public Order GetOrderOrNull(string id)
+        public OrderAccessor GetOrderOrNull(string id)
         {
-            return fixture[id];
+            return fixture.GetOrNull(id);
         }
 
-        public void Remove(string orderId)
+        public OrderAccessor Remove(string orderId)
         {
-            fixture.Remove(orderId);
+            var order = fixture.Remove(orderId);
+            if (order != null)
+                Removed(order);
+            return order;
         }
 
         public void FireOrderOpened(OrderOpenedEventArgs args)
@@ -72,9 +80,13 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.FireOrderFilled(args));
         }
 
-        internal class OrdersFixture : OrderList
+        public event Action<OrderAccessor> Added;
+        public event Action<OrderAccessor> Removed;
+        public event Action<OrderAccessor> Replaced;
+
+        internal class OrdersFixture : OrderList, IEnumerable<OrderAccessor>
         {
-            private ConcurrentDictionary<string, OrderEntity> orders = new ConcurrentDictionary<string, OrderEntity>();
+            private ConcurrentDictionary<string, OrderAccessor> orders = new ConcurrentDictionary<string, OrderAccessor>();
 
             public int Count { get { return orders.Count; } }
 
@@ -82,29 +94,46 @@ namespace TickTrader.Algo.Core
             {
                 get
                 {
-                    OrderEntity entity;
+                    OrderAccessor entity;
                     if (!orders.TryGetValue(id, out entity))
-                        return null;
+                        return Null.Order;
                     return entity;
                 }
             }
 
-            public void Add(OrderEntity entity)
+            public OrderAccessor Add(OrderEntity entity)
             {
-                orders.TryAdd(entity.Id, entity);
+                var accessor = new OrderAccessor(entity);
+                if (!orders.TryAdd(entity.Id, accessor))
+                    throw new ArgumentException("Order #" + entity.Id + " already exist!");
+                return accessor;
             }
 
-            public void Replace(OrderEntity entity, bool fireEvent)
+            public OrderAccessor Replace(OrderEntity entity, bool fireEvent)
             {
-                var oldValue = this[entity.Id];
-                if (oldValue != null && oldValue.Modified <= entity.Modified)
-                    orders[entity.Id] = entity;
+                OrderAccessor order;
+
+                if (this.orders.TryGetValue(entity.Id, out order))
+                {
+                    if (order.Modified <= entity.Modified)
+                        order.Update(entity);
+                }
+
+                return order;
             }
 
-            public void Remove(string orderId)
+            public OrderAccessor Remove(string orderId)
             {
-                OrderEntity removed;
+                OrderAccessor removed;
                 orders.TryRemove(orderId, out removed);
+                return removed;
+            }
+
+            public OrderAccessor GetOrNull(string orderId)
+            {
+                OrderAccessor entity;
+                orders.TryGetValue(orderId, out entity);
+                return entity;
             }
 
             public void FireOrderOpened(OrderOpenedEventArgs args)
@@ -144,14 +173,24 @@ namespace TickTrader.Algo.Core
             public event Action<OrderExpiredEventArgs> Expired = delegate { };
             public event Action<OrderFilledEventArgs> Filled = delegate { };
 
+            public IEnumerator<OrderAccessor> GetTypedEnumerator()
+            {
+                return orders.Values.GetEnumerator();
+            }
+
             public IEnumerator<Order> GetEnumerator()
             {
-                return this.orders.Values.GetEnumerator();
+                return orders.Values.GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return this.orders.Values.GetEnumerator();
+                return orders.Values.GetEnumerator();
+            }
+
+            IEnumerator<OrderAccessor> IEnumerable<OrderAccessor>.GetEnumerator()
+            {
+                return orders.Values.GetEnumerator();
             }
         }
     }

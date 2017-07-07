@@ -7,17 +7,15 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal abstract class FeedFixture : IFeedFixture
+    internal abstract class FeedFixture
     {
-        public FeedFixture(string symbolCode, IFeedFixtureContext context)
+        public FeedFixture(string symbolCode, IFixtureContext context)
         {
             this.SymbolCode = symbolCode;
             this.Context = context;
-
-            context.Add(this);
         }
 
-        protected IFeedFixtureContext Context { get; private set; }
+        protected IFixtureContext Context { get; private set; }
         public string SymbolCode { get; private set; }
         public int Depth { get { return 1; } }
 
@@ -27,11 +25,6 @@ namespace TickTrader.Algo.Core
         //{
         //    Context.Subscribe(symbol, GetMaxDepth(subscribers));
         //}
-
-        public void Dispose()
-        {
-            Context.Remove(this);
-        }
 
         public void OnBufferUpdated(Quote quote)
         {

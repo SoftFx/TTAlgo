@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
             string msg = entry;
             try
             {
-                msg = string.Format(entry);
+                msg = string.Format(entry, parameters);
             }
             catch { }
 
@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
             string msg = entry;
             try
             {
-                msg = string.Format(entry);
+                msg = string.Format(entry, parameters);
             }
             catch { }
 
