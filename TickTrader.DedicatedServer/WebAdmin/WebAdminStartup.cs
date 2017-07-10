@@ -34,6 +34,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
         }
 
         public IConfigurationRoot Configuration { get; private set; }
+        private string JwtKey => $"{Configuration.GetSecretKey()}{Configuration.GetCredentials().Password}";
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -44,7 +45,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
             services.AddTransient<ITokenOptions>(x => new TokenOptions
             {
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSecretKey())),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
                     SecurityAlgorithms.HmacSha256)
             });
             services.AddTransient<IAuthManager, AuthManager>();
@@ -103,7 +104,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSecretKey())),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }

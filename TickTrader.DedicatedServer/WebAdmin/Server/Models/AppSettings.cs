@@ -8,6 +8,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
         [JsonProperty("server.urls")]
         public string ServerUrls { get; set; }
         public string SecretKey { get; set; }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ServerCredentials Credentials { get; set; }
 
 

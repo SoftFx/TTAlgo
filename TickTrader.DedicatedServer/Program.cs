@@ -72,10 +72,18 @@ namespace TickTrader.DedicatedServer
                 {
                     CreateDefaultConfig(configFile);
                 }
-                else if (string.IsNullOrWhiteSpace(appSettings.SecretKey))
+                else
                 {
-                    appSettings.SecretKey = AppSettings.RandomSecretKey;
-                    System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings));
+                    if (string.IsNullOrWhiteSpace(appSettings.SecretKey))
+                    {
+                        appSettings.SecretKey = AppSettings.RandomSecretKey;
+                        SaveConfig(configFile, appSettings);
+                    }
+                    if(appSettings.Credentials == null)
+                    {
+                        appSettings.Credentials = AppSettings.DefaultCredentials;
+                        SaveConfig(configFile, appSettings);
+                    }
                 }
             }
 
@@ -89,7 +97,11 @@ namespace TickTrader.DedicatedServer
         private static void CreateDefaultConfig(string configFile)
         {
             var appSettings = AppSettings.Default;
+            SaveConfig(configFile, appSettings);
+        }
 
+        private static void SaveConfig(string configFile, AppSettings appSettings)
+        {
             System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings));
         }
 
