@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Common.Model.Config;
@@ -11,17 +9,31 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public class BarToDoubleInput : BarInputBase
+    public class BarToDoubleInputSetup : BarInputSetupBase
     {
-        private Mapping selectedMapping;
-        private BarPriceType defPriceType;
-        private List<Mapping> mappings = new List<Mapping>();
+        private Mapping _selectedMapping;
+        private BarPriceType _defPriceType;
+        private List<Mapping> _mappings = new List<Mapping>();
 
-        public BarToDoubleInput(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IAlgoGuiMetadata metadata = null)
+
+        public Mapping SelectedMapping
+        {
+            get { return _selectedMapping; }
+            set
+            {
+                _selectedMapping = value;
+                NotifyPropertyChanged(nameof(Mapping));
+            }
+        }
+
+        public IEnumerable<Mapping> AvailableMappings => _mappings;
+
+
+        public BarToDoubleInputSetup(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IAlgoGuiMetadata metadata = null)
             : base(descriptor, symbolCode, metadata?.Symbols)
         {
             SetMetadata(descriptor);
-            this.defPriceType = defPriceType;
+            _defPriceType = defPriceType;
 
             AddMapping("Open", b => b.Open);
             AddMapping("Close", b => b.Close);
@@ -39,8 +51,8 @@ namespace TickTrader.Algo.Common.Model.Setup
                 {
                     try
                     {
-                        mappings.Add(new ReductionMapping("Bid." + d.DisplayName, BarPriceType.Bid, d));
-                        mappings.Add(new ReductionMapping("Ask." + d.DisplayName, BarPriceType.Ask, d));
+                        _mappings.Add(new ReductionMapping("Bid." + d.DisplayName, BarPriceType.Bid, d));
+                        _mappings.Add(new ReductionMapping("Ask." + d.DisplayName, BarPriceType.Ask, d));
                     }
                     catch (Exception)
                     {
@@ -49,7 +61,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
             }
 
-            mappings.Sort((x, y) => x.Name.CompareTo(y.Name));
+            _mappings.Sort((x, y) => x.Name.CompareTo(y.Name));
 
             if (metadata != null)
             {
@@ -57,7 +69,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 {
                     try
                     {
-                        mappings.Add(new FullBarReductionMapping(d.DisplayName, d));
+                        _mappings.Add(new FullBarReductionMapping(d.DisplayName, d));
                     }
                     catch (Exception)
                     {
@@ -67,27 +79,10 @@ namespace TickTrader.Algo.Common.Model.Setup
             }   
         }
 
-        private void AddMapping(string name, Func<Bar, double> formula)
-        {
-            mappings.Add(new FormulaMapping("Bid." + name, BarPriceType.Bid, formula));
-            mappings.Add(new FormulaMapping("Ask." + name, BarPriceType.Ask, formula));
-        }
-
-        public Mapping SelectedMapping
-        {
-            get { return selectedMapping; }
-            set
-            {
-                this.selectedMapping = value;
-                NotifyPropertyChanged(nameof(Mapping));
-            }
-        }
-
-        public IEnumerable<Mapping> AvailableMappings => mappings;
 
         public override void Apply(IPluginSetupTarget target)
         {
-            selectedMapping.MapInput(target.GetFeedStrategy<BarStrategy>(), Descriptor.Id, SelectedSymbol.Name);
+            _selectedMapping.MapInput(target.GetFeedStrategy<BarStrategy>(), Descriptor.Id, SelectedSymbol.Name);
         }
 
         public override void Reset()
@@ -96,82 +91,111 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetDefaultMapping();
         }
 
-        private void SetDefaultMapping()
-        {
-            SelectedMapping = mappings.FirstOrDefault(m => m.Name == defPriceType + ".Close");
-        }
-
         public override void Load(Property srcProperty)
         {
-            base.Load(srcProperty);
-
-            //var otherInput = srcProperty as BarToDoubleInput;
-            //SelectedSymbol = otherInput.SelectedSymbol;
-            //SelectedMapping = mappings.FirstOrDefault(m => m.Name == otherInput.selectedMapping.Name);
-            //if (selectedMapping == null)
-            //    SetDefaultMapping();
+            var input = srcProperty as BarToDoubleInput;
+            if (input != null)
+            {
+                _selectedMapping = AvailableMappings.FirstOrDefault(m => m.Name == input.SelectedMapping);
+                if (_selectedMapping == null)
+                {
+                    SetDefaultMapping();
+                }
+                LoadConfig(input);
+            }
         }
+
+        public override Property Save()
+        {
+            var input = new BarToDoubleInput { SelectedMapping = SelectedMapping.Name };
+            SaveConfig(input);
+            return input;
+        }
+
+
+        private void AddMapping(string name, Func<Bar, double> formula)
+        {
+            _mappings.Add(new FormulaMapping("Bid." + name, BarPriceType.Bid, formula));
+            _mappings.Add(new FormulaMapping("Ask." + name, BarPriceType.Ask, formula));
+        }
+
+        private void SetDefaultMapping()
+        {
+            SelectedMapping = _mappings.FirstOrDefault(m => m.Name == _defPriceType + ".Close");
+        }
+
 
         public abstract class Mapping
         {
+            public string Name { get; private set; }
+
+
             public Mapping(string name)
             {
-                this.Name = name;
+                Name = name;
             }
 
-            internal abstract void MapInput(BarStrategy strategy, string inputName, string symbol);
 
-            public string Name { get; private set; }
+            internal abstract void MapInput(BarStrategy strategy, string inputName, string symbol);
         }
+
 
         private class FormulaMapping : Mapping
         {
-            private Func<Bar, double> formula;
-            private BarPriceType priceType;
+            private Func<Bar, double> _formula;
+            private BarPriceType _priceType;
+
 
             public FormulaMapping(string name, BarPriceType priceType, Func<Bar, double> formula) : base(name)
             {
-                this.formula = formula;
-                this.priceType = priceType;
+                _formula = formula;
+                _priceType = priceType;
             }
+
 
             internal override void MapInput(BarStrategy strategy, string inputName, string symbol)
             {
-                strategy.MapInput(inputName, symbol, priceType, formula);
+                strategy.MapInput(inputName, symbol, _priceType, _formula);
             }
         }
 
+
         private class ReductionMapping : Mapping
         {
-            private BarToDoubleReduction reduction;
-            private BarPriceType priceType;
+            private BarToDoubleReduction _reduction;
+            private BarPriceType _priceType;
+
 
             public ReductionMapping(string name, BarPriceType priceType, ReductionDescriptor descriptor)
                 : base(name)
             {
-                this.reduction = descriptor.CreateInstance<BarToDoubleReduction>();
-                this.priceType = priceType;
+                _reduction = descriptor.CreateInstance<BarToDoubleReduction>();
+                _priceType = priceType;
             }
+
 
             internal override void MapInput(BarStrategy strategy, string inputName, string symbol)
             {
-                strategy.MapInput(inputName, symbol, priceType, reduction.Reduce);
+                strategy.MapInput(inputName, symbol, _priceType, _reduction.Reduce);
             }
         }
 
+
         private class FullBarReductionMapping : Mapping
         {
-            private FullBarToDoubleReduction reduction;
+            private FullBarToDoubleReduction _reduction;
+
 
             public FullBarReductionMapping(string name, ReductionDescriptor descriptor)
                 : base(name)
             {
-                this.reduction = descriptor.CreateInstance<FullBarToDoubleReduction>();
+                _reduction = descriptor.CreateInstance<FullBarToDoubleReduction>();
             }
+
 
             internal override void MapInput(BarStrategy strategy, string inputName, string symbol)
             {
-                strategy.MapInput(inputName, symbol, reduction.Reduce);
+                strategy.MapInput(inputName, symbol, _reduction.Reduce);
             }
         }
     }
