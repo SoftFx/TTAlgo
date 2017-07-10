@@ -242,6 +242,7 @@ namespace TickTrader.Algo.Core
                 builder.TradeApi = accFixture;
                 builder.Id = _botInstanceId;
                 builder.Isolated = _isolated;
+                builder.Permissions = _permissions;
                 builder.Diagnostics = this;
                 builder.Logger = pluginLogger ?? Null.Logger;
                 builder.OnAsyncAction = OnAsyncAction;

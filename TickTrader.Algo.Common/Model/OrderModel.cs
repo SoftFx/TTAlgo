@@ -433,7 +433,7 @@ namespace TickTrader.Algo.Common.Model
                 StopLoss = stopLoss ?? double.NaN,
                 TakeProfit = takeProfit ?? double.NaN,
                 Comment = this.Comment,
-                Tag = this.Tag,
+                UserTag = this.Tag,
                 InstanceId = this.InstanceId,
                 Created = this.Created ?? DateTime.MinValue,
                 Modified = this.Modified ?? DateTime.MinValue,

@@ -42,7 +42,8 @@ namespace TickTrader.Algo.Core
                 StopLoss = sl ?? double.NaN,
                 TakeProfit = tp ?? double.NaN,
                 Comment = comment,
-                Tag = isolationTag
+                UserTag = tag,
+                InstanceId = _isolationTag,
             };
 
             var smbMetadata = symbols.List[symbol];
@@ -64,7 +65,7 @@ namespace TickTrader.Algo.Core
                 LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
 
-                resultEntity = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, tag);
+                resultEntity = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
 
             	if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
             	{
