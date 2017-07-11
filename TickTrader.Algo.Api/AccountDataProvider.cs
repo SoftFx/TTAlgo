@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Api
         OrderList Orders { get; }
         NetPositionList NetPositions { get; }
         AssetList Assets { get; }
+        TradeHistory TradeHistory { get; }
 
         OrderList OrdersByTag(string orderTag);
         OrderList OrdersBySymbol(string symbol);

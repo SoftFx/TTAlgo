@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
         private LogFixture pluginLogger;
         private IPluginMetadata metadata;
         private IPluginFeedProvider feedProvider;
+        private ITradeHistoryProvider tradeHistoryProvider;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
         private SubscriptionManager dispenser;
@@ -62,6 +63,19 @@ namespace TickTrader.Algo.Core
                 {
                     ThrowIfRunning();
                     accFixture.DataProvider = value;
+                }
+            }
+        }
+
+        public ITradeHistoryProvider TradeHistoryProvider
+        {
+            get { return tradeHistoryProvider; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+                    tradeHistoryProvider = value?? throw new InvalidOperationException("TradeHistoryProvider cannot be null!");
                 }
             }
         }
@@ -225,6 +239,7 @@ namespace TickTrader.Algo.Core
                 InitMetadata();
                 InitWorkingFolder();
                 builder.TradeApi = accFixture;
+                builder.TradeHistoryProvider = tradeHistoryProvider;
                 builder.Id = _botInstanceId;
                 builder.Isolated = _isolated;
                 builder.Diagnostics = this;

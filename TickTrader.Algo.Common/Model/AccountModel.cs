@@ -15,6 +15,7 @@ using TickTrader.Algo.Api;
 using Machinarium.Qnil;
 using System.Diagnostics;
 using TickTrader.Algo.Common.Lib;
+using FDK = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -90,7 +91,7 @@ namespace TickTrader.Algo.Common.Model
         private void UpdateData(AccountInfo accInfo,
             IDictionary<string, CurrencyInfo> currencies,
             IOrderDependenciesResolver orderResolver,
-            IEnumerable<TradeRecord> orders,
+            IEnumerable<FDK.TradeRecord> orders,
             IEnumerable<Position> positions,
             IEnumerable<AssetInfo> assets)
         {

@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Core
         public DiagnosticInfo Diagnostics { get; set; }
         public ITradeApi TradeApi { get; set; }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
+        public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public Action<string, int> OnSubscribe { get; set; }
         public Action<string> OnUnsubscribe { get; set; }
         public Action<Exception> OnException { get; set; }

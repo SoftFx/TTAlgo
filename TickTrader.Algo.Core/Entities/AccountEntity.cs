@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, OrderFilteredCollection> bySymbolFilterCache;
         private Dictionary<string, OrderFilteredCollection> byTagFilterCache;
         private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
+        private TradeHistoryAdapter _historyAdapter;
 
         public AccountEntity(PluginBuilder builder)
         {
@@ -21,6 +22,8 @@ namespace TickTrader.Algo.Core
             Orders = new OrdersCollection(builder);
             NetPositions = new PositionCollection(builder);
             Assets = new AssetsCollection(builder);
+
+            _historyAdapter = new TradeHistoryAdapter();
 
             NetPositions.PositionUpdated += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.AddedModified);
             NetPositions.PositionRemoved += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.Removed);
@@ -31,6 +34,7 @@ namespace TickTrader.Algo.Core
         public OrdersCollection Orders { get; private set; }
         public PositionCollection NetPositions { get; private set; }
         public AssetsCollection Assets { get; private set; }
+        public ITradeHistoryProvider HistoryProvider { get { return _historyAdapter.Provider; } set { _historyAdapter.Provider = value; } }
 
         public string Id { get; set; }
         public double Balance { get; set; }
@@ -114,6 +118,7 @@ namespace TickTrader.Algo.Core
 
         AssetList AccountDataProvider.Assets { get { return Assets.AssetListImpl; } }
         NetPositionList AccountDataProvider.NetPositions { get { return NetPositions.PositionListImpl; } }
+        TradeHistory AccountDataProvider.TradeHistory => _historyAdapter;
 
         public double Equity { get; set; }
         public double Margin { get; set; }
