@@ -22,9 +22,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
-    public class WebAdminStartup
+    public class Startup
     {
-        public WebAdminStartup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -64,7 +64,6 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-
             appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
 
             loggerFactory.AddNLog();
@@ -80,6 +79,8 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     HotModuleReplacement = true,
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
+                app.UseSwagger();
+                app.UseSwaggerUi();
             }
             else
             {
@@ -89,11 +90,8 @@ namespace TickTrader.DedicatedServer.WebAdmin
             app.UseStaticFiles();
 
             app.UseJwtAuthentication();
-            
-            app.ObserveDedicatedServer();
 
-            app.UseSwagger();
-            app.UseSwaggerUi();
+            app.ObserveDedicatedServer();
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
@@ -129,6 +127,6 @@ namespace TickTrader.DedicatedServer.WebAdmin
             var server = services.GetRequiredService<IDedicatedServer>();
 
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
-        }       
+        }
     }
 }

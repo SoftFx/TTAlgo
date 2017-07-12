@@ -18,10 +18,11 @@
     "Console": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5000/",
+      "launchUrl": "https://localhost:5000/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "https://localhost:5000/"
     },
     "Command Console": {
       "commandName": "Project",

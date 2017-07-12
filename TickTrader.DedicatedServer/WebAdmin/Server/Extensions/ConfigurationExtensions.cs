@@ -14,5 +14,10 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         {
             return configuration.GetSection(nameof(AppSettings.Credentials)).Get<ServerCredentials>();
         }
+
+        public static SslSettings GetSslSettings(this IConfiguration configuration)
+        {
+            return configuration.GetSection(nameof(AppSettings.Ssl)).Get<SslSettings>();
+        }
     }
 }

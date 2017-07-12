@@ -17,6 +17,10 @@ using TickTrader.DedicatedServer.DS.Info;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
+using System.Security.Cryptography.X509Certificates;
+using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.DedicatedServer.Extensions;
+using NLog;
 
 namespace TickTrader.DedicatedServer
 {
@@ -24,38 +28,67 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
-            bool isService = true;
-
-            if (Debugger.IsAttached || args.Contains("console"))
-                isService = false;
-
-            var pathToContentRoot = Directory.GetCurrentDirectory();
-
-            if (isService)
+            var logger = LogManager.GetLogger(nameof(Startup));
+            try
             {
-                var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
-                pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                bool isService = true;
+
+                if (Debugger.IsAttached || args.Contains("console"))
+                    isService = false;
+
+                var pathToContentRoot = Directory.GetCurrentDirectory();
+
+                if (isService)
+                {
+                    var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+                    pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                }
+
+                var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
+                var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
+
+                var config = EnsureDefaultConfiguration(pathToAppSettings);
+
+                var sslConf = config.GetSslSettings();
+
+                ValidateSslConfiguration(sslConf, logger);
+
+                var pfxFile = sslConf.File;
+
+                if (!pfxFile.IsPathAbsolute())
+                {
+                    pfxFile = Path.Combine(pathToContentRoot, pfxFile);
+                }
+                var cert = new X509Certificate2(pfxFile, sslConf.Password);
+
+                var host = new WebHostBuilder()
+                    .UseConfiguration(config)
+                    .UseKestrel(options => options.UseHttps(cert))
+                    .UseContentRoot(pathToContentRoot)
+                    .UseWebRoot(pathToWebRoot)
+                    .UseStartup<Startup>()
+                    .Build();
+
+                Console.WriteLine($"Web root path: {pathToWebRoot}");
+
+                if (isService)
+                    host.RunAsCustomService();
+                else
+                    host.Run();
             }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
 
-            var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
-            var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
+        private static void ValidateSslConfiguration(SslSettings sslConf, Logger logger)
+        {
+            if (sslConf == null)
+                throw new ArgumentException("SSL configuration not found");
 
-            var config = EnsureDefaultConfiguration(pathToAppSettings);
-
-            var host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel()
-                .UseContentRoot(pathToContentRoot)
-                .UseWebRoot(pathToWebRoot)
-                .UseStartup<WebAdminStartup>()
-                .Build();
-
-            Console.WriteLine($"Web root path: {pathToWebRoot}");
-
-            if (isService)
-                host.RunAsCustomService();
-            else
-                host.Run();
+            if(string.IsNullOrWhiteSpace(sslConf.File))
+                throw new ArgumentException("Certificate file is not defined");
         }
 
         private static IConfiguration EnsureDefaultConfiguration(string configFile)
@@ -79,7 +112,7 @@ namespace TickTrader.DedicatedServer
                         appSettings.SecretKey = AppSettings.RandomSecretKey;
                         SaveConfig(configFile, appSettings);
                     }
-                    if(appSettings.Credentials == null)
+                    if (appSettings.Credentials == null)
                     {
                         appSettings.Credentials = AppSettings.DefaultCredentials;
                         SaveConfig(configFile, appSettings);
