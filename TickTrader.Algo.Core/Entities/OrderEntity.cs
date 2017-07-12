@@ -6,31 +6,34 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class OrderEntity
     {
-        private string _userTag;
-        private string _tag;
-
         public OrderEntity(string orderId)
         {
-            this.Id = orderId;
+            Id = orderId;
         }
 
         public OrderEntity(OrderEntity src)
         {
-            this.Id = src.Id;
-            this.ClientOrderId = ((OrderEntity)src).ClientOrderId;
-            this.RequestedVolume = src.RequestedVolume;
-            this.RemainingVolume = src.RemainingVolume;
-            this.Symbol = src.Symbol;
-            this.Type = src.Type;
-            this.Side = src.Side;
-            this.Price = src.Price;
-            this.StopLoss = src.StopLoss;
-            this.TakeProfit = src.TakeProfit;
-            this.Comment = src.Comment;
-            this.Created = src.Created;
-            this.Modified = src.Modified;
-            this.Swap = src.Swap;
-            this.Commision = src.Commision;
+            Id = src.Id;
+            ClientOrderId = ((OrderEntity)src).ClientOrderId;
+            RequestedVolume = src.RequestedVolume;
+            RemainingVolume = src.RemainingVolume;
+            Symbol = src.Symbol;
+            Type = src.Type;
+            Side = src.Side;
+            Price = src.Price;
+            StopLoss = src.StopLoss;
+            TakeProfit = src.TakeProfit;
+            Comment = src.Comment;
+            Created = src.Created;
+            Modified = src.Modified;
+            UserTag = src.UserTag;
+            InstanceId = src.InstanceId;
+            ExecPrice = src.ExecPrice;
+            ExecVolume = src.ExecVolume;
+            LastFillPrice = src.LastFillPrice;
+            LastFillVolume = src.LastFillVolume;
+            Swap = src.Swap;
+            Commision = src.Commision;
         }
 
         public string Id { get; private set; }
@@ -46,19 +49,7 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
-        public string Tag
-        {
-            get { return _tag; }
-            set
-            {
-                _tag = value;
-
-                if (CompositeTag.TryParse(_tag, out CompositeTag compositeTag))
-                    _userTag = compositeTag.Tag;
-                else
-                    _userTag = _tag;
-            }
-        }
+        public string UserTag { get; set; }
         public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
@@ -67,7 +58,6 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get; set; }
         public double Swap { get; set; }
         public double Commision { get; set; }
-        public string UserTag => _userTag;
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
     }

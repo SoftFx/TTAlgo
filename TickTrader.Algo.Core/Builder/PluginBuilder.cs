@@ -61,6 +61,7 @@ namespace TickTrader.Algo.Core
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
+        public PluginPermissions Permissions { get; set; }
         public bool Isolated
         {
             get { return _isolated; }
@@ -79,6 +80,7 @@ namespace TickTrader.Algo.Core
                 Account.InstanceId = _instanceId;
             }
         }
+
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -256,7 +258,7 @@ namespace TickTrader.Algo.Core
                 if (TradeApi == null)
                     return new NullTradeApi();
 
-                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Id);
+                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Permissions, Id);
             }
         }
 
@@ -265,7 +267,6 @@ namespace TickTrader.Algo.Core
         EnvironmentInfo IPluginContext.Environment => this;
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
-
 
 
         void IPluginContext.OnExit()

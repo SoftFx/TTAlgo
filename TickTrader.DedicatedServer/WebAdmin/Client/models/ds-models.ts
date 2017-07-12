@@ -176,6 +176,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     public BotName: string;
     public FaultMessage: string;
     public Config: TradeBotConfig;
+    public Permissions: TradeBotPermissions;
 
     constructor() { }
 
@@ -188,6 +189,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
         this.BotName = input.BotName;
         this.FaultMessage = input.FaultMessage;
         this.Config = new TradeBotConfig().Deserialize(input.Config);
+        this.Permissions = <TradeBotPermissions>input.Permissions;
 
         return this;
     }
@@ -340,6 +342,7 @@ export class SetupModel {
     public Isolated: boolean;
     public Account: AccountModel;
     public Symbol: string;
+    public Permissions: TradeBotPermissions;
 
     public Parameters: Parameter[];
 
@@ -353,7 +356,8 @@ export class SetupModel {
             Isolated: this.Isolated,
             Account: this.Account,
             Symbol: this.Symbol,
-            Parameters: this.Parameters.map(p => this.PayloadParameter(p))
+            Parameters: this.Parameters.map(p => this.PayloadParameter(p)),
+            Permissions: this.Permissions
         }
     }
     private PayloadParameter(parameter: Parameter) {
@@ -369,6 +373,7 @@ export class SetupModel {
             p.Descriptor.DataType === ParameterDataTypes.File ? { FileName: p.Value, Size: 0, Data: null } : p.Value,
             p.Descriptor));
         setup.Account = bot.Account;
+        setup.Permissions = <TradeBotPermissions>bot.Permissions;
 
         return setup;
     }
@@ -385,7 +390,17 @@ export class SetupModel {
         setup.Symbol = "";
         setup.Isolated = false;
 
+        let permissions = new TradeBotPermissions();
+        permissions.TradeAllowed = true;
+
+        setup.Permissions = permissions;
+
         return setup;
     }
+}
+
+export class TradeBotPermissions
+{
+    public TradeAllowed: boolean;
 }
 

@@ -148,6 +148,7 @@
     <Compile Include="Metadata\InputDescriptor.cs" />
     <Compile Include="Metadata\OutputDescriptor.cs" />
     <Compile Include="Metadata\ParameterDescriptor.cs" />
+    <Compile Include="PluginPermissions.cs" />
     <Compile Include="Repository\ExtCollection.cs" />
     <Compile Include="Repository\FileWatcher.cs" />
     <Compile Include="Repository\AlgoRepository.cs" />

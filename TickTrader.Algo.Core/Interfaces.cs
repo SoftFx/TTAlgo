@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
+    public interface ITradePermissions
+    {
+        bool TradeAllowed { get; }
+    }
+
     public interface IPluginSubscriptionHandler
     {
         void Subscribe(string smbCode, int depth);

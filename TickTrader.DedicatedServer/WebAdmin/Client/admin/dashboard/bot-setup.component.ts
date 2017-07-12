@@ -63,6 +63,7 @@ export class BotSetupComponent implements OnInit {
 
         formGroup.addControl("InstanceId", this._fb.control(setup.InstanceId, Validators.required));
         formGroup.addControl("Isolated", this._fb.control(setup.Isolated));
+        formGroup.addControl("TradeAllowed", this._fb.control(setup.Permissions.TradeAllowed));
         formGroup.addControl("Account", this._fb.control(setup.Account, Validators.required));
         formGroup.addControl("Symbol", this._fb.control(setup.Symbol, Validators.required));
 
