@@ -49,17 +49,7 @@ namespace TickTrader.DedicatedServer
 
                 var config = EnsureDefaultConfiguration(pathToAppSettings);
 
-                var sslConf = config.GetSslSettings();
-
-                ValidateSslConfiguration(sslConf, logger);
-
-                var pfxFile = sslConf.File;
-
-                if (!pfxFile.IsPathAbsolute())
-                {
-                    pfxFile = Path.Combine(pathToContentRoot, pfxFile);
-                }
-                var cert = new X509Certificate2(pfxFile, sslConf.Password);
+                var cert = GetCertificate(config, logger, pathToContentRoot);
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
@@ -82,6 +72,20 @@ namespace TickTrader.DedicatedServer
             }
         }
 
+        private static X509Certificate2 GetCertificate(IConfiguration config, Logger logger, string contentRoot)
+        {
+            var sslConf = config.GetSslSettings();
+
+            ValidateSslConfiguration(sslConf, logger);
+
+            var pfxFile = sslConf.File;
+
+            if (!pfxFile.IsPathAbsolute())
+                pfxFile = Path.Combine(contentRoot, pfxFile);
+
+            return new X509Certificate2(pfxFile, sslConf.Password);
+        }
+
         private static void ValidateSslConfiguration(SslSettings sslConf, Logger logger)
         {
             if (sslConf == null)
@@ -96,28 +100,6 @@ namespace TickTrader.DedicatedServer
             if (!System.IO.File.Exists(configFile))
             {
                 CreateDefaultConfig(configFile);
-            }
-            else
-            {
-                var appSettings = JsonConvert.DeserializeObject<AppSettings>(System.IO.File.ReadAllText(configFile));
-
-                if (appSettings == null)
-                {
-                    CreateDefaultConfig(configFile);
-                }
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(appSettings.SecretKey))
-                    {
-                        appSettings.SecretKey = AppSettings.RandomSecretKey;
-                        SaveConfig(configFile, appSettings);
-                    }
-                    if (appSettings.Credentials == null)
-                    {
-                        appSettings.Credentials = AppSettings.DefaultCredentials;
-                        SaveConfig(configFile, appSettings);
-                    }
-                }
             }
 
             var builder = new ConfigurationBuilder()
@@ -135,7 +117,7 @@ namespace TickTrader.DedicatedServer
 
         private static void SaveConfig(string configFile, AppSettings appSettings)
         {
-            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings));
+            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
         }
 
         private static void RunConsole()

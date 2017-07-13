@@ -13,7 +13,13 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public SslSettings Ssl { get; set; }
 
-        public static AppSettings Default => new AppSettings { ServerUrls = DefaultServerUrl, Credentials = DefaultCredentials, SecretKey = RandomSecretKey };
+        public static AppSettings Default => new AppSettings
+        {
+            ServerUrls = DefaultServerUrl,
+            Credentials = DefaultCredentials,
+            SecretKey = RandomSecretKey,
+            Ssl = new SslSettings { File = "certificate.pfx", Password = "" }
+        };
 
         public static string DefaultServerUrl => @"https://localhost:5000/";
         public static string RandomSecretKey => new KeyGenerator().GetUniqueKey(128);

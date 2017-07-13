@@ -100,6 +100,20 @@ Function .onInit
 
 FunctionEnd
 
+;--------------------------------------------
+;------------Generate Sertificate------------
+!macro _CreatePfxContainer Password
+
+	ExecWait `"$INSTDIR\Utilities\openssl.exe" req -config "$INSTDIR\Utilities\openssl.cnf" -x509 -sha512 -subj "/CN=localhost" -newkey rsa:4096 -keyout "$INSTDIR\key.pem" -out "$INSTDIR\cert.cer" -days 14600 -nodes`
+	ExecWait `"$INSTDIR\Utilities\openssl.exe" pkcs12 -export -out "$INSTDIR\certificate.pfx" -inkey "$INSTDIR\key.pem" -in "$INSTDIR\cert.cer" -passout pass:${Password}`
+	
+	Delete "$INSTDIR\cert.cer"
+	Delete "$INSTDIR\key.pem"
+	Delete "$INSTDIR\.rnd"
+!macroend
+
+!define CreatePfx '!insertmacro "_CreatePfxContainer"'
+
 !macro UninstallDSMacro un
 	Function ${un}UninstallDS
 		; Stop and Remove DS Service
@@ -123,6 +137,7 @@ FunctionEnd
 
 !insertmacro UninstallDSMacro ""
 !insertmacro UninstallDSMacro "un."
+
 
 Section "TickTrader Dedicated Server" Section1
 
@@ -157,30 +172,29 @@ Section - FinishSection
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 	
 	;Generate Certificate If Needed
-	Pwgen::GeneratePassword 20
-	Pop $0
+	;Pwgen::GeneratePassword 20
+	;Pop $0
 	
-	${IfNot} ${FileExists} "$INSTDIR\${APPSETTINGS}"
-		nsJSON::Set /value `{}`
-		nsJSON::Set `Ssl` `File` /value `"localhost.pfx"`
-		nsJSON::Set `Ssl` `Password` /value `"$0"`
-		nsJSON::Serialize /format /file $INSTDIR\${APPSETTINGS}
-		
-		ExecWait `"$INSTDIR\Utilities\openssl.exe" req -config "$INSTDIR\Utilities\openssl.cnf" -x509 -sha512 -subj "/CN=localhost" -newkey rsa:4096 -keyout "$INSTDIR\key.pem" -out "$INSTDIR\cert.cer" -days 14600 -nodes`
-		ExecWait `"$INSTDIR\Utilities\openssl.exe" pkcs12 -export -out "$INSTDIR\localhost.pfx" -inkey "$INSTDIR\key.pem" -in "$INSTDIR\cert.cer" -passout pass:$0`
-	${Else}
+	;${IfNot} ${FileExists} "$INSTDIR\${APPSETTINGS}"
+	;	nsJSON::Set /value `{}`
+	;	nsJSON::Set `Ssl` `File` /value `"certificate.pfx"`
+	;	nsJSON::Set `Ssl` `Password` /value `"$0"`
+	;	nsJSON::Serialize /format /file $INSTDIR\${APPSETTINGS}
+	;	${CreatePfx} $0
+	${If} ${FileExists} "$INSTDIR\${APPSETTINGS}"
 		nsJSON::Set /file "$INSTDIR\${APPSETTINGS}"
 		ClearErrors
 		nsJSON::Get `Ssl` /end
 		${If} ${Errors}
 			nsJSON::Set /value `{}`
-			nsJSON::Set `Ssl` `File` /value `"localhost.pfx"`
-			nsJSON::Set `Ssl` `Password` /value `"$0"`
+			nsJSON::Set `Ssl` `File` /value `"certificate.pfx"`
+			nsJSON::Set `Ssl` `Password` /value `""`
 			nsJSON::Serialize /format /file $INSTDIR\${APPSETTINGS}
 		
-			ExecWait `"$INSTDIR\Utilities\openssl.exe" req -config "$INSTDIR\Utilities\openssl.cnf" -x509 -sha512 -subj "/CN=localhost" -newkey rsa:4096 -keyout "$INSTDIR\key.pem" -out "$INSTDIR\cert.cer" -days 14600 -nodes`
-			ExecWait `"$INSTDIR\Utilities\openssl.exe" pkcs12 -export -out "$INSTDIR\localhost.pfx" -inkey "$INSTDIR\key.pem" -in "$INSTDIR\cert.cer" -passout pass:$0`
+			${CreatePfx} ""
 		${EndIf}
+	${Else}
+		${CreatePfx} ""
 	${EndIf}
 
 	
