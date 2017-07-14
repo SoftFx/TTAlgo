@@ -8,9 +8,8 @@ namespace TickTrader.Algo.Api
 {
     /// <summary>
     /// Price update summary. May represent one or multiple quotes.
-    /// May represent quite a few quotes in case  your TradeBot is too slow or quote update rate is too high.
-    /// Note: LastQuotes array contains limmited number of quotes and its size may be less than NumberOfQuotes.
-    /// Use LastQuotes[0] to get most relevant quote.
+    /// May represent quite a few quotes in case your TradeBot is too slow or quote update rate is too high.
+    /// Use LastQuotes to get most relevant quote.
     /// </summary>
     public interface RateUpdate
     {
@@ -24,6 +23,6 @@ namespace TickTrader.Algo.Api
         double BidLow { get; }
         double NumberOfQuotes { get; }
 
-        Quote[] LastQuotes { get; }
+        Quote LastQuote { get; }
     }
 }

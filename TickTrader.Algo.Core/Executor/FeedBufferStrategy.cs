@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core
 
         public override bool InBoundaries(DateTime timePoint)
         {
-            return timePoint < _from || timePoint >= _to;
+            return timePoint >= _from || timePoint <= _to;
         }
     }
 }

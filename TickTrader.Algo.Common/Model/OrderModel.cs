@@ -424,8 +424,8 @@ namespace TickTrader.Algo.Common.Model
             return new OrderEntity(Id)
             {
                 ClientOrderId = this.clientOrderId,
-                RemainingVolume = (double?)RemainingAmountLots ?? double.NaN,
-                RequestedVolume = (double?)AmountLots ?? double.NaN,
+                RemainingVolume = ToVolume(RemainingAmount, RemainingAmountLots),
+                RequestedVolume = ToVolume(Amount, AmountLots),
                 Symbol = Symbol,
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),
@@ -433,14 +433,16 @@ namespace TickTrader.Algo.Common.Model
                 StopLoss = stopLoss ?? double.NaN,
                 TakeProfit = takeProfit ?? double.NaN,
                 Comment = this.Comment,
-                Tag = this.Tag,
+                UserTag = this.Tag,
                 InstanceId = this.InstanceId,
                 Created = this.Created ?? DateTime.MinValue,
                 Modified = this.Modified ?? DateTime.MinValue,
                 ExecPrice = ExecPrice ?? double.NaN,
-                ExecVolume = ExecAmountLots ?? double.NaN,
+                ExecVolume = ToVolume(ExecAmount, ExecAmountLots),
                 LastFillPrice = LastFillPrice ?? double.NaN,
-                LastFillVolume = LastFillAmountLots ?? double.NaN
+                LastFillVolume = LastFillAmountLots ?? double.NaN,
+                Swap = (double)Swap,
+                Commision = (double)Commission
             };
         }
 
@@ -506,6 +508,16 @@ namespace TickTrader.Algo.Common.Model
                 return null;
 
             return volume / symbolModel.LotSize;
+        }
+
+        private TradeVolume ToVolume(decimal? volume, decimal? volumeLots)
+        {
+            return new TradeVolume((double?)volume ?? double.NaN, (double?)volumeLots ?? double.NaN);
+        }
+
+        private TradeVolume ToVolume(double? volume, double? volumeLots)
+        {
+            return new TradeVolume(volume ?? double.NaN, volumeLots ?? double.NaN);
         }
     }
 

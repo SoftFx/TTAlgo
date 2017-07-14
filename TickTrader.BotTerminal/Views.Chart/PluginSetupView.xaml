@@ -307,6 +307,8 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="80"/>
@@ -321,6 +323,8 @@
             <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
             <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="4" Grid.Column="0" Content="AllowTrade" />
+            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">

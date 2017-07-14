@@ -52,6 +52,12 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TickTrader.BusinessLogic">
+      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.BusinessObjects">
+      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\BotAdapter.cs" />
@@ -64,6 +70,7 @@
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
+    <Compile Include="Entities\AssetAccessor.cs" />
     <Compile Include="Entities\AssetEntity.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
     <Compile Include="Entities\BalanceOperationReport.cs" />
@@ -81,7 +88,9 @@
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
+    <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
+    <Compile Include="Entities\PositionCollection.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />
     <Compile Include="Entities\OrderExecReport.cs" />
@@ -93,8 +102,9 @@
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
-    <Compile Include="Executor\AccDataFixture.cs" />
+    <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
+    <Compile Include="Executor\CalculatorFixture.cs" />
     <Compile Include="Executor\Exceptions.cs" />
     <Compile Include="Executor\FeedBufferStrategy.cs" />
     <Compile Include="Executor\FeedFixture.cs" />
@@ -110,6 +120,9 @@
     <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Executor\QuoteStrategy.cs" />
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
+    <Compile Include="Isolation\IsolationContext.cs" />
+    <Compile Include="Isolation\Link.cs" />
+    <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
@@ -143,6 +156,7 @@
     <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\RepositoryKey.cs" />
+    <Compile Include="TickTraderToAlgo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

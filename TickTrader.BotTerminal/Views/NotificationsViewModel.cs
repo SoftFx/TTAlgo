@@ -173,20 +173,20 @@ namespace TickTrader.BotTerminal
 
             return new Message(header, body);
         }
-        public static Message BuildMessage(PositionExecReport obj)
+
+        public static Message BuildMessage(PositionExecReport report)
         {
-            var position = obj.PositionCopy;
             string header = "";
             string body = "";
-            switch (obj.ExecAction)
+            switch (report.ExecAction)
             {
                 case OrderExecAction.Modified:
                     header = $"Position Modified";
-                    body = $"Position {position.Side} {position.Amount} of {position.Symbol} at {position.Price} modified.";
+                    body = $"Position {report.Side} {report.Volume} of {report.Symbol} at {report.Price} modified.";
                     break;
                 case OrderExecAction.Closed:
                     header = $"Position Closed";
-                    body = $"Position {position.Side} {position.Amount} of {position.Symbol} at {position.Price} closed.";
+                    body = $"Position {report.Side} {report.Volume} of {report.Symbol} at {report.Price} closed.";
                     break;
             }
             return new Message(header, body);

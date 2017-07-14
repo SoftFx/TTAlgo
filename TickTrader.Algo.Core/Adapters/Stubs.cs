@@ -163,6 +163,11 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
+        public Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        {
+            return rejectResult;
+        }
+
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? tp, double? sl, string comment)
         {
             return rejectResult;
@@ -223,8 +228,11 @@ namespace TickTrader.Algo.Core
 
         public string Currency { get; }
         public Currency CurrencyInfo => Null.Currency;
-        public double Volume => double.NaN;
+        public double Volume => 0;
+        public double LockedVolume => 0;
+        public double FreeVolume => 0;
         public bool IsNull => true;
+
         public override string ToString() { return "{null}"; }
     }
 }

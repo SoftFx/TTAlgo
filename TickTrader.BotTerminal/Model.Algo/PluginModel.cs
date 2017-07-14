@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
 
         public bool Isolated { get; }
 
+        public PluginPermissions Permissions { get; }
+
         public IAlgoPluginHost Host => _host;
 
         public PluginModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
@@ -39,6 +41,7 @@ namespace TickTrader.BotTerminal
             PluginFilePath = pSetup.PluginItem.FilePath;
             InstanceId = pSetup.InstanceId;
             Isolated = pSetup.Isolated;
+            Permissions = pSetup.Permissions;
 
             _executor = CreateExecutor();
             Setup.SetWorkingFolder(_executor.WorkingFolder);
@@ -74,6 +77,7 @@ namespace TickTrader.BotTerminal
 
             executor.InstanceId = InstanceId;
             executor.Isolated = Isolated;
+            executor.Permissions = Permissions;
             executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 

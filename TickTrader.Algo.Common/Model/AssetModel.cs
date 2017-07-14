@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Algo.Core.AssetEntity ToAlgoAsset()
         {
-            return new Algo.Core.AssetEntity((double)amount, currency, currencyInfo);
+            return new Algo.Core.AssetEntity((double)amount, currency);
         }
     }
 }

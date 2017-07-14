@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class CurrenciesCollection
+    public class CurrenciesCollection : IEnumerable<CurrencyEntity>
     {
         private CurrencyFixture fixture = new CurrencyFixture();
 
@@ -12,23 +13,33 @@ namespace TickTrader.Algo.Core
 
         public void Add(CurrencyEntity currency)
         {
-            fixture.InnerCollection.Add(currency.Name, currency);
+            fixture.Add(currency);
         }
 
         public void Init(IEnumerable<CurrencyEntity> currencies)
         {
-            fixture.InnerCollection.Clear();
+            fixture.Clear();
 
             if (currencies != null)
             {
                 foreach (var currency in currencies)
-                    fixture.InnerCollection.Add(currency.Name, currency);
+                    fixture.Add(currency);
             }
+        }
+
+        public IEnumerator<CurrencyEntity> GetEnumerator()
+        {
+            return fixture.GetValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return fixture.GetValues().GetEnumerator();
         }
 
         private class CurrencyFixture : CurrencyList
         {
-            private Dictionary<string, Currency> currencies = new Dictionary<string, Currency>();
+            private Dictionary<string, CurrencyEntity> currencies = new Dictionary<string, CurrencyEntity>();
 
             public Currency this[string currencyCode]
             {
@@ -37,14 +48,27 @@ namespace TickTrader.Algo.Core
                     if (string.IsNullOrEmpty(currencyCode))
                         return Null.Currency;
 
-                    Currency currency;
+                    CurrencyEntity currency;
                     if (!currencies.TryGetValue(currencyCode, out currency))
                         return new NullCurrency(currencyCode);
                     return currency;
                 }
             }
 
-            public Dictionary<string, Currency> InnerCollection { get { return currencies; } }
+            public void Add(CurrencyEntity currency)
+            {
+                currencies.Add(currency.Name, currency);
+            }
+
+            public void Clear()
+            {
+                currencies.Clear();
+            }
+
+            public IEnumerable<CurrencyEntity> GetValues()
+            {
+                return currencies.Values;
+            }
 
             public IEnumerator<Currency> GetEnumerator()
             {
