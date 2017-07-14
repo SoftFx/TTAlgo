@@ -245,8 +245,6 @@ namespace TickTrader.Algo.Core
                 builder.Diagnostics = this;
                 builder.Logger = pluginLogger ?? Null.Logger;
                 builder.OnAsyncAction = OnAsyncAction;
-                builder.OnSubscribe = fStrategy.OnUserSubscribe;
-                builder.OnUnsubscribe = fStrategy.OnUserUnsubscribe;
                 builder.OnExit = OnExit;
                 //builder.OnException = OnException;
 
@@ -254,7 +252,7 @@ namespace TickTrader.Algo.Core
 
                 iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
                 fStrategy.Init(this, bStrategy, ApplyNewRate);
-                fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
+                fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
                 iStrategy.EnqueueTradeUpdate(b => b.InvokeInit()); // enqueue init

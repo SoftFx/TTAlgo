@@ -8,7 +8,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext
+    public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext, CustomFeedProvider
     {
         private Action<QuoteEntity> _rateUpdateCallback;
 
@@ -29,16 +29,10 @@ namespace TickTrader.Algo.Core
         public FeedBufferStrategy BufferingStrategy { get; private set; }
         protected abstract BufferUpdateResult UpdateBuffers(RateUpdate update);
         protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
-
-        public void OnUserSubscribe(string symbolCode, int depth)
-        {
-            RateDispenser.SetUserSubscription(symbolCode, depth);
-        }
-
-        public void OnUserUnsubscribe(string symbolCode)
-        {
-            RateDispenser.RemoveUserSubscription(symbolCode);
-        }
+        protected abstract BarSeries GetBarSeries(string symbol);
+        protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
+        //protected abstract IEnumerable<Bar> QueryBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
+        //protected abstract IEnumerable<Quote> QueryQuotes(string symbol, DateTime from, DateTime to, bool level2);
 
         internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, Action<QuoteEntity> rateUpdateCallback)
         {
@@ -65,6 +59,11 @@ namespace TickTrader.Algo.Core
             Feed.Sync.Invoke(StopStrategy);
         }
 
+        internal void SetSubscribed(string symbol, int depth)
+        {
+            RateDispenser.SetUserSubscription(symbol, depth);
+        }
+
         protected void AddSetupAction(Action setupAction)
         {
             setupActions.Add(setupAction);
@@ -81,6 +80,8 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.Symbols.SetRate(quote);
                 _rateUpdateCallback(quote);
             }
+
+            ExecContext.Builder.CustomFeedProvider = this;
         }
 
         private void StopStrategy()
@@ -159,6 +160,104 @@ namespace TickTrader.Algo.Core
         void IFeedBuferStrategyContext.TruncateBuffers(int bySize)
         {
             ExecContext.Builder.TruncateBuffers(bySize);
+        }
+
+        #endregion
+
+        #region CustomFeedProvider
+
+        BarSeries CustomFeedProvider.GetBarSeries(string symbol)
+        {
+            return GetBarSeries(symbol);
+        }
+
+        BarSeries CustomFeedProvider.GetBarSeries(string symbol, BarPriceType side)
+        {
+            return GetBarSeries(symbol, side);
+        }
+
+        IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder)
+        {
+            const int pageSize = 1000;
+            List<BarEntity> page;
+            int pageIndex;
+
+            if (backwardOrder)
+            {
+                page =  Feed.QueryBars(symbol, side, to, -pageSize, timeFrame);
+                pageIndex = 0;
+
+                while (true)
+                {
+                    if (pageIndex >= page.Count)
+                    {
+                        if (page.Count < pageSize)
+                            break; // last page
+                        var timeRef = page.Last().OpenTime;
+                        page = Feed.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
+                        if (page.Count == 0)
+                            break;
+                        pageIndex = 0;
+                    } 
+
+                    var item = page[pageIndex];
+                    if (item.OpenTime < from)
+                        break;
+                    pageIndex++;
+                    yield return item;
+                }
+            }
+            else
+            {
+                page = Feed.QueryBars(symbol, side, from, pageSize, timeFrame);
+                pageIndex = 0;
+
+                while (true)
+                {
+                    if (pageIndex >= page.Count)
+                    {
+                        if (page.Count < pageSize)
+                            break; // last page
+                        var timeRef = page.Last().OpenTime + TimeSpan.FromMilliseconds(1);
+                        page = Feed.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
+                        if (page.Count == 0)
+                            break;
+                        pageIndex = 0;
+                    }
+
+                    var item = page[pageIndex];
+                    if (item.OpenTime > to)
+                        break;
+                    pageIndex++;
+                    yield return item;
+                }
+            }
+        }
+
+        IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
+        {
+            var ticks = Feed.QueryTicks(symbol, from, to, level2 ? 0 : 1);
+
+            if (backwardOrder)
+            {
+                for (int i = ticks.Count - 1; i >= 0; i--)
+                    yield return ticks[i];
+            }
+            else
+            {
+                for (int i = 0; i < ticks.Count; i++)
+                    yield return ticks[i];
+            }
+        }
+
+        void CustomFeedProvider.Subscribe(string symbol, int depth)
+        {
+            RateDispenser.SetUserSubscription(symbol, depth);
+        }
+
+        void CustomFeedProvider.Unsubscribe(string symbol)
+        {
+            RateDispenser.RemoveUserSubscription(symbol);
         }
 
         #endregion

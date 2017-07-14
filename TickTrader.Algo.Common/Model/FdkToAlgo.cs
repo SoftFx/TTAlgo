@@ -349,5 +349,15 @@ namespace TickTrader.Algo.Common.Model
 
             return Api.TradeRecordTypes.Unknown;
         }
+
+        public static PriceType Convert(Api.BarPriceType priceType)
+        {
+            switch (priceType)
+            {
+                case Api.BarPriceType.Ask: return PriceType.Ask;
+                case Api.BarPriceType.Bid: return PriceType.Bid;
+            }
+            throw new NotImplementedException("Unsupported price type: "  +priceType);
+        }
     }
 }

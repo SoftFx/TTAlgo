@@ -9,12 +9,6 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IPluginSubscriptionHandler
-    {
-        void Subscribe(string smbCode, int depth);
-        void Unsubscribe(string smbCode);
-    }
-
     public interface IPluginSetupTarget
     {
         void SetParameter(string id, object value);

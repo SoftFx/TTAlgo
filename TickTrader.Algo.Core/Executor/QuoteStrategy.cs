@@ -58,5 +58,15 @@ namespace TickTrader.Algo.Core
             base.Stop();
             //mainSeries.Dispose();
         }
+
+        protected override BarSeries GetBarSeries(string symbol)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
