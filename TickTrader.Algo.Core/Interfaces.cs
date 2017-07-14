@@ -52,9 +52,9 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeHistoryProvider
     {
-        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory();
-        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime from, DateTime to);
-        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime to);
+        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(bool skipCancelOrders);
+        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders);
+        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime to, bool skipCancelOrders);
     }
 
     public interface IAsyncCrossDomainEnumerator<T> : IDisposable where T : class

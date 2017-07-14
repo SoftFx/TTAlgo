@@ -8,11 +8,12 @@ namespace TickTrader.Algo.Api
 {
     public interface TradeHistory : IEnumerable<TradeReport>
     {
-        IEnumerable<TradeReport> GetRange(DateTime from, DateTime to);
-        IEnumerable<TradeReport> GetRange(DateTime to);
-        IAsyncEnumerator<TradeReport> GetAsync();
-        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to);
-        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to);
+        IEnumerable<TradeReport> Get(bool skipCancelOrders = false);
+        IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, bool skipCancelOrders = false);
+        IEnumerable<TradeReport> GetRange(DateTime to, bool skipCancelOrders = false);
+        IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders = false);
+        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders = false);
+        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders = false);
     }
 
     public interface IAsyncEnumerator<T> : IDisposable where T : class

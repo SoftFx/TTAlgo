@@ -20,6 +20,11 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Time filter")]
         public TradeHistoryFilters Filter { get; set; }
 
+        [Parameter]
+        public BoolEnum SkipCancelOrders { get; set; }
+
+        private bool SkipCancels => SkipCancelOrders == BoolEnum.True;
+
         protected async override void OnStart()
         {
             var builder = new StringBuilder();
@@ -29,43 +34,43 @@ namespace TickTrader.Algo.TestCollection.Bots
                 if (ExecType == SyncOrAsync.Sync)
                 {
                     if (Filter == TradeHistoryFilters.All)
-                        Print(Account.TradeHistory);
+                        Print(Account.TradeHistory.Get(SkipCancels));
                     else if (Filter == TradeHistoryFilters.Today)
-                        Print(Account.TradeHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1)));
+                        Print(Account.TradeHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), SkipCancels));
                     else if (Filter == TradeHistoryFilters.Yesterday)
-                        Print(Account.TradeHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today));
+                        Print(Account.TradeHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, SkipCancels));
                     else if (Filter == TradeHistoryFilters.ThisYear)
                     {
                         var from = new DateTime(DateTime.Now.Year, 1, 1);
                         var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
-                        Print(Account.TradeHistory.GetRange(from, to));
+                        Print(Account.TradeHistory.GetRange(from, to, SkipCancels));
                     }
                     else if (Filter == TradeHistoryFilters.PreviousYear)
                     {
                         var from = new DateTime(DateTime.Now.Year -1, 1, 1);
                         var to = new DateTime(DateTime.Now.Year, 1, 1);
-                        Print(Account.TradeHistory.GetRange(from, to));
+                        Print(Account.TradeHistory.GetRange(from, to, SkipCancels));
                     }
                 }
                 else
                 {
                     if (Filter == TradeHistoryFilters.All)
-                        await Print(Account.TradeHistory.GetAsync());
+                        await Print(Account.TradeHistory.GetAsync(SkipCancels));
                     else if (Filter == TradeHistoryFilters.Today)
-                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1)));
+                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), SkipCancels));
                     else if (Filter == TradeHistoryFilters.Yesterday)
-                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today));
+                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, SkipCancels));
                     else if (Filter == TradeHistoryFilters.ThisYear)
                     {
                         var from = new DateTime(DateTime.Now.Year, 1, 1);
                         var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
-                        await Print(Account.TradeHistory.GetRangeAsync(from, to));
+                        await Print(Account.TradeHistory.GetRangeAsync(from, to, SkipCancels));
                     }
                     else if (Filter == TradeHistoryFilters.PreviousYear)
                     {
                         var from = new DateTime(DateTime.Now.Year - 1, 1, 1);
                         var to = new DateTime(DateTime.Now.Year, 1, 1);
-                        await Print(Account.TradeHistory.GetRangeAsync(from, to));
+                        await Print(Account.TradeHistory.GetRangeAsync(from, to, SkipCancels));
                     }
                 }
 

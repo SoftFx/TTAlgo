@@ -18,47 +18,55 @@ namespace TickTrader.Algo.Core
         public IEnumerator<TradeReport> GetEnumerator()
         {
             if (_provider != null)
-                return new EnumeratorAdapter<TradeReport>(_provider.GetTradeHistory());
+                return new EnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(false));
             else
                 return Enumerable.Empty<TradeReport>().GetEnumerator();
         }
 
-        public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to)
+        public IEnumerable<TradeReport> Get(bool skipCancelOrders = false)
         {
             if (_provider != null)
-                return new EnumerableAdapter<TradeReport>(() => _provider.GetTradeHistory(from, to));
+                return new EnumerableAdapter<TradeReport>(() => _provider.GetTradeHistory(skipCancelOrders));
             else
                 return Enumerable.Empty<TradeReport>();
         }
 
-        public IEnumerable<TradeReport> GetRange(DateTime to)
+        public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, bool skipCancelOrders)
         {
             if (_provider != null)
-                return new EnumerableAdapter<TradeReport>(() => _provider.GetTradeHistory(to));
+                return new EnumerableAdapter<TradeReport>(() => _provider.GetTradeHistory(from, to, skipCancelOrders));
             else
                 return Enumerable.Empty<TradeReport>();
         }
 
-        public IAsyncEnumerator<TradeReport> GetAsync()
+        public IEnumerable<TradeReport> GetRange(DateTime to, bool skipCancelOrders)
         {
             if (_provider != null)
-                return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory());
+                return new EnumerableAdapter<TradeReport>(() => _provider.GetTradeHistory(to, skipCancelOrders));
+            else
+                return Enumerable.Empty<TradeReport>();
+        }
+
+        public IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders)
+        {
+            if (_provider != null)
+                return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(skipCancelOrders));
             else
                 return new EmptyAsyncEnumerator<TradeReport>();
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to)
+        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
         {
             if (_provider != null)
-                return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(from, to));
+                return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(from, to, skipCancelOrders));
             else
                 return new EmptyAsyncEnumerator<TradeReport>();
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to)
+        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders)
         {
             if (_provider != null)
-                return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(to));
+                return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(to, skipCancelOrders));
             else
                 return new EmptyAsyncEnumerator<TradeReport>();
         }

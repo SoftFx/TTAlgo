@@ -80,24 +80,24 @@ namespace TickTrader.BotTerminal
             OnTradeReport(TransactionReportFactory.Create(_tradeClient.Account.Type.Value, e.Report, GetSymbolFor(e.Report)));
         }
 
-        public IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistory()
+        public IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistory(bool skipCancelOrders)
         {
-            return GetTradeHistoryInternal(null, null);
+            return GetTradeHistoryInternal(null, null, skipCancelOrders);
         }
 
-        public IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistory(DateTime from, DateTime to)
+        public IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
         {
-            return GetTradeHistoryInternal(from, to);
+            return GetTradeHistoryInternal(from, to, skipCancelOrders);
         }
 
-        public IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistory(DateTime to)
+        public IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistory(DateTime to, bool skipCancelOrders)
         {
-            return GetTradeHistoryInternal(null, to);
+            return GetTradeHistoryInternal(null, to, skipCancelOrders);
         }
 
-        private IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistoryInternal(DateTime? from, DateTime? to)
+        private IAsyncCrossDomainEnumerator<Algo.Api.TradeReport> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            return new StreamDownloader(_tradeClient.Connection.TradeProxy.Server, from, to);
+            return new StreamDownloader(_tradeClient.Connection.TradeProxy.Server, from, to, skipCancelOrders);
         }
 
         private class StreamDownloader : CrossDomainObject, IAsyncEnumerator<TradeReport>, IAsyncCrossDomainEnumerator<TradeReport>
@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
             private Task _downloadTask;
             private CancellationTokenSource _stopSrc = new CancellationTokenSource();
 
-            public StreamDownloader(DataTradeServer server, DateTime? from, DateTime? to)
+            public StreamDownloader(DataTradeServer server, DateTime? from, DateTime? to, bool skipCancelOrders)
             {
                 var asynBlockOptions = new DataflowBlockOptions() { BoundedCapacity = 2, CancellationToken = _stopSrc.Token };
                 _asyncBlock = new BufferBlock<object>(asynBlockOptions);
@@ -119,7 +119,7 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        stream = server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, false);
+                        stream = server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, skipCancelOrders);
 
                         while (!stream.EndOfStream && !_stopSrc.Token.IsCancellationRequested)
                         {
