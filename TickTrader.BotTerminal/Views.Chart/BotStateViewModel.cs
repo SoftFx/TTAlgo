@@ -82,6 +82,8 @@ namespace TickTrader.BotTerminal
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add($"Isolation: {(Bot.Isolated ? "Enabled" : "Disabled")}");
             res.Add("");
+            res.Add("------------ Permissions ------------");
+            res.Add(Bot.Permissions.ToString());
             res.Add("------------ Plugin Info ------------");
             res.Add($"Name: {Bot.Setup.Descriptor.UserDisplayName}");
             res.Add($"Version: {Bot.Setup.Descriptor.Version}");

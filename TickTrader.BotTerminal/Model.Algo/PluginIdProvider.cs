@@ -4,22 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     internal class PluginIdProvider
     {
-        public const int MaxIdLength = 30;
-        public const string AllowedCharacters = "a-zA-Z0-9";
-
-
+        private BotIdHelper _botIdHelper;
         private Dictionary<string, int> _bots;
 
 
         public PluginIdProvider()
         {
             _bots = new Dictionary<string, int>();
+            _botIdHelper = new BotIdHelper();
         }
 
 
@@ -38,8 +37,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsValidPluginId(AlgoPluginDescriptor descriptor, string pluginId)
         {
-            var match = Regex.Match(pluginId, $"^[{AllowedCharacters}]{{1,{MaxIdLength}}}$");
-            if (!match.Success)
+            if (!_botIdHelper.Validate(pluginId))
             {
                 return false;
             }
@@ -74,14 +72,7 @@ namespace TickTrader.BotTerminal
 
         private string GenerateId(string pluginName, string suffix = "")
         {
-            var matches = Regex.Matches(pluginName, $"[{AllowedCharacters}]*");
-            var pluginIdBuilder = new StringBuilder();
-            foreach (Match match in matches)
-            {
-                pluginIdBuilder.Append(match.Value);
-            }
-            pluginName = pluginIdBuilder.ToString(0, Math.Min(MaxIdLength - suffix.Length, pluginIdBuilder.Length));
-            return $"{pluginName}{suffix}";
+            return _botIdHelper.BuildId(pluginName, suffix);
         }
 
         private string GenerateIndicatorId(string indicatorName)
