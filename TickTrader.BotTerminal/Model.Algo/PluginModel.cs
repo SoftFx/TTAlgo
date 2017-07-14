@@ -82,6 +82,11 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
+        protected virtual void HandleReconnect()
+        {
+            _executor.HandleReconnect();
+        }
+
         private void Executor_OnRuntimeError(Exception ex)
         {
             logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);

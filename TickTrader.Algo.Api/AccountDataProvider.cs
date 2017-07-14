@@ -33,5 +33,11 @@ namespace TickTrader.Algo.Api
         OrderList OrdersBy(Predicate<Order> customCondition);
 
         event Action BalanceUpdated;
+        /// <summary>
+        /// This event signals that all data is updated by fresh snapshots coming from server.
+        /// Usually happens when connection to server is lost and then restored back.
+        /// All order/positon/asset events lost during disconnected periods will not be fired!
+        /// </summary>
+        event Action Reset;
     }
 }

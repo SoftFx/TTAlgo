@@ -287,6 +287,7 @@ namespace TickTrader.BotTerminal
         private void Connection_Connected()
         {
             stateController.ModifyConditions(() => isConnected = true);
+            Connected?.Invoke();
         }
 
         private void AvailableIndicators_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -385,6 +386,7 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsChanged = delegate { };
         public event System.Action StartEvent = delegate { };
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
+        public event System.Action Connected;
 
         #endregion
     }

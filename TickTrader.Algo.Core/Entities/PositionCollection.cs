@@ -57,6 +57,11 @@ namespace TickTrader.Algo.Core
             return _fixture.Values.GetEnumerator();
         }
 
+        public void Clear()
+        {
+            _fixture.Clear();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _fixture.Values.GetEnumerator();
@@ -120,6 +125,11 @@ namespace TickTrader.Algo.Core
             public IEnumerator<NetPosition> GetEnumerator()
             {
                 return _positions.Values.GetEnumerator();
+            }
+
+            public void Clear()
+            {
+                _positions.Clear();
             }
 
             IEnumerator IEnumerable.GetEnumerator()

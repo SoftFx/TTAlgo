@@ -55,6 +55,7 @@ namespace TickTrader.BotTerminal
         BotJournal Journal { get; }
 
         event Action ParamsChanged;
+        event Action Connected;
         event Action StartEvent;
         event AsyncEventHandler StopEvent;
 

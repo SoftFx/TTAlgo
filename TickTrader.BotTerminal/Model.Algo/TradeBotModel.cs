@@ -24,6 +24,7 @@ namespace TickTrader.BotTerminal
             : base(pSetup, host)
         {
             host.Journal.RegisterBotLog(InstanceId);
+            host.Connected += Host_Connected;
         }
 
         public void Start()
@@ -95,6 +96,12 @@ namespace TickTrader.BotTerminal
                     CustomStatusChanged?.Invoke(this);
                 });
             }
+        }
+
+        private void Host_Connected()
+        {
+            if (this.State == BotModelStates.Running)
+                HandleReconnect();
         }
 
         private BotMessage Convert(BotLogRecord record)

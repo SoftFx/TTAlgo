@@ -297,6 +297,23 @@ namespace TickTrader.Algo.Core
             taskToWait.Wait();
         }
 
+        public void HandleReconnect()
+        {
+            lock (_sync)
+            {
+                if (state == States.Running)
+                {
+                    iStrategy.EnqueueTradeUpdate(b =>
+                    {
+                        calcFixture.Stop();
+                        accFixture.Restart();
+                        calcFixture.Start();
+                        builder.Account.FireResetEvent();
+                    });
+                }
+            }
+        }
+
         private async Task DoStop(bool qucik)
         {
             try

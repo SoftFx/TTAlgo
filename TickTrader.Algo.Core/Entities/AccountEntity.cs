@@ -49,6 +49,11 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => BalanceUpdated());
         }
 
+        internal void FireResetEvent()
+        {
+            builder.InvokePluginMethod(() => Reset());
+        }
+
         public OrderList OrdersByTag(string orderTag)
         {
             if (string.IsNullOrEmpty(orderTag))
@@ -152,6 +157,7 @@ namespace TickTrader.Algo.Core
         public event Action<BL.IOrderModel> OrderRemoved { add { Orders.Removed += value; } remove { Orders.Removed -= value; } }
         public event Action<BL.IOrderModel> OrderReplaced { add { Orders.Replaced += value; } remove { Orders.Replaced -= value; } }
         public event Action BalanceUpdated = delegate { };
+        public event Action Reset = delegate { };
         public event Action<BL.IPositionModel, BL.PositionChageTypes> PositionChanged;
         public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
 

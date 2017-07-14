@@ -35,6 +35,18 @@ namespace TickTrader.Algo.Core
                 DataProvider.SyncInvoke(Init);
         }
 
+        public void Restart()
+        {
+            if (DataProvider != null)
+            {
+                DataProvider.SyncInvoke(() =>
+                {
+                    Deinit();
+                    Init();
+                });
+            }
+        }
+
         private void Init()
         {
             var builder = context.Builder;
@@ -64,6 +76,10 @@ namespace TickTrader.Algo.Core
                 builder.Account.BalanceCurrency = DataProvider.BalanceCurrency;
                 builder.Account.Leverage = DataProvider.Leverage;
             }
+
+            builder.Account.Orders.Clear();
+            builder.Account.NetPositions.Clear();
+            builder.Account.Assets.Clear();
 
             foreach (var order in DataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
