@@ -78,6 +78,8 @@
     <Compile Include="Quote.cs" />
     <Compile Include="Symbol.cs" />
     <Compile Include="TimeFrames.cs" />
+    <Compile Include="TradeHistory.cs" />
+    <Compile Include="TradeReport.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\algo.snk" />

@@ -11,12 +11,12 @@ namespace TickTrader.Algo.Core
     public class SymbolAccessor : Api.Symbol, BO.ISymbolInfo
     {
         private SymbolEntity entity;
-        private IPluginSubscriptionHandler handler;
+        private FeedProvider feed;
 
-        internal SymbolAccessor(SymbolEntity entity, IPluginSubscriptionHandler handler, Dictionary<string, CurrencyEntity> currencies)
+        internal SymbolAccessor(SymbolEntity entity, FeedProvider feed, Dictionary<string, CurrencyEntity> currencies)
         {
             this.entity = entity;
-            this.handler = handler;
+            this.feed = feed;
 
             this.Point = System.Math.Pow(10, -entity.Digits);
 
@@ -71,12 +71,12 @@ namespace TickTrader.Algo.Core
 
         public void Subscribe(int depth = 1)
         {
-            handler.Subscribe(Name, depth);
+            feed.CustomCommds.Subscribe(Name, depth);
         }
 
         public void Unsubscribe()
         {
-            handler.Unsubscribe(Name);
+            feed.CustomCommds.Unsubscribe(Name);
         }
 
         public void UpdateRate(Api.Quote quote)

@@ -44,6 +44,11 @@ namespace TickTrader.Algo.Core
             fixture.Remove(currencyCode);
         }
 
+        public void Clear()
+        {
+            fixture.Clear();
+        }
+
         public IEnumerator<AssetAccessor> GetEnumerator()
         {
             return fixture.Values.GetEnumerator();
@@ -80,6 +85,11 @@ namespace TickTrader.Algo.Core
             public void FireModified(AssetModifiedEventArgs args)
             {
                 Modified(args);
+            }
+
+            public void Clear()
+            {
+                assets.Clear();
             }
 
             public event Action<AssetModifiedEventArgs> Modified = delegate { };

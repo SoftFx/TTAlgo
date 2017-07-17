@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using BO = TickTrader.BusinessObjects;
+using SoftFX.Extended.Reports;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -261,6 +262,102 @@ namespace TickTrader.Algo.Common.Model
                     }
             }
             return Api.OrderCmdResultCodes.UnknownError;
+        }
+
+        public static TradeReportEntity Convert(TradeTransactionReport report)
+        {
+            bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
+                || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
+
+            return new TradeReportEntity(report.Id + ":" + report.ActionId)
+            {
+                OrderId = report.Id,
+                ReportTime = report.TransactionTime,
+                OpenTime = report.OrderCreated,
+                CloseTime = report.TransactionTime,
+                Type = GetRecordType(report),
+                ActionType = Convert(report.TradeTransactionReportType),
+                Balance = report.AccountBalance,
+                Symbol = isBalanceTransaction ? report.TransactionCurrency : report.Symbol,
+                TakeProfit = report.TakeProfit,
+                StopLoss = report.StopLoss,
+                OpenPrice = report.Price,
+                Comment = report.Comment,
+                Commission = report.Commission,
+                CommissionCurrency = report.TransactionCurrency,
+                OpenQuantity = report.Quantity,
+                CloseQuantity = report.PositionLastQuantity,
+                NetProfitLoss = report.TransactionAmount,
+                GrossProfitLoss = report.TransactionAmount - report.Swap - report.Commission,
+                ClosePrice = report.PositionClosePrice,
+                Swap = report.Swap,
+                RemainingQuantity = report.LeavesQuantity
+            };
+        }
+
+        public static Api.TradeExecActions Convert(TradeTransactionReportType type)
+        {
+            switch (type)
+            {
+                case TradeTransactionReportType.BalanceTransaction: return Api.TradeExecActions.BalanceTransaction;
+                case TradeTransactionReportType.Credit: return Api.TradeExecActions.Credit;
+                case TradeTransactionReportType.OrderActivated: return Api.TradeExecActions.OrderActivated;
+                case TradeTransactionReportType.OrderCanceled: return Api.TradeExecActions.OrderCanceled;
+                case TradeTransactionReportType.OrderExpired: return Api.TradeExecActions.OrderExpired;
+                case TradeTransactionReportType.OrderFilled: return Api.TradeExecActions.OrderFilled;
+                case TradeTransactionReportType.OrderOpened: return Api.TradeExecActions.OrderOpened;
+                case TradeTransactionReportType.PositionClosed: return Api.TradeExecActions.PositionClosed;
+                case TradeTransactionReportType.PositionOpened: return Api.TradeExecActions.PositionOpened;
+                default: return Api.TradeExecActions.None;
+            }
+        }
+
+        public static Api.TradeRecordTypes GetRecordType(TradeTransactionReport rep)
+        {
+            if (rep.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction)
+            {
+                if (rep.TransactionAmount >= 0)
+                    return Api.TradeRecordTypes.Deposit;
+                else
+                    return Api.TradeRecordTypes.Withdrawal;
+            }
+            else if (rep.TradeTransactionReportType == TradeTransactionReportType.Credit)
+            {
+                return Api.TradeRecordTypes.Unknown;
+            }
+            else if (rep.TradeRecordType == TradeRecordType.Limit || rep.TradeRecordType == TradeRecordType.IoC)
+            {
+                if (rep.TradeRecordSide == TradeRecordSide.Buy)
+                    return Api.TradeRecordTypes.BuyLimit;
+                else if (rep.TradeRecordSide == TradeRecordSide.Sell)
+                    return Api.TradeRecordTypes.SellLimit;
+            }
+            else if (rep.TradeRecordType == TradeRecordType.Position || rep.TradeRecordType == TradeRecordType.Market || rep.TradeRecordType == TradeRecordType.MarketWithSlippage)
+            {
+                if (rep.TradeRecordSide == TradeRecordSide.Buy)
+                    return Api.TradeRecordTypes.Buy;
+                else if (rep.TradeRecordSide == TradeRecordSide.Sell)
+                    return Api.TradeRecordTypes.Sell;
+            }
+            else if (rep.TradeRecordType == TradeRecordType.Stop)
+            {
+                if (rep.TradeRecordSide == TradeRecordSide.Buy)
+                    return Api.TradeRecordTypes.BuyStop;
+                else if (rep.TradeRecordSide == TradeRecordSide.Sell)
+                    return Api.TradeRecordTypes.SellStop;
+            }
+
+            return Api.TradeRecordTypes.Unknown;
+        }
+
+        public static PriceType Convert(Api.BarPriceType priceType)
+        {
+            switch (priceType)
+            {
+                case Api.BarPriceType.Ask: return PriceType.Ask;
+                case Api.BarPriceType.Bid: return PriceType.Bid;
+            }
+            throw new NotImplementedException("Unsupported price type: "  +priceType);
         }
     }
 }

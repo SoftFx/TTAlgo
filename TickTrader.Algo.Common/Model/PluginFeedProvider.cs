@@ -52,29 +52,21 @@ namespace TickTrader.Algo.Common.Model
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
             BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
-            var result = history.GetBars(symbolCode, PriceType.Ask, period, from, to).Result;
+            var result = history.GetBars(symbolCode, FdkToAlgo.Convert(priceType), period, from, to).Result;
             return FdkToAlgo.Convert(result).ToList();
         }
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
         {
             BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
-            var result = history.GetBars(symbolCode, PriceType.Ask, period, from, size).Result;
+            var result = history.GetBars(symbolCode, FdkToAlgo.Convert(priceType), period, from, size).Result;
             return FdkToAlgo.Convert(result).ToList();
         }
 
-        public IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
-            try
-            {
-                var result = history.GetTicks(symbolCode, from, to, depth).Result;
-                return FdkToAlgo.Convert(result).ToList();
-            }
-            catch (Exception)
-            {
-                // TO DO : return corresponding error code
-                return Enumerable.Empty<QuoteEntity>();
-            }
+            var result = history.GetTicks(symbolCode, from, to, depth).Result;
+            return FdkToAlgo.Convert(result).ToList();
         }
 
         public List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth)
@@ -137,11 +129,6 @@ namespace TickTrader.Algo.Common.Model
         public void Invoke(Action action)
         {
             _sync.Invoke(action);
-        }
-
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
-        {
-            throw new NotImplementedException();
         }
 
         public IEnumerable<QuoteEntity> GetSnapshot()
