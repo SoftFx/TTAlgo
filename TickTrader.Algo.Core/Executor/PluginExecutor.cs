@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
         private LogFixture pluginLogger;
         private IPluginMetadata metadata;
         private IPluginFeedProvider feedProvider;
+        private ITradeHistoryProvider tradeHistoryProvider;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
         private SubscriptionManager dispenser;
@@ -63,6 +64,19 @@ namespace TickTrader.Algo.Core
                 {
                     ThrowIfRunning();
                     accFixture.DataProvider = value;
+                }
+            }
+        }
+
+        public ITradeHistoryProvider TradeHistoryProvider
+        {
+            get { return tradeHistoryProvider; }
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+                    tradeHistoryProvider = value?? throw new InvalidOperationException("TradeHistoryProvider cannot be null!");
                 }
             }
         }
@@ -240,14 +254,13 @@ namespace TickTrader.Algo.Core
                 InitMetadata();
                 InitWorkingFolder();
                 builder.TradeApi = accFixture;
+                builder.TradeHistoryProvider = tradeHistoryProvider;
                 builder.Id = _botInstanceId;
                 builder.Isolated = _isolated;
                 builder.Permissions = _permissions;
                 builder.Diagnostics = this;
                 builder.Logger = pluginLogger ?? Null.Logger;
                 builder.OnAsyncAction = OnAsyncAction;
-                builder.OnSubscribe = fStrategy.OnUserSubscribe;
-                builder.OnUnsubscribe = fStrategy.OnUserUnsubscribe;
                 builder.OnExit = OnExit;
                 //builder.OnException = OnException;
 
@@ -255,7 +268,7 @@ namespace TickTrader.Algo.Core
 
                 iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
                 fStrategy.Init(this, bStrategy, ApplyNewRate);
-                fStrategy.OnUserSubscribe(MainSymbolCode, 1);   // Default subscribe
+                fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                 setupActions.ForEach(a => a());
                 BindAllOutputs();
                 iStrategy.EnqueueTradeUpdate(b => b.InvokeInit()); // enqueue init
@@ -298,6 +311,23 @@ namespace TickTrader.Algo.Core
             }
 
             taskToWait.Wait();
+        }
+
+        public void HandleReconnect()
+        {
+            lock (_sync)
+            {
+                if (state == States.Running)
+                {
+                    iStrategy.EnqueueTradeUpdate(b =>
+                    {
+                        calcFixture.Stop();
+                        accFixture.Restart();
+                        calcFixture.Start();
+                        builder.Account.FireResetEvent();
+                    });
+                }
+            }
         }
 
         private async Task DoStop(bool qucik)

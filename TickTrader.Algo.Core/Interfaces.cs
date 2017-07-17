@@ -49,42 +49,16 @@ namespace TickTrader.Algo.Core
             string orderId, string byOrderId);
     }
 
-    //[Serializable]
-    //public struct OpenModifyResult
-    //{
-    //    public OpenModifyResult(OrderCmdResultCodes code, OrderEntity order)
-    //    {
-    //        this.ResultCode = code;
-    //        this.NewOrder = order;
-    //    }
 
-    //    public OrderCmdResultCodes ResultCode { get; private set; }
-    //    public OrderEntity NewOrder { get; private set; }
-    //}
+    public interface ITradeHistoryProvider
+    {
+        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(bool skipCancelOrders);
+        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders);
+        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime to, bool skipCancelOrders);
+    }
 
-    //[Serializable]
-    //public struct CancelResult
-    //{
-    //    public CancelResult(OrderCmdResultCodes code)
-    //    {
-    //        this.ResultCode = code;
-    //    }
-
-    //    public OrderCmdResultCodes ResultCode { get; private set; }
-    //}
-
-    //[Serializable]
-    //public struct CloseResult
-    //{
-    //    public CloseResult(OrderCmdResultCodes code, double execPrice = double.NaN, double execVolume = 0)
-    //    {
-    //        this.ResultCode = code;
-    //        this.ExecPrice = execPrice;
-    //        this.ExecVolume = execVolume;
-    //    }
-
-    //    public OrderCmdResultCodes ResultCode { get; private set; }
-    //    public double ExecPrice { get; private set; }
-    //    public double ExecVolume { get; private set; }
-    //}
+    public interface IAsyncCrossDomainEnumerator<T> : IDisposable where T : class
+    {
+        void GetNextPage(CrossDomainTaskProxy<T[]> pageCallback);
+    }
 }

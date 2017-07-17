@@ -51,9 +51,11 @@ namespace TickTrader.BotTerminal
         void UpdatePlugin(PluginExecutor plugin);
 
         ITradeExecutor GetTradeApi();
+        ITradeHistoryProvider GetTradeHistoryApi();
         BotJournal Journal { get; }
 
         event Action ParamsChanged;
+        event Action Connected;
         event Action StartEvent;
         event AsyncEventHandler StopEvent;
 
