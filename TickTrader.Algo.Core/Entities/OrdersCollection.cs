@@ -50,6 +50,11 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
+        public void Clear()
+        {
+            fixture.CLear();
+        }
+
         public void FireOrderOpened(OrderOpenedEventArgs args)
         {
             builder.InvokePluginMethod(() => fixture.FireOrderOpened(args));
@@ -134,6 +139,11 @@ namespace TickTrader.Algo.Core
                 OrderAccessor entity;
                 orders.TryGetValue(orderId, out entity);
                 return entity;
+            }
+
+            public void CLear()
+            {
+                orders.Clear();
             }
 
             public void FireOrderOpened(OrderOpenedEventArgs args)

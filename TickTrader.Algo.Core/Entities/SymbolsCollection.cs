@@ -12,11 +12,11 @@ namespace TickTrader.Algo.Core
     {
         private SymbolFixture fixture = new SymbolFixture();
         private string mainSymbolCode;
-        private IPluginSubscriptionHandler subscriptionHandler;
+        private FeedProvider subscriptionHandler;
 
         internal SymbolProvider SymbolProviderImpl { get { return fixture; } }
 
-        public SymbolsCollection(IPluginSubscriptionHandler subscriptionHandler)
+        public SymbolsCollection(FeedProvider subscriptionHandler)
         {
             this.subscriptionHandler = subscriptionHandler;
         }

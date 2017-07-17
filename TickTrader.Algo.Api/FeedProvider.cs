@@ -24,13 +24,10 @@ namespace TickTrader.Algo.Api
     {
         void Subscribe(string symbol, int depth = 1);
         void Unsubscribe(string symbol);
-        BarSeries GetBars(string symbol);
-        BarSeries GetBars(string symbol, TimeFrames timeFrame);
-        BarSeries GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
-        QuoteSeries GetQuotes(string symbol);
-        QuoteSeries GetQuotes(string symbol, DateTime from, DateTime to);
-        QuoteSeries GetLevel2(string symbol);
-        QuoteSeries GetLevel2(string symbol, DateTime from, DateTime to);
+        BarSeries GetBarSeries(string symbol);
+        BarSeries GetBarSeries(string symbol, BarPriceType side);
+        IEnumerable<Bar> GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder);
+        IEnumerable<Quote> GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder);
     }
 
     public interface BarSeries : DataSeries<Bar>

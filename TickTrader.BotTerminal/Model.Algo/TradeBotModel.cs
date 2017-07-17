@@ -16,16 +16,15 @@ namespace TickTrader.BotTerminal
         public BotModelStates State { get; private set; }
         public string CustomStatus { get; private set; }
 
-
         public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
         public event System.Action<TradeBotModel> StateChanged = delegate { };
         public event System.Action<TradeBotModel> Removed = delegate { };
-
 
         public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
             host.Journal.RegisterBotLog(InstanceId);
+            host.Connected += Host_Connected;
         }
 
         public void Start()
@@ -60,6 +59,7 @@ namespace TickTrader.BotTerminal
             executor.TradeExecutor = Host.GetTradeApi();
             executor.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
             executor.BotWorkingFolder = executor.WorkingFolder;
+            executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
             EnvService.Instance.EnsureFolder(executor.WorkingFolder);
 
             executor.InitLogging().NewRecords += TradeBotModel2_NewRecords;
@@ -96,6 +96,12 @@ namespace TickTrader.BotTerminal
                     CustomStatusChanged?.Invoke(this);
                 });
             }
+        }
+
+        private void Host_Connected()
+        {
+            if (this.State == BotModelStates.Running)
+                HandleReconnect();
         }
 
         private BotMessage Convert(BotLogRecord record)

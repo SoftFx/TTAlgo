@@ -86,6 +86,19 @@ namespace TickTrader.Algo.Core
                 return new BarAggragation(bounds.Open, bounds.Close, quote);
         }
 
+        protected override BarSeries GetBarSeries(string symbol)
+        {
+            return GetBarSeries(symbol, MainPriceType);
+        }
+
+        protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
+        {
+            InitSymbol(GetKey(symbol, side));
+            var fixture = GetFixutre(symbol, side);
+            var proxyBuffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = fixture.Buffer };
+            return new BarSeriesProxy() { Buffer = proxyBuffer };
+        }
+
         #region Setup
 
         private void ThrowIfNotbarType<TSrc>()
