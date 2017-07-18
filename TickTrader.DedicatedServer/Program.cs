@@ -16,6 +16,11 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Info;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
+using System.Security.Cryptography.X509Certificates;
+using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.DedicatedServer.Extensions;
+using NLog;
 
 namespace TickTrader.DedicatedServer
 {
@@ -23,38 +28,71 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
-            bool isService = true;
-
-            if (Debugger.IsAttached || args.Contains("console"))
-                isService = false;
-
-            var pathToContentRoot = Directory.GetCurrentDirectory();
-
-            if (isService)
+            var logger = LogManager.GetLogger(nameof(Startup));
+            try
             {
-                var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
-                pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                bool isService = true;
+
+                if (Debugger.IsAttached || args.Contains("console"))
+                    isService = false;
+
+                var pathToContentRoot = Directory.GetCurrentDirectory();
+
+                if (isService)
+                {
+                    var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+                    pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                }
+
+                var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
+                var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
+
+                var config = EnsureDefaultConfiguration(pathToAppSettings);
+
+                var cert = GetCertificate(config, logger, pathToContentRoot);
+
+                var host = new WebHostBuilder()
+                    .UseConfiguration(config)
+                    .UseKestrel(options => options.UseHttps(cert))
+                    .UseContentRoot(pathToContentRoot)
+                    .UseWebRoot(pathToWebRoot)
+                    .UseStartup<Startup>()
+                    .Build();
+
+                Console.WriteLine($"Web root path: {pathToWebRoot}");
+
+                if (isService)
+                    host.RunAsCustomService();
+                else
+                    host.Run();
             }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
 
-            var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
-            var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
+        private static X509Certificate2 GetCertificate(IConfiguration config, Logger logger, string contentRoot)
+        {
+            var sslConf = config.GetSslSettings();
 
-            var config = EnsureDefaultConfiguration(pathToAppSettings);
+            ValidateSslConfiguration(sslConf, logger);
 
-            var host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel()
-                .UseContentRoot(pathToContentRoot)
-                .UseWebRoot(pathToWebRoot)
-                .UseStartup<WebAdminStartup>()
-                .Build();
+            var pfxFile = sslConf.File;
 
-            Console.WriteLine($"Web root path: {pathToWebRoot}");
+            if (!pfxFile.IsPathAbsolute())
+                pfxFile = Path.Combine(contentRoot, pfxFile);
 
-            if (isService)
-                host.RunAsCustomService();
-            else
-                host.Run();
+            return new X509Certificate2(pfxFile, sslConf.Password);
+        }
+
+        private static void ValidateSslConfiguration(SslSettings sslConf, Logger logger)
+        {
+            if (sslConf == null)
+                throw new ArgumentException("SSL configuration not found");
+
+            if(string.IsNullOrWhiteSpace(sslConf.File))
+                throw new ArgumentException("Certificate file is not defined");
         }
 
         private static IConfiguration EnsureDefaultConfiguration(string configFile)
@@ -73,12 +111,13 @@ namespace TickTrader.DedicatedServer
 
         private static void CreateDefaultConfig(string configFile)
         {
-            var appConfig = new AppSettings
-            {
-                ServerUrls = @"http://localhost:5000/"
-            };
+            var appSettings = AppSettings.Default;
+            SaveConfig(configFile, appSettings);
+        }
 
-            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appConfig));
+        private static void SaveConfig(string configFile, AppSettings appSettings)
+        {
+            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
         }
 
         private static void RunConsole()

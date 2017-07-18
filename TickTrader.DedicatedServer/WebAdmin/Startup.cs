@@ -22,30 +22,30 @@ using Microsoft.AspNetCore.Http;
 
 namespace TickTrader.DedicatedServer.WebAdmin
 {
-    public class WebAdminStartup
+    public class Startup
     {
-        private static readonly string jwtKey = "Hu68yowUs4anwe04u48uKNDuweALKSWEUjnenasd";
-
-        public WebAdminStartup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"WebAdmin/appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
         public IConfigurationRoot Configuration { get; private set; }
+        private string JwtKey => $"{Configuration.GetSecretKey()}{Configuration.GetCredentials().Password}";
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+            services.Configure<ServerCredentials>(Configuration.GetSection(nameof(AppSettings.Credentials)));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
             services.AddTransient<ITokenOptions>(x => new TokenOptions
             {
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
                     SecurityAlgorithms.HmacSha256)
             });
             services.AddTransient<IAuthManager, AuthManager>();
@@ -64,7 +64,6 @@ namespace TickTrader.DedicatedServer.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-
             appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
 
             loggerFactory.AddNLog();
@@ -80,6 +79,8 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     HotModuleReplacement = true,
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
+                app.UseSwagger();
+                app.UseSwaggerUi();
             }
             else
             {
@@ -89,11 +90,8 @@ namespace TickTrader.DedicatedServer.WebAdmin
             app.UseStaticFiles();
 
             app.UseJwtAuthentication();
-            
-            app.ObserveDedicatedServer();
 
-            app.UseSwagger();
-            app.UseSwaggerUi();
+            app.ObserveDedicatedServer();
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
@@ -104,7 +102,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }
@@ -129,6 +127,6 @@ namespace TickTrader.DedicatedServer.WebAdmin
             var server = services.GetRequiredService<IDedicatedServer>();
 
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
-        }       
+        }
     }
 }
