@@ -30,6 +30,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private ConnectionErrorCodes _lastErrorCode;
         private ConnectionErrorCodes _currentErrorCode;
         private ClientCore _core;
+        private TaskCompletionSource<object> _disconnectEvent;
 
         [DataMember(Name = "bots")]
         private List<TradeBotModel> _bots = new List<TradeBotModel>();
@@ -288,6 +289,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 _shutdownRequested = false;
                 _stopRequested = false;
                 _lostConnection = false;
+                _disconnectEvent.SetResult(1);
                 ManageConnection();
             }
         }
@@ -301,6 +303,8 @@ namespace TickTrader.DedicatedServer.DS.Models
         private async Task Connect()
         {
             _currentErrorCode = ConnectionErrorCodes.None;
+
+            _disconnectEvent = new TaskCompletionSource<object>();
 
             ChangeState(ConnectionStates.Connecting);
             _connectCancellation = new CancellationTokenSource();
