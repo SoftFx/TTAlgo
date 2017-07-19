@@ -316,7 +316,7 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private Task<OrderCmdResult> ExecTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+        private async Task<OrderCmdResult> ExecTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
         {
             var resultTask = new TaskCompletionSource<OrderCmdResult>();
 
@@ -328,24 +328,27 @@ namespace TickTrader.Algo.Core
                 resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, new OrderAccessor(rep.OrderCopy)));
             });
 
-            var callback = new CrossDomainCallback<OrderCmdResultCodes>(code =>
+            Action<OrderCmdResultCodes> callbackAction = code =>
             {
                 if (code != OrderCmdResultCodes.Ok)
                     context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
-            });
+            };
 
-            executorInvoke(operationId, callback);
-
-            if (!isAsync)
+            using (var callback = new CrossDomainCallback<OrderCmdResultCodes>(callbackAction))
             {
-                while (!resultTask.Task.IsCompleted)
-                    context.ProcessNextOrderUpdate();
-            }
+                executorInvoke(operationId, callback);
 
-            return resultTask.Task;
+                if (!isAsync)
+                {
+                    while (!resultTask.Task.IsCompleted)
+                        context.ProcessNextOrderUpdate();
+                }
+
+                return await resultTask.Task;
+            }
         }
 
-        private Task<OrderCmdResult> ExecDoubleOrderTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+        private async Task<OrderCmdResult> ExecDoubleOrderTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
         {
             var resultTask = new TaskCompletionSource<OrderCmdResult>();
             var resultContainer = new List<OrderEntity>(2);
@@ -362,21 +365,25 @@ namespace TickTrader.Algo.Core
                 }
             });
 
-            var callback = new CrossDomainCallback<OrderCmdResultCodes>(code =>
+            Action<OrderCmdResultCodes> callbackAction = code =>
             {
                 if (code != OrderCmdResultCodes.Ok)
                     context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
-            });
+            };
 
-            executorInvoke(operationId, callback);
-
-            if (!isAsync)
+            using (var callback = new CrossDomainCallback<OrderCmdResultCodes>(callbackAction))
             {
-                while (!resultTask.Task.IsCompleted)
-                    context.ProcessNextOrderUpdate();
-            }
 
-            return resultTask.Task;
+                executorInvoke(operationId, callback);
+
+                if (!isAsync)
+                {
+                    while (!resultTask.Task.IsCompleted)
+                        context.ProcessNextOrderUpdate();
+                }
+
+                return await resultTask.Task;
+            }
         }
 
         private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)
