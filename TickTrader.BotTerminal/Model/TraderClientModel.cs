@@ -37,7 +37,10 @@ namespace TickTrader.BotTerminal
             this.Symbols = (SymbolCollectionModel)_core.Symbols;
             this.TradeHistory = new TradeHistoryProvider(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
-            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            if(Properties.Settings.Default.UseQuoteStorage)
+                this.History = FeedHistoryProviderModel.CreateDiskStorage(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            else
+                this.History = FeedHistoryProviderModel.CreateLightProxy(connection);
             this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
 

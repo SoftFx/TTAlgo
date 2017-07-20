@@ -100,8 +100,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
             Account = new AccountModel(_core, AccountModelOptions.None);
             Symbols = (SymbolManager)_core.Symbols;
-            FeedHistory = new FeedHistoryProviderModel(Connection, ServerModel.Environment.FeedHistoryCacheFolder,
-                FeedHistoryFolderOptions.ServerClientHierarchy);
+            FeedHistory = FeedHistoryProviderModel.CreateLightProxy(Connection);
             TradeApi = new TradeExecutor(_core);
 
             ManageConnection();
