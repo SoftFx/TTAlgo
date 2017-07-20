@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -9,12 +10,14 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
 {
     public class AuthManager : IAuthManager
     {
-        public AuthManager(ITokenOptions tokenOptions)
+        public AuthManager(ITokenOptions tokenOptions, IOptions<ServerCredentials> credentials)
         {
             TokenOptions = tokenOptions;
+            Credentials = credentials.Value;
         }
 
         public ITokenOptions TokenOptions { get; set; }
+        public IServerCredentials Credentials { get; set; }
 
         public JwtSecurityToken GetJwt(ClaimsIdentity identity)
         {
@@ -43,7 +46,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Models
 
         public ClaimsIdentity Login(string login, string password)
         {
-            return login == "Administrator" && password == "Administrator" ?
+            return login == Credentials.Login && password == Credentials.Password ?
                 new ClaimsIdentity(new GenericIdentity(login, "Token")) :
                 default(ClaimsIdentity);
         }

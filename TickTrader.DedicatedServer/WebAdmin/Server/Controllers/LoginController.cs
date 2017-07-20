@@ -17,9 +17,9 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]LoginModel loginModel)
+        public IActionResult Post([FromBody]LoginDataDto loginData)
         {
-            var identity = _authManager.Login(loginModel.Login, loginModel.Password);
+            var identity = _authManager.Login(loginData.Login, loginData.Password);
             if (identity == null)
             {
                 return BadRequest(new Models.BadRequestResult(ExceptionCodes.InvalidCredentials, "Invalid username or password"));

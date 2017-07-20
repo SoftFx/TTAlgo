@@ -142,11 +142,11 @@ namespace TickTrader.BotTerminal
                     switch (order.Type)
                     {
                         case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
-                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                             break;
                     }
                     break;
@@ -154,25 +154,25 @@ namespace TickTrader.BotTerminal
                     switch (order.Type)
                     {
                         case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
-                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                             break;
                     }
                     break;
                 case OrderExecAction.Closed:
                     if (order.Type == Algo.Api.OrderType.Position)
                     {
-                        _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Symbol} {order.RemainingVolume} lots at {order.LastFillPrice}");
+                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
                     }
                     break;
                 case OrderExecAction.Canceled:
-                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                     break;
                 case OrderExecAction.Expired:
-                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume} lots at {order.Price}");
+                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                     break;
                 case OrderExecAction.Filled:
                     _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");

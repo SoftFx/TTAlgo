@@ -11,6 +11,8 @@ namespace TickTrader.Algo.Api
         string Currency { get; }
         Currency CurrencyInfo { get; }
         double Volume { get; }
+        double LockedVolume { get; }
+        double FreeVolume { get; }
         bool IsNull { get; }
     }
 

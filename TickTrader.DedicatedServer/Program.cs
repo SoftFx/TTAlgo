@@ -1,6 +1,5 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
 using TickTrader.DedicatedServer.WebAdmin;
 using Microsoft.Extensions.Configuration;
 using TickTrader.DedicatedServer.DS.Models;
@@ -11,11 +10,17 @@ using TickTrader.DedicatedServer.DS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.DedicatedServer.DS.Info;
+using System.Diagnostics;
+using Newtonsoft.Json;
+using TickTrader.DedicatedServer.WebAdmin.Server.Models;
+using System.Security.Cryptography.X509Certificates;
+using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
+using TickTrader.DedicatedServer.Extensions;
+using NLog;
 
 namespace TickTrader.DedicatedServer
 {
@@ -23,25 +28,96 @@ namespace TickTrader.DedicatedServer
     {
         public static void Main(string[] args)
         {
-            if (args.Length != 1 || args[0] != "console")
+            var logger = LogManager.GetLogger(nameof(Startup));
+            try
             {
-                var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("WebAdmin/appsettings.json", optional: true)
-                    .AddEnvironmentVariables();
-                var config = builder.Build();
+                bool isService = true;
+
+                if (Debugger.IsAttached || args.Contains("console"))
+                    isService = false;
+
+                var pathToContentRoot = Directory.GetCurrentDirectory();
+
+                if (isService)
+                {
+                    var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+                    pathToContentRoot = Path.GetDirectoryName(pathToExe);
+                }
+
+                var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
+                var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
+
+                var config = EnsureDefaultConfiguration(pathToAppSettings);
+
+                var cert = GetCertificate(config, logger, pathToContentRoot);
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
-                    .UseKestrel()
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseStartup<WebAdminStartup>()
+                    .UseKestrel(options => options.UseHttps(cert))
+                    .UseContentRoot(pathToContentRoot)
+                    .UseWebRoot(pathToWebRoot)
+                    .UseStartup<Startup>()
                     .Build();
 
-                host.Run();
+                Console.WriteLine($"Web root path: {pathToWebRoot}");
+
+                if (isService)
+                    host.RunAsCustomService();
+                else
+                    host.Run();
             }
-            else
-                RunConsole();
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        private static X509Certificate2 GetCertificate(IConfiguration config, Logger logger, string contentRoot)
+        {
+            var sslConf = config.GetSslSettings();
+
+            ValidateSslConfiguration(sslConf, logger);
+
+            var pfxFile = sslConf.File;
+
+            if (!pfxFile.IsPathAbsolute())
+                pfxFile = Path.Combine(contentRoot, pfxFile);
+
+            return new X509Certificate2(pfxFile, sslConf.Password);
+        }
+
+        private static void ValidateSslConfiguration(SslSettings sslConf, Logger logger)
+        {
+            if (sslConf == null)
+                throw new ArgumentException("SSL configuration not found");
+
+            if(string.IsNullOrWhiteSpace(sslConf.File))
+                throw new ArgumentException("Certificate file is not defined");
+        }
+
+        private static IConfiguration EnsureDefaultConfiguration(string configFile)
+        {
+            if (!System.IO.File.Exists(configFile))
+            {
+                CreateDefaultConfig(configFile);
+            }
+
+            var builder = new ConfigurationBuilder()
+              .AddJsonFile(configFile, optional: false)
+              .AddEnvironmentVariables();
+
+            return builder.Build();
+        }
+
+        private static void CreateDefaultConfig(string configFile)
+        {
+            var appSettings = AppSettings.Default;
+            SaveConfig(configFile, appSettings);
+        }
+
+        private static void SaveConfig(string configFile, AppSettings appSettings)
+        {
+            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
         }
 
         private static void RunConsole()
@@ -130,7 +206,7 @@ namespace TickTrader.DedicatedServer
                             Console.WriteLine("Error = " + acc.TestConnection().Result);
                         break;
                 }
- 
+
             });
 
             cmdEngine.RegsiterCommand("trade bot", () =>

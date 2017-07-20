@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
-    public class BotLog : CrossDomainObject, IPluginLogger, IBotLog
+    public class BotLog : IBotLog
     {
         private object _internalSync = new object();
         private object _sync;
@@ -62,59 +62,21 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         public event Action<string> StatusUpdated;
 
-        public void OnError(Exception ex)
+        internal void Update(BotLogRecord[] recrods)
         {
-            WriteLog(LogEntryType.Error, ex.Message);
-        }
-
-        public void OnExit()
-        {
-            WriteLog(LogEntryType.Info, "Exit");
-        }
-
-        public void OnInitialized()
-        {
-            WriteLog(LogEntryType.Info, "Initialized");
-        }
-
-        public void OnPrint(string message)
-        {
-            WriteLog(LogEntryType.Custom, message);
-        }
-
-        public void OnPrint(string message, params object[] parameters)
-        {
-            OnPrint(string.Format(message, parameters));
-        }
-
-        public void OnPrintError(string message)
-        {
-            WriteLog(LogEntryType.Error, message);
-        }
-
-        public void OnPrintError(string message, params object[] parameters)
-        {
-            OnPrintError(string.Format(message, parameters));
-        }
-
-        public void OnPrintInfo(string message)
-        {
-            WriteLog(LogEntryType.Info, message);
-        }
-
-        public void OnPrintTrade(string message)
-        {
-            WriteLog(LogEntryType.Trading, message);
-        }
-
-        public void OnStart()
-        {
-            WriteLog(LogEntryType.Info, "Start");
-        }
-
-        public void OnStop()
-        {
-            WriteLog(LogEntryType.Info, "Stop");
+            lock (_sync)
+            {
+                foreach (var rec in recrods)
+                {
+                    if (rec.Severity == LogSeverities.CustomStatus)
+                    {
+                        Status = rec.Message;
+                        StatusUpdated?.Invoke(rec.Message);
+                    }
+                    else
+                        WriteLog(Convert(rec.Severity), rec.Message);
+                }
+            }
         }
 
         public void UpdateStatus(string status)
@@ -208,6 +170,18 @@ namespace TickTrader.DedicatedServer.DS.Models
         public void DeleteFile(string file)
         {
             File.Delete(Path.Combine(_logDirectory, file));
+        }
+
+        private static LogEntryType Convert(LogSeverities severity)
+        {
+            switch (severity)
+            {
+                case LogSeverities.Custom: return LogEntryType.Custom;
+                case LogSeverities.Error: return LogEntryType.Error;
+                case LogSeverities.Info: return LogEntryType.Info;
+                case LogSeverities.Trade: return LogEntryType.Trading;
+                default: return LogEntryType.Info;
+            }
         }
     }
 }

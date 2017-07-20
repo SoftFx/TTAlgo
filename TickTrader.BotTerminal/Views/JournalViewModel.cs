@@ -21,15 +21,17 @@ namespace TickTrader.BotTerminal
         private EventJournal eventJournal;
         private string filterString;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private bool isEnabled = true;
 
         public JournalViewModel(EventJournal journal)
         {
             eventJournal = journal;
-            Journal = CollectionViewSource.GetDefaultView(eventJournal.Records.AsObservable());
+            Journal = CollectionViewSource.GetDefaultView(eventJournal.Records);
             Journal.Filter = new Predicate<object>(Filter);
         }
 
         public ICollectionView Journal { get; private set; }
+
         public string FilterString
         {
             get { return filterString; }
@@ -37,6 +39,17 @@ namespace TickTrader.BotTerminal
             {
                 filterString = value;
                 NotifyOfPropertyChange(nameof(FilterString));
+                RefreshCollection();
+            }
+        }
+
+        public bool IsJournalEnabled
+        {
+            get => isEnabled;
+            set
+            {
+                isEnabled = value;
+                NotifyOfPropertyChange(nameof(IsJournalEnabled));
                 RefreshCollection();
             }
         }
@@ -67,6 +80,9 @@ namespace TickTrader.BotTerminal
 
         private bool Filter(object obj)
         {
+            if (!isEnabled)
+                return false;
+
             var data = obj as EventMessage;
             if (data != null)
             {
@@ -77,5 +93,16 @@ namespace TickTrader.BotTerminal
             }
             return false;
         }
+    }
+
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    internal enum Journ
+    {
+        [Description("All events")]
+        All,
+        Info,
+        Trading,
+        Error,
+        Custom
     }
 }

@@ -8,15 +8,15 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class SymbolsCollection
+    public class SymbolsCollection : IEnumerable<SymbolAccessor>
     {
         private SymbolFixture fixture = new SymbolFixture();
         private string mainSymbolCode;
-        private IPluginSubscriptionHandler subscriptionHandler;
+        private FeedProvider subscriptionHandler;
 
         internal SymbolProvider SymbolProviderImpl { get { return fixture; } }
 
-        public SymbolsCollection(IPluginSubscriptionHandler subscriptionHandler)
+        public SymbolsCollection(FeedProvider subscriptionHandler)
         {
             this.subscriptionHandler = subscriptionHandler;
         }
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
 
         public void Add(SymbolEntity symbol, Dictionary<string, CurrencyEntity> currencies)
         {
-            fixture.InnerCollection.Add(symbol.Name, new SymbolAccessor(symbol, subscriptionHandler, currencies));
+            fixture.Add(new SymbolAccessor(symbol, subscriptionHandler, currencies));
 
             if (symbol.Name == mainSymbolCode)
                 InitCurrentSymbol();
@@ -46,12 +46,12 @@ namespace TickTrader.Algo.Core
 
         public void Init(IEnumerable<SymbolEntity> symbols, Dictionary<string, CurrencyEntity> currencies)
         {
-            fixture.InnerCollection.Clear();
+            fixture.Clear();
 
             if (symbols != null)
             {
                 foreach (var smb in symbols)
-                    fixture.InnerCollection.Add(smb.Name, new SymbolAccessor(smb, subscriptionHandler, currencies));
+                    fixture.Add(new SymbolAccessor(smb, subscriptionHandler, currencies));
 
                 InitCurrentSymbol();
             }
@@ -62,9 +62,24 @@ namespace TickTrader.Algo.Core
             (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
         }
 
+        public IEnumerator<SymbolAccessor> GetEnumerator()
+        {
+            return fixture.GetInnerCollection().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal Symbol GetOrDefault(string symbol)
+        {
+            return fixture.GetOrDefault(symbol);
+        }
+
         private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
         {
-            private Dictionary<string, Api.Symbol> symbols = new Dictionary<string, Api.Symbol>();
+            private Dictionary<string, SymbolAccessor> symbols = new Dictionary<string, SymbolAccessor>();
 
             public Symbol this[string symbolCode]
             {
@@ -73,7 +88,7 @@ namespace TickTrader.Algo.Core
                     if (string.IsNullOrEmpty(symbolCode))
                         return new NullSymbol("");
 
-                    Api.Symbol smb;
+                    SymbolAccessor smb;
                     if (!symbols.TryGetValue(symbolCode, out smb))
                         return new NullSymbol(symbolCode);
                     return smb;
@@ -81,15 +96,29 @@ namespace TickTrader.Algo.Core
             }
 
             public Symbol MainSymbol { get; set; }
-            public Dictionary<string, Api.Symbol> InnerCollection { get { return symbols; } }
 
             public SymbolList List { get { return this; } }
 
             public Symbol GetOrDefault(string symbol)
             {
-                Symbol entity;
+                SymbolAccessor entity;
                 symbols.TryGetValue(symbol, out entity);
                 return entity;
+            }
+
+            public void Clear()
+            {
+                symbols.Clear();
+            }
+
+            public void Add(SymbolAccessor symbol)
+            {
+                symbols.Add(symbol.Name, symbol);
+            }
+
+            public IEnumerable<SymbolAccessor> GetInnerCollection()
+            {
+                return symbols.Values;
             }
 
             public IEnumerator<Symbol> GetEnumerator()

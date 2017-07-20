@@ -7,6 +7,7 @@ using TickTrader.DedicatedServer.WebAdmin.Server.Dto;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
@@ -31,7 +32,17 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 PackageName = bot.PackageName,
                 BotName = bot.BotName,
                 FaultMessage = bot.FaultMessage,
-                Config = bot.ToConfigDto()
+                Config = bot.ToConfigDto(),
+                Permissions = bot.Permissions.ToDto()
+                
+            };
+        }
+
+        public static PermissionsDto ToDto(this PluginPermissions permissions)
+        {
+            return new PermissionsDto
+            {
+                TradeAllowed = permissions.TradeAllowed
             };
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -53,17 +54,36 @@ namespace TickTrader.Algo.Core
         void Invoke(Action action);
     }
 
+    public interface IIsolationContext
+    {
+        T ActivateIsolated<T>() where T : MarshalByRefObject, new();
+        ILink<T> CreateInLink<T>();
+        ILink<T> CreateOutLink<T>();
+    }
+
+    public interface ILink<T> : IDisposable
+    {
+        void Write(T msg);
+        ILinkOutput<T> Output { get; }
+    }
+
+    public interface ILinkOutput<T> : IDisposable
+    {
+        event Action<T> MsgReceived;
+    }
+
     public interface IAccountInfoProvider
     {
         double Balance { get; }
         string BalanceCurrency { get; }
         Api.AccountTypes AccountType { get; }
         string Account { get; }
+        int Leverage { get; }
 
         void SyncInvoke(Action action);
 
         List<OrderEntity> GetOrders();
-        IEnumerable<OrderEntity> GetPosition();
+        IEnumerable<PositionExecReport> GetPositions();
         IEnumerable<AssetEntity> GetAssets();
         event Action<OrderExecReport> OrderUpdated;
         event Action<PositionExecReport> PositionUpdated;
@@ -76,56 +96,40 @@ namespace TickTrader.Algo.Core
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         IPluginLogger Logger { get; }
-        void Enqueue(QuoteEntity update);
-        void Enqueue(Action<PluginBuilder> action);
-        //void AddSetupAction(Action setupAction);
+        void EnqueueQuote(QuoteEntity update);
+        void EnqueueTradeUpdate(Action<PluginBuilder> action);
+        void EnqueueTradeEvent(Action<PluginBuilder> action);
+        void ProcessNextOrderUpdate();
+        void OnInternalException(Exception ex);
 
-        //IEnumerable<BarEntity> QueryBars(string symbolCode, DateTime from, DateTime to, Api.TimeFrames timeFrame);
-        //IEnumerable<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to);
-        //IEnumerable<QuoteEntityL2> QueryTicksL2(string symbolCode, DateTime from, DateTime to);
-        //void Add(IFeedFixture subscriber);
-        //void Remove(IFeedFixture subscriber);
-        //void Subscribe(string symbolCode, int depth);
-        //void Unsubscribe(string symbolCode);
-        //void InvokeUpdateOnCustomSubscription(QuoteEntity update);
-    }
-
-    internal interface IFeedFixtureContext
-    {
-        IFixtureContext ExecContext { get; }
-        IPluginFeedProvider Feed { get; }
+        IPluginFeedProvider FeedProvider { get; }
+        SubscriptionManager Dispenser { get; }
         FeedBufferStrategy BufferingStrategy { get; }
-        void Add(IFeedFixture subscriber);
-        void Remove(IFeedFixture subscriber);
+        //void Subscribe(IRateSubscription subscriber);
+        //void Unsubscribe(IRateSubscription subscriber);
+        //void Subscribe(IAllRatesSubscription subscriber);
+        //void Unsubscribe(IAllRatesSubscription subscriber);
     }
 
-
-    //public interface IPluginInvoker
+    //internal interface IFeedFixtureContext
     //{
-    //    void StartBatch();
-    //    void StopBatch();
-    //    void InvokeInit();
-    //    void IncreaseVirtualPosition();
-    //    void InvokeOnStart();
-    //    void InvokeOnStop();
-    //    void InvokeCalculate(bool isUpdate);
-    //    void InvokeOnQuote(QuoteEntity quote);
+    //    IFixtureContext ExecContext { get; }
+        
+    //    //void Add(IRateSubscription subscriber);
+    //    //void Remove(IRateSubscription subscriber);
     //}
 
-    //public interface IInvokeStrategyContext
+    //internal interface IRateSubscription 
     //{
-    //    IPluginInvoker Builder { get; }
-    //    BufferUpdateResults UpdateBuffers(FeedUpdate update);
-    //    void InvokeFeedEvents(FeedUpdate update);
+    //    string SymbolCode { get; }
+    //    int Depth { get; }
+    //    void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
     //}
 
-    internal interface IFeedFixture 
-    {
-        string SymbolCode { get; }
-        int Depth { get; }
-        //void OnBufferUpdated(Quote quote); // called always
-        void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
-    }
+    //internal interface IAllRatesSubscription
+    //{
+    //    void OnUpdateEvent(Quote quote); // events may be skipped by latency filter or optimizer
+    //}
 
     public interface ITimeRef
     {

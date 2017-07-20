@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -13,13 +14,20 @@ namespace TickTrader.Algo.Core.Lib
     {
         public static async void BatchLinkTo<T>(this IReceivableSourceBlock<T> input, ITargetBlock<T[]> output, int batchSize)
         {
+            CancellationTokenSource cancelReceiveSrc = new CancellationTokenSource();
+
             List<T> buffer = new List<T>(batchSize);
 
             try
             {
-                while (true)
+                var ct = input.Completion.ContinueWith(t =>
                 {
-                    buffer.Add(await input.ReceiveAsync());
+                    cancelReceiveSrc.Cancel();
+                }, TaskContinuationOptions.ExecuteSynchronously);
+
+                while (!input.Completion.IsCompleted)
+                {
+                    buffer.Add(await input.ReceiveAsync(cancelReceiveSrc.Token).ConfigureAwait(false));
 
                     T item;
                     while (buffer.Count < batchSize)
@@ -29,12 +37,26 @@ namespace TickTrader.Algo.Core.Lib
                         buffer.Add(item);
                     }
 
-                    await output.SendAsync(buffer.ToArray());
+                    await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
 
                     buffer.Clear();
                 }
             }
             catch (InvalidOperationException) { /* normal exit */ }
+            catch (OperationCanceledException) { /* normal exit */ }
+        }
+
+        public static IPropagatorBlock<T, T[]> CreateBatchingBlock<T>(int batchSize)
+        {
+            var inputBufferOptions = new DataflowBlockOptions() { BoundedCapacity = batchSize };
+            var outputBufferOptions = new DataflowBlockOptions() { BoundedCapacity = 1 };
+
+            var inBuffer = new BufferBlock<T>(inputBufferOptions);
+            var outBuffer = new BufferBlock<T[]>(outputBufferOptions);
+
+            inBuffer.BatchLinkTo(outBuffer, batchSize);
+
+            return DataflowBlock.Encapsulate<T, T[]>(inBuffer, outBuffer);
         }
 
         private static readonly ExecutionDataflowBlockOptions defaultForkOptions = new ExecutionDataflowBlockOptions() { };

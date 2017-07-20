@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginBuilder : IPluginContext, IPluginSubscriptionHandler, EnvironmentInfo, IHelperApi
+    public class PluginBuilder : IPluginContext, EnvironmentInfo, IHelperApi
     {
         private Dictionary<object, IDataBuffer> inputBuffers = new Dictionary<object, IDataBuffer>();
         private MarketDataImpl marketData;
@@ -26,9 +26,9 @@ namespace TickTrader.Algo.Core
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
             Descriptor = descriptor;
-            marketData = new MarketDataImpl(this, this);
+            marketData = new MarketDataImpl(this);
             Account = new AccountEntity(this);
-            Symbols = new SymbolsCollection(this);
+            Symbols = new SymbolsCollection(marketData);
             Currencies = new CurrenciesCollection();
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
@@ -53,14 +53,15 @@ namespace TickTrader.Algo.Core
         public DiagnosticInfo Diagnostics { get; set; }
         public ITradeApi TradeApi { get; set; }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
-        public Action<string, int> OnSubscribe { get; set; }
-        public Action<string> OnUnsubscribe { get; set; }
+        public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
+        public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
         public Action<Exception> OnException { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
+        public PluginPermissions Permissions { get; set; }
         public bool Isolated
         {
             get { return _isolated; }
@@ -79,6 +80,7 @@ namespace TickTrader.Algo.Core
                 Account.InstanceId = _instanceId;
             }
         }
+
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -171,11 +173,6 @@ namespace TickTrader.Algo.Core
             isStopped = true;
         }
 
-        //protected void InvokeCalculate(bool isUpdate)
-        //{
-
-        //}
-
         private void OnPluginException(Exception ex)
         {
             Logger.OnError(ex);
@@ -256,7 +253,7 @@ namespace TickTrader.Algo.Core
                 if (TradeApi == null)
                     return new NullTradeApi();
 
-                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Id);
+                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Permissions, Id);
             }
         }
 
@@ -265,8 +262,6 @@ namespace TickTrader.Algo.Core
         EnvironmentInfo IPluginContext.Environment => this;
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
-
-
 
         void IPluginContext.OnExit()
         {
@@ -318,6 +313,7 @@ namespace TickTrader.Algo.Core
 
             OnBeforeInvoke();
             var oldContext = SynchronizationContext.Current;
+            var oldStatic = AlgoPlugin.staticContext;
             AlgoPlugin.staticContext = this;
             SynchronizationContext.SetSynchronizationContext(syncContext);
             try
@@ -328,7 +324,7 @@ namespace TickTrader.Algo.Core
             {
                 pluginException = ex;
             }
-            AlgoPlugin.staticContext = null;
+            AlgoPlugin.staticContext = oldStatic;
             SynchronizationContext.SetSynchronizationContext(oldContext);
             OnAfterInvoke();
 
@@ -395,18 +391,6 @@ namespace TickTrader.Algo.Core
         internal void TruncateBuffers(int bySize)
         {
             PluginProxy.Coordinator.Truncate(bySize);
-        }
-
-        void IPluginSubscriptionHandler.Subscribe(string smbCode, int depth)
-        {
-            if (OnSubscribe != null)
-                OnSubscribe(smbCode, depth);
-        }
-
-        void IPluginSubscriptionHandler.Unsubscribe(string smbCode)
-        {
-            if (OnUnsubscribe != null)
-                OnUnsubscribe(smbCode);
         }
 
         #region IHelperApi
@@ -489,16 +473,15 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private class MarketDataImpl : FeedProvider, CustomFeedProvider
+        private class MarketDataImpl : FeedProvider
         {
             private PluginBuilder builder;
             private BarSeriesProxy mainBars;
-            private IPluginSubscriptionHandler subscribeHandler;
 
-            public MarketDataImpl(PluginBuilder builder, IPluginSubscriptionHandler subscribeHandler)
+            public MarketDataImpl(PluginBuilder builder)
             {
                 this.builder = builder;
-                this.subscribeHandler = subscribeHandler;
+                this.CustomCommds = new NullCustomFeedProvider();
             }
 
             public BarSeries Bars
@@ -528,52 +511,7 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            public CustomFeedProvider CustomCommds { get { return this; } }
-
-            public BarSeries GetBars(string symbolCode)
-            {
-                throw new NotImplementedException();
-            }
-
-            public BarSeries GetBars(string symbolCode, TimeFrames timeFrame)
-            {
-                throw new NotImplementedException();
-            }
-
-            public BarSeries GetBars(string symbolCode, TimeFrames timeFrame, DateTime from, DateTime to)
-            {
-                throw new NotImplementedException();
-            }
-
-            public QuoteSeries GetLevel2(string symbolCode)
-            {
-                throw new NotImplementedException();
-            }
-
-            public QuoteSeries GetLevel2(string symbolCode, DateTime from, DateTime to)
-            {
-                throw new NotImplementedException();
-            }
-
-            public QuoteSeries GetQuotes(string symbolCode)
-            {
-                throw new NotImplementedException();
-            }
-
-            public QuoteSeries GetQuotes(string symbolCode, DateTime from, DateTime to)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Subscribe(string symbol, int depth = 1)
-            {
-                subscribeHandler.Subscribe(symbol, depth);
-            }
-
-            public void Unsubscribe(string symbol)
-            {
-                subscribeHandler.Unsubscribe(symbol);
-            }
+            public CustomFeedProvider CustomCommds { get; set; }
         }
 
         private class StatusApiImpl : StatusApi

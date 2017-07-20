@@ -4,18 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class SymbolAccessor : Api.Symbol
+    public class SymbolAccessor : Api.Symbol, BO.ISymbolInfo
     {
         private SymbolEntity entity;
-        private IPluginSubscriptionHandler handler;
+        private FeedProvider feed;
 
-        public SymbolAccessor(SymbolEntity entity, IPluginSubscriptionHandler handler, Dictionary<string, CurrencyEntity> currencies)
+        internal SymbolAccessor(SymbolEntity entity, FeedProvider feed, Dictionary<string, CurrencyEntity> currencies)
         {
             this.entity = entity;
-            this.handler = handler;
+            this.feed = feed;
 
             this.Point = System.Math.Pow(10, -entity.Digits);
 
@@ -48,14 +49,34 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get { return entity.CommissionChargeType; } }
         public CommissionType CommissionType { get { return entity.CommissionType; } }
 
+        public double ContractSizeFractional => entity.ContractSizeFractional;
+        public double MarginFactorFractional => entity.MarginFactorFractional;
+        public double StopOrderMarginReduction => entity.StopOrderMarginReduction;
+        public double MarginHedged => entity.MarginHedged;
+        public BO.MarginCalculationModes MarginMode => entity.MarginMode;
+        public bool SwapEnabled => entity.SwapEnabled;
+        public float SwapSizeLong => entity.SwapSizeLong;
+        public float SwapSizeShort => entity.SwapSizeShort;
+        public string Security => entity.Security;
+        public int SortOrder => entity.SortOrder;
+
+        #region BO.ISymbolInfo
+
+        string BO.ISymbolInfo.Symbol => Name;
+        string BO.ISymbolInfo.MarginCurrency => BaseCurrency;
+        string BO.ISymbolInfo.ProfitCurrency => CounterCurrency;
+        int BO.ISymbolInfo.Precision => Digits;
+
+        #endregion
+
         public void Subscribe(int depth = 1)
         {
-            handler.Subscribe(Name, depth);
+            feed.CustomCommds.Subscribe(Name, depth);
         }
 
         public void Unsubscribe()
         {
-            handler.Unsubscribe(Name);
+            feed.CustomCommds.Unsubscribe(Name);
         }
 
         public void UpdateRate(Api.Quote quote)

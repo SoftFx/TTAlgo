@@ -13,16 +13,13 @@ using System.Threading.Tasks;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.Extensions;
-using System.Text.RegularExpressions;
-using System.Text;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
     [DataContract(Name = "server.config", Namespace = "")]
     public class ServerModel : IDedicatedServer
     {
-        private const string botIdPattern = "[^A-Za-z0-9 ]";
-        private const int BotIdMaxLength = 30;
         private static readonly EnvService envService = new EnvService();
         private static readonly string cfgFilePath = Path.Combine(envService.AppFolder, "server.config.xml");
 
@@ -31,6 +28,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private ILogger<ServerModel> _logger;
         private ILoggerFactory _loggerFactory;
         private Dictionary<string, TradeBotModel> _allBots;
+        private BotIdHelper botIdHelper;
 
         private ServerModel(ILoggerFactory loggerFactory)
         {
@@ -49,6 +47,7 @@ namespace TickTrader.DedicatedServer.DS.Models
         private void Init(ILoggerFactory loggerFactory)
         {
             SyncObj = new object();
+            botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _logger = loggerFactory.CreateLogger<ServerModel>();
             _loggerFactory = loggerFactory;
@@ -232,8 +231,8 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void OnBotValidation(TradeBotModel bot)
         {
-            if (Regex.IsMatch(bot.Id, botIdPattern))
-                throw new InvalidBotException("InstanceID contains invalid characters. Available Characters: a-z A-Z 0-9 and space");
+            if (!botIdHelper.Validate(bot.Id))
+                throw new InvalidBotException($"The instance Id must be no more than {botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
             if (_allBots.ContainsKey(bot.Id))
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
@@ -272,13 +271,7 @@ namespace TickTrader.DedicatedServer.DS.Models
 
                 while (true)
                 {
-                    var botIdBulder = new StringBuilder(Regex.Replace(botDescriptorName, botIdPattern, ""));
-                    var delta = botIdBulder.Length + seed.ToString().Length + 1 - BotIdMaxLength;
-                    if (delta > 0)
-                        botIdBulder.Length -= delta;
-                    botIdBulder.Append(" ").Append(seed);
-
-                    var botId = botIdBulder.ToString();
+                    var botId = botIdHelper.BuildId(botDescriptorName, seed.ToString());
                     if (!_allBots.ContainsKey(botId))
                         return botId;
 
@@ -386,6 +379,15 @@ namespace TickTrader.DedicatedServer.DS.Models
             }
         }
 
+        public Task ShutdownAsync()
+        {
+            lock (SyncObj)
+            {
+                _logger.LogDebug("ServerModel shut down...");
+                var shutdonwTasks = Accounts.Select(ac => ac.ShutdownAsync()).ToArray();
+                return Task.WhenAll(shutdonwTasks);
+            }
+        }
 
         #endregion
     }

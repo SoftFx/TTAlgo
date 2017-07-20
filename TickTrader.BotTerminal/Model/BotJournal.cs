@@ -2,6 +2,7 @@
 using NLog;
 using System.Collections.Generic;
 using System;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -10,79 +11,60 @@ namespace TickTrader.BotTerminal
         private Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>();
 
         public BotJournal() : this(500) { }
+
+        public BotNameAggregator Statistics { get; private set; }
+
         public BotJournal(int journalSize) : base(journalSize)
         {
             Statistics = new BotNameAggregator();
-            Statistics.Items.Updated += args =>
-            {
-                if (args.Action == DLinqAction.Remove)
-                    _loggers.Remove(args.OldItem.Name);
-            };
-
-            Records.Updated += args =>
-            {
-                if (args.Action == DLinqAction.Insert)
-                    Statistics.Register(args.NewItem);
-                else if (args.Action == DLinqAction.Remove)
-                    Statistics.UnRegister(args.OldItem);
-            };
         }
-        
-        public BotNameAggregator Statistics { get; private set; }
 
-        public void Custom(string botName, string message)
+        public override void Add(BotMessage item)
         {
-            var botMessage = new BotMessage(botName, message, JournalMessageType.Custom);
-            Add(botMessage);
-            LogInfo(botMessage);
+            base.Add(item);
+
+            WriteToLogger(item);
         }
 
-        public void Custom(string botName, string message, params object[] args)
+        public override void Add(List<BotMessage> items)
         {
-            Custom(botName, string.Format(message, args));
+            base.Add(items);
+
+            foreach (var item in items)
+                WriteToLogger(item);
         }
 
-        public void Info(string botName, string message)
+        protected override void OnAppended(BotMessage item)
         {
-            var botMessage = new BotMessage(botName, message, JournalMessageType.Info);
-            Add(botMessage);
-            LogInfo(botMessage);
+            Statistics.Register(item);
         }
 
-        public void Info(string botName, string message, params object[] args)
+        protected override void OnRemoved(BotMessage item)
         {
-            Info(botName, string.Format(message, args));
+            Statistics.UnRegister(item);
         }
 
-        public void Error(string botName, string message)
+        public void RegisterBotLog(string botName)
         {
-            var botMessage = new BotMessage(botName, message, JournalMessageType.Error);
-            Add(botMessage);
-            LogError(botMessage);
         }
 
-        public void Error(string botName, string message, params object[] args)
+        public void UnregisterBotLog(string botName)
         {
-            Error(botName, string.Format(message, args));
+            _loggers.Remove(botName);
         }
 
-        public void Trading(string botName, string message)
-        {
-            var botMessage = new BotMessage(botName, message, JournalMessageType.Trading);
-            Add(botMessage);
-            LogInfo(botMessage);
-        }
-
-        public void Trading(string botName, string message, params object[] args)
-        {
-            Trading(botName, string.Format(message, args));
-        }
-
-
-        private void LogInfo(BotMessage message)
+        private void WriteToLogger(BotMessage message)
         {
             var logger = GetOrAddLogger(message.Bot);
-            logger.Info(message.ToString());
+
+            if (message.Type != JournalMessageType.Error)
+                logger.Info(message.ToString());
+            else
+            {
+                logger.Error(message.ToString());
+                if (message.Details != null)
+                    logger.Error(message.Details);
+            }
         }
 
         private void LogError(BotMessage message)
@@ -100,18 +82,15 @@ namespace TickTrader.BotTerminal
 
     internal class BotMessage : BaseJournalMessage
     {
-        public BotMessage(string botName, string message)
+        public BotMessage(DateTime time, string botName, string message, JournalMessageType type) : base(time)
         {
+            Type = type;
             Message = message;
             Bot = botName;
         }
 
-        public BotMessage(string botName, string message, JournalMessageType type) : this(botName, message)
-        {
-            Type = type;
-        }
-
         public string Bot { get; set; }
+        public string Details { get; set; }
 
         public override string ToString()
         {

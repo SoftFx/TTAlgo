@@ -28,7 +28,7 @@ namespace TickTrader.BotTerminal
             {
                 if (visiableRange == null || !visiableRange.Equals(value))
                 {
-                    System.Diagnostics.Debug.WriteLine("VisibleRange changed!");
+                    //System.Diagnostics.Debug.WriteLine("VisibleRange changed!");
                     visiableRange = value;
                     NotifyOfPropertyChange("VisibleRange");
                 }

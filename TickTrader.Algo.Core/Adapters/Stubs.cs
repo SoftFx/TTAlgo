@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -29,6 +30,8 @@ namespace TickTrader.Algo.Core
         private static readonly IPluginLogger nullLogger = new NullLogger();
         private static readonly Currency currency = new NullCurrency();
         private static readonly Asset asset = new NullAsset();
+        private static readonly BarSeries barSeries = new BarSeriesProxy() { Buffer = new EmptyBuffer<Bar>() };
+        private static readonly QuoteSeries quoteSeries = new QuoteSeriesProxy() { Buffer = new EmptyBuffer<Quote>() };
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
@@ -37,6 +40,8 @@ namespace TickTrader.Algo.Core
         public static IPluginLogger Logger => nullLogger;
         public static Currency Currency => currency;
         public static Asset Asset => asset;
+        public static BarSeries BarSeries => barSeries;
+        public static QuoteSeries QuoteSeries => quoteSeries;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
@@ -163,6 +168,11 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
+        public Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        {
+            return rejectResult;
+        }
+
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? tp, double? sl, string comment)
         {
             return rejectResult;
@@ -223,8 +233,42 @@ namespace TickTrader.Algo.Core
 
         public string Currency { get; }
         public Currency CurrencyInfo => Null.Currency;
-        public double Volume => double.NaN;
+        public double Volume => 0;
+        public double LockedVolume => 0;
+        public double FreeVolume => 0;
         public bool IsNull => true;
+
         public override string ToString() { return "{null}"; }
+    }
+
+    public class NullCustomFeedProvider : CustomFeedProvider
+    {
+        public IEnumerable<Bar> GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder)
+        {
+            return Null.BarSeries;
+        }
+
+        public BarSeries GetBarSeries(string symbol)
+        {
+            return Null.BarSeries;
+        }
+
+        public BarSeries GetBarSeries(string symbol, BarPriceType side)
+        {
+            return Null.BarSeries;
+        }
+
+        public IEnumerable<Quote> GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
+        {
+            return Null.QuoteSeries;
+        }
+
+        public void Subscribe(string symbol, int depth = 1)
+        {
+        }
+
+        public void Unsubscribe(string symbol)
+        {
+        }
     }
 }

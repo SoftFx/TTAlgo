@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -48,6 +49,8 @@ namespace TickTrader.BotTerminal
 
         public bool RunBot { get; set; }
 
+        public PluginPermissions Permissions { get; set; }
+
 
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
 
@@ -66,6 +69,7 @@ namespace TickTrader.BotTerminal
             _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
             Isolated = true;
             RunBot = true;
+            Permissions = new PluginPermissions();
 
             Init();
         }

@@ -12,7 +12,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 export class LoginComponent {
     public LogInStatusMessage: string;
-    public Creds: AuthCredentials = new AuthCredentials('Administrator', 'Administrator');
+    public Creds: AuthCredentials = new AuthCredentials();
 
     constructor(
         private router: Router,

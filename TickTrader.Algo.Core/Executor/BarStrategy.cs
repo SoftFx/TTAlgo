@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.Core
 {
     public sealed class BarStrategy : FeedStrategy
     {
+        private BarSampler sampler;
         private BarSeriesFixture mainSeriesFixture;
         private List<BarEntity> mainSeries;
         private Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture> fixtures;
 
-        public BarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
-            : base(feed)
+        public BarStrategy(BarPriceType mainPirceTipe)
         {
             this.MainPriceType = mainPirceTipe;
         }
@@ -25,8 +26,9 @@ namespace TickTrader.Algo.Core
 
         internal override void OnInit()
         {
+            sampler = BarSampler.Get(ExecContext.TimeFrame);
             fixtures = new Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture>();
-            mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, this, mainSeries);
+            mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
 
             fixtures.Add(GetKey(ExecContext.MainSymbolCode, MainPriceType), mainSeriesFixture);
         }
@@ -41,7 +43,7 @@ namespace TickTrader.Algo.Core
             BarSeriesFixture fixture;
             if (!fixtures.TryGetValue(key, out fixture))
             {
-                fixture = new BarSeriesFixture(key.Item1, key.Item2, this, null, mainSeriesFixture);
+                fixture = new BarSeriesFixture(key.Item1, key.Item2, ExecContext, null, mainSeriesFixture);
                 fixtures.Add(key, fixture);
                 BufferingStrategy.InitBuffer(fixture);
             }
@@ -57,31 +59,44 @@ namespace TickTrader.Algo.Core
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
             var overallResult = new BufferUpdateResult();
+            var aggregation = (BarAggragation)update;
 
             var askFixture = GetFixutre(update.Symbol, BarPriceType.Ask);
             var bidFixture = GetFixutre(update.Symbol, BarPriceType.Bid);
 
             if (askFixture != null)
-            {
-                foreach (var quote in update.LastQuotes)
-                {
-                    var result = askFixture.Update(quote);
-                    if (askFixture == mainSeriesFixture)
-                        overallResult = result;
-                }
-            }
+                overallResult += askFixture.Update(aggregation.AskBar);
 
             if (bidFixture != null)
-            {
-                foreach (var quote in update.LastQuotes)
-                {
-                    var result = bidFixture.Update(quote);
-                    if (bidFixture == mainSeriesFixture)
-                        overallResult = result;
-                }
-            }
+                overallResult += bidFixture.Update(aggregation.BidBar);
 
             return overallResult;
+        }
+
+        protected override RateUpdate Aggregate(RateUpdate last, QuoteEntity quote)
+        {
+            var bounds = sampler.GetBar(quote.Time);
+
+            if (last != null && last.Time == bounds.Open)
+            {
+                ((BarAggragation)last).Append(quote);
+                return null;
+            }
+            else
+                return new BarAggragation(bounds.Open, bounds.Close, quote);
+        }
+
+        protected override BarSeries GetBarSeries(string symbol)
+        {
+            return GetBarSeries(symbol, MainPriceType);
+        }
+
+        protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
+        {
+            InitSymbol(GetKey(symbol, side));
+            var fixture = GetFixutre(symbol, side);
+            var proxyBuffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = fixture.Buffer };
+            return new BarSeriesProxy() { Buffer = proxyBuffer };
         }
 
         #region Setup
@@ -130,8 +145,44 @@ namespace TickTrader.Algo.Core
         {
             base.Stop();
 
-            foreach (var fixture in fixtures.Values)
-                fixture.Dispose();
+            //foreach (var fixture in fixtures.Values)
+            //    fixture.Dispose();
+        }
+
+        private class BarAggragation : RateUpdate
+        {
+            private BarEntity _bidBar;
+            private BarEntity _askBar;
+            private QuoteEntity _lastQuote;
+
+            public BarAggragation(DateTime barStartTime, DateTime barEndTime, QuoteEntity quote)
+            {
+                _bidBar = new BarEntity(barStartTime, barEndTime, quote.Bid, 1);
+                _askBar = new BarEntity(barStartTime, barEndTime, quote.Ask, 1);
+                _lastQuote = quote;
+                Symbol = quote.Symbol;
+            }
+
+            public void Append(QuoteEntity quote)
+            {
+                _bidBar.Append(quote.Bid, 1);
+                _askBar.Append(quote.Ask, 1);
+                _lastQuote = quote;
+            }
+
+            public string Symbol { get; private set; }
+            public BarEntity BidBar => _bidBar;
+            public BarEntity AskBar => _askBar;
+
+            DateTime RateUpdate.Time => _askBar.OpenTime;
+            double RateUpdate.Ask => _askBar.Close;
+            double RateUpdate.AskHigh => _askBar.High;
+            double RateUpdate.AskLow => _askBar.Low;
+            double RateUpdate.Bid => _bidBar.Close;
+            double RateUpdate.BidHigh => _bidBar.High;
+            double RateUpdate.BidLow => _bidBar.Low;
+            double RateUpdate.NumberOfQuotes => _askBar.Volume;
+            Quote RateUpdate.LastQuote => _lastQuote;
         }
     }
 }

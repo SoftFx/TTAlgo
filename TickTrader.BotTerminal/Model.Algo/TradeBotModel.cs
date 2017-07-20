@@ -5,6 +5,9 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
 using System.IO;
+using System.Threading.Tasks.Dataflow;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace TickTrader.BotTerminal
 {
@@ -13,15 +16,15 @@ namespace TickTrader.BotTerminal
         public BotModelStates State { get; private set; }
         public string CustomStatus { get; private set; }
 
-
         public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
         public event System.Action<TradeBotModel> StateChanged = delegate { };
         public event System.Action<TradeBotModel> Removed = delegate { };
 
-
         public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
+            host.Journal.RegisterBotLog(InstanceId);
+            host.Connected += Host_Connected;
         }
 
         public void Start()
@@ -45,34 +48,77 @@ namespace TickTrader.BotTerminal
 
         public void Remove()
         {
+            Host.Journal.UnregisterBotLog(InstanceId);
             Removed(this);
         }
-
 
         protected override PluginExecutor CreateExecutor()
         {
             var executor = base.CreateExecutor();
-
             executor.IsRunningChanged += Executor_IsRunningChanged;
-
-            executor.TradeApi = Host.GetTradeApi();
-            executor.Logger = new LogAdapter(Host.Journal, InstanceId, s =>
-            {
-                CustomStatus = s;
-                CustomStatusChanged(this);
-            });
+            executor.TradeExecutor = Host.GetTradeApi();
             executor.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
             executor.BotWorkingFolder = executor.WorkingFolder;
+            executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
             EnvService.Instance.EnsureFolder(executor.WorkingFolder);
 
+            executor.InitLogging().NewRecords += TradeBotModel2_NewRecords;
             return executor;
         }
-
 
         private void ChangeState(BotModelStates newState)
         {
             State = newState;
             StateChanged(this);
+        }
+
+        private void TradeBotModel2_NewRecords(BotLogRecord[] records)
+        {
+            List<BotMessage> messages = new List<BotMessage>(records.Length);
+            string status = null;
+
+            foreach (var rec in records)
+            {
+                if (rec.Severity != LogSeverities.CustomStatus)
+                    messages.Add(Convert(rec));
+                else
+                    status = rec.Message;
+            }
+
+            if (messages.Count > 0)
+                Host.Journal.Add(messages);
+
+            if (status != null)
+            {
+                Execute.OnUIThread(() =>
+                {
+                    CustomStatus = status;
+                    CustomStatusChanged?.Invoke(this);
+                });
+            }
+        }
+
+        private void Host_Connected()
+        {
+            if (this.State == BotModelStates.Running)
+                HandleReconnect();
+        }
+
+        private BotMessage Convert(BotLogRecord record)
+        {
+            return new BotMessage(record.Time, InstanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
+        }
+
+        private JournalMessageType Convert(LogSeverities severity)
+        {
+            switch (severity)
+            {
+                case LogSeverities.Info: return JournalMessageType.Info;
+                case LogSeverities.Error: return JournalMessageType.Error;
+                case LogSeverities.Custom: return JournalMessageType.Custom;
+                case LogSeverities.Trade: return JournalMessageType.Trading;
+                default: return JournalMessageType.Info;
+            }
         }
 
         private void Executor_IsRunningChanged(PluginExecutor pluginExecutor)
@@ -85,97 +131,6 @@ namespace TickTrader.BotTerminal
                     Host.Unlock();
                 }
             });
-        }
-
-
-        private class LogAdapter : CrossDomainObject, IPluginLogger
-        {
-            private Action<string> _statusChanged;
-            private BotJournal _journal;
-            private string _botId;
-
-
-            public LogAdapter(BotJournal journal, string botId, Action<string> statusChangedHandler)
-            {
-                this._journal = journal;
-                this._botId = botId;
-                this._statusChanged = statusChangedHandler;
-            }
-
-
-            public void UpdateStatus(string status)
-            {
-                _statusChanged(status);
-            }
-
-            public void OnPrint(string entry)
-            {
-                _journal.Custom(_botId, entry);
-            }
-
-            public void OnPrint(string entry, object[] parameters)
-            {
-                string msg = entry;
-                try
-                {
-                    msg = string.Format(entry, parameters);
-                }
-                catch { }
-
-                _journal.Custom(_botId, msg);
-            }
-
-            public void OnPrintError(string entry)
-            {
-                _journal.Error(_botId, entry);
-            }
-
-            public void OnPrintError(string entry, object[] parameters)
-            {
-                string msg = entry;
-                try
-                {
-                    msg = string.Format(entry, parameters);
-                }
-                catch { }
-
-                _journal.Error(_botId, msg);
-            }
-
-            public void OnPrintInfo(string entry)
-            {
-                _journal.Info(_botId, entry);
-            }
-
-            public void OnError(Exception ex)
-            {
-                _journal.Error(_botId, "Exception: " + ex.Message);
-            }
-
-            public void OnInitialized()
-            {
-                _journal.Info(_botId, "Bot initialized");
-            }
-
-            public void OnStart()
-            {
-                _journal.Info(_botId, "Bot started");
-            }
-
-            public void OnStop()
-            {
-                _journal.Info(_botId, "Bot stopped");
-            }
-
-            public void OnExit()
-            {
-                _journal.Info(_botId, "Bot exited");
-            }
-
-            public void OnPrintTrade(string entry)
-            {
-                _journal.Trading(_botId, entry);
-            }
         }
     }
 }

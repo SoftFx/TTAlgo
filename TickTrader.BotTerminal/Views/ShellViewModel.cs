@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
         {
             DisplayName = EnvService.Instance.ApplicationName;
 
-            var botNameAggregator = new BotNameAggregator();
+            //var botNameAggregator = new BotNameAggregator();
 
             notificationCenter = new NotificationCenter(new PopupNotification(), new SoundNotification());
             eventJournal = new EventJournal(1000);

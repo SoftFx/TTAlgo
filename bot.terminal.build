@@ -12,13 +12,15 @@
   <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
 
   <property name="WinScpPath"			value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
-
+  
+  <property name="DSDir"				value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" unless="${property::exists('DSDir')}" />
+  
   <property name="OutpuFolder"			value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
   <property name="ToolsFolder"			value="${SourcesDir}tools\"  />
 
   <target name="help">
-    <echo message="Use: nant.exe buildfile:bot.terminal.build [Build|Publish|Clean]"/>
+    <echo message="Use: nant.exe -buildfile:bot.terminal.build [Build|Publish|Clean]"/>
   </target>
 
   <target name="Build" >
@@ -35,6 +37,7 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
+	 <call target="CreateDSInstaller" />
   </target>
 
   <target name="Publish" >
@@ -106,6 +109,11 @@
         <include name="*.zip" />
       </fileset>
     </delete>
+	<delete>
+      <fileset basedir="${OutpuFolder}">
+        <include name="*.exe" />
+      </fileset>
+    </delete>
     <delete>
       <fileset basedir="${OutpuFolder}">
         <include name="*.ttalgo" />
@@ -113,6 +121,11 @@
     </delete>
     <delete>
       <fileset basedir="${PublishFolder}">
+        <include name="**/*" />
+      </fileset>
+    </delete>
+	<delete>
+      <fileset basedir="${DSDir}">
         <include name="**/*" />
       </fileset>
     </delete>
@@ -140,17 +153,33 @@
       </fileset>
     </zip>
 
-	  <property name="ServerBinDir" value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" />
     <property name="ServerDestArchive" value="${OutpuFolder}DedicatedServer ${Build}.zip" />
 
     <zip zipfile="${ServerDestArchive}">
-      <fileset basedir="${ServerBinDir}">
+      <fileset basedir="${DSDir}">
         <include name ="*.*" />
         <include name ="**/*" />
       </fileset>
     </zip>
 	
   </target>
+   
+   
+   <target name="CreateDSInstaller">
+   <property name="UtilDir" value="${SourcesDir}TickTrader.DedicatedServer.CmdUtil\bin\Release\" />
+     	
+	<exec program="${UtilDir}TickTrader.DedicatedServer.CmdUtil.exe">
+		<arg value="Mode=uninstall" />
+		<arg value="AppDir=${DSDir}" />
+		<arg value="OutFile=${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.Uninstall.nsi" />
+	</exec>
+    
+	<exec program="${NSIS_Path}\makensis.exe" >
+	  <arg value="/DPRODUCT_BUILD=${Build}" />
+      <arg value="${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.nsi" />
+    </exec>
+  </target>
+   
    
   <target name="FtpPublish">
     <exec program="${WinScpPath}" verbose="true">

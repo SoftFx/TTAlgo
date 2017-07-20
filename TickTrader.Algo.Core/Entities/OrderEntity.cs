@@ -4,37 +4,42 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class OrderEntity : Order
+    public class OrderEntity
     {
-        private string _userTag;
-        private string _tag;
-
         public OrderEntity(string orderId)
         {
-            this.Id = orderId;
+            Id = orderId;
         }
 
-        public OrderEntity(Order src)
+        public OrderEntity(OrderEntity src)
         {
-            this.Id = src.Id;
-            this.ClientOrderId = ((OrderEntity)src).ClientOrderId;
-            this.RequestedVolume = src.RequestedVolume;
-            this.RemainingVolume = src.RemainingVolume;
-            this.Symbol = src.Symbol;
-            this.Type = src.Type;
-            this.Side = src.Side;
-            this.Price = src.Price;
-            this.StopLoss = src.StopLoss;
-            this.TakeProfit = src.TakeProfit;
-            this.Comment = src.Comment;
-            this.Created = src.Created;
-            this.Modified = src.Modified;
+            Id = src.Id;
+            ClientOrderId = ((OrderEntity)src).ClientOrderId;
+            RequestedVolume = src.RequestedVolume;
+            RemainingVolume = src.RemainingVolume;
+            Symbol = src.Symbol;
+            Type = src.Type;
+            Side = src.Side;
+            Price = src.Price;
+            StopLoss = src.StopLoss;
+            TakeProfit = src.TakeProfit;
+            Comment = src.Comment;
+            Created = src.Created;
+            Modified = src.Modified;
+            UserTag = src.UserTag;
+            InstanceId = src.InstanceId;
+            ExecPrice = src.ExecPrice;
+            ExecVolume = src.ExecVolume;
+            LastFillPrice = src.LastFillPrice;
+            LastFillVolume = src.LastFillVolume;
+            Swap = src.Swap;
+            Commision = src.Commision;
         }
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public double RequestedVolume { get; set; }
-        public double RemainingVolume { get; set; }
+        public TradeVolume RequestedVolume { get; set; }
+        public TradeVolume RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
@@ -44,18 +49,30 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
-        public string Tag { get; set; }
+        public string UserTag { get; set; }
         public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
         public double ExecPrice { get; set; }
-        public double ExecVolume { get; set; }
+        public TradeVolume ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
         public double LastFillVolume { get; set; }
-
-        string Order.Tag => _userTag;
-
+        public double Swap { get; set; }
+        public double Commision { get; set; }
         public static Order Null { get; private set; }
         static OrderEntity() { Null = new NullOrder(); }
+    }
+
+    [Serializable]
+    public struct TradeVolume
+    {
+        public TradeVolume(double units, double lots)
+        {
+            Lots = lots;
+            Units = units;
+        }
+
+        public double Lots { get; private set; }
+        public double Units { get; private set; }
     }
 
     [Serializable]
@@ -80,5 +97,7 @@ namespace TickTrader.Algo.Core
         public double ExecVolume { get { return double.NaN; } }
         public double LastFillPrice { get { return double.NaN; } }
         public double LastFillVolume { get { return double.NaN; } }
+        public double Margin => double.NaN;
+        public double Profit => double.NaN;
     }
 }

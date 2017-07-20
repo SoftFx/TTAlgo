@@ -7,6 +7,5 @@
         public const string String = "String";
         public const string File = "File";
         public const string Enumeration = "Enum";
-
     }
 }
