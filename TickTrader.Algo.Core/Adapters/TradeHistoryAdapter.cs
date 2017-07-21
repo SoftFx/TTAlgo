@@ -142,9 +142,11 @@ namespace TickTrader.Algo.Core
         {
             _currentPage = null;
             _currentPageIndex = 0;
-            var task = new CrossDomainTaskProxy<T[]>();
-            _asyncEnumerator.GetNextPage(task);
-            _currentPage = task.Result;
+            using (var task = new CrossDomainTaskProxy<T[]>())
+            {
+                _asyncEnumerator.GetNextPage(task);
+                _currentPage = task.Result;
+            }
             if (_currentPage != null &&_currentPage.Length == 0)
                 _currentPage = null;
             return _currentPage != null;
@@ -165,11 +167,13 @@ namespace TickTrader.Algo.Core
             _proxy = proxy;
         }
 
-        public Task<T[]> GetNextPage()
+        public async Task<T[]> GetNextPage()
         {
-            var taskProxy = new CrossDomainTaskProxy<T[]>();
-            _proxy.GetNextPage(taskProxy);
-            return taskProxy.Task;
+            using (var taskProxy = new CrossDomainTaskProxy<T[]>())
+            {
+                _proxy.GetNextPage(taskProxy);
+                return await taskProxy.Task;
+            }
         }
 
         public void Dispose()
