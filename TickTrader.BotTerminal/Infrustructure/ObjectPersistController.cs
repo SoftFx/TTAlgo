@@ -39,6 +39,8 @@ namespace TickTrader.BotTerminal
 
         public TimeSpan SaveDelay { get; set; }
 
+        public bool CanSave => !_isClosed;
+
 
         public ObjectPersistController(string fileName, IObjectStorage storage)
         {
@@ -71,6 +73,14 @@ namespace TickTrader.BotTerminal
             Load();
 
             _isClosed = false;
+        }
+
+        public void SetFilename(string newFilename)
+        {
+            if (!_isClosed)
+                throw new InvalidOperationException("Controller is not closed!");
+
+            _fileName = newFilename;
         }
 
 

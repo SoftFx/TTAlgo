@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
             AuthSettingsStorage = loginController.Value;
             var settingsController = CreateStorageController<SettingsStorageModel>("Preferences", EnvService.Instance.UserDataStorage);
             SettingsStorage = settingsController.Value;
-            ProfileManager = new ProfileManager(CreateStorageController<ProfileStorageModel>(ProfileManager.CurrentProfileFileName, EnvService.Instance.ProfilesCacheStorage));
+            ProfileManager = new ProfileManager(CreateStorageController<ProfileStorageModel>(ProfileManager.DefaultProfileFileName, EnvService.Instance.ProfilesCacheStorage));
         }
 
 

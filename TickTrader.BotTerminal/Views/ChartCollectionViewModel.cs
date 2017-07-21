@@ -76,22 +76,21 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SaveProfile(ProfileStorageModel profileStorage)
+        public void SaveProfileSnapshot(ProfileStorageModel profileStorage)
         {
             try
             {
                 profileStorage.SelectedChart = (SelectedChartProxy as ChartViewModel)?.Symbol;
                 profileStorage.Charts = new List<ChartStorageEntry>();
                 Items.Foreach(i => profileStorage.Charts.Add(i.GetSnapshot()));
-                profileStorage.Save();
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to save current profile");
+                _logger.Error(ex, "Failed to save profile snapshot");
             }
         }
 
-        public void LoadProfile(ProfileStorageModel profileStorage, CancellationToken token)
+        public void LoadProfileSnapshot(ProfileStorageModel profileStorage, CancellationToken token)
         {
             try
             {
@@ -114,7 +113,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to load current profile");
+                _logger.Error(ex, "Failed to load profile snapshot");
             }
         }
 

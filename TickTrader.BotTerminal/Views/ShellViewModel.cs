@@ -69,6 +69,8 @@ namespace TickTrader.BotTerminal
             clientModel.Initializing += LoadConnectionProfile;
             clientModel.Connected += OpenDefaultChart;
 
+            storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
+
             LogStateLoop();
         }
 
@@ -164,10 +166,14 @@ namespace TickTrader.BotTerminal
         {
             var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
             wndManager.ShowDialog(exit);
-            if (exit.HasStartedBots && exit.IsConfirmed)
+            if (exit.IsConfirmed)
             {
-                var shutdown = new ShutdownDialogViewModel(Charts);
-                wndManager.ShowDialog(shutdown);
+                storage.ProfileManager.Stop();
+                if (exit.HasStartedBots)
+                {
+                    var shutdown = new ShutdownDialogViewModel(Charts);
+                    wndManager.ShowDialog(shutdown);
+                }
             }
             callback(exit.IsConfirmed);
         }
@@ -196,7 +202,6 @@ namespace TickTrader.BotTerminal
 
         public void About()
         {
-            Charts.SaveProfile(storage.ProfileManager.CurrentProfile);
             AboutDialogViewModel model = new AboutDialogViewModel();
             wndManager.ShowDialog(model);
         }

@@ -46,7 +46,6 @@ namespace TickTrader.BotTerminal
 
                 if (_profileManager.CurrentProfile.Charts == null)
                 {
-                    _profileManager.CurrentProfile.Save();
                     TryClose();
                     return;
                 }
@@ -57,7 +56,7 @@ namespace TickTrader.BotTerminal
                     await Task.Delay(Delay, _token);
                 }
 
-                _charts.LoadProfile(_profileManager.CurrentProfile, _token);
+                _charts.LoadProfileSnapshot(_profileManager.CurrentProfile, _token);
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }
