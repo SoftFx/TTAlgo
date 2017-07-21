@@ -100,15 +100,27 @@ namespace TickTrader.BotTerminal
             OpenUserProfile(Path.Combine(EnvService.Instance.UserProfilesFolder, $"{profileName}.profile"));
         }
 
-        public void SaveUserProfile(string profileName)
+        public void SaveUserProfile(string profilePath)
         {
             try
             {
-                SaveCurrentProfile(Path.Combine(EnvService.Instance.UserProfilesFolder, $"{profileName}.profile"));
+                SaveCurrentProfile(profilePath);
             }
             catch (Exception ex)
             {
-                _logger.Error($"Can't save user profile '{profileName}': {ex.Message}");
+                _logger.Error($"Can't save user profile at {profilePath}: {ex.Message}");
+            }
+        }
+
+        public void SetCurrentProfileAsDefault()
+        {
+            try
+            {
+                SaveCurrentProfile(DefaultProfilePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Can't set current profile as default: {ex.Message}");
             }
         }
 
@@ -123,9 +135,11 @@ namespace TickTrader.BotTerminal
             if (!File.Exists(CurrentProfilePath) && File.Exists(DefaultProfilePath))
             {
                 File.Copy(DefaultProfilePath, CurrentProfilePath);
+                _logger.Info($"Default profile for {Server} {Login} has been set.");
             }
 
             OpenCurrentProfile();
+            _logger.Info($"Loaded cached profile for {Server} {Login}.");
         }
 
         private void OpenUserProfile(string newProfilePath)
@@ -133,6 +147,12 @@ namespace TickTrader.BotTerminal
             if (File.Exists(newProfilePath))
             {
                 File.Copy(newProfilePath, CurrentProfilePath, true);
+                _logger.Info($"Loaded user profile from {newProfilePath}.");
+            }
+            else if (File.Exists(DefaultProfilePath))
+            {
+                File.Copy(DefaultProfilePath, CurrentProfilePath, true);
+                _logger.Info($"Using default profile instead of user profile from {newProfilePath}.");
             }
 
             OpenCurrentProfile();
@@ -163,6 +183,7 @@ namespace TickTrader.BotTerminal
         private async void SaveLoop()
         {
             _isSaving = true;
+            _logger.Info("Started saving changes in current profiles.");
 
             var lastSaveTime = DateTime.Now;
 
@@ -186,6 +207,7 @@ namespace TickTrader.BotTerminal
             }
 
             _isSaving = false;
+            _logger.Info("Stopped saving changes in current profiles.");
         }
     }
 }

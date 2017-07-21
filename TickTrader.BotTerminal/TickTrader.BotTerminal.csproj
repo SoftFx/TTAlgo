@@ -399,6 +399,7 @@
       <DependentUpon>ProfileLoadingDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
+    <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>

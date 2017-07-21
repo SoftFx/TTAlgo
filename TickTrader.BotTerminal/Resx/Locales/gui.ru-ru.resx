@@ -318,4 +318,16 @@
   <data name="Menu_Help" xml:space="preserve">
     <value>Помощь</value>
   </data>
+  <data name="Menu_LoadProfile" xml:space="preserve">
+    <value>Загрузить</value>
+  </data>
+  <data name="Menu_SaveProfile" xml:space="preserve">
+    <value>Сохранить как</value>
+  </data>
+  <data name="Menu_SetProfileDefault" xml:space="preserve">
+    <value>Установить по умолчанию</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>Профиль</value>
+  </data>
 </root>

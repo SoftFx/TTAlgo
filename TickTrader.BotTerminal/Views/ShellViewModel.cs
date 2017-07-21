@@ -13,7 +13,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager
+    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -43,6 +43,8 @@ namespace TickTrader.BotTerminal
             cManager = new ConnectionManager(storage, eventJournal, algoEnv);
             clientModel = new TraderClientModel(cManager.Connection, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
+
+            ProfileManager = new ProfileManagerViewModel(this, storage);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
@@ -112,28 +114,7 @@ namespace TickTrader.BotTerminal
 
         private async Task LoadConnectionProfile(object sender, CancellationToken token)
         {
-            try
-            {
-                if (!await storage.ProfileManager.StopCurrentProfile(cManager.Creds.Server.Address, cManager.Creds.Login))
-                {
-                    return;
-                }
-
-                token.ThrowIfCancellationRequested();
-
-                storage.ProfileManager.LoadCachedProfile(cManager.Creds.Server.Address, cManager.Creds.Login);
-
-                token.ThrowIfCancellationRequested();
-
-                var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
-                wndManager.ShowDialog(loading);
-            }
-            catch (TaskCanceledException) { }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                logger.Error(ex, $"Failed to load connection profile for {cManager.Creds.Server.Address} {cManager.Creds.Login}");
-            }
+            await ProfileManager.LoadConnectionProfile(cManager.Creds.Server.Address, cManager.Creds.Login, token);
         }
 
         public bool CanConnect { get; private set; }
@@ -222,6 +203,8 @@ namespace TickTrader.BotTerminal
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public ToolWindowsManager ToolWndManager { get { return this; } }
+        public IProfileLoader ProfileLoader => this;
+        public ProfileManagerViewModel ProfileManager { get; private set; }
 
         public NotificationsViewModel Notifications { get; private set; }
 
@@ -384,6 +367,16 @@ namespace TickTrader.BotTerminal
         public bool? ShowDialog(IScreen dlgModel)
         {
             return wndManager.ShowDialog(dlgModel);
+        }
+
+        #endregion
+
+        #region IProfileLoader implementation
+
+        public void ReloadProfile(CancellationToken token)
+        {
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
+            wndManager.ShowDialog(loading);
         }
 
         #endregion

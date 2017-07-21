@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -22,10 +23,16 @@ namespace TickTrader.BotTerminal
         bool? ShowDialog(IScreen dlgModel);
     }
 
+    internal interface IProfileLoader
+    {
+        void ReloadProfile(CancellationToken token);
+    }
+
     internal interface IShell : IWindowModel
     {
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
         ToolWindowsManager ToolWndManager { get; }
+        IProfileLoader ProfileLoader { get; }
     }
 }

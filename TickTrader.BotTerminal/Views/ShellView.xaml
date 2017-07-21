@@ -30,6 +30,11 @@
             <MenuItem Header="Sounds" IsChecked="{Binding Notifications.SoundsEnabled}" IsCheckable="True"></MenuItem>
             <MenuItem Header="Notifications" IsChecked="{Binding Notifications.NotificationsEnabled}" IsCheckable="True"></MenuItem>
         </MenuItem>
+        <MenuItem Header="{l:Resx Menu_Profile}" cal:Bind.Model="{Binding ProfileManager}">
+            <MenuItem Header="{l:Resx Menu_SetProfileDefault}" cal:Message.Attach="SetAsDefault"/>
+            <MenuItem Header="{l:Resx Menu_SaveProfile}" cal:Message.Attach="SaveProfile"/>
+            <MenuItem Header="{l:Resx Menu_LoadProfile}"/>
+        </MenuItem>
         <MenuItem Header="{l:Resx Menu_Tools}">
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
         </MenuItem>
