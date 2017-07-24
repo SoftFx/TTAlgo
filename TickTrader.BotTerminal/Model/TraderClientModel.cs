@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
             _core = new ClientCore(connection, c => new SymbolCollectionModel(c), sync, sync);
 
             this.Symbols = (SymbolCollectionModel)_core.Symbols;
-            this.TradeHistory = new TradeHistoryProvider(this);
+            this.TradeHistory = new TradeHistoryProviderModel(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
             if(Properties.Settings.Default.UseQuoteStorage)
                 this.History = FeedHistoryProviderModel.CreateDiskStorage(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
@@ -195,7 +195,7 @@ namespace TickTrader.BotTerminal
         public ConnectionModel Connection { get; private set; }
         public TradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
-        public TradeHistoryProvider TradeHistory { get; }
+        public TradeHistoryProviderModel TradeHistory { get; }
         public SymbolCollectionModel Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ROUTES } from '../sidebar/sidebar-routes.config';
-import { MenuType } from '../sidebar/sidebar.metadata';
-import { AuthService } from '../../services/index';
+import { MenuType, RouteInfo } from '../../models/index';
+import { AuthService, NavigationService } from '../../services/index';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,36 +9,34 @@ import { Router } from '@angular/router';
 })
 
 export class NavbarComponent implements OnInit {
-    private listTitles: any[];
+    private navBarItems: RouteInfo[];
 
-    constructor(private _router: Router, private _authService: AuthService) { }
+    constructor(private _router: Router, private _authService: AuthService, private navService: NavigationService) { }
 
     ngOnInit() {
-        this.listTitles = ROUTES.filter(listTitle => listTitle.menuType !== MenuType.BRAND);
+        this.navBarItems = this.navService.Routes.filter(item => item.menuType == MenuType.NavBar && item.owner == null);
+    }
+
+    public get MenuItems(): RouteInfo[] {
+
+        return this.navService.TopMenuItems();
     }
 
     public get RouteInfo(): any {
-        var titlee = window.location.pathname;
-        for (var item = 0; item < this.listTitles.length; item++) {
-            if (this.listTitles[item].path === titlee) {
-                return this.listTitles[item];
+        var path = window.location.pathname;
+        return this.routeInfo(path);
+    }
+
+    private routeInfo(path: string): RouteInfo
+    {
+        for (var item = 0; item < this.navService.Routes.length; item++) {
+            if (this.navService.Routes[item].path === path) {
+                if (this.navService.Routes[item].owner == null)
+                    return this.navService.Routes[item];
+                else
+                    return this.routeInfo(this.navService.Routes[item].owner);
             }
         }
-        return this.listTitles[0];
-    }
-
-    public get UserName(): string {
-        if (this._authService.IsAuthorized)
-        {
-            return this._authService.AuthData.User;
-        }
-        else
-        {
-            return '';
-        }
-    }
-
-    public Logout() {
-        this._authService.LogOut();
+        return this.navService.Routes[0];
     }
 }
