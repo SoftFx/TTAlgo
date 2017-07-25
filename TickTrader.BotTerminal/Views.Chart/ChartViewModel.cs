@@ -191,6 +191,7 @@ namespace TickTrader.BotTerminal
                     InstanceId = i.Model.InstanceId,
                     Isolated = i.Model.Isolated,
                     Config = i.Model.Setup.Save(),
+                    Permissions = i.Model.Permissions,
                 }).ToList(),
                 Bots = Bots.Select(b => new TradeBotStorageEntry
                 {
@@ -200,6 +201,7 @@ namespace TickTrader.BotTerminal
                     Isolated = b.Model.Isolated,
                     Started = b.Model.State == BotModelStates.Running,
                     Config = b.Model.Setup.Save(),
+                    Permissions = b.Model.Permissions,
                 }).ToList(),
             };
         }
@@ -230,6 +232,7 @@ namespace TickTrader.BotTerminal
             {
                 InstanceId = snapshot.InstanceId,
                 Isolated = snapshot.Isolated,
+                Permissions = snapshot.Permissions,
             };
             if (snapshot is TradeBotStorageEntry)
             {
