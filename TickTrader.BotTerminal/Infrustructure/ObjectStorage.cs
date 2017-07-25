@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace TickTrader.BotTerminal
@@ -51,7 +52,14 @@ namespace TickTrader.BotTerminal
             using (MemoryStream stream = new MemoryStream())
             {
                 DataContractSerializer serializer = new DataContractSerializer(typeof(T));
+#if DEBUG
+                using (var xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true }))
+                {
+                    serializer.WriteObject(xmlWriter, obj);
+                }
+#else
                 serializer.WriteObject(stream, obj);
+#endif
                 _binaryStorage.Save(fileName, stream);
             }
         }
