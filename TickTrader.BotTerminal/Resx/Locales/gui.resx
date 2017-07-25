@@ -348,9 +348,6 @@
   <data name="Menu_SaveProfile" xml:space="preserve">
     <value>##SaveProfile##</value>
   </data>
-  <data name="Menu_SetProfileDefault" xml:space="preserve">
-    <value>##SetProfileDefault##</value>
-  </data>
   <data name="Menu_Profile" xml:space="preserve">
     <value>##Profile##</value>
   </data>

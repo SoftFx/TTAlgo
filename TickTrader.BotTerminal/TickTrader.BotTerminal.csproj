@@ -288,6 +288,7 @@
     <Compile Include="Model.Profiles\ChartStorageEntry.cs" />
     <Compile Include="Model.Profiles\PluginStorageEntry.cs" />
     <Compile Include="Model.Profiles\ProfileManager.cs" />
+    <Compile Include="Model.Profiles\ProfileRepository.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <Compile Include="Model.Profiles\SettingsStorageModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />

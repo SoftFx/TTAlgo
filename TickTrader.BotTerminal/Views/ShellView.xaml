@@ -31,9 +31,10 @@
             <MenuItem Header="Notifications" IsChecked="{Binding Notifications.NotificationsEnabled}" IsCheckable="True"></MenuItem>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Profile}" cal:Bind.Model="{Binding ProfileManager}">
-            <MenuItem Header="{l:Resx Menu_SetProfileDefault}" cal:Message.Attach="SetAsDefault"/>
             <MenuItem Header="{l:Resx Menu_SaveProfile}" cal:Message.Attach="SaveProfile"/>
-            <MenuItem Header="{l:Resx Menu_LoadProfile}"/>
+            <MenuItem Header="{l:Resx Menu_LoadProfile}" ItemsSource="{Binding Profiles}"
+                      cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                      cal:Message.Attach="LoadProfile($originalsourcecontext)"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Tools}">
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>

@@ -10,13 +10,7 @@ namespace TickTrader.BotTerminal
         private const int LoopDelay = 50;
 
 
-        public const string DefaultProfileFileName = "default.profile";
-
-
         private static readonly TimeSpan SaveDelay = TimeSpan.FromSeconds(2);
-
-
-        public static string DefaultProfilePath = Path.Combine(EnvService.Instance.ProfilesCacheFolder, DefaultProfileFileName);
 
 
         private Logger _logger;
@@ -46,12 +40,6 @@ namespace TickTrader.BotTerminal
             _logger = NLog.LogManager.GetCurrentClassLogger();
 
             _isSaving = false;
-            CurrentProfileFileName = DefaultProfileFileName;
-
-            if (!File.Exists(CurrentProfilePath))
-            {
-                CurrentProfile.Save();
-            }
         }
 
 
@@ -112,18 +100,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SetCurrentProfileAsDefault()
-        {
-            try
-            {
-                SaveCurrentProfile(DefaultProfilePath);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Can't set current profile as default: {ex.Message}");
-            }
-        }
-
 
         private void OnProfileUpdated()
         {
@@ -132,12 +108,6 @@ namespace TickTrader.BotTerminal
 
         private void OpenCachedProfile()
         {
-            if (!File.Exists(CurrentProfilePath) && File.Exists(DefaultProfilePath))
-            {
-                File.Copy(DefaultProfilePath, CurrentProfilePath);
-                _logger.Info($"Default profile for {Server} {Login} has been set.");
-            }
-
             OpenCurrentProfile();
             _logger.Info($"Loaded cached profile for {Server} {Login}.");
         }
@@ -148,11 +118,6 @@ namespace TickTrader.BotTerminal
             {
                 File.Copy(newProfilePath, CurrentProfilePath, true);
                 _logger.Info($"Loaded user profile from {newProfilePath}.");
-            }
-            else if (File.Exists(DefaultProfilePath))
-            {
-                File.Copy(DefaultProfilePath, CurrentProfilePath, true);
-                _logger.Info($"Using default profile instead of user profile from {newProfilePath}.");
             }
 
             OpenCurrentProfile();

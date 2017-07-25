@@ -412,15 +412,6 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ##SetProfileDefault##.
-        /// </summary>
-        internal static string Menu_SetProfileDefault {
-            get {
-                return ResourceManager.GetString("Menu_SetProfileDefault", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to ##Theme##.
         /// </summary>
         internal static string Menu_Theme {

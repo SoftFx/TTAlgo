@@ -358,13 +358,10 @@
     <value>Help</value>
   </data>
   <data name="Menu_LoadProfile" xml:space="preserve">
-    <value>Load</value>
+    <value>Load profile</value>
   </data>
   <data name="Menu_SaveProfile" xml:space="preserve">
-    <value>Save as</value>
-  </data>
-  <data name="Menu_SetProfileDefault" xml:space="preserve">
-    <value>Set as default</value>
+    <value>Save profile as</value>
   </data>
   <data name="Menu_Profile" xml:space="preserve">
     <value>Profile</value>

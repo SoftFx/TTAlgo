@@ -1,4 +1,6 @@
-﻿using Microsoft.Win32;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
+using Microsoft.Win32;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,11 @@ namespace TickTrader.BotTerminal
         private ToolWindowsManager _wndManager;
         private ProfileManager _profileManager;
         private CancellationTokenSource _cancelLoadSrc;
+        private ProfileRepository _profileRepo;
+        private DynamicDictionary<string, string> _profiles;
+
+
+        public IObservableListSource<string> Profiles { get; }
 
 
         public ProfileManagerViewModel(IShell shell, PersistModel storage)
@@ -24,13 +31,13 @@ namespace TickTrader.BotTerminal
             _profileLoader = shell.ProfileLoader;
             _wndManager = shell.ToolWndManager;
             _profileManager = storage.ProfileManager;
+
+            _profiles = new DynamicDictionary<string, string>();
+            Profiles = _profiles.OrderBy((k, v) => v).Chain().AsObservable();
+
+            StartRepository();
         }
 
-
-        public void SetAsDefault()
-        {
-            _profileManager.SetCurrentProfileAsDefault();
-        }
 
         public void SaveProfile()
         {
@@ -114,6 +121,46 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, $"Failed to load user profile '{name}'");
             }
+        }
+
+
+        private void StartRepository()
+        {
+            _profileRepo = new ProfileRepository(EnvService.Instance.UserProfilesFolder);
+            _profileRepo.Added += ProfileAdded;
+            _profileRepo.Removed += ProfileRemoved;
+            _profileRepo.Start();
+        }
+
+        private void ProfileAdded(ProfileRepositoryEventArgs args)
+        {
+            Execute.OnUIThread(() =>
+            {
+                try
+                {
+                    _profiles.Add(args.FilePath, args.ProfileName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex);
+                }
+            });
+        }
+
+
+        private void ProfileRemoved(ProfileRepositoryEventArgs args)
+        {
+            Execute.OnUIThread(() =>
+            {
+                try
+                {
+                    _profiles.Remove(args.FilePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex);
+                }
+            });
         }
     }
 }
