@@ -63,6 +63,7 @@ export class AuthService {
 
         localStorage.removeItem(this._storageKey);
 
+        this.RedirectUrl = "";
         this._authDataUpdatedSubject.next(<AuthData>null);
     }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ROUTES } from './sidebar-routes.config';
-import { MenuType } from './sidebar.metadata';
+import { MenuType, RouteInfo } from '../../models/index';
+import { AuthService, NavigationService } from '../../services/index';
 
 @Component({
     selector: 'sidebar-cmp',
@@ -8,16 +8,19 @@ import { MenuType } from './sidebar.metadata';
 })
 
 export class SidebarComponent implements OnInit {
-    public menuItems: any[];
-    isCollapsed = true;
-    constructor() {}
+    public SideMenuItems: any[];
+
+    constructor(private navService: NavigationService) { }
+
     ngOnInit() {
-        this.menuItems = ROUTES.filter(menuItem => menuItem.menuType !== MenuType.BRAND);
+        this.SideMenuItems = this.navService.SideMenuItems();
     }
-   
-    public getMenuItemClasses(menuItem: any) {
-        return {
-            'pull-xs-right': this.isCollapsed && menuItem.menuType === MenuType.RIGHT
-        };
+
+    public get TopMenuItems(): any {
+        return this.navService.TopMenuItems();
+    }
+
+    IsMobileMenu() {
+        return this.navService.IsMobileVersion();
     }
 }

@@ -1,20 +1,12 @@
-using Machinarium.State;
 using SoftFX.Extended;
 using SoftFX.Extended.Reports;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
-using System.Diagnostics;
-using TickTrader.Algo.Common.Lib;
 using FDK = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model

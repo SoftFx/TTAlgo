@@ -16,7 +16,7 @@ namespace TickTrader.DedicatedServer.DS.Models
     {
         private object _internalSync = new object();
         private object _sync;
-        private List<ILogEntry> _logMessages;
+        private CircularList<ILogEntry> _logMessages;
         private ILogger _logger;
         private int _keepInmemory;
         private string _name;
@@ -29,7 +29,7 @@ namespace TickTrader.DedicatedServer.DS.Models
             _name = name;
             _logDirectory = $"{ServerModel.Environment.BotLogFolder}/{_name.Escape()}/";
             _keepInmemory = keepInMemory;
-            _logMessages = new List<ILogEntry>(_keepInmemory);
+            _logMessages = new CircularList<ILogEntry>(_keepInmemory);
             _logger = GetLogger(name);
         }
 
@@ -106,11 +106,16 @@ namespace TickTrader.DedicatedServer.DS.Models
                         break;
                 }
 
-                if (_logMessages.Count >= _keepInmemory)
-                    _logMessages.RemoveAt(0);
+                if (IsLogFull)
+                    _logMessages.Dequeue();
 
                 _logMessages.Add(msg);
             }
+        }
+
+        private bool IsLogFull
+        {
+            get { return _logMessages.Count >= _keepInmemory; }
         }
 
         private ILogger GetLogger(string botId)

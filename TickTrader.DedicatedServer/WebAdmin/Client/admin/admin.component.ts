@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../services/index';
+import { AuthService, NavigationService } from '../services/index';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,8 +10,7 @@ import { Router } from '@angular/router';
 
 export class AdminComponent implements OnInit {
 
-    constructor(private _router: Router, private _authService: AuthService) {
-    }
+    constructor(private _router: Router, private _authService: AuthService, public navBar: NavigationService) { }
 
     ngOnInit() {
         $.getScript('/assets/js/gui.js');
@@ -27,8 +26,7 @@ export class AdminComponent implements OnInit {
 
     private manageTokenExpiration(): void {
         setTimeout(() => {
-            if (!this._authService.IsAuthorized)
-            {
+            if (!this._authService.IsAuthorized) {
                 this._authService.LogOut();
                 this._router.navigate(['/login']);
             }

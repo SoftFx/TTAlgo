@@ -103,6 +103,7 @@
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientCore.cs" />
     <Compile Include="Model\TradeExecutor.cs" />
+    <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
