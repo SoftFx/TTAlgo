@@ -1,7 +1,7 @@
-export enum MenuType {
-    BRAND,
-    LEFT,
-    RIGHT
+﻿export enum MenuType {
+    NavBar,
+    SideBar,
+    SelfTree
 }
 
 export interface RouteInfo {
@@ -9,16 +9,14 @@ export interface RouteInfo {
     title: string;
     menuType: MenuType;
     icon: string;
-    actions: Action[];
+    owner: string;
 }
 
-export class Action
-{
+export class Action {
     public Name: string;
     public Link: string;
 
-    constructor(name: string, link: string)
-    {
+    constructor(name: string, link: string) {
         this.Name = name;
         this.Link = link;
     }
