@@ -269,6 +269,7 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModelBase.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
@@ -457,6 +458,7 @@
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\NotificationsViewModel.cs" />
+    <Compile Include="Views\PreferencesViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\ShutdownDialogView.xaml.cs">
       <DependentUpon>ShutdownDialogView.xaml</DependentUpon>

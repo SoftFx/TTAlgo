@@ -14,7 +14,7 @@
             <Separator/>
             <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
-        <MenuItem Header="{l:Resx Menu_Preferences}">
+        <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
                                         SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>-->
@@ -29,8 +29,9 @@
             </l:MenuItemSelector>
             <MenuItem Header="Sounds" IsChecked="{Binding Notifications.SoundsEnabled}" IsCheckable="True"></MenuItem>
             <MenuItem Header="Notifications" IsChecked="{Binding Notifications.NotificationsEnabled}" IsCheckable="True"></MenuItem>
+            <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
         </MenuItem>
-        <MenuItem Header="{l:Resx Menu_Profile}" cal:Bind.Model="{Binding ProfileManager}">
+        <MenuItem Header="{l:Resx Menu_Profile}" DataContext="{Binding ProfileManager}">
             <MenuItem Header="{l:Resx Menu_SaveProfile}" cal:Message.Attach="SaveProfile"/>
             <MenuItem Header="{l:Resx Menu_LoadProfile}" ItemsSource="{Binding Profiles}"
                       cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"

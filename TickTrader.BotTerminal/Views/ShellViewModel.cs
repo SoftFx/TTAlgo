@@ -45,6 +45,7 @@ namespace TickTrader.BotTerminal
             algoEnv.Init(clientModel.ObservableSymbolList);
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
+            Preferences = new PreferencesViewModel(storage.SettingsStorage);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
@@ -205,6 +206,7 @@ namespace TickTrader.BotTerminal
         public ToolWindowsManager ToolWndManager { get { return this; } }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
+        public PreferencesViewModel Preferences { get; private set; }
 
         public NotificationsViewModel Notifications { get; private set; }
 
