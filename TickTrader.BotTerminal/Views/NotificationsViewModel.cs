@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,19 +16,19 @@ namespace TickTrader.BotTerminal
         private IAccountInfoProvider _accountInfo;
         private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
-        private SettingsStorageModel _settingsStorage;
+        private PreferencesStorageModel _preferences;
 
 
         public bool SoundsEnabled
         {
             get { return _notificationCenter.SoundNotification.Enabled; }
-            private set { ToggleSounds(value, false); }
+            private set { ToggleSounds(value); }
         }
 
         public bool NotificationsEnabled
         {
             get { return _notificationCenter.PopupNotification.Enabled; }
-            private set { ToggleNotifications(value, false); }
+            private set { ToggleNotifications(value); }
         }
 
 
@@ -36,19 +37,34 @@ namespace TickTrader.BotTerminal
             _accountInfo = accountInfo;
             _connectionModel = connectionManager;
             _notificationCenter = notificationCenter;
-            _settingsStorage = storage.SettingsStorage;
+            _preferences = storage.PreferencesStorage.StorageModel;
 
-            LoadSettings();
+            storage.PreferencesStorage.PropertyChanged += OnPreferencesChanged;
+
+            LoadPreferences();
         }
 
 
-        private void LoadSettings()
+        private void OnPreferencesChanged(object sender, PropertyChangedEventArgs e)
         {
-            ToggleSounds(_settingsStorage.EnableSounds, true);
-            ToggleNotifications(_settingsStorage.EnableNotifications, true);
+            switch (e.PropertyName)
+            {
+                case nameof(_preferences.EnableSounds):
+                    ToggleSounds(_preferences.EnableSounds);
+                    break;
+                case nameof(_preferences.EnableNotifications):
+                    ToggleNotifications(_preferences.EnableNotifications);
+                    break;
+            }
         }
 
-        private void ToggleSounds(bool enableSounds, bool isInit)
+        private void LoadPreferences()
+        {
+            ToggleSounds(_preferences.EnableSounds);
+            ToggleNotifications(_preferences.EnableNotifications);
+        }
+
+        private void ToggleSounds(bool enableSounds)
         {
             if (_notificationCenter.SoundNotification.Enabled == enableSounds)
                 return;
@@ -64,15 +80,9 @@ namespace TickTrader.BotTerminal
 
             _notificationCenter.SoundNotification.Enabled = enableSounds;
             NotifyOfPropertyChange(nameof(SoundsEnabled));
-
-            if (!isInit)
-            {
-                _settingsStorage.EnableSounds = enableSounds;
-                _settingsStorage.Save();
-            }
         }
 
-        private void ToggleNotifications(bool enableNotifications, bool isInit)
+        private void ToggleNotifications(bool enableNotifications)
         {
             if (_notificationCenter.PopupNotification.Enabled == enableNotifications)
                 return;
@@ -90,12 +100,6 @@ namespace TickTrader.BotTerminal
 
             _notificationCenter.PopupNotification.Enabled = enableNotifications;
             NotifyOfPropertyChange(nameof(NotificationsEnabled));
-
-            if (!isInit)
-            {
-                _settingsStorage.EnableNotifications = enableNotifications;
-                _settingsStorage.Save();
-            }
         }
 
         private void ConnectionStateChanged(ConnectionManager.States oldState, ConnectionManager.States newState)

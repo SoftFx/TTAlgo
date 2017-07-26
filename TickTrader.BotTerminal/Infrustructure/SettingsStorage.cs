@@ -5,8 +5,7 @@ using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "")]
-    public abstract class SettingsStorageBase : ISettings, INotifyPropertyChanged
+    internal abstract class SettingsStorageBase : ISettings, INotifyPropertyChanged
     {
         public object this[string key]
         {
@@ -40,32 +39,7 @@ namespace TickTrader.BotTerminal
     }
 
 
-    [DataContract(Namespace = "", Name = "Storage")]
-    public class SettingsStorage : SettingsStorageBase
-    {
-        [DataMember]
-        protected Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
-
-
-        protected override object GetProperty(string key)
-        {
-            return Properties.ContainsKey(key) ? Properties[key] : null;
-        }
-
-        protected override bool SetProperty(string key, object value)
-        {
-            if (GetProperty(key) != value)
-            {
-                Properties[key] = value;
-                return true;
-            }
-            return false;
-        }
-    }
-
-
-    [DataContract(Namespace = "", Name = "TypedStorage")]
-    public class SettingsStorage<TModel> : SettingsStorageBase where TModel : class
+    internal class SettingsStorage<TModel> : SettingsStorageBase where TModel : StorageModelBase<TModel>, new()
     {
         protected Dictionary<string, PropertyDescriptor> Properties { get; } = new Dictionary<string, PropertyDescriptor>();
 
@@ -104,6 +78,33 @@ namespace TickTrader.BotTerminal
             if (GetProperty(key) != value)
             {
                 Properties[key].SetValue(StorageModel, value);
+                StorageModel.Save();
+                return true;
+            }
+            return false;
+        }
+    }
+
+
+    internal class SettingsStorage : SettingsStorage<StorageModel>
+    {
+        public SettingsStorage(StorageModel model)
+        {
+            StorageModel = model;
+        }
+
+
+        protected override object GetProperty(string key)
+        {
+            return StorageModel.Properties.ContainsKey(key) ? StorageModel.Properties[key] : null;
+        }
+
+        protected override bool SetProperty(string key, object value)
+        {
+            if (GetProperty(key) != value)
+            {
+                StorageModel.Properties[key] = value;
+                StorageModel.Save();
                 return true;
             }
             return false;

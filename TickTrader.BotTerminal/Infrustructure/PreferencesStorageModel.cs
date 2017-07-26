@@ -3,7 +3,7 @@
 namespace TickTrader.BotTerminal
 {
     [DataContract(Namespace = "", Name = "Preferences")]
-    internal class SettingsStorageModel : StorageModelBase<SettingsStorageModel>
+    internal class PreferencesStorageModel : StorageModelBase<PreferencesStorageModel>
     {
         [DataMember]
         public string Theme { get; set; }
@@ -18,15 +18,15 @@ namespace TickTrader.BotTerminal
         public bool RestartBotsOnStartup { get; set; }
 
 
-        public SettingsStorageModel()
+        public PreferencesStorageModel()
         {
             EnableSounds = true;
         }
 
 
-        public override SettingsStorageModel Clone()
+        public override PreferencesStorageModel Clone()
         {
-            return new SettingsStorageModel
+            return new PreferencesStorageModel
             {
                 Theme = Theme,
                 EnableSounds = EnableSounds,

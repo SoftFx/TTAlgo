@@ -64,7 +64,7 @@ namespace TickTrader.BotTerminal
             var rexBinding = new Binding()
             {
                 FallbackValue = Default,
-                Path = new PropertyPath("(l:Settings.Provider)[(0)]", _settingName),
+                Path = new PropertyPath($"(0)[{_settingName}]", Settings.ProviderProperty),
                 Mode = BindingMode.TwoWay,
                 RelativeSource = RelativeSource.Self
             };

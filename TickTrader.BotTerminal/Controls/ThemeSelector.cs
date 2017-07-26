@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
     public class ThemeSelector : ResourceDictionary
     {
         private Theme _selectedTheme;
-        private SettingsStorageModel _settingsStorage;
+        private PreferencesStorageModel _preferences;
 
 
         public static ThemeSelector Instance => (ThemeSelector)App.Current.Resources.MergedDictionaries.FirstOrDefault(d => d is ThemeSelector);
@@ -36,8 +36,6 @@ namespace TickTrader.BotTerminal
                     if (toApply == null)
                         throw new ArgumentException("Theme not found: " + value);
                     Activate(toApply);
-                    _settingsStorage.Theme = SelectedTheme;
-                    _settingsStorage.Save();
                 }
             }
         }
@@ -53,18 +51,29 @@ namespace TickTrader.BotTerminal
 
         internal void InitializeSettings(PersistModel storage)
         {
-            _settingsStorage = storage.SettingsStorage;
-            if (ThemeNames.Contains(_settingsStorage.Theme))
+            _preferences = storage.PreferencesStorage.StorageModel;
+            storage.PreferencesStorage.PropertyChanged += OnPreferencesChanged;
+
+            if (ThemeNames.Contains(_preferences.Theme))
             {
-                SelectedTheme = _settingsStorage.Theme;
+                SelectedTheme = _preferences.Theme;
             }
             else
             {
-                _settingsStorage.Theme = SelectedTheme;
-                _settingsStorage.Save();
+                storage.PreferencesStorage[nameof(_preferences.Theme)] = SelectedTheme;
             }
         }
 
+
+        private void OnPreferencesChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(_preferences.Theme):
+                    SelectedTheme = _preferences.Theme;
+                    break;
+            };
+        }
 
         private void EnsureDefaultTheme()
         {

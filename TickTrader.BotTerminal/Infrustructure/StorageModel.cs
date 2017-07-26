@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
@@ -28,6 +29,29 @@ namespace TickTrader.BotTerminal
         T IPersistableObject<T>.GetCopyToSave()
         {
             return Clone();
+        }
+    }
+
+
+    [DataContract(Namespace = "", Name = "Storage")]
+    internal class StorageModel : StorageModelBase<StorageModel>
+    {
+        [DataMember]
+        public Dictionary<string, object> Properties { get; private set; }
+
+
+        public StorageModel()
+        {
+            Properties = new Dictionary<string, object>();
+        }
+
+
+        public override StorageModel Clone()
+        {
+            return new StorageModel
+            {
+                Properties = new Dictionary<string, object>(Properties),
+            };
         }
     }
 }

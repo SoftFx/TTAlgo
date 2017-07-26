@@ -270,7 +270,7 @@
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
-    <Compile Include="Infrustructure\StorageModelBase.cs" />
+    <Compile Include="Infrustructure\StorageModel.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
@@ -291,7 +291,7 @@
     <Compile Include="Model.Profiles\ProfileManager.cs" />
     <Compile Include="Model.Profiles\ProfileRepository.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
-    <Compile Include="Model.Profiles\SettingsStorageModel.cs" />
+    <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
@@ -458,7 +458,6 @@
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\NotificationsViewModel.cs" />
-    <Compile Include="Views\PreferencesViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\ShutdownDialogView.xaml.cs">
       <DependentUpon>ShutdownDialogView.xaml</DependentUpon>

@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
         private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
         private readonly SymbolModel smb;
-        private SettingsStorageModel _settingsStorage;
+        private PreferencesStorageModel _preferences;
 
         public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
         {
@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
             this.clientModel = clientModel;
             this.algoEnv = algoEnv;
             this.shell = shell;
-            _settingsStorage = storage.SettingsStorage;
+            _preferences = storage.PreferencesStorage.StorageModel;
 
             ChartWindowId = "Chart" + ++idSeed;
 
@@ -236,7 +236,7 @@ namespace TickTrader.BotTerminal
             };
             if (snapshot is TradeBotStorageEntry)
             {
-                setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _settingsStorage.RestartBotsOnStartup;
+                setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _preferences.RestartBotsOnStartup;
             }
             if (snapshot.Config != null)
             {
