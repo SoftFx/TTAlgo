@@ -43,10 +43,16 @@ namespace TickTrader.Algo.Core
                 buffer.Truncate(bySize);
         }
 
-        //public void Reset()
-        //{
-        //    BuffersCleared();
-        //    VirtualPos = 0;
-        //}
+        public void Clear()
+        {
+            //BuffersCleared();
+
+            foreach (var buffer in buffers)
+                buffer.Clear();
+
+            buffers.Clear();
+
+            VirtualPos = 0;
+        }
     }
 }
