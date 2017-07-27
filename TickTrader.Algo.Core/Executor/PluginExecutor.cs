@@ -346,6 +346,11 @@ namespace TickTrader.Algo.Core
                 calcFixture.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
+
+                builder.PluginProxy.Coordinator.Clear();
+                builder.PluginProxy.Dispose();
+                accFixture.Dispose();
+                fStrategy.Dispose();
             }
             catch (Exception ex)
             {
