@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace TickTrader.BotTerminal
 {
     [DataContract(Namespace = "", Name = "Chart")]
-    public class ChartStorageEntry
+    internal class ChartStorageEntry
     {
         [DataMember]
         public string Symbol { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
@@ -48,18 +49,27 @@ namespace TickTrader.BotTerminal
         public TModel StorageModel { get; set; }
 
 
-        protected SettingsStorage()
+        protected SettingsStorage(Type[] attributesFilter)
         {
-            if (TypeDescriptor.GetAttributes(typeof(TModel))[typeof(DataContractAttribute)] == null)
-                throw new ArgumentException("Model should be serializable via data contract");
-            foreach (PropertyDescriptor p in TypeDescriptor.GetProperties(typeof(TModel), new Attribute[] { new DataMemberAttribute() }))
+            foreach (PropertyDescriptor p in TypeDescriptor.GetProperties(typeof(TModel)))
             {
-                Properties.Add(p.Name, p);
+                if (attributesFilter.All(i => p.Attributes[i] != null))
+                {
+                    Properties.Add(p.Name, p);
+                }
             }
         }
 
 
-        public SettingsStorage(TModel model) : this()
+        public SettingsStorage(TModel model) : this(model, typeof(DataMemberAttribute))
+        {
+        }
+
+        public SettingsStorage(TModel model, Type attributeFilter) : this(model, new[] { attributeFilter })
+        {
+        }
+
+        public SettingsStorage(TModel model, Type[] attributesFilter) : this(attributesFilter)
         {
             StorageModel = model;
         }
@@ -88,9 +98,8 @@ namespace TickTrader.BotTerminal
 
     internal class SettingsStorage : SettingsStorage<StorageModel>
     {
-        public SettingsStorage(StorageModel model)
+        public SettingsStorage(StorageModel model) : base(model, new Type[0])
         {
-            StorageModel = model;
         }
 
 

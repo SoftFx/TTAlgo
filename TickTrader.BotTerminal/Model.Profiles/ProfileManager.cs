@@ -10,7 +10,7 @@ namespace TickTrader.BotTerminal
         private const int LoopDelay = 50;
 
 
-        private static readonly TimeSpan SaveDelay = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan SaveDelay = TimeSpan.FromSeconds(1);
 
 
         private Logger _logger;

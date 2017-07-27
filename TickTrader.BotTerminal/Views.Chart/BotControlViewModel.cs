@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private ToolWindowsManager wndManager;
 
-        public BotControlViewModel(TradeBotModel model, ToolWindowsManager wndManager, bool runBot)
+        public BotControlViewModel(TradeBotModel model, ToolWindowsManager wndManager, bool runBot, bool openState)
         {
             this.Model = model;
             this.wndManager = wndManager;
@@ -25,7 +25,10 @@ namespace TickTrader.BotTerminal
             {
                 StartStop();
             }
-            OpenState();
+            if (openState)
+            {
+                OpenState();
+            }
         }
 
         public async void StartStop()

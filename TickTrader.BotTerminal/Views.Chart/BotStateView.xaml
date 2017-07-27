@@ -53,8 +53,12 @@
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
-        <Setter Property="Width" Value="300"/>
-        <Setter Property="Height" Value="300"/>
+        <Setter Property="l:Settings.Provider" Value="{Binding Bot.StateViewSettings}" />
+        <Setter Property="Width" Value="{l:Setting Width}" />
+        <Setter Property="Height" Value="{l:Setting Height}" />
+        <Setter Property="Left" Value="{l:Setting Left}" />
+        <Setter Property="Top" Value="{l:Setting Top}" />
+        <Setter Property="WindowState" Value="{l:Setting State}" />
     </Style>
 
     <Style x:Key="BotStateViewStyle" TargetType="Window" BasedOn="{StaticResource BotStateViewStyle.Common}">

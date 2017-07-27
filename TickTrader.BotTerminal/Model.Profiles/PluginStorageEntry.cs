@@ -6,7 +6,7 @@ using TickTrader.Algo.Core;
 namespace TickTrader.BotTerminal
 {
     [DataContract(Namespace = "", Name = "Plugin")]
-    public abstract class PluginStorageEntry<T> where T : PluginStorageEntry<T>, new()
+    internal abstract class PluginStorageEntry<T> where T : PluginStorageEntry<T>, new()
     {
         [DataMember]
         public string DescriptorId { get; set; }
@@ -43,22 +43,30 @@ namespace TickTrader.BotTerminal
 
 
     [DataContract(Namespace = "", Name = "Indicator")]
-    public class IndicatorStorageEntry : PluginStorageEntry<IndicatorStorageEntry>
+    internal class IndicatorStorageEntry : PluginStorageEntry<IndicatorStorageEntry>
     {
     }
 
 
     [DataContract(Namespace = "", Name = "TradeBot")]
-    public class TradeBotStorageEntry : PluginStorageEntry<TradeBotStorageEntry>
+    internal class TradeBotStorageEntry : PluginStorageEntry<TradeBotStorageEntry>
     {
         [DataMember]
         public bool Started { get; set; }
+
+        [DataMember]
+        public bool StateViewOpened { get; set; }
+
+        [DataMember]
+        public WindowStorageModel StateSettings { get; set; }
 
 
         public override TradeBotStorageEntry Clone()
         {
             var res = base.Clone();
             res.Started = Started;
+            res.StateViewOpened = StateViewOpened;
+            res.StateSettings = StateSettings.Clone();
             return res;
         }
     }

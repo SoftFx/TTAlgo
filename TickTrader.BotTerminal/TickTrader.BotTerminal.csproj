@@ -271,6 +271,7 @@
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
+    <Compile Include="Infrustructure\WindowStorageModel.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
