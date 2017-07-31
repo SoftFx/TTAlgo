@@ -283,7 +283,9 @@
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model\BotAggregator.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
+    <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\NotificationCenter.cs" />

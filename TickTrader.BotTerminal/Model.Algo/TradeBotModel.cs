@@ -27,6 +27,12 @@ namespace TickTrader.BotTerminal
             host.Connected += Host_Connected;
         }
 
+        internal void Abort()
+        {
+            if (State == BotModelStates.Stopping)
+                AbortExecutor();
+        }
+
         public void Start()
         {
             if (State != BotModelStates.Stopped)
