@@ -69,6 +69,11 @@ namespace TickTrader.BotTerminal
             return Task.Factory.StartNew(() => _executor.Stop());
         }
 
+        protected void AbortExecutor()
+        {
+            _executor.Abort();
+        }
+
         protected virtual PluginExecutor CreateExecutor()
         {
             var executor = PluginRef.CreateExecutor();
