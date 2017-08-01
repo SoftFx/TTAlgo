@@ -342,4 +342,13 @@
   <data name="Menu_Help" xml:space="preserve">
     <value>##Help##</value>
   </data>
+  <data name="Menu_LoadProfile" xml:space="preserve">
+    <value>##LoadProfile##</value>
+  </data>
+  <data name="Menu_SaveProfile" xml:space="preserve">
+    <value>##SaveProfile##</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>##Profile##</value>
+  </data>
 </root>

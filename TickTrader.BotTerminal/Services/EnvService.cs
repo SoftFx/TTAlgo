@@ -10,10 +10,52 @@ namespace TickTrader.BotTerminal
 {
     internal class EnvService
     {
-        private Logger logger;
+        private Logger _logger;
+
+
+        public static EnvService Instance { get; } = new EnvService();
+
+
+        public string AppFolder { get; }
+
+        public string RedistFolder => Path.Combine(AppFolder, "Redist");
+
+        public string FeedHistoryCacheFolder { get; }
+
+        public string ApplicationName { get; }
+
+        public string BotLogFolder { get; }
+
+        public string LogFolder { get; }
+
+        public string JournalFolder { get; }
+
+        public string AlgoRepositoryFolder { get; }
+
+        public string AlgoExtFolder { get; }
+
+        public string AlgoCommonRepositoryFolder { get; }
+
+        public string AlgoWorkingFolder { get; }
+
+        public string AppDataFolder { get; }
+
+        public string AppLockFilePath { get; }
+
+        public IObjectStorage UserDataStorage { get; }
+
+        public IObjectStorage ProtectedUserDataStorage { get; }
+
+        public string UserProfilesFolder { get; }
+
+        public string ProfilesCacheFolder { get; }
+
+        public IObjectStorage ProfilesCacheStorage { get; }
+
+
         private EnvService()
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
+            _logger = NLog.LogManager.GetCurrentClassLogger();
             ApplicationName = "BotTrader";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
@@ -34,6 +76,8 @@ namespace TickTrader.BotTerminal
                 FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
                 AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 AppLockFilePath = Path.Combine(AppDataFolder, "applock");
+                UserProfilesFolder = Path.Combine(appDocumentsFolder, "Profiles");
+                ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
             }
             else
             {
@@ -49,6 +93,8 @@ namespace TickTrader.BotTerminal
                 FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
                 AppDataFolder = Path.Combine(AppFolder, "Settings");
                 AppLockFilePath = Path.Combine(AppFolder, "applock");
+                UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
+                ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
             }
 
             EnsureFolder(AlgoRepositoryFolder);
@@ -60,32 +106,17 @@ namespace TickTrader.BotTerminal
             EnsureFolder(JournalFolder);
             EnsureFolder(FeedHistoryCacheFolder);
             EnsureFolder(AppDataFolder);
+            EnsureFolder(UserProfilesFolder);
+            EnsureFolder(ProfilesCacheFolder);
 
             // This is required for normal Algo plugin execution. Do not change working folder elsewhere!
             Directory.SetCurrentDirectory(AlgoWorkingFolder);
 
             UserDataStorage = new XmlObjectStorage(new FolderBinStorage(AppDataFolder));
             ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder)));
+            ProfilesCacheStorage = new XmlObjectStorage(new FolderBinStorage(ProfilesCacheFolder));
         }
 
-        private static EnvService instance = new EnvService();
-        public static EnvService Instance { get { return instance; } }
-
-        public string AppFolder { get; private set; }
-        public string RedistFolder { get { return Path.Combine(AppFolder, "Redist"); } }
-        public string FeedHistoryCacheFolder { get; private set; }
-        public string ApplicationName { get; private set; }
-        public string BotLogFolder { get; private set; }
-        public string LogFolder { get; private set; }
-        public string JournalFolder { get; private set; }
-        public string AlgoRepositoryFolder { get; private set; }
-        public string AlgoExtFolder { get; private set; }
-        public string AlgoCommonRepositoryFolder { get; private set; }
-        public string AlgoWorkingFolder { get; private set; }
-        public string AppDataFolder { get; private set; }
-        public string AppLockFilePath { get; private set; }
-        public IObjectStorage UserDataStorage { get; private set; }
-        public IObjectStorage ProtectedUserDataStorage { get; private set; }
 
         public void EnsureFolder(string folderPath)
         {
@@ -98,7 +129,7 @@ namespace TickTrader.BotTerminal
             }
             catch (IOException ex)
             {
-                logger.Error("Cannot create directory {0}: {1}", folderPath, ex.Message);
+                _logger.Error("Cannot create directory {0}: {1}", folderPath, ex.Message);
             }
         }
     }

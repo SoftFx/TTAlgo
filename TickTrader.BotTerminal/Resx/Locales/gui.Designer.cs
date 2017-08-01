@@ -331,6 +331,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##LoadProfile##.
+        /// </summary>
+        internal static string Menu_LoadProfile {
+            get {
+                return ResourceManager.GetString("Menu_LoadProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Log In##.
         /// </summary>
         internal static string Menu_LogIn {
@@ -381,6 +390,24 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         internal static string Menu_Preferences {
             get {
                 return ResourceManager.GetString("Menu_Preferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Profile##.
+        /// </summary>
+        internal static string Menu_Profile {
+            get {
+                return ResourceManager.GetString("Menu_Profile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##SaveProfile##.
+        /// </summary>
+        internal static string Menu_SaveProfile {
+            get {
+                return ResourceManager.GetString("Menu_SaveProfile", resourceCulture);
             }
         }
         

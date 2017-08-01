@@ -269,6 +269,9 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Infrustructure\SettingsStorage.cs" />
+    <Compile Include="Infrustructure\StorageModel.cs" />
+    <Compile Include="Infrustructure\WindowStorageModel.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
@@ -283,6 +286,13 @@
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Auth\AuthStorageEntry.cs" />
+    <Compile Include="Model.Profiles\ChartStorageEntry.cs" />
+    <Compile Include="Model.Profiles\PluginStorageEntry.cs" />
+    <Compile Include="Model.Profiles\ProfileManager.cs" />
+    <Compile Include="Model.Profiles\ProfileRepository.cs" />
+    <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
+    <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
@@ -290,7 +300,6 @@
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolModel.cs" />
-    <Compile Include="Model.Algo\TickBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
@@ -338,7 +347,6 @@
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
-    <Compile Include="Model.Algo\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\IndicatorModel.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />
     <Compile Include="Model.Charts\TimelineModel.cs" />
@@ -390,6 +398,11 @@
       <DependentUpon>OpenOrderDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Order\OpenOrderDialogViewModel.cs" />
+    <Compile Include="Views.Profiles\ProfileLoadingDialogView.xaml.cs">
+      <DependentUpon>ProfileLoadingDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
+    <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>
@@ -815,6 +828,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Order\OpenOrderDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Profiles\ProfileLoadingDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

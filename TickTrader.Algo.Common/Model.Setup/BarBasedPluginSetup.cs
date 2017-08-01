@@ -6,9 +6,15 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class BarBasedPluginSetup : PluginSetup
     {
-        private string mainSymbol;
-        private BarPriceType priceType;
-        private IAlgoGuiMetadata metadata;
+        private string _mainSymbol;
+        private BarPriceType _priceType;
+        private IAlgoGuiMetadata _metadata;
+
+
+        public string MainSymbol => _mainSymbol;
+
+        public BarPriceType PriceType => _priceType;
+
 
         public BarBasedPluginSetup(AlgoPluginRef pRef)
             : base(pRef)
@@ -19,15 +25,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol, BarPriceType priceType, IAlgoGuiMetadata metadata)
             : base(pRef)
         {
-            this.mainSymbol = mainSymbol;
-            this.priceType = priceType;
-            this.metadata = metadata;
+            _mainSymbol = mainSymbol;
+            _priceType = priceType;
+            _metadata = metadata;
 
             Init();
         }
 
-        public string MainSymbol => mainSymbol;
-        public BarPriceType PriceType => priceType;
 
         protected override InputSetup CreateInput(InputDescriptor descriptor)
         {
@@ -36,8 +40,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInput(descriptor, mainSymbol, priceType, metadata);
-                case "TickTrader.Algo.Api.Bar": return new BarToBarInput(descriptor, mainSymbol, priceType, metadata);
+                case "System.Double": return new BarToDoubleInputSetup(descriptor, _mainSymbol, _priceType, _metadata);
+                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetup(descriptor, _mainSymbol, _priceType, _metadata);
                 //case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInput(descriptor, mainSymbol, false);
                 //case "TickTrader.Algo.Api.QuoteL2": return new QuoteToQuoteInput(descriptor, mainSymbol, true);
                 default: return new InputSetup.Invalid(descriptor, "UnsupportedInputType");
@@ -53,7 +57,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             else if (descriptor.DataSeriesBaseTypeFullName == "TickTrader.Algo.Api.Marker")
                 return new MarkerSeriesOutputSetup(descriptor);
             else
-                return new ColoredLineOutputSetup(descriptor, Algo.Common.Model.Setup.MsgCodes.UnsupportedPropertyType);
+                return new ColoredLineOutputSetup(descriptor, MsgCodes.UnsupportedPropertyType);
         }
 
         public override void Load(PluginConfig cfg)
@@ -61,8 +65,8 @@ namespace TickTrader.Algo.Common.Model.Setup
             var barConfig = cfg as BarBasedConfig;
             if (barConfig != null)
             {
-                mainSymbol = barConfig.MainSymbol;
-                priceType = barConfig.PriceType;       
+                _mainSymbol = barConfig.MainSymbol;
+                _priceType = barConfig.PriceType;       
             }
 
             base.Load(cfg);
@@ -70,9 +74,11 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         protected override PluginConfig SaveToConfig()
         {
-            var config = new BarBasedConfig();
-            config.MainSymbol = MainSymbol;
-            config.PriceType = PriceType;
+            var config = new BarBasedConfig()
+            {
+                MainSymbol = MainSymbol,
+                PriceType = PriceType
+            };
             return config;
         }
     }

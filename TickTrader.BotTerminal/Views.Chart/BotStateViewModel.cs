@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
             Bot.CustomStatusChanged += Bot_CustomStatusChanged;
+            Bot.StateViewOpened = true;
             DisplayName = "Status: " + bot.InstanceId;
             BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
@@ -37,6 +38,7 @@ namespace TickTrader.BotTerminal
             Bot.Removed -= Bot_Removed;
             Bot.StateChanged -= Bot_StateChanged;
             Bot.CustomStatusChanged -= Bot_CustomStatusChanged;
+            Bot.StateViewOpened = false;
         }
 
         public async void StartStop()

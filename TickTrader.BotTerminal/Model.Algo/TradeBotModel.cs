@@ -15,17 +15,23 @@ namespace TickTrader.BotTerminal
     {
         public BotModelStates State { get; private set; }
         public string CustomStatus { get; private set; }
+        public bool StateViewOpened { get; set; }
+        public SettingsStorage<WindowStorageModel> StateViewSettings { get; private set; }
+
 
         public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
         public event System.Action<TradeBotModel> StateChanged = delegate { };
         public event System.Action<TradeBotModel> Removed = delegate { };
 
-        public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
+
+        public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host, WindowStorageModel stateSettings)
             : base(pSetup, host)
         {
             host.Journal.RegisterBotLog(InstanceId);
             host.Connected += Host_Connected;
+            StateViewSettings = new SettingsStorage<WindowStorageModel>(stateSettings);
         }
+
 
         public void Start()
         {
@@ -52,6 +58,7 @@ namespace TickTrader.BotTerminal
             Removed(this);
         }
 
+
         protected override PluginExecutor CreateExecutor()
         {
             var executor = base.CreateExecutor();
@@ -65,6 +72,7 @@ namespace TickTrader.BotTerminal
             executor.InitLogging().NewRecords += TradeBotModel2_NewRecords;
             return executor;
         }
+
 
         private void ChangeState(BotModelStates newState)
         {
