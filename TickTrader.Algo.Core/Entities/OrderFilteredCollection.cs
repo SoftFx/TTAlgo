@@ -22,6 +22,8 @@ namespace TickTrader.Algo.Core
                     filteredOrders.Add(order.Id, order);
             }
 
+            originalList.Added += OriginalList_Added;
+            originalList.Removed += OriginalList_Removed;
             originalList.Canceled += OriginalList_Canceled;
             originalList.Closed += OriginalList_Closed;
             originalList.Expired += OriginalList_Expired;
@@ -29,6 +31,8 @@ namespace TickTrader.Algo.Core
             originalList.Modified += OriginalList_Modified;
             originalList.Opened += OriginalList_Opened;
         }
+
+
 
         public Order this[string id]
         {
@@ -49,6 +53,26 @@ namespace TickTrader.Algo.Core
         public event Action<OrderFilledEventArgs> Filled;
         public event Action<OrderModifiedEventArgs> Modified;
         public event Action<OrderOpenedEventArgs> Opened;
+        public event Action<Order> Added;
+        public event Action<Order> Removed;
+        public event Action<Order> Replaced;
+
+        private void OriginalList_Added(Order order)
+        {
+            if (predicate(order))
+            {
+                if (!filteredOrders.ContainsKey(order.Id))
+                    filteredOrders.Add(order.Id, order);
+            }
+        }
+
+        private void OriginalList_Removed(Order order)
+        {
+            if (predicate(order))
+            {
+                filteredOrders.Remove(order.Id);
+            }
+        }
 
         private void OriginalList_Canceled(OrderCanceledEventArgs args)
         {
