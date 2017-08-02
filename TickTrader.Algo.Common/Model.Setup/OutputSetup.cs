@@ -8,8 +8,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class OutputSetup : PropertySetupBase
     {
-        public override void Load(Property srcProperty) { }
-        public override Property Save() { return null; }
         public override void Reset() { }
         public OutputTargets Target { get; }
         public int Precision { get; }
@@ -29,6 +27,16 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             if (error != null && Error != null)
                 Error = new GuiModelMsg(error);
+        }
+
+
+        public override void Load(Property srcProperty)
+        {
+        }
+
+        public override Property Save()
+        {
+            throw new Exception("Cannot save error output!");
         }
     }
 
@@ -121,20 +129,26 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override void Load(Property srcProperty)
         {
-            throw new NotImplementedException();
-            //var oldSetup = srcProperty as ColoredLineOutputSetup;
-            //if (oldSetup != null)
-            //{
-            //    this.LineColor = oldSetup.LineColor;
-            //    this.LineThickness = oldSetup.LineThickness;
-            //    this.LineStyle = oldSetup.LineStyle;
-            //    this.IsEnabled = oldSetup.IsEnabled;
-            //}
+            var output = srcProperty as ColoredLineOutput;
+            if (output != null)
+            {
+                lineColor = output.LineColor.ToWindowsColor();
+                lineThickness = output.LineThickness;
+                LineStyle = output.LineStyle;
+                isEnabled = output.IsEnabled;
+            }
         }
 
         public override Property Save()
         {
-            throw new NotImplementedException();
+            return new ColoredLineOutput
+            {
+                Id = Id,
+                LineColor = OutputColor.FromWindowsColor(LineColor),
+                LineThickness = LineThickness,
+                LineStyle = LineStyle,
+                IsEnabled = IsEnabled,
+            };
         }
     }
 
@@ -204,20 +218,26 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override Property Save()
         {
-            throw new NotImplementedException();
+            return new MarkerSeriesOutput
+            {
+                Id = Id,
+                LineColor = OutputColor.FromWindowsColor(LineColor),
+                LineThickness = LineThickness,
+                MarkerSize = MarkerSize,
+                IsEnabled = IsEnabled,
+            };
         }
 
         public override void Load(Property srcProperty)
         {
-            throw new NotImplementedException();
-
-            //var oldSetup = srcProperty as MarkerSeriesOutputSetup;
-            //if (oldSetup != null)
-            //{
-            //    this.LineColor = oldSetup.LineColor;
-            //    this.LineThickness = oldSetup.LineThickness;
-            //    this.IsEnabled = oldSetup.IsEnabled;
-            //}
+            var output = srcProperty as MarkerSeriesOutput;
+            if (output != null)
+            {
+                lineColor = output.LineColor.ToWindowsColor();
+                lineThickness = output.LineThickness;
+                markerSize = output.MarkerSize;
+                isEnabled = output.IsEnabled;
+            }
         }
 
         public override void Reset()

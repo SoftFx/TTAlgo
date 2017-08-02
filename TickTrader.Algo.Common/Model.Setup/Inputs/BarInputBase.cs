@@ -1,72 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public class BarInputBase : InputSetup
+    public abstract class BarInputSetupBase : InputSetup
     {
-        public BarInputBase(InputDescriptor descriptor, string symbolCode, IReadOnlyList<ISymbolInfo> symbols = null)
+        public BarInputSetupBase(InputDescriptor descriptor, string symbolCode, IReadOnlyList<ISymbolInfo> symbols = null)
             : base(descriptor, symbolCode, symbols)
         {
             SetMetadata(descriptor);
         }
-
-        public override Property Save()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Load(Property srcProperty)
-        {
-            throw new NotImplementedException();
-            //var otherInput = srcProperty as BarToBarInput;
-            //SelectedSymbol = otherInput.SelectedSymbol;
-        }
     }
 
-    public class SingleBarInputBase : BarInputBase
+    public abstract class SingleBarInputSetupBase : BarInputSetupBase
     {
-        private BarPriceType defPriceType;
-        private BarPriceType priceType;
+        private BarPriceType _defPriceType;
+        private BarPriceType _priceType;
 
-        public SingleBarInputBase(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IReadOnlyList<ISymbolInfo> symbols = null)
-            : base(descriptor, symbolCode, symbols)
-        {
-            this.defPriceType = defPriceType;
-        }
 
         public BarPriceType PriceType
         {
-            get { return priceType; }
+            get { return _priceType; }
             set
             {
-                this.priceType = value;
+                _priceType = value;
                 NotifyPropertyChanged(nameof(PriceType));
             }
         }
 
+
+        public SingleBarInputSetupBase(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IReadOnlyList<ISymbolInfo> symbols = null)
+            : base(descriptor, symbolCode, symbols)
+        {
+            _defPriceType = defPriceType;
+        }
+
+
         public override void Reset()
         {
             base.Reset();
-            PriceType = defPriceType;
+            PriceType = _defPriceType;
         }
 
-        public override Property Save()
+
+        protected override void LoadConfig(Input input)
         {
-            throw new NotImplementedException();
+            var barInput = input as SingleBarInputBase;
+            _priceType = barInput?.PriceType ?? _defPriceType;
+
+            base.LoadConfig(input);
         }
 
-        public override void Load(Property srcProperty)
+        protected override void SaveConfig(Input input)
         {
-            throw new NotImplementedException();
-            //var otherInput = srcProperty as BarToBarInput;
-            //SelectedSymbol = otherInput.SelectedSymbol;
+            var barInput = input as SingleBarInputBase;
+            if (barInput != null)
+            {
+                barInput.PriceType = _priceType;
+            }
+
+            base.SaveConfig(input);
         }
     }
 }

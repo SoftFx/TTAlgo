@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
             _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
-            Isolated = false;
+            Isolated = true;
             RunBot = true;
             Permissions = new PluginPermissions();
 

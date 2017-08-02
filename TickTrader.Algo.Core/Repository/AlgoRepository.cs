@@ -63,6 +63,11 @@ namespace TickTrader.Algo.Core.Repository
             return stateControl.PushEventAndWait(Events.CloseRequested, States.Closed);
         }
 
+        public Task Init()
+        {
+            return stateControl.AsyncWait(States.Watching);
+        }
+
         private void Scan()
         {
             try

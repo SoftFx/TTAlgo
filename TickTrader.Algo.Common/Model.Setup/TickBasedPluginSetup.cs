@@ -1,26 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Setup;
+﻿using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Config;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.Algo.Common.Model.Setup
 {
     public class TickBasedPluginSetup : PluginSetup
     {
-        private string mainSymbol;
+        private string _mainSymbol;
+
+
+        public string MainSymbol => _mainSymbol;
+
 
         public TickBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol)
             : base(pRef)
         {
-            this.mainSymbol = mainSymbol;
+            _mainSymbol = mainSymbol;
 
             Init();
         }
+
 
         protected override InputSetup CreateInput(InputDescriptor descriptor)
         {
@@ -29,10 +27,10 @@ namespace TickTrader.BotTerminal
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new QuoteToDoubleInput(descriptor, mainSymbol);
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInput(descriptor, mainSymbol, Algo.Api.BarPriceType.Bid);
-                case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInput(descriptor, mainSymbol, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteToQuoteInput(descriptor, mainSymbol, true);
+                case "System.Double": return new QuoteToDoubleInputSetup(descriptor, _mainSymbol);
+                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetup(descriptor, _mainSymbol, Api.BarPriceType.Bid);
+                case "TickTrader.Algo.Api.Quote": return new QuoteToQuoteInputSetup(descriptor, _mainSymbol, false);
+                case "TickTrader.Algo.Api.QuoteL2": return new QuoteToQuoteInputSetup(descriptor, _mainSymbol, true);
                 default: return new InputSetup.Invalid(descriptor, "UnsupportedInputType");
             }
         }
@@ -46,12 +44,27 @@ namespace TickTrader.BotTerminal
             else if (descriptor.DataSeriesBaseTypeFullName == "TickTrader.Algo.Api.Marker")
                 return new MarkerSeriesOutputSetup(descriptor);
             else
-                return new ColoredLineOutputSetup(descriptor, Algo.Common.Model.Setup.MsgCodes.UnsupportedPropertyType);
+                return new ColoredLineOutputSetup(descriptor, MsgCodes.UnsupportedPropertyType);
+        }
+
+        public override void Load(PluginConfig cfg)
+        {
+            var quoteConfig = cfg as QuoteBasedConfig;
+            if (quoteConfig != null)
+            {
+                _mainSymbol = quoteConfig.MainSymbol;
+            }
+
+            base.Load(cfg);
         }
 
         protected override PluginConfig SaveToConfig()
         {
-            throw new NotImplementedException();
+            var config = new QuoteBasedConfig()
+            {
+                MainSymbol = MainSymbol,
+            };
+            return config;
         }
     }
 }

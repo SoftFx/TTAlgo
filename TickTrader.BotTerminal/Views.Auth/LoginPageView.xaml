@@ -20,7 +20,7 @@
             <Setter Property="Padding" Value="0"/>
         </Style>
 
-        <DataTemplate x:Key="AccountAuthInfoTemplate" DataType="{x:Type l:AccountSorageEntry}">
+        <DataTemplate x:Key="AccountAuthInfoTemplate" DataType="{x:Type l:AccountStorageEntry}">
             <StackPanel Orientation="Horizontal" Margin="2">
                 <Border Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}"
                         CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
