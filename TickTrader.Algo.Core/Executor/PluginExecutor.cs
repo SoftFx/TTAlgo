@@ -313,6 +313,17 @@ namespace TickTrader.Algo.Core
             taskToWait.Wait();
         }
 
+        public void Abort()
+        {
+            lock (_sync)
+            {
+                if (state == States.Stopping)
+                {
+                    iStrategy.Abort();
+                }
+            }
+        }
+
         public void HandleReconnect()
         {
             lock (_sync)

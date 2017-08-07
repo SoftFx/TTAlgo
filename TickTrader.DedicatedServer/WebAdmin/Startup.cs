@@ -92,6 +92,7 @@ namespace TickTrader.DedicatedServer.WebAdmin
             app.UseJwtAuthentication();
 
             app.ObserveDedicatedServer();
+            app.UseWardenOverBots();
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {

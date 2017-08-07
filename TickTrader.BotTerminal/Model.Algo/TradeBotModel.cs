@@ -32,6 +32,11 @@ namespace TickTrader.BotTerminal
             StateViewSettings = new SettingsStorage<WindowStorageModel>(stateSettings);
         }
 
+        internal void Abort()
+        {
+            if (State == BotModelStates.Stopping)
+                AbortExecutor();
+        }
 
         public void Start()
         {

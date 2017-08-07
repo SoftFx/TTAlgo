@@ -25,6 +25,7 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
+        private BotsWarden botsWarden;
 
         public ShellViewModel()
         {
@@ -55,6 +56,8 @@ namespace TickTrader.BotTerminal
             TradeHistory = new TradeHistoryViewModel(clientModel);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
+
+            botsWarden = new BotsWarden(new BotAggregator(Charts));
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
             AccountPane = new AccountPaneViewModel(cManager, this, this);

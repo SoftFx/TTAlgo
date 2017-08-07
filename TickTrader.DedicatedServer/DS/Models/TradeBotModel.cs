@@ -387,6 +387,15 @@ namespace TickTrader.DedicatedServer.DS.Models
                 UpdatePackage();
         }
 
+        public void Abort()
+        {
+            lock(_syncObj)
+            {
+                if (State == BotStates.Stopping)
+                    executor?.Abort();
+            }
+        }
+
         private class ListenerProxy : CrossDomainObject
         {
             private PluginExecutor _executor;
