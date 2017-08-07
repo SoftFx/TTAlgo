@@ -317,8 +317,38 @@ namespace TickTrader.DedicatedServer.DS.Models
 
         private void ChangeState(ConnectionStates newState)
         {
+            LogConnectionState(ConnectionState, newState);
             ConnectionState = newState;
             StateChanged?.Invoke(this);
+        }
+
+        private void LogConnectionState(ConnectionStates oldState, ConnectionStates newState)
+        {
+            if (IsConnected(oldState, newState))
+                _log.LogDebug("{0}: login on {1}", Username, Address);
+            else if (IsUsualDisconnect(oldState, newState))
+                _log.LogDebug("{0}: logout from {1}", Username, Address);
+            else if (IsFailedConnection(oldState, newState))
+                _log.LogDebug("{0}: connect to {1} failed [{2}]", Username, Address, Connection.LastError);
+            else if (IsUnexpectedDisconnect(oldState, newState))
+                _log.LogDebug("{0}: connection to {1} lost [{2}]", Username, Address, Connection.LastError);
+        }
+
+        private bool IsConnected(ConnectionStates from, ConnectionStates to)
+        {
+            return to == ConnectionStates.Online;
+        }
+        private bool IsUnexpectedDisconnect(ConnectionStates from, ConnectionStates to)
+        {
+            return Connection.HasError && from == ConnectionStates.Online && (to == ConnectionStates.Offline || to == ConnectionStates.Disconnecting);
+        }
+        private bool IsFailedConnection(ConnectionStates from, ConnectionStates to)
+        {
+            return from == ConnectionStates.Connecting && to == ConnectionStates.Offline && Connection.HasError;
+        }
+        private bool IsUsualDisconnect(ConnectionStates from, ConnectionStates to)
+        {
+            return from == ConnectionStates.Disconnecting && to == ConnectionStates.Offline && !Connection.HasError;
         }
 
         private async void Connect()
