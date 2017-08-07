@@ -72,6 +72,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.Le
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.Protobuf", "TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj", "{AF05CCD3-0E2F-4F8A-8124-27B16162A0C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.UnitTest", "TickTrader.SeriesStorage.UnitTest\TickTrader.SeriesStorage.UnitTest.csproj", "{7E5888D8-162B-4736-BE1B-E39EC114F4C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -344,6 +346,18 @@ Global
 		{AF05CCD3-0E2F-4F8A-8124-27B16162A0C1}.Release|x64.Build.0 = Release|Any CPU
 		{AF05CCD3-0E2F-4F8A-8124-27B16162A0C1}.Release|x86.ActiveCfg = Release|Any CPU
 		{AF05CCD3-0E2F-4F8A-8124-27B16162A0C1}.Release|x86.Build.0 = Release|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Release|x64.Build.0 = Release|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -371,5 +385,6 @@ Global
 		{6664E69F-2180-4D7E-B51E-C81C9F5CC47D} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{CB30B69A-DE4D-4819-8E83-CF5DD80CD060} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{AF05CCD3-0E2F-4F8A-8124-27B16162A0C1} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
+		{7E5888D8-162B-4736-BE1B-E39EC114F4C3} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 	EndGlobalSection
 EndGlobal

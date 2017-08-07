@@ -62,6 +62,7 @@ namespace TickTrader.SeriesStorage
 
         public void WriteBe(long val)
         {
+            ByteConverter.WriteLongBe(val, Buffer, ref _index);
         }
 
         public void WriteBe(ulong val)

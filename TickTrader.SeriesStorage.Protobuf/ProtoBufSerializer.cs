@@ -1,5 +1,7 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,12 +21,13 @@ namespace TickTrader.SeriesStorage.Protobuf
                 return ProtoBuf.Serializer.Deserialize<SliceImpl>(stream);
         }
 
-        public ArraySegment<byte> Serialize(ISlice<TKey, TValue> slice)
+        public byte[] Serialize(ISlice<TKey, TValue> slice)
         {
             using (var stream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(stream, slice);
-                return new ArraySegment<byte>(stream.GetBuffer(), 0, (int)stream.Length);
+                return stream.ToArray();
+                //return new ArraySegment<byte>(stream.GetBuffer(), 0, (int)stream.Length);
             }
         }
 

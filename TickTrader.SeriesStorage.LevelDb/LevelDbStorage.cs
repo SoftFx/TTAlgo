@@ -19,7 +19,7 @@ namespace TickTrader.SeriesStorage.LevelDb
         public LevelDbStorage(string name)
         {
             var options = new LevelDB.Options { CreateIfMissing = true };
-            _database = new LevelDB.DB(name);
+            _database = new LevelDB.DB(name, options);
             try
             {
                 Init();
@@ -100,6 +100,11 @@ namespace TickTrader.SeriesStorage.LevelDb
                 }
             }
             throw new Exception("Maximum numbe of collections is reached!");
+        }
+
+        public void Dispose()
+        {
+            _database.Dispose();
         }
     }
 }

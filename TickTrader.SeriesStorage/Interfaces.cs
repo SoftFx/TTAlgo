@@ -6,23 +6,26 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public interface IBinaryStorage
+    public interface IBinaryStorage : IDisposable
     {
         bool SupportsByteSize { get; }
         IEnumerable<IBinaryCollection> Collections { get; }
     }
 
-    public interface IStorageCollection<TKey, TValue> : IDisposable
+    public interface IStorageCollection<TKey, TValue> : IDisposable where TValue : class
     {
-        IStorageIterator<TKey, TValue> Iterate(TKey from, bool reversed);
-        StorageResultCodes Read(TKey key, out TValue value);
-        StorageResultCodes Write(TKey key, TValue value);
-        StorageResultCodes Remove(TKey key);
+        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed);
+        IEnumerable<TKey> IterateKeys(TKey from, bool reversed);
+        TValue Read(TKey key);
+        void Write(TKey key, TValue value);
+        void Remove(TKey key);
+        void RemoveAll();
         void Drop(); // deletes whole storage
     }
 
     public interface ISliceCollection<TKey, TValue> : IStorageCollection<TKey, ISlice<TKey, TValue>>
     {
+        ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent);
     }
 
     public interface IBinaryCollection
@@ -31,15 +34,8 @@ namespace TickTrader.SeriesStorage
         long ByteSize { get; }
     }
 
-    public interface IBinaryStorageCollection<TKey> : IStorageCollection<TKey, ArraySegment<Byte>>
+    public interface IBinaryStorageCollection<TKey> : IStorageCollection<TKey, byte[]>
     {
-    }
-
-    public interface IStorageIterator<TKey, TValue> : IDisposable
-    {
-        TKey Key { get; }
-        TValue Value { get; }
-        StorageResultCodes Next();
     }
 
     public interface IKeySerializer<TKey>
@@ -58,7 +54,7 @@ namespace TickTrader.SeriesStorage
     public interface ISliceSerializer<TKey, TValue>
     {
         ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent);
-        ArraySegment<byte> Serialize(ISlice<TKey, TValue> slice);
+        byte[] Serialize(ISlice<TKey, TValue> slice);
         ISlice<TKey, TValue> Deserialize(ArraySegment<byte> bytes);
     }
 
@@ -92,13 +88,6 @@ namespace TickTrader.SeriesStorage
         ulong RadBeUlong();
         string ReadString();
         string ReadReversedString();
-    }
-
-    public enum StorageResultCodes
-    {
-        Ok,
-        ValueIsMissing,
-        Error // generic error, no detalization
     }
 
     public struct KeyRange<TKey>

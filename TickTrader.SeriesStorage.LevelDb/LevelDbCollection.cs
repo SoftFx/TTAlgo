@@ -27,84 +27,138 @@ namespace TickTrader.SeriesStorage.LevelDb
         public string Name => _collectionName;
         public long ByteSize => throw new NotImplementedException();
 
-        public IStorageIterator<TKey, ArraySegment<byte>> Iterate(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, byte[]>> Iterate(TKey from, bool reversed)
         {
-            try
+            byte[] refKey = GetBinKey(from);
+
+            using (var dbIterator = _database.CreateIterator())
             {
-                var dbIterator = _database.CreateIterator();
-                var binFrom = GetBinKey(from);
-                dbIterator.Seek(binFrom);
-                return new Iterator(dbIterator, reversed, GetKey);
-            }
-            catch (LevelDB.LevelDBException)
-            {
-                return new ErrorIterator { ErrorCode = StorageResultCodes.Error };
+                Seek(dbIterator, refKey);
+
+                while (true)
+                {
+                    if (!dbIterator.Valid())
+                        yield break; // end of db
+
+                    TKey key;
+
+                    if (!TryGetKey(dbIterator.Key(), out key))
+                        yield break; // end of collection
+
+                    yield return new KeyValuePair<TKey, byte[]>(key, dbIterator.Value());
+
+                    dbIterator.Next();
+                }
             }
         }
 
-        public StorageResultCodes Read(TKey key, out ArraySegment<byte> value)
+        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
         {
-            try
+            byte[] refKey = GetBinKey(from);
+
+            using (var dbIterator = _database.CreateIterator())
             {
-                var binKey = GetBinKey(key);
-                var bytes = _database.Get(binKey);
-                if (bytes == null)
+                Seek(dbIterator, refKey);
+
+                while (true)
                 {
-                    value = new ArraySegment<byte>();
-                    return StorageResultCodes.ValueIsMissing;
+                    if (!dbIterator.Valid())
+                        yield break; // end of db
+
+                    TKey key;
+
+                    if (!TryGetKey(dbIterator.Key(), out key))
+                        yield break; // end of collection
+
+                    yield return key;
+
+                    dbIterator.Next();
+                }
+            }
+        }
+
+        public byte[] Read(TKey key)
+        {
+            var binKey = GetBinKey(key);
+            return _database.Get(binKey);
+        }
+
+        public void Write(TKey key, byte[] value)
+        {
+            EnsureNameHeaderWritten();
+            var binKey = GetBinKey(key);
+            _database.Put(binKey, value.ToArray());
+        }
+
+        public void Remove(TKey key)
+        {
+            var binKey = GetBinKey(key);
+            _database.Delete(binKey);
+        }
+
+        public void RemoveAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Drop()
+        {
+            RemoveAll();
+            // TO DO : Drop header
+            _isDisposed = true;
+        }
+
+        private void Seek(LevelDB.Iterator dbIterator, byte[] refKey)
+        {
+            dbIterator.Seek(refKey);
+
+            if (dbIterator.Valid())
+            {
+                var iKey = dbIterator.Key();
+                if (Enumerable.SequenceEqual(iKey, refKey))
+                    return; // exact position
+
+                // try step back
+                dbIterator.Prev();
+
+                if (dbIterator.Valid())
+                {
+                    TKey key;
+
+                    if (TryGetKey(dbIterator.Key(), out key))
+                        return; // prev key is from this collection 
                 }
 
-                value = new ArraySegment<byte>(bytes, 0, bytes.Length);
-                return StorageResultCodes.Ok;
+                dbIterator.Next();  // revert stepping back
             }
-            catch (LevelDB.LevelDBException)
+            else
             {
-                value = new ArraySegment<byte>();
-                return StorageResultCodes.Error;
-            }
-        }
-
-        public StorageResultCodes Write(TKey key, ArraySegment<byte> value)
-        {
-            try
-            {
-                EnsureNameHeaderWritten();
-
-                var binKey = GetBinKey(key);
-                _database.Put(binKey, value.ToArray());
-                return StorageResultCodes.Ok;
-            }
-            catch (LevelDB.LevelDBException)
-            {
-                return StorageResultCodes.Error;
-            }
-        }
-
-        public StorageResultCodes Remove(TKey key)
-        {
-            try
-            {
-                var binKey = GetBinKey(key);
-                _database.Delete(binKey);
-                return StorageResultCodes.Ok;
-            }
-            catch (LevelDB.LevelDBException)
-            {
-                return StorageResultCodes.Error;
+                // I have to use a hack :(
+                // the only case seems to be end of base
+                dbIterator.SeekToLast();
             }
         }
 
         private byte[] GetBinKey(TKey key)
         {
-            var keyBuilder = new BinaryKeyStream();
+            var fullKeySize = 2 + _keySerializer.KeySize;
+            var keyBuilder = new BinaryKeyWriter(fullKeySize);
+            keyBuilder.WriteBe(_collectionId);
             _keySerializer.Serialize(key, keyBuilder);
-            return keyBuilder.ToArray();
+            return keyBuilder.Buffer;
         }
 
-        private TKey GetKey(byte[] binKey)
+        private bool TryGetKey(byte[] binKey, out TKey key)
         {
             var reader = new BinaryKeyReader(binKey);
-            return _keySerializer.Deserialize(reader);
+            var collectionId = reader.ReadBeUshort();
+            if (collectionId != _collectionId)
+            {
+                key = default(TKey);
+                return false;
+            }
+            key = _keySerializer.Deserialize(reader);
+            return true;
         }
 
         private void EnsureNameHeaderWritten()
@@ -131,65 +185,6 @@ namespace TickTrader.SeriesStorage.LevelDb
         public void Dispose()
         {
             _isDisposed = true;
-        }
-
-        public void Drop()
-        {
-            _isDisposed = true;
-        }
-
-        private class Iterator : IStorageIterator<TKey, ArraySegment<byte>>
-        {
-            private LevelDB.Iterator _dbIterator;
-            private bool _reversed;
-            private Func<byte[], TKey> _keyDeserializeFunc;
-
-            public Iterator(LevelDB.Iterator dbIterator, bool reversed, Func<byte[], TKey> keyDeserializeFunc)
-            {
-                _dbIterator = dbIterator;
-                _reversed = reversed;
-                _keyDeserializeFunc = keyDeserializeFunc;
-            }
-
-            public TKey Key => _keyDeserializeFunc(_dbIterator.Key());
-            public ArraySegment<byte> Value => new ArraySegment<byte>(_dbIterator.Value());
-
-            public void Dispose()
-            {
-                _dbIterator.Dispose();
-            }
-
-            public StorageResultCodes Next()
-            {
-                try
-                {
-                    if (!_reversed)
-                        _dbIterator.Next();
-                    else
-                        _dbIterator.Prev();
-                    return StorageResultCodes.Ok;
-                }
-                catch (LevelDB.LevelDBException)
-                {
-                    return StorageResultCodes.Error;
-                }
-            }
-        }
-
-        private class ErrorIterator : IStorageIterator<TKey, ArraySegment<byte>>
-        {
-            public StorageResultCodes ErrorCode { get; set; }
-            public TKey Key => default(TKey);
-            public ArraySegment<byte> Value => default(ArraySegment<byte>);
-
-            public void Dispose()
-            {
-            }
-
-            public StorageResultCodes Next()
-            {
-                return ErrorCode;
-            }
         }
     }
 }

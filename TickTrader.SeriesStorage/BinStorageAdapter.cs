@@ -17,6 +17,11 @@ namespace TickTrader.SeriesStorage
             _serializer = serializer;
         }
 
+        public ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent)
+        {
+            return _serializer.CreateSlice(range, sliceContent);
+        }
+
         public void Dispose()
         {
             _binStorage.Dispose();
@@ -24,58 +29,47 @@ namespace TickTrader.SeriesStorage
 
         public void Drop()
         {
+            _binStorage.Drop();
+        }
+
+        public IEnumerable<KeyValuePair<TKey, ISlice<TKey, TValue>>> Iterate(TKey from, bool reversed)
+        {
+            foreach (var item in _binStorage.Iterate(from, reversed))
+            {
+                var value = _serializer.Deserialize(new ArraySegment<byte>(item.Value));
+                yield return new KeyValuePair<TKey, ISlice<TKey, TValue>>(item.Key, value);
+            }
+        }
+
+        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
+        {
             throw new NotImplementedException();
         }
 
-        public IStorageIterator<TKey, ISlice<TKey, TValue>> Iterate(TKey from, bool reversed)
+        public ISlice<TKey, TValue> Read(TKey key)
         {
-            var binIterator = _binStorage.Iterate(from, reversed);
-            return new IteratorAdapter { BinIterator = binIterator, Serializer = _serializer };
+            byte[] bytes = _binStorage.Read(key);
+
+            if (bytes == null)
+                return null;
+
+            return _serializer.Deserialize(new ArraySegment<byte>(bytes));
         }
 
-        public StorageResultCodes Read(TKey key, out ISlice<TKey, TValue> value)
+        public void Remove(TKey key)
         {
-            ArraySegment<byte> bytes;
-            var rCode = _binStorage.Read(key, out bytes);
-
-            if (rCode != StorageResultCodes.Ok)
-            {
-                value = null;
-                return rCode;
-            }
-
-            value = _serializer.Deserialize(bytes);
-            return StorageResultCodes.Ok;
+            _binStorage.Remove(key);
         }
 
-        public StorageResultCodes Remove(TKey key)
+        public void RemoveAll()
         {
-            return _binStorage.Remove(key);
+            _binStorage.RemoveAll();
         }
 
-        public StorageResultCodes Write(TKey key, ISlice<TKey, TValue> slice)
+        public void Write(TKey key, ISlice<TKey, TValue> value)
         {
-            var binVal = _serializer.Serialize(slice);
-            return _binStorage.Write(key, binVal);
-        }
-
-        private class IteratorAdapter : IStorageIterator<TKey, ISlice<TKey, TValue>>
-        {
-            public ISliceSerializer<TKey, TValue> Serializer { get; set; }
-            public IStorageIterator<TKey, ArraySegment<byte>> BinIterator { get; set; }
-
-            public TKey Key => BinIterator.Key;
-            public ISlice<TKey, TValue> Value => Serializer.Deserialize(BinIterator.Value);
-
-            public void Dispose()
-            {
-                BinIterator.Dispose();
-            }
-
-            public StorageResultCodes Next()
-            {
-                return BinIterator.Next();
-            }
+            var binVal = _serializer.Serialize(value);
+            _binStorage.Write(key, binVal);
         }
     }
 }
