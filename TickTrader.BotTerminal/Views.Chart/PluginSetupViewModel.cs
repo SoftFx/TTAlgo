@@ -67,6 +67,8 @@ namespace TickTrader.BotTerminal
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
             _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
+            // Disabled until TTS 1.30 comes to live server, also checkbox is hidden in view
+            // Isolated = true;
             Isolated = false;
             RunBot = true;
             Permissions = new PluginPermissions();

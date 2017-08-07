@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
@@ -13,6 +8,13 @@ namespace TickTrader.Algo.Common.Model.Config
     [KnownType(typeof(StringParameter))]
     [KnownType(typeof(EnumParameter))]
     [KnownType(typeof(FileParameter))]
+    [KnownType(typeof(ColoredLineOutput))]
+    [KnownType(typeof(MarkerSeriesOutput))]
+    [KnownType(typeof(QuoteToQuoteInput))]
+    [KnownType(typeof(QuoteToDoubleInput))]
+    [KnownType(typeof(BarToBarInput))]
+    [KnownType(typeof(BarToDoubleInput))]
+    [KnownType(typeof(QuoteToBarInput))]
     public abstract class Property
     {
         [DataMember(Name = "key")]

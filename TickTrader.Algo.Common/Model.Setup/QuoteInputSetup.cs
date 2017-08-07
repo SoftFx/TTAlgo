@@ -1,48 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public class QuoteToQuoteInput : InputSetup
+    public class QuoteToQuoteInputSetup : InputSetup
     {
-        private bool useL2;
+        private bool _useL2;
 
-        public QuoteToQuoteInput(InputDescriptor descriptor, string symbolCode, bool useL2)
+
+        public QuoteToQuoteInputSetup(InputDescriptor descriptor, string symbolCode, bool useL2)
             : base(descriptor, symbolCode, null)
         {
-            this.useL2 = useL2;
+            _useL2 = useL2;
 
             SetMetadata(descriptor);
         }
+
 
         public override void Apply(IPluginSetupTarget target)
         {
             //if (useL2)
             //    target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
             //else
-                target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Descriptor.Id, SelectedSymbol.Name, b => b);
+            target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Descriptor.Id, SelectedSymbol.Name, b => b);
         }
 
         public override void Load(Property srcProperty)
         {
-            throw new NotImplementedException();
+            var input = srcProperty as QuoteToQuoteInput;
+            if (input != null)
+            {
+                _useL2 = input.UseL2;
+                LoadConfig(input);
+            }
         }
 
         public override Property Save()
         {
-            throw new NotImplementedException();
+            var input = new QuoteToQuoteInput { UseL2 = _useL2 };
+            SaveConfig(input);
+            return input;
         }
     }
 
-    //public class QuoteToQuoteL2Input : InputSetup
+    //public class QuoteToQuoteL2InputSetup : InputSetup
     //{
-    //    public QuoteToQuoteL2Input(InputDescriptor descriptor, string symbolCode)
+    //    public QuoteToQuoteL2InputSetup(InputDescriptor descriptor, string symbolCode)
     //        : base(descriptor, symbolCode)
     //    {
     //        SetMetadata(descriptor);
@@ -65,39 +72,64 @@ namespace TickTrader.Algo.Common.Model.Setup
     //    }
     //}
 
-    public class QuoteToDoubleInput : InputSetup
+
+    public enum QuoteToDoubleMappings { Ask, Bid, Median }
+
+
+    public class QuoteToDoubleInputSetup : InputSetup
     {
-        private QuoteToDoubleMappings mapping;
+        private QuoteToDoubleMappings _mapping;
 
-        public QuoteToDoubleInput(InputDescriptor descriptor, string symbolCode)
-            : base(descriptor, symbolCode, null)
-        {
-            SetMetadata(descriptor);
-
-            this.AvailableMappings = Enum.GetValues(typeof(QuoteToDoubleMappings)).Cast<QuoteToDoubleMappings>();
-        }
 
         public QuoteToDoubleMappings Mapping
         {
-            get { return mapping; }
+            get { return _mapping; }
             set
             {
-                this.mapping = value;
+                _mapping = value;
                 NotifyPropertyChanged(nameof(Mapping));
             }
         }
 
         public IEnumerable<QuoteToDoubleMappings> AvailableMappings { get; private set; }
 
+
+        public QuoteToDoubleInputSetup(InputDescriptor descriptor, string symbolCode)
+            : base(descriptor, symbolCode, null)
+        {
+            SetMetadata(descriptor);
+
+            AvailableMappings = Enum.GetValues(typeof(QuoteToDoubleMappings)).Cast<QuoteToDoubleMappings>();
+        }
+
+
         public override void Apply(IPluginSetupTarget target)
         {
-            target.GetFeedStrategy<QuoteStrategy>(). MapInput<double>(Descriptor.Id, SelectedSymbol.Name, GetSelector());
+            target.GetFeedStrategy<QuoteStrategy>().MapInput<double>(Descriptor.Id, SelectedSymbol.Name, GetSelector());
         }
 
         public override void Reset()
         {
-            this.Mapping = QuoteToDoubleMappings.Ask;
+            Mapping = QuoteToDoubleMappings.Ask;
         }
+
+        public override void Load(Property srcProperty)
+        {
+            var input = srcProperty as QuoteToDoubleInput;
+            if (input != null)
+            {
+                _mapping = input.Mapping;
+                LoadConfig(input);
+            }
+        }
+
+        public override Property Save()
+        {
+            var input = new QuoteToDoubleInput { Mapping = _mapping };
+            SaveConfig(input);
+            return input;
+        }
+
 
         private Func<QuoteEntity, double> GetSelector()
         {
@@ -108,16 +140,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 case QuoteToDoubleMappings.Median: return b => (b.Ask + b.Bid) / 2;
                 default: throw new Exception("Unknown mapping variant: " + Mapping);
             }
-        }
-
-        public override void Load(Property srcProperty)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Property Save()
-        {
-            throw new NotImplementedException();
         }
     }
 }

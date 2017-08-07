@@ -41,14 +41,16 @@ namespace TickTrader.BotTerminal
         private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
         private readonly SymbolModel smb;
+        private PreferencesStorageModel _preferences;
 
-        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv)
+        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.clientModel = clientModel;
             this.algoEnv = algoEnv;
             this.shell = shell;
+            _preferences = storage.PreferencesStorage.StorageModel;
 
             ChartWindowId = "Chart" + ++idSeed;
 
@@ -163,12 +165,123 @@ namespace TickTrader.BotTerminal
 
             base.TryClose(dialogResult);
 
+            Indicators.Foreach(i => algoEnv.IdProvider.RemovePlugin(i.Model.InstanceId));
+            Bots.Foreach(b => algoEnv.IdProvider.RemovePlugin(b.Model.InstanceId));
+
             shell.ToolWndManager.CloseWindow(this);
         }
 
         public void OpenOrder()
         {
             shell.OrderCommands.OpenMarkerOrder(Symbol);
+        }
+
+        public ChartStorageEntry GetSnapshot()
+        {
+            return new ChartStorageEntry
+            {
+                Symbol = Symbol,
+                SelectedPeriod = SelectedPeriod.Key,
+                SelectedChartType = Chart.SelectedChartType,
+                CrosshairEnabled = Chart.IsCrosshairEnabled,
+                Indicators = Indicators.Select(i => new IndicatorStorageEntry
+                {
+                    DescriptorId = i.Model.Setup.Descriptor.Id,
+                    PluginFilePath = i.Model.PluginFilePath,
+                    InstanceId = i.Model.InstanceId,
+                    Isolated = i.Model.Isolated,
+                    Config = i.Model.Setup.Save(),
+                    Permissions = i.Model.Permissions,
+                }).ToList(),
+                Bots = Bots.Select(b => new TradeBotStorageEntry
+                {
+                    DescriptorId = b.Model.Setup.Descriptor.Id,
+                    PluginFilePath = b.Model.PluginFilePath,
+                    InstanceId = b.Model.InstanceId,
+                    Isolated = b.Model.Isolated,
+                    Started = b.Model.State == BotModelStates.Running,
+                    Config = b.Model.Setup.Save(),
+                    Permissions = b.Model.Permissions,
+                    StateViewOpened = b.Model.StateViewOpened,
+                    StateSettings = b.Model.StateViewSettings.StorageModel,
+                }).ToList(),
+            };
+        }
+
+        public void RestoreFromSnapshot(ChartStorageEntry snapshot)
+        {
+            if (Symbol != snapshot.Symbol)
+            {
+                return;
+            }
+
+            SelectedPeriod = AvailablePeriods.FirstOrDefault(p => p.Key == snapshot.SelectedPeriod);
+            Chart.SelectedChartType = snapshot.SelectedChartType;
+            Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
+            snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
+            snapshot.Bots?.ForEach(b => RestoreTradeBot(b));
+        }
+
+        private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
+        {
+            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.Descriptor.Id == snapshot.DescriptorId &&
+                i.FilePath == snapshot.PluginFilePath).Snapshot.FirstOrDefault().Value;
+            if (catalogItem == null)
+            {
+                return null;
+            }
+            var setupModel = new PluginSetupViewModel(algoEnv, catalogItem, Chart)
+            {
+                InstanceId = snapshot.InstanceId,
+                Isolated = snapshot.Isolated,
+                Permissions = snapshot.Permissions,
+            };
+            if (snapshot is TradeBotStorageEntry)
+            {
+                setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _preferences.RestartBotsOnStartup;
+            }
+            if (snapshot.Config != null)
+            {
+                setupModel.Setup.Load(snapshot.Config);
+            }
+            return setupModel;
+        }
+
+        private void RestoreIndicator(IndicatorStorageEntry entry)
+        {
+            var setupModel = RestorePlugin(entry);
+
+            if (setupModel == null)
+            {
+                logger.Error($"Indicator '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
+            }
+
+            if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Indicator)
+            {
+                logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not an indicator!");
+            }
+
+            AttachPlugin(setupModel);
+        }
+
+        private void RestoreTradeBot(TradeBotStorageEntry entry)
+        {
+            var setupModel = RestorePlugin(entry);
+
+            if (setupModel == null)
+            {
+                logger.Error($"Trade bot '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
+                return;
+            }
+
+            if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot)
+            {
+                logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not a trade bot!");
+                return;
+            }
+
+            //AttachTradeBot(setupModel, entry.StateSettings.Clone(), entry.StateViewOpened);
+            AttachTradeBot(setupModel, new WindowStorageModel { Width = 300, Height = 300 }, false);
         }
 
         #region Algo
@@ -210,6 +323,11 @@ namespace TickTrader.BotTerminal
 
         private void AttachPlugin(PluginSetupViewModel setupModel)
         {
+            if (setupModel == null)
+            {
+                return;
+            }
+
             var pluginType = setupModel.Setup.Descriptor.AlgoLogicType;
 
             if (pluginType == AlgoTypes.Indicator)
@@ -218,12 +336,17 @@ namespace TickTrader.BotTerminal
             }
             else if (pluginType == AlgoTypes.Robot)
             {
-                var bot = new TradeBotModel(setupModel, Chart);
-                var viewModel = new BotControlViewModel(bot, shell.ToolWndManager, setupModel.RunBot);
-                viewModel.Closed += BotClosed;
-                bots.Add(viewModel);
-                algoEnv.IdProvider.AddPlugin(bot);
+                AttachTradeBot(setupModel, new WindowStorageModel { Width = 300, Height = 300 }, true);
             }
+        }
+
+        private void AttachTradeBot(PluginSetupViewModel setupModel, WindowStorageModel stateSettings, bool openState)
+        {
+            var bot = new TradeBotModel(setupModel, Chart, stateSettings);
+            var viewModel = new BotControlViewModel(bot, shell.ToolWndManager, setupModel.RunBot, openState);
+            viewModel.Closed += BotClosed;
+            bots.Add(viewModel);
+            algoEnv.IdProvider.AddPlugin(bot);
         }
 
         void AlgoSetupClosed(PluginSetupViewModel setupModel, bool dlgResult)

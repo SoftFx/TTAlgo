@@ -1,40 +1,55 @@
 ﻿using Caliburn.Micro;
 using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
+    internal interface IPersistableObject<T>
+    {
+        T GetCopyToSave();
+    }
+
+
+    internal interface IChangableObject
+    {
+        event System.Action Changed;
+    }
+
+
     internal interface IPersistController
     {
         Task Close();
     }
 
+
     internal class ObjectPersistController<T> : IPersistController
         where T : class, IPersistableObject<T>, new()
     {
-        private bool isChanged;
-        private bool isSaving;
-        private bool isClosed;
-        private Task backgroundTask;
-        private IObjectStorage storage;
-        private string fileName;
-        private Logger logger;
+        private bool _isChanged;
+        private bool _isSaving;
+        private bool _isClosed;
+        private Task _backgroundTask;
+        private IObjectStorage _storage;
+        private string _fileName;
+        private Logger _logger;
+
 
         public T Value { get; private set; }
 
+        public TimeSpan SaveDelay { get; set; }
+
+        public bool CanSave => !_isClosed;
+
+
         public ObjectPersistController(string fileName, IObjectStorage storage)
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
-            this.storage = storage;
-            this.fileName = fileName;
+            _logger = NLog.LogManager.GetCurrentClassLogger();
+            _storage = storage;
+            _fileName = fileName;
             Load();
         }
 
-        public TimeSpan SaveDelay { get; set; }
 
         public void SetChanged()
         {
@@ -43,24 +58,42 @@ namespace TickTrader.BotTerminal
 
         public Task Close()
         {
-            Execute.OnUIThread(() => isClosed = true);
+            Execute.OnUIThread(() => _isClosed = true);
 
-            if (backgroundTask != null)
-                return backgroundTask;
+            if (_backgroundTask != null)
+                return _backgroundTask;
             else
                 return Task.FromResult<T>(null);
         }
+
+        public void Reopen()
+        {
+            Value = null;
+
+            Load();
+
+            _isClosed = false;
+        }
+
+        public void SetFilename(string newFilename)
+        {
+            if (!_isClosed)
+                throw new InvalidOperationException("Controller is not closed!");
+
+            _fileName = newFilename;
+        }
+
 
         private void Load()
         {
             try
             {
-                Value = storage.Load<T>(fileName);
+                Value = _storage.Load<T>(_fileName);
             }
             catch (System.IO.FileNotFoundException) { /* normal case */ }
             catch (Exception ex)
             {
-                logger.Error("ObjectPersistController.Load() FAILED " + ex);
+                _logger.Error("ObjectPersistController.Load() FAILED " + ex.Message);
             }
 
             if (Value == null)
@@ -72,32 +105,33 @@ namespace TickTrader.BotTerminal
 
         private void Save()
         {
-            if (isClosed)
+            if (_isClosed)
                 throw new InvalidOperationException("Controller is closed!");
 
-            if (isSaving)
+            if (_isSaving)
             {
-                isChanged = true;
+                _isChanged = true;
                 return;
             }
 
-            backgroundTask = SaveLoop();           
+            _backgroundTask = SaveLoop();
         }
 
         private async Task SaveLoop()
         {
+            _isSaving = true;
             T cloneToSave = Value.GetCopyToSave();
-            isChanged = false;
+            _isChanged = false;
 
             do
             {
                 try
                 {
-                    await Task.Factory.StartNew(() => storage.Save(fileName, cloneToSave));
+                    await Task.Factory.StartNew(() => _storage.Save(_fileName, cloneToSave));
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("ObjectPersistController.Save() FAILED " + ex.Message);
+                    _logger.Error("ObjectPersistController.Save() FAILED " + ex.Message);
                 }
 
                 if (SaveDelay != TimeSpan.Zero)
@@ -105,9 +139,9 @@ namespace TickTrader.BotTerminal
 
                 await Execute.OnUIThreadAsync(() =>
                 {
-                    if (isChanged)
+                    if (_isChanged)
                     {
-                        isChanged = false;
+                        _isChanged = false;
                         cloneToSave = Value.GetCopyToSave();
                     }
                     else
@@ -115,16 +149,8 @@ namespace TickTrader.BotTerminal
                 });
             }
             while (cloneToSave != null);
+
+            Execute.OnUIThread(() => _isSaving = false);
         }
-    }
-
-    interface IPersistableObject<T>
-    {
-        T GetCopyToSave();
-    }
-
-    interface IChangableObject
-    {
-        event System.Action Changed;
     }
 }

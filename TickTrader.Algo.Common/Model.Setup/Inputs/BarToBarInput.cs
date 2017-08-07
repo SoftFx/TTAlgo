@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Common.Model.Config;
@@ -11,20 +9,34 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public class BarToBarInput : BarInputBase
+    public class BarToBarInputSetup : BarInputSetupBase
     {
-        private Mapping selectedMapping;
-        private BarPriceType defPriceType;
-        private List<Mapping> mappings = new List<Mapping>();
+        private Mapping _selectedMapping;
+        private BarPriceType _defPriceType;
+        private List<Mapping> _mappings = new List<Mapping>();
 
-        public BarToBarInput(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IAlgoGuiMetadata metadata = null)
+
+        public Mapping SelectedMapping
+        {
+            get { return _selectedMapping; }
+            set
+            {
+                _selectedMapping = value;
+                NotifyPropertyChanged(nameof(Mapping));
+            }
+        }
+
+        public IEnumerable<Mapping> AvailableMappings => _mappings;
+
+
+        public BarToBarInputSetup(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IAlgoGuiMetadata metadata = null)
             : base(descriptor, symbolCode, metadata?.Symbols)
         {
             SetMetadata(descriptor);
-            this.defPriceType = defPriceType;
+            _defPriceType = defPriceType;
 
-            mappings.Add(new DirectMapping("Bid", BarPriceType.Bid));
-            mappings.Add(new DirectMapping("Ask", BarPriceType.Ask));
+            _mappings.Add(new DirectMapping("Bid", BarPriceType.Bid));
+            _mappings.Add(new DirectMapping("Ask", BarPriceType.Ask));
 
             if (metadata != null)
             {
@@ -32,7 +44,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 {
                     try
                     {
-                        mappings.Add(new ReductionMapping(d.DisplayName, d));
+                        _mappings.Add(new ReductionMapping(d.DisplayName, d));
                     }
                     catch (Exception)
                     {
@@ -42,29 +54,9 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public Mapping SelectedMapping
-        {
-            get { return selectedMapping; }
-            set
-            {
-                this.selectedMapping = value;
-                NotifyPropertyChanged(nameof(Mapping));
-            }
-        }
-
-        public IEnumerable<Mapping> AvailableMappings => mappings;
-
         public override void Apply(IPluginSetupTarget target)
         {
-            selectedMapping?.MapInput(target.GetFeedStrategy<BarStrategy>(), Descriptor.Id, SelectedSymbol.Name);
-        }
-
-        public override void Load(Property srcProperty)
-        {
-            throw new NotImplementedException();
-            //var otherInput = srcProperty as BarToBarInput;
-            //SelectedSymbol = otherInput.SelectedSymbol;
-            //SetDefaultMapping();
+            _selectedMapping?.MapInput(target.GetFeedStrategy<BarStrategy>(), Descriptor.Id, SelectedSymbol.Name);
         }
 
         public override void Reset()
@@ -73,54 +65,85 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetDefaultMapping();
         }
 
+        public override void Load(Property srcProperty)
+        {
+            var input = srcProperty as BarToBarInput;
+            if (input != null)
+            {
+                _selectedMapping = AvailableMappings.FirstOrDefault(m => m.Name == input.SelectedMapping);
+                if (_selectedMapping == null)
+                {
+                    SetDefaultMapping();
+                }
+                LoadConfig(input);
+            }
+        }
+
+        public override Property Save()
+        {
+            var input = new BarToBarInput { SelectedMapping = SelectedMapping.Name };
+            SaveConfig(input);
+            return input;
+        }
+
+
         private void SetDefaultMapping()
         {
-            SelectedMapping = mappings.FirstOrDefault(m => m.Name == defPriceType.ToString());
+            SelectedMapping = _mappings.FirstOrDefault(m => m.Name == _defPriceType.ToString());
         }
+
 
         public abstract class Mapping
         {
+            public string Name { get; private set; }
+
+
             public Mapping(string name)
             {
-                this.Name = name;
+                Name = name;
             }
 
-            internal abstract void MapInput(BarStrategy strategy, string inputName, string symbol);
 
-            public string Name { get; private set; }
+            internal abstract void MapInput(BarStrategy strategy, string inputName, string symbol);
         }
+
 
         private class DirectMapping : Mapping
         {
-            private BarPriceType barSide;
+            private BarPriceType _barSide;
+
 
             public DirectMapping(string name, BarPriceType barSide) : base(name)
             {
-                this.barSide = barSide;
+                _barSide = barSide;
             }
+
 
             internal override void MapInput(BarStrategy strategy, string inputName, string symbol)
             {
-                strategy.MapInput<Api.Bar>(inputName, symbol, barSide, b => b);
+                strategy.MapInput<Bar>(inputName, symbol, _barSide, b => b);
             }
         }
 
+
         private class ReductionMapping : Mapping
         {
-            private FullBarToBarReduction reduction;
+            private FullBarToBarReduction _reduction;
+
 
             public ReductionMapping(string name, ReductionDescriptor descriptor)
                 : base(name)
             {
-                this.reduction = descriptor.CreateInstance<FullBarToBarReduction>();
+                _reduction = descriptor.CreateInstance<FullBarToBarReduction>();
             }
+
 
             internal override void MapInput(BarStrategy strategy, string inputName, string symbol)
             {
-                strategy.MapInput<Api.Bar>(inputName, symbol, (b, a) =>
+                strategy.MapInput<Bar>(inputName, symbol, (b, a) =>
                 {
                     BarEntity entity = new BarEntity();
-                    reduction.Reduce(b, a, entity);
+                    _reduction.Reduce(b, a, entity);
                     return entity;
                 });
             }

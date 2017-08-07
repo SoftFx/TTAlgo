@@ -46,6 +46,9 @@ namespace TickTrader.Algo.Api
         event Action<OrderModifiedEventArgs> Modified;
         event Action<OrderFilledEventArgs> Filled;
         event Action<OrderExpiredEventArgs> Expired;
+        event Action<Order> Added;
+        event Action<Order> Removed;
+        event Action<Order> Replaced;
     }
 
     public interface OrderOpenedEventArgs

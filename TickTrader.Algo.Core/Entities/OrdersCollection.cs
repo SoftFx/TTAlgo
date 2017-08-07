@@ -111,6 +111,9 @@ namespace TickTrader.Algo.Core
                 var accessor = new OrderAccessor(entity);
                 if (!orders.TryAdd(entity.Id, accessor))
                     throw new ArgumentException("Order #" + entity.Id + " already exist!");
+
+                Added?.Invoke(accessor);
+
                 return accessor;
             }
 
@@ -121,7 +124,10 @@ namespace TickTrader.Algo.Core
                 if (this.orders.TryGetValue(entity.Id, out order))
                 {
                     if (order.Modified <= entity.Modified)
+                    {
                         order.Update(entity);
+                        Replaced?.Invoke(order);
+                    }
                 }
 
                 return order;
@@ -130,7 +136,10 @@ namespace TickTrader.Algo.Core
             public OrderAccessor Remove(string orderId)
             {
                 OrderAccessor removed;
-                orders.TryRemove(orderId, out removed);
+
+                if (orders.TryRemove(orderId, out removed))
+                    Removed?.Invoke(removed);
+
                 return removed;
             }
 
@@ -182,6 +191,9 @@ namespace TickTrader.Algo.Core
             public event Action<OrderCanceledEventArgs> Canceled = delegate { };
             public event Action<OrderExpiredEventArgs> Expired = delegate { };
             public event Action<OrderFilledEventArgs> Filled = delegate { };
+            public event Action<Order> Added;
+            public event Action<Order> Removed;
+            public event Action<Order> Replaced;
 
             public IEnumerator<OrderAccessor> GetTypedEnumerator()
             {

@@ -227,7 +227,7 @@
                   IsEnabled="{Binding HasChoice}"/>
     </DataTemplate>-->
 
-    <DataTemplate DataType="{x:Type am:BarToBarInput}">
+    <DataTemplate DataType="{x:Type am:BarToBarInputSetup}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -246,7 +246,7 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:QuoteToBarInput}">
+    <DataTemplate DataType="{x:Type am:QuoteToBarInputSetup}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
                       IsEnabled="{Binding HasChoice}"/>
@@ -254,7 +254,7 @@
 
     <!-- Tick Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToQuoteInput}">
+    <DataTemplate DataType="{x:Type am:QuoteToQuoteInputSetup}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
                       IsEnabled="{Binding HasChoice}"/>
@@ -262,7 +262,7 @@
 
     <!-- Double (bar based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:BarToDoubleInput}">
+    <DataTemplate DataType="{x:Type am:BarToDoubleInputSetup}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -283,7 +283,7 @@
 
     <!-- Double (tick based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToDoubleInput}">
+    <DataTemplate DataType="{x:Type am:QuoteToDoubleInputSetup}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -321,10 +321,10 @@
                      Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
             <Label Grid.Row="2" Grid.Column="0" Content="Start bot" />
             <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
-            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="4" Grid.Column="0" Content="AllowTrade" />
-            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="2" Content="AllowTrade" />
+            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <!--<Label Grid.Row="4" Grid.Column="0" Content="Isolate bot" />
+            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />-->
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
