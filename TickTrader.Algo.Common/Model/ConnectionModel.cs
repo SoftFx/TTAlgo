@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Common.Model
             stateControl.OnEnter(States.Online, () => Connected());
             stateControl.OnEnter(States.Offline, () => Disconnected());
 
-            stateControl.StateChanged += (from, to) => logger.Debug("STATE {0}", to);
+            stateControl.StateChanged += (from, to) => logger.Debug("STATE {0} ({1}:{2})", to, CurrentLogin, CurrentServer);
             stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
