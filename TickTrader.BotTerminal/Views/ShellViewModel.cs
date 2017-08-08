@@ -57,9 +57,10 @@ namespace TickTrader.BotTerminal
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
-            botsWarden = new BotsWarden(new BotAggregator(Charts));
-
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
+
+            botsWarden = new BotsWarden(new BotAggregator(Charts));
+            
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
