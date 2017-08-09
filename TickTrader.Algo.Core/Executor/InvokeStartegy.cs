@@ -317,6 +317,7 @@ namespace TickTrader.Algo.Core
             lock (syncObj)
             {
                 ClearQueues();
+                execStopFlag = false;
                 isStarted = false;
                 stopTask = null;
 
