@@ -10,9 +10,9 @@ namespace TickTrader.SeriesStorage.Protobuf
 {
     public class ProtoBufSerializer<TKey, TValue> : ISliceSerializer<TKey, TValue>
     {
-        public ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent)
+        public ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent)
         {
-            return new SliceImpl { Range = range, Content = sliceContent };
+            return new SliceImpl { From = from, To = to, Content = sliceContent };
         }
 
         public ISlice<TKey, TValue> Deserialize(ArraySegment<byte> bytes)
@@ -35,10 +35,16 @@ namespace TickTrader.SeriesStorage.Protobuf
         private class SliceImpl : ISlice<TKey, TValue>
         {
             [ProtoMember(1)]
-            public KeyRange<TKey> Range { get; set; }
+            public TKey From { get; set; }
 
             [ProtoMember(2)]
-            public TValue[] Content { get; set; }
+            public TKey To { get; set; }
+
+            [ProtoMember(3)]
+            public ArraySegment<TValue> Content { get; set; }
+
+            public bool IsEmpty => Content.Count == 0;
+            public bool IsMissing => false;
         }
     }
 }

@@ -17,9 +17,9 @@ namespace TickTrader.SeriesStorage
             _serializer = serializer;
         }
 
-        public ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent)
+        public ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent)
         {
-            return _serializer.CreateSlice(range, sliceContent);
+            return _serializer.CreateSlice(from, to, sliceContent);
         }
 
         public void Dispose()

@@ -25,7 +25,7 @@ namespace TickTrader.SeriesStorage
 
     public interface ISliceCollection<TKey, TValue> : IStorageCollection<TKey, ISlice<TKey, TValue>>
     {
-        ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent);
+        ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
     }
 
     public interface IBinaryCollection
@@ -53,15 +53,18 @@ namespace TickTrader.SeriesStorage
 
     public interface ISliceSerializer<TKey, TValue>
     {
-        ISlice<TKey, TValue> CreateSlice(KeyRange<TKey> range, TValue[] sliceContent);
+        ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
         byte[] Serialize(ISlice<TKey, TValue> slice);
         ISlice<TKey, TValue> Deserialize(ArraySegment<byte> bytes);
     }
 
     public interface ISlice<TKey, TValue>
     {
-        KeyRange<TKey> Range { get; }
-        TValue[] Content { get; }
+        TKey From { get; }
+        TKey To { get; }
+        ArraySegment<TValue> Content { get; }
+        bool IsEmpty { get; } // all records are null for selected range
+        bool IsMissing { get; } // no data for selected range
     }
 
     public interface IKeyBuilder
@@ -92,6 +95,12 @@ namespace TickTrader.SeriesStorage
 
     public struct KeyRange<TKey>
     {
+        public KeyRange(TKey from, TKey to)
+        {
+            From = from;
+            To = to;
+        }
+
         public TKey From { get; set; }
         public TKey To { get; set; }
     }

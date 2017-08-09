@@ -49,8 +49,10 @@
     <Compile Include="BinStorageAdapter.cs" />
     <Compile Include="ByteConverter.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="ListExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SeriesStorage.cs" />
+    <Compile Include="SliceSegment.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
