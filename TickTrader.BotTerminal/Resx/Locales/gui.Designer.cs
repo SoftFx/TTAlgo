@@ -457,6 +457,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Order_StopPrice##.
+        /// </summary>
+        internal static string Order_StopPrice {
+            get {
+                return ResourceManager.GetString("Order_StopPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Symbol##.
         /// </summary>
         internal static string Order_Symbol {

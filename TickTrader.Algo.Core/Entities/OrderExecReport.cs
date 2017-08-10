@@ -18,6 +18,6 @@ namespace TickTrader.Algo.Core
         public bool IsCompleted => ResultCode == OrderCmdResultCodes.Ok;
     }
 
-    public enum OrderExecAction { Opened, Modified, Canceled, Closed, Filled, Expired, Rejected }
+    public enum OrderExecAction { Opened, Modified, Canceled, Closed, Filled, Expired, Rejected, Activated }
     public enum OrderEntityAction { None, Added, Removed, Updated }
 }

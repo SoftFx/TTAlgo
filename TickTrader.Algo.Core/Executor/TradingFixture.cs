@@ -177,8 +177,14 @@ namespace TickTrader.Algo.Core
             System.Diagnostics.Debug.WriteLine("ER: " + eReport.Action + " #" + eReport.OrderCopy.Id + " " + eReport.OrderCopy.Type);
 
             var orderCollection = builder.Account.Orders;
-
-            if (eReport.ExecAction == OrderExecAction.Opened)
+            if (eReport.ExecAction == OrderExecAction.Activated)
+            {
+                var order = ApplyOrderEntity(eReport, orderCollection);
+                var clone = order.Clone();
+                CallListener(eReport);
+                context.EnqueueTradeEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone)));
+            }
+            else if (eReport.ExecAction == OrderExecAction.Opened)
             {
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();

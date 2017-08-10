@@ -85,6 +85,11 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.FireOrderFilled(args));
         }
 
+        public void FireOrderActivated(OrderActivatedEventArgs args)
+        {
+            builder.InvokePluginMethod(() => fixture.FireOrderActivated(args));
+        }
+
         public event Action<OrderAccessor> Added;
         public event Action<OrderAccessor> Removed;
         public event Action<OrderAccessor> Replaced;
@@ -185,12 +190,18 @@ namespace TickTrader.Algo.Core
                 Filled(args);
             }
 
+            public void FireOrderActivated(OrderActivatedEventArgs args)
+            {
+                Activated(args);
+            }
+
             public event Action<OrderClosedEventArgs> Closed = delegate { };
             public event Action<OrderModifiedEventArgs> Modified = delegate { };
             public event Action<OrderOpenedEventArgs> Opened = delegate { };
             public event Action<OrderCanceledEventArgs> Canceled = delegate { };
             public event Action<OrderExpiredEventArgs> Expired = delegate { };
             public event Action<OrderFilledEventArgs> Filled = delegate { };
+            public event Action<OrderActivatedEventArgs> Activated = delegate { };
             public event Action<Order> Added;
             public event Action<Order> Removed;
             public event Action<Order> Replaced;
@@ -215,5 +226,7 @@ namespace TickTrader.Algo.Core
                 return orders.Values.GetEnumerator();
             }
         }
+
+       
     }
 }

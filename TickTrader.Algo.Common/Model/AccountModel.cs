@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Common.Model
             var currencies = _client.Currencies;
             var accInfo = cache.AccountInfo;
             var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
-            
+
 
             UpdateData(accInfo, currencies, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
 
@@ -235,8 +235,11 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Trade:
-                    if (report.OrderType == TradeRecordType.Limit
-                        || report.OrderType == TradeRecordType.Stop)
+                    if (report.OrderType == TradeRecordType.StopLimit)
+                    {
+                        OnOrderRemoved(report, OrderExecAction.Activated);
+                    }
+                    else if (report.OrderType == TradeRecordType.Limit || report.OrderType == TradeRecordType.Stop)
                     {
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Filled);
@@ -253,7 +256,7 @@ namespace TickTrader.Algo.Common.Model
                         else
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == TradeRecordType.Market 
+                    else if (report.OrderType == TradeRecordType.Market
                         && (Type == AccountType.Net || Type == AccountType.Cash))
                     {
                         OnMarketFilled(report, OrderExecAction.Filled);
