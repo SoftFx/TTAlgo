@@ -84,7 +84,7 @@ namespace TickTrader.BotTerminal
         public bool IsMarket { get; protected set; }
         public bool IsPending { get; protected set; }
         public bool IsBalanceTransaction { get; protected set; }
-        public double MaxVisibleVolume { get; protected set; }
+        public double? MaxVisibleVolume { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeTransactionReport transaction)
         {
