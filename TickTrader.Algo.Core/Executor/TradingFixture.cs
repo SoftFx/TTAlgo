@@ -226,13 +226,13 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId)?.Clone();
                 if (oldOrder != null && eReport.OrderCopy != null)
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
-                    var clone = order.Clone();
+                    var newOrder = order.Clone();
                     CallListener(eReport);
-                    context.EnqueueTradeEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, clone)));
+                    context.EnqueueTradeEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Filled)
