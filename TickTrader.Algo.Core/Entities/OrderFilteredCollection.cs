@@ -30,10 +30,9 @@ namespace TickTrader.Algo.Core
             originalList.Filled += OriginalList_Filled;
             originalList.Modified += OriginalList_Modified;
             originalList.Opened += OriginalList_Opened;
-            originalList.Activated += OriginalList_Activated;
         }
 
-       
+
 
         public Order this[string id]
         {
@@ -57,7 +56,6 @@ namespace TickTrader.Algo.Core
         public event Action<Order> Added;
         public event Action<Order> Removed;
         public event Action<Order> Replaced;
-        public event Action<OrderActivatedEventArgs> Activated;
 
         private void OriginalList_Added(Order order)
         {
@@ -110,12 +108,6 @@ namespace TickTrader.Algo.Core
         {
             if (filteredOrders.ContainsKey(args.OldOrder.Id))
                 Filled?.Invoke(args);
-        }
-
-        private void OriginalList_Activated(OrderActivatedEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.Order.Id))
-                Activated?.Invoke(args);
         }
 
         public IEnumerator<Order> GetEnumerator()

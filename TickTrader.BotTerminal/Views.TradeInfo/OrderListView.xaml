@@ -19,50 +19,6 @@
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="ToolTip">
-                            <Setter.Value>
-                                <StackPanel Orientation="Vertical">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Limit Price: " VerticalAlignment="Center" />
-                                        <TextBlock VerticalAlignment="Center" >
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                    <Binding Path="Order.LimitPrice"/>
-                                                    <Binding Path="PriceDigits"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Stop Price: " VerticalAlignment="Center" />
-                                        <TextBlock VerticalAlignment="Center" >
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                    <Binding Path="Order.StopPrice"/>
-                                                    <Binding Path="PriceDigits"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Tag: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.Tag}" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
-                                        <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
-                                        <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.RowStyle>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
                         <DataGridTextColumn.CellStyle>
@@ -96,7 +52,6 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                   
                     <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
                     <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
                     <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
@@ -108,6 +63,8 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
+                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" />
+                    <DataGridTextColumn Header="Instance Id" Width="*" Binding="{Binding Order.InstanceId}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

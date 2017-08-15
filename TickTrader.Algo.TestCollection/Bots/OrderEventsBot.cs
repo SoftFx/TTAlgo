@@ -15,15 +15,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Filled += OrdersOnFilled;
             Account.Orders.Modified += OrdersOnModified;
             Account.Orders.Opened += OrdersOnOpened;
-            Account.Orders.Activated += OrderActivated;
-        }
-
-        private void OrderActivated(OrderActivatedEventArgs args)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"Activated order #{args.Order.Id} ");
-            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
-            Print(sb.ToString());
         }
 
         protected override void OnStop()
@@ -34,7 +25,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Filled -= OrdersOnFilled;
             Account.Orders.Modified -= OrdersOnModified;
             Account.Orders.Opened -= OrdersOnOpened;
-            Account.Orders.Activated -= OrderActivated;
         }
 
 
