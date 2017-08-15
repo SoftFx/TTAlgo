@@ -7,6 +7,16 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
+    public class OrderActivatedEventArgsImpl: OrderActivatedEventArgs
+    {
+        public OrderActivatedEventArgsImpl(Order order)
+        {
+            this.Order = order;
+        }
+
+        public Order Order { get; private set; }
+    }
+
     public class OrderOpenedEventArgsImpl : OrderOpenedEventArgs
     {
         public OrderOpenedEventArgsImpl(Order order)

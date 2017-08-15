@@ -327,4 +327,7 @@
   <data name="Menu_Profile" xml:space="preserve">
     <value>Профиль</value>
   </data>
+  <data name="Order_StopPrice" xml:space="preserve">
+    <value>Stop Price</value>
+  </data>
 </root>
