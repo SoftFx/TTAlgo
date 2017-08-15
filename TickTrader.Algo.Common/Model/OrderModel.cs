@@ -20,9 +20,6 @@ namespace TickTrader.Algo.Common.Model
         private decimal amountRemaining;
         public TradeRecordSide side;
         private decimal? price;
-        private decimal? stopPrice;
-        private decimal? limitPrice;
-        private decimal? maxVisibleVolume;
         private decimal? swap;
         private decimal? commission;
         private DateTime? created;
@@ -135,46 +132,6 @@ namespace TickTrader.Algo.Common.Model
                 {
                     price = value;
                     NotifyOfPropertyChange(nameof(Price));
-                }
-            }
-        }
-
-        public decimal? LimitPrice
-        {
-            get { return limitPrice; }
-            set
-            {
-                if (limitPrice != value)
-                {
-                    limitPrice = value;
-                    NotifyOfPropertyChange(nameof(LimitPrice));
-                }
-            }
-        }
-
-
-        public decimal? MaxVisibleVolume
-        {
-            get { return maxVisibleVolume; }
-            set
-            {
-                if (maxVisibleVolume != value)
-                {
-                    maxVisibleVolume = value;
-                    NotifyOfPropertyChange(nameof(MaxVisibleVolume));
-                }
-            }
-        }
-
-        public decimal? StopPrice
-        {
-            get { return stopPrice; }
-            set
-            {
-                if (stopPrice != value)
-                {
-                    stopPrice = value;
-                    NotifyOfPropertyChange(nameof(StopPrice));
                 }
             }
         }
@@ -495,11 +452,7 @@ namespace TickTrader.Algo.Common.Model
             this.RemainingAmount = (decimal)record.Volume;
             this.OrderType = record.Type;
             this.Side = record.Side;
-            this.MaxVisibleVolume = (decimal?)record.MaxVisibleVolume;
-            this.Price = (decimal?)(record.Type == TradeRecordType.StopLimit ? record.StopPrice : record.Price) ?? 0M;
-            this.LimitPrice = (decimal?)(record.Type == TradeRecordType.StopLimit || record.Type == TradeRecordType.Limit ? record.Price : null);
-            this.StopPrice = (decimal?)(record.Type == TradeRecordType.StopLimit ? record.StopPrice :
-                record.Type == TradeRecordType.Stop ? record.Price : null);
+            this.Price = (decimal?)record.Price ?? 0M;
             this.Created = record.Created;
             this.Modified = record.Modified;
             this.Expiration = record.Expiration;
@@ -525,10 +478,7 @@ namespace TickTrader.Algo.Common.Model
             this.RemainingAmount = (decimal)report.LeavesVolume;
             this.OrderType = report.OrderType;
             this.Side = report.OrderSide;
-            this.MaxVisibleVolume = (decimal?)report.MaxVisibleVolume;
-            this.Price = (decimal?)(report.OrderType == TradeRecordType.StopLimit ? report.StopPrice : report.Price ?? report.StopPrice) ?? 0;
-            this.LimitPrice = (decimal?)(report.OrderType == TradeRecordType.StopLimit || report.OrderType == TradeRecordType.Limit ? report.Price : null);
-            this.StopPrice = (decimal?)report.StopPrice;
+            this.Price = (decimal?)(report.Price ?? report.StopPrice) ?? 0;
             this.Created = report.Created;
             this.Modified = report.Modified;
             this.Expiration = report.Expiration;

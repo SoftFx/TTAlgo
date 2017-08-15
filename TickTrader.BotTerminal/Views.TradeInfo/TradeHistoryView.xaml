@@ -164,20 +164,6 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
-                    <DataGridTextColumn Header="Max Visible Volume" Width="*" SortMemberPath="MaxVisibleVolume" >
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="MaxVisibleVolume"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                        <DataGridTextColumn.ClipboardContentBinding>
-                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="MaxVisibleVolume"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.ClipboardContentBinding>
-                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
             <DataGrid ItemsSource="{Binding TradesList}"
@@ -298,20 +284,6 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
-                    <DataGridTextColumn Header="Max Visible Volume" Width="*" SortMemberPath="MaxVisibleVolume" >
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="MaxVisibleVolume"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                        <DataGridTextColumn.ClipboardContentBinding>
-                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="MaxVisibleVolume"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.ClipboardContentBinding>
-                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
             <ContentControl Name="OverlayContent"/>
