@@ -6,20 +6,15 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public class BinStorageAdapter<TKey, TValue> : ISliceCollection<TKey, TValue>
+    public class BinStorageAdapter<TKey, TValue> : ICollectionStorage<TKey, TValue>
     {
         private IBinaryStorageCollection<TKey> _binStorage;
-        private ISliceSerializer<TKey, TValue> _serializer;
+        private IValueSerializer<TValue> _serializer;
 
-        public BinStorageAdapter(IBinaryStorageCollection<TKey> binStorage, ISliceSerializer<TKey, TValue> serializer)
+        public BinStorageAdapter(IBinaryStorageCollection<TKey> binStorage, IValueSerializer<TValue> serializer)
         {
             _binStorage = binStorage;
             _serializer = serializer;
-        }
-
-        public ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent)
-        {
-            return _serializer.CreateSlice(from, to, sliceContent);
         }
 
         public void Dispose()
@@ -27,33 +22,37 @@ namespace TickTrader.SeriesStorage
             _binStorage.Dispose();
         }
 
-        public void Drop()
+        public void Drop()  
         {
             _binStorage.Drop();
         }
 
-        public IEnumerable<KeyValuePair<TKey, ISlice<TKey, TValue>>> Iterate(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from)
         {
-            foreach (var item in _binStorage.Iterate(from, reversed))
+            foreach (var item in _binStorage.Iterate(from))
             {
                 var value = _serializer.Deserialize(new ArraySegment<byte>(item.Value));
-                yield return new KeyValuePair<TKey, ISlice<TKey, TValue>>(item.Key, value);
+                yield return new KeyValuePair<TKey, TValue>(item.Key, value);
             }
         }
 
         public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
         {
-            throw new NotImplementedException();
+            return _binStorage.IterateKeys(from, reversed);
         }
 
-        public ISlice<TKey, TValue> Read(TKey key)
+        public bool Read(TKey key, out TValue value)
         {
-            byte[] bytes = _binStorage.Read(key);
+            byte[] bytes;
 
-            if (bytes == null)
-                return null;
+            if (_binStorage.Read(key, out bytes))
+            {
+                value = default(TValue);
+                return false;
+            }
 
-            return _serializer.Deserialize(new ArraySegment<byte>(bytes));
+            value = _serializer.Deserialize(new ArraySegment<byte>(bytes));
+            return true;
         }
 
         public void Remove(TKey key)
@@ -66,10 +65,11 @@ namespace TickTrader.SeriesStorage
             _binStorage.RemoveAll();
         }
 
-        public void Write(TKey key, ISlice<TKey, TValue> value)
+        public void Write(TKey key, TValue value)
         {
             var binVal = _serializer.Serialize(value);
-            _binStorage.Write(key, binVal);
+            // TO DO : ToArray() causes bad performance
+            _binStorage.Write(key, binVal.ToArray());
         }
     }
 }

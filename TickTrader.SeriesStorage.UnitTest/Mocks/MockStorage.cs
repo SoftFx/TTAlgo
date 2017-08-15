@@ -6,14 +6,9 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage.UnitTest.Mocks
 {
-    internal class MockStorage<TKey, TValue> : ISliceCollection<TKey, TValue>
+    internal class MockStorage<TKey, TValue> : ICollectionStorage<TKey, TValue>
     {
-        private SortedList<TKey, ISlice<TKey, TValue>> slices = new SortedList<TKey, ISlice<TKey, TValue>>();
-
-        public ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent)
-        {
-            return new MockSlice<TKey, TValue>(from, to, sliceContent);
-        }
+        private SortedList<TKey, TValue> list = new SortedList<TKey, TValue>();
 
         public void Dispose()
         {
@@ -24,69 +19,40 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             RemoveAll();
         }
 
-        public IEnumerable<KeyValuePair<TKey, ISlice<TKey, TValue>>> Iterate(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from)
         {
-            var index = slices.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
+            var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
 
-            for (int i = index; i < slices.Count; i++)
-                yield return new KeyValuePair<TKey, ISlice<TKey, TValue>>(slices.Keys[i], slices.Values[i]);
+            for (int i = index; i < list.Count; i++)
+                yield return new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
         }
 
         public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
         {
-            var index = slices.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
+            var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
 
-            for (int i = index; i < slices.Count; i++)
-                yield return slices.Keys[i];
+            for (int i = index; i < list.Count; i++)
+                yield return list.Keys[i];
         }
 
-        public ISlice<TKey, TValue> Read(TKey key)
+        public bool Read(TKey key, out TValue val)
         {
-            return slices[key];
+            return list.TryGetValue(key, out val);
         }
 
         public void Remove(TKey key)
         {
-            slices.Remove(key);
+            list.Remove(key);
         }
 
         public void RemoveAll()
         {
-            slices.Clear();
+            list.Clear();
         }
 
-        public void AddSlice(TKey from, TKey to, params TValue[] values)
+        public void Write(TKey key, TValue value)
         {
-            slices[from] = CreateSlice(from, to, new ArraySegment<TValue>(values));
-        }
-
-        public void Write(TKey key, ISlice<TKey, TValue> value)
-        {
-            slices[key] = value;
-        }
-    }
-
-    internal class MockSlice<TKey, TValue> : ISlice<TKey, TValue>
-    {
-        public MockSlice(TKey from, TKey to, ArraySegment<TValue> content)
-        {
-            if (content.Array == null)
-                throw new ArgumentException("content");
-
-            From = from;
-            To = to;
-            Content = content;
-        }
-
-        public TKey From { get; }
-        public TKey To { get; }
-        public ArraySegment<TValue> Content { get; }
-        public bool IsEmpty => Content.Count == 0;
-        public bool IsMissing => false;
-
-        public override string ToString()
-        {
-            return From + "-" + To + ": " + string.Join(",", Content.Select(i => i.ToString()));
+            list[key] = value;
         }
     }
 }

@@ -6,26 +6,10 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public interface IBinaryStorage : IDisposable
+    public interface MultiCollectionStorage : IDisposable
     {
         bool SupportsByteSize { get; }
         IEnumerable<IBinaryCollection> Collections { get; }
-    }
-
-    public interface IStorageCollection<TKey, TValue> : IDisposable where TValue : class
-    {
-        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed);
-        IEnumerable<TKey> IterateKeys(TKey from, bool reversed);
-        TValue Read(TKey key);
-        void Write(TKey key, TValue value);
-        void Remove(TKey key);
-        void RemoveAll();
-        void Drop(); // deletes whole storage
-    }
-
-    public interface ISliceCollection<TKey, TValue> : IStorageCollection<TKey, ISlice<TKey, TValue>>
-    {
-        ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
     }
 
     public interface IBinaryCollection
@@ -34,8 +18,34 @@ namespace TickTrader.SeriesStorage
         long ByteSize { get; }
     }
 
-    public interface IBinaryStorageCollection<TKey> : IStorageCollection<TKey, byte[]>
+    public interface ICollectionStorage<TKey, TValue> : IDisposable
     {
+        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from);
+        IEnumerable<TKey> IterateKeys(TKey from, bool reversed);
+        bool Read(TKey key, out TValue value);
+        void Write(TKey key, TValue value);
+        void Remove(TKey key);
+        void RemoveAll();
+        void Drop(); // deletes whole storage
+    }
+
+    //public interface ISliceCollection<TKey, TValue> : ICollectionStorage<KeyRange<TKey>, ArraySegment<TValue>>
+    //{
+    //    //ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
+    //}
+
+    public interface IBinaryStorageCollection<TKey> : ICollectionStorage<TKey, byte[]>
+    {
+    }
+
+    public interface IBinaryStorageFactory
+    {
+        IBinaryStorageCollection<TKey> CreateStorage<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
+    }
+
+    public interface IStorageFactory
+    {
+        ICollectionStorage<TKey, TValue> CreateStorage<TKey, TValue>();
     }
 
     public interface IKeySerializer<TKey>
@@ -51,21 +61,23 @@ namespace TickTrader.SeriesStorage
         T Deserialize(ArraySegment<byte> bytes);
     }
 
-    public interface ISliceSerializer<TKey, TValue>
+    public interface ISliceSerializer<TValue>
     {
-        ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
-        byte[] Serialize(ISlice<TKey, TValue> slice);
-        ISlice<TKey, TValue> Deserialize(ArraySegment<byte> bytes);
+        //ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
+        //byte[] Serialize(ISlice<TKey, TValue> slice);
+        //ISlice<TKey, TValue> Deserialize(ArraySegment<byte> bytes);
+        byte[] Serialize(ArraySegment<TValue> slice);
+        ArraySegment<TValue> Deserialize(ArraySegment<byte> bytes);
     }
 
-    public interface ISlice<TKey, TValue>
-    {
-        TKey From { get; }
-        TKey To { get; }
-        ArraySegment<TValue> Content { get; }
-        bool IsEmpty { get; } // all records are null for selected range
-        bool IsMissing { get; } // no data for selected range
-    }
+    //public interface ISlice<TKey, TValue>
+    //{
+    //    TKey From { get; }
+    //    TKey To { get; }
+    //    ArraySegment<TValue> Content { get; }
+    //    bool IsEmpty { get; } // all records are null for selected range
+    //    bool IsMissing { get; } // no data for selected range
+    //}
 
     public interface IKeyBuilder
     {
@@ -93,7 +105,8 @@ namespace TickTrader.SeriesStorage
         string ReadReversedString();
     }
 
-    public struct KeyRange<TKey>
+    public struct KeyRange<TKey> : IComparable
+        where TKey : IComparable
     {
         public KeyRange(TKey from, TKey to)
         {
@@ -103,5 +116,20 @@ namespace TickTrader.SeriesStorage
 
         public TKey From { get; set; }
         public TKey To { get; set; }
+
+        public int CompareTo(object obj)
+        {
+            var other = (KeyRange<TKey>)obj;
+
+            int result = From.CompareTo(other.From);
+            if (result == 0)
+                result = To.CompareTo(other.To);
+            return result;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} - {1}", From, To);
+        }
     }
 }

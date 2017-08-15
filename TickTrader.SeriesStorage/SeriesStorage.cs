@@ -6,26 +6,65 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
+    public static class SeriesStorage
+    {
+        public static SeriesStorage<TKey, TValue> Create<TKey, TValue>(IBinaryStorageFactory factory, IKeySerializer<TKey> keySerializer, string name = null)
+            where TKey : IComparable
+        {
+            var binCollection = factory.CreateStorage<KeyRange<TKey>>(name, null);
+            var sliceCollection = new BinStorageAdapter<KeyRange<TKey>, TValue[]>(binCollection, null);
+            return new SimpleSeriesStorage<TKey, TValue>(sliceCollection, null);
+        }
+
+        public static SeriesStorage<TKey, TValue> Create<TKey, TValue>(ICollectionStorage<KeyRange<TKey>, TValue[]> collection, Func<TValue, TKey> keyGetter)
+           where TKey : IComparable
+        {
+            return new SimpleSeriesStorage<TKey, TValue>(collection, keyGetter);
+        }
+
+        public static SeriesStorage<TKey, TValue> Create<TKey, TValue>(IStorageFactory factory, Func<TValue, TKey> keyGetter)
+            where TKey : IComparable
+        {
+            var sliceCollection = factory.CreateStorage<KeyRange<TKey>, TValue[]>();
+            return new SimpleSeriesStorage<TKey, TValue>(sliceCollection, keyGetter);
+        }
+    }
+
     public abstract class SeriesStorage<TKey, TValue> where TKey : IComparable
     {
         private Func<TValue, TKey> _keyFunc;
 
-        public SeriesStorage(ISliceCollection<TKey, TValue> sliceStorage, Func<TValue, TKey> keyFunc)
+        internal SeriesStorage(ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage, Func<TValue, TKey> keyFunc)
         {
             SliceStorage = sliceStorage;
             _keyFunc = keyFunc;
         }
 
-        protected ISliceCollection<TKey, TValue> SliceStorage { get; }
+        protected ICollectionStorage<KeyRange<TKey>, TValue[]> SliceStorage { get; }
 
-        public abstract void Write(KeyRange<TKey> keyRange, IEnumerable<TValue> values);
+        protected abstract void WriteInternal(KeyRange<TKey> keyRange, TValue[] values);
         public abstract void Delete(KeyRange<TKey> keyRange);
-        public abstract IEnumerable<ISlice<TKey, TValue>> IterateSlices(TKey from, TKey to, bool backwards, bool includeMissings);
-        public abstract void Append(TValue item);
+        public abstract IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to);
 
-        public IEnumerable<TValue> Iterate(TKey from, TKey to, bool backwards = false)
+        protected void WriteInternal(Slice<TKey, TValue> slice)
         {
-            foreach (var slice in IterateSlices(from, to, backwards, false))
+            WriteInternal(slice.Range, slice.Content.ToArray());
+        }
+
+        public void Write(Slice<TKey, TValue> slice)
+        {
+            Write(slice.From, slice.To, slice.Content.ToArray());
+        }
+
+        public void Write(TKey from, TKey to, params TValue[] values)
+        {
+            Slice<TKey, TValue>.CheckSlice(from, to, new ArraySegment<TValue>(values), _keyFunc);
+            WriteInternal(new KeyRange<TKey>(from, to), values);
+        }
+
+        public IEnumerable<TValue> Iterate(TKey from, TKey to)
+        {
+            foreach (var slice in IterateSlices(from, to))
             {
                 if (slice.Content != null)
                 {
@@ -35,83 +74,37 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        protected ISlice<TKey, TValue> JoinSlices(ISlice<TKey, TValue> slice1, ISlice<TKey, TValue> slice2)
+        protected Slice<TKey, TValue> JoinSlices(Slice<TKey, TValue> slice1, Slice<TKey, TValue> slice2)
         {
-            if (IsLess(slice2.From, slice1.To))
+            if (KeyHelper.IsLess(slice2.From, slice1.To))
                 throw new Exception("Slices cannot be joined together: key ranges are intersected!");
 
-            var from = Min(slice1.From, slice2.From);
-            var to = Max(slice1.To, slice2.To);
+            var from = KeyHelper.Min(slice1.From, slice2.From);
+            var to = KeyHelper.Max(slice1.To, slice2.To);
             var content = Join(slice1.Content, slice2.Content);
-            return SliceStorage.CreateSlice(from, to, new ArraySegment<TValue>(content));
+            return Slice<TKey, TValue>.Create(from, to, _keyFunc, content);
         }
 
-        protected ISlice<TKey, TValue> CutSlice(TKey from, TKey to, ISlice<TKey, TValue> slice)
+        protected Slice<TKey, TValue> CutSlice(TKey from, TKey to, Slice<TKey, TValue> slice)
         {
             var segment = GetSliceSegment(from, to, slice);
             var contentCopy = new ArraySegment<TValue>(slice.Content.ToArray());
-            return SliceStorage.CreateSlice(segment.From, segment.To, contentCopy);
+            return Slice<TKey, TValue>.Create(segment.From, segment.To, _keyFunc, contentCopy);
         }
 
-        protected ISlice<TKey, TValue> GetSliceSegment(TKey from, TKey to, ISlice<TKey, TValue> slice)
+        protected Slice<TKey, TValue> GetSliceSegment(TKey from, TKey to, Slice<TKey, TValue> slice)
         {
-            if (IsLess(from, slice.From))
-                throw new Exception();
-
-            if (IsLess(slice.To, to))
-                throw new Exception();
-
-            if (IsEqual(from, slice.From) && IsEqual(to, slice.To))
-                return slice;
-
-            if (slice.Content.Count == 0)
-                return SliceStorage.CreateSlice(from, to, new ArraySegment<TValue>(new TValue[0]));
-
-            var firstIndex = slice.Content.BinarySearch(_keyFunc, from, BinarySearchTypes.NearestHigher);
-            var lastIndex = slice.Content.BinarySearch(_keyFunc, to, BinarySearchTypes.NearestLower);
-            var segment = new ArraySegment<TValue>(slice.Content.Array, firstIndex + slice.Content.Offset, lastIndex - firstIndex + 1);
-
-            return SliceStorage.CreateSlice(from, to, segment);
+            return Slice<TKey, TValue>.GetSliceSegment(new KeyRange<TKey>(from, to), slice.Range, slice.Content, _keyFunc);
         }
 
-        protected bool IsLess(TKey key1, TKey key2)
+        protected Slice<TKey, TValue> GetSliceSegment(KeyRange<TKey> newRange, KeyRange<TKey> sliceRange, TValue[] content)
         {
-            return key1.CompareTo(key2) < 0;
+            return Slice<TKey, TValue>.GetSliceSegment(newRange, sliceRange, new ArraySegment<TValue>(content), _keyFunc);
         }
 
-        protected bool IsLessOrEqual(TKey key1, TKey key2)
+        protected TKey GetKey(TValue value)
         {
-            return key1.CompareTo(key2) <= 0;
-        }
-
-        protected bool IsGreater(TKey key1, TKey key2)
-        {
-            return key1.CompareTo(key2) > 0;
-        }
-
-        protected bool IsGreaterOrEqual(TKey key1, TKey key2)
-        {
-            return key1.CompareTo(key2) >= 0;
-        }
-
-        protected bool IsEqual(TKey key1, TKey key2)
-        {
-            return key1.CompareTo(key2) == 0;
-        }
-
-        protected int Compare(TKey key1, TKey key2)
-        {
-            return key1.CompareTo(key2);
-        }
-
-        protected TKey Min(TKey key1, TKey key2)
-        {
-            return IsLess(key1, key2) ?  key1 : key2;
-        }
-
-        protected TKey Max(TKey key1, TKey key2)
-        {
-            return IsLess(key1, key2) ? key2: key1;
+            return _keyFunc(value);
         }
 
         protected TValue[] Join(TValue[] array1, TValue[] array2)
@@ -141,42 +134,101 @@ namespace TickTrader.SeriesStorage
 
     public class SimpleSeriesStorage<TKey, TValue> : SeriesStorage<TKey, TValue> where TKey : IComparable
     {
-        public SimpleSeriesStorage(ISliceCollection<TKey, TValue> sliceStorage, Func<TValue, TKey> keyFunc) : base(sliceStorage, keyFunc)
+        public SimpleSeriesStorage(ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage, Func<TValue, TKey> keyFunc) : base(sliceStorage, keyFunc)
         {
-        }
-
-        public override void Append(TValue item)
-        {
-            throw new NotImplementedException();
         }
 
         public override void Delete(KeyRange<TKey> deleteRange)
         {
-            throw new NotImplementedException();
+            // find all existing slices
+            var existingRanges = GetCoveredSlices(deleteRange.From, deleteRange.To).ToList();
+
+            // TO DO : cut first and last if required
+
+            Slice<TKey, TValue> openSlice = null;
+            Slice<TKey, TValue> closeSlice = null;
+
+            if (existingRanges.Count > 0)
+            {
+                var firstSliceRange = existingRanges[0];
+                var lastSliceRange = existingRanges[existingRanges.Count - 1];
+                TValue[] firstSliceContent = null;
+                TValue[] lastSliceContent = null;
+
+                if (KeyHelper.IsGreater(deleteRange.From, firstSliceRange.From))
+                {
+                    if (SliceStorage.Read(firstSliceRange, out firstSliceContent))
+                        openSlice = GetSliceSegment(new KeyRange<TKey>(firstSliceRange.From, deleteRange.From), firstSliceRange, firstSliceContent);
+                }
+
+                if (KeyHelper.IsLess(deleteRange.To, lastSliceRange.To))
+                {
+                    if (existingRanges.Count == 1) // first is last
+                    {
+                        if (firstSliceContent != null)
+                            closeSlice = GetSliceSegment(new KeyRange<TKey>(deleteRange.To, firstSliceRange.To), firstSliceRange, firstSliceContent);
+                    }
+                    else if (SliceStorage.Read(lastSliceRange, out lastSliceContent))
+                        closeSlice = GetSliceSegment(new KeyRange<TKey>(deleteRange.To, lastSliceRange.To), lastSliceRange, lastSliceContent);
+                }
+            }
+
+            // delete all existing
+
+            foreach (var er in existingRanges)
+                SliceStorage.Remove(er);
+
+            // write open and close segments
+
+            if (openSlice != null)
+                WriteInternal(openSlice);
+
+            if (closeSlice != null)
+                WriteInternal(closeSlice);
         }
 
-        public override IEnumerable<ISlice<TKey, TValue>> IterateSlices(TKey from, TKey to, bool backwards, bool includeMissings)
+        public override IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to)
         {
-            foreach (var entry in SliceStorage.Iterate(from, backwards))
-            {
-                var slice = entry.Value;
+            var fromKey = new KeyRange<TKey>(from, default(TKey));
 
-                if (IsGreaterOrEqual(slice.From, to))
+            foreach (var entry in SliceStorage.Iterate(fromKey))
+            {
+                var range = entry.Key;
+                var content = entry.Value;
+
+                if (KeyHelper.IsGreaterOrEqual(range.From, to))
                     yield break;
 
-                if (IsLessOrEqual(slice.To, from))
+                if (KeyHelper.IsLessOrEqual(range.To, from))
                     continue;
                          
-                var sliceFrom = IsLess(slice.From, from) ? from : slice.From;
-                var sliceTo = IsLess(to, slice.To) ? to : slice.To;
+                var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
+                var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
 
-                yield return GetSliceSegment(sliceFrom, sliceTo, slice);
+                yield return GetSliceSegment(new KeyRange<TKey>(sliceFrom, sliceTo), range, content);
             }
         }
 
-        public override void Write(KeyRange<TKey> range, IEnumerable<TValue> values)
+        protected override void WriteInternal(KeyRange<TKey> range, TValue[] values)
         {
+            Delete(range);
+            SliceStorage.Write(range, values);
+        }
 
+        private IEnumerable<KeyRange<TKey>> GetCoveredSlices(TKey from, TKey to)
+        {
+            var fromKey = new KeyRange<TKey>(from, default(TKey));
+
+            foreach (var range in SliceStorage.IterateKeys(fromKey, false))
+            {
+                if (KeyHelper.IsGreaterOrEqual(range.From, to))
+                    yield break;
+
+                if (KeyHelper.IsLessOrEqual(range.To, from))
+                    continue;
+
+                yield return range;
+            }
         }
     }
 }

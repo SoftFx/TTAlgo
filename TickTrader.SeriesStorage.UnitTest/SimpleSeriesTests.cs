@@ -16,13 +16,13 @@ namespace TickTrader.SeriesStorage.UnitTest
         {
             string[] actual, expected;
 
-            var series = new SimpleSeriesStorage<int, MockItem>(Setup1(), i => i.Id);
+            var series = Setup1();
 
-            actual = series.Iterate(1, 15).Select(i => i.Value).ToArray();
+            actual = series.Iterate(1, 16).Select(i => i.Value).ToArray();
             expected = new String[] { "two", "four", "seven", "eight", "nine", "eleven", "fifteen" };
             CollectionAssert.AreEqual(expected, actual);
 
-            actual = series.Iterate(8, 15).Select(i => i.Value).ToArray();
+            actual = series.Iterate(8, 16).Select(i => i.Value).ToArray();
             expected = new String[] { "eight", "nine", "eleven", "fifteen" };
             CollectionAssert.AreEqual(expected, actual);
 
@@ -34,7 +34,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             expected = new String[] { "two", "four", "seven", "eight", "nine" };
             CollectionAssert.AreEqual(expected, actual);
 
-            actual = series.Iterate(10, 15).Select(i => i.Value).ToArray();
+            actual = series.Iterate(10, 16).Select(i => i.Value).ToArray();
             expected = new String[] { "eleven", "fifteen" };
             CollectionAssert.AreEqual(expected, actual);
         }
@@ -44,21 +44,21 @@ namespace TickTrader.SeriesStorage.UnitTest
         {
             string[] actual, expected;
 
-            var series = new SimpleSeriesStorage<int, MockItem>(Setup1(), i => i.Id);
+            var series = Setup1();
 
             actual = series.Iterate(2, 15).Select(i => i.Value).ToArray();
-            expected = new String[] { "two", "four", "seven", "eight", "nine", "eleven", "fifteen" };
+            expected = new String[] { "two", "four", "seven", "eight", "nine", "eleven" };
             CollectionAssert.AreEqual(expected, actual);
 
             actual = series.Iterate(4, 11).Select(i => i.Value).ToArray();
-            expected = new String[] { "four", "seven", "eight", "nine", "eleven" };
+            expected = new String[] { "four", "seven", "eight", "nine" };
             CollectionAssert.AreEqual(expected, actual);
 
-            actual = series.Iterate(8, 9).Select(i => i.Value).ToArray();
+            actual = series.Iterate(8, 10).Select(i => i.Value).ToArray();
             expected = new String[] { "eight", "nine" };
             CollectionAssert.AreEqual(expected, actual);
 
-            actual = series.Iterate(8, 11).Select(i => i.Value).ToArray();
+            actual = series.Iterate(8, 12).Select(i => i.Value).ToArray();
             expected = new String[] { "eight", "nine", "eleven" };
             CollectionAssert.AreEqual(expected, actual);
         }
@@ -68,7 +68,7 @@ namespace TickTrader.SeriesStorage.UnitTest
         {
             string[] actual, expected;
 
-            var series = new SimpleSeriesStorage<int, MockItem>(Setup1(), i => i.Id);
+            var series = Setup1();
 
             actual = series.Iterate(-1, 18).Select(i => i.Value).ToArray();
             expected = new String[] { "two", "four", "seven", "eight", "nine", "eleven", "fifteen" };
@@ -83,7 +83,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             CollectionAssert.AreEqual(expected, actual);
 
             actual = series.Iterate(-1, 2).Select(i => i.Value).ToArray();
-            expected = new String[] { "two" };
+            expected = new String[] { };
             CollectionAssert.AreEqual(expected, actual);
 
             actual = series.Iterate(20, 45).Select(i => i.Value).ToArray();
@@ -95,30 +95,97 @@ namespace TickTrader.SeriesStorage.UnitTest
             CollectionAssert.AreEqual(expected, actual);
         }
 
-        private MockStorage<int, MockItem> Setup1()
+        [TestMethod]
+        public void SimpleStorage_Write_NoIntersect()
         {
-            var storage = new MockStorage<int, MockItem>();
-            storage.AddSlice(1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
-            storage.AddSlice(8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
-            storage.AddSlice(10, 15, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
-            return storage;
+            var series = Setup0();
+            series.Write(1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
+            series.Write(8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
+            series.Write(10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
+
+            var actual = series.Iterate(1, 16).Select(i => i.Value).ToArray();
+            var expected = new String[] { "two", "four", "seven", "eight", "nine", "eleven", "fifteen" };
+            CollectionAssert.AreEqual(expected, actual);
         }
 
-        private class MockItem
+        [TestMethod]
+        public void SimpleStorage_Overwrite_Right_NoIntersect()
         {
-            public MockItem(int id, string val)
-            {
-                Id = id;
-                Value = val;
-            }
+            var series = Setup0();
+            series.Write(1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
+            series.Write(8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
+            series.Write(10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
 
-            public int Id { get; }
-            public string Value { get; }
+            series.Write(8, 16, new MockItem(13, "thirteen"));
 
-            public override string ToString()
-            {
-                return Value;
-            }
+            var actual = series.Iterate(1, 15).Select(i => i.Value).ToArray();
+            var expected = new String[] { "two", "four", "seven", "thirteen" };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SimpleStorage_Overwrite_Left_NoIntersect()
+        {
+            var series = Setup0();
+            series.Write(1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
+            series.Write(8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
+            series.Write(10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
+
+            series.Write(0, 10, new MockItem(5, "five"));
+
+            var actual = series.Iterate(1, 16).Select(i => i.Value).ToArray();
+            var expected = new String[] { "five", "eleven", "fifteen" };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SimpleStorage_Overwrite_Left_Intersect1()
+        {
+            var series = Setup0();
+            series.Write(1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
+            series.Write(8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
+            series.Write(10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
+
+            series.Write(3, 13, new MockItem(3, "three"), new MockItem(5, "five"), new MockItem(12, "twelve"));
+
+            var actual = series.Iterate(1, 16).Select(i => i.Value).ToArray();
+            var expected = new String[] { "two", "three", "five", "twelve", "fifteen" };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SimpleStorage_Overwrite_Left_Intersect2()
+        {
+            var series = Setup0();
+            series.Write(1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
+            series.Write(8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
+            series.Write(10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
+
+            series.Write(3, 13, new MockItem(3, "three"), new MockItem(5, "five"), new MockItem(12, "twelve"));
+
+            var actual = series.Iterate(1, 16).Select(i => i.Value).ToArray();
+            var expected = new String[] { "two", "three", "five", "twelve", "fifteen" };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        private SeriesStorage<int, MockItem> Setup0()
+        {
+            var storage = new MockStorage<KeyRange<int>, MockItem[]>();
+            return SeriesStorage.Create(storage, i => i.Id);
+        }
+
+        private SeriesStorage<int, MockItem> Setup1()
+        {
+            var storage = new MockStorage<KeyRange<int>, MockItem[]>();
+            Write(storage, 1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
+            Write(storage, 8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
+            Write(storage, 10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
+            return SeriesStorage.Create(storage, i => i.Id);
+        }
+
+        private void Write(MockStorage<KeyRange<int>, MockItem[]> storage, int from, int to, params MockItem[] items)
+        {
+            storage.Write(new KeyRange<int>(from, to), items);
         }
     }
 }

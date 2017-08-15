@@ -38,7 +38,13 @@ namespace TickTrader.SeriesStorage
                 return lower > 0 ? lower - 1 : 0;
             }
             else // if (type == BinarySearchTypes.NearestHigher)
+            {
+                if (lower == 0)
+                    return lower;
+                else if (lower == list.Count)
+                    return lower - 1;
                 return lower;
+            }
         }
 
         public static int BinarySearch<T>(this IList<T> list, T value,

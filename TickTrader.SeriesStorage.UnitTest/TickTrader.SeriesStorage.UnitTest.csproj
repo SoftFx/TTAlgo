@@ -53,9 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LevelDbTests.cs" />
+    <Compile Include="Mocks\MockItem.cs" />
     <Compile Include="Mocks\MockStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleSeriesTests.cs" />
+    <Compile Include="SliceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

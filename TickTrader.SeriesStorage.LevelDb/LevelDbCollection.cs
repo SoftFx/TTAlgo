@@ -27,7 +27,7 @@ namespace TickTrader.SeriesStorage.LevelDb
         public string Name => _collectionName;
         public long ByteSize => throw new NotImplementedException();
 
-        public IEnumerable<KeyValuePair<TKey, byte[]>> Iterate(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, byte[]>> Iterate(TKey from)
         {
             byte[] refKey = GetBinKey(from);
 
@@ -77,10 +77,11 @@ namespace TickTrader.SeriesStorage.LevelDb
             }
         }
 
-        public byte[] Read(TKey key)
+        public bool Read(TKey key, out byte[] value)
         {
             var binKey = GetBinKey(key);
-            return _database.Get(binKey);
+            value = _database.Get(binKey);
+            return value != null;
         }
 
         public void Write(TKey key, byte[] value)
