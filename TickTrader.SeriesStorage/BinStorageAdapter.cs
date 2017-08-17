@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public class BinStorageAdapter<TKey, TValue> : ICollectionStorage<TKey, TValue>
+    internal class BinStorageAdapter<TKey, TValue> : ICollectionStorage<TKey, TValue>
     {
         private IBinaryStorageCollection<TKey> _binStorage;
         private IValueSerializer<TValue> _serializer;

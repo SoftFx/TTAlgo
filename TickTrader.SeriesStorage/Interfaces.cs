@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public interface MultiCollectionStorage : IDisposable
+    public interface IMulticollectionBinaryStorage : IDisposable, IBinaryStorageFactory
     {
         bool SupportsByteSize { get; }
         IEnumerable<IBinaryCollection> Collections { get; }
@@ -40,7 +40,7 @@ namespace TickTrader.SeriesStorage
 
     public interface IBinaryStorageFactory
     {
-        IBinaryStorageCollection<TKey> CreateStorage<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
+        IBinaryStorageCollection<TKey> GetCollection<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
     }
 
     public interface IStorageFactory
@@ -61,13 +61,8 @@ namespace TickTrader.SeriesStorage
         T Deserialize(ArraySegment<byte> bytes);
     }
 
-    public interface ISliceSerializer<TValue>
+    public interface ISliceSerializer<T> : IValueSerializer<T[]>
     {
-        //ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
-        //byte[] Serialize(ISlice<TKey, TValue> slice);
-        //ISlice<TKey, TValue> Deserialize(ArraySegment<byte> bytes);
-        byte[] Serialize(ArraySegment<TValue> slice);
-        ArraySegment<TValue> Deserialize(ArraySegment<byte> bytes);
     }
 
     //public interface ISlice<TKey, TValue>

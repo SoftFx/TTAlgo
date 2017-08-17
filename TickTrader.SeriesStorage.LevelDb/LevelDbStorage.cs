@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage.LevelDb
 {
-    public class LevelDbStorage : MultiCollectionStorage
+    public class LevelDbStorage : IMulticollectionBinaryStorage
     {
         private LevelDB.DB _database;
         private Dictionary<ushort, string> _idToNameMap = new Dictionary<ushort, string>();
@@ -105,6 +105,11 @@ namespace TickTrader.SeriesStorage.LevelDb
         public void Dispose()
         {
             _database.Dispose();
+        }
+
+        public static void Destory(string path)
+        {
+            LevelDB.DB.Destroy(path);
         }
     }
 }

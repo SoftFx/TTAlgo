@@ -8,12 +8,14 @@ namespace TickTrader.SeriesStorage
 {
     public static class SeriesStorage
     {
-        public static SeriesStorage<TKey, TValue> Create<TKey, TValue>(IBinaryStorageFactory factory, IKeySerializer<TKey> keySerializer, string name = null)
+        public static SeriesStorage<TKey, TValue> Create<TKey, TValue>(IBinaryStorageFactory factory,
+            IKeySerializer<TKey> keySerializer, ISliceSerializer<TValue> valueSerializer, Func<TValue, TKey> keyGetter, string name = null)
             where TKey : IComparable
         {
-            var binCollection = factory.CreateStorage<KeyRange<TKey>>(name, null);
-            var sliceCollection = new BinStorageAdapter<KeyRange<TKey>, TValue[]>(binCollection, null);
-            return new SimpleSeriesStorage<TKey, TValue>(sliceCollection, null);
+            var sliceKeySerializer = new KeyRangeSerializer<TKey>(keySerializer);
+            var binCollection = factory.GetCollection(name, sliceKeySerializer);
+            var sliceCollection = new BinStorageAdapter<KeyRange<TKey>, TValue[]>(binCollection, valueSerializer);
+            return new SimpleSeriesStorage<TKey, TValue>(sliceCollection, keyGetter);
         }
 
         public static SeriesStorage<TKey, TValue> Create<TKey, TValue>(ICollectionStorage<KeyRange<TKey>, TValue[]> collection, Func<TValue, TKey> keyGetter)
@@ -229,6 +231,32 @@ namespace TickTrader.SeriesStorage
 
                 yield return range;
             }
+        }
+    }
+
+    internal class KeyRangeSerializer<TKey> : IKeySerializer<KeyRange<TKey>>
+        where TKey : IComparable
+    {
+        private IKeySerializer<TKey> _oneKeySerializer;
+
+        public KeyRangeSerializer(IKeySerializer<TKey> oneKeySerializer)
+        {
+            _oneKeySerializer = oneKeySerializer;
+        }
+
+        public int KeySize => _oneKeySerializer.KeySize * 2;
+
+        public KeyRange<TKey> Deserialize(IKeyReader reader)
+        {
+            return new KeyRange<TKey>(
+                _oneKeySerializer.Deserialize(reader),
+                _oneKeySerializer.Deserialize(reader));
+        }
+
+        public void Serialize(KeyRange<TKey> key, IKeyBuilder builder)
+        {
+            _oneKeySerializer.Serialize(key.From, builder);
+            _oneKeySerializer.Serialize(key.To, builder);
         }
     }
 }
