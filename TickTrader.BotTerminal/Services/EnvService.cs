@@ -32,6 +32,7 @@ namespace TickTrader.BotTerminal
                 AlgoCommonRepositoryFolder = null;
                 AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
+                CustomFeedCacheFolder = Path.Combine(appDocumentsFolder, "CustomQuoteCache");
                 AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 AppLockFilePath = Path.Combine(AppDataFolder, "applock");
             }
@@ -47,6 +48,7 @@ namespace TickTrader.BotTerminal
                 AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
                 AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
+                CustomFeedCacheFolder = Path.Combine(AppFolder, "CustomQuoteCache");
                 AppDataFolder = Path.Combine(AppFolder, "Settings");
                 AppLockFilePath = Path.Combine(AppFolder, "applock");
             }
@@ -74,6 +76,7 @@ namespace TickTrader.BotTerminal
         public string AppFolder { get; private set; }
         public string RedistFolder { get { return Path.Combine(AppFolder, "Redist"); } }
         public string FeedHistoryCacheFolder { get; private set; }
+        public string CustomFeedCacheFolder { get; private set; }
         public string ApplicationName { get; private set; }
         public string BotLogFolder { get; private set; }
         public string LogFolder { get; private set; }

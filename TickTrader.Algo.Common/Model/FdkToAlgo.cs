@@ -19,6 +19,24 @@ namespace TickTrader.Algo.Common.Model
                 dstBars.Add(Convert(bar));
         }
 
+        public static List<BarEntity> Convert(Bar[] srcBars, bool invert)
+        {
+            var result = new List<BarEntity>(srcBars.Length);
+
+            if (invert)
+            {
+                for (int i = srcBars.Length - 1; i >= 0; i--)
+                    result.Add(Convert(srcBars[i]));
+            }
+            else
+            {
+                for (int i = 0; i < srcBars.Length; i++)
+                    result.Add(Convert(srcBars[i]));
+            }
+
+            return result;
+        }
+
         public static IEnumerable<BarEntity> Convert(IEnumerable<Bar> fdkBarCollection)
         {
             return fdkBarCollection.Select(Convert);

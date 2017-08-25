@@ -51,22 +51,20 @@ namespace TickTrader.Algo.Common.Model
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
-            BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
-            var result = history.GetBars(symbolCode, FdkToAlgo.Convert(priceType), period, from, to).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            //return history.GetBars(symbolCode, priceType, timeFrame, from, to).Result;
+            throw new NotImplementedException();
         }
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
         {
             BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
-            var result = history.GetBars(symbolCode, FdkToAlgo.Convert(priceType), period, from, size).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            return history.GetBars(symbolCode, priceType, timeFrame, from, size).Result;
         }
 
         public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
-            var result = history.GetTicks(symbolCode, from, to, depth).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            //return history.IterateTicks(symbolCode, from, to, depth).Result;
+            throw new NotImplementedException();
         }
 
         public List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth)

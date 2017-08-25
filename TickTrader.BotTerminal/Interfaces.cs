@@ -14,18 +14,10 @@ namespace TickTrader.BotTerminal
         void OpenMarkerOrder(string symbol, decimal volume, OrderSide side);
     }
 
-    internal interface ToolWindowsManager
-    {
-        IScreen GetWindow(object key);
-        void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false);
-        void CloseWindow(object wndKey);
-        bool? ShowDialog(IScreen dlgModel);
-    }
-
     internal interface IShell : IWindowModel
     {
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
-        ToolWindowsManager ToolWndManager { get; }
+        WindowManager ToolWndManager { get; }
     }
 }

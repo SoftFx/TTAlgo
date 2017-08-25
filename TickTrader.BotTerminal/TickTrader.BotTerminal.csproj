@@ -167,6 +167,9 @@
     <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
       <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
     </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\lib\SQLite\x64\SQLite.Interop.dll">
@@ -269,6 +272,7 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Infrustructure\WindowManager.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
@@ -327,7 +331,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Infrustructure\MdiWindowManager.cs" />
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
@@ -366,6 +369,9 @@
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
+    <Compile Include="Views.Backtester\FeedDownloadViewModel.cs" />
+    <Compile Include="Views.Backtester\FeedImportViewModel.cs" />
     <Compile Include="Views.Chart\BotControlViewModel.cs" />
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
     <Compile Include="Views.Chart\CloseChartDialogViewModel.cs" />
@@ -426,6 +432,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\GrossPositionListViewModel.cs" />
     <Compile Include="Views\BotJournalViewModel.cs" />
+    <Compile Include="Views.Backtester\FeedStorageViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
     <Compile Include="Views\ExitDialogView.xaml.cs">
       <DependentUpon>ExitDialogView.xaml</DependentUpon>
@@ -786,6 +793,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Backtester\BacktesterView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\FeedDownloadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\FeedImportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Chart\BotControlView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -861,6 +880,10 @@
     <Page Include="Views.TradeInfo\GrossPositionListView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.Backtester\FeedStorageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\JournalView.xaml">
       <SubType>Designer</SubType>

@@ -163,7 +163,7 @@ namespace TickTrader.BotTerminal
 
             base.TryClose(dialogResult);
 
-            shell.ToolWndManager.CloseWindow(this);
+            shell.ToolWndManager.CloseWindowByKey(this);
         }
 
         public void OpenOrder()
@@ -186,7 +186,7 @@ namespace TickTrader.BotTerminal
                 {
                     bot.StartStop();
                 }
-                shell.ToolWndManager.CloseWindow(bot.Model);
+                shell.ToolWndManager.CloseWindowByKey(bot.Model);
             }
         }
 
@@ -196,7 +196,7 @@ namespace TickTrader.BotTerminal
             {
                 var model = new PluginSetupViewModel(algoEnv, item, Chart);
                 if (!model.SetupCanBeSkipped)
-                    shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
+                    shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
                     AttachPlugin(model);
 

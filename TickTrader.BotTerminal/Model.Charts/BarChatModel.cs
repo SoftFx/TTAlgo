@@ -22,8 +22,7 @@ namespace TickTrader.BotTerminal
     internal class BarChartModel : ChartModelBase
     {
         private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
-        private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
-        private BarPeriod period;
+        //private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private Api.TimeFrames timeframe;
         private readonly BarVector barCollection = new BarVector();
 
@@ -59,7 +58,6 @@ namespace TickTrader.BotTerminal
         public void Activate(Api.TimeFrames timeframe)
         {
             this.timeframe = timeframe;
-            this.period = FdkToAlgo.ToBarPeriod(timeframe);
             base.Activate();
         }
 
@@ -72,19 +70,21 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            var barArray = await ClientModel.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
-            var loadedData = barArray.Reverse().ToArray();
+            var barArray = await ClientModel.History.GetBars(SymbolCode, Api.BarPriceType.Bid, timeframe, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
+            //barArray.Reverse();
+            //var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
 
-            indicatorData.Clear();
-            FdkToAlgo.Convert(loadedData, indicatorData);
+            //indicatorData.Clear();
+            //FdkToAlgo.Convert(loadedData, indicatorData);
 
+            barCollection.Clear();
             barCollection.ChangeTimeframe(TimeFrame);
-            barCollection.Append(indicatorData);
+            barCollection.Append(barArray);
 
-            if (loadedData.Length > 0)
-                InitBoundaries(loadedData.Length, loadedData.First().From, loadedData.Last().From);
+            if (barArray.Count > 0)
+                InitBoundaries(barArray.Count, barArray.First().OpenTime, barArray.Last().OpenTime);
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)

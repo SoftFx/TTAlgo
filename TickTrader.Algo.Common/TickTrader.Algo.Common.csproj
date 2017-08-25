@@ -69,6 +69,9 @@
     <Compile Include="Model.Config\Inputs.cs" />
     <Compile Include="Model.Config\Parameters.cs" />
     <Compile Include="Model.Config\PluginConfig.cs" />
+    <Compile Include="Model.FeedCache\BarSerializer.cs" />
+    <Compile Include="Model.FeedCache\DateTimeKeySerializer.cs" />
+    <Compile Include="Model.FeedCache\FeedCacheKey.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Setup\Serialization.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
@@ -77,6 +80,7 @@
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\FdkExtension.cs" />
     <Compile Include="Model\FdkToAlgo.cs" />
+    <Compile Include="Model.FeedCache\FeedCache.cs" />
     <Compile Include="Model\FeedHistoryProvider.cs" />
     <Compile Include="Model\Interfaces.cs" />
     <Compile Include="Model.Setup\Convert.cs" />
@@ -117,6 +121,18 @@
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
+      <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
+      <Name>TickTrader.SeriesStorage.LevelDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj">
+      <Project>{af05ccd3-0e2f-4f8a-8124-27b16162a0c1}</Project>
+      <Name>TickTrader.SeriesStorage.Protobuf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj">
+      <Project>{6664e69f-2180-4d7e-b51e-c81c9f5cc47d}</Project>
+      <Name>TickTrader.SeriesStorage</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

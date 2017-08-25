@@ -71,5 +71,10 @@ namespace TickTrader.SeriesStorage
             // TO DO : ToArray() causes bad performance
             _binStorage.Write(key, binVal.ToArray());
         }
+
+        public long GetSize()
+        {
+            return _binStorage.GetSize();
+        }
     }
 }

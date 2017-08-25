@@ -9,7 +9,7 @@ namespace TickTrader.SeriesStorage
     public interface IMulticollectionBinaryStorage : IDisposable, IBinaryStorageFactory
     {
         bool SupportsByteSize { get; }
-        IEnumerable<IBinaryCollection> Collections { get; }
+        IEnumerable<string> Collections { get; }
     }
 
     public interface IBinaryCollection
@@ -27,12 +27,8 @@ namespace TickTrader.SeriesStorage
         void Remove(TKey key);
         void RemoveAll();
         void Drop(); // deletes whole storage
+        long GetSize();
     }
-
-    //public interface ISliceCollection<TKey, TValue> : ICollectionStorage<KeyRange<TKey>, ArraySegment<TValue>>
-    //{
-    //    //ISlice<TKey, TValue> CreateSlice(TKey from, TKey to, ArraySegment<TValue> sliceContent);
-    //}
 
     public interface IBinaryStorageCollection<TKey> : ICollectionStorage<TKey, byte[]>
     {
@@ -64,15 +60,6 @@ namespace TickTrader.SeriesStorage
     public interface ISliceSerializer<T> : IValueSerializer<T[]>
     {
     }
-
-    //public interface ISlice<TKey, TValue>
-    //{
-    //    TKey From { get; }
-    //    TKey To { get; }
-    //    ArraySegment<TValue> Content { get; }
-    //    bool IsEmpty { get; } // all records are null for selected range
-    //    bool IsMissing { get; } // no data for selected range
-    //}
 
     public interface IKeyBuilder
     {

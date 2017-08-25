@@ -1,0 +1,107 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:t="http://schemas.xceed.com/wpf/xaml/toolkit"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="FeedDownloadTemplate.Classic">
+
+        <ControlTemplate.Resources>
+            <Style TargetType="DatePicker">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="Margin" Value="0,0,0,2"/>
+                <Setter Property="Padding" Value="0" />
+            </Style>
+            <!--<Style TargetType="ComboBox">
+                <Setter Property="Margin" Value="0,0,0,5"/>
+            </Style>-->
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="5"/>
+            </Style>
+        </ControlTemplate.Resources>
+
+        <Grid Background="{TemplateBinding Background}">
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Name="SymbolConfigGroup" Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Content="Symbol:" Grid.Row="0" Grid.Column="0"/>
+                    <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0"
+                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol}"/>
+                    <Label Content="TimeFrame:" Grid.Row="0" Grid.Column="1"/>
+                    <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="1" Margin="0,0,5,0"
+                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame}"/>
+                    <Label Content="Side:" Grid.Row="0" Grid.Column="2"
+                           Visibility="{Binding IsPriceTypeActual,Converter={StaticResource BoolToVis}}"/>
+                    <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="2"
+                              ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType}"
+                              Visibility="{Binding IsPriceTypeActual,Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+
+                <GroupBox Name="RangeSelectionGroup" Grid.Row="1" Padding="4" Header="Range" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <!--<Label Content="From" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" />
+                        <Label Content="To" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" />-->
+                        <t:RangeSlider Grid.Row="1" Grid.ColumnSpan="2"
+                                       Minimum="{Binding MinRangeDouble}" Maximum="{Binding MaxRangeDouble}"
+                                       LowerValue="{Binding RangeFromDouble}" HigherValue="{Binding RangeToDouble}" />
+                        <DatePicker Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" SelectedDate="{Binding RangeFrom}"
+                                    DisplayDateStart="{Binding MinRange}" DisplayDateEnd="{Binding RangeTo}" />
+                        <DatePicker Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right" SelectedDate="{Binding RangeTo}"
+                                    DisplayDateStart="{Binding RangeFrom}" DisplayDateEnd="{Binding MaxRange}" />
+                    </Grid>
+                </GroupBox>
+
+                <Grid Name="Buttons" Grid.Row="2" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" />
+                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel"/>
+                </Grid>
+
+            </Grid>
+        </Grid>
+    </ControlTemplate>
+
+    <Style x:Key="FeedDownloadViewStyle.Common" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+        <Setter Property="WindowStyle" Value="ToolWindow" />
+        <Setter Property="ResizeMode" Value="NoResize" />
+        <Setter Property="Width" Value="400"/>
+        <Setter Property="SizeToContent" Value="Height"/>
+        <Setter Property="ShowInTaskbar" Value="False"/>
+    </Style>
+
+    <Style x:Key="FeedDownloadViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource FeedDownloadViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource FeedDownloadTemplate.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

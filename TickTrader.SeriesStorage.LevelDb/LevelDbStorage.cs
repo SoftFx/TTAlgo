@@ -14,7 +14,7 @@ namespace TickTrader.SeriesStorage.LevelDb
         private Dictionary<string, IBinaryCollection> _collections = new Dictionary<string, IBinaryCollection>();
 
         public bool SupportsByteSize => true;
-        public IEnumerable<IBinaryCollection> Collections { get => _collections.Values; }
+        public IEnumerable<string> Collections { get => _idToNameMap.Values; }
 
         public LevelDbStorage(string name)
         {

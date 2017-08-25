@@ -59,11 +59,11 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                SoftFX.Extended.Quote[] tickArray;
+                SoftFX.Extended.Quote[] tickArray = new Fdk.Quote[0];
 
                 try
                 {
-                    tickArray = await ClientModel.History.GetTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
+                    //var ticks = await ClientModel.History.IterateTicks(SymbolCode, timeMargin - TimeSpan.FromMinutes(15), timeMargin, 0);
                 }
                 catch (Exception)
                 {

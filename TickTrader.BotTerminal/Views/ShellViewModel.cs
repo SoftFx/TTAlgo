@@ -12,7 +12,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager
+    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -24,6 +24,7 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
+        private FeedStorageViewModel _storageManager;
 
         public ShellViewModel()
         {
@@ -35,7 +36,7 @@ namespace TickTrader.BotTerminal
             eventJournal = new EventJournal(1000);
             storage = new PersistModel();
 
-            wndManager = new MdiWindowManager(this);
+            wndManager = new WindowManager(this);
 
             cManager = new ConnectionManager(storage, eventJournal);
             clientModel = new TraderClientModel(cManager.Connection, eventJournal);
@@ -185,7 +186,7 @@ namespace TickTrader.BotTerminal
         public BotJournalViewModel BotJournal { get; set; }
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
-        public ToolWindowsManager ToolWndManager { get { return this; } }
+        public WindowManager ToolWndManager => wndManager;
 
         public NotificationsViewModel Notifications { get; private set; }
 
@@ -275,6 +276,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void OpenStorageManager()
+        {
+            if (_storageManager == null)
+                _storageManager = new FeedStorageViewModel(clientModel, ToolWndManager);
+
+            wndManager.ShowDialog(_storageManager);
+        }
+
         public void CloseChart(object chart)
         {
         }
@@ -286,7 +295,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 using (var openOrderModel = new OpenOrderDialogViewModel(clientModel, symbol))
-                    wndManager.ShowWindow(openOrderModel);
+                    wndManager.OpenMdiWindow(openOrderModel);
             }
             catch (Exception ex)
             {
@@ -297,55 +306,6 @@ namespace TickTrader.BotTerminal
         public void OpenMarkerOrder(string symbol, decimal volume, OrderSide side)
         {
 
-        }
-
-        #endregion
-
-        #region ToolWindowsManager implementation
-
-        private Dictionary<object, IScreen> wndModels = new Dictionary<object, IScreen>();
-
-        public IScreen GetWindow(object key)
-        {
-            return wndModels.GetValueOrDefault(key);
-        }
-
-        public void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false)
-        {
-            IScreen existing = GetWindow(wndKey);
-            if (existing != null)
-            {
-                if (closeExisting)
-                    existing.TryClose();
-                else
-                    throw new Exception("Window already opened!");
-            }
-            wndModel.Deactivated += WndModel_Deactivated;
-            wndModels[wndKey] = wndModel;
-            wndManager.ShowWindow(wndModel);
-        }
-
-        private void WndModel_Deactivated(object sender, DeactivationEventArgs e)
-        {
-            if (e.WasClosed)
-            {
-                var wndModel = sender as IScreen;
-                wndModel.Deactivated -= WndModel_Deactivated;
-
-                var keyValue = wndModels.FirstOrDefault(m => m.Value == wndModel);
-                if (keyValue.Key != null)
-                    wndModels.Remove(keyValue.Key);
-            }
-        }
-
-        public void CloseWindow(object wndKey)
-        {
-            GetWindow(wndKey)?.TryClose();
-        }
-
-        public bool? ShowDialog(IScreen dlgModel)
-        {
-            return wndManager.ShowDialog(dlgModel);
         }
 
         #endregion

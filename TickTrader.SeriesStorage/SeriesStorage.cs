@@ -64,6 +64,11 @@ namespace TickTrader.SeriesStorage
             WriteInternal(new KeyRange<TKey>(from, to), values);
         }
 
+        public Slice<TKey, TValue> GetFirstSlice(TKey from, TKey to)
+        {
+            return IterateSlices(from, to).FirstOrDefault();
+        }
+
         public IEnumerable<TValue> Iterate(TKey from, TKey to)
         {
             foreach (var slice in IterateSlices(from, to))
@@ -74,6 +79,11 @@ namespace TickTrader.SeriesStorage
                         yield return item;
                 }
             }
+        }
+
+        public double GetSize()
+        {
+            return SliceStorage.GetSize();
         }
 
         protected Slice<TKey, TValue> JoinSlices(Slice<TKey, TValue> slice1, Slice<TKey, TValue> slice2)

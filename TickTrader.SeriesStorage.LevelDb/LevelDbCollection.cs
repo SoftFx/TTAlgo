@@ -15,6 +15,9 @@ namespace TickTrader.SeriesStorage.LevelDb
         private bool _isNew;
         private bool _isDisposed;
 
+        private byte[] _minKey;
+        private byte[] _maxKey;
+
         public LevelDbCollection(string collectionName, ushort collectionId, LevelDB.DB database, IKeySerializer<TKey> keySerializer, bool isNew)
         {
             _collectionName = collectionName;
@@ -22,10 +25,13 @@ namespace TickTrader.SeriesStorage.LevelDb
             _database = database;
             _keySerializer = keySerializer;
             _isNew = isNew;
+
+            _minKey = FillBinKey(byte.MinValue);
+            _maxKey = FillBinKey(byte.MaxValue);
         }
 
         public string Name => _collectionName;
-        public long ByteSize => throw new NotImplementedException();
+        public long ByteSize => GetSize();
 
         public IEnumerable<KeyValuePair<TKey, byte[]>> Iterate(TKey from)
         {
@@ -102,6 +108,11 @@ namespace TickTrader.SeriesStorage.LevelDb
             throw new NotImplementedException();
         }
 
+        public long GetSize()
+        {
+            return _database.GetApproximateSize(_minKey, _maxKey);
+        }
+
         public void Drop()
         {
             RemoveAll();
@@ -146,6 +157,16 @@ namespace TickTrader.SeriesStorage.LevelDb
             var keyBuilder = new BinaryKeyWriter(fullKeySize);
             keyBuilder.WriteBe(_collectionId);
             _keySerializer.Serialize(key, keyBuilder);
+            return keyBuilder.Buffer;
+        }
+
+        private byte[] FillBinKey(byte b)
+        {
+            var fullKeySize = 2 + _keySerializer.KeySize;
+            var keyBuilder = new BinaryKeyWriter(fullKeySize);
+            keyBuilder.WriteBe(_collectionId);
+            for (int i = 0; i < _keySerializer.KeySize; i++)
+                keyBuilder.Write(b);
             return keyBuilder.Buffer;
         }
 

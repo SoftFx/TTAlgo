@@ -12,9 +12,9 @@ namespace TickTrader.BotTerminal
 {
     internal class BotControlViewModel : PropertyChangedBase
     {
-        private ToolWindowsManager wndManager;
+        private WindowManager wndManager;
 
-        public BotControlViewModel(TradeBotModel model, ToolWindowsManager wndManager, bool runBot)
+        public BotControlViewModel(TradeBotModel model, WindowManager wndManager, bool runBot)
         {
             this.Model = model;
             this.wndManager = wndManager;
@@ -52,11 +52,11 @@ namespace TickTrader.BotTerminal
 
         public void OpenState()
         {
-            var wnd = wndManager.GetWindow(Model);
+            var wnd = wndManager.GetWindowModel(Model);
             if (wnd != null)
                 wnd.Activate();
             else
-                wndManager.OpenWindow(Model, new BotStateViewModel(Model));
+                wndManager.OpenMdiWindow(Model, new BotStateViewModel(Model));
         }
 
         private void Model_StateChanged(TradeBotModel model)
