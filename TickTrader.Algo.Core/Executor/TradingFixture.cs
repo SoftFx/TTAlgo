@@ -294,10 +294,15 @@ namespace TickTrader.Algo.Core
         }
 
         #region TradeCommands impl
-
+        [Obsolete]
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
             return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendOpenOrder(cbk, id, symbol, type, side, price, volume, tp, sl, comment, options, tag));
+        }
+
+        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
+        {
+            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendOpenOrder(cbk, id, symbol, type, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, tag));
         }
 
         public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId, OrderSide side)
@@ -318,6 +323,11 @@ namespace TickTrader.Algo.Core
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double price, double? sl, double? tp, string comment)
         {
             return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendModifyOrder(cbk, id, orderId, symbol, type, side, price, currentVolume, tp, sl, comment));
+        }
+
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment)
+        {
+            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendModifyOrder(cbk, id, orderId, symbol, type, side, price, stopPrice, currentVolume, maxVisibleVolume, tp, sl, comment));
         }
 
         #endregion
@@ -421,5 +431,7 @@ namespace TickTrader.Algo.Core
         {
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
+
+        
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\EnvironmentInfoBot.cs" />
     <Compile Include="Bots\BotLogWriter.cs" />
+    <Compile Include="Bots\ModifyOrder.cs" />
     <Compile Include="Bots\OpenOrder.cs" />
     <Compile Include="Bots\OrderEventsBot.cs" />
     <Compile Include="Bots\TradeBotCommon.cs" />

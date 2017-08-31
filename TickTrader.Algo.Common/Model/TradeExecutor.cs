@@ -1,12 +1,8 @@
 ﻿using SoftFX.Extended;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
@@ -34,23 +30,49 @@ namespace TickTrader.Algo.Common.Model
             orderQueue.LinkTo(orderSender);
         }
 
+        [Obsolete("Method is deprecated. There is no support for StopLimits and Hidden orders")]
         public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
-            OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
+            OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
+        {
+            if (orderType == OrderType.StopLimit)
+                throw new NotSupportedException("StopLimit");
+
+            var px = orderType == OrderType.Stop ? default(double?) : price;
+            var stopPx = orderType == OrderType.Stop ? price : default(double?);
+
+            SendOpenOrder(callback, operationId, symbol, orderType, side, px, stopPx, volume, null, tp, sl, comment, options, tag);
+        }
+
+        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
+            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
         {
             EnqueueTradeOp("OpenOrder", callback, () =>
             {
-                ValidatePrice(price);
+                if (orderType != OrderType.Stop && orderType != OrderType.Market)
+                {
+                    ValidatePrice(price);
+                    ValidateMaxVisibleVolume(maxVisibleVolume);
+                }
+
+                if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                {
+                    ValidateStopPrice(stopPrice);
+                }
+
                 ValidateVolume(volume);
+                
                 ValidateTp(tp);
                 ValidateSl(sl);
 
-                var px = type == OrderType.Stop ? default(double?) : price;
-                var stopPx = type == OrderType.Stop ? price : default(double?);
+                var px = orderType == OrderType.Stop ? default(double?) : price;
+                var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
+                var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
-                conenction.TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(type, options), Convert(side),
-                    volume, null, px, stopPx, sl, tp, null, comment, tag, null);
+                conenction.TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(orderType, options), Convert(side),
+                    volume, maxVisVolume, px, stopPx, sl, tp, null, comment, tag, null);
             });
         }
+
 
         public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, OrderSide side)
         {
@@ -61,6 +83,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
+        [Obsolete("Method is deprecated. There is no support for StopLimits and Hidden orders")]
         public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
             OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
         {
@@ -76,6 +99,22 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
+        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
+            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment)
+        {
+            EnqueueTradeOp("ModifyOrder", callback, () =>
+            {
+                ValidateOrderId(orderId);
+
+                var px = orderType == OrderType.Stop ? default(double?) : price;
+                var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
+                var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
+
+                conenction.TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
+                    ToRecordType(orderType), Convert(side), volume, maxVisVolume, px, stopPx, sl, tp, null, comment, null, null);
+            });
+        }
+
         public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, double? volume)
         {
             EnqueueTradeOp("CloseOrder", callback, () =>
@@ -83,7 +122,9 @@ namespace TickTrader.Algo.Common.Model
                 ValidateOrderId(orderId);
 
                 if (volume == null)
+                {
                     conenction.TradeProxy.Server.ClosePositionEx(orderId, operationId);
+                }
                 else
                 {
                     ValidateVolume(volume.Value);
@@ -101,7 +142,7 @@ namespace TickTrader.Algo.Common.Model
 
                 var result = conenction.TradeProxy.Server.CloseByPositionsEx(operationId, orderId, byOrderId, -1);
                 if (!result)
-                    throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now.");
+                    throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now."); 
             });
         }
 
@@ -199,10 +240,25 @@ namespace TickTrader.Algo.Common.Model
                 throw new ValidationException(OrderCmdResultCodes.IncorrectVolume);
         }
 
-        private void ValidatePrice(double price)
+        private void ValidateMaxVisibleVolume(double? volume)
         {
-            if (price <= 0 || double.IsNaN(price) || double.IsInfinity(price))
+            if (!volume.HasValue)
+                return;
+
+            if (volume < 0 || double.IsNaN(volume.Value) || double.IsInfinity(volume.Value))
+                throw new ValidationException(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+        }
+
+        private void ValidatePrice(double? price)
+        {
+            if (price == null || price <= 0 || double.IsNaN(price.Value) || double.IsInfinity(price.Value))
                 throw new ValidationException(OrderCmdResultCodes.IncorrectPrice);
+        }
+
+        private void ValidateStopPrice(double? price)
+        {
+            if (price == null || price <= 0 || double.IsNaN(price.Value) || double.IsInfinity(price.Value))
+                throw new ValidationException(OrderCmdResultCodes.IncorrectStopPrice);
         }
 
         private void ValidateTp(double? tp)
