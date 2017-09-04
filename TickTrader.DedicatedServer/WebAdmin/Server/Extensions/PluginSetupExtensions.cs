@@ -69,13 +69,13 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                             default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
                         }
                         break;
-                    case "String":
+                    case ParameterTypes.String:
                         yield return new StringParameter() { Id = param.Id, Value = (string)param.Value };
                         break;
-                    case "Enum":
+                    case ParameterTypes.Enumeration:
                         yield return new EnumParameter() { Id = param.Id, Value = (string)param.Value };
                         break;
-                    case "File":
+                    case ParameterTypes.File:
                         var jObject = param.Value as JObject;
                         var fileName = jObject["FileName"]?.ToString();
 
