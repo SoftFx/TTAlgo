@@ -1,18 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    [DataContract(Name = "Parameter",  Namespace = "")]
+    [DataContract(Name = "Parameter", Namespace = "")]
     public abstract class ParameterSetup : PropertySetupBase
     {
+        private static readonly string nIntTypeName;
+        private static readonly string nDoubleTypeName;
+
+        static ParameterSetup()
+        {
+            nIntTypeName = typeof(int?).GetTypeInfo().FullName;
+            nDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
+        }
+
         public static ParameterSetup Create(ParameterDescriptor descriptor)
         {
             ParameterSetup newParam;
@@ -30,13 +39,25 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         private static ParameterSetup CreateByType(string typeFullName)
         {
-            switch (typeFullName)
+            if (typeFullName == nIntTypeName)
             {
-                case "System.Int32": return new IntParamSetup();
-                case "System.Double": return new DoubleParamSetup();
-                case "System.String": return new StringParamSetup();
-                case "TickTrader.Algo.Api.File": return new FileParamSetup();
-                default: return new AlgoInvalidParameter(new GuiModelMsg(MsgCodes.UnsupportedPropertyType));
+                return new NullableIntParamSetup();
+            }
+            else if (typeFullName == nDoubleTypeName)
+            {
+                return new NullableDoubleParamSetup();
+            }
+            else
+            {
+                switch (typeFullName)
+                {
+                    case "System.Boolean": return new BoolParamSetup();
+                    case "System.Int32": return new IntParamSetup();
+                    case "System.Double": return new DoubleParamSetup();
+                    case "System.String": return new StringParamSetup();
+                    case "TickTrader.Algo.Api.File": return new FileParamSetup();
+                    default: return new AlgoInvalidParameter(new GuiModelMsg(MsgCodes.UnsupportedPropertyType));
+                }
             }
         }
 
@@ -58,6 +79,14 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
     }
 
+
+    [DataContract(Name = "bool", Namespace = "")]
+    public class BoolParamSetup : ParameterSetup<bool>
+    {
+        internal override UiConverter<bool> Converter { get { return UiConverter.Bool; } }
+        public override Property Save() { return SaveTyped<BoolParameter>(); }
+    }
+
     [DataContract(Name = "int", Namespace = "")]
     public class IntParamSetup : ParameterSetup<int>
     {
@@ -65,11 +94,25 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override Property Save() { return SaveTyped<IntParameter>(); }
     }
 
+    [DataContract(Name = "nint", Namespace = "")]
+    public class NullableIntParamSetup : ParameterSetup<int?>
+    {
+        internal override UiConverter<int?> Converter { get { return UiConverter.NullableInt; } }
+        public override Property Save() { return SaveTyped<NullableIntParameter>(); }
+    }
+
     [DataContract(Name = "double", Namespace = "")]
     public class DoubleParamSetup : ParameterSetup<double>
     {
         internal override UiConverter<double> Converter { get { return UiConverter.Double; } }
         public override Property Save() { return SaveTyped<DoubleParameter>(); }
+    }
+
+    [DataContract(Name = "ndouble", Namespace = "")]
+    public class NullableDoubleParamSetup : ParameterSetup<double?>
+    {
+        internal override UiConverter<double?> Converter { get { return UiConverter.NullableDouble; } }
+        public override Property Save() { return SaveTyped<NullableDoubleParameter>(); }
     }
 
     [DataContract(Name = "string", Namespace = "")]
@@ -96,7 +139,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public List<string> EnumValues { get; private set; }   
+        public List<string> EnumValues { get; private set; }
         public string DefaultValue { get; private set; }
 
         public override void Load(Property srcProperty)
