@@ -140,6 +140,19 @@
                                      HorizontalAlignment="Stretch" />
     </DataTemplate>
 
+    <!--  Bool Param template  -->
+
+    <DataTemplate DataType="{x:Type am:BoolParamSetup}">
+        <CheckBox Name="input" IsChecked="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+
     <!--  Int Param template  -->
 
     <DataTemplate DataType="{x:Type am:IntParamSetup}">
@@ -152,10 +165,30 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type am:NullableIntParamSetup}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
     <!--  DoubleParam template -->
 
     <DataTemplate DataType="{x:Type am:DoubleParamSetup}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type am:NullableDoubleParamSetup}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding HasError}" Value="True">

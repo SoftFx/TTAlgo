@@ -29,6 +29,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         NotInteger,
         NotDouble,
         NumberOverflow,
-        RequiredButNotSet
+        RequiredButNotSet,
+        NotBoolean
     }
 }

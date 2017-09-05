@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -10,14 +6,61 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         static UiConverter()
         {
+            Bool = new BoolConverter();
             Int = new IntConverter();
+            NullableInt = new NullableIntConverter();
             Double = new DoubleConverter();
+            NullableDouble = new NullableDoubleConverter();
             String = new StringConverter();
         }
 
+        public static UiConverter<bool> Bool { get; private set; }
         public static UiConverter<int> Int { get; private set; }
+        public static UiConverter<int?> NullableInt { get; private set; }
         public static UiConverter<double> Double { get; private set; }
+        public static UiConverter<double?> NullableDouble { get; private set; }
         public static UiConverter<string> String { get; private set; }
+
+
+        internal class BoolConverter : UiConverter<bool>
+        {
+            public override bool Parse(string str, out GuiModelMsg error)
+            {
+                error = null;
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(str))
+                        return Boolean.Parse(str);
+                }
+                catch (FormatException)
+                {
+                    error = new GuiModelMsg(MsgCodes.NotBoolean);
+                }
+
+                return false;
+            }
+
+            public override string ToString(bool val)
+            {
+                return val.ToString();
+            }
+
+            public override bool FromObject(object objVal, out bool result)
+            {
+                try
+                {
+                    result = System.Convert.ToBoolean(objVal);
+                    return true;
+                }
+                catch
+                {
+                    result = false;
+                    return false;
+                }
+            }
+        }
+
 
         internal class StringConverter : UiConverter<string>
         {
@@ -79,6 +122,58 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
+        internal class NullableIntConverter : UiConverter<int?>
+        {
+            public override int? Parse(string str, out GuiModelMsg error)
+            {
+                error = null;
+                try
+                {
+                    return string.IsNullOrWhiteSpace(str) ? default(int?) : int.Parse(str);
+                }
+                catch (FormatException)
+                {
+                    error = new GuiModelMsg(MsgCodes.NotInteger);
+                }
+                catch (OverflowException)
+                {
+                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
+                }
+                return default(int?);
+            }
+
+            public override string ToString(int? val)
+            {
+                return val.ToString();
+            }
+
+            public override bool FromObject(object objVal, out int? result)
+            {
+                try
+                {
+                    if (objVal == null)
+                    {
+                        result = default(int?);
+                    }
+                    else if (objVal is string && string.IsNullOrWhiteSpace((string)objVal))
+                    {
+                        result = default(int?);
+                    }
+                    else
+                    {
+                        result = System.Convert.ToInt32(objVal);
+                    }
+
+                    return true;
+                }
+                catch (Exception)
+                {
+                    result = default(int?);
+                    return false;
+                }
+            }
+        }
+
         internal class DoubleConverter : UiConverter<double>
         {
             public override double Parse(string str, out GuiModelMsg error)
@@ -114,6 +209,58 @@ namespace TickTrader.Algo.Common.Model.Setup
                 catch (Exception)
                 {
                     result = 0;
+                    return false;
+                }
+            }
+        }
+
+        internal class NullableDoubleConverter : UiConverter<double?>
+        {
+            public override double? Parse(string str, out GuiModelMsg error)
+            {
+                error = null;
+                try
+                {
+                    return string.IsNullOrWhiteSpace(str) ? default(double?) : double.Parse(str);
+                }
+                catch (FormatException)
+                {
+                    error = new GuiModelMsg(MsgCodes.NotDouble);
+                }
+                catch (OverflowException)
+                {
+                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
+                }
+                return default(double?);
+            }
+
+            public override string ToString(double? val)
+            {
+                return val.ToString();
+            }
+
+            public override bool FromObject(object objVal, out double? result)
+            {
+                try
+                {
+                    if (objVal == null)
+                    {
+                        result = default(double?);
+                    }
+                    else if (objVal is string && string.IsNullOrWhiteSpace((string)objVal))
+                    {
+                        result = default(double?);
+                    }
+                    else
+                    {
+                        result = System.Convert.ToDouble(objVal);
+                    }
+
+                    return true;
+                }
+                catch (Exception)
+                {
+                    result = default(double?);
                     return false;
                 }
             }

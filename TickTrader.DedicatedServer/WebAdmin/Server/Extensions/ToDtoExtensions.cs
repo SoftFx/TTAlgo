@@ -8,11 +8,21 @@ using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 using TickTrader.Algo.Core;
+using System.Reflection;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class ToDtoExtensions
     {
+        private static readonly string nIntTypeName;
+        private static readonly string nDoubleTypeName;
+
+        static ToDtoExtensions()
+        {
+            nIntTypeName = typeof(int?).GetTypeInfo().FullName;
+            nDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
+        }
+
         public static AccountInfoDto ToDto(this ConnectionInfo info)
         {
             return new AccountInfoDto
@@ -34,7 +44,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
                 Permissions = bot.Permissions.ToDto()
-                
+
             };
         }
 
@@ -148,15 +158,20 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
         {
             if (parameter.IsEnum)
                 return ParameterTypes.Enumeration;
-
-            switch (parameter.DataType)
-            {
-                case "System.Int32": return ParameterTypes.Integer;
-                case "System.Double": return ParameterTypes.Double;
-                case "System.String": return ParameterTypes.String;
-                case "TickTrader.Algo.Api.File": return ParameterTypes.File;
-                default: return "Unknown";
-            }
+            else if (parameter.DataType == nDoubleTypeName)
+                return ParameterTypes.NullableDouble;
+            else if (parameter.DataType == nIntTypeName)
+                return ParameterTypes.NullableInteger;
+            else
+                switch (parameter.DataType)
+                {
+                    case "System.Int32": return ParameterTypes.Integer;
+                    case "System.Double": return ParameterTypes.Double;
+                    case "System.String": return ParameterTypes.String;
+                    case "System.Boolean": return ParameterTypes.Boolean;
+                    case "TickTrader.Algo.Api.File": return ParameterTypes.File;
+                    default: return "Unknown";
+                }
         }
     }
 }
