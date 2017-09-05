@@ -253,7 +253,7 @@ namespace TickTrader.Algo.Core
             logger.PrintTrade("Modifying order #" + orderId);
 
             var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, tp, sl, comment);
+                    orderVolume, price, sl, tp, comment);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
@@ -296,7 +296,7 @@ namespace TickTrader.Algo.Core
             logger.PrintTrade("Modifying order #" + orderId);
 
             var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, stopPrice, orderMaxVisibleVolume, tp, sl, comment);
+                    orderVolume, price, stopPrice, orderMaxVisibleVolume, sl, tp, comment);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
