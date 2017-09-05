@@ -32,6 +32,9 @@
                 </l:ThemeSelector>
 
                 <!-- Views (temp!) -->
+                <ResourceDictionary Source="Views.Aux/ProgressView.xaml" />
+                <ResourceDictionary Source="Views.Aux/DateRangeSelectionView.xaml" />
+                <ResourceDictionary Source="Views.Aux/PathInputView.xaml" />
                 <ResourceDictionary Source="Views/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
@@ -45,6 +48,7 @@
                 <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/FeedDownloadView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/FeedImportView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/FeedExportView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

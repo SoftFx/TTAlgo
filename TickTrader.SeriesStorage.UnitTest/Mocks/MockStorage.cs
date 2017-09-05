@@ -19,6 +19,11 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             RemoveAll();
         }
 
+        public long GetSize()
+        {
+            return 0;
+        }
+
         public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from)
         {
             var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);

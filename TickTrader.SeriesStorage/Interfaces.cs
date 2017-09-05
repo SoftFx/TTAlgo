@@ -87,7 +87,7 @@ namespace TickTrader.SeriesStorage
         string ReadReversedString();
     }
 
-    public struct KeyRange<TKey> : IComparable
+    public class KeyRange<TKey> : IComparable
         where TKey : IComparable
     {
         public KeyRange(TKey from, TKey to)

@@ -214,6 +214,7 @@
       <DependentUpon>TransparentContainer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
+    <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
@@ -369,8 +370,12 @@
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
+    <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
+    <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
+    <Compile Include="Views.Aux\PathInputViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.Backtester\FeedDownloadViewModel.cs" />
+    <Compile Include="Views.Backtester\FeedExportViewModel.cs" />
     <Compile Include="Views.Backtester\FeedImportViewModel.cs" />
     <Compile Include="Views.Chart\BotControlViewModel.cs" />
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
@@ -453,6 +458,7 @@
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\NotificationsViewModel.cs" />
+    <Compile Include="Views.Aux\ProgressViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\ShutdownDialogView.xaml.cs">
       <DependentUpon>ShutdownDialogView.xaml</DependentUpon>
@@ -793,11 +799,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Aux\ActionDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Aux\DateRangeSelectionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Aux\PathInputView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Backtester\BacktesterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\FeedDownloadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\FeedExportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -909,6 +931,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Aux\ProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ShellView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -954,6 +980,18 @@
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
+      <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
+      <Name>TickTrader.SeriesStorage.LevelDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj">
+      <Project>{af05ccd3-0e2f-4f8a-8124-27b16162a0c1}</Project>
+      <Name>TickTrader.SeriesStorage.Protobuf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj">
+      <Project>{6664e69f-2180-4d7e-b51e-c81c9f5cc47d}</Project>
+      <Name>TickTrader.SeriesStorage</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
       <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>

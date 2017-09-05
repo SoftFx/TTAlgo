@@ -60,19 +60,34 @@ namespace TickTrader.Algo.Common.Model
 
         public double? GetCollectionSize(FeedCacheKey key)
         {
-            lock (_sync)
-            {
-                return _barCollections.GetOrDefault(key)?.GetSize();
-            }
+            return GetBarCollection(key)?.GetSize();
         }
 
-        public Slice<DateTime, BarEntity> QueryBarCache(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType,  DateTime from, DateTime to)
+        public KeyRange<DateTime> GetFirstBarRange(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
         {
-            lock (_sync)
-            {
-                var key = new FeedCacheKey(symbol, frame, priceType);
-                return GetBarCollection(key)?.GetFirstSlice(from, to);
-            }
+            var key = new FeedCacheKey(symbol, frame, priceType);
+            return GetBarCollection(key)?.GetFirstRange(from, to);
+        }
+
+        public IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key)
+        {
+            return IterateCacheKeys(key, DateTime.MinValue, DateTime.MaxValue);
+        }
+
+        public IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return GetBarCollection(key)?.IterateRanges(from, to);
+        }
+
+        public IEnumerable<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return GetBarCollection(key)?.IterateSlices(from, to) ?? Enumerable.Empty<Slice<DateTime, BarEntity>>();
+        }
+
+        public Slice<DateTime, BarEntity> QueryBarCache(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
+        {
+            var key = new FeedCacheKey(symbol, frame, priceType);
+            return GetBarCollection(key)?.GetFirstSlice(from, to);
         }
 
         public void Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
@@ -87,17 +102,20 @@ namespace TickTrader.Algo.Common.Model
 
         private SeriesStorage<DateTime, BarEntity> GetBarCollection(FeedCacheKey key, bool addIfMissing = false)
         {
-            SeriesStorage<DateTime, BarEntity> series;
-            _barCollections.TryGetValue(key, out series);
-
-            if (series == null && addIfMissing)
+            lock (_sync)
             {
-                series = CreateBarCollection(key);
-                _barCollections.Add(key, series);
-                Added?.Invoke(key);
-            }
+                SeriesStorage<DateTime, BarEntity> series;
+                _barCollections.TryGetValue(key, out series);
 
-            return series;
+                if (series == null && addIfMissing)
+                {
+                    series = CreateBarCollection(key);
+                    _barCollections.Add(key, series);
+                    Added?.Invoke(key);
+                }
+
+                return series;
+            }
         }
 
         private SeriesStorage<DateTime, BarEntity> CreateBarCollection(FeedCacheKey key)

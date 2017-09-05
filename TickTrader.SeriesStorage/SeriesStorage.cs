@@ -38,15 +38,19 @@ namespace TickTrader.SeriesStorage
 
         internal SeriesStorage(ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage, Func<TValue, TKey> keyFunc)
         {
+            LockObj = new object();
+
             SliceStorage = sliceStorage;
             _keyFunc = keyFunc;
         }
 
+        protected object LockObj { get; }
         protected ICollectionStorage<KeyRange<TKey>, TValue[]> SliceStorage { get; }
 
         protected abstract void WriteInternal(KeyRange<TKey> keyRange, TValue[] values);
         public abstract void Delete(KeyRange<TKey> keyRange);
-        public abstract IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to);
+        protected abstract IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to);
+        protected abstract IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to);
 
         protected void WriteInternal(Slice<TKey, TValue> slice)
         {
@@ -66,7 +70,12 @@ namespace TickTrader.SeriesStorage
 
         public Slice<TKey, TValue> GetFirstSlice(TKey from, TKey to)
         {
-            return IterateSlices(from, to).FirstOrDefault();
+            return IterateSlicesInternal(from, to).FirstOrDefault();
+        }
+
+        public KeyRange<TKey> GetFirstRange(TKey from, TKey to)
+        {
+            return IterateRangesInternal(from, to).FirstOrDefault();
         }
 
         public IEnumerable<TValue> Iterate(TKey from, TKey to)
@@ -79,6 +88,16 @@ namespace TickTrader.SeriesStorage
                         yield return item;
                 }
             }
+        }
+
+        public IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to)
+        {
+            return IterateSlicesInternal(from, to).LockOnEach(LockObj);
+        }
+
+        public IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to)
+        {
+            return IterateRangesInternal(from, to).LockOnEach(LockObj);
         }
 
         public double GetSize()
@@ -199,7 +218,7 @@ namespace TickTrader.SeriesStorage
                 WriteInternal(closeSlice);
         }
 
-        public override IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to)
+        protected override IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to)
         {
             var fromKey = new KeyRange<TKey>(from, default(TKey));
 
@@ -221,10 +240,32 @@ namespace TickTrader.SeriesStorage
             }
         }
 
+        protected override IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to)
+        {
+            var fromKey = new KeyRange<TKey>(from, default(TKey));
+
+            foreach (var range in SliceStorage.IterateKeys(fromKey, false))
+            {
+                if (KeyHelper.IsGreaterOrEqual(range.From, to))
+                    yield break;
+
+                if (KeyHelper.IsLessOrEqual(range.To, from))
+                    continue;
+
+                var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
+                var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+
+                yield return new KeyRange<TKey>(sliceFrom, sliceTo);
+            }
+        }
+
         protected override void WriteInternal(KeyRange<TKey> range, TValue[] values)
         {
-            Delete(range);
-            SliceStorage.Write(range, values);
+            lock (LockObj)
+            {
+                Delete(range);
+                SliceStorage.Write(range, values);
+            }
         }
 
         private IEnumerable<KeyRange<TKey>> GetCoveredSlices(TKey from, TKey to)

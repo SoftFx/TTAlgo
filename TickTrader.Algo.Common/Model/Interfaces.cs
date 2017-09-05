@@ -22,4 +22,14 @@ namespace TickTrader.Algo.Common.Model
     {
         IFeedSubscription SubscribeAll();
     }
+
+    public interface IActionObserver
+    {
+        void StartProgress(double min, double max);
+        void ReserveMessageSlots(int slotCount);
+        void Reset();
+        void SetProgress(double val);
+        void SetMessage(int slot, string message);
+        //void SetKeyValue(int slot, string key, string value);
+    }
 }

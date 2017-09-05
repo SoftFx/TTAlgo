@@ -49,6 +49,7 @@
     <Compile Include="BinaryKeyWriter.cs" />
     <Compile Include="BinStorageAdapter.cs" />
     <Compile Include="ByteConverter.cs" />
+    <Compile Include="EnumerableExt.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="KeyHelper.cs" />
     <Compile Include="LightSerializer\LightObjectReader.cs" />

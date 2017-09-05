@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
+    <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\PathEscaper.cs" />
     <Compile Include="Model.Config\Inputs.cs" />
     <Compile Include="Model.Config\Parameters.cs" />

@@ -3,6 +3,19 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
+    <Style x:Key="FeedStorageDataGridRow" TargetType="{x:Type DataGridRow}">
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu>
+                    <MenuItem Header="Resize" IsEnabled="False" ToolTip="Not implemented!"/>
+                    <MenuItem Header="Remove" IsEnabled="False" ToolTip="Not implemented!"/>
+                    <Separator/>
+                    <MenuItem Header="Export" cal:Message.Attach="Export"/>
+                </ContextMenu>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <ControlTemplate x:Key="FeedStorageTemplate.Classic">
         <Grid Background="{TemplateBinding Background}">
 
@@ -31,15 +44,7 @@
             </StackPanel>
 
             <DataGrid Style="{DynamicResource DataGrid_Style}" Grid.Column="0" Margin="5,0,5,5"
-                      ItemsSource="{Binding ServerItems}">
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Resize" IsEnabled="False" ToolTip="Not implemented!"/>
-                        <MenuItem Header="Remove" IsEnabled="False" ToolTip="Not implemented!"/>
-                        <Separator/>
-                        <MenuItem Header="Export" IsEnabled="False" ToolTip="Not implemented!"/>
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
+                      ItemsSource="{Binding ServerItems}" Tag="{Binding}" RowStyle="{StaticResource FeedStorageDataGridRow}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Symbol" Width="2*"
                                         Binding="{Binding Symbol}"
@@ -50,7 +55,7 @@
                                         Binding="{Binding Size}" />
                 </DataGrid.Columns>
             </DataGrid>
-            
+
         </Grid>
     </ControlTemplate>
 

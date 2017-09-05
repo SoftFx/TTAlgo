@@ -3,6 +3,7 @@ using SoftFX.Extended;
 using SoftFX.Extended.Storage;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Math;
+using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -106,6 +108,12 @@ namespace TickTrader.Algo.Common.Model
         //    //return Enqueue(() => fdkStorage.Online.GetBars(symbol, priceType, period, startTime, endTime));
         //}
 
+        public IEnumerable<Slice<DateTime, BarEntity>> ReadCache(FeedCacheKey key, bool custom, DateTime from, DateTime to)
+        {
+            var cache = custom ? _customChache : _onlineCache;
+            return cache.IterateBarCache(key, from, to);
+        }
+
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
             return Task.Factory.StartNew(() =>
@@ -121,35 +129,122 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public Task<List<BarEntity>> GetBars(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        public Task<Tuple<DateTime, DateTime>> GetCachedRange(FeedCacheKey key, bool custom)
         {
             return Task.Factory.StartNew(() =>
             {
-                var result = connection.FeedProxy.Server.GetHistoryBars(symbol, startTime, count, FdkToAlgo.Convert(priceType), FdkToAlgo.ToBarPeriod(timeFrame));
-                var algoBars = FdkToAlgo.Convert(result.Bars, true);
+                var cache = custom ? _customChache : _onlineCache;
+                bool hasValues = false;
+                var min = DateTime.MinValue;
+                var max = DateTime.MaxValue;
 
-                var toCorrected = result.To.Value;
-
-                if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To) // hacky workaround
+                foreach (var r in cache.IterateCacheKeys(key))
                 {
-                    var sampler = BarSampler.Get(timeFrame);
-                    var barBoundaries = sampler.GetBar(result.To.Value);
-                    toCorrected = barBoundaries.Close;
+                    if (!hasValues)
+                    {
+                        min = r.From;
+                        hasValues = true;
+                    }
+
+                    max = r.To;
                 }
 
-                _onlineCache.Put(symbol, timeFrame, priceType, result.From.Value, toCorrected, algoBars.ToArray());
-                return algoBars;
+                return hasValues ? new Tuple<DateTime, DateTime>(min, max) : null;
+            });
+        }
+
+        public Task<List<BarEntity>> GetBarSlice(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var slice = DownloadBarSlice(symbol, timeFrame, priceType, startTime, count);
+                _onlineCache.Put(symbol, timeFrame, priceType, slice.From, slice.To, slice.Bars.ToArray());
+                return slice.Bars;
             });
 
             //return Enqueue(() => fdkStorage.Online.GetBars(symbol, priceType, period, startTime, count));
         }
 
-        //private Task<TResult> Enqueue<TResult>(Func<TResult> handler)
-        //{
-        //    Task<TResult> task = new Task<TResult>(handler);
-        //    requestQueue.Post(task);
-        //    return task;
-        //}
+        public Task Downlaod(string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to)
+        {
+            return Downlaod(symbol, timeFrame, priceType, from, to, CancellationToken.None, null);
+        }
+
+        public Task Downlaod(string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to,
+            CancellationToken cancelToken, IActionObserver observer = null)
+        {
+            const int chunkSize = 12000;
+
+            observer?.StartProgress(from.TotalDays(), to.TotalDays());
+
+            var watch = new Stopwatch();
+            int downloadedCount = 0;
+
+            return Task.Factory.StartNew(() =>
+            {
+                for (var i = from; i < to;)
+                {
+                    var cachedSlice = OnlineCache.GetFirstBarRange(symbol, timeFrame, priceType.Value, i, to);
+                    var cachedStart = cachedSlice?.From ?? DateTime.MaxValue;
+                    var cachedEnd = cachedSlice?.To ?? DateTime.MaxValue;
+
+                    if (cachedStart <= i)
+                    {
+                        // skip
+                        i = cachedEnd;
+                    }
+                    else
+                    {
+                        // download
+                        watch.Start();
+                        var slice = DownloadBarSlice(symbol, timeFrame, priceType.Value, i, chunkSize);
+                        downloadedCount += slice?.Bars.Count ?? 0;
+                        watch.Stop();
+                        _onlineCache.Put(symbol, timeFrame, priceType.Value, i, slice.To, slice.Bars.ToArray());
+                        i = slice.To;
+                    }
+
+                    observer.SetMessage(0, "Downloading... " +  downloadedCount + " bars are downloaded.");
+
+                    if (watch.ElapsedMilliseconds > 0)
+                        observer.SetMessage(1, "Bar per second: " + Math.Round( (double)(downloadedCount * 1000) / watch.ElapsedMilliseconds));
+
+                    observer?.SetProgress(i.TotalDays());
+
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        observer.SetMessage(0, "Canceled. " + downloadedCount + " bars were downloaded.");
+                        return;
+                    }
+                }
+
+                observer.SetMessage(0, "Completed. " + downloadedCount + " bars were downloaded.");
+            });
+        }
+
+        private BarSlice DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
+        {
+            var result = connection.FeedProxy.Server.GetHistoryBars(symbol, startTime, count, FdkToAlgo.Convert(priceType), FdkToAlgo.ToBarPeriod(timeFrame));
+            var algoBars = FdkToAlgo.Convert(result.Bars, count < 0);
+
+            var toCorrected = result.To.Value;
+
+            if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To) // hacky workaround
+            {
+                var sampler = BarSampler.Get(timeFrame);
+                var barBoundaries = sampler.GetBar(result.To.Value);
+                toCorrected = barBoundaries.Close;
+            }
+
+            return new BarSlice { Bars = algoBars, From = result.From.Value, To = toCorrected };
+        }
+
+        private class BarSlice
+        {
+            public DateTime From { get; set; }
+            public DateTime To { get; set; }
+            public List<BarEntity> Bars { get; set; }
+        }
     }
 
    

@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            var barArray = await ClientModel.History.GetBars(SymbolCode, Api.BarPriceType.Bid, timeframe, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
+            var barArray = await ClientModel.History.GetBarSlice(SymbolCode, Api.BarPriceType.Bid, timeframe, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
             //barArray.Reverse();
             //var loadedData = barArray.Reverse().ToArray();
 

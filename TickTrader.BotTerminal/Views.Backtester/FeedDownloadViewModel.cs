@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -18,8 +20,9 @@ namespace TickTrader.BotTerminal
         private bool _isRangeLoaded;
         private FeedHistoryProviderModel _feedCache;
         private TraderClientModel _client;
-        private DateTime? _rangeFrom;
-        private DateTime? _rangeTo;
+        private bool _showDownloadUi;
+        private CancellationTokenSource _cancelDownloadSrc;
+        private Task _downloadTask;
 
         public FeedDownloadViewModel(TraderClientModel clientModel)
         {
@@ -33,19 +36,40 @@ namespace TickTrader.BotTerminal
             DisplayName = "Pre-download symbol";
             SelectedTimeFrame = TimeFrames.M1;
             SelectedPriceType = BarPriceType.Bid;
+
+            DownloadObserver = new ProgressViewModel();
+            DateRange = new DateRangeSelectionViewModel();
+
+            UpdateState();
         }
 
         public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
         public bool IsPriceTypeActual { get; private set; }
         public IObservableListSource<SymbolModel> Symbols { get; }
+        public DateRangeSelectionViewModel DateRange { get; }
         public bool CanDownload { get; private set; }
-        public double MaxRangeDouble => GetDayNumber(MaxRange);
-        public double MinRangeDouble => GetDayNumber(MinRange);
-        public DateTime MinRange { get; private set; }
-        public DateTime MaxRange { get; private set; }
+        public bool CanCancel { get; private set; }
+        public ProgressViewModel DownloadObserver { get; }
+        public bool IsInputEnabled => !IsDowloading;
+
+        private bool IsDowloading => _cancelDownloadSrc != null;
+        private bool IsCanceling => _cancelDownloadSrc?.IsCancellationRequested ?? false;
 
         #region Observable Properties
+
+        public bool ShowDownloadUi
+        {
+            get => _showDownloadUi;
+            set
+            {
+                if (_showDownloadUi != value)
+                {
+                    _showDownloadUi = value;
+                    NotifyOfPropertyChange(nameof(ShowDownloadUi));
+                }
+            }
+        }
 
         public bool IsRangeLoaded
         {
@@ -73,6 +97,8 @@ namespace TickTrader.BotTerminal
 
                     if (_selectedSymbol != null)
                         UpdateAvailableRange(_selectedSymbol);
+
+                    DownloadObserver.Reset();
                 }
             }
         }
@@ -106,61 +132,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public double RangeFromDouble
-        {
-            get => ToDouble(RangeFrom) ?? 0;
-            set { RangeFrom = FromDayNumber(value); }
-        }
-
-        public double RangeToDouble
-        {
-            get => ToDouble(RangeTo) ?? 100;
-            set { RangeTo = FromDayNumber(value); }
-        }
-
-        public DateTime? RangeFrom
-        {
-            get => _rangeFrom;
-            set
-            {
-                if (_rangeFrom != value)
-                {
-                    //if (value < MinRange)
-                    //    value = MinRange;
-                    //if (value > RangeTo)
-                    //    value = RangeTo;
-
-                    _rangeFrom = value;
-                    NotifyOfPropertyChange(nameof(RangeFrom));
-                    NotifyOfPropertyChange(nameof(RangeFromDouble));
-                }
-            }
-        }
-
-        public DateTime? RangeTo
-        {
-            get { return _rangeTo; }
-            set
-            {
-                if (_rangeTo != value)
-                {
-                    //if (value > MaxRange)
-                    //    value = MaxRange;
-                    //if (value < RangeFrom)
-                    //    value = RangeFrom;
-
-                    _rangeTo = value;
-                    NotifyOfPropertyChange(nameof(RangeTo));
-                    NotifyOfPropertyChange(nameof(RangeToDouble));
-                }
-            }
-        }
-
         #endregion
 
-        public void Cancel()
+        public async void Cancel()
         {
-            TryClose();
+            if (IsDowloading)
+            {
+                _cancelDownloadSrc.Cancel();
+                UpdateState();
+                await _downloadTask;
+            }
+            else
+                TryClose();
         }
 
         public void Dispose()
@@ -173,60 +156,62 @@ namespace TickTrader.BotTerminal
         public override void TryClose(bool? dialogResult = default(bool?))
         {
             base.TryClose(dialogResult);
-
             Dispose();
+        }
+
+        public override void CanClose(Action<bool> callback)
+        {
+            callback(!IsDowloading);
         }
 
         public void Download()
         {
+            _downloadTask = DownloadAsync();
         }
 
         private void UpdateState()
         {
-            var connected = _client.IsConnected;
-            CanDownload = connected && IsRangeLoaded;
+            CanDownload = _client.IsConnected && IsRangeLoaded && !IsDowloading;
+            CanCancel = !IsCanceling;
             NotifyOfPropertyChange(nameof(CanDownload));
+            NotifyOfPropertyChange(nameof(CanCancel));
+            NotifyOfPropertyChange(nameof(IsInputEnabled));
         }
 
         private async void UpdateAvailableRange(SymbolModel smb)
         {
             IsRangeLoaded = false;
-            RangeFrom = null;
-            RangeTo = null;
+            DateRange.From = null;
+            DateRange.To = null;
 
             var range = await _feedCache.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
 
             if (_selectedSymbol == smb)
             {
-                MinRange = range.Item1.Date;
-                MaxRange = range.Item2.Date;
-
-                NotifyOfPropertyChange(nameof(MinRange));
-                NotifyOfPropertyChange(nameof(MaxRange));
-                NotifyOfPropertyChange(nameof(MinRangeDouble));
-                NotifyOfPropertyChange(nameof(MaxRangeDouble));
-
-                RangeFrom = MinRange;
-                RangeTo = MaxRange;
+                DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
                 IsRangeLoaded = true;
             }
         }
 
-        private double? ToDouble(DateTime? val)
+        private async Task DownloadAsync()
         {
-            if (val == null)
-                return null;
-            return GetDayNumber(val.Value);
-        }
+            ShowDownloadUi = true;
+            DownloadObserver.Reset();
+            _cancelDownloadSrc = new CancellationTokenSource();
+            UpdateState();
 
-        private static double GetDayNumber(DateTime val)
-        {
-            return (val - DateTime.MinValue).TotalDays;
-        }
+            try
+            {
+                await _feedCache.Downlaod(SelectedSymbol.Name, SelectedTimeFrame, SelectedPriceType,
+                    DateRange.From.Value, DateRange.To.Value, _cancelDownloadSrc.Token, DownloadObserver);
+            }
+            catch (Exception ex)
+            {
 
-        private static DateTime FromDayNumber(double day)
-        {
-            return DateTime.MinValue + TimeSpan.FromDays(Math.Round(day));
+            }
+
+            _cancelDownloadSrc = null;
+            UpdateState();
         }
     }
 }

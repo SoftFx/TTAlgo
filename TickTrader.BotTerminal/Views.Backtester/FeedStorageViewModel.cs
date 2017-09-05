@@ -29,9 +29,9 @@ namespace TickTrader.BotTerminal
             lock (_historyProvider.OnlineCache.SyncObj)
             {
                 foreach (var key in _historyProvider.OnlineCache.Keys)
-                    ServerItems.Add(new CacheSeriesInfoViewModel(key));
+                    ServerItems.Add(new CacheSeriesInfoViewModel(key, this));
 
-                _historyProvider.OnlineCache.Added += k => Execute.OnUIThread(() => ServerItems.Add(new CacheSeriesInfoViewModel(k)));
+                _historyProvider.OnlineCache.Added += k => Execute.OnUIThread(() => ServerItems.Add(new CacheSeriesInfoViewModel(k, this)));
                 _historyProvider.OnlineCache.Removed += k => { };
             }
         }
@@ -73,6 +73,11 @@ namespace TickTrader.BotTerminal
             _wndManager.ShowDialog(new FeedImportViewModel());
         }
 
+        public void Export(CacheSeriesInfoViewModel series)
+        {
+            _wndManager.ShowDialog(new FeedExportViewModel(series.Key, _clientModel));
+        }
+
         private async void DoUpdateSizes()
         {
             CanUpdateSizes = false;
@@ -99,10 +104,13 @@ namespace TickTrader.BotTerminal
         }
     }
 
-    public class CacheSeriesInfoViewModel : ObservableObject
+    internal class CacheSeriesInfoViewModel : ObservableObject
     {
-        public CacheSeriesInfoViewModel(FeedCacheKey key)
+        private FeedStorageViewModel _parent;
+
+        public CacheSeriesInfoViewModel(FeedCacheKey key, FeedStorageViewModel parent)
         {
+            _parent = parent;
             Key = key;
             Symbol = key.Symbol;
             Cfg = key.Frame + " " + key.PriceType;
@@ -121,6 +129,11 @@ namespace TickTrader.BotTerminal
                 Size = Math.Round(newSize.Value / (1024 * 1024), 2);
 
             NotifyOfPropertyChange(nameof(Size));
+        }
+
+        public void Export()
+        {
+            _parent.Export(this);
         }
     }
 }
