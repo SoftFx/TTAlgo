@@ -88,6 +88,17 @@
     <Compile Include="State\StateMachineSync.cs" />
     <Compile Include="State\StateTransition.cs" />
     <Compile Include="State\TimeEvent.cs" />
+    <Compile Include="Var\BoolVar.cs" />
+    <Compile Include="Var\CmpVar.cs" />
+    <Compile Include="Var\DoubleVar.cs" />
+    <Compile Include="Var\Interfaces.cs" />
+    <Compile Include="Var\IntVar.cs" />
+    <Compile Include="Var\StateMachine.cs" />
+    <Compile Include="Var\StateMachineBase.cs" />
+    <Compile Include="Var\Var.cs" />
+    <Compile Include="Var\VarContext.cs" />
+    <Compile Include="Var\VarExtentions.cs" />
+    <Compile Include="Var\VarOperator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
