@@ -82,6 +82,7 @@ namespace Machinarium.Var
         {
             private IVar[] _baseSources;
             private Func<bool> _operatorDef;
+            private bool _value;
 
             public Operator(Func<bool> operatorDef, params IVar[] baseSources)
             {
@@ -90,6 +91,8 @@ namespace Machinarium.Var
 
                 foreach (var src in baseSources)
                     src.Changed += Src_Changed;
+
+                _value = operatorDef();
             }
 
             private void Src_Changed(bool disposed)
@@ -97,12 +100,19 @@ namespace Machinarium.Var
                 if (disposed)
                     Dispose();
                 else
-                    OnChanged();
+                {
+                    var newVal = _operatorDef();
+                    if (newVal != _value)
+                    {
+                        _value = newVal;
+                        OnChanged();
+                    }
+                }
             }
 
             public override bool Value
             {
-                get => _operatorDef();
+                get => _value;
                 set => throw new Exception("Cannot set value for operator!");
             }
 

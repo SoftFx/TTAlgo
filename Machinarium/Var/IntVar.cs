@@ -75,24 +75,64 @@ namespace Machinarium.Var
             return new Operator(() => c1.Value * c2, c1);
         }
 
+        public static BoolVar operator ==(IntVar c1, IntVar c2)
+        {
+            return new BoolVar.Operator(() => c1.Value == c2.Value, c1, c2);
+        }
+
+        public static BoolVar operator ==(int c1, IntVar c2)
+        {
+            return new BoolVar.Operator(() => c1 == c2.Value, c2);
+        }
+
+        public static BoolVar operator ==(IntVar c1, int c2)
+        {
+            return new BoolVar.Operator(() => c1.Value == c2, c1);
+        }
+
+        public static BoolVar operator !=(IntVar c1, IntVar c2)
+        {
+            return new BoolVar.Operator(() => c1.Value != c2.Value, c1, c2);
+        }
+
+        public static BoolVar operator !=(int c1, IntVar c2)
+        {
+            return new BoolVar.Operator(() => c1 != c2.Value, c2);
+        }
+
+        public static BoolVar operator !=(IntVar c1, int c2)
+        {
+            return new BoolVar.Operator(() => c1.Value != c2, c1);
+        }
+
         public static BoolVar operator >(IntVar c1, IntVar c2)
         {
-            return new BoolVar.Operator(() => c1.Value > c2.Value, c1);
+            return new BoolVar.Operator(() => c1.Value > c2.Value, c1, c2);
         }
 
         public static BoolVar operator <(IntVar c1, IntVar c2)
         {
-            return new BoolVar.Operator(() => c1.Value < c2.Value, c1);
+            return new BoolVar.Operator(() => c1.Value < c2.Value, c1, c2);
         }
 
         public static BoolVar operator >=(IntVar c1, IntVar c2)
         {
-            return new BoolVar.Operator(() => c1.Value >= c2.Value, c1);
+            return new BoolVar.Operator(() => c1.Value >= c2.Value, c1, c2);
         }
 
         public static BoolVar operator <=(IntVar c1, IntVar c2)
         {
-            return new BoolVar.Operator(() => c1.Value <= c2.Value, c1);
+            return new BoolVar.Operator(() => c1.Value <= c2.Value, c1, c2);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public class Variable : IntVar
@@ -127,6 +167,7 @@ namespace Machinarium.Var
         {
             private IVar[] _baseSources;
             private Func<int> _operatorDef;
+            private int _value;
 
             public Operator(Func<int> operatorDef, params IVar[] baseSources)
             {
@@ -135,6 +176,8 @@ namespace Machinarium.Var
 
                 foreach (var src in baseSources)
                     src.Changed += Src_Changed;
+
+                _value = operatorDef();
             }
 
             private void Src_Changed(bool disposed)
@@ -142,12 +185,19 @@ namespace Machinarium.Var
                 if (disposed)
                     Dispose();
                 else
-                    OnChanged();
+                {
+                    var newVal = _operatorDef();
+                    if (newVal != _value)
+                    {
+                        _value = newVal;
+                        OnChanged();
+                    }
+                }
             }
 
             public override int Value
             {
-                get => _operatorDef();
+                get => _value;
                 set => throw new Exception("Cannot set value for operator!");
             }
 
