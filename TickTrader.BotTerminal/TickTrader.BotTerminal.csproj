@@ -176,9 +176,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
-    <Content Include="Redist\TickTrader.Algo.VS.Package.vsix">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -990,7 +987,9 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Redist\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

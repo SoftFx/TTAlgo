@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
             this.Model = model;
             this.wndManager = wndManager;
 
-            model.StateChanged += Model_StateChanged;
+            model.StateChanged += BotStateChanged;
 
             if (runBot)
             {
@@ -53,6 +53,8 @@ namespace TickTrader.BotTerminal
         public bool CanBeClosed { get { return Model.State == BotModelStates.Stopped; } }
         public bool CanStartStop { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped; } }
 
+        public bool CanOpenSettings { get { return Model.State == BotModelStates.Stopped; } }
+
         public void OpenState()
         {
             var wnd = wndManager.GetWindow(Model);
@@ -62,8 +64,35 @@ namespace TickTrader.BotTerminal
                 wndManager.OpenWindow(Model, new BotStateViewModel(Model));
         }
 
-        private void Model_StateChanged(TradeBotModel model)
+        public void OpenSettings()
         {
+            var key = $"BotSettings {Model.InstanceId}";
+
+            var wnd = wndManager.GetWindow(key);
+            if (wnd != null)
+            {
+                wnd.Activate();
+            }
+            else
+            {
+                var pSetup = new PluginSetupViewModel(Model);
+                pSetup.Closed += PluginSetupViewClosed;
+
+                wndManager.OpenWindow(key, pSetup);
+            }
+        }
+
+        private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)
+        {
+            if (dialogResult)
+            {
+                Model.Configurate(setupVM.Setup, setupVM.Permissions, setupVM.Isolated);
+            }
+        }
+
+        private void BotStateChanged(TradeBotModel model)
+        {
+            NotifyOfPropertyChange(nameof(CanOpenSettings));
             NotifyOfPropertyChange(nameof(CanBeClosed));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(IsStarted));
@@ -71,7 +100,7 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            Model.StateChanged -= Model_StateChanged;
+            Model.StateChanged -= BotStateChanged;
         }
     }
 }

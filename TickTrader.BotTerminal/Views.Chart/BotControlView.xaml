@@ -8,9 +8,25 @@
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <ContextMenu x:Key="ContextMenu">
-        <MenuItem Header="View state"
+        <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="StartStop" >
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Setter Property="Header" Value="Start"></Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsStarted}" Value="True">
+                            <Setter Property="Header" Value="Stop"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <MenuItem Header="Status"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenState" />
+        <MenuItem Header="Settings"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenSettings" />
     </ContextMenu>
 
     <ControlTemplate x:Key="BotControlView.Old">
@@ -25,6 +41,7 @@
                             <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>
                             <TextBlock Text="{Binding Model.InstanceId}" Width="180" cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]"/>
                             <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+                            <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" />
                             <l:FlatButton cal:Message.Attach="Close" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
                         </StackPanel>
                     </Border>
@@ -48,6 +65,7 @@
                             <!--<Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>-->
                             <TextBlock Text="{Binding Model.InstanceId}" Width="180"/>
                             <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+                            <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}"/>
                             <l:FlatButton cal:Message.Attach="Close" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanBeClosed}"/>
                         </StackPanel>
                     </Border>
