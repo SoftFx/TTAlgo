@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             if (wnd != null)
                 wnd.Activate();
             else
-                wndManager.OpenWindow(Model, new BotStateViewModel(Model));
+                wndManager.OpenWindow(Model, new BotStateViewModel(Model, wndManager));
         }
 
         public void OpenSettings()
