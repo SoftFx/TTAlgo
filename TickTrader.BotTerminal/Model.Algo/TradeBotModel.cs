@@ -22,6 +22,7 @@ namespace TickTrader.BotTerminal
         public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
         public event System.Action<TradeBotModel> StateChanged = delegate { };
         public event System.Action<TradeBotModel> Removed = delegate { };
+        public event System.Action<TradeBotModel> ConfigurationChanged = delegate { };
 
 
         public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host, WindowStorageModel stateSettings)
@@ -78,6 +79,15 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
+        new internal void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        {
+            if (State != BotModelStates.Stopped)
+                return;
+
+            base.Configurate(setup, permissions, isolated);
+
+            ConfigurationChanged(this);
+        }
 
         private void ChangeState(BotModelStates newState)
         {

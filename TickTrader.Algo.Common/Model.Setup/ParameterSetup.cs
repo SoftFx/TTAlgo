@@ -341,7 +341,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             var typedSrcProperty = srcProperty as Parameter<T>;
             if (typedSrcProperty != null)
-                this.value = typedSrcProperty.Value;
+                this.Value = typedSrcProperty.Value;
         }
 
         protected Property SaveTyped<TCfg>()
