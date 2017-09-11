@@ -42,9 +42,10 @@ namespace TickTrader.Algo.Core
             return fixture.GetOrNull(id);
         }
 
-        public OrderAccessor Remove(string orderId)
+        public OrderAccessor Remove(OrderEntity entity)
         {
-            var order = fixture.Remove(orderId);
+            var order = fixture.Remove(entity.Id);
+            order?.Update(entity);
             if (order != null)
                 Removed(order);
             return order;
