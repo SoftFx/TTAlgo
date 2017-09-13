@@ -483,7 +483,7 @@ namespace TickTrader.Algo.Common.Model
                 ExecPrice = ExecPrice ?? double.NaN,
                 ExecVolume = ToVolume(ExecAmount, ExecAmountLots),
                 LastFillPrice = LastFillPrice ?? double.NaN,
-                LastFillVolume = LastFillAmountLots ?? double.NaN,
+                LastFillVolume = ToVolume(LastFillAmount, LastFillAmountLots),
                 Swap = (double)Swap,
                 Commision = (double)Commission
             };
