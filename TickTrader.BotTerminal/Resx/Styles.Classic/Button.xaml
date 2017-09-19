@@ -87,7 +87,21 @@
         <!--<Setter Property="Background" Value="{DynamicResource Chart_BotControl_Background}"/>
         <Setter Property="HighlightBackground" Value="{DynamicResource Chart_BotControl_HighlightBackground}" />-->
     </Style>
-   
+
+    <Style x:Key="BotSettingsButtonStyle" TargetType="l:FlatButton" x:Shared="False">
+        <Setter Property="Width" Value="30"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="2 0 2 0"/>
+        <Setter Property="Content">
+            <Setter.Value>
+                <Path Width="14" Height="14" Stretch="Uniform" StrokeThickness="0" SnapsToDevicePixels="True"
+                          Data="{DynamicResource Cogwheel}"
+                          Fill="{DynamicResource Shell_PrimaryForeground}"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="PanelActionButtonStyle" TargetType="l:FlatButton">
     </Style>
 

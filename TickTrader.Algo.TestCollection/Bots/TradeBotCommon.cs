@@ -10,7 +10,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         public string ToObjectPropertiesString(Type type, object obj)
         {
             var sb = new StringBuilder();
-            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(type))
             {
                 var pNname = descriptor.Name;
                 var pValue = descriptor.GetValue(obj);

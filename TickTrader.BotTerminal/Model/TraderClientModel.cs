@@ -168,7 +168,7 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Closed:
                     if (order.Type == Algo.Api.OrderType.Position)
                     {
-                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillVolume.Lots} lots at {order.LastFillPrice}");
                     }
                     break;
                 case OrderExecAction.Canceled:
@@ -178,7 +178,7 @@ namespace TickTrader.BotTerminal
                     _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                     break;
                 case OrderExecAction.Filled:
-                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume.Lots} lots at {order.LastFillPrice}");
                     break;
             }
         }

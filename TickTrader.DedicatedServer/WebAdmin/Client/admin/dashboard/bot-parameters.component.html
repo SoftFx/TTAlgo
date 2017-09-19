@@ -5,7 +5,10 @@
                 <div class="form-group">
                     <label>{{Parameter.Descriptor.DisplayName}}</label>
                     <input *ngSwitchCase="ParameterDataType.Int" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.NInt" type="number" step="1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
                     <input *ngSwitchCase="ParameterDataType.Double" type="number" step="0.1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.NDouble" type="number" step="0.1" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
+                    <input *ngSwitchCase="ParameterDataType.Boolean" type="checkbox" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
                     <input *ngSwitchCase="ParameterDataType.String" type="text" class="form-control" [(ngModel)]="Parameter.Value" [formControlName]="Parameter.Descriptor.Id" />
                     <div *ngSwitchCase="ParameterDataType.File" class="input-group">
                         <input *ngIf="Parameter.Value" [ngModel]="Parameter.Value.FileName" [ngModelOptions]="{standalone: true}" type="text" class="form-control" placeholder="Select the file" readonly>
