@@ -71,9 +71,7 @@ namespace TickTrader.BotTerminal
         private PluginSetupViewModel()
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
-            // Disabled until TTS 1.30 comes to live server, also checkbox is hidden in view
-            // Isolated = true;
-            Isolated = false;
+            Isolated = true;
             RunBot = true;
             Permissions = new PluginPermissions();
         }
