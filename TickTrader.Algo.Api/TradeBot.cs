@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
 {
@@ -81,15 +82,26 @@ namespace TickTrader.Algo.Api
         #endregion
 
         #region Order Commands
-
+        [Obsolete]
         public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
             return context.TradeApi.OpenOrder(false, symbol, type, side, volume, price, sl, tp, comment, options, tag).Result;
         }
 
+        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume = null, double? price = null, double? stopPrice = null, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
+        {
+            return context.TradeApi.OpenOrder(false, symbol, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag).Result;
+        }
+
+        [Obsolete]
         public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
             return context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment, options, tag);
+        }
+
+        private Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
+        {
+            return context.TradeApi.OpenOrder(true, symbol, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag);
         }
 
         public OrderCmdResult CloseOrder(string orderId, double? volume = null)
@@ -121,60 +133,156 @@ namespace TickTrader.Algo.Api
         {
             return context.TradeApi.CancelOrder(true, orderId);
         }
-
+        [Obsolete]
         public OrderCmdResult ModifyOrder(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
         {
             return context.TradeApi.ModifyOrder(false, orderId, price, sl, tp, comment).Result;
         }
 
+        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "")
+        {
+            return context.TradeApi.ModifyOrder(false, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment).Result;
+        }
+
+        [Obsolete]
         public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double price, double? sl = null, double? tp = null, string comment = "")
         {
             return context.TradeApi.ModifyOrder(true, orderId, price, sl, tp, comment);
+        }
+
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "")
+        {
+            return context.TradeApi.ModifyOrder(true, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment);
         }
 
         #endregion
 
         #region Order Short Commands
 
-        public OrderCmdResult MarketSell(double volume, double? sl = null, double? tp = null, string comment = "")
+        #region Market
+        public OrderCmdResult MarketSell(double volume, double? sl = null, double? tp = null, string comment = "", string tag = null)
         {
-            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, volume, 1, tp, sl, comment);
+            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null,  string comment = "")
+        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null,  string comment = "", string tag = null)
         {
-            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, 1, sl, tp, comment);
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult MarketBuy(double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult MarketBuy(double volume, double? tp = null, double? sl = null, string comment = "", string tag = null)
         {
-            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, volume, 1, tp, sl, comment);
+            return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult MarketBuy(string symbol, double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult MarketBuy(string symbol, double volume, double? tp = null, double? sl = null, string comment = "", string tag = null)
         {
-            return OpenOrder(symbol, OrderType.Market, OrderSide.Buy, volume, 1, tp, sl, comment);
+            return OpenOrder(symbol, OrderType.Market, OrderSide.Buy, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult OpenMarketOrder(OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult OpenMarketOrder(OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "", string tag = null)
         {
-            return OpenOrder(Symbol.Name, OrderType.Market, side, volume, 1, tp, sl, comment);
+            return OpenOrder(Symbol.Name, OrderType.Market, side, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult OpenMarketOrder(string symbol, OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "")
+        public OrderCmdResult OpenMarketOrder(string symbol, OrderSide side, double volume, double? tp = null, double? sl = null, string comment = "", string tag = null)
         {
-            return OpenOrder(symbol, OrderType.Market, side, volume, 1, tp, sl, comment);
+            return OpenOrder(symbol, OrderType.Market, side, volume, tp: tp, sl: sl, comment: comment, tag: tag);
+        }
+        #endregion
+
+        #region Limit
+        public OrderCmdResult LimitSell(double volume, double price, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenLimitOrder(OrderSide.Sell, Symbol.Name, volume, price, maxVisibleVolume, sl, tp, comment, tag);
         }
 
+        public OrderCmdResult LimitSell(string symbol, double volume, double price, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenLimitOrder(OrderSide.Sell, symbol, volume, price, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult LimitBuy(double volume, double price, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenLimitOrder(OrderSide.Buy, Symbol.Name, volume, price, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult LimitBuy(string symbol, double volume, double price, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenLimitOrder(OrderSide.Buy, symbol, volume, price, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult OpenLimitOrder(OrderSide side, string symbol, double volume, double price, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenOrder(symbol, OrderType.Limit, side, volume, maxVisibleVolume, price, sl: sl, tp: tp, comment: comment, tag: tag);
+        }
+        #endregion
+
+        #region Stop
+        public OrderCmdResult StopSell(double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopOrder(OrderSide.Sell, Symbol.Name, volume, price, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult StopSell(string symbol, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopOrder(OrderSide.Sell, symbol, volume, price, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult StopBuy(double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopOrder(OrderSide.Buy, Symbol.Name, volume, price, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult StopBuy(string symbol, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopOrder(OrderSide.Buy, symbol, volume, price, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult OpenStopOrder(OrderSide side, string symbol, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenOrder(symbol, OrderType.Stop, side, volume, stopPrice: price, sl: sl, tp: tp, comment: comment, tag: tag);
+        }
+        #endregion
+
+        #region StopLimit
+        public OrderCmdResult StopLimitSell(double volume, double price, double stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopLimitOrder(OrderSide.Sell, Symbol.Name, volume, price, stopPrice, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult StopLimitSell(string symbol, double volume, double price, double stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopLimitOrder(OrderSide.Sell, symbol, volume, price, stopPrice, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult StopLimitBuy(double volume, double price, double stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopLimitOrder(OrderSide.Buy, Symbol.Name, volume, price, stopPrice, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult StopLimitBuy(string symbol, double volume, double price, double stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenStopLimitOrder(OrderSide.Buy, symbol, volume, price, stopPrice, maxVisibleVolume, sl, tp, comment, tag);
+        }
+
+        public OrderCmdResult OpenStopLimitOrder(OrderSide side, string symbol, double volume, double price, double stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", string tag = null)
+        {
+            return OpenOrder(symbol, OrderType.StopLimit, side, volume, maxVisibleVolume, price, stopPrice, sl: sl, tp: tp, comment: comment, tag: tag);
+        }
+        #endregion
+
+        #region IoC
         public OrderCmdResult OpenLimitIoC(string symbol, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
         {
-            return OpenOrder(symbol, OrderType.Limit, side, volume, price, sl, tp, comment, OrderExecOptions.ImmediateOrCancel, tag);
+            return OpenOrder(symbol, OrderType.Limit, side, volume, null, price, null, sl, tp, comment, OrderExecOptions.ImmediateOrCancel, tag);
         }
 
         public Task<OrderCmdResult> OpenLimitIoCAsync(string symbol, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", string tag = null)
         {
-            return OpenOrderAsync(symbol, OrderType.Limit, side, volume, price, sl, tp, comment, OrderExecOptions.ImmediateOrCancel, tag);
+            return OpenOrderAsync(symbol, OrderType.Limit, side, volume, null, price, null, sl, tp, comment, OrderExecOptions.ImmediateOrCancel, tag);
         }
+        #endregion
 
         #endregion
     }

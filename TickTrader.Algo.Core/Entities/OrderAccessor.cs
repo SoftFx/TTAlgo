@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using BL = TickTrader.BusinessLogic;
@@ -39,9 +35,11 @@ namespace TickTrader.Algo.Core
         public string Symbol => _entity.Symbol;
         public double RequestedVolume => _entity.RequestedVolume.Lots;
         public double RemainingVolume => _entity.RemainingVolume.Lots;
+        public double MaxVisibleVolume => _entity.MaxVisibleVolume.Lots;
         public OrderType Type => _entity.Type;
         public OrderSide Side => _entity.Side;
         public double Price => _entity.Price;
+        public double StopPrice => _entity.StopPrice;
         public double StopLoss => _entity.StopLoss;
         public double TakeProfit => _entity.TakeProfit;
         public bool IsNull => false;
@@ -53,7 +51,7 @@ namespace TickTrader.Algo.Core
         public double ExecPrice => _entity.ExecPrice;
         public double ExecVolume => _entity.ExecVolume.Lots;
         public double LastFillPrice => _entity.LastFillPrice;
-        public double LastFillVolume => _entity.LastFillVolume;
+        public double LastFillVolume => _entity.LastFillVolume.Lots;
         public double Margin { get; set; }
         public double Profit { get; set; }
 
@@ -77,7 +75,7 @@ namespace TickTrader.Algo.Core
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => Convert(_entity.Type); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => Convert(_entity.Side); set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.Price { get => (decimal)Price; set => throw new NotImplementedException(); }
+        decimal? BL.ICommonOrder.Price { get => (decimal)((Type == OrderType.Stop || Type == OrderType.StopLimit) ? StopPrice :  Price); set => throw new NotImplementedException(); }
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 

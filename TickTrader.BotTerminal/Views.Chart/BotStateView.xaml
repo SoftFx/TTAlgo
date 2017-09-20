@@ -22,12 +22,14 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}" Grid.RowSpan="2"/>
+                <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" HorizontalAlignment="Right" Grid.RowSpan="2" Grid.Column="2"/>
                 <TextBlock Style="{StaticResource BotNameLabelStyle}" Text="{Binding BotName}" Grid.Column="1" Grid.Row="0" />
                 <TextBlock Style="{DynamicResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" Grid.Row="1" />
             </Grid>

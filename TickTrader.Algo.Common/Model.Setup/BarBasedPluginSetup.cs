@@ -1,4 +1,6 @@
-﻿using TickTrader.Algo.Api;
+﻿using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
 
@@ -66,7 +68,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             if (barConfig != null)
             {
                 _mainSymbol = barConfig.MainSymbol;
-                _priceType = barConfig.PriceType;       
+                _priceType = barConfig.PriceType;
             }
 
             base.Load(cfg);
@@ -80,6 +82,14 @@ namespace TickTrader.Algo.Common.Model.Setup
                 PriceType = PriceType
             };
             return config;
+        }
+
+        public override object Clone()
+        {
+            var save = Save();
+            var setup = new BarBasedPluginSetup(PluginRef);
+            setup.Load(save);
+            return setup;
         }
     }
 }

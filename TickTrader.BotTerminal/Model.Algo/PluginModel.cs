@@ -23,13 +23,13 @@ namespace TickTrader.BotTerminal
 
         public string PluginFilePath { get; }
 
-        public PluginSetup Setup { get; }
+        public PluginSetup Setup { get; private set; }
 
-        public string InstanceId { get; }
+        public string InstanceId { get; private set; }
 
-        public bool Isolated { get; }
+        public bool Isolated { get; private set; }
 
-        public PluginPermissions Permissions { get; }
+        public PluginPermissions Permissions { get; private set; }
 
         public IAlgoPluginHost Host => _host;
 
@@ -62,6 +62,18 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex, "StartExcecutor() failed!");
                 return false;
             }
+        }
+
+        protected void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        {
+            Setup = setup;
+            Permissions = permissions;
+            Isolated = isolated;
+
+            Setup.SetWorkingFolder(_executor.WorkingFolder);
+            Setup.Apply(_executor);
+            _executor.Permissions = permissions;
+            _executor.Isolated = isolated;
         }
 
         protected Task StopExecutor()

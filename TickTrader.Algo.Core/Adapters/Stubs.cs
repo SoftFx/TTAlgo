@@ -173,12 +173,24 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
+        [Obsolete]
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? tp, double? sl, string comment)
         {
             return rejectResult;
         }
 
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment)
+        {
+            return rejectResult;
+        }
+
+        [Obsolete]
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
+        {
+            return rejectResult;
+        }
+
+        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
             return rejectResult;
         }

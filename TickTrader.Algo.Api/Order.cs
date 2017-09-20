@@ -12,9 +12,11 @@ namespace TickTrader.Algo.Api
         string Symbol { get; }
         double RequestedVolume { get; }
         double RemainingVolume { get; }
+        double MaxVisibleVolume { get; }
         OrderType Type { get; }
         OrderSide Side { get; }
         double Price { get; }
+        double StopPrice { get; }
         double StopLoss { get; }
         double TakeProfit { get; }
         bool IsNull { get; }
