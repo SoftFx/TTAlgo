@@ -1,18 +1,13 @@
 ﻿using SoftFX.Extended;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
-using Fdk = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class OrderModel : ObservableObject, TickTrader.BusinessLogic.IOrderModel
+    public class OrderModel : ObservableObject, IOrderModel
     {
         private string clientOrderId;
         private TradeRecordType orderType;
@@ -469,10 +464,12 @@ namespace TickTrader.Algo.Common.Model
                 ClientOrderId = this.clientOrderId,
                 RemainingVolume = ToVolume(RemainingAmount, RemainingAmountLots),
                 RequestedVolume = ToVolume(Amount, AmountLots),
+                MaxVisibleVolume = ToVolume(MaxVisibleVolume, AmountToLots(MaxVisibleVolume)),
                 Symbol = Symbol,
                 Type = FdkToAlgo.Convert(orderType),
                 Side = FdkToAlgo.Convert(Side),
-                Price = (double?)Price ?? double.NaN,
+                Price = (OrderType == TradeRecordType.Stop ? double.NaN : (OrderType == TradeRecordType.StopLimit ? (double?)LimitPrice : (double?)(Price)) ?? double.NaN),
+                StopPrice = (double?)StopPrice ?? double.NaN,
                 StopLoss = stopLoss ?? double.NaN,
                 TakeProfit = takeProfit ?? double.NaN,
                 Comment = this.Comment,
