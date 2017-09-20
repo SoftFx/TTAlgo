@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     [DataContract(Name = "algoSetup", Namespace = "")]
     [KnownType(typeof(BarBasedPluginSetup))]
-    public abstract class PluginSetup : ObservableObject
+    public abstract class PluginSetup : ObservableObject, ICloneable
     {
         [DataMember(Name = "properties")]
         private List<PropertySetupBase> _allProperties;
@@ -91,6 +91,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
         protected abstract PluginConfig SaveToConfig();
+
+        public abstract object Clone();
 
         public IEnumerable<ParameterSetup> Parameters => _parameters;
         public IEnumerable<InputSetup> Inputs => _inputs;

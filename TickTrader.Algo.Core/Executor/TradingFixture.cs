@@ -119,7 +119,7 @@ namespace TickTrader.Algo.Core
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
             else if (eReport.Action == OrderEntityAction.Removed)
-                return collection.Remove(eReport.OrderId);
+                return collection.Remove(eReport.OrderCopy);
             else if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
             return null;
@@ -248,7 +248,7 @@ namespace TickTrader.Algo.Core
                 else
                 {
                     // pending orders
-                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
+                    var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId)?.Clone();
                     if (oldOrder != null && eReport.OrderCopy != null)
                     {
                         var order = ApplyOrderEntity(eReport, orderCollection);

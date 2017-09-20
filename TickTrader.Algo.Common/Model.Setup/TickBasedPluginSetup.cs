@@ -66,5 +66,10 @@ namespace TickTrader.Algo.Common.Model.Setup
             };
             return config;
         }
+
+        public override object Clone()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

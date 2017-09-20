@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
         public double ExecPrice => _entity.ExecPrice;
         public double ExecVolume => _entity.ExecVolume.Lots;
         public double LastFillPrice => _entity.LastFillPrice;
-        public double LastFillVolume => _entity.LastFillVolume;
+        public double LastFillVolume => _entity.LastFillVolume.Lots;
         public double Margin { get; set; }
         public double Profit { get; set; }
 

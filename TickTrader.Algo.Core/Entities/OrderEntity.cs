@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core
         public double ExecPrice { get; set; }
         public TradeVolume ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
-        public double LastFillVolume { get; set; }
+        public TradeVolume LastFillVolume { get; set; }
         public double Swap { get; set; }
         public double Commision { get; set; }
         public static Order Null { get; private set; }
@@ -78,6 +78,12 @@ namespace TickTrader.Algo.Core
 
         public double Lots { get; private set; }
         public double Units { get; private set; }
+
+
+        public override string ToString()
+        {
+            return $"{Lots} lots ({Units} units)";
+        }
     }
 
     [Serializable]
