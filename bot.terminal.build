@@ -71,8 +71,8 @@
     <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}">
       <arg value="restore" />
       <arg value="Algo.sln" />
-	  <arg value="-Recursive" />
-	  <arg value="-NonInteractive" />
+  	  <arg value="-Recursive" />
+  	  <arg value="-NonInteractive" />
     </exec>
 
     <exec program="${MSBuildDir}msbuild.exe" >
@@ -109,7 +109,7 @@
         <include name="*.zip" />
       </fileset>
     </delete>
-	<delete>
+    <delete>
       <fileset basedir="${OutpuFolder}">
         <include name="*.exe" />
       </fileset>
@@ -124,7 +124,7 @@
         <include name="**/*" />
       </fileset>
     </delete>
-	<delete>
+    <delete>
       <fileset basedir="${DSDir}">
         <include name="**/*" />
       </fileset>
@@ -133,7 +133,15 @@
 
   <target name="CreateBinPackage">
 
+    <property name="VsPackageDir" value="${SourcesDir}TickTrader.Algo.VS.Package\bin\${Configuration}"/>
     <property name="BotTerminalBinDir" value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}" />
+
+    <copy todir="${BotTerminalBinDir}\Redist\">
+      <fileset basedir="${VsPackageDir}">
+        <include name="*.vsix" />
+      </fileset>
+    </copy>
+
     <property name="BotTerminalDestArchive" value="${OutpuFolder}BotTerminal ${Build}.zip" />
     
     <zip zipfile="${BotTerminalDestArchive}">
@@ -165,17 +173,17 @@
   </target>
    
    
-   <target name="CreateDSInstaller">
-   <property name="UtilDir" value="${SourcesDir}TickTrader.DedicatedServer.CmdUtil\bin\Release\" />
+  <target name="CreateDSInstaller">
+    <property name="UtilDir" value="${SourcesDir}TickTrader.DedicatedServer.CmdUtil\bin\Release\" />
      	
-	<exec program="${UtilDir}TickTrader.DedicatedServer.CmdUtil.exe">
-		<arg value="Mode=uninstall" />
-		<arg value="AppDir=${DSDir}" />
-		<arg value="OutFile=${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.Uninstall.nsi" />
-	</exec>
-    
-	<exec program="${NSIS_Path}\makensis.exe" >
-	  <arg value="/DPRODUCT_BUILD=${Build}" />
+  	<exec program="${UtilDir}TickTrader.DedicatedServer.CmdUtil.exe">
+  		<arg value="Mode=uninstall" />
+  		<arg value="AppDir=${DSDir}" />
+  		<arg value="OutFile=${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.Uninstall.nsi" />
+  	</exec>
+      
+  	<exec program="${NSIS_Path}\makensis.exe" >
+  	  <arg value="/DPRODUCT_BUILD=${Build}" />
       <arg value="${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.nsi" />
     </exec>
   </target>
