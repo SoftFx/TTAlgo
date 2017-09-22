@@ -17,14 +17,14 @@ namespace TickTrader.Algo.Common.Model
         private decimal margin;
         private Algo.Api.Currency currencyInfo;
 
-        public AssetModel(double balance, string currency, IDictionary<string, CurrencyInfo> currencies)
+        public AssetModel(double balance, string currency, IReadOnlyDictionary<string, CurrencyInfo> currencies)
         {
             this.currency = currency;
             this.amount = (decimal)balance;
             currencyInfo = currencies.ContainsKey(currency) ? (Currency)FdkToAlgo.Convert(currencies[currency]) : new Algo.Core.NullCurrency(currency);
         }
 
-        public AssetModel(AssetInfo asset, IDictionary<string, CurrencyInfo> currencies)
+        public AssetModel(AssetInfo asset, IReadOnlyDictionary<string, CurrencyInfo> currencies)
         {
             Currency = asset.Currency;
             currencyInfo = currencies.ContainsKey(currency) ? (Currency)FdkToAlgo.Convert(currencies[currency]) : new Algo.Core.NullCurrency(currency);

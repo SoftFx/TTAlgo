@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {

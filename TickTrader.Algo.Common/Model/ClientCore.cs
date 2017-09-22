@@ -1,4 +1,5 @@
-﻿using SoftFX.Extended;
+﻿using Machinarium.Qnil;
+using SoftFX.Extended;
 using SoftFX.Extended.Events;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private ISyncContext _tradeSync;
         private ISyncContext _feedSync;
+        private DynamicDictionary<string, CurrencyInfo> _currencies = new DynamicDictionary<string, CurrencyInfo>();
 
         public ClientCore(ConnectionModel connection,
             Func<ClientCore, SymbolCollectionBase> symbolCollectionFactory,
@@ -20,7 +22,6 @@ namespace TickTrader.Algo.Common.Model
             Connection = connection;
             Symbols = symbolCollectionFactory(this);
             Distributor = Symbols.Distributor;
-            Currencies = new Dictionary<string, CurrencyInfo>();
             _tradeSync = tradeSync;
             _feedSync = feedSync;
 
@@ -51,7 +52,7 @@ namespace TickTrader.Algo.Common.Model
         public ConnectionModel Connection { get; }
         public QuoteDistributor Distributor { get; }
         public SymbolCollectionBase Symbols { get; }
-        public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
+        public IDynamicDictionarySource<string, CurrencyInfo> Currencies => _currencies;
         public DataTrade TradeProxy => Connection.TradeProxy;
         public DataFeed FeedProxy => Connection.FeedProxy;
 
@@ -65,10 +66,10 @@ namespace TickTrader.Algo.Common.Model
         public void Init()
         {
             var cache = FeedProxy.Cache;
-            Currencies.Clear();
+            _currencies.Clear();
             foreach (var c in cache.Currencies)
-                Currencies.Add(c.Name, c);
-            Symbols.Initialize(FeedProxy.Cache.Symbols, Currencies);
+                _currencies.Add(c.Name, c);
+            Symbols.Initialize(FeedProxy.Cache.Symbols, _currencies.Snapshot);
         }
 
         public async Task Deinit()

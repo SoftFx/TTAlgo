@@ -31,7 +31,7 @@ namespace TickTrader.SeriesStorage.LevelDb
             }
         }
 
-        public IBinaryStorageCollection<TKey> GetCollection<TKey>(string name, IKeySerializer<TKey> keySerializer)
+        public IBinaryStorageCollection<TKey> GetBinaryCollection<TKey>(string name, IKeySerializer<TKey> keySerializer)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException();

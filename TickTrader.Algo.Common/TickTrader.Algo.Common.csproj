@@ -32,6 +32,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
+    <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\packages\protobuf-net.2.3.0\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="SoftFX.Extended.Net, Version=1.29.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
       <HintPath>..\packages\SoftFX.FDK.1.29.932\lib\net40\SoftFX.Extended.Net.dll</HintPath>
     </Reference>
@@ -65,14 +68,22 @@
   <ItemGroup>
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
+    <Compile Include="Lib\CollectionsExt.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
+    <Compile Include="Lib\DictionarySyncrhonizer.cs" />
+    <Compile Include="Lib\EnumerableLockExt.cs" />
     <Compile Include="Lib\PathEscaper.cs" />
+    <Compile Include="Lib\SetSynchronizer.cs" />
+    <Compile Include="Lib\TaskMahcine.cs" />
     <Compile Include="Model.Config\Inputs.cs" />
     <Compile Include="Model.Config\Parameters.cs" />
     <Compile Include="Model.Config\PluginConfig.cs" />
     <Compile Include="Model.FeedCache\BarSerializer.cs" />
+    <Compile Include="Model.FeedCache\CustomFeedStorage.cs" />
+    <Compile Include="Model.FeedCache\CustomSymbol.cs" />
     <Compile Include="Model.FeedCache\DateTimeKeySerializer.cs" />
     <Compile Include="Model.FeedCache\FeedCacheKey.cs" />
+    <Compile Include="Model.FeedCache\GuidKeySerializer.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Setup\Serialization.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
@@ -83,6 +94,7 @@
     <Compile Include="Model\FdkToAlgo.cs" />
     <Compile Include="Model.FeedCache\FeedCache.cs" />
     <Compile Include="Model\FeedHistoryProvider.cs" />
+    <Compile Include="Model\FeedStorageBase.cs" />
     <Compile Include="Model\Interfaces.cs" />
     <Compile Include="Model.Setup\Convert.cs" />
     <Compile Include="Model.Setup\GuiModelMsg.cs" />

@@ -51,12 +51,15 @@ namespace TickTrader.SeriesStorage
             return _buffer[_index++];
         }
 
-        public string ReadReversedString()
+        public byte[] ReadByteArray(int size)
         {
-            throw new NotImplementedException();
+            var result = new byte[size];
+            Array.Copy(_buffer, _index, result, 0, size);
+            _index += size;
+            return result;
         }
 
-        public bool ReadSeparator()
+        public string ReadReversedString()
         {
             throw new NotImplementedException();
         }

@@ -68,7 +68,7 @@ namespace TickTrader.BotTerminal
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
 
-            this.isConnected = client.IsConnected;
+            this.isConnected = client.IsConnected.Value;
             client.Connected += Connection_Connected;
             client.Disconnected += Connection_Disconnected;
 

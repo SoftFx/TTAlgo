@@ -6,14 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
+    public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo, ISymbolModel
     {
         private IFeedSubscription subscription;
 
-        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IReadOnlyDictionary<string, CurrencyInfo> currencies)
         {
             Descriptor = info;
             Distributor = distributor;
@@ -21,14 +22,16 @@ namespace TickTrader.Algo.Common.Model
             subscription = distributor.Subscribe(info.Name);
             subscription.NewQuote += OnNewTick;
 
-            BaseCurrency = currencies.GetOrDefault(info.Currency);
-            QuoteCurrency = currencies.GetOrDefault(info.SettlementCurrency);
+            BaseCurrency = currencies.Read(info.Currency);
+            QuoteCurrency = currencies.Read(info.SettlementCurrency);
 
             BaseCurrencyDigits = BaseCurrency?.Precision ?? 2;
             QuoteCurrencyDigits = QuoteCurrency?.Precision ?? 2;
         }
 
         public string Name { get { return Descriptor.Name; } }
+        public string Description => Descriptor.Description;
+        public bool IsUserCreated => false;
         public SymbolInfo Descriptor { get; private set; }
         public int PriceDigits { get { return Descriptor.Precision; } }
         public int BaseCurrencyDigits { get; private set; }
@@ -67,8 +70,8 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        public event Action<SymbolInfo> InfoUpdated = delegate { };
-        public event Action<SymbolModel> RateUpdated = delegate { };
+        public event Action<ISymbolModel> InfoUpdated = delegate { };
+        public event Action<ISymbolModel> RateUpdated = delegate { };
 
         public virtual void Close()
         {
@@ -78,7 +81,7 @@ namespace TickTrader.Algo.Common.Model
         public virtual void Update(SymbolInfo newInfo)
         {
             this.Descriptor = newInfo;
-            InfoUpdated(newInfo);
+            InfoUpdated(this);
         }
 
         protected virtual void OnNewTick(Quote tick)
@@ -95,6 +98,11 @@ namespace TickTrader.Algo.Common.Model
         {
             return amount <= maxVolume && amount >= minVolume
                 && (amount / step) % 1 == 0;
+        }
+
+        public SymbolEntity GetAlgoSymbolInfo()
+        {
+            return FdkToAlgo.Convert(Descriptor);
         }
     }
 }

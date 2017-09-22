@@ -6,55 +6,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
+using Machinarium.Var;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolListViewModel : PropertyChangedBase
+    internal class SymbolListViewModel : EntityBase
     {
-        private SymbolViewModel selected;
         private IDynamicListSource<SymbolViewModel> viewModelCollection;
 
-        public SymbolListViewModel(SymbolCollectionModel symbolCollection, iOrderUi orderUi)
+        public SymbolListViewModel(SymbolCollectionModel symbolCollection, IShell shell)
         {
-            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, orderUi)).OrderBy((k, v) => k);
+            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, shell)).OrderBy((k, v) => k);
 
             Symbols = viewModelCollection.AsObservable();
+            SelectedSymbol = AddProperty<SymbolViewModel>();
 
-            viewModelCollection.Updated += args =>
+            TriggerOnChange(SelectedSymbol.Var, a =>
             {
-                if(args.Action == DLinqAction.Remove || args.Action == DLinqAction.Replace)
-                    args.OldItem.NewChartRequested -= symbolViewModel_NewChartRequested;
-
-                if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
-                    args.NewItem.NewChartRequested += symbolViewModel_NewChartRequested;
-            };
+                if (a.Old != null) a.Old.IsSelected = false;
+                if (a.New != null) a.New.IsSelected = true;
+            });
         }
 
-        void symbolViewModel_NewChartRequested(string symbol)
-        {
-            NewChartRequested(symbol);
-        }
-
-        public void OpenChart(object context)
-        {
-        }
-
-        public event Action<string> NewChartRequested = delegate { };
-
-        public IObservableListSource<SymbolViewModel> Symbols { get; private set; }
-
-        public SymbolViewModel SelectedSymbol
-        {
-            get { return selected; }
-            set
-            {
-                if (selected != null)
-                    selected.IsSelected = false;
-                selected = value;
-                NotifyOfPropertyChange("SelectedSymbols");
-                if (selected != null)
-                    selected.IsSelected = true;
-            }
-        }
+        public IObservableListSource<SymbolViewModel> Symbols { get; }
+        public Property<SymbolViewModel> SelectedSymbol { get; }
     }
 }

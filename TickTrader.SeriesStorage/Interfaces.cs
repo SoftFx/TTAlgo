@@ -36,7 +36,7 @@ namespace TickTrader.SeriesStorage
 
     public interface IBinaryStorageFactory
     {
-        IBinaryStorageCollection<TKey> GetCollection<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
+        IBinaryStorageCollection<TKey> GetBinaryCollection<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
     }
 
     public interface IStorageFactory
@@ -72,6 +72,7 @@ namespace TickTrader.SeriesStorage
         void WriteBe(ulong val);
         void Write(string val);
         void WriteReversed(string val);
+        void Write(byte[] byteArray);
     }
 
     public interface IKeyReader
@@ -85,6 +86,7 @@ namespace TickTrader.SeriesStorage
         ulong RadBeUlong();
         string ReadString();
         string ReadReversedString();
+        byte[] ReadByteArray(int size);
     }
 
     public class KeyRange<TKey> : IComparable

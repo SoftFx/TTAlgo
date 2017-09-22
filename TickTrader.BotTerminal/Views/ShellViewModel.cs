@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
@@ -24,7 +25,8 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
-        private FeedStorageViewModel _storageManager;
+        private SymbolManagerViewModel _smbManager;
+        private CustomFeedStorage _userSymbols;
 
         public ShellViewModel()
         {
@@ -61,12 +63,14 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
-            SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             clientModel.Connected += OpenDefaultChart;
 
             LogStateLoop();
+
+            _userSymbols = new CustomFeedStorage(EnvService.Instance.CustomFeedCacheFolder);
+            _userSymbols.Start();
         }
 
         private void OpenDefaultChart()
@@ -176,6 +180,11 @@ namespace TickTrader.BotTerminal
             TryClose();
         }
 
+        public void OpenChart(string smb)
+        {
+            Charts.Open(smb);
+        }
+
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
         public AlgoListViewModel AlgoList { get; set; }
@@ -197,6 +206,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
+                await Task.Factory.StartNew(() => _userSymbols.Stop());
             }
             catch (Exception) { }
 
@@ -278,10 +288,10 @@ namespace TickTrader.BotTerminal
 
         public void OpenStorageManager()
         {
-            if (_storageManager == null)
-                _storageManager = new FeedStorageViewModel(clientModel, ToolWndManager);
+            if (_smbManager == null)
+                _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
 
-            wndManager.ShowDialog(_storageManager);
+            wndManager.ShowDialog(_smbManager);
         }
 
         public void CloseChart(object chart)

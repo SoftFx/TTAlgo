@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Common.Model
         private readonly DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
         private AccountType? accType;
         private IOrderDependenciesResolver orderResolver;
-        private IDictionary<string, CurrencyInfo> _currencies;
+        private IReadOnlyDictionary<string, CurrencyInfo> _currencies;
         private ClientCore _client;
         private bool _isCalcEnabled;
 
@@ -70,10 +70,10 @@ namespace TickTrader.Algo.Common.Model
             var cache = _client.TradeProxy.Cache;
             var currencies = _client.Currencies;
             var accInfo = cache.AccountInfo;
-            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+            var balanceCurrencyInfo = currencies.Snapshot.Read(accInfo.Currency);
             
 
-            UpdateData(accInfo, currencies, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
+            UpdateData(accInfo, currencies.Snapshot, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
 
             if (_isCalcEnabled)
             {
@@ -89,7 +89,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         private void UpdateData(AccountInfo accInfo,
-            IDictionary<string, CurrencyInfo> currencies,
+            IReadOnlyDictionary<string, CurrencyInfo> currencies,
             IOrderDependenciesResolver orderResolver,
             IEnumerable<FDK.TradeRecord> orders,
             IEnumerable<Position> positions,
@@ -103,7 +103,7 @@ namespace TickTrader.Algo.Common.Model
 
             this.orderResolver = orderResolver;
 
-            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+            var balanceCurrencyInfo = currencies.Read(accInfo.Currency);
 
             Account = accInfo.AccountId;
             Type = accInfo.Type;

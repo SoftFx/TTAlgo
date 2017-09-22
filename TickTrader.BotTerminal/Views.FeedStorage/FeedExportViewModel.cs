@@ -129,7 +129,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateState()
         {
-            CanExport = _client.IsConnected && DateRange.From != null && DateRange.To != null && !IsExporting && SelectedExporter.CanExport;
+            CanExport = _client.IsConnected.Value && DateRange.From != null && DateRange.To != null && !IsExporting && SelectedExporter.CanExport;
             CanCancel = !IsCancelling;
             NotifyOfPropertyChange(nameof(CanExport));
             NotifyOfPropertyChange(nameof(CanCancel));
@@ -159,7 +159,7 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        foreach (var slice in cache.OnlineCache.IterateBarCache(_key, from, to))
+                        foreach (var slice in cache.Cache.IterateBarCache(_key, from, to))
                         {
                             exporter.ExportSlice(slice.From, slice.To, slice.Content);
                             ExportObserver.SetProgress(slice.To.TotalDays());
@@ -193,7 +193,7 @@ namespace TickTrader.BotTerminal
             DateRange.From = null;
             DateRange.To = null;
 
-            var range = await _client.History.GetCachedRange(_key, false);
+            var range = await _client.History.Cache.GetRangeAsync(_key, false);
 
             DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
             IsRangeLoaded = true;

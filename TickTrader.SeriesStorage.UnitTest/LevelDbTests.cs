@@ -21,21 +21,21 @@ namespace TickTrader.SeriesStorage.UnitTest
 
             using (var storage = new LevelDbStorage(tempdbPath))
             {
-                using (var collection1 = storage.GetCollection("collection1", keySerializer))
+                using (var collection1 = storage.GetBinaryCollection("collection1", keySerializer))
                 {
                     collection1.Write(new DateTime(2017, 08, 01), Bytes(1));
                     collection1.Write(new DateTime(2017, 08, 05), Bytes(2));
                     collection1.Write(new DateTime(2017, 08, 15), Bytes(3));
                 }
 
-                using (var collection2 = storage.GetCollection("collection2", keySerializer))
+                using (var collection2 = storage.GetBinaryCollection("collection2", keySerializer))
                 {
                     collection2.Write(new DateTime(2017, 08, 15), Bytes(6));
                     collection2.Write(new DateTime(2017, 08, 05), Bytes(5));
                     collection2.Write(new DateTime(2017, 08, 01), Bytes(4));
                 }
 
-                using (var collection3 = storage.GetCollection("collection3", keySerializer))
+                using (var collection3 = storage.GetBinaryCollection("collection3", keySerializer))
                 {
                     collection3.Write(new DateTime(2017, 08, 05), Bytes(8));
                     collection3.Write(new DateTime(2017, 08, 15), Bytes(9));
@@ -61,7 +61,7 @@ namespace TickTrader.SeriesStorage.UnitTest
 
             using (var storage = new LevelDbStorage(tempdbPath))
             {
-                using (var collection = storage.GetCollection("collection1", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, actual.Count);
@@ -69,7 +69,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     CollectionAssert.AreEqual(actual[1].Value, Bytes(3));
                 }
 
-                using (var collection = storage.GetCollection("collection2", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, actual.Count);
@@ -77,7 +77,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     CollectionAssert.AreEqual(actual[1].Value, Bytes(6));
                 }
 
-                using (var collection = storage.GetCollection("collection3", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, actual.Count);
@@ -97,21 +97,21 @@ namespace TickTrader.SeriesStorage.UnitTest
 
             using (var storage = new LevelDbStorage(tempdbPath))
             {
-                using (var collection = storage.GetCollection("collection1", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
                     Assert.AreEqual(1, actual.Count);
                     CollectionAssert.AreEqual(actual[0].Value, Bytes(3));
                 }
 
-                using (var collection = storage.GetCollection("collection2", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
                     Assert.AreEqual(1, actual.Count);
                     CollectionAssert.AreEqual(actual[0].Value, Bytes(6));
                 }
 
-                using (var collection = storage.GetCollection("collection3", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
                     Assert.AreEqual(1, actual.Count);
@@ -130,7 +130,7 @@ namespace TickTrader.SeriesStorage.UnitTest
 
             using (var storage = new LevelDbStorage(tempdbPath))
             {
-                using (var collection = storage.GetCollection("collection1", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(3, actual.Count);
@@ -139,7 +139,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     CollectionAssert.AreEqual(actual[2].Value, Bytes(3));
                 }
 
-                using (var collection = storage.GetCollection("collection2", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(3, actual.Count);
@@ -148,7 +148,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     CollectionAssert.AreEqual(actual[2].Value, Bytes(6));
                 }
 
-                using (var collection = storage.GetCollection("collection3", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(3, actual.Count);
@@ -169,13 +169,13 @@ namespace TickTrader.SeriesStorage.UnitTest
 
             using (var storage = new LevelDbStorage(tempdbPath))
             {
-                using (var collection = storage.GetCollection("collection1", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(0, actual.Count);
                 }
 
-                using (var collection = storage.GetCollection("collection3", keySerializer))
+                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(0, actual.Count);

@@ -13,7 +13,7 @@ namespace TickTrader.SeriesStorage
             where TKey : IComparable
         {
             var sliceKeySerializer = new KeyRangeSerializer<TKey>(keySerializer);
-            var binCollection = factory.GetCollection(name, sliceKeySerializer);
+            var binCollection = factory.GetBinaryCollection(name, sliceKeySerializer);
             var sliceCollection = new BinStorageAdapter<KeyRange<TKey>, TValue[]>(binCollection, valueSerializer);
             return new SimpleSeriesStorage<TKey, TValue>(sliceCollection, keyGetter);
         }
@@ -38,13 +38,10 @@ namespace TickTrader.SeriesStorage
 
         internal SeriesStorage(ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage, Func<TValue, TKey> keyFunc)
         {
-            LockObj = new object();
-
             SliceStorage = sliceStorage;
             _keyFunc = keyFunc;
         }
 
-        protected object LockObj { get; }
         protected ICollectionStorage<KeyRange<TKey>, TValue[]> SliceStorage { get; }
 
         protected abstract void WriteInternal(KeyRange<TKey> keyRange, TValue[] values);
@@ -92,17 +89,22 @@ namespace TickTrader.SeriesStorage
 
         public IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to)
         {
-            return IterateSlicesInternal(from, to).LockOnEach(LockObj);
+            return IterateSlicesInternal(from, to);
         }
 
         public IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to)
         {
-            return IterateRangesInternal(from, to).LockOnEach(LockObj);
+            return IterateRangesInternal(from, to);
         }
 
         public double GetSize()
         {
             return SliceStorage.GetSize();
+        }
+
+        public void Drop()
+        {
+            SliceStorage.Drop();
         }
 
         protected Slice<TKey, TValue> JoinSlices(Slice<TKey, TValue> slice1, Slice<TKey, TValue> slice2)
@@ -261,11 +263,8 @@ namespace TickTrader.SeriesStorage
 
         protected override void WriteInternal(KeyRange<TKey> range, TValue[] values)
         {
-            lock (LockObj)
-            {
-                Delete(range);
-                SliceStorage.Write(range, values);
-            }
+            Delete(range);
+            SliceStorage.Write(range, values);
         }
 
         private IEnumerable<KeyRange<TKey>> GetCoveredSlices(TKey from, TKey to)

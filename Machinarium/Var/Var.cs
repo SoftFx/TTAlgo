@@ -7,26 +7,222 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
-    public abstract class Var : IVar, INotifyPropertyChanged
+    [TypeConverter(typeof(VarConverter))]
+    public abstract class Var : INotifyPropertyChanged
     {
-        public Var()
+        private object _context;
+
+        internal Var()
         {
-            VarContext.AddIfContextExist(this);
+            //_context = VarContext.Register(this);
         }
 
-        public event Action<bool> Changed;
+        internal event Action Changed;
         public event PropertyChangedEventHandler PropertyChanged;
         public abstract void Dispose();
 
+        //public static Var<T> New<T>(T initialValue = default(T))
+        //{
+        //    return new Var<T>(initialValue);
+        //}
+
+        //public static BoolVar NewBool(bool initialValue = false)
+        //{
+        //    return new BoolVar(initialValue);
+        //}
+
+        //public static IntVar NewInt(int initialValue = 0)
+        //{
+        //    return new IntVar(initialValue);
+        //}
+
+        //public static DoubleVar NewDouble(double initialValue = 0)
+        //{
+        //    return new DoubleVar(initialValue);
+        //}
+
+        internal abstract void AttachSource(object src);
+        internal abstract object GetBoxedValue();
+
+        internal void SetContext(object context)
+        {
+            if (_context == null)
+                _context = context;
+        }
+
+        internal void DisposeIfNoContext()
+        {
+            if (_context == null)
+                Dispose();
+        }
+
         protected void OnChanged()
         {
-            Changed?.Invoke(false);
+            Changed?.Invoke();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Value"));
         }
 
-        protected void OnDisposed()
+        //protected void OnDisposed()
+        //{
+        //    //Changed?.Invoke(true); // propogate dispose up
+        //}
+    }
+
+    public class Var<T> : Var
+    {
+        private T _val;
+        private IDisposable _srcOperator;
+
+        public Var()
         {
-            Changed?.Invoke(true);
+        }
+
+        public Var(T initialValue = default(T))
+        {
+            _val = initialValue;
+        }
+
+        public static BoolVar operator ==(Var<T> c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => EqualityComparer<T>.Default.Equals(c1.Value, c2.Value), c1, c2);
+        }
+
+        public static BoolVar operator ==(Var<T> c1, T c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => EqualityComparer<T>.Default.Equals(c1.Value, c2), c1);
+        }
+
+        public static BoolVar operator ==(T c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => EqualityComparer<T>.Default.Equals(c1, c2.Value), c2);
+        }
+
+        public static BoolVar operator !=(Var<T> c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => !EqualityComparer<T>.Default.Equals(c1.Value, c2.Value), c1, c2);
+        }
+
+        public static BoolVar operator !=(Var<T> c1, T c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => !EqualityComparer<T>.Default.Equals(c1.Value, c2), c1);
+        }
+
+        public static BoolVar operator !=(T c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => !EqualityComparer<T>.Default.Equals(c1, c2.Value), c2);
+        }
+
+        public static BoolVar operator >(Var<T> c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1.Value, c2.Value) > 0, c1, c2);
+        }
+
+        public static BoolVar operator >(Var<T> c1, T c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1.Value, c2) > 0, c1);
+        }
+
+        public static BoolVar operator >(T c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1, c2.Value) > 0, c2);
+        }
+
+        public static BoolVar operator <(Var<T> c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1.Value, c2.Value) < 0, c1, c2);
+        }
+
+        public static BoolVar operator <(Var<T> c1, T c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1.Value, c2) < 0, c1);
+        }
+
+        public static BoolVar operator <(T c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1, c2.Value) < 0, c2);
+        }
+
+        public static BoolVar operator >=(Var<T> c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1.Value, c2.Value) >= 0, c1);
+        }
+
+        public static BoolVar operator <=(Var<T> c1, Var<T> c2)
+        {
+            return BoolVar.Operator<BoolVar>(() => Comparer<T>.Default.Compare(c1.Value, c2.Value) <= 0, c1);
+        }
+
+        public T Value
+        {
+            get => _val;
+            internal set
+            {
+                if (_srcOperator != null)
+                    throw new Exception();
+
+                SetValueInternal(value);
+            }
+        }
+
+        #region Internal
+
+        internal virtual bool Equals(T val1, T val2)
+        {
+            return EqualityComparer<T>.Default.Equals(val1, val2);
+        }
+
+        internal void SetValueInternal(T value)
+        {
+            if (!Equals(_val, value))
+            {
+                _val = value;
+                OnChanged();
+            }
+        }
+
+        internal override void AttachSource(object src)
+        {
+            var srcVar = (Var<T>)src;
+            new Operator<T>(this, () => srcVar.Value, srcVar);
+        }
+
+        internal void SetOperator(IDisposable srcOperator)
+        {
+            if (_srcOperator != null)
+                _srcOperator.Dispose();
+
+            _srcOperator = srcOperator;
+        }
+
+        internal override object GetBoxedValue()
+        {
+            return _val;
+        }
+
+        public override void Dispose()
+        {
+            _srcOperator?.Dispose();
+            //OnDisposed();
+        }
+
+        internal static TVar Operator<TVar>(Func<T> operatorDef, params Var[] baseSources)
+           where TVar : Var<T>, new()
+        {
+            TVar varObj = new TVar();
+            new Operator<T>(varObj, operatorDef, baseSources);
+            return varObj;
+        }
+
+        #endregion
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

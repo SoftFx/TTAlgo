@@ -25,7 +25,7 @@
         <Grid Background="{TemplateBinding Background}">
             <StackPanel Margin="5">
 
-                <Grid Name="SymbolConfigGroup" IsEnabled="{Binding IsInputEnabled}">
+                <Grid Name="SymbolConfigGroup">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*" />
                         <ColumnDefinition Width="*"/>
@@ -38,18 +38,16 @@
 
                     <Label Content="Symbol:" Grid.Row="0" Grid.Column="0"/>
                     <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0"
-                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol}"/>
+                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol.Value}"/>
                     <Label Content="TimeFrame:" Grid.Row="0" Grid.Column="1"/>
                     <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="1" Margin="0,0,5,0"
-                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame}"/>
-                    <Label Content="Side:" Grid.Row="0" Grid.Column="2"
-                           Visibility="{Binding IsPriceTypeActual,Converter={StaticResource BoolToVis}}"/>
-                    <ComboBox IsEditable="False" Grid.Row="1" Grid.Column="2"
-                              ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType}"
-                              Visibility="{Binding IsPriceTypeActual,Converter={StaticResource BoolToVis}}"/>
+                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame.Value}"/>
+                    <Label Name="SideLabel" Content="Side:" Grid.Row="0" Grid.Column="2"/>
+                    <ComboBox Name="SideCombo" IsEditable="False" Grid.Row="1" Grid.Column="2"
+                              ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"/>
                 </Grid>
 
-                <GroupBox Name="RangeSelectionGroup" Padding="4" Header="Range" IsEnabled="{Binding IsInputEnabled}">
+                <GroupBox Name="RangeSelectionGroup" Padding="4" Header="Range">
                     <ContentControl cal:View.Model="{Binding DateRange}"/>
                 </GroupBox>
 
@@ -58,14 +56,28 @@
                         <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" />
-                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel"/>
+                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" IsEnabled="{Binding DownloadEnabled.Value}" />
+                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel" IsEnabled="{Binding CancelEnabled.Value}"/>
                 </Grid>
 
-                <ContentControl cal:View.Model="{Binding DownloadObserver}" 
-                                Visibility="{Binding ShowDownloadUi, Converter={StaticResource BoolToVis}}"/>
+                <ContentControl Name="ProgressBar" cal:View.Model="{Binding DownloadObserver}" />
             </StackPanel>
         </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsBusy.Value}" Value="True">
+                <Setter Property="IsEnabled" Value="False" TargetName="SymbolConfigGroup"/>
+                <Setter Property="IsEnabled" Value="False" TargetName="RangeSelectionGroup"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsPriceTypeActual.Value}" Value="False">
+                <Setter Property="Visibility" Value="Hidden" TargetName="SideCombo"/>
+                <Setter Property="Visibility" Value="Hidden" TargetName="SideLabel"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ShowDownloadUi.Value}" Value="False">
+                <Setter Property="Visibility" Value="Collapsed" TargetName="ProgressBar"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+
     </ControlTemplate>
 
     <Style x:Key="FeedDownloadViewStyle.Common" TargetType="Window">

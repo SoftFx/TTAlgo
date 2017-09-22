@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public static class ListExt
+    public static class Extentions
     {
         public static int BinarySearch<T, TVal>(this IList<T> list, Func<T, TVal> getter, TVal value,
             BinarySearchTypes type = BinarySearchTypes.Exact, IComparer<TVal> comparer = null)
@@ -78,6 +78,14 @@ namespace TickTrader.SeriesStorage
             }
             else // if (type == BinarySearchTypes.NearestHigher)
                 return lower;
+        }
+
+        public static ICollectionStorage<TKey, TValue> GetCollection<TKey, TValue>(
+            this IMulticollectionBinaryStorage storage, string name,
+            IKeySerializer<TKey> keySerializer, IValueSerializer<TValue> valueSerializer)
+        {
+            var collection = storage.GetBinaryCollection(name, keySerializer);
+            return new BinStorageAdapter<TKey, TValue>(collection, valueSerializer);
         }
     }
 

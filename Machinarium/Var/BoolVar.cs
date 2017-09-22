@@ -1,128 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
-    public abstract class BoolVar : Var, IVar<bool>
+    public class BoolVar : Var<bool>
     {
-        public abstract bool Value { get; set; }
-
-        public static implicit operator BoolVar(bool v)
+        public BoolVar()
         {
-            return new Variable(v);
+        }
+
+        public BoolVar(bool initialValue = false) : base(initialValue)
+        {
         }
 
         public static BoolVar operator &(BoolVar c1, BoolVar c2)
         {
-            return new Operator(() => c1.Value && c2.Value, c1, c2);
+            return Operator<BoolVar>(() => c1.Value && c2.Value, c1, c2);
         }
 
         public static BoolVar operator &(BoolVar c1, bool c2)
         {
-            return new Operator(() => c1.Value && c2, c1);
+            return Operator<BoolVar>(() => c1.Value && c2, c1);
         }
 
         public static BoolVar operator &(bool c1, BoolVar c2)
         {
-            return new Operator(() => c1 && c2.Value, c2);
+            return Operator<BoolVar>(() => c1 && c2.Value, c2);
         }
 
         public static BoolVar operator |(BoolVar c1, BoolVar c2)
         {
-            return new Operator(() => c1.Value || c2.Value, c1, c2);
+            return Operator<BoolVar>(() => c1.Value || c2.Value, c1, c2);
         }
 
         public static BoolVar operator |(bool c1, BoolVar c2)
         {
-            return new Operator(() => c1 || c2.Value, c2);
+            return Operator<BoolVar>(() => c1 || c2.Value, c2);
         }
 
         public static BoolVar operator |(BoolVar c1, bool c2)
         {
-            return new Operator(() => c1.Value || c2, c1);
+            return Operator<BoolVar>(() => c1.Value || c2, c1);
         }
 
         public static BoolVar operator !(BoolVar c1)
         {
-            return new Operator(() => !c1.Value, c1);
+            return Operator<BoolVar>(() => !c1.Value, c1);
         }
 
-        public class Variable : BoolVar
+        internal override bool Equals(bool val1, bool val2)
         {
-            private bool _val;
-
-            public Variable(bool initialValue = false)
-            {
-                _val = initialValue;
-            }
-
-            public override bool Value
-            {
-                get => _val;
-                set
-                {
-                    if (_val != value)
-                    {
-                        _val = value;
-                        OnChanged();
-                    }
-                }
-            }
-
-            public override void Dispose()
-            {
-                OnDisposed();
-            }
+            return val1 == val2;
         }
 
-        internal class Operator : BoolVar
+        public void Set()
         {
-            private IVar[] _baseSources;
-            private Func<bool> _operatorDef;
-            private bool _value;
+            Value = true;
+        }
 
-            public Operator(Func<bool> operatorDef, params IVar[] baseSources)
-            {
-                _operatorDef = operatorDef;
-                _baseSources = baseSources;
-
-                foreach (var src in baseSources)
-                    src.Changed += Src_Changed;
-
-                _value = operatorDef();
-            }
-
-            private void Src_Changed(bool disposed)
-            {
-                if (disposed)
-                    Dispose();
-                else
-                {
-                    var newVal = _operatorDef();
-                    if (newVal != _value)
-                    {
-                        _value = newVal;
-                        OnChanged();
-                    }
-                }
-            }
-
-            public override bool Value
-            {
-                get => _value;
-                set => throw new Exception("Cannot set value for operator!");
-            }
-
-            public override void Dispose()
-            {
-                foreach (var src in _baseSources)
-                    src.Changed -= Src_Changed;
-
-                OnDisposed();
-            }
+        public void Unset()
+        {
+            Value = false;
         }
     }
 }

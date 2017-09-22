@@ -32,4 +32,12 @@ namespace TickTrader.Algo.Common.Model
         void SetMessage(int slot, string message);
         //void SetKeyValue(int slot, string key, string value);
     }
+
+    public interface ISymbolModel : Setup.ISymbolInfo
+    {
+        bool IsUserCreated { get; }
+        string Description { get; }
+
+        SymbolEntity GetAlgoSymbolInfo();
+    }
 }

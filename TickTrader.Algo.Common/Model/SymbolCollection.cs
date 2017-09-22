@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model
 
         private ISyncContext _sync;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
-        private IDictionary<string, CurrencyInfo> currencies;
+        private IReadOnlyDictionary<string, CurrencyInfo> currencies;
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
             Distributor = new QuoteDistributor(client);
         }
 
-        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IReadOnlyDictionary<string, CurrencyInfo> currencies)
         {
             return new SymbolModel(Distributor, info, currencies);
         }
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
         public QuoteDistributor Distributor { get; }
 
-        public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
+        public void Initialize(SymbolInfo[] symbolSnapshot, IReadOnlyDictionary<string, CurrencyInfo> currencySnapshot)
         {
             this.currencies = currencySnapshot;
             Merge(symbolSnapshot);

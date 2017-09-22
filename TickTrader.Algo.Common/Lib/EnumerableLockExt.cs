@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.SeriesStorage
+namespace TickTrader.Algo.Common.Lib
 {
-    public static class EnumerableExt
+    public static class EnumerableLockExt
     {
-        public static IEnumerable<T> LockOnEach<T>(this IEnumerable<T> src, object lockObj)
+        public static IEnumerable<T> GetSyncWrapper<T>(this IEnumerable<T> src, object lockObj)
         {
             IEnumerator<T> enumerator;
             T current;

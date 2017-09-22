@@ -268,6 +268,7 @@
     <Compile Include="Extensions\ResxBindingExtension.cs" />
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
+    <Compile Include="Extensions\ValidationBinding.cs" />
     <Compile Include="Infrustructure\AppInstanceRestrictor.cs" />
     <Compile Include="Infrustructure\AutoViewManager.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
@@ -288,6 +289,7 @@
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Lib\FilteredListModel.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
@@ -316,6 +318,7 @@
     <Compile Include="Model.Algo\PluginCatalogItem.cs" />
     <Compile Include="Model.Algo\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
+    <Compile Include="Model\ValidationExt.cs" />
     <Compile Include="Model\VsIntegration.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>
@@ -334,7 +337,6 @@
     </Compile>
     <Compile Include="Lib\Activity.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
-    <Compile Include="Lib\CollectionsExt.cs" />
     <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
@@ -374,9 +376,10 @@
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.Aux\PathInputViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
-    <Compile Include="Views.Backtester\FeedDownloadViewModel.cs" />
-    <Compile Include="Views.Backtester\FeedExportViewModel.cs" />
-    <Compile Include="Views.Backtester\FeedImportViewModel.cs" />
+    <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
+    <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
+    <Compile Include="Views.FeedStorage\FeedImportViewModel.cs" />
+    <Compile Include="Views.FeedStorage\SymbolCfgEditorViewModel.cs" />
     <Compile Include="Views.Chart\BotControlViewModel.cs" />
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
     <Compile Include="Views.Chart\CloseChartDialogViewModel.cs" />
@@ -437,7 +440,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\GrossPositionListViewModel.cs" />
     <Compile Include="Views\BotJournalViewModel.cs" />
-    <Compile Include="Views.Backtester\FeedStorageViewModel.cs" />
+    <Compile Include="Views.FeedStorage\SymbolManagerViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
     <Compile Include="Views\ExitDialogView.xaml.cs">
       <DependentUpon>ExitDialogView.xaml</DependentUpon>
@@ -610,6 +613,10 @@
     <Page Include="Resx\Styles.Classic\DragDropStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\Icons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles.Classic\ListBox.xaml">
       <SubType>Designer</SubType>
@@ -815,15 +822,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Backtester\FeedDownloadView.xaml">
+    <Page Include="Views.FeedStorage\FeedDownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Backtester\FeedExportView.xaml">
+    <Page Include="Views.FeedStorage\FeedExportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Backtester\FeedImportView.xaml">
+    <Page Include="Views.FeedStorage\FeedImportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.FeedStorage\SymbolCfgEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -903,7 +914,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views.Backtester\FeedStorageView.xaml">
+    <Page Include="Views.FeedStorage\SymbolManagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

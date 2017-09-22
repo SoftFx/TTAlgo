@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolModel : Algo.Common.Model.SymbolModel, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
     {
-        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IReadOnlyDictionary<string, CurrencyInfo> currencies)
             : base(distributor, info, currencies)
         {
             this.Amounts = new OrderAmountModel(info);

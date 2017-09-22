@@ -29,7 +29,8 @@ namespace TickTrader.SeriesStorage
 
         public void Write(byte[] byteArray)
         {
-            throw new NotImplementedException();
+            Array.Copy(byteArray, 0, Buffer, _index, byteArray.Length);
+            _index += byteArray.Length;
         }
 
         public void Write(string val)

@@ -8,17 +8,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {
     class AssetsViewModel : AccountBasedViewModel
     {
-        public AssetsViewModel(AccountModel model, IDictionary<string, CurrencyInfo> currencies, ConnectionModel connection)
+        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyInfo> currencies, ConnectionModel connection)
             : base(model, connection)
         {
             Assets = model.Assets
                 .OrderBy((c, a) => c)
-                .Select(a => new AssetViewModel(a, currencies.GetOrDefault(a.Currency)))
+                .Select(a => new AssetViewModel(a, currencies.Read(a.Currency)))
                 .AsObservable();
         }
 

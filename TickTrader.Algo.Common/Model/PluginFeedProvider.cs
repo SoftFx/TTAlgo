@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Common.Model
         private ISymbolManager symbols;
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
-        private Dictionary<string, CurrencyInfo> currencies;
+        private IReadOnlyDictionary<string, CurrencyInfo> currencies;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Common.Model
         public ISynchronizationContext Sync { get { return this; } }
 
         public PluginFeedProvider(ISymbolManager symbols, FeedHistoryProviderModel history,
-            Dictionary<string, CurrencyInfo> currencies, ISyncContext sync)
+            IReadOnlyDictionary<string, CurrencyInfo> currencies, ISyncContext sync)
         {
             _sync = sync;
             this.symbols = symbols;

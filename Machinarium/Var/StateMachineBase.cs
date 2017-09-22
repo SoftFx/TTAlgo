@@ -6,24 +6,26 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Var
 {
-    public abstract class StateMachineBase<T>
+    public abstract class StateMachineBase<T> : EntityBase
         where T : IComparable<T>, IEquatable<T>
     {
+        private Property<T> _stateProperty;
+
         public StateMachineBase(T initialState = default(T))
         {
-            State = CmpVar.New(initialState);
+            _stateProperty = AddProperty(initialState);
         }
 
-        public CmpVar<T> State { get; }
+        public Var<T> State => _stateProperty.Var;
 
         public virtual void OnEnter(T state, Action handler)
         {
-            (State == state).WhenTrue(handler);
+            TriggerOn(State == state, handler);
         }
 
         public virtual void OnExit(T state, Action handler)
         {
-            (State == state).WhenFalse(handler);
+            TriggerOn(State != state, handler);
         }
 
         protected abstract T OnEvent(T currentState, object eventId);
@@ -35,12 +37,12 @@ namespace Machinarium.Var
 
         public void AddInput(BoolVar varInput, object trueEvent)
         {
-            varInput.WhenTrue(() => PushEvent(trueEvent));
+            TriggerOn(varInput, () => PushEvent(trueEvent));
         }
 
         public void AddInput(BoolVar varInput, object trueEvent, object falseEvent)
         {
-            varInput.WhenTrueOrFalse(() => PushEvent(trueEvent), ()=> PushEvent(falseEvent));
+            TriggerOn(varInput, () => PushEvent(trueEvent), () => PushEvent(falseEvent));
         }
     }
 }

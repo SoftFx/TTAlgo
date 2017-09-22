@@ -12,20 +12,24 @@ using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
+using Machinarium.Var;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TraderClientModel
+    internal class TraderClientModel : EntityBase
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientCore _core;
 
         private IAccountInfoProvider _accountInfo;
         private EventJournal _journal;
+        private BoolProperty _isConnected;
 
         public TraderClientModel(ConnectionModel connection, EventJournal journal)
         {
             this.Connection = connection;
+
+            _isConnected = AddBoolProperty();
 
             connection.Initalizing += Connection_Initalizing;
             connection.State.StateChanged += State_StateChanged;
@@ -37,7 +41,7 @@ namespace TickTrader.BotTerminal
             this.Symbols = (SymbolCollectionModel)_core.Symbols;
             this.TradeHistory = new TradeHistoryProvider(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
-            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, EnvService.Instance.CustomFeedCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
             this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
 
@@ -66,7 +70,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected = true;
+                IsConnected.Set();
                 Connected?.Invoke();
             }
             catch (Exception ex)
@@ -79,7 +83,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected = false;
+                IsConnected.Unset();
                 Disconnected?.Invoke();
             }
             catch (Exception ex)
@@ -181,7 +185,7 @@ namespace TickTrader.BotTerminal
         }
 
         public bool IsConnecting { get; private set; }
-        public bool IsConnected { get; private set; }
+        public BoolVar IsConnected => _isConnected.Var;
 
         public event AsyncEventHandler Initializing;
         public event Action IsConnectingChanged;
@@ -197,6 +201,6 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
-        public Dictionary<string, CurrencyInfo> Currencies => _core.Currencies;
+        public IDynamicDictionarySource<string, CurrencyInfo> Currencies => _core.Currencies;
     }
 }
