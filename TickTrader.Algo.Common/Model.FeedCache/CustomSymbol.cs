@@ -55,6 +55,7 @@ namespace TickTrader.Algo.Common.Model
         public bool IsUserCreated => true;
         public string Description => _info.Description;
         public string Name => _info.Name;
+        public string Security => "";
 
         public SymbolEntity GetAlgoSymbolInfo()
         {

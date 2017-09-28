@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
         private Task _downloadTask;
         private readonly BoolVar isDowloading;
 
-        public FeedDownloadViewModel(TraderClientModel clientModel)
+        public FeedDownloadViewModel(TraderClientModel clientModel, SymbolModel symbol = null)
         {
             _client = clientModel;
             _cancelDownloadSrc = varContext.AddProperty<CancellationTokenSource>();
@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
 
             SelectedTimeFrame = varContext.AddProperty(TimeFrames.M1);
             SelectedPriceType = varContext.AddProperty(BarPriceType.Bid);
-            SelectedSymbol = varContext.AddProperty<SymbolModel>();
+            SelectedSymbol = varContext.AddProperty<SymbolModel>(symbol);
             varContext.TriggerOnChange(SelectedSymbol.Var, a => DownloadObserver.Reset());
             ShowDownloadUi = varContext.AddBoolProperty();
 

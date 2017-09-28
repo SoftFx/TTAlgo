@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public string Name { get { return Descriptor.Name; } }
+        public string Security => Descriptor.SecurityName;
         public string Description => Descriptor.Description;
         public bool IsUserCreated => false;
         public SymbolInfo Descriptor { get; private set; }

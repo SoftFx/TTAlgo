@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class DictionaryToListOperator<TKey, TValue, TResult> : OperatorBase, IDynamicListSource<TResult>, IReadOnlyList<TResult>
+    internal class SetToListOperator<TSource, TResult> : OperatorBase, IReadOnlyList<TResult>, IDynamicListSource<TResult>
     {
-        private static readonly IEqualityComparer<TKey> Comparer = EqualityComparer<TKey>.Default;
+        private static readonly IEqualityComparer<TSource> Comparer = EqualityComparer<TSource>.Default;
 
-        private IDynamicDictionarySource<TKey, TValue> _src;
+        private IDynamicSetSource<TSource> _src;
         private List<ListItem> _list;
-        private Func<TKey, TValue, TResult> _selector;
+        private Func<TSource, TResult> _selector;
 
-        public DictionaryToListOperator(IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TResult> selector)
+        public SetToListOperator(IDynamicSetSource<TSource> src, Func<TSource, TResult> selector)
         {
             _src = src;
             _selector = selector;
@@ -23,7 +23,7 @@ namespace Machinarium.Qnil
             _list = new List<ListItem>();
 
             foreach (var srcItem in src.Snapshot)
-                _list.Add(new ListItem(srcItem.Key, _selector(srcItem.Key, srcItem.Value)));
+                _list.Add(new ListItem(srcItem, _selector(srcItem)));
 
             src.Updated += Src_Updated;
         }
@@ -32,17 +32,17 @@ namespace Machinarium.Qnil
 
         public event ListUpdateHandler<TResult> Updated;
 
-        private void Add(TKey key, TValue val)
+        private void Add(TSource srcValue)
         {
-            var newVal = _selector(key, val);
+            var newVal = _selector(srcValue);
             var index = _list.Count;
-            _list.Add(new ListItem(key, newVal));
+            _list.Add(new ListItem(srcValue, newVal));
             Updated?.Invoke(new ListUpdateArgs<TResult>(this, DLinqAction.Insert, index, newVal));
         }
 
-        private void Remove(TKey key, TValue val)
+        private void Remove(TSource srcValue)
         {
-            var index = _list.FindIndex(0, i => Comparer.Equals(i.Key, key));
+            var index = _list.FindIndex(0, i => Comparer.Equals(i.Key, srcValue));
             if (index < 0)
                 throw new Exception("Cannot find removed item in list!");
             var removedVal = _list[index].Val;
@@ -50,33 +50,33 @@ namespace Machinarium.Qnil
             Updated?.Invoke(new ListUpdateArgs<TResult>(this, DLinqAction.Remove, index, default(TResult), removedVal));
         }
 
-        private void Replace(TKey key, TValue val)
+        private void Replace(TSource oldSrcVal, TSource newSrcVal)
         {
-            var index = _list.FindIndex(0, i => Comparer.Equals(i.Key, key));
+            var index = _list.FindIndex(0, i => Comparer.Equals(i.Key, oldSrcVal));
             if (index < 0)
                 throw new Exception("Cannot find removed item in list!");
             var item = _list[index];
             var oldVal = item.Val;
-            var newVal = _selector(key, val);
-            _list[index] = new ListItem(key, newVal);
+            var newVal = _selector(newSrcVal);
+            _list[index] = new ListItem(newSrcVal, newVal);
             Updated?.Invoke(new ListUpdateArgs<TResult>(this, DLinqAction.Replace, index, default(TResult), newVal));
         }
 
-        private void Src_Updated(DictionaryUpdateArgs<TKey, TValue> args)
+        private void Src_Updated(SetUpdateArgs<TSource> args)
         {
             if (args.Action == DLinqAction.Dispose)
                 Dispose();
             else if (args.Action == DLinqAction.Insert)
-                Add(args.Key, args.NewItem);
+                Add(args.NewItem);
             else if (args.Action == DLinqAction.Remove)
-                Remove(args.Key, args.OldItem);
+                Remove(args.OldItem);
             else if (args.Action == DLinqAction.Replace)
-                Replace(args.Key, args.NewItem);
+                Replace(args.OldItem, args.NewItem);
         }
 
         protected override void DoDispose()
         {
-            _src.Updated -= Src_Updated;
+            _src.Updated += Src_Updated;
         }
 
         protected override void SendDisposeToConsumers()
@@ -111,13 +111,13 @@ namespace Machinarium.Qnil
 
         private struct ListItem
         {
-            public ListItem(TKey key, TResult value)
+            public ListItem(TSource key, TResult value)
             {
                 Key = key;
                 Val = value;
             }
 
-            public TKey Key { get; set; }
+            public TSource Key { get; set; }
             public TResult Val { get; set; }
         }
     }

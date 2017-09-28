@@ -12,10 +12,9 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolCfgEditorViewModel : Screen, IWindowModel
     {
-        private Guid _id;
         private VarContext _varContext = new VarContext();
 
-        public SymbolCfgEditorViewModel(CustomSymbol symbol, TraderClientModel client)
+        public SymbolCfgEditorViewModel(CustomSymbol symbol, IObservableListSource<string> availableCurrencies, Predicate<string> symbolExistsFunc)
         {
             if (symbol == null)
             {
@@ -41,12 +40,13 @@ namespace TickTrader.BotTerminal
             Error = _varContext.AddProperty<string>();
 
             Name.MustBeNotEmpy();
+            Name.AddValidationRule(v => !symbolExistsFunc(v), "Symbol with such name already exists!");
             BaseCurr.MustBeNotEmpy();
             ProfitCurr.MustBeNotEmpy();
 
             Digits.AddValidationRule(v => v >= 1 && v <= 11, "Digits can be from 1 to 11!");
 
-            AvailableCurrencies = client.Currencies.TransformToList((k, v) => k).AsObservable();
+            AvailableCurrencies = availableCurrencies;
 
             Action<VarChangeEventArgs<string>> validate = a =>
             {

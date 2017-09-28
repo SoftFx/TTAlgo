@@ -2,16 +2,17 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:t="http://schemas.xceed.com/wpf/xaml/toolkit"
                     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
     <Style x:Key="FeedStorageDataGridRow" TargetType="{x:Type DataGridRow}">
         <Setter Property="ContextMenu">
             <Setter.Value>
                 <ContextMenu >
-                    <MenuItem Header="Resize" IsEnabled="False" ToolTip="Not implemented!"/>
-                    <MenuItem Header="Remove" IsEnabled="False" ToolTip="Not implemented!"/>
-                    <Separator/>
                     <MenuItem Header="Export" cal:Message.Attach="Export"/>
+                    <Separator/>
+                    <MenuItem Header="Remove" IsEnabled="False" cal:Message.Attach="Remove"/>
                 </ContextMenu>
             </Setter.Value>
         </Setter>
@@ -21,98 +22,84 @@
         <Setter Property="ContextMenu">
             <Setter.Value>
                 <ContextMenu cal:Bind.ModelWithoutContext="{Binding}" >
-                    <MenuItem Header="Edit settings..." cal:Message.Attach="Edit"/>
-                    <MenuItem Header="{Binding Name}" cal:Message.Attach="Export"/>
+                    <MenuItem Header="Download" cal:Message.Attach="Download" IsEnabled="{Binding IsOnline}"/>
+                    <MenuItem Header="Import" cal:Message.Attach="Import" IsEnabled="{Binding IsCustom}"/>
                     <!--<MenuItem Header="Cached data" IsEnabled="False" ToolTip="Not implemented!"/>-->
                     <Separator/>
-                    <MenuItem Header="Remove" cal:Message.Attach="Remove"/>
+                    <MenuItem Header="Edit settings..." cal:Message.Attach="Edit" IsEnabled="{Binding IsCustom}"/>
+                    <MenuItem Header="Remove" cal:Message.Attach="Remove" IsEnabled="{Binding IsCustom}"/>
                 </ContextMenu>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style x:Key="SymbolManagerView.HeaderGroupStyle.Classic" TargetType="GroupItem">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="GroupItem">
-                    <Expander IsExpanded="True">
-                        <Expander.Header>
-                            <TextBlock Text="{Binding Name}"/>
-                        </Expander.Header>
-                        <ItemsPresenter Margin="20,0,0,0"/>
-                    </Expander>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    <HierarchicalDataTemplate DataType="{x:Type l:ManageSymbolGrouping}" ItemsSource="{Binding Childs}">
+        <TextBlock Text="{Binding GroupName}"/>
+    </HierarchicalDataTemplate>
 
     <ControlTemplate x:Key="SymbolManagerView.Template.Classic">
         <Grid Background="{TemplateBinding Background}">
-            <TabControl Grid.Column="0" Margin="5,0,5,5">
-                <TabItem Header="Symbols" Width="140">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <Grid.Resources>
-                            <CollectionViewSource x:Key="SymbolGroupViewSrc" Source="{Binding Symbols}">
-                                <CollectionViewSource.SortDescriptions>
-                                    <!--<scm:SortDescription PropertyName="Group" />-->
-                                    <scm:SortDescription PropertyName="Category" />
-                                    <scm:SortDescription PropertyName="Name" />
-                                </CollectionViewSource.SortDescriptions>
-                                <CollectionViewSource.GroupDescriptions>
-                                    <!--<PropertyGroupDescription PropertyName="Group" />-->
-                                    <PropertyGroupDescription PropertyName="Category" />
-                                </CollectionViewSource.GroupDescriptions>
-                            </CollectionViewSource>
-                        </Grid.Resources>
-                        <ToolBar Grid.Row="0" HorizontalAlignment="Stretch" Focusable="False">
-                            <Button Content="{DynamicResource AddToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="AddSymbol" />
-                            <ContentControl Content="{DynamicResource SearchToolBarIcon}" Margin="10,0,2,0" />
-                            <TextBox Width="120" Margin="0,2,0,2" Text="{Binding SymbolFilter, Delay=300, UpdateSourceTrigger=PropertyChanged}" />
-                        </ToolBar>
-                        <DataGrid Style="{DynamicResource DataGrid_Style}" Grid.Row="1"
-                                  ItemsSource="{Binding Source={StaticResource SymbolGroupViewSrc}}" Tag="{Binding}" RowStyle="{StaticResource SymbolManagerRow}">
-                            <DataGrid.GroupStyle>
-                                <GroupStyle ContainerStyle="{StaticResource SymbolManagerView.HeaderGroupStyle.Classic}"/>
-                            </DataGrid.GroupStyle>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Width="*"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TreeView Grid.Column="0" Grid.RowSpan="3" Margin="6"
+                      ItemsSource="{Binding RootGroups}">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="IsExpanded" Value="True"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <i:Interaction.Behaviors>
+                    <l:TreeBindingBehavior SelectedItem="{Binding SelectedGroup.Value, Mode=TwoWay}"/>
+                </i:Interaction.Behaviors>
+            </TreeView>
+
+            <ToolBar Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Focusable="False" Margin="0,6,6,6">
+                <Button Content="{DynamicResource AddToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="AddSymbol" />
+                <Button Content="{DynamicResource ImportToolBarIcon}" Margin="3,0,0,0" Focusable="False" />
+                <Button Content="{DynamicResource DownloadToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Download" Focusable="False"  />
+                <Button Content="{DynamicResource RefreshToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="UpdateSizes" Focusable="False" />
+                <ContentControl Content="{DynamicResource SearchToolBarIcon}" Margin="15,0,2,0" />
+                <TextBox Width="120" Margin="0,2,0,2" Text="{Binding SymbolFilter.Value, Delay=300, UpdateSourceTrigger=PropertyChanged}" />
+            </ToolBar>
+
+            <DataGrid Style="{DynamicResource DataGrid_Style}" Grid.Row="1" Grid.Column="1" Margin="0,0,6,6"
+                      ItemsSource="{Binding Symbols.Value}" RowStyle="{StaticResource SymbolManagerRow}"
+                      SelectedValue="{Binding SelectedSymbol.Value}"
+                      BorderThickness="1">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Width="*"
                                         Binding="{Binding Name}"/>
-                                <DataGridTextColumn Header="Description" Width="2*"
+                    <DataGridTextColumn Header="Description" Width="2*"
                                         Binding="{Binding Description}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Cached Series" Width="140">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <ToolBar Grid.Row="0" HorizontalAlignment="Stretch">
-                            <Button Content="{DynamicResource ImportToolBarIcon}" Margin="3,0,0,0" Focusable="False" />
-                            <Button Content="{DynamicResource RefreshToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="UpdateSizes" Focusable="False" />
-                            <ContentControl Content="{DynamicResource SearchToolBarIcon}" Margin="10,0,2,0"/>
-                            <TextBox Width="120" Margin="0,2,0,2" />
-                        </ToolBar>
-                        <DataGrid Style="{DynamicResource DataGrid_Style}"
-                                  ItemsSource="{Binding CacheSeries}" Tag="{Binding}" RowStyle="{StaticResource FeedStorageDataGridRow}" Grid.Row="1">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Symbol" Width="2*"
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Grid Grid.Row="2" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Label Content="Cached series:" Margin="0,0,0,2" Grid.Row="0"/>
+                <DataGrid Style="{DynamicResource DataGrid_Style}" BorderThickness="1" Margin="0,0,6,6" Grid.Row="1"
+                                  ItemsSource="{Binding CacheSeries.Value}" RowStyle="{StaticResource FeedStorageDataGridRow}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Symbol" Width="2*"
                                         Binding="{Binding Symbol}" />
-                                <DataGridTextColumn Header="Periodicity" Width="*"
+                        <DataGridTextColumn Header="Periodicity" Width="*"
                                         Binding="{Binding Cfg}" />
-                                <DataGridTextColumn Header="Size Mb" Width="*"
+                        <DataGridTextColumn Header="Size Mb" Width="*"
                                         Binding="{Binding Size}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </TabItem>
-            </TabControl>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
 
         </Grid>
     </ControlTemplate>
@@ -121,9 +108,9 @@
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Setter Property="WindowStyle" Value="ThreeDBorderWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
-        <Setter Property="Width" Value="400"/>
-        <Setter Property="Height" Value="700"/>
-        <Setter Property="MinWidth" Value="300"/>
+        <Setter Property="Width" Value="600"/>
+        <Setter Property="Height" Value="400"/>
+        <Setter Property="MinWidth" Value="400"/>
         <Setter Property="MinHeight" Value="300"/>
         <Setter Property="ShowInTaskbar" Value="False"/>
     </Style>

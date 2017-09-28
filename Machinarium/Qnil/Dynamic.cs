@@ -24,6 +24,16 @@ namespace Machinarium.Qnil
             return new SetToDicionaryOperator<TKey, TValue>(src, selector);
         }
 
+        public static IDynamicListSource<TResult> TransformToList<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> transformFunc)
+        {
+            return new SetToListOperator<TSource, TResult>(src, transformFunc);
+        }
+
+        public static IDynamicListSource<T> TransformToList<T>(this IDynamicSetSource<T> src)
+        {
+            return new SetToListOperator<T, T>(src, v => v);
+        }
+
         /// <summary>
         /// Transforms dynamic collection into new one by applying selector function for each element.
         /// Note: Transform function is called once and only once for each element in source collection!
@@ -77,6 +87,11 @@ namespace Machinarium.Qnil
         public static IDynamicListSource<TResult> TransformToList<TKey, TValue, TResult>(this IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TResult> transformFunc)
         {
             return new DictionaryToListOperator<TKey, TValue, TResult>(src, transformFunc);
+        }
+
+        public static IDynamicListSource<TValue> TransformToList<TKey, TValue>(this IDynamicDictionarySource<TKey, TValue> src)
+        {
+            return new DictionaryToListOperator<TKey, TValue, TValue>(src, (k, v) => v);
         }
 
         public static IObservableListSource<T> AsObservable<T>(this IDynamicListSource<T> src)

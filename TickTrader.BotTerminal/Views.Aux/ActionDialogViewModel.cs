@@ -52,7 +52,12 @@ namespace TickTrader.BotTerminal
             {
                 var fex = ex.FlattenAsPossible();
                 if (!(fex is TaskCanceledException))
-                    System.Diagnostics.Trace.WriteLine(ex.ToString());
+                    WindowManager.ShowError(fex.Message, this);
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                WindowManager.ShowError(ex.Message, this);
             }
 
             _isCompleted = true;

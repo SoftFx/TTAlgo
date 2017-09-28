@@ -215,6 +215,7 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
+    <Compile Include="Behaviors\TreeBindingBehavior.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />

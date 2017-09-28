@@ -18,6 +18,11 @@
         <TextBlock Text="Import" Margin="4,0,0,0"/>
     </StackPanel>
 
+    <StackPanel x:Key="DownloadToolBarIcon" Orientation="Horizontal" x:Shared="false">
+        <Path Style="{StaticResource ToolBarIconStyle}" Fill="LightGreen" Data="{DynamicResource InboxPath}"/>
+        <TextBlock Text="Download" Margin="4,0,0,0"/>
+    </StackPanel>
+
     <Path x:Key="RefreshToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource RefreshPath}" Fill="Green"  />
     <Path x:Key="SearchToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource MagnifyLens}" Fill="{DynamicResource ToolBarItem_ForegroundBrush}"/>
 

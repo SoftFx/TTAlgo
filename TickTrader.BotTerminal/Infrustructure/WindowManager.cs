@@ -10,6 +10,8 @@ namespace TickTrader.BotTerminal
 {
     public class WindowManager
     {
+        private static Caliburn.Micro.WindowManager staticManager = new Caliburn.Micro.WindowManager();
+
         private CaliburnAdapter _adapter;
         IViewAware _containerModel;
         private Dictionary<object, IScreen> _wndModels = new Dictionary<object, IScreen>();
@@ -35,6 +37,21 @@ namespace TickTrader.BotTerminal
         public void OpenMdiWindow(IScreen wndModel)
         {
             _adapter.GetOrCreateWindow(wndModel, MdiSetup).Show();
+        }
+
+        public static void OpenWindow(IScreen wndModel, IViewAware owner)
+        {
+            staticManager.ShowWindow(wndModel);
+        }
+
+        public static void ShowError(string message, IViewAware contextModel = null, string caption = null)
+        {
+            var view = contextModel?.GetView() as DependencyObject;
+            var window = view != null ? Window.GetWindow(view) : null;
+            if (window != null)
+                System.Windows.MessageBox.Show(window, message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+            else
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void MdiSetup(Window wnd)
