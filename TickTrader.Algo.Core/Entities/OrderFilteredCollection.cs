@@ -7,46 +7,24 @@ namespace TickTrader.Algo.Core
 {
     internal class OrderFilteredCollection : OrderList
     {
-        private Dictionary<string, Order> filteredOrders = new Dictionary<string, Order>();
-        private OrderList originalList;
-        private Predicate<Order> predicate;
+        private Dictionary<string, Order> _filteredOrders = new Dictionary<string, Order>();
+        private OrderList _originalList;
+        private Predicate<Order> _predicate;
 
-        public OrderFilteredCollection(OrderList originalList, Predicate<Order> predicate)
-        {
-            this.originalList = originalList;
-            this.predicate = predicate;
-
-            foreach (var order in originalList)
-            {
-                if (predicate(order))
-                    filteredOrders.Add(order.Id, order);
-            }
-
-            originalList.Added += OriginalList_Added;
-            originalList.Removed += OriginalList_Removed;
-            originalList.Canceled += OriginalList_Canceled;
-            originalList.Closed += OriginalList_Closed;
-            originalList.Expired += OriginalList_Expired;
-            originalList.Filled += OriginalList_Filled;
-            originalList.Modified += OriginalList_Modified;
-            originalList.Opened += OriginalList_Opened;
-            originalList.Activated += OriginalList_Activated;
-        }
-
-       
 
         public Order this[string id]
         {
             get
             {
                 Order entity;
-                if (!filteredOrders.TryGetValue(id, out entity))
+                if (!_filteredOrders.TryGetValue(id, out entity))
                     return Null.Order;
                 return entity;
             }
         }
 
-        public int Count { get { return filteredOrders.Count; } }
+        public int Count => _filteredOrders.Count;
+
 
         public event Action<OrderCanceledEventArgs> Canceled;
         public event Action<OrderClosedEventArgs> Closed;
@@ -59,73 +37,98 @@ namespace TickTrader.Algo.Core
         public event Action<Order> Replaced;
         public event Action<OrderActivatedEventArgs> Activated;
 
-        private void OriginalList_Added(Order order)
+
+        public OrderFilteredCollection(OrderList originalList, Predicate<Order> predicate)
         {
-            if (predicate(order))
+            _originalList = originalList;
+            _predicate = predicate;
+
+            foreach (var order in originalList)
             {
-                if (!filteredOrders.ContainsKey(order.Id))
-                    filteredOrders.Add(order.Id, order);
+                if (predicate(order))
+                    _filteredOrders.Add(order.Id, order);
             }
+
+            _originalList.Added += OriginalList_Added;
+            _originalList.Removed += OriginalList_Removed;
+            _originalList.Canceled += OriginalList_Canceled;
+            _originalList.Closed += OriginalList_Closed;
+            _originalList.Expired += OriginalList_Expired;
+            _originalList.Filled += OriginalList_Filled;
+            _originalList.Modified += OriginalList_Modified;
+            _originalList.Opened += OriginalList_Opened;
+            _originalList.Activated += OriginalList_Activated;
         }
 
-        private void OriginalList_Removed(Order order)
-        {
-            if (predicate(order))
-            {
-                filteredOrders.Remove(order.Id);
-            }
-        }
-
-        private void OriginalList_Canceled(OrderCanceledEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.Order.Id))
-                Canceled?.Invoke(args);
-        }
-
-        private void OriginalList_Opened(OrderOpenedEventArgs args)
-        {
-            if (predicate(args.Order))
-                Opened?.Invoke(args);
-        }
-
-        private void OriginalList_Modified(OrderModifiedEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.OldOrder.Id))
-                Modified?.Invoke(args);
-        }
-
-        private void OriginalList_Closed(OrderClosedEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.Order.Id))
-                Closed?.Invoke(args);
-        }
-
-        private void OriginalList_Expired(OrderExpiredEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.Order.Id))
-                Expired?.Invoke(args);
-        }
-
-        private void OriginalList_Filled(OrderFilledEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.OldOrder.Id))
-                Filled?.Invoke(args);
-        }
-
-        private void OriginalList_Activated(OrderActivatedEventArgs args)
-        {
-            if (filteredOrders.ContainsKey(args.Order.Id))
-                Activated?.Invoke(args);
-        }
 
         public IEnumerator<Order> GetEnumerator()
         {
-            return filteredOrders.Values.GetEnumerator();
+            return _filteredOrders.Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+
+        private void OriginalList_Added(Order order)
+        {
+            if (_predicate(order))
+            {
+                if (!_filteredOrders.ContainsKey(order.Id))
+                    _filteredOrders.Add(order.Id, order);
+            }
+        }
+
+        private void OriginalList_Removed(Order order)
+        {
+            if (_predicate(order))
+            {
+                _filteredOrders.Remove(order.Id);
+            }
+        }
+
+        private void OriginalList_Canceled(OrderCanceledEventArgs args)
+        {
+            if (_predicate(args.Order))
+                Canceled?.Invoke(args);
+        }
+
+        private void OriginalList_Opened(OrderOpenedEventArgs args)
+        {
+            if (_predicate(args.Order))
+                Opened?.Invoke(args);
+        }
+
+        private void OriginalList_Modified(OrderModifiedEventArgs args)
+        {
+            if (_predicate(args.OldOrder))
+                Modified?.Invoke(args);
+        }
+
+        private void OriginalList_Closed(OrderClosedEventArgs args)
+        {
+            if (_predicate(args.Order))
+                Closed?.Invoke(args);
+        }
+
+        private void OriginalList_Expired(OrderExpiredEventArgs args)
+        {
+            if (_predicate(args.Order))
+                Expired?.Invoke(args);
+        }
+
+        private void OriginalList_Filled(OrderFilledEventArgs args)
+        {
+            if (_predicate(args.OldOrder))
+                Filled?.Invoke(args);
+        }
+
+        private void OriginalList_Activated(OrderActivatedEventArgs args)
+        {
+            if (_predicate(args.Order))
+                Activated?.Invoke(args);
         }
     }
 }
