@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Core.Container
 {
     internal class AlgoSandbox : CrossDomainObject
     {
+        protected static readonly IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger("AlgoSandbox");
         private IPluginLoader loader;
 
         public AlgoSandbox(IPluginLoader src)
@@ -56,7 +57,7 @@ namespace TickTrader.Algo.Core.Container
             byte[] symbolsBytes = loader.GetFileBytes(pdbFileName);
 
             if (assemblyBytes == null)
-                throw new FileNotFoundException("Package is missing required file: " + assemblyFileName);
+                throw new FileNotFoundException($"Package {loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
 
             return Assembly.Load(assemblyBytes, symbolsBytes);
         }
@@ -76,7 +77,15 @@ namespace TickTrader.Algo.Core.Container
             if (name.Name == "TickTrader.Algo.Api")
                 return typeof(TickTrader.Algo.Api.TradeBot).Assembly;
 
-            return LoadAssembly(name.Name + ".dll");
+            try
+            {
+                return LoadAssembly(name.Name + ".dll");
+            }
+            catch (FileNotFoundException ex)
+            {
+                _logger.Debug($"Failed to resolve assembly {name.Name}: {ex.Message}");
+                return null;
+            }
         }
     }
 
