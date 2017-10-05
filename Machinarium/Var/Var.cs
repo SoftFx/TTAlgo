@@ -213,6 +213,15 @@ namespace Machinarium.Var
             return varObj;
         }
 
+        internal static TVar SelectOperator<TVar, TEntity>(Func<TEntity, Var<T>> selector, Var<TEntity> entityRef)
+            where TVar : Var<T>, new()
+            where TEntity : class
+        {
+            TVar varObj = new TVar();
+            new SelectOperator<T, TEntity>(varObj, entityRef, selector);
+            return varObj;
+        }
+
         #endregion
 
         public override bool Equals(object obj)

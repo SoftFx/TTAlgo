@@ -8,10 +8,15 @@ namespace Machinarium.Var
 {
     public static class VarExtentions
     {
-        //public static BoolVar Check<T>(this Var<T> srcVar, Predicate<T> condition)
-        //{
-        //    return BoolVar.Operator<BoolVar>(() => condition(srcVar.Value), srcVar);
-        //}
+        public static void Set(this BoolProperty property)
+        {
+            property.Value = true;
+        }
+
+        public static void Clear(this BoolProperty property)
+        {
+            property.Value = false;
+        }
     }
 
     public struct VarChangeEventArgs<T>

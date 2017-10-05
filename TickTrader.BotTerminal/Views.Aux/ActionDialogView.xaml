@@ -5,15 +5,10 @@
 
     <ControlTemplate x:Key="ActionDialogView.Template.Common" TargetType="Window">
         <StackPanel Background="{TemplateBinding Background}">
-            <ContentControl Name="RichProgressControl" Content="{Binding Progress}" Visibility="Collapsed" />
-            <ProgressBar Name="SimpleProgressBar"  IsIndeterminate="True" Margin="8" Height="4"/>
+            <ContentControl cal:View.Model="{Binding Progress}" />
             <Button Name="CancelButton" Content="Cancel" Margin="4" Width="75" HorizontalAlignment="Center" cal:Message.Attach="Cancel"/>
         </StackPanel>
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsIndeterminate}" Value="False">
-                <Setter TargetName="RichProgressControl" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="SimpleProgressBar" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
             <DataTrigger Binding="{Binding IsCancellable}" Value="False">
                 <Setter TargetName="CancelButton" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>

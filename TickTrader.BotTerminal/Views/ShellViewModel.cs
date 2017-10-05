@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
         private SymbolManagerViewModel _smbManager;
-        private CustomFeedStorage _userSymbols;
+        private CustomFeedStorage _userSymbols = new CustomFeedStorage();
 
         public ShellViewModel()
         {
@@ -69,8 +69,7 @@ namespace TickTrader.BotTerminal
 
             LogStateLoop();
 
-            _userSymbols = new CustomFeedStorage(EnvService.Instance.CustomFeedCacheFolder);
-            _userSymbols.Start();
+            _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
         }
 
         private void OpenDefaultChart()

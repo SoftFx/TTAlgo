@@ -15,6 +15,7 @@ namespace TickTrader.SeriesStorage.LevelDb
 
         public bool SupportsByteSize => true;
         public IEnumerable<string> Collections { get => _idToNameMap.Values; }
+        internal LevelDB.DB Database => _database;
 
         public LevelDbStorage(string name)
         {
@@ -59,9 +60,14 @@ namespace TickTrader.SeriesStorage.LevelDb
                 isNew = true;
             }
 
-            var collection = new LevelDbCollection<TKey>(name, collectionId, _database, keySerializer, isNew);
+            var collection = new LevelDbCollection<TKey>(name, collectionId, this, keySerializer, isNew);
             _collections.Add(name, collection);
             return collection;
+        }
+
+        internal void OnDropped(IBinaryCollection collection)
+        {
+            _collections.Remove(collection.Name);
         }
 
         private void Init()

@@ -63,7 +63,7 @@
 
             <ToolBar Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Focusable="False" Margin="0,6,6,6">
                 <Button Content="{DynamicResource AddToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="AddSymbol" />
-                <Button Content="{DynamicResource ImportToolBarIcon}" Margin="3,0,0,0" Focusable="False" />
+                <Button Content="{DynamicResource ImportToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Import" Focusable="False" />
                 <Button Content="{DynamicResource DownloadToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Download" Focusable="False"  />
                 <Button Content="{DynamicResource RefreshToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="UpdateSizes" Focusable="False" />
                 <ContentControl Content="{DynamicResource SearchToolBarIcon}" Margin="15,0,2,0" />
@@ -77,6 +77,8 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name" Width="*"
                                         Binding="{Binding Name}"/>
+                    <DataGridTextColumn Header="Size Mb" Width="*"
+                                        Binding="{Binding DiskSize}" />
                     <DataGridTextColumn Header="Description" Width="2*"
                                         Binding="{Binding Description}" />
                 </DataGrid.Columns>

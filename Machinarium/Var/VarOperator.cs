@@ -24,6 +24,18 @@ namespace Machinarium.Var
             return BoolVar.Operator<BoolVar>(() => operatorDef(src.Value), src);
         }
 
+        public static BoolVar IsNotNull<T>(this Var<T> src)
+            where T : class
+        {
+            return BoolVar.Operator<BoolVar>(() => src.Value != null, src);
+        }
+
+        public static BoolVar IsNull<T>(this Var<T> src)
+            where T : class
+        {
+            return BoolVar.Operator<BoolVar>(() => src.Value == null, src);
+        }
+
         public static IntVar Create<T1>(Var<T1> src1, Func<T1, int> operatorDef)
         {
             return IntVar.Operator<IntVar>(() => operatorDef(src1.Value), src1);
@@ -52,6 +64,24 @@ namespace Machinarium.Var
         public static BoolVar Create<T1, T2, T3>(Var<T1> src1, Var<T2> src2, Var<T3> src3, Func<T1, T2, T3, bool> operatorDef)
         {
             return BoolVar.Operator<BoolVar>(() => operatorDef(src1.Value, src2.Value, src3.Value), src1, src2, src3);
+        }
+
+        public static Var<TProp> Ref<TProp, TEntity>(this Var<TEntity> entityVar, Func<TEntity, TProp> selector)
+            where TEntity : class
+        {
+            return Var<TProp>.Operator<Var<TProp>>(() => entityVar.Value == null ? default(TProp) : selector(entityVar.Value), entityVar);
+        }
+
+        public static Var<TProp> Ref<TProp, TEntity>(this Var<TEntity> entityVar, Func<TEntity, Var<TProp>> selector)
+            where TEntity : class
+        {
+            return Var<TProp>.SelectOperator<Var<TProp>, TEntity>(selector, entityVar);
+        }
+
+        public static BoolVar Ref<TEntity>(this Var<TEntity> entityVar, Func<TEntity, BoolVar> selector)
+            where TEntity : class
+        {
+            return BoolVar.SelectOperator<BoolVar, TEntity>(selector, entityVar);
         }
     }
 }

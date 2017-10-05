@@ -130,6 +130,7 @@
     <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Math\BarVector.cs" />
     <Compile Include="Metadata\ReductionDescriptor.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />

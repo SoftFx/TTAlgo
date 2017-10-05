@@ -13,12 +13,14 @@ namespace TickTrader.BotTerminal
         {
             ValidatesOnDataErrors = true;
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            Mode = BindingMode.TwoWay;
         }
 
         public ValidationBinding(string path) : base(path)
         {
             ValidatesOnDataErrors = true;
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            Mode = BindingMode.TwoWay;
         }
     }
 }

@@ -14,22 +14,25 @@ namespace TickTrader.Algo.Common.Model
     public class CustomFeedStorage : FeedCache
     {
         private ICollectionStorage<Guid, CustomSymbol> _metadataStorage;
-        private DynamicDictionary<string, CustomSymbolModel> _symbols = new DynamicDictionary<string, CustomSymbolModel>();
+        private DynamicDictionary<string, CustomSymbol> _symbols = new DynamicDictionary<string, CustomSymbol>();
 
-        public CustomFeedStorage(string dbFolder) : base(dbFolder)
-        {
-        }
-
-        public override void Start()
+        public override void Start(string dbFolder)
         {
             lock (SyncObj)
             {
-                base.Start();
+                _symbols.Clear();
+
+                base.Start(dbFolder);
 
                 _metadataStorage = Database.GetCollection("symbols", new GuidKeySerializer(), new ProtoValueSerializer<CustomSymbol>());
 
                 foreach (var entry in _metadataStorage.Iterate(Guid.Empty))
-                    _symbols.Add(entry.Value.Name, new CustomSymbolModel(entry.Key, entry.Value));
+                {
+                    var smb = entry.Value;
+                    smb.StorageId = entry.Key;
+
+                    _symbols.Add(smb.Name, smb);
+                }
             }
         }
 
@@ -49,9 +52,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public IDynamicDictionarySource<string, CustomSymbolModel> GetSymbolsSyncCopy(ISyncContext context)
+        public IDynamicDictionarySource<string, CustomSymbol> GetSymbolsSyncCopy(ISyncContext context)
         {
-            lock (SyncObj) return new DictionarySyncrhonizer<string, CustomSymbolModel>(_symbols, context);
+            lock (SyncObj) return new DictionarySyncrhonizer<string, CustomSymbol>(_symbols, context);
         }
 
         public Task AddAsync(CustomSymbol newSymbol)
@@ -68,9 +71,9 @@ namespace TickTrader.Algo.Common.Model
                 if (_symbols.ContainsKey(newSymbol.Name))
                     throw new ArgumentException("Symbol " + newSymbol.Name + " already exists!");
 
-                var id = Guid.NewGuid();
-                _metadataStorage.Write(id, newSymbol);
-                _symbols.Add(newSymbol.Name, new CustomSymbolModel(id, newSymbol));
+                newSymbol.StorageId = Guid.NewGuid();
+                _metadataStorage.Write(newSymbol.StorageId, newSymbol);
+                _symbols.Add(newSymbol.Name, newSymbol);
             };
         }
 
@@ -85,15 +88,13 @@ namespace TickTrader.Algo.Common.Model
             {
                 CheckState();
 
-                CustomSymbolModel smbEntity;
+                CustomSymbol smbEntity;
                 if (_symbols.TryGetValue(symbol, out smbEntity))
                 {
+                    var toRemove = Keys.Snapshot.Where(k => k.Symbol == symbol).ToList();
+
                     // clear cache 
-                    foreach (var seriesKey in Keys.Snapshot)
-                    {
-                        if (seriesKey.Symbol == symbol)
-                            RemoveSeries(seriesKey);
-                    }
+                    toRemove.ForEach(RemoveSeries);
 
                     // remove symbol
                     _metadataStorage.Remove(smbEntity.StorageId);

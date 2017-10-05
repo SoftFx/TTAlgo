@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Common.Model
         private ConnectionModel connection;
         private string _dataFolder;
         private FeedHistoryFolderOptions _folderOptions;
-        private FeedCache _diskCache;
+        private FeedCache _diskCache = new FeedCache();
 
         public FeedHistoryProviderModel(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions)
         {
@@ -54,9 +54,7 @@ namespace TickTrader.Algo.Common.Model
             if (_folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
                 onlineFolder = Path.Combine(onlineFolder, PathEscaper.Escape(connection.CurrentLogin));
 
-            _diskCache = new FeedCache(onlineFolder);
-
-            await Task.Factory.StartNew(() => _diskCache.Start());
+            await Task.Factory.StartNew(() => _diskCache.Start(onlineFolder));
         }
 
         public async Task Deinit()
@@ -107,6 +105,7 @@ namespace TickTrader.Algo.Common.Model
             const int chunkSize = 12000;
 
             observer?.StartProgress(from.TotalDays(), to.TotalDays());
+            observer?.SetMessage("Downloading... \n");
 
             var watch = new Stopwatch();
             int downloadedCount = 0;
@@ -135,21 +134,21 @@ namespace TickTrader.Algo.Common.Model
                         i = slice.To;
                     }
 
-                    observer.SetMessage(0, "Downloading... " +  downloadedCount + " bars are downloaded.");
-
+                    var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
                     if (watch.ElapsedMilliseconds > 0)
-                        observer.SetMessage(1, "Bar per second: " + Math.Round( (double)(downloadedCount * 1000) / watch.ElapsedMilliseconds));
+                        msg += "\nBar per second: " + Math.Round( (double)(downloadedCount * 1000) / watch.ElapsedMilliseconds);
+                    observer.SetMessage(msg);
 
                     observer?.SetProgress(i.TotalDays());
 
                     if (cancelToken.IsCancellationRequested)
                     {
-                        observer.SetMessage(0, "Canceled. " + downloadedCount + " bars were downloaded.");
+                        observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
                         return;
                     }
                 }
 
-                observer.SetMessage(0, "Completed. " + downloadedCount + " bars were downloaded.");
+                observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
             });
         }
 
@@ -178,7 +177,6 @@ namespace TickTrader.Algo.Common.Model
         }
     }
 
-   
     public enum FeedHistoryFolderOptions
     {
         NoHierarchy, // places history right into specified folder

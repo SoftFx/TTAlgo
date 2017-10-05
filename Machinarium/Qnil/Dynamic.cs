@@ -74,6 +74,11 @@ namespace Machinarium.Qnil
             return new ListFilter<T>(src, condition, false);
         }
 
+        public static IDynamicSetSource<T> Where<T>(this IDynamicSetSource<T> src, Predicate<T> condition)
+        {
+            return new SetFilter<T>(src, condition);
+        }
+
         public static IDynamicListSource<T> ToList<T>(this IDynamicListSource<T> src)
         {
             var chain = src as ListChainToken<T>;

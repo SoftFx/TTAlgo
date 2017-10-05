@@ -7,12 +7,18 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.BusinessObjects;
+using SoftFX.Extended;
+using TickTrader.Algo.Api;
+using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
 {
     [ProtoContract]
     public class CustomSymbol
     {
+        [ProtoIgnore]
+        internal Guid StorageId { get; set; }
+
         [ProtoMember(2)]
         public string Name { get; set; }
         [ProtoMember(3)]
@@ -38,28 +44,5 @@ namespace TickTrader.Algo.Common.Model
         //        Description = Description,
         //    };
         //}
-    }
-
-
-    public class CustomSymbolModel : ISymbolModel
-    {
-        private CustomSymbol _info;
-
-        public CustomSymbolModel(Guid id, CustomSymbol info)
-        {
-            StorageId = id;
-            _info = info;
-        }
-
-        public Guid StorageId { get; }
-        public bool IsUserCreated => true;
-        public string Description => _info.Description;
-        public string Name => _info.Name;
-        public string Security => "";
-
-        public SymbolEntity GetAlgoSymbolInfo()
-        {
-            return _info.ToAlgo();
-        }
     }
 }

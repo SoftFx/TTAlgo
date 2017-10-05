@@ -176,7 +176,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                ExportObserver.SetMessage(0, "Error:" + ex.Message);
+                ExportObserver.SetMessage("Error:" + ex.Message);
             }
             finally
             {
@@ -238,22 +238,25 @@ namespace TickTrader.BotTerminal
     internal class CsvExporter : FeedExporter
     {
         private StreamWriter _writer;
+        private string _path;
 
         public CsvExporter() : base("CSV")
         {
-            FileInput = new PathInputViewModel(PathInputModes.SaveFile) { Filter = "CSV file|*.csv" };
-
-            FileInput.PropertyChanged += (s, a) =>
-            {
-                CanExport = FileInput.IsValid;
-            };
         }
 
-        public PathInputViewModel FileInput { get; }
+        public string FilePath
+        {
+            get => _path;
+            set
+            {
+                _path = value;
+                CanExport = !string.IsNullOrWhiteSpace(_path);
+            }
+        }
 
         public override void StartExport()
         {
-            _writer = new StreamWriter(File.Open(FileInput.Path, FileMode.Create));
+            _writer = new StreamWriter(File.Open(FilePath, FileMode.Create));
         }
 
         public override void ExportSlice(DateTime from, DateTime to, ArraySegment<BarEntity> values)

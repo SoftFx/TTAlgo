@@ -34,8 +34,8 @@
                 <!-- Views (temp!) -->
                 <ResourceDictionary Source="Views.Aux/ProgressView.xaml" />
                 <ResourceDictionary Source="Views.Aux/DateRangeSelectionView.xaml" />
-                <ResourceDictionary Source="Views.Aux/PathInputView.xaml" />
                 <ResourceDictionary Source="Views.Aux/ActionDialogView.xaml" />
+                <ResourceDictionary Source="Views.Aux/ActionView.xaml" />
 
                 <ResourceDictionary Source="Views/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />

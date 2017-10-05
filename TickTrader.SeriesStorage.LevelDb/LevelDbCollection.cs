@@ -10,7 +10,7 @@ namespace TickTrader.SeriesStorage.LevelDb
     {
         private ushort _collectionId;
         private string _collectionName;
-        private LevelDB.DB _database;
+        private LevelDbStorage _storage;
         private IKeySerializer<TKey> _keySerializer;
         private bool _isNew;
         private bool _isDisposed;
@@ -18,11 +18,11 @@ namespace TickTrader.SeriesStorage.LevelDb
         private byte[] _minKey;
         private byte[] _maxKey;
 
-        public LevelDbCollection(string collectionName, ushort collectionId, LevelDB.DB database, IKeySerializer<TKey> keySerializer, bool isNew)
+        public LevelDbCollection(string collectionName, ushort collectionId, LevelDbStorage storage, IKeySerializer<TKey> keySerializer, bool isNew)
         {
             _collectionName = collectionName;
             _collectionId = collectionId;
-            _database = database;
+            _storage = storage;
             _keySerializer = keySerializer;
             _isNew = isNew;
 
@@ -37,7 +37,7 @@ namespace TickTrader.SeriesStorage.LevelDb
         {
             byte[] refKey = GetBinKey(from);
 
-            using (var dbIterator = _database.CreateIterator())
+            using (var dbIterator = _storage.Database.CreateIterator())
             {
                 Seek(dbIterator, refKey);
 
@@ -62,7 +62,7 @@ namespace TickTrader.SeriesStorage.LevelDb
         {
             byte[] refKey = GetBinKey(from);
 
-            using (var dbIterator = _database.CreateIterator())
+            using (var dbIterator = _storage.Database.CreateIterator())
             {
                 Seek(dbIterator, refKey);
 
@@ -86,7 +86,7 @@ namespace TickTrader.SeriesStorage.LevelDb
         public bool Read(TKey key, out byte[] value)
         {
             var binKey = GetBinKey(key);
-            value = _database.Get(binKey);
+            value = _storage.Database.Get(binKey);
             return value != null;
         }
 
@@ -94,28 +94,58 @@ namespace TickTrader.SeriesStorage.LevelDb
         {
             EnsureNameHeaderWritten();
             var binKey = GetBinKey(key);
-            _database.Put(binKey, value.ToArray());
+            _storage.Database.Put(binKey, value.ToArray());
         }
 
         public void Remove(TKey key)
         {
             var binKey = GetBinKey(key);
-            _database.Delete(binKey);
+            _storage.Database.Delete(binKey);
+        }
+
+        private void RemoveRange(byte[] fromKey, byte[] toKey)
+        {
+            using (var dbIterator = _storage.Database.CreateIterator())
+            {
+                Seek(dbIterator, fromKey);
+
+                while (true)
+                {
+                    if (!dbIterator.Valid())
+                        return; // end of db
+
+                    TKey key;
+
+                    if (!TryGetKey(dbIterator.Key(), out key))
+                        return; // end of collection
+
+                    _storage.Database.Delete(dbIterator.Key());
+
+                    dbIterator.Next();
+                }
+            }
         }
 
         public void RemoveAll()
         {
-            throw new NotImplementedException();
+            RemoveRange(_minKey, _maxKey);
+        }
+
+        public void Compact()
+        {
+            _storage.Database.CompactRange(_minKey, _maxKey);
         }
 
         public long GetSize()
         {
-            return _database.GetApproximateSize(_minKey, _maxKey);
+            return _storage.Database.GetApproximateSize(_minKey, _maxKey);
         }
 
         public void Drop()
         {
             RemoveAll();
+            Compact();
+            _storage.OnDropped(this);
             // TO DO : Drop header
             _isDisposed = true;
         }
@@ -195,7 +225,7 @@ namespace TickTrader.SeriesStorage.LevelDb
 
         private void WriteHeader(Header h)
         {
-            _database.Put(h.GetBinaryKey(), h.Content);
+            _storage.Database.Put(h.GetBinaryKey(), h.Content);
         }
 
         private void ThrowIfDisposed()

@@ -44,6 +44,8 @@ namespace TickTrader.BotTerminal
 
         private async void Handle(Task workerTask)
         {
+            Progress = new ProgressViewModel();
+            Progress.Start();
             try
             {
                 await workerTask;
@@ -76,6 +78,6 @@ namespace TickTrader.BotTerminal
 
         public bool IsCancellable => _cancelSrc != null;
         public bool IsIndeterminate => Progress == null;
-        public ProgressViewModel Progress { get; } 
+        public ProgressViewModel Progress { get; private set; } 
     }
 }

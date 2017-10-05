@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,12 +10,24 @@ using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
-    public class ProgressViewModel : ObservableObject, IActionObserver
+    public class ProgressViewModel : EntityBase, IActionObserver
     {
         public ProgressViewModel()
         {
-            Messages = new ObservableCollection<string>();
+            Message = AddProperty("");
+            IsIndeterminate = AddBoolProperty();
+            IsError = AddBoolProperty();
+            ProgressMin = AddProperty(0D);
+            ProgressMax = AddProperty(100D);
+            Progress = AddProperty(0D);
         }
+
+        public BoolProperty IsIndeterminate { get; private set; }
+        public BoolProperty IsError { get; private set; }
+        public Property<double> ProgressMin { get; private set; }
+        public Property<double> ProgressMax { get; private set; }
+        public Property<double> Progress { get; private set; }
+        public Property<string> Message { get; }
 
         public void StartProgress(double min, double max)
         {
@@ -23,108 +36,57 @@ namespace TickTrader.BotTerminal
                 if (min >= max)
                     throw new ArgumentException("Max cannot be less or equal to min!");
 
-                ProgressMin = min;
-                ProgressMax = max;
-                IsProgressInitialized = true;
-                NotifyOfPropertyChange(nameof(ProgressMin));
-                NotifyOfPropertyChange(nameof(ProgressMax));
-                NotifyOfPropertyChange(nameof(IsProgressInitialized));
+                ProgressMin.Value = min;
+                ProgressMax.Value = max;
+                IsIndeterminate.Clear();
             });
         }
 
         public void Reset()
         {
-            Execute.OnUIThread(() =>
-            {
-                ProgressMin = 0;
-                ProgressMax = 0;
-                IsProgressInitialized = false;
-                Progress = 0;
-                NotifyOfPropertyChange(nameof(ProgressMin));
-                NotifyOfPropertyChange(nameof(ProgressMax));
-                NotifyOfPropertyChange(nameof(Progress));
-                NotifyOfPropertyChange(nameof(IsProgressInitialized));
-
-                for (int i = 0; i < Messages.Count; i++)
-                    Messages[i] = "";
-            });
+            ProgressMin.Value = 0;
+            ProgressMax.Value = 100;
+            IsIndeterminate.Clear();
+            Progress.Value = 0;
+            Message.Value = "";
+            IsError.Clear();
         }
 
         public void SetProgress(double val)
         {
             Execute.OnUIThread(() =>
             {
-                if (!IsProgressInitialized)
+                if (IsIndeterminate.Value)
                     throw new InvalidOperationException("You must call StartProgress() method before setting progress value.");
 
-                if (val < ProgressMin || val > ProgressMax)
+                if (val < ProgressMin.Value || val > ProgressMax.Value)
                     throw new InvalidOperationException();
 
-                Progress = val;
-                NotifyOfPropertyChange(nameof(Progress));
+                Progress.Value = val;
             });
         }
 
-        public bool IsProgressInitialized { get; private set; }
-        public double ProgressMin { get; private set; }
-        public double ProgressMax { get; private set; }
-        public double Progress { get; private set; }
-
-        public ObservableCollection<string> Messages { get; }
-
-        public void SetMessage(int slot, string message)
+        public void Start()
         {
-            Execute.OnUIThread(() =>
+            Reset();
+            IsIndeterminate.Set();
+        }
+
+        public void Stop(string errorMsg = null)
+        {
+            IsIndeterminate.Clear();
+            if (!string.IsNullOrWhiteSpace(errorMsg))
             {
-                EnsureSlot(slot);
-                Messages[slot] = message;
-            });
+                IsError.Set();
+                Message.Value = errorMsg;
+            }
+            else
+                Progress = ProgressMax;
         }
 
-        //public void SetKeyValue(int slot, string key, string value)
-        //{
-        //    Execute.OnUIThread(() =>
-        //    {
-        //        EnsureSlot(slot);
-        //        Messages[slot] = new KeyValueProgressMessage(key, value);
-        //    });
-        //}
-
-        private void EnsureSlot(int slotNo)
+        public void SetMessage(string message)
         {
-            for (int i = Messages.Count; i <= slotNo; i++)
-                Messages.Add("");
-        }
-
-        public void ReserveMessageSlots(int slotCount)
-        {
-            EnsureSlot(slotCount);
+            Execute.OnUIThread(() => Message.Value = message);
         }
     }
-
-    //public interface IProgressDescriptionMessage
-    //{
-    //}
-
-    //public class SimpleProgressMessage : IProgressDescriptionMessage
-    //{
-    //    public SimpleProgressMessage(string val = "")
-    //    {
-    //        Value = val;
-    //    }
-
-    //    public string Value { get; }
-    //}
-
-    //public class KeyValueProgressMessage : IProgressDescriptionMessage
-    //{
-    //    public KeyValueProgressMessage(string key, string value)
-    //    {
-    //        Key = key;
-    //        Value = value;
-    //    }
-
-    //    public string Key { get; }
-    //    public string Value { get; }
-    //}
 }

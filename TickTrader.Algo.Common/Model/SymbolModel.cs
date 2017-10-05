@@ -10,7 +10,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo, ISymbolModel
+    public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
     {
         private IFeedSubscription subscription;
 
@@ -30,7 +30,6 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public string Name { get { return Descriptor.Name; } }
-        public string Security => Descriptor.SecurityName;
         public string Description => Descriptor.Description;
         public bool IsUserCreated => false;
         public SymbolInfo Descriptor { get; private set; }
@@ -71,8 +70,8 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        public event Action<ISymbolModel> InfoUpdated = delegate { };
-        public event Action<ISymbolModel> RateUpdated = delegate { };
+        public event Action<SymbolModel> InfoUpdated = delegate { };
+        public event Action<SymbolModel> RateUpdated = delegate { };
 
         public virtual void Close()
         {

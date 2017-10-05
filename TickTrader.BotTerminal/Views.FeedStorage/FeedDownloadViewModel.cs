@@ -113,12 +113,15 @@ namespace TickTrader.BotTerminal
             DateRange.From = null;
             DateRange.To = null;
 
-            var range = await _client.History.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
-
-            if (SelectedSymbol.Value == smb)
+            if (smb != null)
             {
-                DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
-                IsRangeLoaded.Value = true;
+                var range = await _client.History.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
+
+                if (SelectedSymbol.Value == smb)
+                {
+                    DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
+                    IsRangeLoaded.Value = true;
+                }
             }
         }
 

@@ -17,25 +17,21 @@ namespace TickTrader.Algo.Common.Model
         private object _syncObj = new object();
         private DynamicDictionary<FeedCacheKey, SeriesStorage<DateTime, BarEntity>> _barCollections = new DynamicDictionary<FeedCacheKey, SeriesStorage<DateTime, BarEntity>>();
         private LevelDbStorage _diskStorage;
-        private string _dbFolder;
-
-        public FeedCache(string dbFolder)
-        {
-            _dbFolder = dbFolder;
-        }
 
         public IDynamicSetSource<FeedCacheKey> Keys => _barCollections.Keys;
         public LevelDbStorage Database => _diskStorage;
         protected object SyncObj => _syncObj;
 
-        public virtual void Start()
+        public virtual void Start(string folder)
         {
             lock (_syncObj)
             {
+                _barCollections.Clear();
+
                 if (_diskStorage != null)
                     throw new InvalidOperationException("Already started!");
 
-                _diskStorage = new LevelDbStorage(_dbFolder);
+                _diskStorage = new LevelDbStorage(folder);
 
                 var loadedKeys = new List<FeedCacheKey>();
 
@@ -65,7 +61,6 @@ namespace TickTrader.Algo.Common.Model
         {
             lock (_syncObj)
             {
-                _barCollections.Clear();
                 if (_diskStorage != null)
                 {
                     _diskStorage.Dispose();

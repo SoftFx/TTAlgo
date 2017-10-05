@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -26,19 +27,7 @@ namespace TickTrader.Algo.Common.Model
     public interface IActionObserver
     {
         void StartProgress(double min, double max);
-        void ReserveMessageSlots(int slotCount);
-        void Reset();
         void SetProgress(double val);
-        void SetMessage(int slot, string message);
-        //void SetKeyValue(int slot, string key, string value);
-    }
-
-    public interface ISymbolModel : Setup.ISymbolInfo
-    {
-        bool IsUserCreated { get; }
-        string Description { get; }
-        string Security { get; }
-
-        SymbolEntity GetAlgoSymbolInfo();
+        void SetMessage(string message);
     }
 }

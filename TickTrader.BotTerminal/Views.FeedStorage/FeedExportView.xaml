@@ -24,7 +24,7 @@
             <DataTemplate DataType="{x:Type l:CsvExporter}">
                 <StackPanel>
                     <Label Content="File:"/>
-                    <ContentControl cal:View.Model="{Binding FileInput}" />
+                    <l:PathBox Mode="SaveFile" Filter="CSV file|*.csv" Path="{Binding FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </DataTemplate>
             

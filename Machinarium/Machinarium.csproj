@@ -84,6 +84,7 @@
     <Compile Include="Qnil\ObservableWrapper2.cs" />
     <Compile Include="Qnil\OperatorBase.cs" />
     <Compile Include="Qnil\ListAdapter.cs" />
+    <Compile Include="Qnil\SetFilter.cs" />
     <Compile Include="Qnil\SetObservableCollection.cs" />
     <Compile Include="Qnil\SetSelectOperator.cs" />
     <Compile Include="Qnil\SetToDicionaryOperator.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Var\Interfaces.cs" />
     <Compile Include="Var\IntVar.cs" />
     <Compile Include="Var\Operator.cs" />
+    <Compile Include="Var\SelectOperator.cs" />
     <Compile Include="Var\StateMachine.cs" />
     <Compile Include="Var\StateMachineBase.cs" />
     <Compile Include="Var\Var.cs" />

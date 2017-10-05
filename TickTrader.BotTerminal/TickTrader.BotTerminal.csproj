@@ -242,6 +242,9 @@
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\FlatRadioButton.cs" />
+    <Compile Include="Controls\PathBox.xaml.cs">
+      <DependentUpon>PathBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\PopupButton.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
@@ -375,7 +378,7 @@
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
     <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
-    <Compile Include="Views.Aux\PathInputViewModel.cs" />
+    <Compile Include="Views.Aux\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -576,6 +579,10 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
     <Page Include="Controls.Chart\MarkerAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\PathBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -815,7 +822,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Aux\PathInputView.xaml">
+    <Page Include="Views.Aux\ActionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
