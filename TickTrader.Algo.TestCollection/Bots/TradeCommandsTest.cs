@@ -63,8 +63,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
 			Print("Test - Modify Stop");
 
-			var newStopPrice = Symbol.RoundPriceUp(stop.Price - Symbol.Point * 500);
-			ThrowOnError(ModifyOrder(stop.Id, newStopPrice));
+			var newStopPrice = Symbol.RoundPriceUp(stop.StopPrice - Symbol.Point * 500);
+			ThrowOnError(ModifyOrder(stop.Id, null, newStopPrice));
 
 			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
 			{
