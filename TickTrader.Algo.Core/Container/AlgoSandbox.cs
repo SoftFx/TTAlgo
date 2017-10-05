@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Core.Container
             }
             catch (FileNotFoundException ex)
             {
-                _logger.Debug($"Failed to resolve assembly {name.Name}: {ex.Message}");
+                //_logger.Debug($"Failed to resolve assembly {name.Name}: {ex.Message}");
                 return null;
             }
         }
