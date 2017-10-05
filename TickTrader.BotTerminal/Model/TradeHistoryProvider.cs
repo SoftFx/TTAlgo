@@ -30,13 +30,13 @@ namespace TickTrader.BotTerminal
             _tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
         }
 
-        public Task<int> DownloadingHistoryAsync(DateTime from, DateTime to, CancellationToken token, Action<TransactionReport> reportHandler)
+        public Task<int> DownloadingHistoryAsync(DateTime from, DateTime to, bool skipCancel, CancellationToken token, Action<TransactionReport> reportHandler)
         {
             return Task.Run(() =>
             {
                 token.ThrowIfCancellationRequested();
 
-                var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000, false);
+                var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000, skipCancel);
 
                 while (!historyStream.EndOfStream)
                 {
