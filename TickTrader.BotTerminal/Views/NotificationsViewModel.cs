@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
         {
             if (newState == ConnectionManager.States.Online)
             {
-                _notificationCenter.SoundNotification.Notify(AppSounds.Positive);
+                _notificationCenter.SoundNotification.Notify(AppSounds.Save);
             }
             else if (newState == ConnectionManager.States.Offline)
             {
