@@ -109,7 +109,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 Print("Test - Open Market 3");
 
-                var pos3 = ThrowOnError(OpenMarketOrder(Symbol.Name, OrderSide.Buy, Volume, Symbol.Ask));
+                var pos3 = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, Volume, Symbol.Ask));
                 VerifyOrder(pos3.Id, OrderType.Position, OrderSide.Buy, Volume);
 
                 Print("Test - Close Market 2 by Market 3");
