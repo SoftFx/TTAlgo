@@ -63,8 +63,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
 			Print("Test - Modify Stop");
 
-			var newStopPrice = Symbol.RoundPriceUp(stop.Price - Symbol.Point * 500);
-			ThrowOnError(ModifyOrder(stop.Id, newStopPrice));
+			var newStopPrice = Symbol.RoundPriceUp(stop.StopPrice - Symbol.Point * 500);
+			ThrowOnError(ModifyOrder(stop.Id, null, newStopPrice));
 
 			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
 			{
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 Print("Test - Open Market 3");
 
-                var pos3 = ThrowOnError(OpenMarketOrder(Symbol.Name, OrderSide.Buy, Volume, Symbol.Ask));
+                var pos3 = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, Volume, Symbol.Ask));
                 VerifyOrder(pos3.Id, OrderType.Position, OrderSide.Buy, Volume);
 
                 Print("Test - Close Market 2 by Market 3");
