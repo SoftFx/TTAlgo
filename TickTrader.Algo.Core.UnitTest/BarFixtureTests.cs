@@ -62,10 +62,10 @@ namespace TickTrader.Algo.Core.UnitTest
             Assert.AreEqual(4, mainFixture.Count);
 
             Assert.AreEqual(4, secondFixture.Count);
-            Assert.AreEqual(double.NaN, secondFixture.Buffer[0].Open);
+            Assert.AreEqual(1.391, secondFixture.Buffer[0].Open);
             Assert.AreEqual(DateTime.Parse("2017-01-16 18:25"), secondFixture.Buffer[1].OpenTime);
             Assert.AreEqual(DateTime.Parse("2017-01-16 18:27"), secondFixture.Buffer[2].OpenTime);
-            Assert.AreEqual(double.NaN, secondFixture.Buffer[3].Open);
+            Assert.AreEqual(1.395, secondFixture.Buffer[3].Open);
         }
 
         [TestMethod]
