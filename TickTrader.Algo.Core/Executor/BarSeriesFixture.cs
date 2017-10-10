@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Core
         private List<BarEntity> futureBarCache;
         private ITimeRef refTimeline;
         private BarPriceType priceType;
+        private double defaultBarValue;
 
         public BarSeriesFixture(string symbolCode, IFixtureContext context, List<BarEntity> data = null, ITimeRef refTimeline = null)
             : this(symbolCode, BarPriceType.Bid, context, data, refTimeline)
@@ -123,13 +124,15 @@ namespace TickTrader.Algo.Core
                 if (futureBarCache[0].OpenTime == timeCoordinate)
                 {
                     Buffer.Append(futureBarCache[0]);
-                    break;
+                    return;
                 }
                 else if (futureBarCache[0].OpenTime < timeCoordinate)
                     futureBarCache.RemoveAt(0);
                 else if (futureBarCache[0].OpenTime > timeCoordinate)
                     break;
             }
+
+            Buffer.Append(CreateFillingBar(timeCoordinate));
         }
 
         private void AppendBar(BarEntity bar)
@@ -147,7 +150,7 @@ namespace TickTrader.Algo.Core
                     else if (timeCoordinate > bar.OpenTime) // place not found - throw out
                         return;
 
-                    Buffer.Append(CreateEmptyBar(timeCoordinate)); // fill empty spaces
+                    Buffer.Append(CreateFillingBar(timeCoordinate)); // fill empty spaces
                 }
 
                 futureBarCache.Add(bar); // place not found - add to future cache
@@ -159,24 +162,34 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private BarEntity CreateEmptyBar(DateTime openTime)
+        private BarEntity CreateFillingBar(DateTime openTime)
+        {
+            return CreateFillingBar(openTime, Buffer.Count > 0 ? Buffer.Last.Close : defaultBarValue);
+        }
+
+        private BarEntity CreateFillingBar(DateTime openTime, double price)
         {
             var boundaries = sampler.GetBar(openTime);
-            return new BarEntity(boundaries.Open, boundaries.Close, double.NaN, double.NaN);
+            return new BarEntity(boundaries.Open, boundaries.Close, price, double.IsNaN(price) ? price : 0);
         }
 
         private void AppendData(List<BarEntity> data)
         {
             IsLoaded = true;
 
+            defaultBarValue = double.NaN;
             if (data != null)
+            {
+                if (data.Count > 0)
+                    defaultBarValue = data[0].Open;
                 data.ForEach(AppendBar);
+            }
 
             if (refTimeline != null)
             {
                 // fill end of buffer
                 for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
-                    Buffer.Append(CreateEmptyBar(refTimeline[i]));
+                    Buffer.Append(CreateFillingBar(refTimeline[i]));
             }
         }
 
