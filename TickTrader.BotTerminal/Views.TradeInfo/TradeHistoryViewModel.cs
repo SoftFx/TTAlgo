@@ -36,6 +36,7 @@ namespace TickTrader.BotTerminal
         private DateTime _to;
         private TimePeriod _period;
         private TradeDirection _tradeDirectionFilter;
+        private bool _skipCancel;
 
         private CancellationTokenSource _cancelLoadSrc, _cancelCleanSrc;
         private ActionBlock<TransactionReport> _uiUpdater;
@@ -46,6 +47,7 @@ namespace TickTrader.BotTerminal
             _period = TimePeriod.LastHour;
             UpdateDateTimePeriod();
             TradeDirectionFilter = TradeDirection.All;
+            _skipCancel = true;
 
             _tradesList = new ObservableSrotedList<string, TransactionReport>();
             TradesList = CollectionViewSource.GetDefaultView(_tradesList);
@@ -120,6 +122,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool SkipCancel
+        {
+            get { return _skipCancel; }
+            set
+            {
+                if (_skipCancel == value)
+                    return;
+
+                _skipCancel = value;
+                NotifyOfPropertyChange(nameof(SkipCancel));
+                RefreshHistory();
+            }
+        }
+
         public ICollectionView TradesList { get; private set; }
 
         public ObservableTask<int> DownloadObserver
@@ -187,7 +203,7 @@ namespace TickTrader.BotTerminal
                 _uiUpdater = currentUpdater;
 
                 var downloadTask = _tradeClient.TradeHistory.DownloadingHistoryAsync(
-                    From.ToUniversalTime(), To.ToUniversalTime(), currentSrc.Token,
+                    From.ToUniversalTime(), To.ToUniversalTime(), SkipCancel, currentSrc.Token,
                     r => currentUpdater.SendAsync(r, currentSrc.Token).Wait());
                 DownloadObserver = new ObservableTask<int>(downloadTask);
 
@@ -225,6 +241,7 @@ namespace TickTrader.BotTerminal
                 {
                     var key = GetTransactionKey(tradeTransaction);
                     if (!_tradesList.ContainsKey(key) &&
+                        !(SkipCancel && tradeTransaction.ActionType == TradeTransactionReportType.OrderCanceled) &&
                         (Period == TimePeriod.LastHour
                             ? tradeTransaction.CloseTime.ToLocalTime() > From
                             : tradeTransaction.CloseTime.ToLocalTime().Between(From, To)))

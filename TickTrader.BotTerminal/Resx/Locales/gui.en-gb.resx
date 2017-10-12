@@ -357,4 +357,16 @@
   <data name="Menu_Help" xml:space="preserve">
     <value>Help</value>
   </data>
+  <data name="Menu_LoadProfile" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="Menu_SaveProfile" xml:space="preserve">
+    <value>Save profile as</value>
+  </data>
+  <data name="Menu_Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Order_StopPrice" xml:space="preserve">
+    <value>Stop Price</value>
+  </data>
 </root>

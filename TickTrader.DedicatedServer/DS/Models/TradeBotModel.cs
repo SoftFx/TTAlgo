@@ -286,6 +286,7 @@ namespace TickTrader.DedicatedServer.DS.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.Account;
                 executor.TradeExecutor = _client.TradeApi;
+                executor.TradeHistoryProvider = new TradeHistoryProvider(_client.Connection);
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;
@@ -384,6 +385,15 @@ namespace TickTrader.DedicatedServer.DS.Models
         {
             if (pckg.NameEquals(PackageName))
                 UpdatePackage();
+        }
+
+        public void Abort()
+        {
+            lock(_syncObj)
+            {
+                if (State == BotStates.Stopping)
+                    executor?.Abort();
+            }
         }
 
         private class ListenerProxy : CrossDomainObject

@@ -219,7 +219,7 @@ namespace TickTrader.Algo.Core.Lib
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            Array.Copy(this.buffer, 0, array, arrayIndex, this.Count);
         }
 
         public bool Remove(T item)

@@ -10,10 +10,9 @@ namespace TickTrader.BotTerminal
 {
     internal class EnvService
     {
-        private Logger logger;
         private EnvService()
         {
-            logger = NLog.LogManager.GetCurrentClassLogger();
+            _logger = NLog.LogManager.GetCurrentClassLogger();
             ApplicationName = "BotTrader";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
@@ -35,6 +34,8 @@ namespace TickTrader.BotTerminal
                 CustomFeedCacheFolder = Path.Combine(appDocumentsFolder, "CustomQuoteCache");
                 AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 AppLockFilePath = Path.Combine(AppDataFolder, "applock");
+                UserProfilesFolder = Path.Combine(appDocumentsFolder, "Profiles");
+                ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
             }
             else
             {
@@ -51,6 +52,8 @@ namespace TickTrader.BotTerminal
                 CustomFeedCacheFolder = Path.Combine(AppFolder, "CustomQuoteCache");
                 AppDataFolder = Path.Combine(AppFolder, "Settings");
                 AppLockFilePath = Path.Combine(AppFolder, "applock");
+                UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
+                ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
             }
 
             EnsureFolder(AlgoRepositoryFolder);
@@ -62,12 +65,15 @@ namespace TickTrader.BotTerminal
             EnsureFolder(JournalFolder);
             EnsureFolder(FeedHistoryCacheFolder);
             EnsureFolder(AppDataFolder);
+            EnsureFolder(UserProfilesFolder);
+            EnsureFolder(ProfilesCacheFolder);
 
             // This is required for normal Algo plugin execution. Do not change working folder elsewhere!
             Directory.SetCurrentDirectory(AlgoWorkingFolder);
 
             UserDataStorage = new XmlObjectStorage(new FolderBinStorage(AppDataFolder));
             ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder)));
+            ProfilesCacheStorage = new XmlObjectStorage(new FolderBinStorage(ProfilesCacheFolder));
         }
 
         private static EnvService instance = new EnvService();
@@ -89,6 +95,8 @@ namespace TickTrader.BotTerminal
         public string AppLockFilePath { get; private set; }
         public IObjectStorage UserDataStorage { get; private set; }
         public IObjectStorage ProtectedUserDataStorage { get; private set; }
+        public string UserProfilesFolder { get; }
+        public string ProfilesCacheFolder { get; }
 
         public void EnsureFolder(string folderPath)
         {
@@ -101,7 +109,7 @@ namespace TickTrader.BotTerminal
             }
             catch (IOException ex)
             {
-                logger.Error("Cannot create directory {0}: {1}", folderPath, ex.Message);
+                _logger.Error("Cannot create directory {0}: {1}", folderPath, ex.Message);
             }
         }
     }

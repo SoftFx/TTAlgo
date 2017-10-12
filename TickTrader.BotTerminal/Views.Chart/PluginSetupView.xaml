@@ -140,6 +140,19 @@
                                      HorizontalAlignment="Stretch" />
     </DataTemplate>
 
+    <!--  Bool Param template  -->
+
+    <DataTemplate DataType="{x:Type am:BoolParamSetup}">
+        <CheckBox Name="input" IsChecked="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+
     <!--  Int Param template  -->
 
     <DataTemplate DataType="{x:Type am:IntParamSetup}">
@@ -152,10 +165,30 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type am:NullableIntParamSetup}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
     <!--  DoubleParam template -->
 
     <DataTemplate DataType="{x:Type am:DoubleParamSetup}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type am:NullableDoubleParamSetup}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding HasError}" Value="True">
@@ -227,7 +260,7 @@
                   IsEnabled="{Binding HasChoice}"/>
     </DataTemplate>-->
 
-    <DataTemplate DataType="{x:Type am:BarToBarInput}">
+    <DataTemplate DataType="{x:Type am:BarToBarInputSetup}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -246,7 +279,7 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:QuoteToBarInput}">
+    <DataTemplate DataType="{x:Type am:QuoteToBarInputSetup}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
                       IsEnabled="{Binding HasChoice}"/>
@@ -254,7 +287,7 @@
 
     <!-- Tick Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToQuoteInput}">
+    <DataTemplate DataType="{x:Type am:QuoteToQuoteInputSetup}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
                       IsEnabled="{Binding HasChoice}"/>
@@ -262,7 +295,7 @@
 
     <!-- Double (bar based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:BarToDoubleInput}">
+    <DataTemplate DataType="{x:Type am:BarToDoubleInputSetup}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -283,7 +316,7 @@
 
     <!-- Double (tick based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToDoubleInput}">
+    <DataTemplate DataType="{x:Type am:QuoteToDoubleInputSetup}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -317,14 +350,12 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
+            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt" IsEnabled="{Binding IsCreationMode}"
                      Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="Start bot" />
-            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
+            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
             <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="4" Grid.Column="0" Content="AllowTrade" />
-            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
@@ -427,7 +458,7 @@
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
-                <StackPanel>
+                <StackPanel IsEnabled="{Binding IsEnabled}">
                     <GroupBox Name="DescriptionGroup" Header="Description">
                         <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
                     </GroupBox>
@@ -451,6 +482,19 @@
                     </GroupBox>
                     <GroupBox Name="OutputsGroup" Header="Outputs" Margin="4">
                         <ItemsControl ItemsSource="{Binding Setup.Outputs}"/>
+                    </GroupBox>
+                    <GroupBox Name="AutoRunGroup" Margin="4" Visibility="Collapsed">
+                        <Grid Margin="3">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Start bot" />
+                            <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                        </Grid>
                     </GroupBox>
                 </StackPanel>
             </ScrollViewer>
@@ -485,6 +529,15 @@
             <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
                 <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot"/>
+                    <Condition Binding="{Binding IsEditMode}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 

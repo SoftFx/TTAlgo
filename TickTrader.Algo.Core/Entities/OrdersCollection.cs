@@ -42,9 +42,10 @@ namespace TickTrader.Algo.Core
             return fixture.GetOrNull(id);
         }
 
-        public OrderAccessor Remove(string orderId)
+        public OrderAccessor Remove(OrderEntity entity)
         {
-            var order = fixture.Remove(orderId);
+            var order = fixture.Remove(entity.Id);
+            order?.Update(entity);
             if (order != null)
                 Removed(order);
             return order;
@@ -85,6 +86,11 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.FireOrderFilled(args));
         }
 
+        public void FireOrderActivated(OrderActivatedEventArgs args)
+        {
+            builder.InvokePluginMethod(() => fixture.FireOrderActivated(args));
+        }
+
         public event Action<OrderAccessor> Added;
         public event Action<OrderAccessor> Removed;
         public event Action<OrderAccessor> Replaced;
@@ -111,6 +117,9 @@ namespace TickTrader.Algo.Core
                 var accessor = new OrderAccessor(entity);
                 if (!orders.TryAdd(entity.Id, accessor))
                     throw new ArgumentException("Order #" + entity.Id + " already exist!");
+
+                Added?.Invoke(accessor);
+
                 return accessor;
             }
 
@@ -121,7 +130,10 @@ namespace TickTrader.Algo.Core
                 if (this.orders.TryGetValue(entity.Id, out order))
                 {
                     if (order.Modified <= entity.Modified)
+                    {
                         order.Update(entity);
+                        Replaced?.Invoke(order);
+                    }
                 }
 
                 return order;
@@ -130,7 +142,10 @@ namespace TickTrader.Algo.Core
             public OrderAccessor Remove(string orderId)
             {
                 OrderAccessor removed;
-                orders.TryRemove(orderId, out removed);
+
+                if (orders.TryRemove(orderId, out removed))
+                    Removed?.Invoke(removed);
+
                 return removed;
             }
 
@@ -176,12 +191,21 @@ namespace TickTrader.Algo.Core
                 Filled(args);
             }
 
+            public void FireOrderActivated(OrderActivatedEventArgs args)
+            {
+                Activated(args);
+            }
+
             public event Action<OrderClosedEventArgs> Closed = delegate { };
             public event Action<OrderModifiedEventArgs> Modified = delegate { };
             public event Action<OrderOpenedEventArgs> Opened = delegate { };
             public event Action<OrderCanceledEventArgs> Canceled = delegate { };
             public event Action<OrderExpiredEventArgs> Expired = delegate { };
             public event Action<OrderFilledEventArgs> Filled = delegate { };
+            public event Action<OrderActivatedEventArgs> Activated = delegate { };
+            public event Action<Order> Added;
+            public event Action<Order> Removed;
+            public event Action<Order> Replaced;
 
             public IEnumerator<OrderAccessor> GetTypedEnumerator()
             {
@@ -203,5 +227,7 @@ namespace TickTrader.Algo.Core
                 return orders.Values.GetEnumerator();
             }
         }
+
+       
     }
 }

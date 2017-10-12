@@ -9,16 +9,26 @@ namespace TickTrader.BotTerminal
 {
     internal class BotStateViewModel : Screen, IWindowModel
     {
-        public BotStateViewModel(TradeBotModel bot)
+        private ToolWindowsManager _wndManager;
+
+        public BotStateViewModel(TradeBotModel bot, ToolWindowsManager wndManager)
         {
+            _wndManager = wndManager;
             this.Bot = bot;
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
+            Bot.ConfigurationChanged += BotConfigurationChanged;
             Bot.CustomStatusChanged += Bot_CustomStatusChanged;
+            Bot.StateViewOpened = true;
             DisplayName = "Status: " + bot.InstanceId;
             BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
             Bot_CustomStatusChanged(Bot);
+        }
+
+        private void BotConfigurationChanged(TradeBotModel obj)
+        {
+            NotifyOfPropertyChange(nameof(BotInfo));
         }
 
         public TradeBotModel Bot { get; private set; }
@@ -27,6 +37,7 @@ namespace TickTrader.BotTerminal
         public string CustomStatus { get; private set; }
         public bool IsStarted { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopping; } }
         public bool CanStartStop { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopped; } }
+        public bool CanOpenSettings { get { return Bot.State == BotModelStates.Stopped; } }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public bool HasParams => Bot.Setup.Parameters.Any();
 
@@ -34,9 +45,11 @@ namespace TickTrader.BotTerminal
         {
             base.TryClose(dialogResult);
 
+            Bot.ConfigurationChanged -= BotConfigurationChanged;
             Bot.Removed -= Bot_Removed;
             Bot.StateChanged -= Bot_StateChanged;
             Bot.CustomStatusChanged -= Bot_CustomStatusChanged;
+            Bot.StateViewOpened = false;
         }
 
         public async void StartStop()
@@ -47,6 +60,32 @@ namespace TickTrader.BotTerminal
                 Bot.Start();
             else if (Bot.State == BotModelStates.Stopping)
                 throw new Exception("StartStop() cannot be called when Bot is stopping!");
+        }
+
+        public void OpenSettings()
+        {
+            var key = $"BotSettings {Bot.InstanceId}";
+
+            var wnd = _wndManager.GetWindow(key);
+            if (wnd != null)
+            {
+                wnd.Activate();
+            }
+            else
+            {
+                var pSetup = new PluginSetupViewModel(Bot);
+                pSetup.Closed += PluginSetupViewClosed;
+
+                _wndManager.OpenWindow(key, pSetup);
+            }
+        }
+
+        private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)
+        {
+            if (dialogResult)
+            {
+                Bot.Configurate(setupVM.Setup, setupVM.Permissions, setupVM.Isolated);
+            }
         }
 
         private void Bot_Removed(TradeBotModel bot)
@@ -70,6 +109,7 @@ namespace TickTrader.BotTerminal
             }
 
             NotifyOfPropertyChange(nameof(ExecStatus));
+            NotifyOfPropertyChange(nameof(CanOpenSettings));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(IsStarted));
             NotifyOfPropertyChange(nameof(BotInfo));

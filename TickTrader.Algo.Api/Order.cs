@@ -12,9 +12,11 @@ namespace TickTrader.Algo.Api
         string Symbol { get; }
         double RequestedVolume { get; }
         double RemainingVolume { get; }
+        double MaxVisibleVolume { get; }
         OrderType Type { get; }
         OrderSide Side { get; }
         double Price { get; }
+        double StopPrice { get; }
         double StopLoss { get; }
         double TakeProfit { get; }
         bool IsNull { get; }
@@ -46,6 +48,15 @@ namespace TickTrader.Algo.Api
         event Action<OrderModifiedEventArgs> Modified;
         event Action<OrderFilledEventArgs> Filled;
         event Action<OrderExpiredEventArgs> Expired;
+        event Action<OrderActivatedEventArgs> Activated;
+        event Action<Order> Added;
+        event Action<Order> Removed;
+        event Action<Order> Replaced;
+    }
+
+    public interface OrderActivatedEventArgs
+    {
+        Order Order { get; }
     }
 
     public interface OrderOpenedEventArgs

@@ -1,20 +1,12 @@
-using Machinarium.State;
 using SoftFX.Extended;
 using SoftFX.Extended.Reports;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
-using System.Diagnostics;
-using TickTrader.Algo.Common.Lib;
 using FDK = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model
@@ -71,7 +63,7 @@ namespace TickTrader.Algo.Common.Model
             var currencies = _client.Currencies;
             var accInfo = cache.AccountInfo;
             var balanceCurrencyInfo = currencies.Snapshot.Read(accInfo.Currency);
-            
+
 
             UpdateData(accInfo, currencies.Snapshot, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
 
@@ -124,6 +116,8 @@ namespace TickTrader.Algo.Common.Model
 
         protected void OnBalanceChanged()
         {
+            if (_isCalcEnabled)
+                Calc.Recalculate();
         }
 
         private void OnBalanceOperation(SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
@@ -149,20 +143,6 @@ namespace TickTrader.Algo.Common.Model
             }
 
             AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
-        }
-
-        protected void OnTransactionReport(TradeTransactionReport report)
-        {
-            // TODO: Remove after TTS 1.28 will be on live servers
-            // Workaround. FDK does not provide balance changes in PositionReport
-            if (Type == AccountType.Net)
-            {
-                if (report.TradeTransactionReportType == TradeTransactionReportType.OrderFilled)
-                {
-                    Balance = report.AccountBalance;
-                    OnBalanceChanged();
-                }
-            }
         }
 
         protected void OnReport(SoftFX.Extended.Events.PositionReportEventArgs e)
@@ -243,8 +223,11 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Trade:
-                    if (report.OrderType == TradeRecordType.Limit
-                        || report.OrderType == TradeRecordType.Stop)
+                    if (report.OrderType == TradeRecordType.StopLimit)
+                    {
+                        OnOrderRemoved(report, OrderExecAction.Activated);
+                    }
+                    else if (report.OrderType == TradeRecordType.Limit || report.OrderType == TradeRecordType.Stop)
                     {
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Filled);
@@ -261,7 +244,7 @@ namespace TickTrader.Algo.Common.Model
                         else
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == TradeRecordType.Market 
+                    else if (report.OrderType == TradeRecordType.Market
                         && (Type == AccountType.Net || Type == AccountType.Cash))
                     {
                         OnMarketFilled(report, OrderExecAction.Filled);
@@ -269,20 +252,20 @@ namespace TickTrader.Algo.Common.Model
                     break;
             }
 
-            // TODO: Enable after TTS 1.28 will be on live servers
-            //if (Type == AccountType.Net && report.ExecutionType == ExecutionType.Trade)
-            //{
-            //    switch (report.OrderStatus)
-            //    {
-            //        case OrderStatus.Calculated:
-            //        case OrderStatus.Filled:
-            //            if (!double.IsNaN(report.Balance))
-            //            {
-            //                Balance = report.Balance;
-            //            }
-            //            break;
-            //    }
-            //}
+            if (Type == AccountType.Net && report.ExecutionType == ExecutionType.Trade)
+            {
+                switch (report.OrderStatus)
+                {
+                    case OrderStatus.Calculated:
+                    case OrderStatus.Filled:
+                        if (!double.IsNaN(report.Balance))
+                        {
+                            Balance = report.Balance;
+                            OnBalanceChanged();
+                        }
+                        break;
+                }
+            }
 
             if (Type == AccountType.Cash)
             {

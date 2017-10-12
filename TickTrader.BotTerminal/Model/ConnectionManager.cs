@@ -30,8 +30,9 @@ namespace TickTrader.BotTerminal
         private Task connectTask;
         private IDelayCounter connectionDelay;
         private CancellationTokenSource recconectTokenSource;
+        private bool _catalogInitialized;
 
-        public ConnectionManager(PersistModel appStorage, EventJournal journal)
+        public ConnectionManager(PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
@@ -39,13 +40,14 @@ namespace TickTrader.BotTerminal
             this.journal = journal;
             this.connectionDelay = new ConnectionDelayCounter(TimeSpan.FromSeconds(2), TimeSpan.FromMinutes(1));
 
+            InitCatalog(algoEnv.Repo);
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
 
             InitAuthData();
 
-            internalStateControl.AddTransition(InStates.Offline, () => HasRequest, InStates.Connecting);
+            internalStateControl.AddTransition(InStates.Offline, () => HasRequest && _catalogInitialized, InStates.Connecting);
             internalStateControl.AddTransition(InStates.Connecting, InEvents.Connected, InStates.Online);
             internalStateControl.AddTransition(InStates.Connecting, () => HasRequest, InStates.Disconnecting);
             internalStateControl.AddTransition(InStates.Connecting, InEvents.FailedToConnect, InStates.Offline);
@@ -95,6 +97,12 @@ namespace TickTrader.BotTerminal
             internalStateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
+        private async void InitCatalog(PluginCatalog catalog)
+        {
+            await catalog.Init();
+            internalStateControl.ModifyConditions(() => _catalogInitialized = true);
+        }
+
         private async Task RecconectAfter(CancellationToken token, TimeSpan delay)
         {
             await Task.Delay(delay, token);
@@ -132,8 +140,8 @@ namespace TickTrader.BotTerminal
 
         internal void RemoveAccount(AccountAuthEntry entry)
         {
-            authStorage.Remove(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
-            authStorage.TriggerSave();
+            authStorage.Remove(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
+            authStorage.Save();
         }
 
         private bool HasRequest { get { return currentConnectionRequest != null; } }
@@ -219,12 +227,12 @@ namespace TickTrader.BotTerminal
 
         private void SaveLogin(AccountAuthEntry entry)
         {
-            authStorage.Update(new AccountSorageEntry(entry.Login, entry.Password, entry.Server.Address));
+            authStorage.Update(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.UpdateLast(entry.Login, entry.Server.Address);
-            authStorage.TriggerSave();
+            authStorage.Save();
         }
 
-        private void Storage_Changed(ListUpdateArgs<AccountSorageEntry> e)
+        private void Storage_Changed(ListUpdateArgs<AccountStorageEntry> e)
         {
             if (e.Action == DLinqAction.Insert)
                 Accounts.Add(CreateEntry(e.NewItem));
@@ -242,10 +250,10 @@ namespace TickTrader.BotTerminal
 
         private AccountAuthEntry CreateEntry(string login, string password, string server)
         {
-            return CreateEntry(new AccountSorageEntry(login, password, server));
+            return CreateEntry(new AccountStorageEntry(login, password, server));
         }
 
-        private AccountAuthEntry CreateEntry(AccountSorageEntry record)
+        private AccountAuthEntry CreateEntry(AccountStorageEntry record)
         {
             return new AccountAuthEntry(record, GetServer(record.ServerAddress));
         }

@@ -313,6 +313,17 @@ namespace TickTrader.Algo.Core
             taskToWait.Wait();
         }
 
+        public void Abort()
+        {
+            lock (_sync)
+            {
+                if (state == States.Stopping)
+                {
+                    iStrategy.Abort();
+                }
+            }
+        }
+
         public void HandleReconnect()
         {
             lock (_sync)
@@ -346,6 +357,11 @@ namespace TickTrader.Algo.Core
                 calcFixture.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
+
+                builder.PluginProxy.Coordinator.Clear();
+                builder.PluginProxy.Dispose();
+                accFixture.Dispose();
+                fStrategy.Dispose();
             }
             catch (Exception ex)
             {

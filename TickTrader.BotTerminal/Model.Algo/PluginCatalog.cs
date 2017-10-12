@@ -65,6 +65,11 @@ namespace TickTrader.BotTerminal
                 Add(d);
         }
 
+        public Task Init()
+        {
+            return Task.WhenAll(repositories.Select(r => r.Init()));
+        }
+
         private void Rep_Added(AlgoRepositoryEventArgs args)
         {
             Execute.OnUIThread(() =>

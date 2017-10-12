@@ -39,9 +39,12 @@ namespace TickTrader.BotTerminal
             _core = new ClientCore(connection, c => new SymbolCollectionModel(c), sync, sync);
 
             this.Symbols = (SymbolCollectionModel)_core.Symbols;
-            this.TradeHistory = new TradeHistoryProvider(this);
+            this.TradeHistory = new TradeHistoryProviderModel(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
-            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            if(Properties.Settings.Default.UseQuoteStorage)
+                this.History = FeedHistoryProviderModel.CreateDiskStorage(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            else
+                this.History = FeedHistoryProviderModel.CreateLightProxy(connection);
             this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
 
@@ -169,7 +172,7 @@ namespace TickTrader.BotTerminal
                 case OrderExecAction.Closed:
                     if (order.Type == Algo.Api.OrderType.Position)
                     {
-                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillVolume.Lots} lots at {order.LastFillPrice}");
                     }
                     break;
                 case OrderExecAction.Canceled:
@@ -179,7 +182,7 @@ namespace TickTrader.BotTerminal
                     _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
                     break;
                 case OrderExecAction.Filled:
-                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume} lots at {order.LastFillPrice}");
+                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume.Lots} lots at {order.LastFillPrice}");
                     break;
             }
         }
@@ -196,7 +199,7 @@ namespace TickTrader.BotTerminal
         public ConnectionModel Connection { get; private set; }
         public TradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
-        public TradeHistoryProvider TradeHistory { get; }
+        public TradeHistoryProviderModel TradeHistory { get; }
         public SymbolCollectionModel Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }

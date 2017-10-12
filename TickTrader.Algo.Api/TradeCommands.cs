@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
@@ -9,8 +6,10 @@ namespace TickTrader.Algo.Api
     internal interface TradeCommands
     {
         Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
+        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
         Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
         Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
+        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment);
         Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
         Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
     }
@@ -48,6 +47,8 @@ namespace TickTrader.Algo.Api
         IncorrectTp         = 108,
         IncorrectSl         = 109,
         NotEnoughMoney      = 110,
-        TradeNotAllowed     = 111
+        TradeNotAllowed     = 111,
+        IncorrectStopPrice = 112,
+        IncorrectMaxVisibleVolume = 113
     }
 }

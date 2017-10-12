@@ -46,7 +46,41 @@ namespace TickTrader.Algo.TestCollection.Bots
             Print("Test - Cancel Limit");
 
             ThrowOnError(CancelOrder(limit.Id));
-            Print("Test - Open Market 1");
+
+			Print("Test - Open Stop");
+
+			var stop = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Stop, OrderSide.Sell, Volume, Symbol.Bid - Symbol.Point * 1000));
+			
+			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
+			{
+				VerifyOrder(stop.Id, OrderType.Stop, OrderSide.Sell, Volume);
+			}
+
+			if (Account.Type == AccountTypes.Cash)
+			{
+				VerifyOrder(stop.Id, OrderType.StopLimit, OrderSide.Sell, Volume);
+			}
+
+			Print("Test - Modify Stop");
+
+			var newStopPrice = Symbol.RoundPriceUp(stop.StopPrice - Symbol.Point * 500);
+			ThrowOnError(ModifyOrder(stop.Id, null, newStopPrice));
+
+			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
+			{
+				VerifyOrder(stop.Id, OrderType.Stop, OrderSide.Sell, Volume);
+			}
+
+			Print("Test - Cancel Stop");
+
+			ThrowOnError(CancelOrder(stop.Id));
+
+			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
+			{
+				VerifyOrderDeleted(stop.Id);
+			}
+			
+			Print("Test - Open Market 1");
 
             var pos1 = ThrowOnError(OpenMarketOrder(OrderSide.Buy, Volume * 2));
             
@@ -75,7 +109,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 Print("Test - Open Market 3");
 
-                var pos3 = ThrowOnError(OpenMarketOrder(Symbol.Name, OrderSide.Buy, Volume, Symbol.Ask));
+                var pos3 = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Buy, Volume, Symbol.Ask));
                 VerifyOrder(pos3.Id, OrderType.Position, OrderSide.Buy, Volume);
 
                 Print("Test - Close Market 2 by Market 3");

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
@@ -10,9 +6,9 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public class QuoteToBarInput : SingleBarInputBase
+    public class QuoteToBarInputSetup : SingleBarInputSetupBase
     {
-        private static readonly Func<QuoteEntity, Bar> askConvertor = q =>
+        private static readonly Func<QuoteEntity, Bar> AskConvertor = q =>
             new BarEntity()
             {
                 Open = q.Ask,
@@ -24,7 +20,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 Volume = 1
             };
 
-        private static readonly Func<QuoteEntity, Bar> bidConvertor = q =>
+        private static readonly Func<QuoteEntity, Bar> BidConvertor = q =>
             new BarEntity()
             {
                 Open = q.Bid,
@@ -36,25 +32,34 @@ namespace TickTrader.Algo.Common.Model.Setup
                 Volume = 1
             };
 
-        public QuoteToBarInput(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType)
+
+        public QuoteToBarInputSetup(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType)
             : base(descriptor, symbolCode, defPriceType)
         {
             SetMetadata(descriptor);
         }
 
+
         public override void Apply(IPluginSetupTarget target)
         {
             target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Bar>(Descriptor.Id, SelectedSymbol.Name,
-                PriceType == BarPriceType.Ask ? askConvertor : bidConvertor);
+                PriceType == BarPriceType.Ask ? AskConvertor : BidConvertor);
         }
 
         public override void Load(Property srcProperty)
         {
-            base.Load(srcProperty);
+            var input = srcProperty as QuoteToBarInput;
+            if (input != null)
+            {
+                LoadConfig(input);
+            }
+        }
 
-            //var otherInput = srcProperty as QuoteToBarInput;
-            //SelectedSymbol = otherInput.SelectedSymbol;
-            //PriceType = otherInput.PriceType;
+        public override Property Save()
+        {
+            var input = new QuoteToBarInput();
+            SaveConfig(input);
+            return input;
         }
     }
 }

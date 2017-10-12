@@ -14,21 +14,28 @@
             <Separator/>
             <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
-        <MenuItem Header="{l:Resx Menu_Preferences}">
+        <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
                                         SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>-->
             <l:MenuItemSelector Header="{l:Resx Menu_Theme}"
                                         ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
-                                        SelectedItem="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=SelectedTheme, Mode=TwoWay}">
+                                        SelectedItem="{l:Setting Theme}">
                 <l:MenuItemSelector.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{l:ResxBinding Prefix=Theme_}"/>
                     </DataTemplate>
                 </l:MenuItemSelector.ItemTemplate>
             </l:MenuItemSelector>
-            <MenuItem Header="Sounds" IsChecked="{Binding Notifications.SoundsEnabled}" IsCheckable="True"></MenuItem>
-            <MenuItem Header="Notifications" IsChecked="{Binding Notifications.NotificationsEnabled}" IsCheckable="True"></MenuItem>
+            <MenuItem Header="Sounds" IsChecked="{l:Setting EnableSounds}" IsCheckable="True"></MenuItem>
+            <MenuItem Header="Notifications" IsChecked="{l:Setting EnableNotifications}" IsCheckable="True"></MenuItem>
+            <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
+        </MenuItem>
+        <MenuItem Header="{l:Resx Menu_Profile}" DataContext="{Binding ProfileManager}">
+            <MenuItem Header="{l:Resx Menu_SaveProfile}" cal:Message.Attach="SaveProfile"/>
+            <MenuItem Header="{l:Resx Menu_LoadProfile}" ItemsSource="{Binding Profiles}"
+                      cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                      cal:Message.Attach="LoadProfile($originalsourcecontext)"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Tools}">
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>

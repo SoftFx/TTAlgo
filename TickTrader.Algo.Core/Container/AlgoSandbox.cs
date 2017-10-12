@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core.Container
             byte[] symbolsBytes = loader.GetFileBytes(pdbFileName);
 
             if (assemblyBytes == null)
-                throw new FileNotFoundException("Package is missing required file: " + assemblyFileName);
+                throw new FileNotFoundException($"Package {loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
 
             return Assembly.Load(assemblyBytes, symbolsBytes);
         }
@@ -76,7 +76,14 @@ namespace TickTrader.Algo.Core.Container
             if (name.Name == "TickTrader.Algo.Api")
                 return typeof(TickTrader.Algo.Api.TradeBot).Assembly;
 
-            return LoadAssembly(name.Name + ".dll");
+            try
+            {
+                return LoadAssembly(name.Name + ".dll");
+            }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
         }
     }
 

@@ -22,12 +22,14 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}" Grid.RowSpan="2"/>
+                <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" HorizontalAlignment="Right" Grid.RowSpan="2" Grid.Column="2"/>
                 <TextBlock Style="{StaticResource BotNameLabelStyle}" Text="{Binding BotName}" Grid.Column="1" Grid.Row="0" />
                 <TextBlock Style="{DynamicResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" Grid.Row="1" />
             </Grid>
@@ -53,8 +55,12 @@
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
-        <Setter Property="Width" Value="300"/>
-        <Setter Property="Height" Value="300"/>
+        <Setter Property="l:Settings.Provider" Value="{Binding Bot.StateViewSettings}" />
+        <Setter Property="Width" Value="{l:Setting Width}" />
+        <Setter Property="Height" Value="{l:Setting Height}" />
+        <Setter Property="Left" Value="{l:Setting Left}" />
+        <Setter Property="Top" Value="{l:Setting Top}" />
+        <Setter Property="WindowState" Value="{l:Setting State}" />
     </Style>
 
     <Style x:Key="BotStateViewStyle" TargetType="Window" BasedOn="{StaticResource BotStateViewStyle.Common}">

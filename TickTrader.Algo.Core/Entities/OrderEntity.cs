@@ -14,13 +14,15 @@ namespace TickTrader.Algo.Core
         public OrderEntity(OrderEntity src)
         {
             Id = src.Id;
-            ClientOrderId = ((OrderEntity)src).ClientOrderId;
+            ClientOrderId = src.ClientOrderId;
             RequestedVolume = src.RequestedVolume;
             RemainingVolume = src.RemainingVolume;
+            MaxVisibleVolume = src.MaxVisibleVolume;
             Symbol = src.Symbol;
             Type = src.Type;
             Side = src.Side;
             Price = src.Price;
+            StopPrice = src.StopPrice;
             StopLoss = src.StopLoss;
             TakeProfit = src.TakeProfit;
             Comment = src.Comment;
@@ -55,10 +57,13 @@ namespace TickTrader.Algo.Core
         public double ExecPrice { get; set; }
         public TradeVolume ExecVolume { get; set; }
         public double LastFillPrice { get; set; }
-        public double LastFillVolume { get; set; }
+        public TradeVolume LastFillVolume { get; set; }
         public double Swap { get; set; }
         public double Commision { get; set; }
         public static Order Null { get; private set; }
+        public double StopPrice { get; set; }
+        public TradeVolume MaxVisibleVolume { get; set; }
+
         static OrderEntity() { Null = new NullOrder(); }
     }
 
@@ -73,6 +78,12 @@ namespace TickTrader.Algo.Core
 
         public double Lots { get; private set; }
         public double Units { get; private set; }
+
+
+        public override string ToString()
+        {
+            return $"{Lots} lots ({Units} units)";
+        }
     }
 
     [Serializable]
@@ -81,10 +92,12 @@ namespace TickTrader.Algo.Core
         public string Id { get { return ""; } }
         public double RequestedVolume { get { return double.NaN; } }
         public double RemainingVolume { get { return double.NaN; } }
+        public double MaxVisibleVolume { get { return double.NaN; } }
         public string Symbol { get { return ""; } }
         public OrderType Type { get { return OrderType.Market; } }
         public OrderSide Side { get { return OrderSide.Buy; } }
         public double Price { get { return double.NaN; } }
+        public double StopPrice { get { return double.NaN; } }
         public double StopLoss { get { return double.NaN; } }
         public double TakeProfit { get { return double.NaN; } }
         public string Comment { get { return ""; } }

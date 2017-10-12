@@ -5,12 +5,15 @@ using TickTrader.DedicatedServer.DS.Models;
 using System;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using TickTrader.DedicatedServer.WebAdmin.Server.Hubs;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {
     public static class DedicatedServerApplicationBuilderExtensions
     {
         private static IServiceProvider _services;
+        private static ILogger _logger;
 
         private static Microsoft.AspNetCore.SignalR.IHubContext Hub
         {
@@ -19,6 +22,32 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
                 var signalRConnectionManager = _services.GetService<IConnectionManager>();
                 var _hub = signalRConnectionManager.GetHubContext<DSFeed>();
                 return _hub;
+            }
+        }
+
+
+        public static IApplicationBuilder UseWardenOverBots(this IApplicationBuilder app)
+        {
+            _services = app.ApplicationServices;
+            var _dedicatedServer = _services.GetService<IDedicatedServer>();
+            _logger = _services.GetService<ILoggerFactory>().CreateLogger("BotsWarden");
+
+            _dedicatedServer.BotStateChanged += WatchTheStop;
+
+            return app;
+        }
+
+        private static async void WatchTheStop(ITradeBot bot)
+        {
+            if (bot.State != BotStates.Stopping)
+                return;
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            if (bot.State == BotStates.Stopping)
+            {
+                bot.Abort();
+                _logger.LogDebug($"Bot '{bot.Id}' was aborted");
             }
         }
 

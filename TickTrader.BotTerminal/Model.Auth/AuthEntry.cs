@@ -44,9 +44,9 @@ namespace TickTrader.BotTerminal
 
     internal class AccountAuthEntry
     {
-        private AccountSorageEntry storageRecord;
+        private AccountStorageEntry storageRecord;
 
-        public AccountAuthEntry(AccountSorageEntry storageRecord, ServerAuthEntry server)
+        public AccountAuthEntry(AccountStorageEntry storageRecord, ServerAuthEntry server)
         {
             this.storageRecord = storageRecord;
             this.Server = server;
@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
         public string Login { get { return storageRecord.Login; } }
         public bool HasPassword { get { return storageRecord.HasPassword; } }
 
-        public bool Matches(AccountSorageEntry acc)
+        public bool Matches(AccountStorageEntry acc)
         {
             return Login == acc.Login && Server.Address == acc.ServerAddress;
         }

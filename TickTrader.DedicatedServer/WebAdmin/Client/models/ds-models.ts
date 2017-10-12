@@ -329,8 +329,11 @@ export class ParameterDescriptor implements Serializable<ParameterDescriptor>{
 export enum ParameterDataTypes {
     Unknown = -1,
     Int,
+    NInt,
     Double,
+    NDouble,
     String,
+    Boolean,
     File,
     Enum
 }

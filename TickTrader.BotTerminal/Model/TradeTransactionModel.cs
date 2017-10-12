@@ -10,7 +10,7 @@ namespace TickTrader.BotTerminal
 {
     abstract class TransactionReport
     {
-        public enum AggregatedTransactionType { Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal }
+        public enum AggregatedTransactionType { Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit }
         public enum TransactionSide { None = -1, Buy, Sell }
 
         public TransactionReport() { }
@@ -48,6 +48,12 @@ namespace TickTrader.BotTerminal
             StopLoss = GetStopLoss(transaction);
             TakeProfit = GetTakeProfit(transaction);
             UniqueId = GetUniqueId(transaction);
+            MaxVisibleVolume = GetMaxVisibleVolume(transaction);
+        }
+
+        private double? GetMaxVisibleVolume(TradeTransactionReport transaction)
+        {
+            return transaction.MaxVisibleQuantity;
         }
 
         public string UniqueId { get; protected set; }
@@ -78,6 +84,7 @@ namespace TickTrader.BotTerminal
         public bool IsMarket { get; protected set; }
         public bool IsPending { get; protected set; }
         public bool IsBalanceTransaction { get; protected set; }
+        public double? MaxVisibleVolume { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeTransactionReport transaction)
         {
@@ -91,6 +98,8 @@ namespace TickTrader.BotTerminal
                     return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
                 case TradeRecordType.Limit:
                     return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.BuyLimit : AggregatedTransactionType.SellLimit;
+                case TradeRecordType.StopLimit:
+                    return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
                 case TradeRecordType.Stop:
                     return transaction.TradeRecordSide == TradeRecordSide.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
                 default: return AggregatedTransactionType.Unknown;
@@ -195,7 +204,9 @@ namespace TickTrader.BotTerminal
         }
         protected override double GetOpenPrice(TradeTransactionReport transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.TradeRecordType == TradeRecordType.Stop ? transaction.StopPrice : transaction.Price;
+            return IsBalanceTransaction ?
+                double.NaN : transaction.TradeRecordType == TradeRecordType.Stop || transaction.TradeRecordType == TradeRecordType.StopLimit ?
+                transaction.StopPrice : transaction.Price;
         }
     }
 
@@ -230,7 +241,7 @@ namespace TickTrader.BotTerminal
         protected override double GetOpenPrice(TradeTransactionReport transaction)
         {
             return IsBalanceTransaction ? double.NaN :
-                transaction.TradeRecordType == TradeRecordType.Stop ? transaction.StopPrice :
+                transaction.TradeRecordType == TradeRecordType.Stop || transaction.TradeRecordType == TradeRecordType.StopLimit ? transaction.StopPrice :
                 IsPosition ? transaction.PosOpenPrice : transaction.Price;
         }
         protected override double GetRemainingQuntity(TradeTransactionReport transaction)
@@ -251,7 +262,7 @@ namespace TickTrader.BotTerminal
                 AssetII = transaction.SrcAssetMovement ?? 0;
                 AssetIICurrency = transaction.SrcAssetCurrency;
             }
-            else if(GetTransactionSide(transaction) == TransactionSide.Sell)
+            else if (GetTransactionSide(transaction) == TransactionSide.Sell)
             {
                 AssetII = transaction.DstAssetMovement ?? 0;
                 AssetIICurrency = transaction.DstAssetCurrency;
@@ -259,7 +270,7 @@ namespace TickTrader.BotTerminal
                 AssetI = transaction.SrcAssetMovement ?? 0;
                 AssetICurrency = transaction.SrcAssetCurrency;
             }
-            else if(IsBalanceTransaction)
+            else if (IsBalanceTransaction)
             {
                 AssetI = transaction.TransactionAmount;
                 AssetICurrency = transaction.TransactionCurrency;

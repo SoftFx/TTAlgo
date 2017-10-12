@@ -1,29 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    //public abstract class InputSetup : PropertySetupBase
-    //{
-    //    public override void CopyFrom(PropertySetupBase srcProperty) { }
-    //    public override void Reset() { }
-    //}
-
     public abstract class InputSetup : PropertySetupBase
     {
-        private ISymbolInfo selectedSymbol;
-        private string defaultSymbolCode;
+        private ISymbolInfo _selectedSymbol;
+        private string _defaultSymbolCode;
+
+
+        public ISymbolInfo SelectedSymbol
+        {
+            get { return _selectedSymbol; }
+            set
+            {
+                _selectedSymbol = value;
+                NotifyPropertyChanged(nameof(SelectedSymbol));
+            }
+        }
+
+        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
+
 
         public InputSetup(InputDescriptor descriptor, string defaultSymbolCode, IReadOnlyList<ISymbolInfo> symbols)
         {
-            this.defaultSymbolCode = defaultSymbolCode;
+            _defaultSymbolCode = defaultSymbolCode;
 
             SetMetadata(descriptor);
             if (symbols == null)
@@ -32,22 +37,28 @@ namespace TickTrader.Algo.Common.Model.Setup
                 AvailableSymbols = symbols;
         }
 
-        public ISymbolInfo SelectedSymbol
-        {
-            get { return selectedSymbol; }
-            set
-            {
-                selectedSymbol = value;
-                NotifyPropertyChanged(nameof(SelectedSymbol));
-            }
-        }
-
-        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.First(s => s.Name == defaultSymbolCode);
+            SelectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
         }
+
+
+        protected virtual void LoadConfig(Input input)
+        {
+            _selectedSymbol = AvailableSymbols.FirstOrDefault(s => s.Name == input.SelectedSymbol);
+            if (_selectedSymbol == null)
+            {
+                _selectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
+            }
+        }
+
+        protected virtual void SaveConfig(Input input)
+        {
+            input.Id = Id;
+            input.SelectedSymbol = _selectedSymbol.Name;
+        }
+
 
         public class Invalid : InputSetup
         {
@@ -55,15 +66,15 @@ namespace TickTrader.Algo.Common.Model.Setup
                 : base(descriptor, null, null)
             {
                 if (error == null)
-                    this.Error = new GuiModelMsg(descriptor.Error.Value);
+                    Error = new GuiModelMsg(descriptor.Error.Value);
                 else
-                    this.Error = new GuiModelMsg(error);
+                    Error = new GuiModelMsg(error);
             }
 
             public Invalid(InputDescriptor descriptor, string symbol, GuiModelMsg error)
                 : base(descriptor, symbol, null)
             {
-                this.Error = error;
+                Error = error;
             }
 
             public override void Apply(IPluginSetupTarget target)
@@ -80,15 +91,14 @@ namespace TickTrader.Algo.Common.Model.Setup
                 throw new Exception("Cannot save invalid input!");
             }
         }
-
-        public enum QuoteToDoubleMappings { Ask, Bid, Median }
     }
+
 
     internal class DummySymbolInfo : ISymbolInfo
     {
         public DummySymbolInfo(string symbol)
         {
-            this.Name = symbol;
+            Name = symbol;
         }
 
         public string Name { get; private set; }

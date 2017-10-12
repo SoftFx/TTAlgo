@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Order Events Bot", Version = "2.1", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Order Events Bot", Version = "2.2", Category = "Test Orders",
         Description = "Subscribes to order events and prints each event info to bot log")]
     public class OrderEventsBot : TradeBotCommon
     {
@@ -15,6 +15,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Filled += OrdersOnFilled;
             Account.Orders.Modified += OrdersOnModified;
             Account.Orders.Opened += OrdersOnOpened;
+            Account.Orders.Activated += OrderActivated;
         }
 
         protected override void OnStop()
@@ -25,6 +26,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Filled -= OrdersOnFilled;
             Account.Orders.Modified -= OrdersOnModified;
             Account.Orders.Opened -= OrdersOnOpened;
+            Account.Orders.Activated -= OrderActivated;
         }
 
 
@@ -74,6 +76,14 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Canceled order #{args.Order.Id}");
+            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
+            Print(sb.ToString());
+        }
+
+        private void OrderActivated(OrderActivatedEventArgs args)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Activated order #{args.Order.Id} ");
             sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
             Print(sb.ToString());
         }
