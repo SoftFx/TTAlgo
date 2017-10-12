@@ -254,6 +254,7 @@ namespace TickTrader.BotTerminal
             if (setupModel == null)
             {
                 logger.Error($"Indicator '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
+                return;
             }
 
             if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Indicator)

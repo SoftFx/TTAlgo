@@ -65,10 +65,20 @@ namespace TickTrader.Algo.Core
             var bidFixture = GetFixutre(update.Symbol, BarPriceType.Bid);
 
             if (askFixture != null)
-                overallResult += askFixture.Update(aggregation.AskBar);
+            {
+                var askResult = askFixture.Update(aggregation.AskBar);
+                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
+                    askResult.ExtendedBy = 0;
+                overallResult += askResult;
+            }
 
             if (bidFixture != null)
-                overallResult += bidFixture.Update(aggregation.BidBar);
+            {
+                var bidResult = bidFixture.Update(aggregation.BidBar);
+                if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
+                    bidResult.ExtendedBy = 0;
+                overallResult = bidResult;
+            }
 
             return overallResult;
         }
