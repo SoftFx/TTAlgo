@@ -25,6 +25,8 @@ namespace TickTrader.BotTerminal
 
             Symbols = symbols.AsObservable();
 
+            DisplayName = "Import Series";
+
             SelectedTimeFrame = _context.AddProperty(TimeFrames.M1);
             SelectedPriceType = _context.AddProperty(BarPriceType.Bid);
             SelectedSymbol = _context.AddProperty<ManagedCustomSymbol>(initialSymbol);
@@ -43,8 +45,6 @@ namespace TickTrader.BotTerminal
             _context.TriggerOnChange(SelectedImporter.Var, a => IsActionVisible.Clear());
             _context.TriggerOnChange(SelectedTimeFrame.Var, a => IsActionVisible.Clear());
             _context.TriggerOnChange(SelectedPriceType.Var, a => IsActionVisible.Clear());
-
-            //_context.TriggerOn(importerValid, () => System.Diagnostics.Debug.WriteLine("Importer Valid!"), () => System.Diagnostics.Debug.WriteLine("Importer Invalid!"));
         }
 
         public IEnumerable<FeedImporter> Importers => _importers;
@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         private void DoImport(CancellationToken cToken)
         {
-            var pageSize = 1000;
+            var pageSize = 8000;
 
             var symbol = SelectedSymbol.Value;
             var importer = SelectedImporter.Value;
@@ -99,9 +99,28 @@ namespace TickTrader.BotTerminal
                 }
             }
             else
-                throw new Exception("Tick import is not supported by now!");
+            {
+                var tickVector = new List<QuoteEntity>();
 
-            //Task.Delay(5000).Wait();
+                foreach (var tick in importer.ImportQuotes())
+                {
+                    tickVector.Add(tick);
+
+                    if (tickVector.Count >= pageSize + 1)
+                    {
+                        var page = RemoveFromStart(tickVector, pageSize);
+                        symbol.WriteSlice(false, page.First().Time, tickVector.Last().Time, page);
+                    }
+                }
+            }
+        }
+
+        private static T[] RemoveFromStart<T>(List<T> list, int pageSize)
+        {
+            var removedPart = new T[pageSize];
+            list.CopyTo(0, removedPart, 0, pageSize);
+            list.RemoveRange(0, pageSize);
+            return removedPart;
         }
 
         public void Cancel()
@@ -129,6 +148,7 @@ namespace TickTrader.BotTerminal
         public string Name { get; }
         public BoolProperty CanImport { get; }
         public abstract IEnumerable<BarEntity> ImportBars();
+        public abstract IEnumerable<QuoteEntity> ImportQuotes();
     }
 
     internal class CsvFeedImporter : FeedImporter
@@ -140,7 +160,6 @@ namespace TickTrader.BotTerminal
             FilePath.MustBeNotEmpy();
 
             CanImport.Var = FilePath.IsValid();
-            //TriggerOn(CanImport.Var, () => System.Diagnostics.Debug.WriteLine("CSV Valid!"), () => System.Diagnostics.Debug.WriteLine("CSV Invalid!"));
         }
 
         public Validable<string> FilePath { get; }
@@ -171,6 +190,45 @@ namespace TickTrader.BotTerminal
                     bar.Volume = double.Parse(parts[5]);
 
                     yield return bar;
+                }
+            }
+        }
+
+        public override IEnumerable<QuoteEntity> ImportQuotes()
+        {
+            int lineNo = 1;
+
+            var asks = new List<BookEntry>();
+            var bids = new List<BookEntry>();
+
+            using (var reader = new StreamReader(FilePath.Value))
+            {
+                while (true)
+                {
+                    var line = reader.ReadLine();
+                    if (line == null)
+                        break;
+                    var parts = line.Split(',');
+                    if (parts.Length < 5 || (parts.Length - 1) % 4 != 0)
+                        throw new Exception("Invalid record at line " + lineNo);
+
+                    lineNo++;
+
+                    var time = DateTime.Parse(parts[0]);
+
+                    for (int i = 1; i < parts.Length; i += 4)
+                    {
+                        if (!string.IsNullOrEmpty(parts[i + 0]))
+                            bids.Add(new BookEntryEntity(double.Parse(parts[i + 0]), double.Parse(parts[i + 1])));
+
+                        if (!string.IsNullOrEmpty(parts[i + 2]))
+                            asks.Add(new BookEntryEntity(double.Parse(parts[i + 2]), double.Parse(parts[i + 3])));
+                    }
+
+                    yield return new QuoteEntity("", time, bids.ToArray(), asks.ToArray());
+
+                    asks.Clear();
+                    bids.Clear();
                 }
             }
         }

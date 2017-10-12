@@ -3,6 +3,7 @@ using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,38 +18,32 @@ namespace TickTrader.BotTerminal
     {
         private readonly VarContext varContext = new VarContext();
         private TraderClientModel _client;
-        private readonly Property<CancellationTokenSource> _cancelDownloadSrc;
-        private Task _downloadTask;
-        private readonly BoolVar isDowloading;
 
         public FeedDownloadViewModel(TraderClientModel clientModel, SymbolModel symbol = null)
         {
             _client = clientModel;
-            _cancelDownloadSrc = varContext.AddProperty<CancellationTokenSource>();
 
             Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
 
-            DownloadObserver = new ProgressViewModel();
+            DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
 
             SelectedTimeFrame = varContext.AddProperty(TimeFrames.M1);
             SelectedPriceType = varContext.AddProperty(BarPriceType.Bid);
             SelectedSymbol = varContext.AddProperty<SymbolModel>(symbol);
-            varContext.TriggerOnChange(SelectedSymbol.Var, a => DownloadObserver.Reset());
             ShowDownloadUi = varContext.AddBoolProperty();
 
             IsRangeLoaded = varContext.AddBoolProperty();
             IsPriceTypeActual = SelectedTimeFrame.Var != TimeFrames.Ticks;
+            IsBusy = DownloadObserver.IsRunning;
 
-            isDowloading = _cancelDownloadSrc.Var != (CancellationTokenSource)null;
-            var isCanceling = isDowloading & _cancelDownloadSrc.Var.Check(c => c != null && c.IsCancellationRequested);
-
-            IsBusy = isDowloading;
-
-            DownloadEnabled = _client.IsConnected & IsRangeLoaded.Var & !isDowloading;
-            CancelEnabled = !isCanceling;
+            DownloadEnabled = _client.IsConnected & IsRangeLoaded.Var & !IsBusy;
+            CancelEnabled = !IsBusy | DownloadObserver.CanCancel;
 
             varContext.TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange(SelectedSymbol.Value));
+
+            varContext.TriggerOnChange(IsBusy, a => System.Diagnostics.Debug.WriteLine("IsBusy = " + a.New));
+            varContext.TriggerOnChange(DownloadObserver.CanCancel, a => System.Diagnostics.Debug.WriteLine("Observer.CanCancel = " + a.New));
 
             DisplayName = "Pre-download symbol";
         }
@@ -57,8 +52,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
         public IObservableListSource<SymbolModel> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
-        public ProgressViewModel DownloadObserver { get; }
-
+        public ActionViewModel DownloadObserver { get; }
 
         #region Observable Properties
 
@@ -74,13 +68,10 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        public async void Cancel()
+        public void Cancel()
         {
-            if (isDowloading.Value)
-            {
-                _cancelDownloadSrc.Value.Cancel();
-                await _downloadTask;
-            }
+            if (IsBusy.Value)
+                DownloadObserver.Cancel();  
             else
                 TryClose();
         }
@@ -99,12 +90,13 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            callback(!isDowloading.Value);
+            callback(!IsBusy.Value);
         }
 
         public void Download()
         {
-            _downloadTask = DownloadAsync();
+            ShowDownloadUi.Value = true;
+            DownloadObserver.Start(DownloadAsync);
         }
 
         private async void UpdateAvailableRange(SymbolModel smb)
@@ -125,23 +117,80 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task DownloadAsync()
+        private async Task DownloadAsync(IActionObserver observer, CancellationToken cancelToken)
         {
-            ShowDownloadUi.Value = true;
-            DownloadObserver.Reset();
-            _cancelDownloadSrc.Value = new CancellationTokenSource();
+            var symbol = SelectedSymbol.Value.Name;
+            var timeFrame = SelectedTimeFrame.Value;
+            var priceType = SelectedPriceType.Value;
+            var from = DateRange.From.Value;
+            var to = DateRange.To.Value;
 
-            try
+            observer?.SetMessage("Downloading... \n");
+
+            var watch = Stopwatch.StartNew();
+            int downloadedCount = 0;
+
+            if (timeFrame != TimeFrames.Ticks)
             {
-                await _client.History.Downlaod(SelectedSymbol.Value.Name, SelectedTimeFrame.Value, SelectedPriceType.Value,
-                    DateRange.From.Value, DateRange.To.Value, _cancelDownloadSrc.Value.Token, DownloadObserver);
+                observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
+
+                var barEnumerator = _client.History.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
+
+                while (await barEnumerator.Next())
+                {
+                    var info = barEnumerator.Current;
+                    if (info.Count > 0)
+                    {
+                        downloadedCount += info.Count;
+                        var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
+                        if (watch.ElapsedMilliseconds > 0)
+                            msg += "\nBar per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
+                        observer.SetMessage(msg);
+                    }
+
+                    observer?.SetProgress(info.To.GetAbsoluteDay());
+
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
+                        return;
+                    }
+                }
+
+                observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
             }
-            catch (Exception ex)
+            else
             {
+                var endDay = to.GetAbsoluteDay();
+                var totalDays = endDay - from.GetAbsoluteDay();
 
+                observer?.StartProgress(0, totalDays);
+
+                var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, false, from, to);
+
+                while (await tickEnumerator.Next())
+                {
+                    var info = tickEnumerator.Current;
+                    if (info.Count > 0)
+                    {
+                        downloadedCount += info.Count;
+                        var msg = "Downloading... " + downloadedCount + " ticks are downloaded.";
+                        if (watch.ElapsedMilliseconds > 0)
+                            msg += "\nTicks per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
+                        observer.SetMessage(msg);
+                    }
+
+                    observer?.SetProgress(endDay - info.From.GetAbsoluteDay());
+
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
+                        return;
+                    }
+                }
+
+                observer.SetMessage("Completed: " + downloadedCount + " ticks were downloaded.");
             }
-
-            _cancelDownloadSrc.Value = null;
         }
     }
 }

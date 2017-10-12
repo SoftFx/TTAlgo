@@ -15,7 +15,6 @@ namespace TickTrader.BotTerminal
         private VarContext _context = new VarContext();
         private Property<CancellationTokenSource> _cancelSrc;
         private BoolProperty _isRunning;
-        private BoolProperty _canCancel;
         private BoolProperty _isCanceled;
 
         public ActionViewModel()
@@ -24,48 +23,52 @@ namespace TickTrader.BotTerminal
             _cancelSrc = _context.AddProperty<CancellationTokenSource>();
             _isRunning = _context.AddBoolProperty();
             _isCanceled = _context.AddBoolProperty();
-            _canCancel = _context.AddBoolProperty();
 
-            _canCancel.Var = _isRunning.Var & _cancelSrc.Var.IsNotNull() & !_isCanceled.Var;
+            CanCancel = _isRunning.Var & _cancelSrc.Var.IsNotNull() & !_isCanceled.Var;
             _context.TriggerOn(_isCanceled.Var, () => _cancelSrc.Value.Cancel());
-
         }
 
         public BoolVar IsRunning => _isRunning.Var;
         public BoolVar IsCancelling => _isCanceled.Var;
-        public BoolVar CanCancel => _canCancel.Var;
+        public BoolVar CanCancel { get; }
         public ProgressViewModel Progress { get; private set; }
 
         public Task Start(System.Action action)
         {
-            return Handle(Task.Factory.StartNew(action));
+            return Handle(() => Task.Factory.StartNew(action));
         }
 
         public Task Start(Action<CancellationToken> action)
         {
             _cancelSrc.Value = new CancellationTokenSource();
-            return Handle(Task.Factory.StartNew(() => action(_cancelSrc.Value.Token)));
+            return Handle(() => Task.Factory.StartNew(() => action(_cancelSrc.Value.Token)));
         }
 
         public Task Start(Action<IActionObserver> action)
         {
-            return Handle(Task.Factory.StartNew(() => action(Progress)));
+            return Handle(() => Task.Factory.StartNew(() => action(Progress)));
         }
 
-        public Task Start(string actionName, Action<IActionObserver, CancellationToken> action)
+        public Task Start(Action<IActionObserver, CancellationToken> action)
         {
             _cancelSrc.Value = new CancellationTokenSource();
-            return Handle(Task.Factory.StartNew(() => action(Progress, _cancelSrc.Value.Token)));
+            return Handle(() => Task.Factory.StartNew(() => action(Progress, _cancelSrc.Value.Token)));
         }
 
-        private async Task Handle(Task workerTask)
+        public Task Start(Func<IActionObserver, CancellationToken, Task> asyncAction)
+        {
+            _cancelSrc.Value = new CancellationTokenSource();
+            return Handle(() => asyncAction(Progress, _cancelSrc.Value.Token));
+        }
+
+        private async Task Handle(Func<Task> workerTaskFactory)
         {
             Progress.Start();
             _isRunning.Set();
 
             try
             {
-                await workerTask;
+                await workerTaskFactory();
                 Progress.Stop();
             }
             catch (AggregateException ex)
@@ -82,6 +85,7 @@ namespace TickTrader.BotTerminal
 
             _isRunning.Clear();
             _cancelSrc.Value = null;
+            _isCanceled.Clear();
         }
 
         public void Cancel()

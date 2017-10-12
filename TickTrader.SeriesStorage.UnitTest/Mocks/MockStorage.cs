@@ -24,12 +24,22 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             return 0;
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed)
         {
-            var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
+            if (reversed)
+            {
+                var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
 
-            for (int i = index; i < list.Count; i++)
-                yield return new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
+                for (int i = index; i >= 0; i--)
+                    yield return new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
+            }
+            else
+            {
+                var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
+
+                for (int i = index; i < list.Count; i++)
+                    yield return new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
+            }
         }
 
         public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)

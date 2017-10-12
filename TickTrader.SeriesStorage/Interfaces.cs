@@ -20,8 +20,8 @@ namespace TickTrader.SeriesStorage
 
     public interface ICollectionStorage<TKey, TValue> : IDisposable
     {
-        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from);
-        IEnumerable<TKey> IterateKeys(TKey from, bool reversed);
+        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed = false);
+        IEnumerable<TKey> IterateKeys(TKey from, bool reversed = false);
         bool Read(TKey key, out TValue value);
         void Write(TKey key, TValue value);
         void Remove(TKey key);
@@ -30,7 +30,7 @@ namespace TickTrader.SeriesStorage
         long GetSize();
     }
 
-    public interface IBinaryStorageCollection<TKey> : ICollectionStorage<TKey, byte[]>
+    public interface IBinaryStorageCollection<TKey> : ICollectionStorage<TKey, ArraySegment<byte>>
     {
     }
 

@@ -46,8 +46,8 @@ namespace TickTrader.SeriesStorage
 
         protected abstract void WriteInternal(KeyRange<TKey> keyRange, TValue[] values);
         public abstract void Delete(KeyRange<TKey> keyRange);
-        protected abstract IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to);
-        protected abstract IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to);
+        protected abstract IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed);
+        protected abstract IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to, bool reversed);
 
         protected void WriteInternal(Slice<TKey, TValue> slice)
         {
@@ -67,34 +67,56 @@ namespace TickTrader.SeriesStorage
 
         public Slice<TKey, TValue> GetFirstSlice(TKey from, TKey to)
         {
-            return IterateSlicesInternal(from, to).FirstOrDefault();
+            return IterateSlicesInternal(from, to, false).FirstOrDefault();
         }
 
         public KeyRange<TKey> GetFirstRange(TKey from, TKey to)
         {
-            return IterateRangesInternal(from, to).FirstOrDefault();
+            return IterateRangesInternal(from, to, false).FirstOrDefault();
         }
 
-        public IEnumerable<TValue> Iterate(TKey from, TKey to)
+        public KeyRange<TKey> GetLastRange(TKey from, TKey to)
         {
-            foreach (var slice in IterateSlices(from, to))
+            return IterateRangesInternal(from, to, true).FirstOrDefault();
+        }
+
+        public IEnumerable<TValue> IterateReversed(TKey from, TKey to)
+        {
+            return Iterate(from, to, true);
+        }
+
+        public IEnumerable<TValue> Iterate(TKey from, TKey to, bool reversed = false)
+        {
+            foreach (var slice in IterateSlices(from, to, reversed))
             {
-                if (slice.Content != null)
+                if (!reversed)
                 {
-                    foreach (var item in slice.Content)
-                        yield return item;
+                    if (slice.Content != null)
+                    {
+                        foreach (var item in slice.Content)
+                            yield return item;
+                    }
+                }
+                else
+                {
+                    var array = slice.Content.Array;
+                    var offset = slice.Content.Offset;
+                    var count = slice.Content.Count;
+
+                    for (int i = offset + count - 1; i >= offset; i--)
+                        yield return array[i];
                 }
             }
         }
 
-        public IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to)
+        public IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to, bool reversed = false)
         {
-            return IterateSlicesInternal(from, to);
+            return IterateSlicesInternal(from, to, reversed);
         }
 
-        public IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to)
+        public IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false)
         {
-            return IterateRangesInternal(from, to);
+            return IterateRangesInternal(from, to, reversed);
         }
 
         public double GetSize()
@@ -220,44 +242,83 @@ namespace TickTrader.SeriesStorage
                 WriteInternal(closeSlice);
         }
 
-        protected override IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to)
+        protected override IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed)
         {
-            var fromKey = new KeyRange<TKey>(from, default(TKey));
-
-            foreach (var entry in SliceStorage.Iterate(fromKey))
+            if (!reversed)
             {
-                var range = entry.Key;
-                var content = entry.Value;
+                var fromKey = new KeyRange<TKey>(from, default(TKey));
 
-                if (KeyHelper.IsGreaterOrEqual(range.From, to))
-                    yield break;
+                foreach (var entry in SliceStorage.Iterate(fromKey))
+                {
+                    var range = entry.Key;
+                    var content = entry.Value;
 
-                if (KeyHelper.IsLessOrEqual(range.To, from))
-                    continue;
-                         
-                var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
-                var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+                    if (KeyHelper.IsGreaterOrEqual(range.From, to))
+                        yield break;
 
-                yield return GetSliceSegment(new KeyRange<TKey>(sliceFrom, sliceTo), range, content);
+                    if (KeyHelper.IsLessOrEqual(range.To, from))
+                        continue;
+
+                    var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
+                    var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+
+                    yield return GetSliceSegment(new KeyRange<TKey>(sliceFrom, sliceTo), range, content);
+                }
+            }
+            else
+            {
+                var toKey = new KeyRange<TKey>(to, default(TKey));
+
+                foreach (var entry in SliceStorage.Iterate(toKey, true))
+                {
+                    var range = entry.Key;
+                    var content = entry.Value;
+
+                    if (KeyHelper.IsLessOrEqual(range.To, from))
+                        yield break;
+
+                    var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
+                    var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+
+                    yield return GetSliceSegment(new KeyRange<TKey>(sliceFrom, sliceTo), range, content);
+                }
             }
         }
 
-        protected override IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to)
+        protected override IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to, bool reversed)
         {
-            var fromKey = new KeyRange<TKey>(from, default(TKey));
-
-            foreach (var range in SliceStorage.IterateKeys(fromKey, false))
+            if (!reversed)
             {
-                if (KeyHelper.IsGreaterOrEqual(range.From, to))
-                    yield break;
+                var fromKey = new KeyRange<TKey>(from, default(TKey));
 
-                if (KeyHelper.IsLessOrEqual(range.To, from))
-                    continue;
+                foreach (var range in SliceStorage.IterateKeys(fromKey, false))
+                {
+                    if (KeyHelper.IsGreaterOrEqual(range.From, to))
+                        yield break;
 
-                var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
-                var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+                    if (KeyHelper.IsLessOrEqual(range.To, from))
+                        continue;
 
-                yield return new KeyRange<TKey>(sliceFrom, sliceTo);
+                    var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
+                    var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+
+                    yield return new KeyRange<TKey>(sliceFrom, sliceTo);
+                }
+            }
+            else
+            {
+                var toKey = new KeyRange<TKey>(to, default(TKey));
+
+                foreach (var range in SliceStorage.IterateKeys(toKey, true))
+                {
+                    if (KeyHelper.IsLessOrEqual(range.To, from))
+                        yield break;
+
+                    var sliceFrom = KeyHelper.IsLess(range.From, from) ? from : range.From;
+                    var sliceTo = KeyHelper.IsLess(to, range.To) ? to : range.To;
+
+                    yield return new KeyRange<TKey>(sliceFrom, sliceTo);
+                }
             }
         }
 

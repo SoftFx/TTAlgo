@@ -25,6 +25,8 @@ namespace Machinarium.Var
             _var.Changed += () => NotifyPropertyChange(nameof(Value));
         }
 
+        internal string Name { get; set; }
+
         protected void NotifyPropertyChange(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -49,8 +51,15 @@ namespace Machinarium.Var
 
         Var<T> IProperty<T>.Var => Var;
 
-
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public override string ToString()
+        {
+            if (Name == null)
+                return nameof(TVar) + ": " + Value;
+            else
+                return Name + ": " + Value;
+        }
     }
 
     public class Property<T> : PropertyBase<Var<T>, T> { }

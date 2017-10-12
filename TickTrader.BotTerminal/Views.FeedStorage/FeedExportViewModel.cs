@@ -19,21 +19,20 @@ namespace TickTrader.BotTerminal
         private FeedCacheKey _key;
         private List<FeedExporter> _exporters = new List<FeedExporter>();
         private FeedExporter _selectedExporter;
-        private TraderClientModel _client;
+        private FeedCache _storage;
         private bool _isRangeLoaded;
         private bool _showDownloadUi;
         private CancellationTokenSource _cancelExportSrc;
         private Task _exportTask;
 
-        public FeedExportViewModel(FeedCacheKey key, TraderClientModel clientModel)
+        public FeedExportViewModel(FeedCacheKey key, FeedCache diskStorage)
         {
             _key = key;
-            _client = clientModel;
-
-            clientModel.Connected += UpdateState;
-            clientModel.Disconnected += UpdateState;
+            _storage = diskStorage;
 
             _exporters.Add(new CsvExporter());
+
+            DisplayName = string.Format("Export Series: {0} {1} {2}", key.Symbol, key.Frame, key.PriceType);
             
             DateRange = new DateRangeSelectionViewModel();
             ExportObserver = new ProgressViewModel();
@@ -123,13 +122,11 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            _client.Connected -= UpdateState;
-            _client.Disconnected -= UpdateState;
         }
 
         private void UpdateState()
         {
-            CanExport = _client.IsConnected.Value && DateRange.From != null && DateRange.To != null && !IsExporting && SelectedExporter.CanExport;
+            CanExport = DateRange.From != null && DateRange.To != null && !IsExporting && SelectedExporter.CanExport;
             CanCancel = !IsCancelling;
             NotifyOfPropertyChange(nameof(CanExport));
             NotifyOfPropertyChange(nameof(CanCancel));
@@ -149,9 +146,7 @@ namespace TickTrader.BotTerminal
 
                 await Task.Factory.StartNew(() =>
                 {
-                    var cache = _client.History;
-
-                    ExportObserver.StartProgress(from.TotalDays(), to.TotalDays());
+                    ExportObserver.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
                     var exporter = SelectedExporter;
 
@@ -159,10 +154,21 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        foreach (var slice in cache.Cache.IterateBarCache(_key, from, to))
+                        if (_key.Frame != Algo.Api.TimeFrames.Ticks)
                         {
-                            exporter.ExportSlice(slice.From, slice.To, slice.Content);
-                            ExportObserver.SetProgress(slice.To.TotalDays());
+                            foreach (var slice in _storage.IterateBarCache(_key, from, to))
+                            {
+                                exporter.ExportSlice(slice.From, slice.To, slice.Content);
+                                ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
+                            }
+                        }
+                        else
+                        {
+                            foreach (var slice in _storage.IterateTickCache(_key, from, to))
+                            {
+                                exporter.ExportSlice(slice.From, slice.To, slice.Content);
+                                ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
+                            }
                         }
 
                     }
@@ -193,7 +199,7 @@ namespace TickTrader.BotTerminal
             DateRange.From = null;
             DateRange.To = null;
 
-            var range = await _client.History.Cache.GetRangeAsync(_key, false);
+            var range = await _storage.GetRangeAsync(_key, false);
 
             DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
             IsRangeLoaded = true;
@@ -227,6 +233,7 @@ namespace TickTrader.BotTerminal
 
         public virtual void StartExport() { }
         public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<BarEntity> values);
+        public abstract void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteEntity> values);
         public virtual void EndExport() { }
 
         public virtual void Init(FeedCacheKey key)
@@ -274,6 +281,42 @@ namespace TickTrader.BotTerminal
                 _writer.Write(val.Close);
                 _writer.Write(",");
                 _writer.WriteLine(val.Volume);
+            }
+        }
+
+        public override void ExportSlice(DateTime from, DateTime to, ArraySegment<QuoteEntity> values)
+        {
+            foreach (var val in values)
+            {
+                _writer.Write(val.Time.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+
+                var bids = val.BidBook;
+                var asks = val.AskBook;
+
+                for (int i = 0; i < Math.Max(bids.Length, asks.Length); i++)
+                {
+                    if (i < bids.Length)
+                    {
+                        _writer.Write(",");
+                        _writer.Write(bids[i].Price);
+                        _writer.Write(",");
+                        _writer.Write(bids[i].Volume);
+                    }
+                    else
+                        _writer.Write(",,");
+
+                    if (i < asks.Length)
+                    {
+                        _writer.Write(",");
+                        _writer.Write(asks[i].Price);
+                        _writer.Write(",");
+                        _writer.Write(asks[i].Volume);
+                    }
+                    else
+                        _writer.Write(",,");
+
+                    _writer.WriteLine();
+                }
             }
         }
 

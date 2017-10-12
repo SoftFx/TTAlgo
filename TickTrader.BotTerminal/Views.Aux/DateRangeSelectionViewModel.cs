@@ -12,8 +12,8 @@ namespace TickTrader.BotTerminal
         private DateTime? _rangeFrom;
         private DateTime? _rangeTo;
 
-        public double MaxRangeDouble => Max.TotalDays();
-        public double MinRangeDouble => Min.TotalDays();
+        public double MaxRangeDouble => Max.GetAbsoluteDay();
+        public double MinRangeDouble => Min.GetAbsoluteDay();
 
         public DateTime Min { get; private set; }
         public DateTime Max { get; private set; }
@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
         {
             if (val == null)
                 return null;
-            return val.Value.TotalDays();
+            return val.Value.GetAbsoluteDay();
         }
     }
 }

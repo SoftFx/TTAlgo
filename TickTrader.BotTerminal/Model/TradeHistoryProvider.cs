@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal
             return new StreamDownloader(_tradeClient.Connection.TradeProxy.Server, from, to, skipCancelOrders);
         }
 
-        private class StreamDownloader : CrossDomainObject, IAsyncEnumerator<TradeReport>, IAsyncCrossDomainEnumerator<TradeReport>
+        private class StreamDownloader : CrossDomainObject, IAsyncCrossDomainEnumerator<TradeReport>
         {
             private BufferBlock<object> _asyncBlock;
             private Task _downloadTask;

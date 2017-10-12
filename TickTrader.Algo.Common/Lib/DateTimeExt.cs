@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Common.Lib
 {
     public static class DateTimeExt
     {
-        public static int TotalDays(this DateTime val)
+        public static int GetAbsoluteDay(this DateTime val)
         {
             return (int)(val - DateTime.MinValue).TotalDays;
         }

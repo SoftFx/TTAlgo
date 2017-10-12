@@ -33,13 +33,13 @@ namespace TickTrader.SeriesStorage.LevelDb
         public string Name => _collectionName;
         public long ByteSize => GetSize();
 
-        public IEnumerable<KeyValuePair<TKey, byte[]>> Iterate(TKey from)
+        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(TKey from, bool reversed)
         {
             byte[] refKey = GetBinKey(from);
 
             using (var dbIterator = _storage.Database.CreateIterator())
             {
-                Seek(dbIterator, refKey);
+                Seek(dbIterator, refKey.ToArray(), reversed);
 
                 while (true)
                 {
@@ -51,9 +51,12 @@ namespace TickTrader.SeriesStorage.LevelDb
                     if (!TryGetKey(dbIterator.Key(), out key))
                         yield break; // end of collection
 
-                    yield return new KeyValuePair<TKey, byte[]>(key, dbIterator.Value());
+                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.Value()));
 
-                    dbIterator.Next();
+                    if (reversed)
+                        dbIterator.Prev();
+                    else
+                        dbIterator.Next();
                 }
             }
         }
@@ -64,7 +67,7 @@ namespace TickTrader.SeriesStorage.LevelDb
 
             using (var dbIterator = _storage.Database.CreateIterator())
             {
-                Seek(dbIterator, refKey);
+                Seek(dbIterator, refKey, reversed);
 
                 while (true)
                 {
@@ -78,22 +81,26 @@ namespace TickTrader.SeriesStorage.LevelDb
 
                     yield return key;
 
-                    dbIterator.Next();
+                    if (reversed)
+                        dbIterator.Prev();
+                    else
+                        dbIterator.Next();
                 }
             }
         }
 
-        public bool Read(TKey key, out byte[] value)
+        public bool Read(TKey key, out ArraySegment<byte> value)
         {
             var binKey = GetBinKey(key);
-            value = _storage.Database.Get(binKey);
+            value = new ArraySegment<byte>(_storage.Database.Get(binKey));
             return value != null;
         }
 
-        public void Write(TKey key, byte[] value)
+        public void Write(TKey key, ArraySegment<byte> value)
         {
             EnsureNameHeaderWritten();
             var binKey = GetBinKey(key);
+            // TO DO : ToArray() causes bad performance
             _storage.Database.Put(binKey, value.ToArray());
         }
 
@@ -150,7 +157,7 @@ namespace TickTrader.SeriesStorage.LevelDb
             _isDisposed = true;
         }
 
-        private void Seek(LevelDB.Iterator dbIterator, byte[] refKey)
+        private void Seek(LevelDB.Iterator dbIterator, byte[] refKey, bool reversed = false)
         {
             dbIterator.Seek(refKey);
 
@@ -171,7 +178,8 @@ namespace TickTrader.SeriesStorage.LevelDb
                         return; // prev key is from this collection 
                 }
 
-                dbIterator.Next();  // revert stepping back
+                if (!reversed)
+                    dbIterator.Next();  // revert stepping back
             }
             else
             {

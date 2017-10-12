@@ -56,6 +56,11 @@ namespace TickTrader.SeriesStorage
         public bool IsEmpty { get; }
         public bool IsMissing { get; }
 
+        public Slice<TKey, TValue> ChangeBounds(TKey from, TKey to)
+        {
+            return new Slice<TKey, TValue>(from, to, _keyFunc, Content, IsMissing);
+        }
+
         public Slice<TKey, TValue> GetSegment(TKey from, TKey to)
         {
             return GetSegment(new KeyRange<TKey>(from, to));

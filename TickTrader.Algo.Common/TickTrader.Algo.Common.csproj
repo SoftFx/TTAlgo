@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\lib\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.3.0\lib\net40\protobuf-net.dll</HintPath>
@@ -66,12 +69,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fdk.Serializers\BarFormatter.cs" />
+    <Compile Include="Fdk.Serializers\ByteArrayBuilder.cs" />
+    <Compile Include="Fdk.Serializers\Crc32HashExtension.cs" />
+    <Compile Include="Fdk.Serializers\FeedTickFormatter.cs" />
+    <Compile Include="Fdk.Serializers\FeedTickLevel2Formatter.cs" />
+    <Compile Include="Fdk.Serializers\IChunkSerializer.cs" />
+    <Compile Include="Fdk.Serializers\IFormatter.cs" />
+    <Compile Include="Fdk.Serializers\ISerializer.cs" />
+    <Compile Include="Fdk.Serializers\TextSerializer.cs" />
+    <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\DictionarySyncrhonizer.cs" />
-    <Compile Include="Lib\EnumerableLockExt.cs" />
+    <Compile Include="Lib\EnumerableExt.cs" />
     <Compile Include="Lib\PathEscaper.cs" />
     <Compile Include="Lib\SetSynchronizer.cs" />
     <Compile Include="Lib\TaskMahcine.cs" />
@@ -84,6 +97,7 @@
     <Compile Include="Model.FeedCache\DateTimeKeySerializer.cs" />
     <Compile Include="Model.FeedCache\FeedCacheKey.cs" />
     <Compile Include="Model.FeedCache\GuidKeySerializer.cs" />
+    <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Setup\Serialization.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
@@ -94,7 +108,6 @@
     <Compile Include="Model\FdkToAlgo.cs" />
     <Compile Include="Model.FeedCache\FeedCache.cs" />
     <Compile Include="Model\FeedHistoryProvider.cs" />
-    <Compile Include="Model\FeedStorageBase.cs" />
     <Compile Include="Model\Interfaces.cs" />
     <Compile Include="Model.Setup\Convert.cs" />
     <Compile Include="Model.Setup\GuiModelMsg.cs" />

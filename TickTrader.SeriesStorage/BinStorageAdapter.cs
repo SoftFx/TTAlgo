@@ -27,11 +27,11 @@ namespace TickTrader.SeriesStorage
             _binStorage.Drop();
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed)
         {
-            foreach (var item in _binStorage.Iterate(from))
+            foreach (var item in _binStorage.Iterate(from, reversed))
             {
-                var value = _serializer.Deserialize(new ArraySegment<byte>(item.Value));
+                var value = _serializer.Deserialize(item.Value);
                 yield return new KeyValuePair<TKey, TValue>(item.Key, value);
             }
         }
@@ -43,7 +43,7 @@ namespace TickTrader.SeriesStorage
 
         public bool Read(TKey key, out TValue value)
         {
-            byte[] bytes;
+            ArraySegment<byte> bytes;
 
             if (_binStorage.Read(key, out bytes))
             {
@@ -51,7 +51,7 @@ namespace TickTrader.SeriesStorage
                 return false;
             }
 
-            value = _serializer.Deserialize(new ArraySegment<byte>(bytes));
+            value = _serializer.Deserialize(bytes);
             return true;
         }
 
@@ -68,8 +68,7 @@ namespace TickTrader.SeriesStorage
         public void Write(TKey key, TValue value)
         {
             var binVal = _serializer.Serialize(value);
-            // TO DO : ToArray() causes bad performance
-            _binStorage.Write(key, binVal.ToArray());
+            _binStorage.Write(key, binVal);
         }
 
         public long GetSize()

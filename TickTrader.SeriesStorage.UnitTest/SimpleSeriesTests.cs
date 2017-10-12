@@ -40,6 +40,34 @@ namespace TickTrader.SeriesStorage.UnitTest
         }
 
         [TestMethod]
+        public void SimpleStorage_IterateReversed_ExactSlices()
+        {
+            string[] actual, expected;
+
+            var series = Setup1();
+
+            actual = series.IterateReversed(1, 16).Select(i => i.Value).ToArray();
+            expected = new String[] { "fifteen", "eleven", "nine", "eight", "seven", "four", "two" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(8, 16).Select(i => i.Value).ToArray();
+            expected = new String[] { "fifteen", "eleven", "nine", "eight" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(8, 10).Select(i => i.Value).ToArray();
+            expected = new String[] { "nine", "eight" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(1, 10).Select(i => i.Value).ToArray();
+            expected = new String[] { "nine", "eight", "seven", "four", "two" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(10, 16).Select(i => i.Value).ToArray();
+            expected = new String[] { "fifteen", "eleven" };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void SimpleStorage_Iterate_ExactKeys()
         {
             string[] actual, expected;
@@ -60,6 +88,30 @@ namespace TickTrader.SeriesStorage.UnitTest
 
             actual = series.Iterate(8, 12).Select(i => i.Value).ToArray();
             expected = new String[] { "eight", "nine", "eleven" };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SimpleStorage_IterateReversed_ExactKeys()
+        {
+            string[] actual, expected;
+
+            var series = Setup1();
+
+            actual = series.IterateReversed(2, 15).Select(i => i.Value).ToArray();
+            expected = new String[] { "eleven", "nine", "eight", "seven", "four", "two" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(4, 11).Select(i => i.Value).ToArray();
+            expected = new String[] { "nine", "eight", "seven", "four" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(8, 10).Select(i => i.Value).ToArray();
+            expected = new String[] { "nine", "eight" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(8, 12).Select(i => i.Value).ToArray();
+            expected = new String[] { "eleven", "nine", "eight" };
             CollectionAssert.AreEqual(expected, actual);
         }
 
@@ -91,6 +143,38 @@ namespace TickTrader.SeriesStorage.UnitTest
             CollectionAssert.AreEqual(expected, actual);
 
             actual = series.Iterate(-10, 0).Select(i => i.Value).ToArray();
+            expected = new String[] { };
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SimpleStorage_IterateReversed_NotExact()
+        {
+            string[] actual, expected;
+
+            var series = Setup1();
+
+            actual = series.IterateReversed(-1, 18).Select(i => i.Value).ToArray();
+            expected = new String[] { "fifteen", "eleven", "nine", "eight", "seven", "four", "two" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(-1, 3).Select(i => i.Value).ToArray();
+            expected = new String[] { "two" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(6, 10).Select(i => i.Value).ToArray();
+            expected = new String[] { "nine", "eight", "seven" };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(-1, 2).Select(i => i.Value).ToArray();
+            expected = new String[] { };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(20, 45).Select(i => i.Value).ToArray();
+            expected = new String[] { };
+            CollectionAssert.AreEqual(expected, actual);
+
+            actual = series.IterateReversed(-10, 0).Select(i => i.Value).ToArray();
             expected = new String[] { };
             CollectionAssert.AreEqual(expected, actual);
         }

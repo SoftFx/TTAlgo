@@ -38,6 +38,7 @@ namespace Machinarium.Var
         {
             var property = new Property<T>();
             property.Value = initialValue;
+            property.Name = notifyName;
             AddDisposableChild(property);
             return property;
         }
@@ -46,6 +47,7 @@ namespace Machinarium.Var
         {
             var property = new IntProperty();
             property.Value = initialValue;
+            property.Name = notifyName;
             AddDisposableChild(property);
             return property;
         }
@@ -54,6 +56,7 @@ namespace Machinarium.Var
         {
             var property = new BoolProperty();
             property.Value = initialValue;
+            property.Name = notifyName;
             AddDisposableChild(property);
             return property;
         }
@@ -62,6 +65,7 @@ namespace Machinarium.Var
         {
             var property = new Validable<T>();
             property.Value = initialValue;
+            property.Name = notifyName;
             AddDisposableChild(property);
             return property;
         }
@@ -70,6 +74,7 @@ namespace Machinarium.Var
         {
             var property = new IntValidable();
             property.Value = initialValue;
+            property.Name = notifyName;
             AddDisposableChild(property);
             return property;
         }
@@ -78,6 +83,7 @@ namespace Machinarium.Var
         {
             var property = new BoolValidable();
             property.Value = initialValue;
+            property.Name = notifyName;
             AddDisposableChild(property);
             return property;
         }

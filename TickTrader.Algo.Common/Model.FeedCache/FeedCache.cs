@@ -16,9 +16,15 @@ namespace TickTrader.Algo.Common.Model
     {
         private object _syncObj = new object();
         private DynamicDictionary<FeedCacheKey, SeriesStorage<DateTime, BarEntity>> _barCollections = new DynamicDictionary<FeedCacheKey, SeriesStorage<DateTime, BarEntity>>();
+        private DynamicDictionary<FeedCacheKey, SeriesStorage<DateTime, QuoteEntity>> _tickCollections = new DynamicDictionary<FeedCacheKey, SeriesStorage<DateTime, QuoteEntity>>();
         private LevelDbStorage _diskStorage;
 
-        public IDynamicSetSource<FeedCacheKey> Keys => _barCollections.Keys;
+        public FeedCache()
+        {
+            Keys = Dynamic.Union(_barCollections.Keys, _tickCollections.Keys);
+        }
+
+        public IDynamicSetSource<FeedCacheKey> Keys { get; }
         public LevelDbStorage Database => _diskStorage;
         protected object SyncObj => _syncObj;
 
@@ -45,10 +51,7 @@ namespace TickTrader.Algo.Common.Model
                 }
 
                 foreach (var key in loadedKeys)
-                {
-                    var collection = CreateBarCollection(key);
-                    _barCollections.Add(key, collection);
-                }
+                    CreateCollection(key);
             }
         }
 
@@ -102,8 +105,15 @@ namespace TickTrader.Algo.Common.Model
         public double? GetCollectionSize(FeedCacheKey key)
         {
             lock (_syncObj)
-                return GetBarCollection(key)?.GetSize();
+            {
+                if (key.Frame == Api.TimeFrames.Ticks)
+                    return GetTicksCollection(key)?.GetSize();
+                else
+                    return GetBarCollection(key)?.GetSize();
+            }
         }
+
+        #region Bar History
 
         public KeyRange<DateTime> GetFirstBarRange(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
         {
@@ -114,6 +124,28 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        public KeyRange<DateTime> GetLastBarRange(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
+        {
+            lock (_syncObj)
+            {
+                CheckState();
+
+                var key = new FeedCacheKey(symbol, frame, priceType);
+                return GetBarCollection(key)?.GetFirstRange(from, to);
+            }
+        }
+
+        public Slice<DateTime, BarEntity> GetFirstBarSlice(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to)
+        {
+            lock (_syncObj)
+            {
+                CheckState();
+
+                var key = new FeedCacheKey(symbol, frame, priceType);
+                return GetBarCollection(key)?.GetFirstSlice(from, to);
+            }
+        }
+
         private IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key)
         {
             return IterateCacheKeys(key, DateTime.MinValue, DateTime.MaxValue);
@@ -121,7 +153,10 @@ namespace TickTrader.Algo.Common.Model
 
         private IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
         {
-            return GetBarCollection(key)?.IterateRanges(from, to);
+            if (key.Frame == Api.TimeFrames.Ticks)
+                return GetTicksCollection(key)?.IterateRanges(from, to) ?? Enumerable.Empty<KeyRange<DateTime>>();
+            else
+                return GetBarCollection(key)?.IterateRanges(from, to) ?? Enumerable.Empty<KeyRange<DateTime>>();
         }
 
         public IEnumerable<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
@@ -143,6 +178,8 @@ namespace TickTrader.Algo.Common.Model
         {
             lock (_syncObj)
             {
+                CheckState();
+
                 var key = new FeedCacheKey(symbol, frame, priceType);
                 return GetBarCollection(key)?.GetFirstSlice(from, to);
             }
@@ -152,9 +189,81 @@ namespace TickTrader.Algo.Common.Model
         {
             lock (_syncObj)
             {
+                CheckState();
+
                 var key = new FeedCacheKey(symbol, frame, priceType);
                 var collection = GetBarCollection(key, true);
                 collection.Write(from, to, values);
+            }
+        }
+
+        #endregion
+
+        #region Tick History
+
+        public IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return IterateTickCacheInternal(key, from, to).GetSyncWrapper(_syncObj);
+        }
+
+        private IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            CheckState();
+            foreach (var entry in GetTicksCollection(key)?.IterateSlices(from, to))
+            {
+                CheckState();
+                yield return entry;
+            }
+        }
+
+        public KeyRange<DateTime> GetLastTickRange(string symbol, bool includeLevel2, DateTime from, DateTime to)
+        {
+            lock (_syncObj)
+            {
+                CheckState();
+
+                var key = new FeedCacheKey(symbol, Api.TimeFrames.Ticks);
+                return GetTicksCollection(key)?.GetLastRange(from, to);
+            }
+        }
+
+        public void Put(string symbol, bool level2, DateTime from, DateTime to, QuoteEntity[] values)
+        {
+            lock (_syncObj)
+            {
+                CheckState();
+
+                var key = new FeedCacheKey(symbol, Api.TimeFrames.Ticks);
+                var collection = GetTicksCollection(key, true);
+                collection.Write(from, to, values);
+            }
+        }
+
+        public void Put(string symbol, bool level2, Slice<DateTime, QuoteEntity> slice)
+        {
+            lock (_syncObj)
+            {
+                CheckState();
+
+                var key = new FeedCacheKey(symbol, Api.TimeFrames.Ticks);
+                var collection = GetTicksCollection(key, true);
+                collection.Write(slice);
+            }
+        }
+
+        #endregion
+
+        private void CreateCollection(FeedCacheKey key)
+        {
+            if (key.Frame == Api.TimeFrames.Ticks)
+            {
+                var collection = SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.Serialize());
+                _tickCollections.Add(key, collection);
+            }
+            else
+            {
+                var collection = SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.Serialize());
+                _barCollections.Add(key, collection);
             }
         }
 
@@ -187,21 +296,36 @@ namespace TickTrader.Algo.Common.Model
 
         private SeriesStorage<DateTime, BarEntity> GetBarCollection(FeedCacheKey key, bool addIfMissing = false)
         {
+            if (key.Frame == Api.TimeFrames.Ticks)
+                throw new ArgumentException("key");
+
             SeriesStorage<DateTime, BarEntity> series;
             _barCollections.TryGetValue(key, out series);
 
             if (series == null && addIfMissing)
             {
-                series = CreateBarCollection(key);
-                _barCollections.Add(key, series);
+                CreateCollection(key);
+                _barCollections.TryGetValue(key, out series);
             }
 
             return series;
         }
 
-        private SeriesStorage<DateTime, BarEntity> CreateBarCollection(FeedCacheKey key)
+        private SeriesStorage<DateTime, QuoteEntity> GetTicksCollection(FeedCacheKey key, bool addIfMissing = false)
         {
-            return SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.Serialize());
+            if (key.Frame != Api.TimeFrames.Ticks)
+                throw new ArgumentException("key");
+
+            SeriesStorage<DateTime, QuoteEntity> series;
+            _tickCollections.TryGetValue(key, out series);
+
+            if (series == null && addIfMissing)
+            {
+                CreateCollection(key);
+                _tickCollections.TryGetValue(key, out series);
+            }
+
+            return series;
         }
     }
 }

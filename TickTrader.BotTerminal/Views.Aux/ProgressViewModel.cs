@@ -17,9 +17,13 @@ namespace TickTrader.BotTerminal
             Message = AddProperty("");
             IsIndeterminate = AddBoolProperty();
             IsError = AddBoolProperty();
-            ProgressMin = AddProperty(0D);
-            ProgressMax = AddProperty(100D);
-            Progress = AddProperty(0D);
+            ProgressMin = AddProperty(0D, "ProgressMin");
+            ProgressMax = AddProperty(100D, "ProgressMax");
+            Progress = AddProperty(0D, "Progress");
+
+            //TriggerOnChange(ProgressMin.Var, a => System.Diagnostics.Debug.WriteLine("Min = " + a.New));
+            //TriggerOnChange(ProgressMax.Var, a => System.Diagnostics.Debug.WriteLine("Max = " + a.New));
+            //TriggerOnChange(Progress.Var, a => System.Diagnostics.Debug.WriteLine("Progress = " + a.New));
         }
 
         public BoolProperty IsIndeterminate { get; private set; }
@@ -80,8 +84,6 @@ namespace TickTrader.BotTerminal
                 IsError.Set();
                 Message.Value = errorMsg;
             }
-            else
-                Progress = ProgressMax;
         }
 
         public void SetMessage(string message)

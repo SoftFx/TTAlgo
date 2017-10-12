@@ -407,33 +407,7 @@ namespace TickTrader.Algo.Core
 
         Quote IHelperApi.CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
         {
-            QuoteEntity entity = new QuoteEntity();
-            entity.Symbol = symbol;
-            entity.Time = time;
-
-            if (bids != null)
-            {
-                entity.BidList = bids.ToArray();
-                entity.Bid = bids.Max(e => e.Price);
-            }
-            else
-            {
-                entity.BidList = new BookEntry[0];
-                entity.Bid = double.NaN;
-            }
-
-            if (asks != null)
-            {
-                entity.AskList = asks.ToArray();
-                entity.Ask = asks.Min(e => e.Price);
-            }
-            else
-            {
-                entity.AskList = new BookEntry[0];
-                entity.Bid = double.NaN;
-            }
-
-            return entity;
+            return new QuoteEntity(symbol, time, bids?.ToArray(), asks?.ToArray());
         }
 
         BookEntry IHelperApi.CreateBookEntry(double price, double volume)

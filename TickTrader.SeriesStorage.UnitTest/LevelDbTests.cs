@@ -14,6 +14,23 @@ namespace TickTrader.SeriesStorage.UnitTest
         private readonly static IKeySerializer<DateTime> keySerializer = new DatTimeKeySerializer();
         private readonly static string tempdbPath = "test.db";
 
+        // Setup 1:
+
+        //    collection1
+        //    2017, 08, 01 - 1
+        //    2017, 08, 05 - 2
+        //    2017, 08, 15 - 3
+
+        //    collection2
+        //    2017, 08, 01 - 4
+        //    2017, 08, 05 - 5
+        //    2017, 08, 15 - 6
+
+        //    collection3
+        //    2017, 08, 01 - 7
+        //    2017, 08, 05 - 8
+        //    2017, 08, 15 - 9
+
         [TestMethod]
         public void LevelDbStorage_SimpleWrite()
         {
@@ -23,23 +40,23 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 using (var collection1 = storage.GetBinaryCollection("collection1", keySerializer))
                 {
-                    collection1.Write(new DateTime(2017, 08, 01), Bytes(1));
-                    collection1.Write(new DateTime(2017, 08, 05), Bytes(2));
-                    collection1.Write(new DateTime(2017, 08, 15), Bytes(3));
+                    collection1.Write(new DateTime(2017, 08, 01), ByteSegment(1));
+                    collection1.Write(new DateTime(2017, 08, 05), ByteSegment(2));
+                    collection1.Write(new DateTime(2017, 08, 15), ByteSegment(3));
                 }
 
                 using (var collection2 = storage.GetBinaryCollection("collection2", keySerializer))
                 {
-                    collection2.Write(new DateTime(2017, 08, 15), Bytes(6));
-                    collection2.Write(new DateTime(2017, 08, 05), Bytes(5));
-                    collection2.Write(new DateTime(2017, 08, 01), Bytes(4));
+                    collection2.Write(new DateTime(2017, 08, 15), ByteSegment(6));
+                    collection2.Write(new DateTime(2017, 08, 05), ByteSegment(5));
+                    collection2.Write(new DateTime(2017, 08, 01), ByteSegment(4));
                 }
 
                 using (var collection3 = storage.GetBinaryCollection("collection3", keySerializer))
                 {
-                    collection3.Write(new DateTime(2017, 08, 05), Bytes(8));
-                    collection3.Write(new DateTime(2017, 08, 15), Bytes(9));
-                    collection3.Write(new DateTime(2017, 08, 01), Bytes(7));
+                    collection3.Write(new DateTime(2017, 08, 05), ByteSegment(8));
+                    collection3.Write(new DateTime(2017, 08, 15), ByteSegment(9));
+                    collection3.Write(new DateTime(2017, 08, 01), ByteSegment(7));
                 }
             }
 
@@ -47,7 +64,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 var expected = Setup1();
                 var actual = ReadAll(rawDb);
-                CollectionAssert.AreEqual(expected, actual);
+                AssertCollectionsAreEqual(expected, actual);
             }
         }
 
@@ -63,26 +80,41 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
-                    Assert.AreEqual(2, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(2));
-                    CollectionAssert.AreEqual(actual[1].Value, Bytes(3));
+                    var forward = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
+                    Assert.AreEqual(2, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(2));
+                    AssertCollectionsAreEqual(forward[1].Value, Bytes(3));
+
+                    var backward = collection.Iterate(new DateTime(2017, 08, 05), true).ToList();
+                    Assert.AreEqual(2, backward.Count);
+                    AssertCollectionsAreEqual(backward[0].Value, Bytes(2));
+                    AssertCollectionsAreEqual(backward[1].Value, Bytes(1));
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
-                    Assert.AreEqual(2, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(5));
-                    CollectionAssert.AreEqual(actual[1].Value, Bytes(6));
+                    var forward = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
+                    Assert.AreEqual(2, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(5));
+                    AssertCollectionsAreEqual(forward[1].Value, Bytes(6));
+
+                    var backward = collection.Iterate(new DateTime(2017, 08, 05), true).ToList();
+                    Assert.AreEqual(2, backward.Count);
+                    AssertCollectionsAreEqual(backward[0].Value, Bytes(5));
+                    AssertCollectionsAreEqual(backward[1].Value, Bytes(4));
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(8));
-                    CollectionAssert.AreEqual(actual[1].Value, Bytes(9));
+                    AssertCollectionsAreEqual(actual[0].Value, Bytes(8));
+                    AssertCollectionsAreEqual(actual[1].Value, Bytes(9));
+
+                    var backward = collection.Iterate(new DateTime(2017, 08, 05), true).ToList();
+                    Assert.AreEqual(2, backward.Count);
+                    AssertCollectionsAreEqual(backward[0].Value, Bytes(8));
+                    AssertCollectionsAreEqual(backward[1].Value, Bytes(7));
                 }
             }
         }
@@ -99,23 +131,41 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
-                    Assert.AreEqual(1, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(3));
+                    var forward = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
+                    Assert.AreEqual(1, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(3));
+
+                    var backward = collection.Iterate(new DateTime(2017, 08, 16), true).ToList();
+                    Assert.AreEqual(3, backward.Count);
+                    AssertCollectionsAreEqual(backward[0].Value, Bytes(3));
+                    AssertCollectionsAreEqual(backward[1].Value, Bytes(2));
+                    AssertCollectionsAreEqual(backward[2].Value, Bytes(1));
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
-                    Assert.AreEqual(1, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(6));
+                    var forward = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
+                    Assert.AreEqual(1, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(6));
+
+                    var backward = collection.Iterate(new DateTime(2017, 08, 16), true).ToList();
+                    Assert.AreEqual(3, backward.Count);
+                    AssertCollectionsAreEqual(backward[0].Value, Bytes(6));
+                    AssertCollectionsAreEqual(backward[1].Value, Bytes(5));
+                    AssertCollectionsAreEqual(backward[2].Value, Bytes(4));
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
-                    Assert.AreEqual(1, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(9));
+                    var forward = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
+                    Assert.AreEqual(1, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(9));
+
+                    var backward = collection.Iterate(new DateTime(2017, 08, 16), true).ToList();
+                    Assert.AreEqual(3, backward.Count);
+                    AssertCollectionsAreEqual(backward[0].Value, Bytes(9));
+                    AssertCollectionsAreEqual(backward[1].Value, Bytes(8));
+                    AssertCollectionsAreEqual(backward[2].Value, Bytes(7));
                 }
             }
         }
@@ -132,29 +182,38 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
-                    Assert.AreEqual(3, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(1));
-                    CollectionAssert.AreEqual(actual[1].Value, Bytes(2));
-                    CollectionAssert.AreEqual(actual[2].Value, Bytes(3));
+                    var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
+                    Assert.AreEqual(3, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(1));
+                    AssertCollectionsAreEqual(forward[1].Value, Bytes(2));
+                    AssertCollectionsAreEqual(forward[2].Value, Bytes(3));
+
+                    var backward = collection.Iterate(new DateTime(2017, 07, 30), true).ToList();
+                    Assert.AreEqual(0, backward.Count);
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
-                    Assert.AreEqual(3, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(4));
-                    CollectionAssert.AreEqual(actual[1].Value, Bytes(5));
-                    CollectionAssert.AreEqual(actual[2].Value, Bytes(6));
+                    var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
+                    Assert.AreEqual(3, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(4));
+                    AssertCollectionsAreEqual(forward[1].Value, Bytes(5));
+                    AssertCollectionsAreEqual(forward[2].Value, Bytes(6));
+
+                    var backward = collection.Iterate(new DateTime(2017, 07, 30), true).ToList();
+                    Assert.AreEqual(0, backward.Count);
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
-                    Assert.AreEqual(3, actual.Count);
-                    CollectionAssert.AreEqual(actual[0].Value, Bytes(7));
-                    CollectionAssert.AreEqual(actual[1].Value, Bytes(8));
-                    CollectionAssert.AreEqual(actual[2].Value, Bytes(9));
+                    var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
+                    Assert.AreEqual(3, forward.Count);
+                    AssertCollectionsAreEqual(forward[0].Value, Bytes(7));
+                    AssertCollectionsAreEqual(forward[1].Value, Bytes(8));
+                    AssertCollectionsAreEqual(forward[2].Value, Bytes(9));
+
+                    var backward = collection.Iterate(new DateTime(2017, 07, 30), true).ToList();
+                    Assert.AreEqual(0, backward.Count);
                 }
             }
         }
@@ -171,14 +230,20 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
-                    Assert.AreEqual(0, actual.Count);
+                    var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
+                    Assert.AreEqual(0, forward.Count);
+
+                    var backward = collection.Iterate(new DateTime(2017, 07, 30), true).ToList();
+                    Assert.AreEqual(0, backward.Count);
                 }
 
                 using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
                 {
-                    var actual = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
-                    Assert.AreEqual(0, actual.Count);
+                    var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
+                    Assert.AreEqual(0, forward.Count);
+
+                    var backward = collection.Iterate(new DateTime(2017, 07, 30), true).ToList();
+                    Assert.AreEqual(0, backward.Count);
                 }
             }
         }
@@ -225,6 +290,11 @@ namespace TickTrader.SeriesStorage.UnitTest
         public static byte[] Bytes(params byte[] bytes)
         {
             return bytes;
+        }
+
+        public static ArraySegment<byte> ByteSegment(params byte[] bytes)
+        {
+            return new ArraySegment<byte>(bytes);
         }
 
         public class DatTimeKeySerializer : IKeySerializer<DateTime>
@@ -282,6 +352,12 @@ namespace TickTrader.SeriesStorage.UnitTest
             {
                 return base.GetHashCode();
             }
+        }
+
+        //[System.Diagnostics.DebuggerHidden]
+        private static void AssertCollectionsAreEqual<T>(ICollection<T> collection1, ICollection<T> collection2)
+        {
+            CollectionAssert.AreEqual(collection1.ToArray(), collection2.ToArray());
         }
     }
 }

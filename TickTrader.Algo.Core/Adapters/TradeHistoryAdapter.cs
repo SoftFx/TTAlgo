@@ -47,28 +47,28 @@ namespace TickTrader.Algo.Core
                 return Enumerable.Empty<TradeReport>();
         }
 
-        public IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport[]> GetAsync(bool skipCancelOrders)
         {
             if (_provider != null)
                 return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(skipCancelOrders));
             else
-                return new EmptyAsyncEnumerator<TradeReport>();
+                return new EmptyAsyncEnumerator<TradeReport[]>();
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport[]> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
         {
             if (_provider != null)
                 return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(from, to, skipCancelOrders));
             else
-                return new EmptyAsyncEnumerator<TradeReport>();
+                return new EmptyAsyncEnumerator<TradeReport[]>();
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport[]> GetRangeAsync(DateTime to, bool skipCancelOrders)
         {
             if (_provider != null)
                 return new AsyncEnumeratorAdapter<TradeReport>(_provider.GetTradeHistory(to, skipCancelOrders));
             else
-                return new EmptyAsyncEnumerator<TradeReport>();
+                return new EmptyAsyncEnumerator<TradeReport[]>();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -158,9 +158,11 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    internal class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T> where  T: class
+    internal class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T[]> where  T: class
     {
         private IAsyncCrossDomainEnumerator<T> _proxy;
+
+        public T[] Current { get; private set; }
 
         public AsyncEnumeratorAdapter(IAsyncCrossDomainEnumerator<T> proxy)
         {
@@ -180,22 +182,29 @@ namespace TickTrader.Algo.Core
         {
             _proxy.Dispose();
         }
+
+        public async Task<bool> Next()
+        {
+            using (var taskProxy = new CrossDomainTaskProxy<T[]>())
+            {
+                _proxy.GetNextPage(taskProxy);
+                Current = await taskProxy.Task;
+                return Current != null;
+            }
+        }
     }
 
     internal class EmptyAsyncEnumerator<T> : IAsyncEnumerator<T> where T : class
     {
+        public T Current => default(T);
+
         public void Dispose()
         {
         }
 
-        public Task<T> GetNextItem()
+        public Task<bool> Next()
         {
-            return Task.FromResult<T>(null);
-        }
-
-        public Task<T[]> GetNextPage()
-        {
-            return Task.FromResult<T[]>(null);
+            return Task.FromResult(false);
         }
     }
 }

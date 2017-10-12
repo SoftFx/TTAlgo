@@ -11,7 +11,7 @@ using SoftFX.Extended.Reports;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class FdkToAlgo
+    public static class FdkToAlgo
     {
         public static void Convert(IEnumerable<Bar> srcBars, List<BarEntity> dstBars)
         {
@@ -35,6 +35,11 @@ namespace TickTrader.Algo.Common.Model
             }
 
             return result;
+        }
+
+        public static IEnumerable<QuoteEntity> ToAlgo(this IEnumerable<BO.TickValue> ticks, string symbol)
+        {
+            return ticks.Select(t => Convert(t, symbol));
         }
 
         public static IEnumerable<BarEntity> Convert(IEnumerable<Bar> fdkBarCollection)
@@ -63,34 +68,7 @@ namespace TickTrader.Algo.Common.Model
 
         public static QuoteEntity Convert(Quote fdkTick)
         {
-            var entity = new QuoteEntity();
-
-            if (fdkTick.HasAsk)
-            {
-                entity.Ask = fdkTick.Ask;
-                entity.AskList = ConvertLevel2(fdkTick.Asks);
-            }
-            else
-            {
-                entity.Ask = double.NaN;
-                entity.AskList = QuoteEntity.EmptyBook;
-            }
-
-            if (fdkTick.HasBid)
-            {
-                entity.Bid = fdkTick.Bid;
-                entity.BidList = ConvertLevel2(fdkTick.Bids);
-            }
-            else
-            {
-                entity.Bid = double.NaN;
-                entity.BidList = QuoteEntity.EmptyBook;
-            }
-
-            entity.Symbol = fdkTick.Symbol;
-            entity.Time = fdkTick.CreatingTime;
-
-            return entity;
+            return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
         }
 
         private static Api.BookEntry[] ConvertLevel2(QuoteEntry[] book)
@@ -376,6 +354,18 @@ namespace TickTrader.Algo.Common.Model
                 case Api.BarPriceType.Bid: return PriceType.Bid;
             }
             throw new NotImplementedException("Unsupported price type: "  +priceType);
+        }
+
+        public static QuoteEntity Convert(BO.TickValue tick, string symbol)
+        {
+            var bids = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Bid)
+                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
+                .ToArray();
+            var asks = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Ask)
+                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
+                .ToArray();
+
+            return new QuoteEntity(symbol, tick.Time, bids, asks);
         }
     }
 }

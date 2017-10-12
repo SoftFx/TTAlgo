@@ -15,12 +15,16 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Math;
 using TickTrader.SeriesStorage;
+using TickTrader.Server.QuoteHistory.Serialization;
+using TT = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
     public class FeedHistoryProviderModel
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>();
+
+        private const int SliceMaxSize = 8000;
 
         private ConnectionModel connection;
         private string _dataFolder;
@@ -94,87 +98,289 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public Task Downlaod(string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to)
+        public IAsyncEnumerator<BarStreamSlice> EnumerateBars(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            return Downlaod(symbol, timeFrame, priceType, from, to, CancellationToken.None, null);
+            return EnumerateBarsInternal(symbol, timeFrame, priceType, from, to).ToAsyncEnumerator();
         }
 
-        public Task Downlaod(string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to,
-            CancellationToken cancelToken, IActionObserver observer = null)
+        private IEnumerable<Task<BarStreamSlice>> EnumerateBarsInternal(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            const int chunkSize = 12000;
-
-            observer?.StartProgress(from.TotalDays(), to.TotalDays());
-            observer?.SetMessage("Downloading... \n");
-
-            var watch = new Stopwatch();
-            int downloadedCount = 0;
-
-            return Task.Factory.StartNew(() =>
+            for (var i = from; i < to;)
             {
-                for (var i = from; i < to;)
+                yield return Task.Factory.StartNew(() =>
                 {
-                    var cachedSlice = Cache.GetFirstBarRange(symbol, timeFrame, priceType.Value, i, to);
-                    var cachedStart = cachedSlice?.From ?? DateTime.MaxValue;
-                    var cachedEnd = cachedSlice?.To ?? DateTime.MaxValue;
+                    var cachedSlice = Cache.GetFirstBarSlice(symbol, timeFrame, priceType, i, to);
 
-                    if (cachedStart <= i)
+                    if (cachedSlice != null && cachedSlice.From == i)
                     {
-                        // skip
-                        i = cachedEnd;
+                        i = cachedSlice.To;
+                        return new BarStreamSlice(cachedSlice.From, cachedSlice.To, cachedSlice.Content.ToList());
                     }
                     else
                     {
                         // download
-                        watch.Start();
-                        var slice = DownloadBarSlice(symbol, timeFrame, priceType.Value, i, chunkSize);
-                        downloadedCount += slice?.Bars.Count ?? 0;
-                        watch.Stop();
-                        _diskCache.Put(symbol, timeFrame, priceType.Value, i, slice.To, slice.Bars.ToArray());
+                        var slice = DownloadBarSlice(symbol, timeFrame, priceType, i, SliceMaxSize);
+                        _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
                         i = slice.To;
+                        return slice;
                     }
-
-                    var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
-                    if (watch.ElapsedMilliseconds > 0)
-                        msg += "\nBar per second: " + Math.Round( (double)(downloadedCount * 1000) / watch.ElapsedMilliseconds);
-                    observer.SetMessage(msg);
-
-                    observer?.SetProgress(i.TotalDays());
-
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
-                        return;
-                    }
-                }
-
-                observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
-            });
+                });
+            }
         }
 
-        private BarSlice DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
+        private IEnumerable<Task<SliceInfo>> DownloadBarsInternal(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        {
+            const int chunkSize = 8000;
+
+            for (var i = from; i < to;)
+            {
+                yield return Task.Factory.StartNew(() =>
+                {
+                    var cachedSlice = Cache.GetFirstBarRange(symbol, timeFrame, priceType, i, to);
+
+                    if (cachedSlice != null && cachedSlice.From == i)
+                    {
+                        i = cachedSlice.To;
+                        return new SliceInfo(cachedSlice.From, cachedSlice.To, -1);
+                    }
+                    else
+                    {
+                        // download
+                        var slice = DownloadBarSlice(symbol, timeFrame, priceType, i, chunkSize);
+                        _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
+                        i = slice.To;
+                        return new SliceInfo(slice.From, slice.To, slice.Bars.Count);
+                    }
+                });
+            }
+        }
+
+        public IAsyncEnumerator<SliceInfo> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        {
+            return DownloadBarsInternal(symbol, timeFrame, priceType, from, to).ToAsyncEnumerator();
+        }
+
+        private BarStreamSlice DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
         {
             var result = connection.FeedProxy.Server.GetHistoryBars(symbol, startTime, count, FdkToAlgo.Convert(priceType), FdkToAlgo.ToBarPeriod(timeFrame));
             var algoBars = FdkToAlgo.Convert(result.Bars, count < 0);
 
             var toCorrected = result.To.Value;
 
-            if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To) // hacky workaround
+            if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To)
             {
                 var sampler = BarSampler.Get(timeFrame);
                 var barBoundaries = sampler.GetBar(result.To.Value);
                 toCorrected = barBoundaries.Close;
             }
 
-            return new BarSlice { Bars = algoBars, From = result.From.Value, To = toCorrected };
+            return new BarStreamSlice(result.From.Value, toCorrected, algoBars);
         }
 
-        private class BarSlice
+        //private IEnumerable<Task<TickStreamSlice>> EnumerateTicksInternal()
+        //{
+
+        //}
+
+        public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, bool includeLevel2, DateTime from, DateTime to)
         {
-            public DateTime From { get; set; }
-            public DateTime To { get; set; }
-            public List<BarEntity> Bars { get; set; }
+            return DownloadTicksInternal(symbol, includeLevel2, from, to).ToAsyncEnumerator();
         }
+
+        private IEnumerable<Task<SliceInfo>> DownloadTicksInternal(string symbol, bool includeLevel2, DateTime from, DateTime to)
+        {
+            for (var i = to; i > from;)
+            {
+                yield return Task.Factory.StartNew(() =>
+                {
+                    var cachedSlice = Cache.GetLastTickRange(symbol, includeLevel2, from, i);
+
+                    if (cachedSlice != null && cachedSlice.To == i)
+                    {
+                        i = cachedSlice.From;
+                        return new SliceInfo(cachedSlice.From, cachedSlice.To, -1);
+                    }
+                    else
+                    {
+                        // download
+                        var slices = DownloadTickFile(symbol, i, includeLevel2);
+                        if (slices == null || slices.Count == 0)
+                        {
+                            // end of data
+                            var emptyInfo = new SliceInfo(from, i, 0);
+                            i = from;
+                            return emptyInfo;
+                        }
+
+                        int count = 0;
+                        foreach (var slice in slices)
+                        {
+                            _diskCache.Put(symbol, includeLevel2, slice);
+                            count += slice.Content.Count;
+                        }
+                        var slicesFrom = slices.First().From;
+                        var info = new SliceInfo(slicesFrom, i, count);
+                        i = slicesFrom;
+                        return info;
+                    }
+                });
+            }
+        }
+
+        private List<Slice<DateTime, QuoteEntity>> DownloadTickFile(string symbol, DateTime refTimePoint, bool includeLevel2)
+        {
+            var proxy = connection.FeedProxy;
+            var result = proxy.Server.GetQuotesHistoryFiles(symbol, includeLevel2, Decrease(refTimePoint));
+
+            if (result == null || result.Files.Length == 0)
+                return null;
+
+            var fileFrom = result.From.Value;
+            var fileTo = result.To.Value;
+
+            var slicer = new TimeBasedSlicer<QuoteEntity>(fileFrom, fileTo, SliceMaxSize, q => q.Time);
+
+            foreach (var fileCode in result.Files)
+            {
+                var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(FeedTickFormatter.Instance, "ticks");
+
+                using (var downloadStream = new DataStream(proxy, fileCode))
+                {
+                    var bytes = downloadStream.ToArray();
+                    var fdkTicks = serializer.Deserialize(bytes);
+                    slicer.Write(fdkTicks.ToAlgo(symbol).ToArray());
+                }
+            }
+
+            return slicer;
+        }
+
+        private DateTime Decrease(DateTime val)
+        {
+            return new DateTime(val.Ticks - 1);
+        }
+    }
+
+    internal class TimeBasedSlicer<T> : List<Slice<DateTime, T>>
+    {
+        private DateTime _from;
+        private DateTime _to;
+        private int _size;
+        private Func<T, DateTime> _timeSelector;
+
+        public TimeBasedSlicer(DateTime from, DateTime to, int maxSize, Func<T, DateTime> timeSelector)
+        {
+            _from = from;
+            _to = to;
+            _size = maxSize;
+            _timeSelector = timeSelector;
+        }
+
+        public void Write(T[] data)
+        {
+            for (int i = 0; i < data.Length;)
+                i += Write(new ArraySegment<T>(data, i, data.Length - i));
+        }
+
+        protected Slice<DateTime, T> LastSlice
+        {
+            get => this[Count - 1];
+            set => this[Count - 1] = value;
+        }
+
+        private int Write(ArraySegment<T> data)
+        {
+            if (data.Count <= 0)
+                return 0;
+
+            if (Count > 0)
+            {
+                if (LastSlice.Content.Count < _size)
+                    return FillSlice(LastSlice, data);
+
+                AdjustLastSliceEnd(_timeSelector(data.First()));
+            }
+
+            return AddNewSlice(data);
+        }
+
+        private void AdjustLastSliceEnd(DateTime newTo)
+        {
+            var last = LastSlice;
+            LastSlice = last.ChangeBounds(last.From, newTo);
+        }
+
+        private int AddNewSlice(ArraySegment<T> data)
+        {
+            int toCopy = Math.Min(_size, data.Count);
+            var content = new ArraySegment<T>(data.Array, data.Offset, toCopy);
+            //var lastItemTime = _timeSelector(content.Last());
+            var slice = Slice<DateTime, T>.Create(new KeyRange<DateTime>(_from, _to), _timeSelector, content);
+            Add(slice);
+            return toCopy;
+        }
+
+        private int FillSlice(Slice<DateTime, T> sliceToFill, ArraySegment<T> data)
+        {
+            int space = _size - sliceToFill.Content.Count;
+            int toCopy = Math.Min(space, data.Count);
+            var content = CombineArrays(sliceToFill.Content, new ArraySegment<T>(data.Array, data.Offset, toCopy));
+            //var lastItemTime = _timeSelector(content.Last());
+            this[Count - 1] = Slice<DateTime, T>.Create(new KeyRange<DateTime>(sliceToFill.From, _to), _timeSelector, content);
+            return toCopy;
+        }
+
+        private T[] CombineArrays(ArraySegment<T> a1, ArraySegment<T> a2)
+        {
+            var result = new T[a1.Count +  a2.Count];
+
+            Array.Copy(a1.Array, a1.Offset, result, 0, a1.Count);
+            Array.Copy(a2.Array, a2.Offset, result, a1.Count, a2.Count);
+
+            return result;
+        }
+    }
+
+    public class SliceInfo
+    {
+        public SliceInfo(DateTime from, DateTime to, int count)
+        {
+            From = from;
+            To = to;
+            Count = count;
+        }
+
+        public int Count { get; }
+        public DateTime From { get; }
+        public DateTime To { get; }
+    }
+
+    public class BarStreamSlice
+    {
+        public BarStreamSlice(DateTime from, DateTime to, List<BarEntity> barList)
+        {
+            From = from;
+            To = to;
+            Bars = barList;
+        }
+
+        public DateTime From { get; }
+        public DateTime To { get; }
+        public List<BarEntity> Bars { get; }
+    }
+
+    public class TickStreamSlice
+    {
+        public TickStreamSlice(DateTime from, DateTime to, List<QuoteEntity> ticksList)
+        {
+            From = from;
+            To = to;
+            Ticks = ticksList;
+        }
+
+        public DateTime From { get; }
+        public DateTime To { get; }
+        public List<QuoteEntity> Ticks { get; }
     }
 
     public enum FeedHistoryFolderOptions

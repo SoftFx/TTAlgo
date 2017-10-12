@@ -9,7 +9,7 @@
     <Style x:Key="FeedStorageDataGridRow" TargetType="{x:Type DataGridRow}">
         <Setter Property="ContextMenu">
             <Setter.Value>
-                <ContextMenu >
+                <ContextMenu cal:Bind.ModelWithoutContext="{Binding}">
                     <MenuItem Header="Export" cal:Message.Attach="Export"/>
                     <Separator/>
                     <MenuItem Header="Remove" IsEnabled="False" cal:Message.Attach="Remove"/>
@@ -40,16 +40,18 @@
     <ControlTemplate x:Key="SymbolManagerView.Template.Classic">
         <Grid Background="{TemplateBinding Background}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="140"/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="170" MinWidth="90"/>
+                <ColumnDefinition Width="Auto"/> <!--splitter-->
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
+                <RowDefinition Height="Auto"/> <!--splitter-->
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <TreeView Grid.Column="0" Grid.RowSpan="3" Margin="6"
+            <TreeView Grid.Column="0" Grid.RowSpan="4" Margin="6,6,0,6"
                       ItemsSource="{Binding RootGroups}">
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="{x:Type TreeViewItem}">
@@ -61,7 +63,10 @@
                 </i:Interaction.Behaviors>
             </TreeView>
 
-            <ToolBar Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Focusable="False" Margin="0,6,6,6">
+            <GridSplitter Width="6" Grid.Column="1" Grid.RowSpan="4" VerticalAlignment="Stretch" HorizontalAlignment="Right"
+                          Background="Transparent" Margin="0,6,0,6" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" />
+
+            <ToolBar Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="0,6,6,6">
                 <Button Content="{DynamicResource AddToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="AddSymbol" />
                 <Button Content="{DynamicResource ImportToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Import" Focusable="False" />
                 <Button Content="{DynamicResource DownloadToolBarIcon}" Margin="3,0,0,0" cal:Message.Attach="Download" Focusable="False"  />
@@ -70,10 +75,10 @@
                 <TextBox Width="120" Margin="0,2,0,2" Text="{Binding SymbolFilter.Value, Delay=300, UpdateSourceTrigger=PropertyChanged}" />
             </ToolBar>
 
-            <DataGrid Style="{DynamicResource DataGrid_Style}" Grid.Row="1" Grid.Column="1" Margin="0,0,6,6"
+            <DataGrid Style="{DynamicResource DataGrid_Style}" Grid.Row="1" Grid.Column="2" Margin="0,0,6,0"
                       ItemsSource="{Binding Symbols.Value}" RowStyle="{StaticResource SymbolManagerRow}"
                       SelectedValue="{Binding SelectedSymbol.Value}"
-                      BorderThickness="1">
+                      BorderThickness="1" HorizontalScrollBarVisibility="Hidden">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name" Width="*"
                                         Binding="{Binding Name}"/>
@@ -84,14 +89,19 @@
                 </DataGrid.Columns>
             </DataGrid>
 
-            <Grid Grid.Row="2" Grid.Column="1">
+
+            <GridSplitter Height="6" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Stretch" Background="Transparent"
+                          Margin="0,0,6,0"  ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"/>
+
+            <Grid Grid.Row="3" Grid.Column="2" Margin="0,0,6,6">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Label Content="Cached series:" Margin="0,0,0,2" Grid.Row="0"/>
-                <DataGrid Style="{DynamicResource DataGrid_Style}" BorderThickness="1" Margin="0,0,6,6" Grid.Row="1"
-                                  ItemsSource="{Binding CacheSeries.Value}" RowStyle="{StaticResource FeedStorageDataGridRow}">
+                <DataGrid Style="{DynamicResource DataGrid_Style}" BorderThickness="1" Grid.Row="1"
+                          ItemsSource="{Binding CacheSeries.Value}" RowStyle="{StaticResource FeedStorageDataGridRow}"
+                          HorizontalScrollBarVisibility="Hidden">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Symbol" Width="2*"
                                         Binding="{Binding Symbol}" />
@@ -110,8 +120,8 @@
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Setter Property="WindowStyle" Value="ThreeDBorderWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
-        <Setter Property="Width" Value="600"/>
-        <Setter Property="Height" Value="400"/>
+        <Setter Property="Width" Value="700"/>
+        <Setter Property="Height" Value="500"/>
         <Setter Property="MinWidth" Value="400"/>
         <Setter Property="MinHeight" Value="300"/>
         <Setter Property="ShowInTaskbar" Value="False"/>

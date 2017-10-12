@@ -20,7 +20,7 @@ namespace Machinarium.Qnil
                 foreach (var i in src.Snapshot)
                     Add(i);
 
-                src.Updated -= Src_Updated;
+                src.Updated += Src_Updated;
             }
         }
 

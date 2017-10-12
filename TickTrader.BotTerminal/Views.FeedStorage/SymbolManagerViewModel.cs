@@ -23,10 +23,10 @@ namespace TickTrader.BotTerminal
         private FeedHistoryProviderModel _historyProvider;
         private WindowManager _wndManager;
         private CustomFeedStorage _customStorage;
-        //private IDynamicListSource<CacheSeriesInfoViewModel> _allSeries;
         private VarContext _varContext = new VarContext();
-        private IDynamicDictionarySource<string, ManagedCustomSymbol> _customSymbols;
-        private IDynamicDictionarySource<string, ManagedOnlineSymbol> _onlineSymbols;
+        private DynamicDictionary<string, SymbolModel> _onlineSymbols = new DynamicDictionary<string, SymbolModel>();
+        private IDynamicDictionarySource<string, ManagedCustomSymbol> _customManagedSymbols;
+        private IDynamicDictionarySource<string, ManagedOnlineSymbol> _onlineManagedSymbols;
 
         public SymbolManagerViewModel(TraderClientModel clientModel, CustomFeedStorage customStorage, WindowManager wndManager)
         {
@@ -43,14 +43,14 @@ namespace TickTrader.BotTerminal
             var onlineSeries = onlineCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, _historyProvider.Cache, false));
             var customSeries = customCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, customStorage, true));
 
-            _onlineSymbols = clientModel.Symbols.Select((k, v) => new ManagedOnlineSymbol((SymbolModel)v, this, onlineSeries));
-            _customSymbols = customStorage.GetSymbolsSyncCopy(new DispatcherSync()).Select((k, v) => new ManagedCustomSymbol(v, this, customStorage, customSeries));
+            _onlineManagedSymbols = _onlineSymbols.Select((k, v) => new ManagedOnlineSymbol((SymbolModel)v, this, onlineSeries));
+            _customManagedSymbols = customStorage.GetSymbolsSyncCopy(new DispatcherSync()).Select((k, v) => new ManagedCustomSymbol(v, this, customStorage, customSeries));
 
-            var symbolsBySecurity = _onlineSymbols.GroupBy((k, v) => v.Security);
+            var symbolsBySecurity = _onlineManagedSymbols.GroupBy((k, v) => v.Security);
             var groupsBySecurity = symbolsBySecurity.TransformToList((k, v) => new ManageSymbolGrouping(v.GroupKey, v.TransformToList((k1, v1) => (ManagedSymbol)v1)));
 
-            var onlineGroup = new ManageSymbolGrouping("Online", _onlineSymbols.TransformToList((k,v) => (ManagedSymbol)v), groupsBySecurity);
-            var customGroup = new ManageSymbolGrouping("Custom", _customSymbols.TransformToList((k, v) => (ManagedSymbol)v));
+            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols.TransformToList((k,v) => (ManagedSymbol)v), groupsBySecurity);
+            var customGroup = new ManageSymbolGrouping("Custom", _customManagedSymbols.TransformToList((k, v) => (ManagedSymbol)v));
 
             RootGroups = new ManageSymbolGrouping[] { customGroup, onlineGroup };
             SelectedGroup = _varContext.AddProperty<ManageSymbolGrouping>(customGroup);
@@ -59,10 +59,15 @@ namespace TickTrader.BotTerminal
             SelectedSymbol = _varContext.AddProperty<ManagedSymbol>();
             CacheSeries = SelectedSymbol.Var.Ref(s => s.Series);
 
-            //_allSeries = Dynamic.Union(onlineSeries, customSeries).TransformToList();
-
             _varContext.TriggerOnChange(SelectedGroup.Var, a => ApplySymbolFilter());
             _varContext.TriggerOnChange(SymbolFilter.Var, a => ApplySymbolFilter());
+
+            _varContext.TriggerOn(clientModel.IsConnected, () =>
+            {
+                _onlineSymbols.Clear();
+                foreach (var i in clientModel.Symbols.Snapshot)
+                    _onlineSymbols.Add(i.Key, (SymbolModel)i.Value);
+            });
         }
 
         public Property<ManageSymbolGrouping> SelectedGroup { get; }
@@ -128,7 +133,7 @@ namespace TickTrader.BotTerminal
 
         public void Import(ManagedCustomSymbol symbol)
         {
-            using (var symbolList = _customSymbols.TransformToList())
+            using (var symbolList = _customManagedSymbols.TransformToList())
                 _wndManager.ShowDialog(new FeedImportViewModel(symbolList, symbol));
         }
 
@@ -136,7 +141,7 @@ namespace TickTrader.BotTerminal
         {
             using (var currencies = _clientModel.Currencies.TransformToList((k, v) => k).Chain().AsObservable())
             {
-                var model = new SymbolCfgEditorViewModel(null, currencies, _customSymbols.Snapshot.ContainsKey);
+                var model = new SymbolCfgEditorViewModel(null, currencies, _customManagedSymbols.Snapshot.ContainsKey);
 
                 if (_wndManager.ShowDialog(model) == true)
                 {
@@ -148,7 +153,7 @@ namespace TickTrader.BotTerminal
 
         public void Export(CacheSeriesInfoViewModel series)
         {
-            _wndManager.ShowDialog(new FeedExportViewModel(series.Key, _clientModel));
+            _wndManager.ShowDialog(new FeedExportViewModel(series.Key, series.Storage));
         }
 
         public void RemoveSymbol(ManagedCustomSymbol symbolModel)
@@ -163,8 +168,8 @@ namespace TickTrader.BotTerminal
             CanUpdateSizes = false;
 
             var toUpdate = new List<ManagedSymbol>();
-            toUpdate.AddRange(_onlineSymbols.Snapshot.Values);
-            toUpdate.AddRange(_customSymbols.Snapshot.Values);
+            toUpdate.AddRange(_onlineManagedSymbols.Snapshot.Values);
+            toUpdate.AddRange(_customManagedSymbols.Snapshot.Values);
 
             foreach (var item in toUpdate)
                 item.ResetSize();
@@ -194,6 +199,7 @@ namespace TickTrader.BotTerminal
         public string Symbol { get; }
         public string Cfg { get; }
         public double? Size { get; private set; }
+        public FeedCache Storage => _cache;
 
         public async Task UpdateSize()
         {
@@ -323,6 +329,11 @@ namespace TickTrader.BotTerminal
         public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
         {
             _storage.Put(Name, frame, priceType, from, to, values);
+        }
+
+        public void WriteSlice(bool level2, DateTime from, DateTime to, QuoteEntity[] values)
+        {
+            _storage.Put(Name, level2, from, to, values);
         }
     }
 
