@@ -14,7 +14,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell,IProfileLoader
+    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 

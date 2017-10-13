@@ -12,7 +12,7 @@
                 <ContextMenu cal:Bind.ModelWithoutContext="{Binding}">
                     <MenuItem Header="Export" cal:Message.Attach="Export"/>
                     <Separator/>
-                    <MenuItem Header="Remove" IsEnabled="False" cal:Message.Attach="Remove"/>
+                    <MenuItem Header="Remove" cal:Message.Attach="Remove"/>
                 </ContextMenu>
             </Setter.Value>
         </Setter>

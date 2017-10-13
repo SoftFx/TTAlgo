@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
     {
         private Logger _logger;
         private IProfileLoader _profileLoader;
-        private ToolWindowsManager _wndManager;
+        private WindowManager _wndManager;
         private ProfileManager _profileManager;
         private CancellationTokenSource _cancelLoadSrc;
         private ProfileRepository _profileRepo;

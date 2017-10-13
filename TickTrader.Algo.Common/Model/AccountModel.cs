@@ -8,6 +8,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
 using FDK = SoftFX.Extended;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {

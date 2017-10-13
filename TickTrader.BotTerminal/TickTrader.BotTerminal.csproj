@@ -357,7 +357,6 @@
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
-    <Compile Include="Model.Algo\BarBasedPluginSetup.cs" />
     <Compile Include="Model.Algo\IndicatorModel.cs" />
     <Compile Include="Model.Charts\TickChartModel.cs" />
     <Compile Include="Model.Charts\TimelineModel.cs" />

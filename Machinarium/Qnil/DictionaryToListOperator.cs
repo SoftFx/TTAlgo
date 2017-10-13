@@ -59,7 +59,7 @@ namespace Machinarium.Qnil
             var oldVal = item.Val;
             var newVal = _selector(key, val);
             _list[index] = new ListItem(key, newVal);
-            Updated?.Invoke(new ListUpdateArgs<TResult>(this, DLinqAction.Replace, index, default(TResult), newVal));
+            Updated?.Invoke(new ListUpdateArgs<TResult>(this, DLinqAction.Replace, index, newVal, oldVal));
         }
 
         private void Src_Updated(DictionaryUpdateArgs<TKey, TValue> args)

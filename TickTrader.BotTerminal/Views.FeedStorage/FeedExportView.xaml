@@ -45,8 +45,8 @@
                         <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="Export" cal:Message.Attach="Export" />
-                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel"/>
+                    <Button Grid.Column="0" Content="Export" cal:Message.Attach="Export" IsDefault="True" />
+                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel" IsCancel="True"/>
                 </Grid>
                 <ContentControl cal:View.Model="{Binding ExportObserver}" Visibility="{Binding ShowDownloadUi, Converter={StaticResource BoolToVis}}" />
                 

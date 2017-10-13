@@ -31,14 +31,5 @@ namespace TickTrader.BotTerminal.Properties {
                 return ((bool)(this["EnableFixLogs"]));
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool UseQuoteStorage {
-            get {
-                return ((bool)(this["UseQuoteStorage"]));
-            }
-        }
     }
 }

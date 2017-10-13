@@ -56,8 +56,8 @@
                         <ColumnDefinition />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" IsEnabled="{Binding DownloadEnabled.Value}" />
-                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel" IsEnabled="{Binding CancelEnabled.Value}"/>
+                    <Button Grid.Column="0" Content="Download" cal:Message.Attach="Download" IsEnabled="{Binding DownloadEnabled.Value}" IsDefault="True" />
+                    <Button Grid.Column="1" Content="Cancel" cal:Message.Attach="Cancel" IsEnabled="{Binding CancelEnabled.Value}" IsCancel="True"/>
                 </Grid>
 
                 <ContentControl Name="ProgressBar" cal:View.Model="{Binding DownloadObserver}" />

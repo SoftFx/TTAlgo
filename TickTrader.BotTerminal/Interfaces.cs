@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
-        ToolWindowsManager ToolWndManager { get; }
+        WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }
     }
 }

@@ -77,6 +77,23 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
+        public void Update(CustomSymbol symbolCfg)
+        {
+            lock (SyncObj)
+            {
+                CheckState();
+
+                var oldEntity = _symbols[symbolCfg.Name];
+
+                if (oldEntity.Name != symbolCfg.Name)
+                    throw new ArgumentException("Changing name is not supported!");
+
+                symbolCfg.StorageId = oldEntity.StorageId;
+                _metadataStorage.Write(oldEntity.StorageId, symbolCfg);
+                _symbols[symbolCfg.Name] = symbolCfg;
+            }
+        }
+
         public Task RemoveAsync(string symbol)
         {
             return Task.Factory.StartNew(() => Remove(symbol));

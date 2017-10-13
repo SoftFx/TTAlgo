@@ -29,7 +29,10 @@ namespace TickTrader.BotTerminal
                 };
             }
             else
-                DisplayName = "Edit Custom Symbol Config";
+            {
+                IsEditMode = true;
+                DisplayName = "Edit Symbol Settings";
+            }
 
             Name = _varContext.AddValidable<string>(symbol.Name);
             Description = _varContext.AddValidable<string>(symbol.Description);
@@ -39,8 +42,12 @@ namespace TickTrader.BotTerminal
             DigitsStr = _varContext.AddConverter(Digits, new StringToInt());
             Error = _varContext.AddProperty<string>();
 
-            Name.MustBeNotEmpy();
-            Name.AddValidationRule(v => !symbolExistsFunc(v), "Symbol with such name already exists!");
+            if (!IsEditMode)
+            {
+                Name.MustBeNotEmpy();
+                Name.AddValidationRule(v => !symbolExistsFunc(v), "Symbol with such name already exists!");
+            }
+
             BaseCurr.MustBeNotEmpy();
             ProfitCurr.MustBeNotEmpy();
 
@@ -66,10 +73,11 @@ namespace TickTrader.BotTerminal
         {
             return new CustomSymbol()
             {
-                Name = Name.Value,
+                Name = Name.Value.Trim(),
                 Description = Description.Value,
-                BaseCurr = BaseCurr.Value,
-                ProfitCurr = ProfitCurr.Value
+                BaseCurr = BaseCurr.Value.Trim(),
+                ProfitCurr = ProfitCurr.Value.Trim(),
+                Digits = Digits.Value
             };
         }
 
@@ -81,6 +89,8 @@ namespace TickTrader.BotTerminal
         public IValidable<string> DigitsStr { get; }
         public IObservableListSource<string> AvailableCurrencies { get; }
         public Property<string> Error { get; }
+        public bool IsEditMode { get; }
+        public bool IsAddMode => !IsEditMode;
 
         public BoolVar IsValid { get; }
 

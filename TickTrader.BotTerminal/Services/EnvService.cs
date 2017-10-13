@@ -10,9 +10,11 @@ namespace TickTrader.BotTerminal
 {
     internal class EnvService
     {
+        private static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private EnvService()
         {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
+            
             ApplicationName = "BotTrader";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
@@ -95,6 +97,7 @@ namespace TickTrader.BotTerminal
         public string AppLockFilePath { get; private set; }
         public IObjectStorage UserDataStorage { get; private set; }
         public IObjectStorage ProtectedUserDataStorage { get; private set; }
+        public IObjectStorage ProfilesCacheStorage { get; private set; }
         public string UserProfilesFolder { get; }
         public string ProfilesCacheFolder { get; }
 

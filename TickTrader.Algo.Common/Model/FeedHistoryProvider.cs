@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 yield return Task.Factory.StartNew(() =>
                 {
-                    var cachedSlice = Cache.GetFirstBarRange(symbol, timeFrame, priceType, i, to);
+                    var cachedSlice = Cache.GetFirstRange(symbol, timeFrame, priceType, i, to);
 
                     if (cachedSlice != null && cachedSlice.From == i)
                     {
@@ -182,18 +182,20 @@ namespace TickTrader.Algo.Common.Model
 
         //}
 
-        public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, bool includeLevel2, DateTime from, DateTime to)
+        public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
         {
-            return DownloadTicksInternal(symbol, includeLevel2, from, to).ToAsyncEnumerator();
+            return DownloadTicksInternal(symbol, timeFrame, from, to).ToAsyncEnumerator();
         }
 
-        private IEnumerable<Task<SliceInfo>> DownloadTicksInternal(string symbol, bool includeLevel2, DateTime from, DateTime to)
+        private IEnumerable<Task<SliceInfo>> DownloadTicksInternal(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
         {
+            var includeLevel2 = timeFrame == TimeFrames.TicksLevel2;
+
             for (var i = to; i > from;)
             {
                 yield return Task.Factory.StartNew(() =>
                 {
-                    var cachedSlice = Cache.GetLastTickRange(symbol, includeLevel2, from, i);
+                    var cachedSlice = Cache.GetLastRange(symbol, timeFrame, null, from, i);
 
                     if (cachedSlice != null && cachedSlice.To == i)
                     {

@@ -231,6 +231,23 @@ namespace Machinarium.Qnil
             return new DictionaryGrouping<TKey, TValue, TGrouping>(src, groupingKeySelector);
         }
 
+        public static void EnableAutodispose<TKey, TVal>(this IDynamicDictionarySource<TKey, TVal> src)
+            where TVal : IDisposable
+        {
+            src.Updated += a =>
+            {
+                if (a.Action == DLinqAction.Remove)
+                    a.OldItem.Dispose();
+                else if (a.Action == DLinqAction.Replace)
+                    a.OldItem.Dispose();
+                else if (a.Action == DLinqAction.Dispose)
+                {
+                    foreach (var i in a.Sender.Snapshot.Values)
+                        i.Dispose();
+                }
+            };
+        }
+
         // <summary>
         /// Note: Supplied collection must be empty!
         /// Note: You should not update supplied collection in any other way or from any other source!

@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private WindowManager wndManager;
 
-        public BotControlViewModel(TradeBotModel model, ToolWindowsManager wndManager, bool runBot, bool openState)
+        public BotControlViewModel(TradeBotModel model, WindowManager wndManager, bool runBot, bool openState)
         {
             this.Model = model;
             this.wndManager = wndManager;
@@ -61,14 +61,14 @@ namespace TickTrader.BotTerminal
             if (wnd != null)
                 wnd.Activate();
             else
-                wndManager.OpenWindow(Model, new BotStateViewModel(Model, wndManager));
+                wndManager.OpenMdiWindow(Model, new BotStateViewModel(Model, wndManager));
         }
 
         public void OpenSettings()
         {
             var key = $"BotSettings {Model.InstanceId}";
 
-            var wnd = wndManager.GetWindow(key);
+            var wnd = wndManager.GetWindowModel(key);
             if (wnd != null)
             {
                 wnd.Activate();
@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
                 var pSetup = new PluginSetupViewModel(Model);
                 pSetup.Closed += PluginSetupViewClosed;
 
-                wndManager.OpenWindow(key, pSetup);
+                wndManager.OpenMdiWindow(key, pSetup);
             }
         }
 

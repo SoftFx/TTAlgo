@@ -68,6 +68,9 @@ namespace TickTrader.BotTerminal
                 foreach (var i in clientModel.Symbols.Snapshot)
                     _onlineSymbols.Add(i.Key, (SymbolModel)i.Value);
             });
+
+            _onlineManagedSymbols.EnableAutodispose();
+            _customManagedSymbols.EnableAutodispose();
         }
 
         public Property<ManageSymbolGrouping> SelectedGroup { get; }
@@ -151,6 +154,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void EditSymbol(ManagedCustomSymbol symbol)
+        {
+            using (var currencies = _clientModel.Currencies.TransformToList((k, v) => k).Chain().AsObservable())
+            {
+                var model = new SymbolCfgEditorViewModel(symbol.Model, currencies, _customManagedSymbols.Snapshot.ContainsKey);
+
+                if (_wndManager.ShowDialog(model) == true)
+                {
+                    var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _customStorage.Update(model.GetResultingSymbol()));
+                    _wndManager.ShowDialog(actionModel);
+                }
+            }
+        }
+
         public void Export(CacheSeriesInfoViewModel series)
         {
             _wndManager.ShowDialog(new FeedExportViewModel(series.Key, series.Storage));
@@ -160,6 +177,13 @@ namespace TickTrader.BotTerminal
         {
             var actionModel = new ActionDialogViewModel("Removing symbol...",
                     () => _customStorage.Remove(symbolModel.Name));
+            _wndManager.ShowDialog(actionModel);
+        }
+
+        public void RemoveSeries(CacheSeriesInfoViewModel series)
+        {
+            var actionModel = new ActionDialogViewModel("Removing series...",
+                   () => series.Storage.RemoveSeries(series.Key));
             _wndManager.ShowDialog(actionModel);
         }
 
@@ -217,6 +241,11 @@ namespace TickTrader.BotTerminal
         public void Export()
         {
             _parent.Export(this);
+        }
+
+        public void Remove()
+        {
+            _parent.RemoveSeries(this);
         }
     }
 
@@ -315,6 +344,7 @@ namespace TickTrader.BotTerminal
         public override string Category => "Custom Symbols";
         public override bool IsCustom => true;
         public override bool IsOnline => false;
+        public CustomSymbol Model => _model;
 
         public void Remove()
         {
@@ -324,6 +354,11 @@ namespace TickTrader.BotTerminal
         public void Import()
         {
             Parent.Import(this);
+        }
+
+        public void Edit()
+        {
+            Parent.EditSymbol(this);
         }
 
         public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)

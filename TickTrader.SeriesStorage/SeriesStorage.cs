@@ -32,7 +32,22 @@ namespace TickTrader.SeriesStorage
         }
     }
 
-    public abstract class SeriesStorage<TKey, TValue> where TKey : IComparable
+    public interface ISeriesStorage
+    {
+        double GetSize();
+        void Drop();
+    }
+
+    public interface ISeriesStorage<TKey> : ISeriesStorage
+        where TKey : IComparable
+    {
+        KeyRange<TKey> GetFirstRange(TKey from, TKey to);
+        KeyRange<TKey> GetLastRange(TKey from, TKey to);
+        IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false);
+    }
+
+    public abstract class SeriesStorage<TKey, TValue> : ISeriesStorage<TKey>
+        where TKey : IComparable
     {
         private Func<TValue, TKey> _keyFunc;
 

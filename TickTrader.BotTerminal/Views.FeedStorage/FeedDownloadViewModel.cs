@@ -166,7 +166,7 @@ namespace TickTrader.BotTerminal
 
                 observer?.StartProgress(0, totalDays);
 
-                var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, false, from, to);
+                var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
 
                 while (await tickEnumerator.Next())
                 {
