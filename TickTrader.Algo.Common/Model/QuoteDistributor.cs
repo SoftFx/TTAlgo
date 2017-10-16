@@ -147,7 +147,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 try
                 {
-                    NewQuote?.Invoke(newQuote);
+                    NewQuote?.Invoke(TruncateQuote(newQuote));
                 }
                 catch (Exception ex)
                 {
@@ -193,6 +193,13 @@ namespace TickTrader.Algo.Common.Model
                         parent.AdjustSubscription(symbol);
                     }
                 }
+            }
+
+            protected Quote TruncateQuote(Quote quote)
+            {
+                bySymbol.TryGetValue(quote.Symbol, out var depth);
+                depth = depth < 1 ? 1 : depth;
+                return new Quote(quote.Symbol, quote.CreatingTime, quote.Bids.Take(depth).ToArray(), quote.Asks.Take(depth).ToArray());
             }
         }
 
@@ -249,7 +256,7 @@ namespace TickTrader.Algo.Common.Model
 
             public void Add(Subscription subscription, int depth)
             {
-                Subscriptions.Add(subscription, depth);
+                Subscriptions[subscription] = depth;
             }
 
             public void Remove(Subscription subscription)

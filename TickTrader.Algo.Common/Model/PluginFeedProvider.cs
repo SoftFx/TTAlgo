@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Common.Model
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
         private Dictionary<string, CurrencyInfo> currencies;
+        private Dictionary<string, int> _subscriptionCache;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
@@ -32,6 +33,7 @@ namespace TickTrader.Algo.Common.Model
             this.symbols = symbols;
             this.history = history;
             this.currencies = currencies;
+            _subscriptionCache = new Dictionary<string, int>();
 
             rxBuffer = new BufferBlock<QuoteEntity>();
             txBlock = new ActionBlock<QuoteEntity[]>(uList =>
@@ -91,6 +93,12 @@ namespace TickTrader.Algo.Common.Model
         {
             //System.Diagnostics.Debug.WriteLine("UNSUBSCRIBED!");
 
+            foreach (var pair in _subscriptionCache)
+            {
+                subscription.Remove(pair.Key);
+            }
+            _subscriptionCache.Clear();
+
             if (subscription != null)
             {
                 subscription.Dispose();
@@ -103,6 +111,7 @@ namespace TickTrader.Algo.Common.Model
             if (subscription == null)
                 throw new InvalidOperationException("No subscription to change! You must call Subscribe() prior to calling SetSymbolDepth()!");
 
+            _subscriptionCache[symbolCode] = depth;
             subscription.Add(symbolCode, depth);
         }
 

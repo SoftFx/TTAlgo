@@ -70,6 +70,7 @@ namespace TickTrader.Algo.Core
             {
                 var request = new CrossdomainRequest() { Feed = _context.FeedProvider, Symbol = symbol, Depth = newDepth };
                 _context.FeedProvider.Sync.Invoke(request.SetDepth);
+                subscribers.CurrentDepth = newDepth;
             }
         }
 
@@ -132,7 +133,7 @@ namespace TickTrader.Algo.Core
             }
 
             public SubscriptionFixture UserSubscription { get; set; }
-            public int CurrentDepth { get; private set; }
+            public int CurrentDepth { get; set; }
 
             public void OnUpdate(Quote quote)
             {
