@@ -366,9 +366,9 @@ namespace TickTrader.BotTerminal
             _storage.Put(Name, frame, priceType, from, to, values);
         }
 
-        public void WriteSlice(bool level2, DateTime from, DateTime to, QuoteEntity[] values)
+        public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
         {
-            _storage.Put(Name, level2, from, to, values);
+            _storage.Put(Name, timeFrame, from, to, values);
         }
     }
 

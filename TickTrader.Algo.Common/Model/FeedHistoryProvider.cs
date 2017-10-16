@@ -217,7 +217,7 @@ namespace TickTrader.Algo.Common.Model
                         int count = 0;
                         foreach (var slice in slices)
                         {
-                            _diskCache.Put(symbol, includeLevel2, slice);
+                            _diskCache.Put(symbol, timeFrame, slice);
                             count += slice.Content.Count;
                         }
                         var slicesFrom = slices.First().From;
@@ -244,7 +244,9 @@ namespace TickTrader.Algo.Common.Model
 
             foreach (var fileCode in result.Files)
             {
-                var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(FeedTickFormatter.Instance, "ticks");
+                var filename = includeLevel2 ? "ticks level2" : "ticks";
+                IFormatter<TT.TickValue> formatter = includeLevel2 ? (IFormatter<TT.TickValue>)FeedTickLevel2Formatter.Instance : FeedTickFormatter.Instance;
+                var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(formatter, filename);
 
                 using (var downloadStream = new DataStream(proxy, fileCode))
                 {

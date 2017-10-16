@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             CanImport = isNotRunning  & SelectedSymbol.Var.IsNotNull() & importerValid;
             CanCancel = isNotRunning | ActionRunner.CanCancel;
             IsInputEnabled = isNotRunning;
-            IsPriceActual = SelectedTimeFrame.Var != TimeFrames.Ticks;
+            IsPriceActual = !SelectedTimeFrame.Var.IsTicks();
 
             _context.TriggerOnChange(SelectedSymbol.Var, a => IsActionVisible.Clear());
             _context.TriggerOnChange(SelectedImporter.Var, a => IsActionVisible.Clear());
@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
             var timeFrame = SelectedTimeFrame.Value;
             var priceType = SelectedPriceType.Value;
 
-            if (timeFrame != TimeFrames.Ticks)
+            if (!timeFrame.IsTicks())
             {
                 var vector = new CoreMath.BarVector(timeFrame);
 
@@ -109,8 +109,15 @@ namespace TickTrader.BotTerminal
                     if (tickVector.Count >= pageSize + 1)
                     {
                         var page = RemoveFromStart(tickVector, pageSize);
-                        symbol.WriteSlice(false, page.First().Time, tickVector.Last().Time, page);
+                        symbol.WriteSlice(timeFrame, page.First().Time, tickVector.Last().Time, page);
                     }
+                }
+
+                if (tickVector.Count > 0)
+                {
+                    var page = tickVector.ToArray();
+                    var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
+                    symbol.WriteSlice(timeFrame, page.First().Time, toCorrected, page);
                 }
             }
         }

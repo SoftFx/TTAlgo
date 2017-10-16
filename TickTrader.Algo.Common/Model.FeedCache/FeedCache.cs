@@ -210,25 +210,25 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void Put(string symbol, bool level2, DateTime from, DateTime to, QuoteEntity[] values)
+        public void Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
         {
             lock (_syncObj)
             {
                 CheckState();
 
-                var key = new FeedCacheKey(symbol, Api.TimeFrames.Ticks);
+                var key = new FeedCacheKey(symbol, timeFrame);
                 var collection = GetSeries<QuoteEntity>(key, true);
                 collection.Write(from, to, values);
             }
         }
 
-        public void Put(string symbol, bool level2, Slice<DateTime, QuoteEntity> slice)
+        public void Put(string symbol, Api.TimeFrames timeFrame, Slice<DateTime, QuoteEntity> slice)
         {
             lock (_syncObj)
             {
                 CheckState();
 
-                var key = new FeedCacheKey(symbol, Api.TimeFrames.Ticks);
+                var key = new FeedCacheKey(symbol, timeFrame);
                 var collection = GetSeries<QuoteEntity>(key, true);
                 collection.Write(slice);
             }
@@ -240,7 +240,7 @@ namespace TickTrader.Algo.Common.Model
         {
             ISeriesStorage<DateTime> collection;
 
-            if (key.Frame == Api.TimeFrames.Ticks)
+            if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
                 collection = SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.Serialize());
             else
                 collection = SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.Serialize());

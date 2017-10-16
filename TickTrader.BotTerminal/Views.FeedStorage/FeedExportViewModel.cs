@@ -142,7 +142,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 var from = DateRange.From.Value;
-                var to = DateRange.To.Value;
+                var to = DateRange.To.Value + TimeSpan.FromDays(1);
 
                 await Task.Factory.StartNew(() =>
                 {
@@ -154,7 +154,7 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        if (_key.Frame != Algo.Api.TimeFrames.Ticks)
+                        if (!_key.Frame.IsTicks())
                         {
                             foreach (var slice in _storage.IterateBarCache(_key, from, to))
                             {
@@ -314,9 +314,9 @@ namespace TickTrader.BotTerminal
                     }
                     else
                         _writer.Write(",,");
-
-                    _writer.WriteLine();
                 }
+
+                _writer.WriteLine();
             }
         }
 

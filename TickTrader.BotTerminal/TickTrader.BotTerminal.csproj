@@ -307,6 +307,7 @@
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
+    <Compile Include="Model\ModelExtentions.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />

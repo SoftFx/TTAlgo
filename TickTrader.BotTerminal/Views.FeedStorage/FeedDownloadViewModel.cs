@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
             ShowDownloadUi = varContext.AddBoolProperty();
 
             IsRangeLoaded = varContext.AddBoolProperty();
-            IsPriceTypeActual = SelectedTimeFrame.Var != TimeFrames.Ticks;
+            IsPriceTypeActual = !SelectedTimeFrame.Var.IsTicks();
             IsBusy = DownloadObserver.IsRunning;
 
             DownloadEnabled = _client.IsConnected & IsRangeLoaded.Var & !IsBusy;
@@ -130,7 +130,7 @@ namespace TickTrader.BotTerminal
             var watch = Stopwatch.StartNew();
             int downloadedCount = 0;
 
-            if (timeFrame != TimeFrames.Ticks)
+            if (!timeFrame.IsTicks())
             {
                 observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
