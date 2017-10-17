@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Core
 
         internal PluginAdapter PluginProxy { get; private set; }
         public string MainSymbol { get; set; }
+        public Tuple<string, BarPriceType> MainBufferId { get; set; }
         public SymbolsCollection Symbols { get; private set; }
         public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
@@ -494,7 +495,7 @@ namespace TickTrader.Algo.Core
                         if (!string.IsNullOrEmpty(builder.MainSymbol))
                         {
                             IDataBuffer mainBuffer;
-                            if (builder.inputBuffers.TryGetValue(builder.MainSymbol, out mainBuffer))
+                            if (builder.inputBuffers.TryGetValue(builder.MainBufferId, out mainBuffer))
                             {
                                 if (mainBuffer is InputBuffer<BarEntity>)
                                     mainBars.Buffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = (InputBuffer<BarEntity>)mainBuffer };
