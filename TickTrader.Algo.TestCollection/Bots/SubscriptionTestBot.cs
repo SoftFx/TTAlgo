@@ -17,7 +17,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         private Dictionary<string, QuoteStats> _snapshot;
 
 
-        [Parameter(DisplayName = "Min Depth", DefaultValue = 0)]
+        [Parameter(DisplayName = "Min Depth", DefaultValue = -1)]
         public int MinDepth { get; set; }
 
         [Parameter(DisplayName = "Max Depth", DefaultValue = 3)]
@@ -93,7 +93,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     await Task.Delay(SubscribeTimeout);
                 }
-                for (var i = MinDepth; i < MaxDepth; i++)
+                for (var i = MinDepth; i <= MaxDepth; i++)
                 {
                     SubcribeAll(i);
 
@@ -131,7 +131,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             foreach (var stats in _snapshot.Values)
             {
-                if (depth > 0)
+                if (depth > -1)
                     stats.Info.Subscribe(depth);
                 else
                     stats.Info.Unsubscribe();
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             foreach (var stats in _snapshot.Values)
             {
-                if (depth > 0)
+                if (depth > -1)
                     Feed.Subscribe(stats.Symbol, depth);
                 else
                     Feed.Unsubscribe(stats.Symbol);

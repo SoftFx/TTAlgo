@@ -197,7 +197,10 @@ namespace TickTrader.Algo.Common.Model
 
             protected Quote TruncateQuote(Quote quote)
             {
-                bySymbol.TryGetValue(quote.Symbol, out var depth);
+                if (bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
+                {
+                    return quote;
+                }
                 depth = depth < 1 ? 1 : depth;
                 return new Quote(quote.Symbol, quote.CreatingTime, quote.Bids.Take(depth).ToArray(), quote.Asks.Take(depth).ToArray());
             }
