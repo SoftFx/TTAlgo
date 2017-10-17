@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
@@ -15,6 +16,7 @@ namespace TickTrader.Algo.TestCollection.Bots
     public class SubscriptionTestBot : TradeBot
     {
         private Dictionary<string, QuoteStats> _snapshot;
+        private CancellationTokenSource _cancelTokenSrc;
 
 
         [Parameter(DisplayName = "Min Depth", DefaultValue = -1)]
@@ -42,8 +44,22 @@ namespace TickTrader.Algo.TestCollection.Bots
                 .Select(s => new QuoteStats(s))
                 .ToDictionary(s => s.Symbol);
 
+            _cancelTokenSrc = new CancellationTokenSource();
+
             SnapshotLoop();
             SubscribeLoop();
+        }
+
+        protected override void OnStop()
+        {
+            try
+            {
+                _cancelTokenSrc.Cancel();
+            }
+            catch (Exception ex)
+            {
+                PrintError($"Failed to stop bot gracefully: {ex.Message}");
+            }
         }
 
         protected override void OnQuote(Quote quote)
@@ -80,29 +96,36 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (SubscribeTimeout <= 0)
             {
                 SubcribeAll(MaxDepth);
+                return;
             }
 
-            while (!IsStopped)
+            try
             {
-                for (var i = MaxDepth; i > MinDepth; i--)
+                while (!IsStopped)
                 {
-                    SubcribeAll(i);
+                    if (MinDepth == MaxDepth)
+                    {
+                        SubcribeAll(MaxDepth);
+                        await Task.Delay(SubscribeTimeout, _cancelTokenSrc.Token);
+                    }
+                    else
+                    {
+                        for (var i = MaxDepth; i > MinDepth; i--)
+                        {
+                            SubcribeAll(i);
 
-                    if (IsStopped)
-                        return;
+                            await Task.Delay(SubscribeTimeout, _cancelTokenSrc.Token);
+                        }
+                        for (var i = MinDepth; i < MaxDepth; i++)
+                        {
+                            SubcribeAll(i);
 
-                    await Task.Delay(SubscribeTimeout);
-                }
-                for (var i = MinDepth; i <= MaxDepth; i++)
-                {
-                    SubcribeAll(i);
-
-                    if (IsStopped)
-                        return;
-
-                    await Task.Delay(SubscribeTimeout);
+                            await Task.Delay(SubscribeTimeout, _cancelTokenSrc.Token);
+                        }
+                    }
                 }
             }
+            catch (TaskCanceledException) { }
         }
 
         private void SubcribeAll(int depth)

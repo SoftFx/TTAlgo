@@ -57,7 +57,10 @@ namespace TickTrader.Algo.Core
         public void ClearUserSubscriptions()
         {
             foreach (var collection in subscribersBySymbol.Values)
+            {
                 collection.UserSubscription = null;
+                collection.CurrentDepth = 1;
+            }
         }
 
         private void UpdateSubscription(string symbol, SubscriptionCollection subscribers)
