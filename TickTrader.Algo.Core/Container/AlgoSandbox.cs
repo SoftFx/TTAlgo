@@ -12,7 +12,6 @@ namespace TickTrader.Algo.Core.Container
 {
     internal class AlgoSandbox : CrossDomainObject
     {
-        protected static readonly IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger("AlgoSandbox");
         private IPluginLoader loader;
 
         public AlgoSandbox(IPluginLoader src)
@@ -81,9 +80,8 @@ namespace TickTrader.Algo.Core.Container
             {
                 return LoadAssembly(name.Name + ".dll");
             }
-            catch (FileNotFoundException ex)
+            catch (FileNotFoundException)
             {
-                //_logger.Debug($"Failed to resolve assembly {name.Name}: {ex.Message}");
                 return null;
             }
         }

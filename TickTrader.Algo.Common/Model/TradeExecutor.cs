@@ -166,6 +166,10 @@ namespace TickTrader.Algo.Common.Model
             {
                 return vex.Code;
             }
+            catch (ConnectionLostException)
+            {
+                return OrderCmdResultCodes.ConnectionError;
+            }
             catch (SoftFX.Extended.Errors.RejectException rex)
             {
                 return FdkToAlgo.Convert(rex.Reason, rex.Message);
