@@ -182,17 +182,17 @@ namespace TickTrader.Algo.Core
 
         private void OnOrderAdded(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => OrderAdded?.Invoke(order));
+            UpdateAccountInfo(() => { OrderAdded?.Invoke(order); builder.Logger.OnPrint($"DEBUG | Calculator added #{order.OrderId}"); });
         }
 
         private void OnOrderReplaced(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => OrderReplaced?.Invoke(order));
+            UpdateAccountInfo(() => { OrderReplaced?.Invoke(order); builder.Logger.OnPrint($"DEBUG | Calculator replaced #{order.OrderId}"); });
         }
 
         private void OnOrderRemoved(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => OrderRemoved?.Invoke(order));
+            UpdateAccountInfo(() => { OrderRemoved?.Invoke(order); builder.Logger.OnPrint($"DEBUG | Calculator added #{order.OrderId}"); });
         }
 
         private void OnPositionUpdated(BL.IPositionModel position)
@@ -216,7 +216,7 @@ namespace TickTrader.Algo.Core
             {
                 action();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 builder.Logger.OnError(ex);
             }
