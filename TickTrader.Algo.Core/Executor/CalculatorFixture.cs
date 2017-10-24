@@ -40,6 +40,7 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
+            _context.Builder.Account.DisableBlEvents();
             _state = null;
             if (cashCalc != null)
             {

@@ -30,17 +30,7 @@ namespace TickTrader.Algo.Core
 
         public void Dispose()
         {
-            if (_blEventsEnabled)
-            {
-                Orders.Added -= OnOrderAdded;
-                Orders.Replaced -= OnOrderReplaced;
-                Orders.Removed -= OnOrderRemoved;
-
-                NetPositions.PositionUpdated -= OnPositionUpdated;
-                NetPositions.PositionRemoved -= OnPositionRemoved;
-
-                Assets.AssetChanged -= OnAssetsChanged;
-            }
+            DisableBlEvents();
         }
 
         public void EnableBlEvents()
@@ -55,6 +45,23 @@ namespace TickTrader.Algo.Core
             Assets.AssetChanged += OnAssetsChanged;
 
             _blEventsEnabled = true;
+        }
+
+        public void DisableBlEvents()
+        {
+            if (_blEventsEnabled)
+            {
+                Orders.Added -= OnOrderAdded;
+                Orders.Replaced -= OnOrderReplaced;
+                Orders.Removed -= OnOrderRemoved;
+
+                NetPositions.PositionUpdated -= OnPositionUpdated;
+                NetPositions.PositionRemoved -= OnPositionRemoved;
+
+                Assets.AssetChanged -= OnAssetsChanged;
+
+                _blEventsEnabled = false;
+            }
         }
 
         public OrdersCollection Orders { get; private set; }
@@ -191,29 +198,17 @@ namespace TickTrader.Algo.Core
 
         private void OnOrderAdded(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() =>
-            {
-                OrderAdded?.Invoke(order);
-                builder.Logger.OnPrint($"DEBUG | Calculator added #{order.OrderId}, Thread = {System.Threading.Thread.CurrentThread.ManagedThreadId}, Id = {builder.Id}");
-            });
+            UpdateAccountInfo(() => OrderAdded?.Invoke(order));
         }
 
         private void OnOrderReplaced(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() =>
-            {
-                OrderReplaced?.Invoke(order);
-                builder.Logger.OnPrint($"DEBUG | Calculator replaced #{order.OrderId}, Thread = {System.Threading.Thread.CurrentThread.ManagedThreadId}, Id = {builder.Id}");
-            });
+            UpdateAccountInfo(() => OrderReplaced?.Invoke(order));
         }
 
         private void OnOrderRemoved(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() =>
-            {
-                OrderRemoved?.Invoke(order);
-                builder.Logger.OnPrint($"DEBUG | Calculator removed #{order.OrderId}, Thread = {System.Threading.Thread.CurrentThread.ManagedThreadId}, Id = {builder.Id}");
-            });
+            UpdateAccountInfo(() => OrderRemoved?.Invoke(order));
         }
 
         private void OnPositionUpdated(BL.IPositionModel position)
