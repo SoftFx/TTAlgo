@@ -70,7 +70,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public DataFeed FeedProxy { get { return feedProxy; } }
-        public DataTrade TradeProxy { get { return tradeProxy ?? throw new ConnectionLostException(); } }
+        public DataTrade TradeProxy { get { return tradeProxy; } }
         public ConnectionErrorCodes LastError { get; private set; }
         public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
         public string CurrentLogin { get; private set; }
@@ -405,6 +405,4 @@ namespace TickTrader.Algo.Common.Model
     {
         public bool EnableFixLogs { get; set; }
     }
-
-    public class ConnectionLostException : Exception { }
 }
