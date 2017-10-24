@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, OrderFilteredCollection> byTagFilterCache;
         private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
         private TradeHistoryAdapter _historyAdapter;
+        private bool _blEventsEnabled;
 
         public AccountEntity(PluginBuilder builder)
         {
@@ -25,7 +26,25 @@ namespace TickTrader.Algo.Core
             Assets = new AssetsCollection(builder);
 
             _historyAdapter = new TradeHistoryAdapter();
+        }
 
+        public void Dispose()
+        {
+            if (_blEventsEnabled)
+            {
+                Orders.Added -= OnOrderAdded;
+                Orders.Replaced -= OnOrderReplaced;
+                Orders.Removed -= OnOrderRemoved;
+
+                NetPositions.PositionUpdated -= OnPositionUpdated;
+                NetPositions.PositionRemoved -= OnPositionRemoved;
+
+                Assets.AssetChanged -= OnAssetsChanged;
+            }
+        }
+
+        public void EnableBlEvents()
+        {
             Orders.Added += OnOrderAdded;
             Orders.Replaced += OnOrderReplaced;
             Orders.Removed += OnOrderRemoved;
@@ -34,18 +53,8 @@ namespace TickTrader.Algo.Core
             NetPositions.PositionRemoved += OnPositionRemoved;
 
             Assets.AssetChanged += OnAssetsChanged;
-        }
 
-        public void Dispose()
-        {
-            Orders.Added -= OnOrderAdded;
-            Orders.Replaced -= OnOrderReplaced;
-            Orders.Removed -= OnOrderRemoved;
-
-            NetPositions.PositionUpdated -= OnPositionUpdated;
-            NetPositions.PositionRemoved -= OnPositionRemoved;
-
-            Assets.AssetChanged -= OnAssetsChanged;
+            _blEventsEnabled = true;
         }
 
         public OrdersCollection Orders { get; private set; }
@@ -182,17 +191,29 @@ namespace TickTrader.Algo.Core
 
         private void OnOrderAdded(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => { OrderAdded?.Invoke(order); builder.Logger.OnPrint($"DEBUG | Calculator added #{order.OrderId}"); });
+            UpdateAccountInfo(() =>
+            {
+                OrderAdded?.Invoke(order);
+                builder.Logger.OnPrint($"DEBUG | Calculator added #{order.OrderId}, Thread = {System.Threading.Thread.CurrentThread.ManagedThreadId}, Id = {builder.Id}");
+            });
         }
 
         private void OnOrderReplaced(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => { OrderReplaced?.Invoke(order); builder.Logger.OnPrint($"DEBUG | Calculator replaced #{order.OrderId}"); });
+            UpdateAccountInfo(() =>
+            {
+                OrderReplaced?.Invoke(order);
+                builder.Logger.OnPrint($"DEBUG | Calculator replaced #{order.OrderId}, Thread = {System.Threading.Thread.CurrentThread.ManagedThreadId}, Id = {builder.Id}");
+            });
         }
 
         private void OnOrderRemoved(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => { OrderRemoved?.Invoke(order); builder.Logger.OnPrint($"DEBUG | Calculator added #{order.OrderId}"); });
+            UpdateAccountInfo(() =>
+            {
+                OrderRemoved?.Invoke(order);
+                builder.Logger.OnPrint($"DEBUG | Calculator removed #{order.OrderId}, Thread = {System.Threading.Thread.CurrentThread.ManagedThreadId}, Id = {builder.Id}");
+            });
         }
 
         private void OnPositionUpdated(BL.IPositionModel position)

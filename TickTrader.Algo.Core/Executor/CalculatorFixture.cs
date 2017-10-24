@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
                 marginCalc = new MarginCalcAdapter(acc, _state, _context);
             else
                 cashCalc = new CashCalcAdapter(acc, _state, _context);
+            acc.EnableBlEvents();
         }
 
         internal void UpdateRate(QuoteEntity entity)
