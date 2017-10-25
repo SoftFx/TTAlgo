@@ -2,6 +2,7 @@
 using TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using BL = TickTrader.BusinessLogic;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.Core
 {
@@ -76,6 +77,10 @@ namespace TickTrader.Algo.Core
         BO.OrderTypes BL.ICommonOrder.Type { get => Convert(_entity.Type); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => Convert(_entity.Side); set => throw new NotImplementedException(); }
         decimal? BL.ICommonOrder.Price { get => (decimal)((Type == OrderType.Stop || Type == OrderType.StopLimit) ? StopPrice :  Price); set => throw new NotImplementedException(); }
+        bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
+        bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
+        string BL.ICommonOrder.MarginCurrency { get => _entity.MarginCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.ProfitCurrency { get => _entity.ProfitCurrency; set => throw new NotImplementedException(); }
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 

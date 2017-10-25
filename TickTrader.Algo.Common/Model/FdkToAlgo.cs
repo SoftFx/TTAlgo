@@ -118,19 +118,32 @@ namespace TickTrader.Algo.Common.Model
                 SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
                 SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
                 Security = info.SecurityName,
-                SortOrder = 0 // ??
+                SortOrder = info.SortOrder,
+                SwapType = Convert(info.SwapType),
+                TripleSwapDay = info.TripleSwapDay,
+                HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction ?? 1,
             };
         }
 
-        public static TickTrader.BusinessObjects.MarginCalculationModes Convert(MarginCalcMode mode)
+        public static BO.MarginCalculationModes Convert(MarginCalcMode mode)
         {
             switch (mode)
             {
-                case MarginCalcMode.Cfd: return BusinessObjects.MarginCalculationModes.CFD;
-                case MarginCalcMode.CfdIndex: return BusinessObjects.MarginCalculationModes.CFD_Index;
-                case MarginCalcMode.CfdLeverage: return BusinessObjects.MarginCalculationModes.CFD_Leverage;
-                case MarginCalcMode.Forex: return BusinessObjects.MarginCalculationModes.Forex;
-                case MarginCalcMode.Futures: return BusinessObjects.MarginCalculationModes.Futures;
+                case MarginCalcMode.Cfd: return BO.MarginCalculationModes.CFD;
+                case MarginCalcMode.CfdIndex: return BO.MarginCalculationModes.CFD_Index;
+                case MarginCalcMode.CfdLeverage: return BO.MarginCalculationModes.CFD_Leverage;
+                case MarginCalcMode.Forex: return BO.MarginCalculationModes.Forex;
+                case MarginCalcMode.Futures: return BO.MarginCalculationModes.Futures;
+                default: throw new NotImplementedException();
+            }
+        }
+
+        public static BO.SwapType Convert(SwapType type)
+        {
+            switch (type)
+            {
+                case SwapType.Points: return BO.SwapType.Points;
+                case SwapType.PercentPerYear: return BO.SwapType.PercentPerYear;
                 default: throw new NotImplementedException();
             }
         }

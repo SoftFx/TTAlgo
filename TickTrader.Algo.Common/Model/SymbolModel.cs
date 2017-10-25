@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
-using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
+    public class SymbolModel : BO.ISymbolInfo, Setup.ISymbolInfo
     {
         private IFeedSubscription subscription;
 
@@ -45,25 +45,24 @@ namespace TickTrader.Algo.Common.Model
 
         protected QuoteDistributor Distributor { get; private set; }
 
-        #region ISymbolInfo
+        #region BO ISymbolInfo
 
-        string ISymbolInfo.Symbol { get { return Name; } }
-        double ISymbolInfo.ContractSizeFractional { get { return Descriptor.RoundLot; } }
-        string ISymbolInfo.MarginCurrency { get { return Descriptor.Currency; } }
-        string ISymbolInfo.ProfitCurrency { get { return Descriptor.SettlementCurrency; } }
-        double ISymbolInfo.MarginFactorFractional { get { return Descriptor.MarginFactorFractional ?? 1; } }
-        double ISymbolInfo.MarginHedged { get { return Descriptor.MarginHedge; } }
-        int ISymbolInfo.Precision { get { return Descriptor.Precision; } }
-        bool ISymbolInfo.SwapEnabled { get { return true; } }
-        float ISymbolInfo.SwapSizeLong { get { return (float)Descriptor.SwapSizeLong; } }
-        float ISymbolInfo.SwapSizeShort { get { return (float)Descriptor.SwapSizeShort; } }
-        string ISymbolInfo.Security { get { return ""; } }
-        int ISymbolInfo.SortOrder { get { return 0; } }
-
-        TickTrader.BusinessObjects.MarginCalculationModes ISymbolInfo.MarginMode
-        {
-            get { return FdkToAlgo.Convert(Descriptor.MarginCalcMode); }
-        }
+        string BO.ISymbolInfo.Symbol => Name;
+        double BO.ISymbolInfo.ContractSizeFractional => Descriptor.RoundLot;
+        string BO.ISymbolInfo.MarginCurrency => Descriptor.Currency;
+        string BO.ISymbolInfo.ProfitCurrency => Descriptor.SettlementCurrency;
+        double BO.ISymbolInfo.MarginFactorFractional => Descriptor.MarginFactorFractional ?? 1;
+        double BO.ISymbolInfo.MarginHedged => Descriptor.MarginHedge;
+        int BO.ISymbolInfo.Precision => Descriptor.Precision;
+        bool BO.ISymbolInfo.SwapEnabled => true;
+        float BO.ISymbolInfo.SwapSizeLong => (float)Descriptor.SwapSizeLong;
+        float BO.ISymbolInfo.SwapSizeShort => (float)Descriptor.SwapSizeShort;
+        string BO.ISymbolInfo.Security => Descriptor.SecurityName;
+        int BO.ISymbolInfo.SortOrder => Descriptor.SortOrder;
+        BO.SwapType BO.ISymbolInfo.SwapType => FdkToAlgo.Convert(Descriptor.SwapType);
+        int BO.ISymbolInfo.TripleSwapDay => Descriptor.TripleSwapDay;
+        double BO.ISymbolInfo.HiddenLimitOrderMarginReduction => Descriptor.HiddenLimitOrderMarginReduction ?? 1;
+        BO.MarginCalculationModes BO.ISymbolInfo.MarginMode => FdkToAlgo.Convert(Descriptor.MarginCalcMode);
 
         #endregion
 
