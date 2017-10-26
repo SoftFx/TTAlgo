@@ -174,7 +174,7 @@ namespace TickTrader.Algo.Core
 
         private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
         {
-            System.Diagnostics.Debug.WriteLine("ER: " + eReport.Action + " #" + eReport.OrderCopy.Id + " " + eReport.OrderCopy.Type);
+            System.Diagnostics.Debug.WriteLine($"ER: {eReport.Action} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecAction.Activated)
@@ -432,6 +432,6 @@ namespace TickTrader.Algo.Core
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
-        
+
     }
 }

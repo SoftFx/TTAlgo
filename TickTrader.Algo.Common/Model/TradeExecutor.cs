@@ -14,12 +14,17 @@ namespace TickTrader.Algo.Common.Model
 
         private BufferBlock<Task> orderQueue;
         private ActionBlock<Task> orderSender;
-        private ConnectionModel conenction;
+        private ConnectionModel connection;
         private IOrderDependenciesResolver resolver;
+
+        private DataTrade TradeProxy =>
+            connection.State.Current == ConnectionModel.States.Online && connection.TradeProxy != null
+            ? connection.TradeProxy
+            : throw new ConnectionLostException();
 
         public TradeExecutor(ClientCore client)
         {
-            this.conenction = client.Connection;
+            this.connection = client.Connection;
             this.resolver = client.Symbols;
 
             orderQueue = new BufferBlock<Task>();
@@ -68,7 +73,7 @@ namespace TickTrader.Algo.Common.Model
                 var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
-                conenction.TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(orderType, options), Convert(side),
+                TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(orderType, options), Convert(side),
                     volume, maxVisVolume, px, stopPx, sl, tp, null, comment, tag, null);
             });
         }
@@ -79,7 +84,7 @@ namespace TickTrader.Algo.Common.Model
             EnqueueTradeOp("CancelOrder", callback, () =>
             {
                 ValidateOrderId(orderId);
-                conenction.TradeProxy.Server.DeletePendingOrderEx(operationId, orderId, Convert(side));
+                TradeProxy.Server.DeletePendingOrderEx(operationId, orderId, Convert(side));
             });
         }
 
@@ -94,7 +99,7 @@ namespace TickTrader.Algo.Common.Model
                 var px = orderType == OrderType.Stop ? default(double?) : price;
                 var stopPx = orderType == OrderType.Stop ? price : default(double?);
 
-                conenction.TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
+                TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
                     ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
             });
         }
@@ -110,7 +115,7 @@ namespace TickTrader.Algo.Common.Model
                 var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
-                conenction.TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
+                TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
                     ToRecordType(orderType), Convert(side), volume, maxVisVolume, px, stopPx, sl, tp, null, comment, null, null);
             });
         }
@@ -123,12 +128,12 @@ namespace TickTrader.Algo.Common.Model
 
                 if (volume == null)
                 {
-                    conenction.TradeProxy.Server.ClosePositionEx(orderId, operationId);
+                    TradeProxy.Server.ClosePositionEx(orderId, operationId);
                 }
                 else
                 {
                     ValidateVolume(volume.Value);
-                    conenction.TradeProxy.Server.ClosePositionPartiallyEx(orderId, volume.Value, operationId);
+                    TradeProxy.Server.ClosePositionPartiallyEx(orderId, volume.Value, operationId);
                 }
             });
         }
@@ -140,7 +145,7 @@ namespace TickTrader.Algo.Common.Model
                 ValidateOrderId(orderId);
                 ValidateOrderId(byOrderId);
 
-                var result = conenction.TradeProxy.Server.CloseByPositionsEx(operationId, orderId, byOrderId, -1);
+                var result = TradeProxy.Server.CloseByPositionsEx(operationId, orderId, byOrderId, -1);
                 if (!result)
                     throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now."); 
             });
@@ -165,6 +170,10 @@ namespace TickTrader.Algo.Common.Model
             catch (ValidationException vex)
             {
                 return vex.Code;
+            }
+            catch (ConnectionLostException)
+            {
+                return OrderCmdResultCodes.ConnectionError;
             }
             catch (SoftFX.Extended.Errors.RejectException rex)
             {
@@ -295,5 +304,7 @@ namespace TickTrader.Algo.Common.Model
 
             public OrderCmdResultCodes Code { get; private set; }
         }
+
+        private class ConnectionLostException : Exception { }
     }
 }
