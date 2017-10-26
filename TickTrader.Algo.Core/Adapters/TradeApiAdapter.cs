@@ -58,6 +58,10 @@ namespace TickTrader.Algo.Core
             {
                 resultEntity = new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, new OrderAccessor(orderToOpen));
             }
+            else if(!ValidateVolume(volumeLots, smbMetadata))
+            {
+                resultEntity = new TradeResultEntity(OrderCmdResultCodes.IncorrectVolume, new OrderAccessor(orderToOpen));
+            }
             else
             {
                 volumeLots = RoundVolume(volumeLots, smbMetadata);
@@ -112,6 +116,10 @@ namespace TickTrader.Algo.Core
             else if (!_permissions.TradeAllowed)
             {
                 resultEntity = new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, new OrderAccessor(orderToOpen));
+            }
+            else if (!ValidateVolume(volumeLots, smbMetadata))
+            {
+                resultEntity = new TradeResultEntity(OrderCmdResultCodes.IncorrectVolume, new OrderAccessor(orderToOpen));
             }
             else
             {
@@ -221,7 +229,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + result.ResultCode);
                 return new TradeResultEntity(result.ResultCode, orderToClose);
             }
         }
@@ -345,6 +353,11 @@ namespace TickTrader.Algo.Core
             var lotSize = smbInfo.ContractSize;
             var byUnits = lotSize * byLots;
             return new TradeVolume(oldVol.Units - byUnits, oldVol.Lots - byLots);
+        }
+
+        private bool ValidateVolume(double volume, Symbol smbMetadata)
+        {
+            return volume.Gte(smbMetadata.MinTradeVolume) && volume.Lt(smbMetadata.MaxTradeVolume);
         }
 
         #region Logging
