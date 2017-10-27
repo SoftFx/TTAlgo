@@ -144,6 +144,7 @@ namespace TickTrader.BotTerminal
             Execute.OnUIThread(() =>
             {
                 SeriesData.Clear();
+                SeriesData.Metadata.Clear();
                 SeriesData.Append(
                     points.Select(p => p.TimeCoordinate.Value),
                     points.Select(p => p.Value.Y),

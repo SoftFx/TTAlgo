@@ -10,11 +10,15 @@ using SciChart.Charting.Model.DataSeries;
 using System.ComponentModel;
 using TickTrader.Algo.Api;
 using System.Windows.Media;
+using NLog;
 
 namespace TickTrader.BotTerminal
 {
     public class AlgoPointMarker : BasePointMarker
     {
+        private static Logger _logger = LogManager.GetCurrentClassLogger();
+
+
         private IList<int> dataPointIndexes = new List<int>();
         private IPen2D strokePen;
 
@@ -55,7 +59,13 @@ namespace TickTrader.BotTerminal
 
             foreach (Point center in centers)
             {
-                var pointMetadata = metadata[dataPointIndexes[i++]] as AlgoMarkerMetadata;
+                var index = dataPointIndexes[i++];
+                var pointMetadata = metadata[index] as AlgoMarkerMetadata;
+                if (pointMetadata == null)
+                {
+                    _logger.Error($"{RenderableSeries.DataSeries.SeriesName}: No metadata at {index}");
+                    continue;
+                }
                 var fillColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(pointMetadata.MarkerEntity.Color, Stroke);
                 var newCenter = center;
 
