@@ -357,7 +357,7 @@ namespace TickTrader.Algo.Core
 
         private bool ValidateVolume(double volume, Symbol smbMetadata)
         {
-            return volume.Gte(smbMetadata.MinTradeVolume) && volume.Lt(smbMetadata.MaxTradeVolume);
+            return volume.Gte(smbMetadata.MinTradeVolume) && volume.Lte(smbMetadata.MaxTradeVolume);
         }
 
         #region Logging
