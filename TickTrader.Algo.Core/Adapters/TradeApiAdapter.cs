@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core
 
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, OrderExecOptions options, string tag)
+            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
             OrderCmdResult resultEntity;
             string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
@@ -133,7 +133,7 @@ namespace TickTrader.Algo.Core
                 LogOrderOpening(symbol, orderType, side, volumeLots, (stopPrice ?? price) ?? double.NaN, sl, tp);
 
 
-                resultEntity = await api.OpenOrder(isAysnc, symbol, orderType, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, isolationTag);
+                resultEntity = await api.OpenOrder(isAysnc, symbol, orderType, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, isolationTag, expiration);
 
                 if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
                 {
@@ -275,7 +275,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
         {
             if (!_permissions.TradeAllowed)
             {
@@ -304,7 +304,7 @@ namespace TickTrader.Algo.Core
             logger.PrintTrade("Modifying order #" + orderId);
 
             var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, stopPrice, orderMaxVisibleVolume, sl, tp, comment);
+                    orderVolume, price, stopPrice, orderMaxVisibleVolume, sl, tp, comment, expiration);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {

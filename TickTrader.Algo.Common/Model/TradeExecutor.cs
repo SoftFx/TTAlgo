@@ -45,11 +45,11 @@ namespace TickTrader.Algo.Common.Model
             var px = orderType == OrderType.Stop ? default(double?) : price;
             var stopPx = orderType == OrderType.Stop ? price : default(double?);
 
-            SendOpenOrder(callback, operationId, symbol, orderType, side, px, stopPx, volume, null, tp, sl, comment, options, tag);
+            SendOpenOrder(callback, operationId, symbol, orderType, side, px, stopPx, volume, null, tp, sl, comment, options, tag, null);
         }
 
-        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
+        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol, OrderType orderType, OrderSide side,
+            double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
             EnqueueTradeOp("OpenOrder", callback, () =>
             {
@@ -65,16 +65,17 @@ namespace TickTrader.Algo.Common.Model
                 }
 
                 ValidateVolume(volume);
-                
+
                 ValidateTp(tp);
                 ValidateSl(sl);
+                ValidateExpiration(expiration);
 
                 var px = orderType == OrderType.Stop ? default(double?) : price;
                 var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
                 TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(orderType, options), Convert(side),
-                    volume, maxVisVolume, px, stopPx, sl, tp, null, comment, tag, null);
+                    volume, maxVisVolume, px, stopPx, sl, tp, expiration, comment, tag, null);
             });
         }
 
@@ -104,19 +105,20 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment)
+        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol, OrderType orderType, OrderSide side,
+            double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, DateTime? expiration)
         {
             EnqueueTradeOp("ModifyOrder", callback, () =>
             {
                 ValidateOrderId(orderId);
+                ValidateExpiration(expiration);
 
                 var px = orderType == OrderType.Stop ? default(double?) : price;
                 var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
                 TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
-                    ToRecordType(orderType), Convert(side), volume, maxVisVolume, px, stopPx, sl, tp, null, comment, null, null);
+                    ToRecordType(orderType), Convert(side), volume, maxVisVolume, px, stopPx, sl, tp, expiration, comment, null, null);
             });
         }
 
@@ -147,7 +149,7 @@ namespace TickTrader.Algo.Common.Model
 
                 var result = TradeProxy.Server.CloseByPositionsEx(operationId, orderId, byOrderId, -1);
                 if (!result)
-                    throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now."); 
+                    throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now.");
             });
         }
 
@@ -293,6 +295,16 @@ namespace TickTrader.Algo.Common.Model
             long parsedId;
             if (!long.TryParse(orderId, out parsedId))
                 throw new ValidationException(OrderCmdResultCodes.IncorrectOrderId);
+        }
+
+        private void ValidateExpiration(DateTime? expiration)
+        {
+            if (expiration == null)
+                return;
+
+            var epoch = new DateTime(1970, 1, 1, 0, 0, 0);
+            if (expiration.Value < epoch)
+                throw new ValidationException(OrderCmdResultCodes.IncorrectExpiration);
         }
 
         private class ValidationException : Exception
