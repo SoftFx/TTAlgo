@@ -30,60 +30,181 @@ namespace TickTrader.Algo.TestCollection.Bots
             Exit();
         }
 
-        private void TestSync()
+        private void TestLimitOrderSync()
         {
             Print("Test - Open Limit");
 
             var limit = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, Symbol.Bid + Symbol.Point * 500));
+
             VerifyOrder(limit.Id, OrderType.Limit, OrderSide.Sell, Volume);
+
 
             Print("Test - Modify Limit");
 
             var newPrice = Symbol.RoundPriceUp(limit.Price + Symbol.Point * 2);
+
             ThrowOnError(ModifyOrder(limit.Id, newPrice));
+
             VerifyOrder(limit.Id, OrderType.Limit, OrderSide.Sell, Volume, newPrice);
+
 
             Print("Test - Cancel Limit");
 
             ThrowOnError(CancelOrder(limit.Id));
+        }
 
-			Print("Test - Open Stop");
+        private async Task TestLimitOrderAsync()
+        {
+            Print("Test - Open Limit Async");
 
-			var stop = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Stop, OrderSide.Sell, Volume, Symbol.Bid - Symbol.Point * 1000));
-			
-			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
-			{
-				VerifyOrder(stop.Id, OrderType.Stop, OrderSide.Sell, Volume);
-			}
+            var limit = ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, Symbol.Bid + Symbol.Point * 500));
+            VerifyOrder(limit.Id, OrderType.Limit, OrderSide.Sell, Volume);
 
-			if (Account.Type == AccountTypes.Cash)
-			{
-				VerifyOrder(stop.Id, OrderType.StopLimit, OrderSide.Sell, Volume);
-			}
 
-			Print("Test - Modify Stop");
+            Print("Test - Modify Limit Async");
 
-			var newStopPrice = Symbol.RoundPriceUp(stop.StopPrice - Symbol.Point * 500);
-			ThrowOnError(ModifyOrder(stop.Id, null, newStopPrice));
+            var newPrice = Symbol.RoundPriceUp(limit.Price + Symbol.Point * 2);
+            ThrowOnError(await ModifyOrderAsync(limit.Id, newPrice));
+            VerifyOrder(limit.Id, OrderType.Limit, OrderSide.Sell, Volume, newPrice);
 
-			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
-			{
-				VerifyOrder(stop.Id, OrderType.Stop, OrderSide.Sell, Volume);
-			}
 
-			Print("Test - Cancel Stop");
+            Print("Test - Cancel Limit Async");
 
-			ThrowOnError(CancelOrder(stop.Id));
+            ThrowOnError(await CancelOrderAsync(limit.Id));
+        }
 
-			if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)
-			{
-				VerifyOrderDeleted(stop.Id);
-			}
-			
-			Print("Test - Open Market 1");
+        private void TestStopOrderSync()
+        {
+            Print("Test - Open Stop");
+
+            var stop = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Stop, OrderSide.Sell, Volume, Symbol.Bid - Symbol.Point * 1000));
+
+            var orderType = (Account.Type == AccountTypes.Cash) ? OrderType.StopLimit : OrderType.Stop;
+
+            VerifyOrder(stop.Id, orderType, OrderSide.Sell, Volume);
+
+
+            Print("Test - Modify Stop");
+
+            var newStopPrice = Symbol.RoundPriceUp(stop.StopPrice - Symbol.Point * 500);
+
+            ThrowOnError(ModifyOrder(stop.Id, null, newStopPrice));
+
+            VerifyOrder(stop.Id, orderType, OrderSide.Sell, Volume);
+
+
+            Print("Test - Cancel Stop");
+
+            ThrowOnError(CancelOrder(stop.Id));
+
+            VerifyOrderDeleted(stop.Id);
+        }
+
+        private async Task TestStopOrderAsync()
+        {
+            Print("Test - Open Stop Async");
+
+            var stop = ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Stop, OrderSide.Sell, Volume, Symbol.Bid - Symbol.Point * 1000));
+
+            var orderType = (Account.Type == AccountTypes.Cash) ? OrderType.StopLimit : OrderType.Stop;
+
+            VerifyOrder(stop.Id, orderType, OrderSide.Sell, Volume);
+
+
+            Print("Test - Modify Stop Async");
+
+            var newStopPrice = Symbol.RoundPriceUp(stop.StopPrice - Symbol.Point * 500);
+
+            ThrowOnError(await ModifyOrderAsync(stop.Id, null, newStopPrice));
+
+            VerifyOrder(stop.Id, orderType, OrderSide.Sell, Volume);
+
+
+            Print("Test - Cancel Stop Async");
+
+            ThrowOnError(await CancelOrderAsync(stop.Id));
+
+            VerifyOrderDeleted(stop.Id);
+        }
+
+        private void TestStopLimitOrderSync()
+        {
+            Print("Test - Open StopLimit");
+
+            var stopLimit = ThrowOnError(OpenOrder(Symbol.Name, OrderType.StopLimit, OrderSide.Sell, Volume, null, Symbol.Bid - Symbol.Point * 1000, Symbol.Bid - Symbol.Point * 500));
+
+            VerifyOrder(stopLimit.Id, OrderType.StopLimit, OrderSide.Sell, Volume);
+
+
+            Print("Test - Modify StopLimit");
+
+            ThrowOnError(ModifyOrder(stopLimit.Id, Symbol.Bid - Symbol.Point * 500, Symbol.Bid - Symbol.Point * 100));
+
+
+            Print("Test - Cancel StopLimit");
+
+            ThrowOnError(CancelOrder(stopLimit.Id));
+
+
+            Print("Test - Open and activate Buy StopLimit");
+
+            String buyOrderTag = "Activation and closing buy order tag";
+            Order buyStopLimit = null;
+
+            Account.Orders.Activated += delegate (OrderActivatedEventArgs obj)
+            {
+                if (buyStopLimit.Id == obj.Order.Id)
+                    Print("SUCCESS: buy order #" + obj.Order.Id + " activated.");
+            };
+
+            Account.Orders.Opened += delegate (OrderOpenedEventArgs obj)
+            {
+                if (obj.Order.Tag == buyOrderTag && buyStopLimit.Id != obj.Order.Id)
+                {
+                    Print("SUCCESS: buy order #" + obj.Order.Id + " opened from parent order #" + buyStopLimit.Id + ".");
+
+                    Print("Test - Cancel buy limit order #" + obj.Order.Id);
+
+                    ThrowOnError(CancelOrder(obj.Order.Id));
+                }
+            };
+
+            buyStopLimit = ThrowOnError(OpenOrder(Symbol.Name, OrderType.StopLimit, OrderSide.Buy, Volume, null, Symbol.Ask - Symbol.Point * 100, Symbol.Ask,
+                null, null, null, OrderExecOptions.None, buyOrderTag));
+
+            Print("Test - Open and activate Sell StopLimit");
+
+            String sellOrderTag = "Activation and closing sell order tag";
+            Order sellStopLimit = null;
+
+            Account.Orders.Activated += delegate (OrderActivatedEventArgs obj)
+            {
+                if (sellStopLimit.Id == obj.Order.Id)
+                    Print("SUCCESS: sell order #" + obj.Order.Id + " activated.");
+            };
+
+            Account.Orders.Opened += delegate (OrderOpenedEventArgs obj)
+            {
+                if (obj.Order.Tag == sellOrderTag && sellStopLimit.Id != obj.Order.Id)
+                {
+                    Print("SUCCESS: sell order #" + obj.Order.Id + " opened from parent order #" + sellStopLimit.Id + ".");
+
+                    Print("Test - Cancel sell limit order #" + obj.Order.Id);
+
+                    ThrowOnError(CancelOrder(obj.Order.Id));
+                }
+            };
+
+            sellStopLimit = ThrowOnError(OpenOrder(Symbol.Name, OrderType.StopLimit, OrderSide.Sell, Volume, null, Symbol.Bid + Symbol.Point * 100, Symbol.Bid,
+                null, null, null, OrderExecOptions.None, sellOrderTag));
+        }
+
+        private void TestMarketOrder()
+        {
+            Print("Test - Open Market 1");
 
             var pos1 = ThrowOnError(OpenMarketOrder(OrderSide.Buy, Volume * 2));
-            
+
             if (Account.Type == AccountTypes.Gross)
             {
                 VerifyOrder(pos1.Id, OrderType.Position, OrderSide.Buy, Volume * 2);
@@ -99,10 +220,11 @@ namespace TickTrader.Algo.TestCollection.Bots
                 VerifyOrderDeleted(pos1.Id);
             }
 
+
             Print("Test - Open Market 2");
 
             var pos2 = ThrowOnError(OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, Volume, Symbol.Ask));
-            
+
             if (Account.Type == AccountTypes.Gross)
             {
                 VerifyOrder(pos2.Id, OrderType.Position, OrderSide.Sell, Volume);
@@ -121,26 +243,12 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
         }
 
-        private async Task TestAsync()
+        private async Task TestMarketOrderAsync()
         {
-            Print("Test - Open Limit Async");
-
-            var limit = ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, Symbol.Bid + Symbol.Point * 500));
-            VerifyOrder(limit.Id, OrderType.Limit, OrderSide.Sell, Volume);
-
-            Print("Test - Modify Limit Async");
-
-            var newPrice = Symbol.RoundPriceUp(limit.Price + Symbol.Point * 2);
-            ThrowOnError(await ModifyOrderAsync(limit.Id, newPrice));
-            VerifyOrder(limit.Id, OrderType.Limit, OrderSide.Sell, Volume, newPrice);
-
-            Print("Test - Cancel Limit Async");
-
-            ThrowOnError(await CancelOrderAsync(limit.Id));
             Print("Test - Open Market 1 Async");
 
             var pos1 = ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Market, OrderSide.Buy, Volume * 2, Symbol.Ask));
-            
+
             if (Account.Type == AccountTypes.Gross)
             {
                 VerifyOrder(pos1.Id, OrderType.Position, OrderSide.Buy, Volume * 2);
@@ -152,7 +260,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 Print("Test - Close Market 1 Async");
 
-                ThrowOnError(CloseOrder(pos1.Id, Volume));
+                ThrowOnError(await CloseOrderAsync(pos1.Id, Volume));
                 VerifyOrderDeleted(pos1.Id);
             }
 
@@ -176,6 +284,21 @@ namespace TickTrader.Algo.TestCollection.Bots
                 VerifyOrderDeleted(pos2.Id);
                 VerifyOrderDeleted(pos3.Id);
             }
+        }
+
+        private void TestSync()
+        {
+            TestLimitOrderSync();
+            TestStopOrderSync();
+            TestStopLimitOrderSync();
+            TestMarketOrder();
+        }
+
+        private async Task TestAsync()
+        {
+            await TestLimitOrderAsync();
+            await TestStopOrderAsync();
+            await TestMarketOrderAsync();
         }
 
         private void VerifyOrder(string orderId, OrderType type, OrderSide side, double orderVolume, double? price = null)

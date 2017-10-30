@@ -14,6 +14,14 @@
             Dealer Ip Address is automatically filled by TradeHost
             </summary>
         </member>
+        <member name="M:TickTrader.BusinessObjects.ManagerRightsDomain.Clone">
+            <summary>
+            Creates a new object that is a copy of the current instance.
+            </summary>
+            <returns>
+            A new object that is a copy of this instance.
+            </returns>
+        </member>
         <member name="T:TickTrader.BusinessObjects.SystemPerformanceCounterTypes">
             <summary>
             Contains enums used in Monitoring as System Performance Counters
@@ -196,6 +204,26 @@
             <param name="address">Desired address</param>
             <returns>New machine request</returns>
         </member>
+        <member name="M:TickTrader.BusinessObjects.Requests.ManagerDomainsModifyRequest.Create(System.Int32,System.String,System.String,TickTrader.BusinessObjects.ManagerRightsDomain)">
+            <summary>
+            Create modify manager domains request with required parameters.
+            </summary>
+            <param name="ConfigVersion">Configuration version</param>
+            <param name="ManagerDomainsId">Manager domains Id</param>
+            <param name="Domains">Manager domains pattern (null if you want to keep previous value)</param>
+            <param name="Rights">Manager domains rights (null if you want to keep previous value)</param>
+            <returns>New manager domains request</returns>
+        </member>
+        <member name="M:TickTrader.BusinessObjects.Requests.ManagerDomainsNewRequest.Create(System.Int32,System.Int16,System.String,TickTrader.BusinessObjects.ManagerRightsDomain)">
+            <summary>
+            Create new manager domains request with required parameters.
+            </summary>
+            <param name="ConfigVersion">Configuration version</param>
+            <param name="ManagerId">Manager Id</param>
+            <param name="Domains">Manager domains pattern</param>
+            <param name="Rights">Manager groups rights</param>
+            <returns>New manager domains request</returns>
+        </member>
         <member name="M:TickTrader.BusinessObjects.Requests.ModuleModifyRequest.Create(System.String,System.String,System.String,System.String,System.Nullable{System.Boolean},System.String,System.String,System.String,System.String,System.Int32,TickTrader.BusinessObjects.Configuration.ServerModuleConfig)">
             <summary>
             Create modify module request with required parameters.
@@ -272,6 +300,42 @@
             <param name="configVersion">Configuration version</param>
             <param name="config">Server common configuration</param>        
             <returns>Set server time request</returns>
+        </member>
+        <member name="M:TickTrader.BusinessObjects.Requests.ThrottlingChangeRequest.Create(System.Int32,TickTrader.BusinessObjects.ThrottlingProtocol,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Create modify throttling request with required parameters.
+            </summary>
+            <param name="ConfigVersion">Configuration version</param>
+            <param name="protocol">Protocol</param>
+            <param name="spa">Sessions per account</param>
+            <param name="rps">Requests per session</param>
+            <returns>New throttling request</returns>
+        </member>
+        <member name="M:TickTrader.BusinessObjects.Requests.ValidateMarginRequest.Create(System.Int64,TickTrader.BusinessObjects.OrderTypes,TickTrader.BusinessObjects.OrderSides,System.String,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal})">
+            <summary>
+            Create validate margin request with required parameters.
+            </summary>
+            <param name="login">Account login of the target account</param>
+            <param name="OrderType">Order type (market, limit, stop)</param>
+            <param name="OrderSide">Order side (buy, sell)</param>
+            <param name="Symbol">Symbol name</param>
+            <param name="Amount">Amount</param>
+            <param name="StopPrice"> Stop price</param>
+            <param name="Price">Price</param>
+            <returns>Validate margin request</returns>
+        </member>
+        <member name="M:TickTrader.BusinessObjects.Requests.ValidateMarginRequest.CreateClient(System.Int64,TickTrader.BusinessObjects.OrderTypes,TickTrader.BusinessObjects.OrderSides,System.String,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal})">
+            <summary>
+            Create validate margin request with required parameters (client emulation).
+            </summary>
+            <param name="login">Account login of the target account</param>
+            <param name="OrderType">Order type (market, limit, stop)</param>
+            <param name="OrderSide">Order side (buy, sell)</param>
+            <param name="Symbol">Symbol name</param>
+            <param name="Amount">Amount</param>
+            <param name="StopPrice">Stop price</param>
+            <param name="Price">Price</param>
+            <returns>Validate margin request</returns>
         </member>
         <member name="M:TickTrader.BusinessObjects.Requests.WebApiTokenModifyRequest.Create(System.String,TickTrader.BusinessObjects.WebApiAuthenticationType,System.Nullable{TickTrader.BusinessObjects.WebApiRights})">
             <summary>
@@ -561,6 +625,14 @@
             <param name="targets">Drop session targets</param>
             <returns>New drop sessions request</returns>
         </member>
+        <member name="M:TickTrader.BusinessObjects.Requests.DropSessionsRequest.CreateForLogin(System.String,TickTrader.BusinessObjects.Requests.DropSessionsTargets)">
+            <summary>
+            Create drop sessions request for the given login.
+            </summary>
+            <param name="login">Desired login</param>
+            <param name="targets">Drop session targets</param>
+            <returns>New drop sessions request</returns>
+        </member>
         <member name="M:TickTrader.BusinessObjects.Requests.DropSessionsRequest.CreateForGroup(System.Int16,TickTrader.BusinessObjects.Requests.DropSessionsTargets)">
             <summary>
             Create drop sessions request for the given group.
@@ -844,7 +916,14 @@
             Rollover Time. The date will be ignored.
             </summary>
         </member>
-        <member name="M:TickTrader.BusinessObjects.Level2Collection.#ctor(System.Collections.Generic.List{TickTrader.BusinessObjects.Level2Value},System.Int32,System.Byte,System.Byte)">
+        <member name="M:TickTrader.BusinessObjects.Level2Collection.#ctor(System.Collections.Generic.IEnumerable{TickTrader.BusinessObjects.Level2Value},System.Collections.Generic.IEnumerable{TickTrader.BusinessObjects.Level2Value})">
+            <summary>
+            Initialize level2 with a list of bids and asks
+            </summary>
+            <param name="bids">bids list</param>
+            <param name="asks">asks list</param>
+        </member>
+        <member name="M:TickTrader.BusinessObjects.Level2Collection.#ctor(System.Collections.Generic.List{TickTrader.BusinessObjects.Level2Value},System.Int32,System.Int32,System.Int32)">
             <summary>
             Warning should be sorted in collection and proper offset set
             </summary>
@@ -1164,6 +1243,21 @@
             
             </summary>
         </member>
+        <member name="P:TickTrader.BusinessObjects.Order.MaxVisibleAmount">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.Order.CurrentPrice">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.Order.TransferringCoefficient">
+             <summary>
+            
+             </summary>
+        </member>
         <member name="M:TickTrader.BusinessObjects.Order.Clone">
              <summary>
             
@@ -1471,6 +1565,22 @@
             Margin reduction for Stop orders
             </summary>
         </member>
+        <member name="P:TickTrader.BusinessObjects.SymbolInfo.HiddenLimitOrderMarginReduction">
+            <summary>
+            Margin reduction for Stop orders
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.SymbolInfo.SwapType">
+            <summary>
+            Gets or sets swap type
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.SymbolInfo.TripleSwapDay">
+            <summary>
+            Gets or sets a day of week (from Monday to Friday) when 3-days swaps are charged.
+            If value is 0 3-days swaps are disabled.
+            </summary>
+        </member>
         <member name="M:TickTrader.BusinessObjects.SymbolInfo.Clone">
             <summary>
             
@@ -1538,6 +1648,16 @@
             </summary>
         </member>
         <member name="P:TickTrader.BusinessObjects.GroupSymbolInfo.SecurityName">
+            <summary>
+            Gets or sets the TODO
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.GroupSymbolInfo.MinCommission">
+            <summary>
+            Gets or sets the TODO
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.GroupSymbolInfo.MinCommissionCurrency">
             <summary>
             Gets or sets the TODO
             </summary>
@@ -2180,6 +2300,44 @@
             Indicates whether IoC
             </summary>
         </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.OrderMaxVisibleAmount">
+            <summary>
+            Max visible amount of the order.
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.ReducedOpenCommissionFlag">
+            <summary>
+            True if Open Commission was reduced
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.ReducedCloseCommissionFlag">
+            <summary>
+            True if Close Commission was reduced
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.SymbolPrecision">
+            <summary>
+            Symbol percision.
+            Null in case of no symbol was used.
+            Null in case of Balance and Credit transactions.
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.MinCommissionCurrency">
+            <summary>
+            Minimal Commission Currency
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.MinCommissionConversionRate">
+            <summary>
+            Minimal Commission Conversion Rate
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.TransferringCoefficient">
+            <summary>
+            Transfering Coefficient
+            Null in all other cases.
+            </summary>
+        </member>
         <member name="P:TickTrader.BusinessObjects.TradeReport.IsIoC">
             <summary>
             Is IoC flag
@@ -2190,6 +2348,12 @@
             <summary>
             Is "market with slippage" flag
             Determines whether order has "market with slippage" option
+            </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.TradeReport.IsHiddenIceberg">
+            <summary>
+            Is HiddenIceberg flag
+            Determines whether order has HiddenIceberg option
             </summary>
         </member>
         <member name="P:TickTrader.BusinessObjects.TradeReport.SideString">
@@ -2270,7 +2434,7 @@
             <param name="id"></param>
             <param name="level2"></param>
         </member>
-        <member name="M:TickTrader.Common.Business.FeedTick.ConstructFormPreparedData(System.String,TickTrader.BusinessObjects.FeedTickId,System.Collections.Generic.IEnumerable{TickTrader.Common.Business.FeedLevel2Record},System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean)">
+        <member name="M:TickTrader.Common.Business.FeedTick.ConstructFormPreparedData(System.String,TickTrader.BusinessObjects.FeedTickId,TickTrader.Common.Business.FeedLevel2Record[],System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean)">
             <summary>
             
             </summary>
@@ -2281,7 +2445,7 @@
             <param name="bestAsk"></param>
             <returns></returns>
         </member>
-        <member name="M:TickTrader.Common.Business.FeedTick.ConstructFormPreparedData(System.String,TickTrader.BusinessObjects.FeedTickId,System.Collections.Generic.IEnumerable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean,System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean,System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean)">
+        <member name="M:TickTrader.Common.Business.FeedTick.ConstructFormPreparedData(System.String,TickTrader.BusinessObjects.FeedTickId,TickTrader.Common.Business.FeedLevel2Record[],System.Boolean,System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean,System.Nullable{TickTrader.Common.Business.FeedLevel2Record},System.Boolean)">
             <summary>
             
             </summary>

@@ -29,6 +29,7 @@ namespace TickTrader.Algo.Core
             sampler = BarSampler.Get(ExecContext.TimeFrame);
             fixtures = new Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
+            ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainPriceType);
 
             fixtures.Add(GetKey(ExecContext.MainSymbolCode, MainPriceType), mainSeriesFixture);
         }
