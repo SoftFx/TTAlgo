@@ -123,12 +123,12 @@ namespace TickTrader.Algo.Core
 
             public IEnumerator<Symbol> GetEnumerator()
             {
-                return symbols.Values.GetEnumerator();
+                return symbols.Values.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return symbols.Values.GetEnumerator();
+                return GetEnumerator();
             }
         }
     }

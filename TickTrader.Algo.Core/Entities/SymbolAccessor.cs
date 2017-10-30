@@ -59,6 +59,7 @@ namespace TickTrader.Algo.Core
         public float SwapSizeShort => entity.SwapSizeShort;
         public string Security => entity.Security;
         public int SortOrder => entity.SortOrder;
+        public int GroupSortOrder => entity.GroupSortOrder;
         public BO.SwapType SwapType => entity.SwapType;
         public int TripleSwapDay => entity.TripleSwapDay;
         public double HiddenLimitOrderMarginReduction => entity.HiddenLimitOrderMarginReduction;

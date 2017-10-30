@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
@@ -72,12 +73,12 @@ namespace TickTrader.Algo.Core
 
             public IEnumerator<Currency> GetEnumerator()
             {
-                return currencies.Values.GetEnumerator();
+                return currencies.Values.OrderBy(c => c.SortOrder).GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return currencies.Values.GetEnumerator();
+                return GetEnumerator();
             }
         }
     }
