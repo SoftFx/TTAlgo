@@ -11,7 +11,7 @@ using SoftFX.Extended.Reports;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public static class FdkToAlgo
+    public static class FdkConvertor
     {
         public static void Convert(IEnumerable<Bar> srcBars, List<BarEntity> dstBars)
         {
@@ -37,11 +37,6 @@ namespace TickTrader.Algo.Common.Model
             return result;
         }
 
-        public static IEnumerable<QuoteEntity> ToAlgo(this IEnumerable<BO.TickValue> ticks, string symbol)
-        {
-            return ticks.Select(t => Convert(t, symbol));
-        }
-
         public static IEnumerable<BarEntity> Convert(IEnumerable<Bar> fdkBarCollection)
         {
             return fdkBarCollection.Select(Convert);
@@ -50,6 +45,58 @@ namespace TickTrader.Algo.Common.Model
         public static IEnumerable<QuoteEntity> Convert(IEnumerable<Quote> fdkQuoteArray)
         {
             return fdkQuoteArray.Select(Convert);
+        }
+
+        public static AccountEntity Convert(AccountInfo info)
+        {
+            return new AccountEntity()
+            {
+                Id = info.AccountId,
+                Balance = info.Balance,
+                BalanceCurrency = info.Currency,
+                Type = Convert(info.Type),
+                Leverage = info.Leverage,
+                Assets = info.Assets.Select(Convert).ToArray()
+            };
+        }
+
+        public static AssetEntity Convert(AssetInfo info)
+        {
+            return new AssetEntity(info.Balance, info.Currency)
+            {
+                TradeVolume = info.TradeAmount
+            };
+        }
+
+        public static OrderEntity Convert(TradeRecord record)
+        {
+            return new OrderEntity(record.OrderId)
+            {
+                Symbol = record.Symbol,
+                Comment = record.Comment,
+                Type = Convert(record.Type),
+                ClientOrderId = record.ClientOrderId,
+                Price = record.Price ?? double.NaN,
+                StopPrice = record.StopPrice ?? double.NaN,
+                Side = Convert( record.Side),
+                Created = record.Created ?? DateTime.MinValue,
+                Swap = record.Swap,
+                Modified = record.Modified ?? DateTime.MinValue,
+                StopLoss = record.StopLoss ?? double.NaN,
+                TakeProfit = record.TakeProfit ?? double.NaN,
+                Commission = record.Commission,
+            };
+        }
+
+        public static PositionEntity Convert(Position p)
+        {
+            return new PositionEntity()
+            {
+                Symbol = p.Symbol,
+                Margin = p.Margin ?? 0,
+                Commission = p.Commission,
+                AgentCommission = p.AgentCommission,
+            };
         }
 
         public static BarEntity Convert(Bar fdkBar)
@@ -192,7 +239,7 @@ namespace TickTrader.Algo.Common.Model
                 case Api.TimeFrames.M1: return BarPeriod.M1;
                 case Api.TimeFrames.S10: return BarPeriod.S10;
                 case Api.TimeFrames.S1: return BarPeriod.S1;
-                
+
                 default: throw new ArgumentException("Unsupported time frame: " + timeframe);
             }
         }
@@ -353,19 +400,109 @@ namespace TickTrader.Algo.Common.Model
                 case Api.BarPriceType.Ask: return PriceType.Ask;
                 case Api.BarPriceType.Bid: return PriceType.Bid;
             }
-            throw new NotImplementedException("Unsupported price type: "  +priceType);
+            throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        public static QuoteEntity Convert(BO.TickValue tick, string symbol)
-        {
-            var bids = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Bid)
-                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
-                .ToArray();
-            var asks = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Ask)
-                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
-                .ToArray();
+        //public static void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, OrderExecReport report, OrderModel newOrder = null)
+        //{
+        //    OrderExecReport algoReport = new OrderExecReport();
+        //    if (newOrder != null)
+        //        algoReport.OrderCopy = newOrder.ToAlgoOrder();
+        //    algoReport.OperationId = GetOperationId(report);
+        //    algoReport.OrderId = report.OrderId;
+        //    algoReport.ExecAction = action;
+        //    algoReport.Action = entityAction;
+        //    if (algoReport.ExecAction == OrderExecAction.Rejected)
+        //        algoReport.ResultCode = FdkToAlgo.Convert(report.RejectReason, report.Text);
+        //    if (!double.IsNaN(report.Balance))
+        //        algoReport.NewBalance = report.Balance;
+        //    if (report.Assets != null)
+        //        algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
+        //    AlgoEvent_OrderUpdated(algoReport);
+        //}
 
-            return new QuoteEntity(symbol, tick.Time, bids, asks);
-        }
+        //private static void OnReport(OrderExecReport report)
+        //{
+        //    switch (report.ExecAction)
+        //    {
+        //        case OrderExecAction.Calculated:
+        //            if (orders.ContainsKey(report.OrderId))
+        //                OnOrderUpdated(report, OrderExecAction.Opened);
+        //            else
+        //                OnOrderAdded(report, OrderExecAction.Opened);
+        //            break;
+
+        //        case OrderExecAction.Modified:
+        //            OnOrderUpdated(report, OrderExecAction.Modified);
+        //            break;
+
+        //        case OrderExecAction.Expired:
+        //            OnOrderRemoved(report, OrderExecAction.Expired);
+        //            break;
+
+        //        case OrderExecAction.Canceled:
+        //            OnOrderRemoved(report, OrderExecAction.Canceled);
+        //            break;
+
+        //        case OrderExecAction.Rejected:
+        //            OnOrderRejected(report, OrderExecAction.Rejected);
+        //            break;
+
+        //        case OrderExecAction.None:
+        //            if (report.OrderStatus == OrderStatus.Rejected)
+        //                OnOrderRejected(report, OrderExecAction.Rejected);
+        //            break;
+
+        //        case OrderExecAction.Trade:
+        //            if (report.OrderType == TradeRecordType.StopLimit)
+        //            {
+        //                OnOrderRemoved(report, OrderExecAction.Activated);
+        //            }
+        //            else if (report.OrderType == TradeRecordType.Limit || report.OrderType == TradeRecordType.Stop)
+        //            {
+        //                if (report.LeavesVolume != 0)
+        //                    OnOrderUpdated(report, OrderExecAction.Filled);
+        //                else if (Type != AccountType.Gross)
+        //                    OnOrderRemoved(report, OrderExecAction.Filled);
+        //            }
+        //            else if (report.OrderType == TradeRecordType.Position)
+        //            {
+        //                if (!double.IsNaN(report.Balance))
+        //                    Balance = report.Balance;
+
+        //                if (report.LeavesVolume != 0)
+        //                    OnOrderUpdated(report, OrderExecAction.Closed);
+        //                else
+        //                    OnOrderRemoved(report, OrderExecAction.Closed);
+        //            }
+        //            else if (report.OrderType == TradeRecordType.Market
+        //                && (Type == AccountType.Net || Type == AccountType.Cash))
+        //            {
+        //                OnMarketFilled(report, OrderExecAction.Filled);
+        //            }
+        //            break;
+        //    }
+
+        //    if (Type == AccountType.Net && report.ExecutionType == OrderExecAction.Trade)
+        //    {
+        //        switch (report.OrderStatus)
+        //        {
+        //            case OrderStatus.Calculated:
+        //            case OrderStatus.Filled:
+        //                if (!double.IsNaN(report.Balance))
+        //                {
+        //                    Balance = report.Balance;
+        //                    OnBalanceChanged();
+        //                }
+        //                break;
+        //        }
+        //    }
+
+        //    if (Type == AccountType.Cash)
+        //    {
+        //        foreach (var asset in report.Assets)
+        //            UpdateAsset(asset);
+        //    }
+        //}
     }
 }

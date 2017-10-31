@@ -9,6 +9,7 @@ using TickTrader.DedicatedServer.DS.Models;
 using TickTrader.DedicatedServer.WebAdmin.Server.Models;
 using TickTrader.Algo.Core;
 using System.Reflection;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
 {

@@ -22,5 +22,13 @@ namespace TickTrader.Algo.Common.Lib
             dicionary.TryGetValue(key, out value);
             return value;
         }
+
+        public static TValue GetOrDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dicionary, TKey key, TValue defaultValue = default(TValue))
+        {
+            TValue val;
+            if (!dicionary.TryGetValue(key, out val))
+                return defaultValue;
+            return val;
+        }
     }
 }

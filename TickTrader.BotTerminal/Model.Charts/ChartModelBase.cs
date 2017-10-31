@@ -18,7 +18,6 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
-using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
@@ -51,7 +50,7 @@ namespace TickTrader.BotTerminal
         private AxisBase timeAxis;
         private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
-        private List<Quote> updateQueue;
+        private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
 
         public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel client)
@@ -235,7 +234,7 @@ namespace TickTrader.BotTerminal
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel CreateIndicator(PluginSetupViewModel setup);
-        protected abstract void ApplyUpdate(Quote update);
+        protected abstract void ApplyUpdate(QuoteEntity update);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -250,7 +249,7 @@ namespace TickTrader.BotTerminal
             {
                 isUpdateRequired = false;
                 ClearData();
-                updateQueue = new List<Quote>();
+                updateQueue = new List<QuoteEntity>();
                 await StopEvent.InvokeAsync(this);
                 await LoadData(cToken);
                 ApplyQueue();
@@ -309,7 +308,7 @@ namespace TickTrader.BotTerminal
             subscription.Dispose();
         }
 
-        protected virtual void OnRateUpdate(Quote tick)
+        protected virtual void OnRateUpdate(QuoteEntity tick)
         {
             if (stateController.Current == States.LoadingData)
                 updateQueue.Add(tick);

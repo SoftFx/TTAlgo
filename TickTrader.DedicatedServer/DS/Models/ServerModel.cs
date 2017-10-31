@@ -14,6 +14,7 @@ using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.Extensions;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {

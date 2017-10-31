@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using TickTrader.Algo.Common.Model;
 using TickTrader.DedicatedServer.DS.Info;
 using System.Net;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Controllers
 {

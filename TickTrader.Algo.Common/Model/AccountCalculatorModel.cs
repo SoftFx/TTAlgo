@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 using TickTrader.Common.Business;
@@ -30,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var smb in client.Symbols.Snapshot.Values)
             {
                 if (smb.LastQuote != null)
-                    MarketModel.Update(new RateAdapter(smb.LastQuote));
+                    MarketModel.Update(smb.LastQuote);
             }
 
             _subscription.NewQuote += Symbols_RateUpdated;
@@ -56,7 +57,7 @@ namespace TickTrader.Algo.Common.Model
 
         public static AccountCalculatorModel Create(AccountModel acc, ClientCore client)
         {
-            if (acc.Type == SoftFX.Extended.AccountType.Cash)
+            if (acc.Type == Api.AccountTypes.Cash)
                 return new CashCalc(acc, client);
             else
                 return new MarginCalc(acc, client);
@@ -68,45 +69,45 @@ namespace TickTrader.Algo.Common.Model
             _subscription.Dispose();
         }
 
-        private void Symbols_RateUpdated(SoftFX.Extended.Quote quote)
+        private void Symbols_RateUpdated(QuoteEntity quote)
         {
-            MarketModel.Update(new RateAdapter(quote));
+            MarketModel.Update(quote);
         }
 
-        private class RateAdapter : ISymbolRate
-        {
-            public RateAdapter(SoftFX.Extended.Quote quote)
-            {
-                //if (quote.Symbol == "ETHRUB")
-                //{
-                //    System.Diagnostics.Debug.WriteLine("ETHRUB!111111 ololo!");
-                //}
+        //private class RateAdapter : ISymbolRate
+        //{
+        //    public RateAdapter(SoftFX.Extended.Quote quote)
+        //    {
+        //        //if (quote.Symbol == "ETHRUB")
+        //        //{
+        //        //    System.Diagnostics.Debug.WriteLine("ETHRUB!111111 ololo!");
+        //        //}
 
-                if (quote.HasAsk)
-                {
-                    Ask = (decimal)quote.Ask;
-                    NullableAsk = (decimal)quote.Ask;
-                }
+        //        if (quote.HasAsk)
+        //        {
+        //            Ask = (decimal)quote.Ask;
+        //            NullableAsk = (decimal)quote.Ask;
+        //        }
 
-                if (quote.HasBid)
-                {
-                    Bid = (decimal)quote.Bid;
-                    NullableBid = (decimal)quote.Bid;
-                }
+        //        if (quote.HasBid)
+        //        {
+        //            Bid = (decimal)quote.Bid;
+        //            NullableBid = (decimal)quote.Bid;
+        //        }
 
-                Symbol = quote.Symbol;
-            }
+        //        Symbol = quote.Symbol;
+        //    }
 
-            public decimal Ask { get; private set; }
-            public decimal Bid { get; private set; }
-            public decimal? NullableAsk { get; private set; }
-            public decimal? NullableBid { get; private set; }
-            public string Symbol { get; private set; }
-        }
+        //    public decimal Ask { get; private set; }
+        //    public decimal Bid { get; private set; }
+        //    public decimal? NullableAsk { get; private set; }
+        //    public decimal? NullableBid { get; private set; }
+        //    public string Symbol { get; private set; }
+        //}
 
         private class CurrencyInfoAdapter : ICurrencyInfo
         {
-            public CurrencyInfoAdapter(SoftFX.Extended.CurrencyInfo info)
+            public CurrencyInfoAdapter(CurrencyEntity info)
             {
                 Name = info.Name;
                 Precision = info.Precision;
@@ -143,9 +144,9 @@ namespace TickTrader.Algo.Common.Model
                 {
                     switch (acc.Type)
                     {
-                        case SoftFX.Extended.AccountType.Cash: return AccountingTypes.Cash;
-                        case SoftFX.Extended.AccountType.Gross: return AccountingTypes.Gross;
-                        case SoftFX.Extended.AccountType.Net: return AccountingTypes.Net;
+                        case Api.AccountTypes.Cash: return AccountingTypes.Cash;
+                        case Api.AccountTypes.Gross: return AccountingTypes.Gross;
+                        case Api.AccountTypes.Net: return AccountingTypes.Net;
                         default: throw new NotImplementedException("Account type is not supported: " + acc.Type);
                     }
                 }

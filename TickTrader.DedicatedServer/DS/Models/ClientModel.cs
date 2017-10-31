@@ -12,6 +12,8 @@ using TickTrader.DedicatedServer.DS.Exceptions;
 using TickTrader.DedicatedServer.Infrastructure;
 using TickTrader.DedicatedServer.DS.Info;
 using TickTrader.DedicatedServer.Extensions;
+using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.DedicatedServer.DS.Models
 {
@@ -103,7 +105,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             Account = new AccountModel(_core, AccountModelOptions.None);
             Symbols = (SymbolManager)_core.Symbols;
             FeedHistory = new FeedHistoryProviderModel(Connection, ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
-            TradeApi = new TradeExecutor(_core);
 
             ManageConnection();
         }
@@ -114,9 +115,9 @@ namespace TickTrader.DedicatedServer.DS.Models
         public IEnumerable<ITradeBot> TradeBots => _bots;
         public AccountModel Account { get; private set; }
         public SymbolManager Symbols { get; private set; }
-        public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
+        public Dictionary<string, CurrencyEntity> Currencies { get; private set; }
         public FeedHistoryProviderModel FeedHistory { get; private set; }
-        public TradeExecutor TradeApi { get; private set; }
+        public ITradeServerApi TradeApi => Connection.TradeProxy;
         public bool IsReconnecting
         {
             get
@@ -182,8 +183,6 @@ namespace TickTrader.DedicatedServer.DS.Models
         }
 
         #region Connection Management
-
-
 
         public Task<ConnectionErrorCodes> TestConnection()
         {
@@ -362,15 +361,15 @@ namespace TickTrader.DedicatedServer.DS.Models
             ChangeState(ConnectionStates.Connecting);
             _connectCancellation = new CancellationTokenSource();
 
-            _lastErrorCode = await Connection.Connect(Username, Password, Address, _connectCancellation.Token);
+            _lastErrorCode = await Connection.Connect(Username, Password, Address, false, _connectCancellation.Token);
             _currentErrorCode = _lastErrorCode;
 
             if (_lastErrorCode == ConnectionErrorCodes.None)
             {
                 await FeedHistory.Init();
 
-                var fCache = Connection.FeedProxy.Cache;
-                var tCache = Connection.TradeProxy.Cache;
+                var fCache = Connection.FeedProxy;
+                var tCache = Connection.TradeProxy;
                 var symbols = fCache.Symbols;
                 Currencies = fCache.Currencies.ToDictionary(c => c.Name);
                 _core.Init();
@@ -540,8 +539,6 @@ namespace TickTrader.DedicatedServer.DS.Models
             var toRemove = _bots.Where(b => b.Package == package).ToList();
             toRemove.ForEach(b => _bots.Remove(b));
         }
-
-
 
         #endregion
     }

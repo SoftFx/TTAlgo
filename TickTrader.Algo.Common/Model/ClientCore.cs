@@ -1,11 +1,10 @@
 ﻿using Machinarium.Qnil;
-using SoftFX.Extended;
-using SoftFX.Extended.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -13,7 +12,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private ISyncContext _tradeSync;
         private ISyncContext _feedSync;
-        private DynamicDictionary<string, CurrencyInfo> _currencies = new DynamicDictionary<string, CurrencyInfo>();
+        private DynamicDictionary<string, CurrencyEntity> _currencies = new DynamicDictionary<string, CurrencyEntity>();
 
         public ClientCore(ConnectionModel connection,
             Func<ClientCore, SymbolCollectionBase> symbolCollectionFactory,
@@ -29,7 +28,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 connection.FeedProxy.Tick += FeedProxy_Tick;
 
-                connection.TradeProxy.AccountInfo += TradeProxy_AccountInfo;
+                //connection.TradeProxy.AccountInfo += TradeProxy_AccountInfo;
                 connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
                 connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
                 connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
@@ -38,7 +37,7 @@ namespace TickTrader.Algo.Common.Model
 
             connection.Disconnecting += () =>
             {
-                connection.TradeProxy.AccountInfo -= TradeProxy_AccountInfo;
+                //connection.TradeProxy.AccountInfo -= TradeProxy_AccountInfo;
                 connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
                 connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
                 connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
@@ -52,24 +51,23 @@ namespace TickTrader.Algo.Common.Model
         public ConnectionModel Connection { get; }
         public QuoteDistributor Distributor { get; }
         public SymbolCollectionBase Symbols { get; }
-        public IDynamicDictionarySource<string, CurrencyInfo> Currencies => _currencies;
-        public DataTrade TradeProxy => Connection.TradeProxy;
-        public DataFeed FeedProxy => Connection.FeedProxy;
+        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _currencies;
+        public ITradeServerApi TradeProxy => Connection.TradeProxy;
+        public IFeedServerApi FeedProxy => Connection.FeedProxy;
 
-        public event Action<PositionReportEventArgs> PositionReportReceived;
-        public event Action<ExecutionReportEventArgs> ExecutionReportReceived;
-        public event Action<AccountInfoEventArgs> AccountInfoReceived;
-        public event Action<TradeTransactionReportEventArgs> TradeTransactionReceived;
-        public event Action<NotificationEventArgs<BalanceOperation>> BalanceReceived;
-        public event Action<TickEventArgs> TickReceived;
+        public event Action<PositionEntity> PositionReportReceived;
+        public event Action<ExecutionReport> ExecutionReportReceived;
+        //public event Action<AccountInfoEventArgs> AccountInfoReceived;
+        public event Action<TradeReportEntity> TradeTransactionReceived;
+        public event Action<BalanceOperationReport> BalanceReceived;
+        public event Action<QuoteEntity> TickReceived;
 
         public void Init()
         {
-            var cache = FeedProxy.Cache;
             _currencies.Clear();
-            foreach (var c in cache.Currencies)
+            foreach (var c in FeedProxy.Currencies)
                 _currencies.Add(c.Name, c);
-            Symbols.Initialize(FeedProxy.Cache.Symbols, _currencies.Snapshot);
+            Symbols.Initialize(FeedProxy.Symbols, _currencies.Snapshot);
         }
 
         public async Task Deinit()
@@ -77,34 +75,34 @@ namespace TickTrader.Algo.Common.Model
             await Symbols.Deinit();
         }
 
-        private void TradeProxy_PositionReport(object sender, PositionReportEventArgs e)
+        private void TradeProxy_PositionReport(PositionEntity position)
         {
-            _tradeSync.Invoke(() => PositionReportReceived?.Invoke(e));
+            _tradeSync.Invoke(() => PositionReportReceived?.Invoke(position));
         }
 
-        private void TradeProxy_ExecutionReport(object sender, ExecutionReportEventArgs e)
+        private void TradeProxy_ExecutionReport(ExecutionReport report)
         {
-            _tradeSync.Invoke(() => ExecutionReportReceived?.Invoke(e));
+            _tradeSync.Invoke(() => ExecutionReportReceived?.Invoke(report));
         }
 
-        private void TradeProxy_AccountInfo(object sender, AccountInfoEventArgs e)
+        //private void TradeProxy_AccountInfo(object sender, AccountInfoEventArgs e)
+        //{
+        //    _tradeSync.Invoke(() => AccountInfoReceived?.Invoke(e));
+        //}
+
+        private void TradeProxy_TradeTransactionReport(TradeReportEntity report)
         {
-            _tradeSync.Invoke(() => AccountInfoReceived?.Invoke(e));
+            _tradeSync.Invoke(() => TradeTransactionReceived?.Invoke(report));
         }
 
-        private void TradeProxy_TradeTransactionReport(object sender, TradeTransactionReportEventArgs e)
+        private void TradeProxy_BalanceOperation(BalanceOperationReport report)
         {
-            _tradeSync.Invoke(() => TradeTransactionReceived?.Invoke(e));
+            _tradeSync.Invoke(() => BalanceReceived?.Invoke(report));
         }
 
-        private void TradeProxy_BalanceOperation(object sender, NotificationEventArgs<BalanceOperation> e)
+        private void FeedProxy_Tick(QuoteEntity q)
         {
-            _tradeSync.Invoke(() => BalanceReceived?.Invoke(e));
-        }
-
-        private void FeedProxy_Tick(object sender, TickEventArgs e)
-        {
-            _tradeSync.Invoke(() => TickReceived?.Invoke(e));
+            _tradeSync.Invoke(() => TickReceived?.Invoke(q));
         }
     }
 }

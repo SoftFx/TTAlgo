@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,12 +72,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        void FeedProxy_Tick(SoftFX.Extended.Events.TickEventArgs e)
+        void FeedProxy_Tick(QuoteEntity e)
         {
-            UpdateRate(e.Tick);
+            UpdateRate(e);
         }
 
-        private void UpdateRate(Quote tick)
+        private void UpdateRate(QuoteEntity tick)
         {
             foreach (var subscription in allSymbolSubscriptions)
                 subscription.OnNewQuote(tick);
@@ -122,7 +121,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 var subscribeTask = new Task(() =>
                 {
-                    _client.FeedProxy.Server.SubscribeToQuotes(symbols, depth);
+                    _client.FeedProxy.SubscribeToQuotes(symbols, depth);
                     logger.Debug("Subscribed to " + string.Join(",", symbols));
                 });
                 requestQueue.Post(subscribeTask);
@@ -136,14 +135,14 @@ namespace TickTrader.Algo.Common.Model
             protected QuoteDistributor parent;
             protected Dictionary<string, int> bySymbol = new Dictionary<string, int>();
 
-            public event Action<Quote> NewQuote;
+            public event Action<QuoteEntity> NewQuote;
 
             public Subscription(QuoteDistributor parent)
             {
                 this.parent = parent;
             }
 
-            public virtual void OnNewQuote(Quote newQuote)
+            public virtual void OnNewQuote(QuoteEntity newQuote)
             {
                 try
                 {
@@ -263,6 +262,6 @@ namespace TickTrader.Algo.Common.Model
     {
         void Add(string symbol, int depth = 1);
         void Remove(string symbol);
-        event Action<Quote> NewQuote;
+        event Action<QuoteEntity> NewQuote;
     }
 }

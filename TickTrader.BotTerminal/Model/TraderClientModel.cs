@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -32,7 +31,7 @@ namespace TickTrader.BotTerminal
             _isConnected = AddBoolProperty();
 
             connection.Initalizing += Connection_Initalizing;
-            connection.State.StateChanged += State_StateChanged;
+            connection.StateChanged += State_StateChanged;
             connection.Deinitalizing += Connection_Deinitalizing;
 
             var sync = new DispatcherSync();
@@ -42,7 +41,7 @@ namespace TickTrader.BotTerminal
             this.TradeHistory = new TradeHistoryProviderModel(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
             this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
-            this.TradeApi = new TradeExecutor(_core);
+            //this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
 
             _accountInfo = Account;
@@ -96,7 +95,6 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var cache = Connection.FeedProxy.Cache;
                 await History.Init();
                 _core.Init();
                 Account.Init();
@@ -194,13 +192,13 @@ namespace TickTrader.BotTerminal
         public event Action Disconnected;
 
         public ConnectionModel Connection { get; private set; }
-        public TradeExecutor TradeApi { get; private set; }
+        public ITradeServerApi TradeApi => Connection.TradeProxy;
         public AccountModel Account { get; private set; }
         public TradeHistoryProviderModel TradeHistory { get; }
         public SymbolCollectionModel Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
-        public IDynamicDictionarySource<string, CurrencyInfo> Currencies => _core.Currencies;
+        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _core.Currencies;
     }
 }

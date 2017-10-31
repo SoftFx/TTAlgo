@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private IFeedSubscription subscription;
 
-        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IReadOnlyDictionary<string, CurrencyInfo> currencies)
+        public SymbolModel(QuoteDistributor distributor, SymbolEntity info, IReadOnlyDictionary<string, CurrencyEntity> currencies)
         {
             Descriptor = info;
             Distributor = distributor;
@@ -32,19 +32,19 @@ namespace TickTrader.Algo.Common.Model
         public string Name { get { return Descriptor.Name; } }
         public string Description => Descriptor.Description;
         public bool IsUserCreated => false;
-        public SymbolInfo Descriptor { get; private set; }
+        public SymbolEntity Descriptor { get; private set; }
         public int PriceDigits { get { return Descriptor.Precision; } }
         public int BaseCurrencyDigits { get; private set; }
         public int QuoteCurrencyDigits { get; private set; }
-        public CurrencyInfo BaseCurrency { get; private set; }
-        public CurrencyInfo QuoteCurrency { get; private set; }
+        public CurrencyEntity BaseCurrency { get; private set; }
+        public CurrencyEntity QuoteCurrency { get; private set; }
         public int Depth { get; private set; }
         public int RequestedDepth { get; private set; }
-        public Quote LastQuote { get; private set; }
+        public QuoteEntity LastQuote { get; private set; }
         public double? CurrentAsk { get; private set; }
         public double? CurrentBid { get; private set; }
         public double LotSize { get { return Descriptor.RoundLot; } }
-        public double StopOrderMarginReduction => Descriptor.StopOrderMarginReduction ?? 0;
+        public double StopOrderMarginReduction => Descriptor.StopOrderMarginReduction;
 
         protected QuoteDistributor Distributor { get; private set; }
 
@@ -54,8 +54,8 @@ namespace TickTrader.Algo.Common.Model
         double ISymbolInfo.ContractSizeFractional { get { return Descriptor.RoundLot; } }
         string ISymbolInfo.MarginCurrency { get { return Descriptor.Currency; } }
         string ISymbolInfo.ProfitCurrency { get { return Descriptor.SettlementCurrency; } }
-        double ISymbolInfo.MarginFactorFractional { get { return Descriptor.MarginFactorFractional ?? 1; } }
-        double ISymbolInfo.MarginHedged { get { return Descriptor.MarginHedge; } }
+        double ISymbolInfo.MarginFactorFractional { get { return Descriptor.MarginFactorFractional; } }
+        double ISymbolInfo.MarginHedged { get { return Descriptor.MarginHedged; } }
         int ISymbolInfo.Precision { get { return Descriptor.Precision; } }
         bool ISymbolInfo.SwapEnabled { get { return true; } }
         float ISymbolInfo.SwapSizeLong { get { return (float)Descriptor.SwapSizeLong; } }
@@ -63,10 +63,7 @@ namespace TickTrader.Algo.Common.Model
         string ISymbolInfo.Security { get { return ""; } }
         int ISymbolInfo.SortOrder { get { return 0; } }
 
-        TickTrader.BusinessObjects.MarginCalculationModes ISymbolInfo.MarginMode
-        {
-            get { return FdkToAlgo.Convert(Descriptor.MarginCalcMode); }
-        }
+        TickTrader.BusinessObjects.MarginCalculationModes ISymbolInfo.MarginMode => Descriptor.MarginMode;
 
         #endregion
 
@@ -78,13 +75,13 @@ namespace TickTrader.Algo.Common.Model
             subscription.Dispose();
         }
 
-        public virtual void Update(SymbolInfo newInfo)
+        public virtual void Update(SymbolEntity newInfo)
         {
             this.Descriptor = newInfo;
             InfoUpdated(this);
         }
 
-        protected virtual void OnNewTick(Quote tick)
+        protected virtual void OnNewTick(QuoteEntity tick)
         {
             LastQuote = tick;
 
@@ -102,7 +99,7 @@ namespace TickTrader.Algo.Common.Model
 
         public SymbolEntity GetAlgoSymbolInfo()
         {
-            return FdkToAlgo.Convert(Descriptor);
+            return Descriptor;
         }
     }
 }

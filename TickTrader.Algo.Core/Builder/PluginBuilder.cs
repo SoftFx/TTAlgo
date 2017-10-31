@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
         {
             Descriptor = descriptor;
             marketData = new MarketDataImpl(this);
-            Account = new AccountEntity(this);
+            Account = new AccountAccessor(this);
             Symbols = new SymbolsCollection(marketData);
             Currencies = new CurrenciesCollection();
 
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
         public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
-        public AccountEntity Account { get; private set; }
+        public AccountAccessor Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
         public Action CurrencyDataRequested { get; set; }

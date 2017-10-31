@@ -70,6 +70,12 @@
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
+    <Compile Include="Entities.Requests\CancelOrderRequest.cs" />
+    <Compile Include="Entities.Requests\CloseOrderRequest.cs" />
+    <Compile Include="Entities.Requests\OpenOrderRequest.cs" />
+    <Compile Include="Entities.Requests\OrderRequest.cs" />
+    <Compile Include="Entities.Requests\ReplaceOrderRequest.cs" />
+    <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AssetAccessor.cs" />
     <Compile Include="Entities\AssetEntity.cs" />
@@ -124,10 +130,10 @@
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
     <Compile Include="Isolation\IsolationContext.cs" />
     <Compile Include="Isolation\Link.cs" />
+    <Compile Include="Lib\AsyncEnumerator.cs" />
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />
     <Compile Include="Lib\IoHelper.cs" />
-    <Compile Include="Lib\TaskProxy.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarVector.cs" />

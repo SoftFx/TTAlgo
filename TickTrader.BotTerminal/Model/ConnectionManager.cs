@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.BotTerminal
 {
@@ -284,7 +285,7 @@ namespace TickTrader.BotTerminal
         {
             var request = currentConnectionRequest;
             currentConnectionRequest = null;
-            var code = await Connection.Connect(request.Login, request.Password, request.Server, request.CancelToken);
+            var code = await Connection.Connect(request.Login, request.Password, request.Server, false, request.CancelToken);
             request.SetResult(code);
             if (code == ConnectionErrorCodes.None)
                 internalStateControl.PushEvent(InEvents.Connected);

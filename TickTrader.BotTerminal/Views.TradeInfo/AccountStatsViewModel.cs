@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -23,7 +24,7 @@ namespace TickTrader.BotTerminal
             {
                 account.Calc.Updated += Calc_Updated;
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
-                IsStatsVisible = account.Type != SoftFX.Extended.AccountType.Cash;
+                IsStatsVisible = account.Type != AccountTypes.Cash;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
                 Calc_Updated(account.Calc);
             };

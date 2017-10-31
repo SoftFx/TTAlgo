@@ -24,37 +24,18 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeApi
     {
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
-        Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId, OrderSide side);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
-        Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
+        Task<OrderCmdResult> OpenOrder(bool isAysnc, OpenOrderRequest request);
+        Task<OrderCmdResult> CancelOrder(bool isAysnc, CancelOrderRequest request);
+        Task<OrderCmdResult> ModifyOrder(bool isAysnc, ReplaceOrderRequest request);
+        Task<OrderCmdResult> CloseOrder(bool isAysnc, CloseOrderRequest request);
     }
 
     public interface ITradeExecutor
     {
-        void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
-            string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag);
-
-        void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag);
-
-        void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
-            string orderId, OrderSide side);
-
-        void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
-            string orderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
-
-        void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment);
-
-        void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
-            string orderId, double? volume);
-
-        void SendCloseOrderBy(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
-            string orderId, string byOrderId);
+        void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request);
+        void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request);
+        void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request);
+        void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request);
     }
 
 
@@ -65,7 +46,7 @@ namespace TickTrader.Algo.Core
         IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime to, bool skipCancelOrders);
     }
 
-    public interface IAsyncCrossDomainEnumerator<T> : IDisposable where T : class
+    public interface IAsyncCrossDomainEnumerator<T> : IDisposable
     {
         void GetNextPage(CrossDomainTaskProxy<T[]> pageCallback);
     }

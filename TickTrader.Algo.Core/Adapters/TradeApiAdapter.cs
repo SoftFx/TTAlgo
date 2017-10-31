@@ -10,12 +10,12 @@ namespace TickTrader.Algo.Core
     {
         private ITradeApi api;
         private SymbolProvider symbols;
-        private AccountEntity account;
+        private AccountAccessor account;
         private PluginLoggerAdapter logger;
         private string _isolationTag;
         private ITradePermissions _permissions;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
+        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
         {
             this.api = api;
             this.symbols = symbols;
@@ -67,8 +67,21 @@ namespace TickTrader.Algo.Core
                 tp = RoundPrice(tp, smbMetadata, side);
                 LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
 
+                var request = new OpenOrderRequest
+                {
+                    Symbol = symbol,
+                    Type = type,
+                    Side = side,
+                    Price = price,
+                    Volume = volume,
+                    TakeProfit = tp,
+                    StopLoss = sl,
+                    Comment = comment,
+                    Options = options,
+                    Tag = isolationTag
+                };
 
-                resultEntity = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
+                resultEntity = await api.OpenOrder(isAysnc, request);
 
                 if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
                 {
@@ -124,8 +137,22 @@ namespace TickTrader.Algo.Core
                 tp = RoundPrice(tp, smbMetadata, side);
                 LogOrderOpening(symbol, orderType, side, volumeLots, (stopPrice ?? price) ?? double.NaN, sl, tp);
 
+                var request = new OpenOrderRequest
+                {
+                    Symbol = symbol,
+                    Type = orderType,
+                    Side = side,
+                    Price = price,
+                    StopPrice = stopPrice,
+                    Volume = volume,
+                    TakeProfit = tp,
+                    StopLoss = sl,
+                    Comment = comment,
+                    Options = options,
+                    Tag = isolationTag
+                };
 
-                resultEntity = await api.OpenOrder(isAysnc, symbol, orderType, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, isolationTag);
+                resultEntity = await api.OpenOrder(isAysnc, request);
 
                 if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
                 {
@@ -152,7 +179,9 @@ namespace TickTrader.Algo.Core
 
             logger.PrintTrade("Canceling order #" + orderId);
 
-            var result = await api.CancelOrder(isAysnc, orderId, orderToCancel.Side);
+            var request = new CancelOrderRequest { OrderId = orderId, Side = orderToCancel.Side };
+
+            var result = await api.CancelOrder(isAysnc, request);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
                 logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
@@ -188,7 +217,9 @@ namespace TickTrader.Algo.Core
 
             logger.PrintTrade("Closing order #" + orderId);
 
-            var result = await api.CloseOrder(isAysnc, orderId, closeVolume);
+            var request = new CloseOrderRequest { OrderId = orderId, Volume = closeVolume };
+
+            var result = await api.CloseOrder(isAysnc, request);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
@@ -212,7 +243,9 @@ namespace TickTrader.Algo.Core
             if (orderByClose == null)
                 return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
 
-            var result = await api.CloseOrderBy(isAysnc, orderId, byOrderId);
+            var request = new CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
+
+            var result = await api.CloseOrder(isAysnc, request);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
@@ -252,8 +285,20 @@ namespace TickTrader.Algo.Core
 
             logger.PrintTrade("Modifying order #" + orderId);
 
-            var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, sl, tp, comment);
+            var request = new ReplaceOrderRequest
+            {
+                OrderId = orderId,
+                Symbol = orderToModify.Symbol,
+                Type = orderToModify.Type,
+                Side = orderToModify.Side,
+                CurrentVolume = orderVolume,
+                Price = price,
+                StopLoss = sl,
+                TrakeProfit = tp,
+                Comment = comment
+            };
+
+            var result = await api.ModifyOrder(isAysnc, request);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {
@@ -295,8 +340,21 @@ namespace TickTrader.Algo.Core
 
             logger.PrintTrade("Modifying order #" + orderId);
 
-            var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, stopPrice, orderMaxVisibleVolume, sl, tp, comment);
+            var request = new ReplaceOrderRequest
+            {
+                OrderId = orderId,
+                Symbol = orderToModify.Symbol,
+                Type = orderToModify.Type,
+                Side = orderToModify.Side,
+                CurrentVolume = orderVolume,
+                Price = price,
+                StopPrice =stopPrice,
+                StopLoss = sl,
+                TrakeProfit = tp,
+                Comment = comment
+            };
+
+            var result = await api.ModifyOrder(isAysnc, request);
 
             if (result.ResultCode == OrderCmdResultCodes.Ok)
             {

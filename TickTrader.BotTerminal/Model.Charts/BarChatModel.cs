@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -111,7 +110,7 @@ namespace TickTrader.BotTerminal
             plugin.GetFeedStrategy<BarStrategy>().SetMainSeries(barCollection.Snapshot.ToList());
         }
 
-        protected override void ApplyUpdate(Quote quote)
+        protected override void ApplyUpdate(QuoteEntity quote)
         {
             if (quote.HasBid)
             {

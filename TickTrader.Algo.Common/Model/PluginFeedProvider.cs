@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SoftFX.Extended;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
@@ -18,7 +17,7 @@ namespace TickTrader.Algo.Common.Model
         private ISymbolManager symbols;
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
-        private IReadOnlyDictionary<string, CurrencyInfo> currencies;
+        private IReadOnlyDictionary<string, CurrencyEntity> currencies;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
@@ -26,7 +25,7 @@ namespace TickTrader.Algo.Common.Model
         public ISynchronizationContext Sync { get { return this; } }
 
         public PluginFeedProvider(ISymbolManager symbols, FeedHistoryProviderModel history,
-            IReadOnlyDictionary<string, CurrencyInfo> currencies, ISyncContext sync)
+            IReadOnlyDictionary<string, CurrencyEntity> currencies, ISyncContext sync)
         {
             _sync = sync;
             this.symbols = symbols;
@@ -57,7 +56,6 @@ namespace TickTrader.Algo.Common.Model
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
         {
-            BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
             return history.GetBarSlice(symbolCode, priceType, timeFrame, from, size).Result;
         }
 
@@ -82,7 +80,7 @@ namespace TickTrader.Algo.Common.Model
             feedUpdateHandler = handler;
 
             subscription = symbols.SubscribeAll();
-            subscription.NewQuote += q => rxBuffer.Post(FdkToAlgo.Convert(q));
+            subscription.NewQuote += q => rxBuffer.Post(q);
         }
 
         public void Unsubscribe()
@@ -106,12 +104,12 @@ namespace TickTrader.Algo.Common.Model
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
         {
-            return symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToList();
+            return symbols.Snapshot.Select(m => m.Value.Descriptor).ToList();
         }
 
         public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
         {
-            return currencies.Values.Select(FdkToAlgo.Convert).ToList();
+            return currencies.Values.ToList();
         }
 
         public IEnumerable<BarEntity> QueryBars(string symbolCode)
@@ -133,7 +131,7 @@ namespace TickTrader.Algo.Common.Model
         {
             return symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
-                .Select(s => FdkToAlgo.Convert(s.Value.LastQuote))
+                .Select(s => s.Value.LastQuote)
                 .ToList();
         }
     }

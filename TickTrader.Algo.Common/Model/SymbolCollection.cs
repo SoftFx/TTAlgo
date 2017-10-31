@@ -1,6 +1,6 @@
 ﻿using Machinarium.Qnil;
 using Machinarium.State;
-using SoftFX.Extended;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model
 
         private ISyncContext _sync;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
-        private IReadOnlyDictionary<string, CurrencyInfo> currencies;
+        private IReadOnlyDictionary<string, CurrencyEntity> currencies;
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
             Distributor = new QuoteDistributor(client);
         }
 
-        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IReadOnlyDictionary<string, CurrencyInfo> currencies)
+        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info, IReadOnlyDictionary<string, CurrencyEntity> currencies)
         {
             return new SymbolModel(Distributor, info, currencies);
         }
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
         public QuoteDistributor Distributor { get; }
 
-        public void Initialize(SymbolInfo[] symbolSnapshot, IReadOnlyDictionary<string, CurrencyInfo> currencySnapshot)
+        public void Initialize(SymbolEntity[] symbolSnapshot, IReadOnlyDictionary<string, CurrencyEntity> currencySnapshot)
         {
             this.currencies = currencySnapshot;
             Merge(symbolSnapshot);
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Common.Model
             return Distributor.SubscribeAll();
         }
 
-        private void Merge(IEnumerable<SymbolInfo> freshSnashot)
+        private void Merge(IEnumerable<SymbolEntity> freshSnashot)
         {
             var freshSnapshotDic = freshSnashot.ToDictionary(i => i.Name);
 

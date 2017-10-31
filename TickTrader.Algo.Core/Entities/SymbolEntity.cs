@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
+using BL = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
@@ -17,6 +18,7 @@ namespace TickTrader.Algo.Core
         }
 
         public string Name { get; private set; }
+        public string Description { get; set; }
         public int Digits { get; set; }
         public double LotSize { get; set; }
         public double MaxAmount { get; set; }
@@ -41,5 +43,37 @@ namespace TickTrader.Algo.Core
         public string Security { get; set; }
         public int SortOrder { get; set; }
 
+        #region FDK Compatibility
+
+        public double MinCommission { get; }
+        public string MinCommissionCurrency { get; }
+        //public BL.SwapType SwapType { get; }
+        public int TripleSwapDay { get; }
+        public double? DefaultSlippage { get; set; }
+        public bool IsTradeEnabled { get; set; }
+        public int GroupSortOrder { get; }
+        public int CurrencySortOrder { get; }
+        public int SettlementCurrencySortOrder { get; }
+        public int CurrencyPrecision { get; }
+        public int SettlementCurrencyPrecision { get; }
+        public string StatusGroupId { get; }
+        public string SecurityName => Security;
+        public string SecurityDescription { get; }
+        public double? HiddenLimitOrderMarginReduction { get; }
+        public string Currency => BaseCurrencyCode;
+        public string SettlementCurrency => CounterCurrencyCode;
+        public int Precision => Digits;
+        public double RoundLot => LotSize;
+        public double MinTradeVolume => MinAmount;
+        public double MaxTradeVolume => MaxAmount;
+        public double TradeVolumeStep => AmountStep;
+        public BL.ProfitCalculationModes ProfitCalcMode { get; }
+        public BL.MarginCalculationModes MarginCalcMode { get; }
+        public double MarginHedge { get; }
+        public int MarginFactor { get; }
+        public double ContractMultiplier { get; }
+        public int Color { get; }
+
+        #endregion
     }
 }

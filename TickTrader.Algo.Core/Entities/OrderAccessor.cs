@@ -66,42 +66,19 @@ namespace TickTrader.Algo.Core
         public bool IsCalculated => CalculationError == null;
         public decimal? MarginRateCurrent { get; set; }
         public decimal? Swap => (decimal)_entity.Swap;
-        public decimal? Commission => (decimal)_entity.Commision;
+        public decimal? Commission => (decimal)_entity.Commission;
         public decimal? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
         public decimal Amount { get => (decimal)RequestedVolume; set => throw new NotImplementedException(); }
         public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume.Units; set => throw new NotImplementedException(); }
         decimal? BL.IOrderModel.Profit { get => (decimal)Profit; set => Profit = (double)value; }
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }
-        BO.OrderTypes BL.ICommonOrder.Type { get => Convert(_entity.Type); set => throw new NotImplementedException(); }
-        BO.OrderSides BL.ICommonOrder.Side { get => Convert(_entity.Side); set => throw new NotImplementedException(); }
+        BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
+        BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
         decimal? BL.ICommonOrder.Price { get => (decimal)((Type == OrderType.Stop || Type == OrderType.StopLimit) ? StopPrice :  Price); set => throw new NotImplementedException(); }
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 
         #endregion
-
-        private static BO.OrderTypes Convert(OrderType apiType)
-        {
-            switch (apiType)
-            {
-                case OrderType.Limit: return BO.OrderTypes.Limit;
-                case OrderType.StopLimit: return BO.OrderTypes.StopLimit;
-                case OrderType.Market: return BO.OrderTypes.Market;
-                case OrderType.Position: return BO.OrderTypes.Position;
-                case OrderType.Stop: return BO.OrderTypes.Stop;
-                default: throw new NotImplementedException("Unknown order type: " + apiType);
-            }
-        }
-
-        private static BO.OrderSides Convert(OrderSide apiSide)
-        {
-            switch (apiSide)
-            {
-                case OrderSide.Buy: return BO.OrderSides.Buy;
-                case OrderSide.Sell: return BO.OrderSides.Sell;
-                default: throw new NotImplementedException("Unknown order side: " + apiSide);
-            }
-        }
     }
 }

@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (timeFrame != TimeFrames.Ticks)
                 {
-                    var result = connection.FeedProxy.Server.GetHistoryBars(symbol, DateTime.Now, 1, FdkToAlgo.Convert(priceType), FdkToAlgo.ToBarPeriod(timeFrame));
+                    var result = connection.FeedProxy.GetHistoryBars(symbol, DateTime.Now, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
 
                     return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
                 }
@@ -162,8 +162,10 @@ namespace TickTrader.Algo.Common.Model
 
         private BarStreamSlice DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
         {
-            var result = connection.FeedProxy.Server.GetHistoryBars(symbol, startTime, count, FdkToAlgo.Convert(priceType), FdkToAlgo.ToBarPeriod(timeFrame));
-            var algoBars = FdkToAlgo.Convert(result.Bars, count < 0);
+            var result = connection.FeedProxy.GetHistoryBars(symbol, startTime, count, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
+            var algoBars = result.Bars;
+            if (count < 0)
+                algoBars.Reverse();
 
             var toCorrected = result.To.Value;
 
@@ -193,7 +195,7 @@ namespace TickTrader.Algo.Common.Model
 
             for (var i = to; i > from;)
             {
-                yield return Task.Factory.StartNew(() =>
+                Func<Task < SliceInfo>> nextTask = async ()=>
                 {
                     var cachedSlice = Cache.GetLastRange(symbol, timeFrame, null, from, i);
 
@@ -205,7 +207,7 @@ namespace TickTrader.Algo.Common.Model
                     else
                     {
                         // download
-                        var slices = DownloadTickFile(symbol, i, includeLevel2);
+                        var slices = await DownloadTickFile(symbol, i, includeLevel2).ConfigureAwait(false);
                         if (slices == null || slices.Count == 0)
                         {
                             // end of data
@@ -225,16 +227,18 @@ namespace TickTrader.Algo.Common.Model
                         i = slicesFrom;
                         return info;
                     }
-                });
+                };
+
+                yield return nextTask();
             }
         }
 
-        private List<Slice<DateTime, QuoteEntity>> DownloadTickFile(string symbol, DateTime refTimePoint, bool includeLevel2)
+        private async Task<List<Slice<DateTime, QuoteEntity>>> DownloadTickFile(string symbol, DateTime refTimePoint, bool includeLevel2)
         {
             var proxy = connection.FeedProxy;
-            var result = proxy.Server.GetQuotesHistoryFiles(symbol, includeLevel2, Decrease(refTimePoint));
+            var result = await proxy.DownloadTickFiles(symbol, Decrease(refTimePoint), includeLevel2);
 
-            if (result == null || result.Files.Length == 0)
+            if (result == null || result.Files.Count == 0)
                 return null;
 
             var fileFrom = result.From.Value;
@@ -242,21 +246,33 @@ namespace TickTrader.Algo.Common.Model
 
             var slicer = new TimeBasedSlicer<QuoteEntity>(fileFrom, fileTo, SliceMaxSize, q => q.Time);
 
-            foreach (var fileCode in result.Files)
+            foreach (var fileBytes in result.Files)
             {
-                var filename = includeLevel2 ? "ticks level2" : "ticks";
-                IFormatter<TT.TickValue> formatter = includeLevel2 ? (IFormatter<TT.TickValue>)FeedTickLevel2Formatter.Instance : FeedTickFormatter.Instance;
-                var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(formatter, filename);
-
-                using (var downloadStream = new DataStream(proxy, fileCode))
-                {
-                    var bytes = downloadStream.ToArray();
-                    var fdkTicks = serializer.Deserialize(bytes);
-                    slicer.Write(fdkTicks.ToAlgo(symbol).ToArray());
-                }
+                var ticks = DeserializeTicksFile(fileBytes.ToArray(), includeLevel2);
+                slicer.Write(ticks.Select(t => Convert(t, symbol)).ToArray());
             }
 
             return slicer;
+        }
+
+        private List<TT.TickValue> DeserializeTicksFile(byte[] fileBytes, bool level2)
+        {
+            var filename = level2 ? "ticks level2" : "ticks";
+            IFormatter<TT.TickValue> formatter = level2 ? (IFormatter<TT.TickValue>)FeedTickLevel2Formatter.Instance : FeedTickFormatter.Instance;
+            var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(formatter, filename);
+            return serializer.Deserialize(fileBytes);
+        }
+
+        public static QuoteEntity Convert(TT.TickValue tick, string symbol)
+        {
+            var bids = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Bid)
+                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
+                .ToArray();
+            var asks = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Ask)
+                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
+                .ToArray();
+
+            return new QuoteEntity(symbol, tick.Time, bids, asks);
         }
 
         private DateTime Decrease(DateTime val)

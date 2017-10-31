@@ -54,13 +54,13 @@ namespace TickTrader.Algo.Core
 
         private class MarginCalcAdapter : BL.AccountCalculator
         {
-            public MarginCalcAdapter(AccountEntity accEntity, BL.MarketState market) : base(accEntity, market)
+            public MarginCalcAdapter(AccountAccessor accEntity, BL.MarketState market) : base(accEntity, market)
             {
             }
 
             protected override void OnUpdated()
             {
-                var accEntity = (AccountEntity)Info;
+                var accEntity = (AccountAccessor)Info;
 
                 accEntity.Equity = (double)Equity;
                 accEntity.Profit = (double)Profit;

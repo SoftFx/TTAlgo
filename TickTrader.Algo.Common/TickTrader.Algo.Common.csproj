@@ -67,8 +67,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
+    <Reference Include="TickTrader.FDK.Common">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.FDK.OrderEntry">
+      <HintPath>..\lib\SFX\TickTrader.FDK.OrderEntry.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.FDK.QuoteFeed">
+      <HintPath>..\lib\SFX\TickTrader.FDK.QuoteFeed.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.FDK.QuoteStore">
+      <HintPath>..\lib\SFX\TickTrader.FDK.QuoteStore.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\HistoryFilesPackage.cs" />
     <Compile Include="Fdk.Serializers\BarFormatter.cs" />
     <Compile Include="Fdk.Serializers\ByteArrayBuilder.cs" />
     <Compile Include="Fdk.Serializers\Crc32HashExtension.cs" />
@@ -80,6 +93,7 @@
     <Compile Include="Fdk.Serializers\TextSerializer.cs" />
     <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
+    <Compile Include="Lib\AsyncLock.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
@@ -99,33 +113,40 @@
     <Compile Include="Model.FeedCache\FeedCacheKey.cs" />
     <Compile Include="Model.FeedCache\GuidKeySerializer.cs" />
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
-    <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
-    <Compile Include="Model.Setup\Serialization.cs" />
-    <Compile Include="Model.Setup\TickBasedPluginSetup.cs" />
+    <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
+    <Compile Include="Model.Interop\FdkInterop.cs" />
+    <Compile Include="Model.Interop\InteropException.cs" />
+    <Compile Include="Model.Interop\SfxInterop.cs" />
+    <Compile Include="Model.Interop\Model.Setup\BarBasedPluginSetup.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Serialization.cs" />
+    <Compile Include="Model.Interop\Model.Setup\TickBasedPluginSetup.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Entities\BarHistoryReport.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
+    <Compile Include="Entities\ExecutionReport.cs" />
     <Compile Include="Model\FdkExtension.cs" />
-    <Compile Include="Model\FdkToAlgo.cs" />
+    <Compile Include="Model.Interop\FdkCovertor.cs" />
     <Compile Include="Model.FeedCache\FeedCache.cs" />
     <Compile Include="Model\FeedHistoryProvider.cs" />
     <Compile Include="Model\Interfaces.cs" />
-    <Compile Include="Model.Setup\Convert.cs" />
-    <Compile Include="Model.Setup\GuiModelMsg.cs" />
-    <Compile Include="Model.Setup\InputSetup.cs" />
-    <Compile Include="Model.Setup\Inputs\BarInputBase.cs" />
-    <Compile Include="Model.Setup\Inputs\BarToBarInput.cs" />
-    <Compile Include="Model.Setup\Inputs\BarToDoubleInput.cs" />
-    <Compile Include="Model.Setup\Inputs\QuoteToBarInput.cs" />
-    <Compile Include="Model.Setup\Interfaces.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Convert.cs" />
+    <Compile Include="Model.Interop\Model.Setup\GuiModelMsg.cs" />
+    <Compile Include="Model.Interop\Model.Setup\InputSetup.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Inputs\BarInputBase.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Inputs\BarToBarInput.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Inputs\BarToDoubleInput.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Inputs\QuoteToBarInput.cs" />
+    <Compile Include="Model.Interop\Model.Setup\Interfaces.cs" />
     <Compile Include="Lib\ObservableObject.cs" />
-    <Compile Include="Model.Setup\OutputSetup.cs" />
-    <Compile Include="Model.Setup\ParameterSetup.cs" />
-    <Compile Include="Model.Setup\PluginSetup.cs" />
-    <Compile Include="Model.Setup\PropertySetupBase.cs" />
-    <Compile Include="Model.Setup\QuoteInputSetup.cs" />
-    <Compile Include="Model.Setup\UiConverter.cs" />
+    <Compile Include="Model.Interop\Model.Setup\OutputSetup.cs" />
+    <Compile Include="Model.Interop\Model.Setup\ParameterSetup.cs" />
+    <Compile Include="Model.Interop\Model.Setup\PluginSetup.cs" />
+    <Compile Include="Model.Interop\Model.Setup\PropertySetupBase.cs" />
+    <Compile Include="Model.Interop\Model.Setup\QuoteInputSetup.cs" />
+    <Compile Include="Model.Interop\Model.Setup\UiConverter.cs" />
+    <Compile Include="Model.Interop\IServerInterop.cs" />
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\AggregatedOrderType.cs" />
     <Compile Include="Model\PluginFeedProvider.cs" />
@@ -134,7 +155,6 @@
     <Compile Include="Model\SymbolCollection.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientCore.cs" />
-    <Compile Include="Model\TradeExecutor.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -168,6 +188,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

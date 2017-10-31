@@ -1,7 +1,8 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Core;
 using TickTrader.DedicatedServer.DS.Models;
 
 namespace TickTrader.DedicatedServer.DS.Info
@@ -15,9 +16,9 @@ namespace TickTrader.DedicatedServer.DS.Info
             Currencies = client.Currencies.Values.ToList();
         }
 
-        public AccountType AccountType { get; }
+        public AccountTypes AccountType { get; }
 
-        public IReadOnlyList<SymbolInfo> Symbols { get; }
-        public IReadOnlyList<CurrencyInfo> Currencies { get; }
+        public IReadOnlyList<SymbolEntity> Symbols { get; }
+        public IReadOnlyList<CurrencyEntity> Currencies { get; }
     }
 }

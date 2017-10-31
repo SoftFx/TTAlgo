@@ -1,10 +1,10 @@
 ﻿using Caliburn.Micro;
-using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -26,9 +26,9 @@ namespace TickTrader.BotTerminal
         public int PriceDigits { get; private set; }
         public int ProfitDigits { get; private set; }
 
-        public RateDirectionTracker CurrentPrice => Order.OrderType != TradeRecordType.Position ?
-                                                    Order.Side == TradeRecordSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
-                                                    Order.Side == TradeRecordSide.Buy ? symbol?.BidTracker : symbol?.AskTracker;
+        public RateDirectionTracker CurrentPrice => Order.OrderType != OrderType.Position ?
+                                                    Order.Side == OrderSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
+                                                    Order.Side == OrderSide.Buy ? symbol?.BidTracker : symbol?.AskTracker;
 
         public void Dispose()
         {

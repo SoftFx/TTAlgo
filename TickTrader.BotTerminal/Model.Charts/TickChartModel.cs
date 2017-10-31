@@ -14,7 +14,6 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
-using Fdk = SoftFX.Extended;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -23,7 +22,7 @@ namespace TickTrader.BotTerminal
     {
         private XyDataSeries<DateTime, double> askData = new XyDataSeries<DateTime, double>();
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
-        private Fdk.Quote lastSeriesQuote;
+        private QuoteEntity lastSeriesQuote;
 
         public TickChartModel(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel clientModel)
             : base(symbol, algoEnv, clientModel)
@@ -59,7 +58,7 @@ namespace TickTrader.BotTerminal
             {
                 DateTime timeMargin = Model.LastQuote.CreatingTime;
 
-                SoftFX.Extended.Quote[] tickArray = new Fdk.Quote[0];
+                QuoteEntity[] tickArray = new QuoteEntity[0];
 
                 try
                 {
@@ -68,7 +67,7 @@ namespace TickTrader.BotTerminal
                 catch (Exception)
                 {
                     // TO DO: dysplay error on chart
-                    tickArray = new SoftFX.Extended.Quote[0];
+                    tickArray = new QuoteEntity[0];
                 }
 
                 //foreach (var tick in tickArray)
@@ -95,7 +94,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override void ApplyUpdate(Fdk.Quote update)
+        protected override void ApplyUpdate(QuoteEntity update)
         {
             if (lastSeriesQuote == null || update.CreatingTime > lastSeriesQuote.CreatingTime)
             {

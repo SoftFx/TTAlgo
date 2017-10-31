@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -37,8 +37,7 @@ namespace TickTrader.BotTerminal
             DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
             Level2Panel = new SymbolLevel2ViewModel();
 
-            if (model.Descriptor.Features.IsColorSupported)
-                Color = model.Descriptor.Color;
+            Color = model.Descriptor.Color;
 
             this.DetailsPanel.OnBuyClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
             this.DetailsPanel.OnSellClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
@@ -115,7 +114,7 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        private void OnRateUpdate(Quote tick)
+        private void OnRateUpdate(QuoteEntity tick)
         {
             Bid.Rate = tick.HasBid ? (double?)tick.Bid : null;
             Ask.Rate = tick.HasAsk ? (double?)tick.Ask : null;

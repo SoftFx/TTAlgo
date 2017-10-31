@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core
         void OnExit();
     }
 
-    internal static class Null
+    public static class Null
     {
         private static readonly DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
         private static readonly Order order = new NullOrder();

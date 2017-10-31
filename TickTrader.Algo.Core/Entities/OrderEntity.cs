@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core
             LastFillPrice = src.LastFillPrice;
             LastFillVolume = src.LastFillVolume;
             Swap = src.Swap;
-            Commision = src.Commision;
+            Commission = src.Commission;
         }
 
         public string Id { get; private set; }
@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Core
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
         public double Price { get; set; }
+        public double? NullablePrice => Price.AsNullable();
         public double StopLoss { get; set; }
         public double TakeProfit { get; set; }
         public string Comment { get; set; }
@@ -59,12 +60,25 @@ namespace TickTrader.Algo.Core
         public double LastFillPrice { get; set; }
         public TradeVolume LastFillVolume { get; set; }
         public double Swap { get; set; }
-        public double Commision { get; set; }
+        public double Commission { get; set; }
         public static Order Null { get; private set; }
         public double StopPrice { get; set; }
         public TradeVolume MaxVisibleVolume { get; set; }
+        public DateTime? NullableExpiration { get; set; }
+        public DateTime Expiration => NullableExpiration ?? DateTime.MinValue;
+        public bool IsExpirationSet => NullableExpiration != null;
+        public OrderExecOptions Options { get; set; }
+        public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
         static OrderEntity() { Null = new NullOrder(); }
+
+        #region FDK compatibility
+
+        public string OrderId => Id;
+        public double Volume => RemainingVolume.Units;
+        public double InitialVolume => RequestedVolume.Units;
+
+        #endregion
     }
 
     [Serializable]
@@ -78,7 +92,6 @@ namespace TickTrader.Algo.Core
 
         public double Lots { get; private set; }
         public double Units { get; private set; }
-
 
         public override string ToString()
         {

@@ -27,5 +27,11 @@ namespace TickTrader.Algo.Common.Lib
             machine.Post(task);
             return task;
         }
+
+        public static Task<bool> AddTimeout(this Task t, int timeoutMs)
+        {
+            return Task.WhenAny(t, Task.Delay(timeoutMs))
+                .ContinueWith(wt => wt == t);
+        }
     }
 }

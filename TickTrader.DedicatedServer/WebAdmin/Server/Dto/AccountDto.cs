@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.DedicatedServer.WebAdmin.Server.Dto
 {

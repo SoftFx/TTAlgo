@@ -66,14 +66,15 @@ namespace TickTrader.Algo.Core
         public double Margin { get; set; }
         public double Profit { get; set; }
         public DateTime? Modified { get; set; }
+        public bool IsEmpty => Volume.Units == 0;
 
         double NetPosition.Volume => Volume.Lots;
 
         decimal BL.IPositionModel.Commission => (decimal)Commission;
         decimal BL.IPositionModel.AgentCommission => (decimal)AgentCommission;
         decimal BL.IPositionModel.Swap => (decimal)Swap;
-        BL.IPositionSide BL.IPositionModel.Long => _buyProxy;
-        BL.IPositionSide BL.IPositionModel.Short => _sellProxy;
+        public BL.IPositionSide Long => _buyProxy;
+        public BL.IPositionSide Short => _sellProxy;
         BL.OrderCalculator BL.IPositionModel.Calculator { get; set; }
 
         private class SideProxy : BL.IPositionSide

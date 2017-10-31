@@ -71,6 +71,24 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
+        #region FDK compatibility
+
+        public DateTime CreatingTime => Time;
+        public bool HasBid => !double.IsNaN(Bid);
+        public bool HasAsk => !double.IsNaN(Ask);
+
+        public double? GetNullableBid()
+        {
+            return double.IsNaN(Bid) ? null : (double?)Bid;
+        }
+
+        public double? GetNullableAsk()
+        {
+            return double.IsNaN(Ask) ? null : (double?)Ask;
+        }
+
+        #endregion
+
         public override string ToString()
         {
             var bookDepth = System.Math.Max(BidList?.Length ?? 0, AskList?.Length ?? 0);

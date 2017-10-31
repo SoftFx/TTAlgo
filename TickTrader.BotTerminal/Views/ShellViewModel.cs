@@ -91,11 +91,11 @@ namespace TickTrader.BotTerminal
                 var defaultSymbol = string.Empty;
                 switch (clientModel.Account.Type)
                 {
-                    case SoftFX.Extended.AccountType.Gross:
-                    case SoftFX.Extended.AccountType.Cash:
+                    case AccountTypes.Gross:
+                    case AccountTypes.Cash:
                         defaultSymbol = "EURUSD";
                         break;
-                    case SoftFX.Extended.AccountType.Net:
+                    case AccountTypes.Net:
                         defaultSymbol = "EUR/USD";
                         break;
                 }
@@ -286,7 +286,7 @@ namespace TickTrader.BotTerminal
                 builder.Append("STATE SNAPSHOT ");
 
                 LogState(builder, "ConnectionManager", cManager.State.ToString());
-                LogState(builder, "Connection", cManager.Connection.State.Current.ToString());
+                LogState(builder, "Connection", cManager.Connection.State.ToString());
 
                 logger.Debug(builder.ToString());
 

@@ -1,26 +1,27 @@
 ﻿using SoftFX.Extended;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.Algo.Common.Model.Interop
 {
-    public class TradeExecutor : CrossDomainObject, ITradeExecutor
+    internal class FdkAsyncExecutor : ITradeExecutor
     {
-        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<TradeExecutor>();
+        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FdkAsyncExecutor>();
 
         private BufferBlock<Task> orderQueue;
         private ActionBlock<Task> orderSender;
-        private ConnectionModel conenction;
-        private IOrderDependenciesResolver resolver;
+        private DataTrade _tradeProxy;
 
-        public TradeExecutor(ClientCore client)
+        public FdkAsyncExecutor(DataTrade client)
         {
-            this.conenction = client.Connection;
-            this.resolver = client.Symbols;
+            this._tradeProxy = client;
 
             orderQueue = new BufferBlock<Task>();
 
@@ -30,24 +31,19 @@ namespace TickTrader.Algo.Common.Model
             orderQueue.LinkTo(orderSender);
         }
 
-        [Obsolete("Method is deprecated. There is no support for StopLimits and Hidden orders")]
-        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
-            OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
-        {
-            if (orderType == OrderType.StopLimit)
-                throw new NotSupportedException("StopLimit");
-
-            var px = orderType == OrderType.Stop ? default(double?) : price;
-            var stopPx = orderType == OrderType.Stop ? price : default(double?);
-
-            SendOpenOrder(callback, operationId, symbol, orderType, side, px, stopPx, volume, null, tp, sl, comment, options, tag);
-        }
-
-        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
+        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
         {
             EnqueueTradeOp("OpenOrder", callback, () =>
             {
+                var operationId = request.OperationId;
+                var orderType = request.Type;
+                var price = request.Price;
+                var stopPrice = request.StopPrice;
+                var maxVisibleVolume = request.MaxVisibleVolume;
+                var volume = request.Volume;
+                var tp = request.TakeProfit;
+                var sl = request.StopLoss;
+
                 if (orderType != OrderType.Stop && orderType != OrderType.Market)
                 {
                     ValidatePrice(price);
@@ -60,7 +56,7 @@ namespace TickTrader.Algo.Common.Model
                 }
 
                 ValidateVolume(volume);
-                
+
                 ValidateTp(tp);
                 ValidateSl(sl);
 
@@ -68,81 +64,74 @@ namespace TickTrader.Algo.Common.Model
                 var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
-                conenction.TradeProxy.Server.SendOrderEx(operationId, symbol, Convert(orderType, options), Convert(side),
-                    volume, maxVisVolume, px, stopPx, sl, tp, null, comment, tag, null);
+                _tradeProxy.Server.SendOrderEx(operationId, request.Symbol, Convert(orderType, request.Options), Convert(request.Side),
+                    volume, maxVisVolume, px, stopPx, sl, tp, null, request.Comment, request.Tag, null);
             });
         }
 
-
-        public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, OrderSide side)
+        public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
         {
             EnqueueTradeOp("CancelOrder", callback, () =>
             {
+                var orderId = request.OrderId;
+                var operationId = request.OperationId;
+                var side = request.Side;
+
                 ValidateOrderId(orderId);
-                conenction.TradeProxy.Server.DeletePendingOrderEx(operationId, orderId, Convert(side));
+                _tradeProxy.Server.DeletePendingOrderEx(operationId, orderId, Convert(side));
             });
         }
 
-        [Obsolete("Method is deprecated. There is no support for StopLimits and Hidden orders")]
-        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
-            OrderType orderType, OrderSide side, double price, double volume, double? tp, double? sl, string comment)
+        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
         {
             EnqueueTradeOp("ModifyOrder", callback, () =>
             {
-                ValidateOrderId(orderId);
+                var orderId = request.OrderId;
+                var orderType = request.Type;
+                var price = request.Price;
+                var stopPrice = request.StopPrice;
+                var maxVisibleVolume = request.MaxVisibleVolume;
 
-                var px = orderType == OrderType.Stop ? default(double?) : price;
-                var stopPx = orderType == OrderType.Stop ? price : default(double?);
-
-                conenction.TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
-                    ToRecordType(orderType), Convert(side), volume, null, px, stopPx, sl, tp, null, comment, null, null);
-            });
-        }
-
-        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment)
-        {
-            EnqueueTradeOp("ModifyOrder", callback, () =>
-            {
                 ValidateOrderId(orderId);
 
                 var px = orderType == OrderType.Stop ? default(double?) : price;
                 var stopPx = orderType == OrderType.Stop || orderType == OrderType.StopLimit ? stopPrice : default(double?);
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
-                conenction.TradeProxy.Server.ModifyTradeRecordEx(operationId, orderId, symbol,
-                    ToRecordType(orderType), Convert(side), volume, maxVisVolume, px, stopPx, sl, tp, null, comment, null, null);
+                _tradeProxy.Server.ModifyTradeRecordEx(request.OperationId, orderId, request.Symbol,
+                    ToRecordType(orderType), Convert(request.Side), request.CurrentVolume, maxVisVolume, px, stopPx,
+                    request.StopLoss, request.TrakeProfit, null, request.Comment, null, null);
             });
         }
 
-        public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, double? volume)
+        public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
         {
             EnqueueTradeOp("CloseOrder", callback, () =>
             {
+                var orderId = request.OrderId;
+                var byOrderId = request.ByOrderId;
+                var volume = request.Volume;
+
                 ValidateOrderId(orderId);
 
-                if (volume == null)
+                if (byOrderId != null)
                 {
-                    conenction.TradeProxy.Server.ClosePositionEx(orderId, operationId);
+                    ValidateOrderId(orderId);
+                    ValidateOrderId(byOrderId);
+
+                    var result = _tradeProxy.Server.CloseByPositionsEx(request.OperationId, orderId, byOrderId, -1);
+                    if (!result)
+                        throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now.");
+                }
+                else if (volume == null)
+                {
+                    _tradeProxy.Server.ClosePositionEx(orderId, request.OperationId);
                 }
                 else
                 {
                     ValidateVolume(volume.Value);
-                    conenction.TradeProxy.Server.ClosePositionPartiallyEx(orderId, volume.Value, operationId);
+                    _tradeProxy.Server.ClosePositionPartiallyEx(orderId, volume.Value, request.OperationId);
                 }
-            });
-        }
-
-        public void SendCloseOrderBy(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string byOrderId)
-        {
-            EnqueueTradeOp("CloseOrderBy", callback, () =>
-            {
-                ValidateOrderId(orderId);
-                ValidateOrderId(byOrderId);
-
-                var result = conenction.TradeProxy.Server.CloseByPositionsEx(operationId, orderId, byOrderId, -1);
-                if (!result)
-                    throw new Exception("False! CloseByPositionsEx does not return error code! So enjoy this False by now."); 
             });
         }
 
@@ -168,7 +157,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (SoftFX.Extended.Errors.RejectException rex)
             {
-                return FdkToAlgo.Convert(rex.Reason, rex.Message);
+                return FdkConvertor.Convert(rex.Reason, rex.Message);
             }
             catch (SoftFX.Extended.Errors.LogoutException)
             {
