@@ -123,9 +123,20 @@ namespace TickTrader.BotTerminal
                 EnableArchiveFileCompression = true
             };
 
+            var botStatusTarget = new FileTarget()
+            {
+                FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Status.txt"),
+                Layout = "${longdate} | ${message}",
+                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}"), "Archives"), "Status-{#}.zip"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true
+            };
+
             var ruleForJournalTarget = new LoggingRule(string.Concat("*", nameof(EventJournal)), LogLevel.Trace, journalTarget) { Final = true };
             var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoTarget) { Final = true };
             var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorTarget);
+            var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusTarget) { Final = true };
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
             ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);
@@ -135,6 +146,7 @@ namespace TickTrader.BotTerminal
             var config = new LoggingConfiguration();
 
             config.LoggingRules.Add(ruleForJournalTarget);
+            config.LoggingRules.Add(ruleForBotStatusTarget);
             config.LoggingRules.Add(ruleForBotErrorTarget);
             config.LoggingRules.Add(ruleForBotInfoTarget);
             config.LoggingRules.Add(ruleForLogTarget);
