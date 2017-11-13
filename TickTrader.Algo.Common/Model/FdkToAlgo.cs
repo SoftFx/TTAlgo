@@ -45,9 +45,22 @@ namespace TickTrader.Algo.Common.Model
             return result;
         }
 
-        public static IEnumerable<QuoteEntity> ToAlgo(this IEnumerable<BO.TickValue> ticks, string symbol)
+        public static IEnumerable<QuoteEntity> ToAlgo(this IList<BO.TickValue> ticks, string symbol)
         {
-            return ticks.Select(t => Convert(t, symbol));
+            var result = new List<QuoteEntity>(ticks.Count);
+
+            for (int i = 0; i < ticks.Count; i++)
+            {
+                var t = ticks[i];
+
+                if (i > 0 && ticks[i - 1].Time == t.Time)
+                    continue; // skip duplicate
+                result.Add(Convert(t, symbol));
+            }
+
+            return result;
+
+            //return ticks.Select(t => Convert(t, symbol));
         }
 
         public static IEnumerable<BarEntity> Convert(IEnumerable<Bar> fdkBarCollection)
