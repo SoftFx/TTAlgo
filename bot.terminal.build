@@ -13,7 +13,7 @@
 
   <property name="WinScpPath"			value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
   
-  <property name="DSDir"				value="${SourcesDir}TickTrader.DedicatedServer\bin\${Configuration}\net462\publish\" unless="${property::exists('DSDir')}" />
+  <property name="BADir"				value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net462\publish\" unless="${property::exists('BADir')}" />
   
   <property name="OutpuFolder"			value="${SourcesDir}build.ouput\" />
   <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
@@ -37,7 +37,7 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
-	 <call target="CreateDSInstaller" />
+	 <call target="CreateBAInstaller" />
   </target>
 
   <target name="Publish" >
@@ -125,7 +125,7 @@
       </fileset>
     </delete>
     <delete>
-      <fileset basedir="${DSDir}">
+      <fileset basedir="${BADir}">
         <include name="**/*" />
       </fileset>
     </delete>
@@ -161,10 +161,10 @@
       </fileset>
     </zip>
 
-    <property name="ServerDestArchive" value="${OutpuFolder}DedicatedServer ${Build}.zip" />
+    <property name="ServerDestArchive" value="${OutpuFolder}BotAgent ${Build}.zip" />
 
     <zip zipfile="${ServerDestArchive}">
-      <fileset basedir="${DSDir}">
+      <fileset basedir="${BADir}">
         <include name ="*.*" />
         <include name ="**/*" />
       </fileset>
@@ -173,18 +173,18 @@
   </target>
    
    
-  <target name="CreateDSInstaller">
-    <property name="UtilDir" value="${SourcesDir}TickTrader.DedicatedServer.CmdUtil\bin\Release\" />
+  <target name="CreateBAInstaller">
+    <property name="UtilDir" value="${SourcesDir}TickTrader.BotAgent.CmdUtil\bin\Release\" />
      	
-  	<exec program="${UtilDir}TickTrader.DedicatedServer.CmdUtil.exe">
+  	<exec program="${UtilDir}TickTrader.BotAgent.CmdUtil.exe">
   		<arg value="Mode=uninstall" />
-  		<arg value="AppDir=${DSDir}" />
-  		<arg value="OutFile=${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.Uninstall.nsi" />
+  		<arg value="AppDir=${BADir}" />
+  		<arg value="OutFile=${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.Uninstall.nsi" />
   	</exec>
       
   	<exec program="${NSIS_Path}\makensis.exe" >
   	  <arg value="/DPRODUCT_BUILD=${Build}" />
-      <arg value="${SourcesDir}TickTrader.DedicatedServer.Setup\DS.Setup.nsi" />
+      <arg value="${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.nsi" />
     </exec>
   </target>
    
