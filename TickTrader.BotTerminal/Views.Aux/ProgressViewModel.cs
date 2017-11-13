@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
         {
             Execute.OnUIThread(() =>
             {
-                if (min >= max)
+                if (min > max)
                     throw new ArgumentException("Max cannot be less or equal to min!");
 
                 ProgressMin.Value = min;
