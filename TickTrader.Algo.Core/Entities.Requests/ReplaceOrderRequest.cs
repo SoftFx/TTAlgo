@@ -7,6 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class ReplaceOrderRequest : OrderRequest
     {
         public string OrderId { get; set; }

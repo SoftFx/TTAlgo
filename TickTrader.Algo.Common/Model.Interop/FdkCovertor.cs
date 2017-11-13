@@ -314,6 +314,7 @@ namespace TickTrader.Algo.Common.Model
 
             return new TradeReportEntity(report.Id + ":" + report.ActionId)
             {
+                Id = report.Id,
                 OrderId = report.Id,
                 ReportTime = report.TransactionTime,
                 OpenTime = report.OrderCreated,
@@ -334,7 +335,73 @@ namespace TickTrader.Algo.Common.Model
                 GrossProfitLoss = report.TransactionAmount - report.Swap - report.Commission,
                 ClosePrice = report.PositionClosePrice,
                 Swap = report.Swap,
-                RemainingQuantity = report.LeavesQuantity
+                RemainingQuantity = report.LeavesQuantity,
+                AccountBalance = report.AccountBalance,
+                ActionId = report.ActionId,
+                AgentCommission = report.AgentCommission,
+                ClientId = report.ClientId,
+                CloseConversionRate = report.CloseConversionRate,
+                CommCurrency = report.CommCurrency,
+                DstAssetAmount = report.DstAssetAmount,
+                DstAssetCurrency = report.DstAssetCurrency,
+                DstAssetMovement = report.DstAssetMovement,
+                DstAssetToUsdConversionRate = report.DstAssetToUsdConversionRate,
+                Expiration = report.Expiration,
+                ImmediateOrCancel = report.ImmediateOrCancel,
+                IsReducedCloseCommission = report.IsReducedCloseCommission,
+                IsReducedOpenCommission = report.IsReducedOpenCommission,
+                LeavesQuantity = report.LeavesQuantity,
+                Magic = report.Magic,
+                MarginCurrency = report.MarginCurrency,
+                MarginCurrencyToUsdConversionRate = report.MarginCurrencyToUsdConversionRate,
+                MarketWithSlippage = report.MarketWithSlippage,
+                MaxVisibleQuantity = report.MaxVisibleQuantity,
+                MinCommissionConversionRate = report.MinCommissionConversionRate,
+                MinCommissionCurrency = report.MinCommissionCurrency,
+                NextStreamPositionId = report.NextStreamPositionId,
+                OpenConversionRate = report.OpenConversionRate,
+                OrderCreated = report.OrderCreated,
+                OrderFillPrice = report.OrderFillPrice,
+                OrderLastFillAmount = report.OrderLastFillAmount,
+                OrderModified = report.OrderModified,
+                PositionById = report.PositionById,
+                PositionClosed = report.PositionClosed,
+                PositionClosePrice = report.PositionClosePrice,
+                PositionCloseRequestedPrice = report.PositionCloseRequestedPrice,
+                PositionId = report.PositionId,
+                PositionLastQuantity = report.PositionLastQuantity,
+                PositionLeavesQuantity = report.PositionLeavesQuantity,
+                PositionModified = report.PositionModified,
+                PositionOpened = report.PositionOpened,
+                PositionQuantity = report.PositionQuantity,
+                PosOpenPrice = report.PosOpenPrice,
+                PosOpenReqPrice = report.PosOpenReqPrice,
+                PosRemainingPrice = report.PosRemainingPrice,
+                PosRemainingSide = Convert(report.PosRemainingSide),
+                Price = report.Price,
+                ProfitCurrency = report.ProfitCurrency,
+                Quantity = report.Quantity,
+                ProfitCurrencyToUsdConversionRate = report.ProfitCurrencyToUsdConversionRate,
+                ReqClosePrice = report.ReqClosePrice,
+                ReqCloseQuantity = report.ReqCloseQuantity,
+                ReqOpenPrice = report.ReqOpenPrice,
+                SrcAssetAmount = report.SrcAssetAmount,
+                SrcAssetCurrency = report.SrcAssetCurrency,
+                SrcAssetMovement = report.SrcAssetMovement,
+                SrcAssetToUsdConversionRate = report.SrcAssetToUsdConversionRate,
+                TradeRecordSide = Convert(report.TradeRecordSide),
+                TradeRecordType =  Convert(report.TradeRecordType),
+                //TradeTransactionReportType = Convert(report.TradeTransactionReportType),
+                ReqOpenQuantity = report.ReqOpenQuantity,
+                StopPrice = report.StopPrice,
+                Tag = report.Tag,
+                TransactionAmount = report.TransactionAmount,
+                TransactionCurrency = report.TransactionCurrency,
+                TransactionTime = report.TransactionTime,
+                UsdToDstAssetConversionRate = report.UsdToDstAssetConversionRate,
+                UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
+                UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
+                UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
             };
         }
 
@@ -403,106 +470,75 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        //public static void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, OrderExecReport report, OrderModel newOrder = null)
-        //{
-        //    OrderExecReport algoReport = new OrderExecReport();
-        //    if (newOrder != null)
-        //        algoReport.OrderCopy = newOrder.ToAlgoOrder();
-        //    algoReport.OperationId = GetOperationId(report);
-        //    algoReport.OrderId = report.OrderId;
-        //    algoReport.ExecAction = action;
-        //    algoReport.Action = entityAction;
-        //    if (algoReport.ExecAction == OrderExecAction.Rejected)
-        //        algoReport.ResultCode = FdkToAlgo.Convert(report.RejectReason, report.Text);
-        //    if (!double.IsNaN(report.Balance))
-        //        algoReport.NewBalance = report.Balance;
-        //    if (report.Assets != null)
-        //        algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
-        //    AlgoEvent_OrderUpdated(algoReport);
-        //}
+        public static BarHistoryReport ToBarReport(DataHistoryInfo info)
+        {
+            return new BarHistoryReport()
+            {
+                Bars = Convert(info.Bars).ToList(),
+                From = info.From,
+                To  = info.To,
+                FromAll = info.FromAll, 
+                ToAll = info.ToAll
+            };
+        }
 
-        //private static void OnReport(OrderExecReport report)
-        //{
-        //    switch (report.ExecAction)
-        //    {
-        //        case OrderExecAction.Calculated:
-        //            if (orders.ContainsKey(report.OrderId))
-        //                OnOrderUpdated(report, OrderExecAction.Opened);
-        //            else
-        //                OnOrderAdded(report, OrderExecAction.Opened);
-        //            break;
+        public static ExecutionReport Convert(SoftFX.Extended.ExecutionReport report)
+        {
+            return new ExecutionReport()
+            {
+                OrderId = report.OrderId,
+                Expiration = report.Expiration,
+                Created = report.Created,
+                Modified = report.Modified,
+                RejectReason = Convert(report.RejectReason, report.Text),
+                TakeProfit = report.TakeProfit,
+                StopLoss = report.StopLoss,
+                Text = report.Text,
+                Comment = report.Comment,
+                Tag = report.Tag,
+                Magic = report.Magic,
+                IsReducedOpenCommission = report.IsReducedOpenCommission,
+                IsReducedCloseCommission = report.IsReducedCloseCommission,
+                ImmediateOrCancel= report.ImmediateOrCancel,
+                MarketWithSlippage = report.MarketWithSlippage,
+                ClosePositionRequestId = report.ClosePositionRequestId,
+                TradePrice = report.TradePrice,
+                Assets = report.Assets.Select(Convert).ToArray(),
+                StopPrice = report.StopPrice,
+                AveragePrice = report.AveragePrice,
+                ClientOrderId = report.ClientOrderId,
+                TradeRequestId = report.TradeRequestId, 
+                OrderStatus = Convert(report.OrderStatus),
+                ExecutionType = Convert(report.ExecutionType),
+                Symbol = report.Symbol,
+                ExecutedVolume = report.ExecutedVolume,
+                InitialVolume = report.InitialVolume,
+                LeavesVolume = report.LeavesVolume,
+                MaxVisibleVolume  = report.MaxVisibleVolume,
+                TradeAmount = report.TradeAmount,
+                Commission = report.Commission,
+                AgentCommission = report.AgentCommission,
+                Swap = report.Swap,
+                OrderType = Convert(report.OrderType),
+                OrderSide = Convert(report.OrderSide),
+                Price = report.Price,
+                Balance = report.Balance
+            };
+        }
 
-        //        case OrderExecAction.Modified:
-        //            OnOrderUpdated(report, OrderExecAction.Modified);
-        //            break;
+        public static ExecutionType Convert(SoftFX.Extended.ExecutionType type)
+        {
+            return (ExecutionType)type;
+        }
 
-        //        case OrderExecAction.Expired:
-        //            OnOrderRemoved(report, OrderExecAction.Expired);
-        //            break;
+        public static OrderStatus Convert(SoftFX.Extended.OrderStatus status)
+        {
+            return (OrderStatus)status;
+        }
 
-        //        case OrderExecAction.Canceled:
-        //            OnOrderRemoved(report, OrderExecAction.Canceled);
-        //            break;
-
-        //        case OrderExecAction.Rejected:
-        //            OnOrderRejected(report, OrderExecAction.Rejected);
-        //            break;
-
-        //        case OrderExecAction.None:
-        //            if (report.OrderStatus == OrderStatus.Rejected)
-        //                OnOrderRejected(report, OrderExecAction.Rejected);
-        //            break;
-
-        //        case OrderExecAction.Trade:
-        //            if (report.OrderType == TradeRecordType.StopLimit)
-        //            {
-        //                OnOrderRemoved(report, OrderExecAction.Activated);
-        //            }
-        //            else if (report.OrderType == TradeRecordType.Limit || report.OrderType == TradeRecordType.Stop)
-        //            {
-        //                if (report.LeavesVolume != 0)
-        //                    OnOrderUpdated(report, OrderExecAction.Filled);
-        //                else if (Type != AccountType.Gross)
-        //                    OnOrderRemoved(report, OrderExecAction.Filled);
-        //            }
-        //            else if (report.OrderType == TradeRecordType.Position)
-        //            {
-        //                if (!double.IsNaN(report.Balance))
-        //                    Balance = report.Balance;
-
-        //                if (report.LeavesVolume != 0)
-        //                    OnOrderUpdated(report, OrderExecAction.Closed);
-        //                else
-        //                    OnOrderRemoved(report, OrderExecAction.Closed);
-        //            }
-        //            else if (report.OrderType == TradeRecordType.Market
-        //                && (Type == AccountType.Net || Type == AccountType.Cash))
-        //            {
-        //                OnMarketFilled(report, OrderExecAction.Filled);
-        //            }
-        //            break;
-        //    }
-
-        //    if (Type == AccountType.Net && report.ExecutionType == OrderExecAction.Trade)
-        //    {
-        //        switch (report.OrderStatus)
-        //        {
-        //            case OrderStatus.Calculated:
-        //            case OrderStatus.Filled:
-        //                if (!double.IsNaN(report.Balance))
-        //                {
-        //                    Balance = report.Balance;
-        //                    OnBalanceChanged();
-        //                }
-        //                break;
-        //        }
-        //    }
-
-        //    if (Type == AccountType.Cash)
-        //    {
-        //        foreach (var asset in report.Assets)
-        //            UpdateAsset(asset);
-        //    }
-        //}
+        public static BalanceOperationReport Convert(SoftFX.Extended.BalanceOperation op)
+        {
+            return new BalanceOperationReport(op.Balance, op.TransactionCurrency, op.TransactionAmount);
+        }
     }
 }

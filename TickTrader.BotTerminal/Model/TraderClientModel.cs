@@ -23,6 +23,7 @@ namespace TickTrader.BotTerminal
         private IAccountInfoProvider _accountInfo;
         private EventJournal _journal;
         private BoolProperty _isConnected;
+        private bool _wasConnectedEventFired;
 
         public TraderClientModel(ConnectionModel connection, EventJournal journal)
         {
@@ -93,27 +94,31 @@ namespace TickTrader.BotTerminal
 
         private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
         {
-            try
-            {
+            _wasConnectedEventFired = false;
+
+            //try
+            //{
                 await History.Init();
-                _core.Init();
+                await _core.Init();
                 Account.Init();
                 _accountInfo.BalanceUpdated += Account_BalanceUpdated;
                 _accountInfo.OrderUpdated += Account_OrderUpdated;
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Connection_Initalizing() failed.");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    logger.Error(ex, "Connection_Initalizing() failed.");
+            //}
 
+            _wasConnectedEventFired = true;
             OnConnected();
         }
 
         private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
-            OnDisconnected();
+            if (_wasConnectedEventFired)
+                OnDisconnected();
 
             try
             {

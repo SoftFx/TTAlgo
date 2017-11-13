@@ -48,6 +48,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        public string Id { get; private set; }
         public double Balance { get; private set; }
         public string BalanceCurrency { get; private set; }
         public int BalanceDigits { get; private set; }
@@ -57,12 +58,14 @@ namespace TickTrader.Algo.Common.Model
 
         public void Init()
         {
-            var cache = _client.TradeProxy;
+            var cache = _client.Cache;
             var currencies = _client.Currencies;
-            var accInfo = cache.AccountInfo;
+            var accInfo = cache.AccountInfo.Value;
             var balanceCurrencyInfo = currencies.Snapshot.Read(accInfo.BalanceCurrency);
+            var tradeRecords = cache.TradeRecords.Snapshot.Values;
+            var positions = cache.Positions.Snapshot.Values;
 
-            UpdateData(accInfo, currencies.Snapshot, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
+            UpdateData(accInfo, currencies.Snapshot, _client.Symbols, tradeRecords, positions, accInfo.Assets);
 
             if (_isCalcEnabled)
             {
@@ -73,8 +76,11 @@ namespace TickTrader.Algo.Common.Model
 
         public void Deinit()
         {
-            if (_isCalcEnabled)
+            if (_isCalcEnabled && Calc != null)
+            {
                 Calc.Dispose();
+                Calc = null;
+            }
         }
 
         private void UpdateData(AccountEntity accInfo,
@@ -84,6 +90,8 @@ namespace TickTrader.Algo.Common.Model
             IEnumerable<PositionEntity> positions,
             IEnumerable<AssetEntity> assets)
         {
+            Id = accInfo.Id;
+
             _currencies = currencies;
 
             this.positions.Clear();
@@ -187,14 +195,14 @@ namespace TickTrader.Algo.Common.Model
         {
             switch (report.ExecutionType)
             {
-                case ExecutionType.Opened:
+                case ExecutionType.Calculated:
                     if (orders.ContainsKey(report.OrderId))
                         OnOrderUpdated(report, OrderExecAction.Opened);
                     else
                         OnOrderAdded(report, OrderExecAction.Opened);
                     break;
 
-                case ExecutionType.Modified:
+                case ExecutionType.Replace:
                     OnOrderUpdated(report, OrderExecAction.Modified);
                     break;
 
@@ -356,10 +364,12 @@ namespace TickTrader.Algo.Common.Model
             {
                 return new AccountEntity
                 {
+                    Id = Id,
                     Balance = Balance,
                     BalanceCurrency = BalanceCurrency,
                     Leverage = Leverage,
-                    Type = Type.Value
+                    Type = Type.Value,
+                    Assets = Assets.Snapshot.Values.Select(a => a.ToAlgoAsset()).ToArray()
                 };
             }
         }

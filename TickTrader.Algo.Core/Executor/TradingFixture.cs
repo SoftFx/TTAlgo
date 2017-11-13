@@ -60,13 +60,13 @@ namespace TickTrader.Algo.Core
 
             var accType = DataProvider.AccountInfo.Type;
 
-            builder.Account.Update(DataProvider.AccountInfo, currencies);
-
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
             builder.Account.Orders.Clear();
             builder.Account.NetPositions.Clear();
             builder.Account.Assets.Clear();
+
+            builder.Account.Update(DataProvider.AccountInfo, currencies);
 
             foreach (var order in DataProvider.GetOrders())
                 builder.Account.Orders.Add(order);

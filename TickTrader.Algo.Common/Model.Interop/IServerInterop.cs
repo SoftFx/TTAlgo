@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SoftFX.Extended;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
@@ -24,9 +23,9 @@ namespace TickTrader.Algo.Common.Model
 
     public interface ITradeServerApi : ITradeExecutor
     {
-        AccountEntity AccountInfo { get; }
-        IEnumerable<OrderEntity> TradeRecords { get; }
-        IEnumerable<PositionEntity> Positions { get; }
+        Task<AccountEntity> GetAccountInfo();
+        Task<OrderEntity[]> GetTradeRecords();
+        Task<PositionEntity[]> GetPositions();
 
         Task<OrderCmdResult> OpenOrder(OpenOrderRequest request);
         Task<OrderCmdResult> CancelOrder(CancelOrderRequest request);
@@ -44,13 +43,13 @@ namespace TickTrader.Algo.Common.Model
 
     public interface IFeedServerApi
     {
-        CurrencyEntity[] Currencies { get; }
-        SymbolEntity[] Symbols { get; }
-        void SubscribeToQuotes(string[] symbols, int depth);
-
         event Action<QuoteEntity> Tick;
 
-        BarHistoryReport GetHistoryBars(string symbol, DateTime startTime, int count, PriceType priceType, BarPeriod barPeriod);
+        Task<CurrencyEntity[]> GetCurrencies();
+        Task<SymbolEntity[]> GetSymbols();
+        Task SubscribeToQuotes(string[] symbols, int depth);
+        IAsyncEnumerator<BarEntity[]> GetHistoryBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod);
+        Task<List<BarEntity>> GetHistoryBars(string symbol, DateTime startTime, int count, BarPriceType priceType, TimeFrames barPeriod);
         Task<HistoryFilesPackage> DownloadTickFiles(string symbol, DateTime refTimePoint, bool includeLevel2);
     }
 }

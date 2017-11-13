@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Common.Model
         private ClientCore _client;
         private List<Subscription> allSymbolSubscriptions = new List<Subscription>();
         private Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
-        private ActionBlock<Task> requestQueue;
+        private ActionBlock<SubscriptionTask> requestQueue;
 
         public QuoteDistributor(ClientCore client)
         {
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var group in groups.Values)
                 group.CurrentDepth = group.MaxDepth;
 
-            requestQueue = new ActionBlock<Task>(t => t.RunSynchronously());
+            requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
             EnqueuBatchSubscription();
         }
 
@@ -115,19 +115,28 @@ namespace TickTrader.Algo.Common.Model
             return group;
         }
 
-        private Task EnqueueSubscriptionRequest(int depth, params string[] symbols)
+        private void EnqueueSubscriptionRequest(int depth, params string[] symbols)
         {
             if (requestQueue != null) // online
+                requestQueue.Post(new SubscriptionTask(symbols, depth));
+        }
+
+        private async Task InvokeSubscribeAsync(SubscriptionTask task)
+        {
+            await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
+            logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
+        }
+
+        private struct SubscriptionTask
+        {
+            public SubscriptionTask(string[] symbols, int depth)
             {
-                var subscribeTask = new Task(() =>
-                {
-                    _client.FeedProxy.SubscribeToQuotes(symbols, depth);
-                    logger.Debug("Subscribed to " + string.Join(",", symbols));
-                });
-                requestQueue.Post(subscribeTask);
-                return subscribeTask;
+                Symbols = symbols;
+                Depth = depth;
             }
-            return Task.FromResult<object>(this);
+
+            public string[] Symbols { get; }
+            public int Depth { get; }
         }
 
         private class Subscription : IFeedSubscription

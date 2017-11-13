@@ -1,7 +1,4 @@
-﻿using Machinarium.State;
-using SoftFX.Extended;
-using SoftFX.Extended.Storage;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -75,27 +72,22 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                if (timeFrame != TimeFrames.Ticks)
-                {
-                    var result = connection.FeedProxy.GetHistoryBars(symbol, DateTime.Now, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
+            throw new NotSupportedException();
 
-                    return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
-                }
-                else
-                    throw new Exception("Ticks is not supported!");
-            });
+            //if (timeFrame != TimeFrames.Ticks)
+            //{
+            //    var result = await connection.FeedProxy.GetHistoryBars(symbol, DateTime.Now, 1, priceType, timeFrame);
+            //    return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
+            //}
+            //else
+            //    throw new Exception("Ticks is not supported!");
         }
 
-        public Task<List<BarEntity>> GetBarSlice(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        public async Task<List<BarEntity>> GetBarSlice(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                var slice = DownloadBarSlice(symbol, timeFrame, priceType, startTime, count);
-                _diskCache.Put(symbol, timeFrame, priceType, slice.From, slice.To, slice.Bars.ToArray());
-                return slice.Bars;
-            });
+            var slice = await DownloadBarSlice(symbol, timeFrame, priceType, startTime, count);
+            _diskCache.Put(symbol, timeFrame, priceType, slice.From, slice.To, slice.Bars.ToArray());
+            return slice.Bars;
         }
 
         public IAsyncEnumerator<BarStreamSlice> EnumerateBars(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
@@ -107,7 +99,7 @@ namespace TickTrader.Algo.Common.Model
         {
             for (var i = from; i < to;)
             {
-                yield return Task.Factory.StartNew(() =>
+                Func<Task< BarStreamSlice>> nextSliceFunc = async ()=>
                 {
                     var cachedSlice = Cache.GetFirstBarSlice(symbol, timeFrame, priceType, i, to);
 
@@ -119,12 +111,14 @@ namespace TickTrader.Algo.Common.Model
                     else
                     {
                         // download
-                        var slice = DownloadBarSlice(symbol, timeFrame, priceType, i, SliceMaxSize);
+                        var slice = await DownloadBarSlice(symbol, timeFrame, priceType, i, SliceMaxSize);
                         _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
                         i = slice.To;
                         return slice;
                     }
-                });
+                };
+
+                yield return nextSliceFunc();
             }
         }
 
@@ -134,7 +128,7 @@ namespace TickTrader.Algo.Common.Model
 
             for (var i = from; i < to;)
             {
-                yield return Task.Factory.StartNew(() =>
+                Func<Task<SliceInfo>> nextSliceFunc = async () =>
                 {
                     var cachedSlice = Cache.GetFirstRange(symbol, timeFrame, priceType, i, to);
 
@@ -146,12 +140,14 @@ namespace TickTrader.Algo.Common.Model
                     else
                     {
                         // download
-                        var slice = DownloadBarSlice(symbol, timeFrame, priceType, i, chunkSize);
+                        var slice = await DownloadBarSlice(symbol, timeFrame, priceType, i, chunkSize);
                         _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
                         i = slice.To;
                         return new SliceInfo(slice.From, slice.To, slice.Bars.Count);
                     }
-                });
+                };
+
+                yield return nextSliceFunc();
             }
         }
 
@@ -160,23 +156,25 @@ namespace TickTrader.Algo.Common.Model
             return DownloadBarsInternal(symbol, timeFrame, priceType, from, to).ToAsyncEnumerator();
         }
 
-        private BarStreamSlice DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
+        private async Task<BarStreamSlice> DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
         {
-            var result = connection.FeedProxy.GetHistoryBars(symbol, startTime, count, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
-            var algoBars = result.Bars;
+            var algoBars = await connection.FeedProxy.GetHistoryBars(symbol, startTime, count, priceType, timeFrame);
             if (count < 0)
                 algoBars.Reverse();
 
-            var toCorrected = result.To.Value;
+            var from = algoBars.First().OpenTime;
+            var to =  algoBars.Last().CloseTime;
 
-            if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To)
-            {
-                var sampler = BarSampler.Get(timeFrame);
-                var barBoundaries = sampler.GetBar(result.To.Value);
-                toCorrected = barBoundaries.Close;
-            }
+            //var toCorrected = result.To.Value;
 
-            return new BarStreamSlice(result.From.Value, toCorrected, algoBars);
+            //if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To)
+            //{
+            //    var sampler = BarSampler.Get(timeFrame);
+            //    var barBoundaries = sampler.GetBar(result.To.Value);
+            //    toCorrected = barBoundaries.Close;
+            //}
+
+            return new BarStreamSlice(from, to, algoBars);
         }
 
         //private IEnumerable<Task<TickStreamSlice>> EnumerateTicksInternal()

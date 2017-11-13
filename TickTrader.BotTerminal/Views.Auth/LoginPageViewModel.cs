@@ -25,6 +25,7 @@ namespace TickTrader.BotTerminal
         private bool isConnecting;
         private bool isValid;
         private bool savePassword;
+        private bool useSfx;
 
         public LoginPageViewModel(ConnectionManager cManager, AccountAuthEntry displayEntry = null)
         {
@@ -88,6 +89,16 @@ namespace TickTrader.BotTerminal
             {
                 savePassword = value;
                 NotifyOfPropertyChange(nameof(SavePassword));
+            }
+        }
+
+        public bool UseSfxProtocol
+        {
+            get { return useSfx; }
+            set
+            {
+                useSfx = value;
+                NotifyOfPropertyChange(nameof(UseSfxProtocol));
             }
         }
 
@@ -161,7 +172,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 string address = ResolveServerAddress();
-                Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
+                Error = await cManager.Connect(login, password, address, useSfx, savePassword, CancellationToken.None);
                 if (Error == ConnectionErrorCodes.None)
                     Done();
             }
@@ -189,6 +200,7 @@ namespace TickTrader.BotTerminal
             Password = acc.Password;
             Server = acc.Server.Name;
             SavePassword = acc.Password != null;
+            UseSfxProtocol = acc.UseSfxProtocol;
         }
 
         private string ResolveServerAddress()

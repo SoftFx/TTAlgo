@@ -23,9 +23,9 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info, IReadOnlyDictionary<string, CurrencyEntity> currencies)
+        protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info)
         {
-            return new SymbolModel((QuoteDistributor)distributor, info, currencies);
+            return new SymbolModel((QuoteDistributor)distributor, info, Currencies);
         }
     }
 }

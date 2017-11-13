@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class CloseOrderRequest : OrderRequest
     {
         public string OrderId { get; set; }

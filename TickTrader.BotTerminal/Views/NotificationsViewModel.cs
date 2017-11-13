@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Toaster.Messages;
 
@@ -17,7 +18,6 @@ namespace TickTrader.BotTerminal
         private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
         private PreferencesStorageModel _preferences;
-
 
         public bool SoundsEnabled
         {
@@ -31,7 +31,6 @@ namespace TickTrader.BotTerminal
             private set { ToggleNotifications(value); }
         }
 
-
         public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionManager connectionManager, PersistModel storage)
         {
             _accountInfo = accountInfo;
@@ -43,7 +42,6 @@ namespace TickTrader.BotTerminal
 
             LoadPreferences();
         }
-
 
         private void OnPreferencesChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -102,13 +100,13 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(NotificationsEnabled));
         }
 
-        private void ConnectionStateChanged(ConnectionManager.States oldState, ConnectionManager.States newState)
+        private void ConnectionStateChanged(ConnectionModel.States oldState, ConnectionModel.States newState)
         {
-            if (newState == ConnectionManager.States.Online)
+            if (newState == ConnectionModel.States.Online)
             {
                 _notificationCenter.SoundNotification.Notify(AppSounds.Save);
             }
-            else if (newState == ConnectionManager.States.Offline)
+            else if (oldState == ConnectionModel.States.Disconnecting && (newState == ConnectionModel.States.Offline || newState == ConnectionModel.States.OfflineRetry))
             {
                 _notificationCenter.SoundNotification.Notify(AppSounds.NegativeLong);
             }

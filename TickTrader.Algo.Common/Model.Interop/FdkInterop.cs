@@ -10,10 +10,13 @@ using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Common.Lib;
+using SoftFX.Extended.Reports;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class FdkInterop : IServerInterop, IFeedServerApi, ITradeServerApi
+    internal class FdkInterop : CrossDomainObject, IServerInterop, IFeedServerApi, ITradeServerApi
     {
         private static IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FdkInterop>();
 
@@ -22,6 +25,7 @@ namespace TickTrader.Algo.Common.Model
         private DataFeed _feedProxy;
         private DataTrade _tradeProxy;
         private FdkAsyncExecutor _executor;
+        private ActionBlock<Task> requestProcessor;
 
         private TaskCompletionSource<ConnectionErrorCodes> _connectEvent;
         private bool isFeedLoggedIn;
@@ -40,220 +44,9 @@ namespace TickTrader.Algo.Common.Model
             _options = options;
         }
 
-        //private void Init()
-        //{
-        //    try
-        //    {
-        //        bool logsEnabled = options.EnableFixLogs;
-
-        //        if (logsEnabled)
-        //        {
-        //            if (!Directory.Exists(LogPath))
-        //                Directory.CreateDirectory(LogPath);
-        //        }
-
-        //        isFeedLoggedIn = false;
-        //        isTradeLoggedIn = false;
-        //        isFeedCacheLoaded = false;
-        //        isTradeCacheLoaded = false;
-        //        isSymbolsLoaded = false;
-
-        //        FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
-        //        {
-        //            TargetCompId = "EXECUTOR",
-        //            ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
-        //            SecureConnection = true,
-        //            Port = 5003,
-        //            DecodeLogFixMessages = true
-        //        };
-
-        //        feedCs.Address = CurrentServer;
-        //        feedCs.Username = CurrentLogin;
-        //        feedCs.Password = CurrentPassword;
-
-        //        if (logsEnabled)
-        //        {
-        //            feedCs.FixEventsFileName = "feed.events.log";
-        //            feedCs.FixMessagesFileName = "feed.messages.log";
-        //            feedCs.FixLogDirectory = LogPath;
-        //        }
-        //        feedCs.ExcludeMessagesFromLogs = "y|0";
-
-        //        feedProxy = new DataFeed(feedCs.ToString());
-        //        feedProxy.Logout += feedProxy_Logout;
-        //        feedProxy.Logon += feedProxy_Logon;
-        //        feedProxy.CacheInitialized += FeedProxy_CacheInitialized;
-        //        feedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-
-        //        FixConnectionStringBuilder tradeCs = new FixConnectionStringBuilder()
-        //        {
-        //            TargetCompId = "EXECUTOR",
-        //            ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
-        //            SecureConnection = true,
-        //            Port = 5004,
-        //            DecodeLogFixMessages = true
-        //        };
-
-        //        tradeCs.Address = address;
-        //        tradeCs.Username = username;
-        //        tradeCs.Password = password;
-        //        if (logsEnabled)
-        //        {
-        //            tradeCs.FixEventsFileName = "trade.events.log";
-        //            tradeCs.FixMessagesFileName = "trade.messages.log";
-        //            tradeCs.FixLogDirectory = LogPath;
-        //        }
-
-        //        tradeProxy = new DataTrade(tradeCs.ToString());
-        //        tradeProxy.Logout += tradeProxy_Logout;
-        //        tradeProxy.Logon += tradeProxy_Logon;
-        //        tradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
-
-        //        TradeProxy.SynchOperationTimeout = 5 * 60 * 1000;
-
-        //        Connecting();
-
-        //        feedProxy.Start();
-        //        tradeProxy.Start();
-
-        //        stateControl.PushEvent(Events.DoneConnecting);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.Error("ConnectionModel.Init() failed!", ex);
-        //        LastError = ConnectionErrorCodes.Unknown;
-        //        stateControl.PushEvent(Events.FailedConnecting);
-        //    }
-        //}
-
-        //public void Disconnect()
-        //{
-        //    try
-        //    {
-        //        connectCancelSrc.Cancel();
-
-        //         wait start task to stop
-        //        await startTask;
-
-        //        try
-        //        {
-        //             fire disconnecting event
-        //            Disconnecting();
-        //        }
-        //        catch (Exception ex) { logger.Error(ex); }
-
-        //         start stoping feed
-        //        Task stopFeed = Task.Factory.StartNew(
-        //            () =>
-        //            {
-        //                try
-        //                {
-        //                    feedProxy.Logout -= feedProxy_Logout;
-        //                    feedProxy.Logon -= feedProxy_Logon;
-        //                    feedProxy.CacheInitialized -= FeedProxy_CacheInitialized;
-        //                    feedProxy.SymbolInfo -= FeedProxy_SymbolInfo;
-        //                    feedProxy.Stop();
-        //                    feedProxy.Dispose();
-        //                }
-        //                catch (Exception ex) { logger.Error(ex); }
-        //            });
-
-        //         start stopping trade
-        //        Task stopTrade = Task.Factory.StartNew(
-        //            () =>
-        //            {
-        //                try
-        //                {
-        //                    tradeProxy.Logout -= tradeProxy_Logout;
-        //                    tradeProxy.Logon -= tradeProxy_Logon;
-        //                    tradeProxy.CacheInitialized -= TradeProxy_CacheInitialized;
-        //                    tradeProxy.Stop();
-        //                    tradeProxy.Dispose();
-        //                }
-        //                catch (Exception ex) { logger.Error(ex); }
-
-        //            });
-
-        //         wait Feed & Tarde stop
-        //        await Task.WhenAll(stopFeed, stopTrade);
-
-        //        feedProxy = null;
-        //        tradeProxy = null;
-        //    }
-        //    catch (Exception ex) { logger.Error(ex); }
-        //    stateControl.PushEvent(Events.DoneDisconnecting);
-        //}
-
-        //private ConnectionErrorCodes Convert(LogoutReason fdkCode)
-        //{
-        //    switch (fdkCode)
-        //    {
-        //        case LogoutReason.BlockedAccount: return ConnectionErrorCodes.BlockedAccount;
-        //        case LogoutReason.InvalidCredentials: return ConnectionErrorCodes.InvalidCredentials;
-        //        case LogoutReason.NetworkError: return ConnectionErrorCodes.NetworkError;
-        //        case LogoutReason.ServerError: return ConnectionErrorCodes.ServerError;
-        //        case LogoutReason.ServerLogout: return ConnectionErrorCodes.ServerLogout;
-        //        case LogoutReason.SlowConnection: return ConnectionErrorCodes.SlowConnection;
-        //        case LogoutReason.LoginDeleted: return ConnectionErrorCodes.LoginDeleted;
-        //        default: return ConnectionErrorCodes.Unknown;
-        //    }
-        //}
-
-        //private void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
-        //{
-        //    logger.Debug("EVENT Feed.SymbolInfo");
-        //    stateControl.ModifyConditions(() => isSymbolsLoaded = true);
-        //}
-
-        //void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
-        //{
-        //    logger.Debug("EVENT Feed.Logon");
-        //    stateControl.ModifyConditions(() => isFeedLoggedIn = true);
-        //}
-
-        //void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
-        //{
-        //    logger.Debug("EVENT Trade.Logon");
-        //    stateControl.ModifyConditions(() => isTradeLoggedIn = true);
-        //}
-
-        //private void FeedProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
-        //{
-        //    logger.Debug("EVENT Feed.CacheInitialized");
-        //    stateControl.ModifyConditions(() => isFeedCacheLoaded = true);
-        //}
-
-        //private void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
-        //{
-        //    logger.Debug("EVENT Trade.CacheInitialized");
-        //    stateControl.ModifyConditions(() => isTradeCacheLoaded = true);
-        //}
-
-        //void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
-        //{
-        //    stateControl.SyncContext.Synchronized(() =>
-        //    {
-        //        if (LastError == ConnectionErrorCodes.None)
-        //            LastError = Convert(e.Reason);
-        //        stateControl.PushEvent(Events.OnLogout);
-        //    });
-        //}
-
-        //void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
-        //{
-        //    stateControl.SyncContext.Synchronized(() =>
-        //    {
-        //        if (LastError == ConnectionErrorCodes.None)
-        //            LastError = Convert(e.Reason);
-        //        stateControl.PushEvent(Events.OnLogout);
-        //    });
-        //}
-
-        public Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken)
+        public async Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken)
         {
-            bool logsEnabled = _options.EnableFixLogs;
-
-            if (logsEnabled)
+            if (_options.EnableFixLogs)
             {
                 if (!Directory.Exists(LogPath))
                     Directory.CreateDirectory(LogPath);
@@ -265,6 +58,35 @@ namespace TickTrader.Algo.Common.Model
             isTradeCacheLoaded = false;
             isSymbolsLoaded = false;
 
+            CreateFeedProxy(address, login, password, _options.EnableFixLogs);
+            CreateTradeProxy(address, login, password, _options.EnableFixLogs);
+
+            _connectEvent = new TaskCompletionSource<ConnectionErrorCodes>();
+
+            _feedProxy.Tick += (s, e) => Tick?.Invoke(FdkConvertor.Convert(e.Tick));
+            _tradeProxy.PositionReport += (s, a) => PositionReport?.Invoke(FdkConvertor.Convert(a.Report));
+            _tradeProxy.ExecutionReport += (s, a) => ExecutionReport?.Invoke(FdkConvertor.Convert(a.Report));
+            _tradeProxy.BalanceOperation += (s, a) => BalanceOperation?.Invoke(FdkConvertor.Convert(a.Data));
+            _tradeProxy.TradeTransactionReport += (s, a) => TradeTransactionReport?.Invoke(FdkConvertor.Convert(a.Report));
+
+            _feedProxy.Start();
+            _tradeProxy.Start();
+
+            var resultCode =  await _connectEvent.Task;
+
+            if (resultCode == ConnectionErrorCodes.None)
+            {
+                requestProcessor = TaskMahcine.Create();
+                _executor = new FdkAsyncExecutor(_tradeProxy);
+            }
+            else
+                await Disconnect();
+
+            return resultCode;
+        }
+
+        private void CreateFeedProxy(string address, string login, string password, bool logsEnabled)
+        {
             FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
             {
                 TargetCompId = "EXECUTOR",
@@ -284,6 +106,7 @@ namespace TickTrader.Algo.Common.Model
                 feedCs.FixMessagesFileName = "feed.messages.log";
                 feedCs.FixLogDirectory = LogPath;
             }
+
             feedCs.ExcludeMessagesFromLogs = "y|0";
 
             _feedProxy = new DataFeed(feedCs.ToString());
@@ -291,7 +114,10 @@ namespace TickTrader.Algo.Common.Model
             _feedProxy.Logon += feedProxy_Logon;
             _feedProxy.CacheInitialized += FeedProxy_CacheInitialized;
             _feedProxy.SymbolInfo += FeedProxy_SymbolInfo;
+        }
 
+        private void CreateTradeProxy(string address, string login, string password, bool logsEnabled)
+        {
             FixConnectionStringBuilder tradeCs = new FixConnectionStringBuilder()
             {
                 TargetCompId = "EXECUTOR",
@@ -304,6 +130,7 @@ namespace TickTrader.Algo.Common.Model
             tradeCs.Address = address;
             tradeCs.Username = login;
             tradeCs.Password = password;
+
             if (logsEnabled)
             {
                 tradeCs.FixEventsFileName = "trade.events.log";
@@ -312,28 +139,10 @@ namespace TickTrader.Algo.Common.Model
             }
 
             _tradeProxy = new DataTrade(tradeCs.ToString());
+            _tradeProxy.SynchOperationTimeout = 5 * 60 * 1000;
             _tradeProxy.Logout += tradeProxy_Logout;
             _tradeProxy.Logon += tradeProxy_Logon;
             _tradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
-
-            _tradeProxy.SynchOperationTimeout = 5 * 60 * 1000;
-
-            //Connecting();
-
-            _connectEvent = new TaskCompletionSource<ConnectionErrorCodes>();
-
-            _executor = new FdkAsyncExecutor(_tradeProxy);
-            _feedProxy.Tick += (s, e) => Tick?.Invoke(FdkConvertor.Convert(e.Tick));
-            _tradeProxy.PositionReport += (s, a) => PositionReport?.Invoke(FdkConvertor.Convert(a.Report));
-            //_tradeProxy.ExecutionReport += (s, a) => ExecutionReport?.Invoke(FdkConvertor.Convert(a.Report));
-            //_tradeProxy.BalanceOperation += (s, a) => BalanceOperation?.Invoke(FdkConvertor.Convert(a.Data));
-
-            _feedProxy.Start();
-            _tradeProxy.Start();
-
-            return _connectEvent.Task;
-
-            //stateControl.PushEvent(Events.DoneConnecting);
         }
 
         private void UpdateState(Action updateAction)
@@ -351,8 +160,14 @@ namespace TickTrader.Algo.Common.Model
             get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs"); }
         }
 
-        Task IServerInterop.Disconnect()
+        public async Task Disconnect()
         {
+            if (requestProcessor != null)
+            {
+                requestProcessor.Complete();
+                await requestProcessor.Completion;
+            }
+
             var stopTradeTask = Task.Factory.StartNew(() =>
             {
                 try
@@ -386,7 +201,7 @@ namespace TickTrader.Algo.Common.Model
                 }
             });
 
-            return Task.WhenAll(stopFeedTask, stopTradeTask);
+            await Task.WhenAll(stopFeedTask, stopTradeTask);
         }
 
         private void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
@@ -467,14 +282,19 @@ namespace TickTrader.Algo.Common.Model
         public CurrencyEntity[] Currencies => _feedProxy.Cache.Currencies.Select(FdkConvertor.Convert).ToArray();
         public SymbolEntity[] Symbols => _feedProxy.Cache.Symbols.Select(FdkConvertor.Convert).ToArray();
 
-        public void SubscribeToQuotes(string[] symbols, int depth)
+        public Task<CurrencyEntity[]> GetCurrencies()
         {
-            _feedProxy.Server.SubscribeToQuotes(symbols, depth);
+            return Task.FromResult(Currencies);
         }
 
-        public BarHistoryReport GetHistoryBars(string symbol, DateTime startTime, int count, PriceType priceType, BarPeriod barPeriod)
+        public Task<SymbolEntity[]> GetSymbols()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Symbols);
+        }
+
+        public Task SubscribeToQuotes(string[] symbols, int depth)
+        {
+            return requestProcessor.EnqueueTask(() => _feedProxy.Server.SubscribeToQuotes(symbols, depth));
         }
 
         public Task<HistoryFilesPackage> DownloadTickFiles(string symbol, DateTime refTimePoint, bool includeLevel2)
@@ -482,13 +302,45 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException();
         }
 
+        public IAsyncEnumerator<BarEntity[]> GetHistoryBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<BarEntity>> GetHistoryBars(string symbol, DateTime startTime, int count, BarPriceType priceType, TimeFrames barPeriod)
+        {
+            var fdkPriceType = FdkConvertor.Convert(priceType);
+            var fdkBarPeriod = FdkConvertor.ToBarPeriod(barPeriod);
+
+            return requestProcessor.EnqueueTask(() =>
+            {
+                var result = _feedProxy.Server.GetHistoryBars(symbol, startTime, count, fdkPriceType, fdkBarPeriod);
+                return FdkConvertor.Convert(result.Bars).ToList();
+            });
+        }
+
         #endregion
 
         #region ITradeServerApi
 
         public AccountEntity AccountInfo => FdkConvertor.Convert(_tradeProxy.Cache.AccountInfo);
-        public IEnumerable<OrderEntity> TradeRecords =>  _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
-        public IEnumerable<PositionEntity> Positions => _tradeProxy.Cache.Positions.Select(FdkConvertor.Convert);
+        public OrderEntity[] TradeRecords =>  _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
+        public PositionEntity[] Positions => _tradeProxy.Cache.Positions.Select(FdkConvertor.Convert).ToArray();
+
+        public Task<AccountEntity> GetAccountInfo()
+        {
+            return Task.FromResult(AccountInfo);
+        }
+
+        public Task<OrderEntity[]> GetTradeRecords()
+        {
+            return Task.FromResult(TradeRecords);
+        }
+
+        public Task<PositionEntity[]> GetPositions()
+        {
+            return Task.FromResult(Positions);
+        }
 
         public Task<OrderCmdResult> OpenOrder(OpenOrderRequest request)
         {
@@ -512,29 +364,106 @@ namespace TickTrader.Algo.Common.Model
 
         public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            throw new NotImplementedException();
+            return new StreamDownloader(_tradeProxy.Server, from, to, skipCancelOrders);
         }
 
         public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
         {
-            throw new NotImplementedException();
+            _executor.SendOpenOrder(callback, request);
         }
 
         public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
         {
-            throw new NotImplementedException();
+            _executor.SendCancelOrder(callback, request);
         }
 
         public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
         {
-            throw new NotImplementedException();
+            _executor.SendModifyOrder(callback, request);
         }
 
         public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
         {
-            throw new NotImplementedException();
+            _executor.SendCloseOrder(callback, request);
         }
 
         #endregion
+
+        private class StreamDownloader : CrossDomainObject, IAsyncEnumerator<TradeReportEntity[]>
+        {
+            private BufferBlock<object> _asyncBlock;
+            private Task _downloadTask;
+            private CancellationTokenSource _stopSrc = new CancellationTokenSource();
+
+            public TradeReportEntity[] Current { get; private set; }
+
+            public StreamDownloader(DataTradeServer server, DateTime? from, DateTime? to, bool skipCancelOrders)
+            {
+                var asynBlockOptions = new DataflowBlockOptions() { BoundedCapacity = 2, CancellationToken = _stopSrc.Token };
+                _asyncBlock = new BufferBlock<object>(asynBlockOptions);
+
+                _downloadTask = Task.Run(() =>
+                {
+                    const int bufferSize = 500;
+                    List<TradeReportEntity> pageBuffer = new List<TradeReportEntity>(bufferSize);
+                    StreamIterator<TradeTransactionReport> stream = null;
+
+                    try
+                    {
+                        stream = server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, skipCancelOrders);
+
+                        while (!stream.EndOfStream && !_stopSrc.Token.IsCancellationRequested)
+                        {
+                            var report = FdkConvertor.Convert(stream.Item);
+                            pageBuffer.Add(report);
+
+                            if (pageBuffer.Count == bufferSize)
+                            {
+                                _asyncBlock.SendAsync(pageBuffer.ToArray(), _stopSrc.Token).Wait();
+                                pageBuffer.Clear();
+                            }
+
+                            stream.Next();
+                        }
+
+                        if (pageBuffer.Count > 0 && !_stopSrc.IsCancellationRequested)
+                            _asyncBlock.SendAsync(pageBuffer.ToArray());
+
+                        _asyncBlock.SendAsync(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        var aggeEx = ex as AggregateException;
+                        if (aggeEx == null || !(aggeEx.InnerException is TaskCanceledException))
+                            _asyncBlock.SendAsync(ex);
+                    }
+                    _asyncBlock.Complete();
+                    if (stream != null)
+                        stream.Dispose();
+                });
+            }
+
+            public override void Dispose()
+            {
+                _stopSrc.Cancel();
+                _downloadTask.Wait();
+                try
+                {
+                    _asyncBlock.Completion.Wait();
+                }
+                catch (Exception) { };
+
+                base.Dispose();
+            }
+
+            public async Task<bool> Next()
+            {
+                var result = await _asyncBlock.ReceiveAsync().ConfigureAwait(false);
+                if (result is Exception)
+                    throw (Exception)result;
+                Current = (TradeReportEntity[])result;
+                return Current != null;
+            }
+        }
     }
 }

@@ -12,7 +12,6 @@ namespace TickTrader.Algo.Common.Model
     {
         private ISyncContext _tradeSync;
         private ISyncContext _feedSync;
-        private DynamicDictionary<string, CurrencyEntity> _currencies = new DynamicDictionary<string, CurrencyEntity>();
 
         public ClientCore(ConnectionModel connection,
             Func<ClientCore, SymbolCollectionBase> symbolCollectionFactory,
@@ -23,6 +22,8 @@ namespace TickTrader.Algo.Common.Model
             Distributor = Symbols.Distributor;
             _tradeSync = tradeSync;
             _feedSync = feedSync;
+
+            Cache = new EntityCache();
 
             connection.Connecting += () =>
             {
@@ -51,7 +52,8 @@ namespace TickTrader.Algo.Common.Model
         public ConnectionModel Connection { get; }
         public QuoteDistributor Distributor { get; }
         public SymbolCollectionBase Symbols { get; }
-        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _currencies;
+        public EntityCache Cache { get; }
+        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => Cache.Currencies;
         public ITradeServerApi TradeProxy => Connection.TradeProxy;
         public IFeedServerApi FeedProxy => Connection.FeedProxy;
 
@@ -62,17 +64,16 @@ namespace TickTrader.Algo.Common.Model
         public event Action<BalanceOperationReport> BalanceReceived;
         public event Action<QuoteEntity> TickReceived;
 
-        public void Init()
+        public async Task Init()
         {
-            _currencies.Clear();
-            foreach (var c in FeedProxy.Currencies)
-                _currencies.Add(c.Name, c);
-            Symbols.Initialize(FeedProxy.Symbols, _currencies.Snapshot);
+            await Cache.Load(TradeProxy, FeedProxy);
+            await Symbols.Initialize();
         }
 
         public async Task Deinit()
         {
             await Symbols.Deinit();
+            Cache.Close();
         }
 
         private void TradeProxy_PositionReport(PositionEntity position)

@@ -7,6 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class OpenOrderRequest : OrderRequest
     {
         public string Symbol { get; set; }

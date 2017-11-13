@@ -9,10 +9,10 @@ namespace TickTrader.Algo.Common.Model
 {
     public class BarHistoryReport
     {
-        public List<BarEntity> Bars { get; }
-        public DateTime? From { get; }
-        public DateTime? To { get; }
-        public DateTime FromAll { get; }
-        public DateTime ToAll { get; }
+        public List<BarEntity> Bars { get; set; }
+        public DateTime? From { get; set; }
+        public DateTime? To { get; set; }
+        public DateTime FromAll { get; set; }
+        public DateTime ToAll { get; set; }
     }
 }

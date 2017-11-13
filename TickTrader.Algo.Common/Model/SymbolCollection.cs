@@ -21,28 +21,29 @@ namespace TickTrader.Algo.Common.Model
 
         private ISyncContext _sync;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
-        private IReadOnlyDictionary<string, CurrencyEntity> currencies;
+        private ClientCore _core;
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
         public SymbolCollectionBase(ClientCore client, ISyncContext sync)
         {
+            _core = client;
             _sync = sync;
             Distributor = new QuoteDistributor(client);
         }
 
-        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info, IReadOnlyDictionary<string, CurrencyEntity> currencies)
+        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info)
         {
-            return new SymbolModel(Distributor, info, currencies);
+            return new SymbolModel(Distributor, info, Currencies);
         }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
         public QuoteDistributor Distributor { get; }
+        public IReadOnlyDictionary<string, CurrencyEntity> Currencies => _core.Currencies.Snapshot;
 
-        public void Initialize(SymbolEntity[] symbolSnapshot, IReadOnlyDictionary<string, CurrencyEntity> currencySnapshot)
+        public async Task Initialize()
         {
-            this.currencies = currencySnapshot;
-            Merge(symbolSnapshot);
+            Merge(await _core.FeedProxy.GetSymbols());
             Distributor.Init();
         }
 
@@ -66,7 +67,7 @@ namespace TickTrader.Algo.Common.Model
                     else
                     {
                         Distributor.AddSymbol(info.Name);
-                        model = CreateSymbolsEntity(Distributor, info, currencies);
+                        model = CreateSymbolsEntity(Distributor, info);
                         symbols.Add(info.Name, model);
                     }
                 });

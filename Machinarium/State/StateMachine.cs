@@ -46,7 +46,7 @@ namespace Machinarium.State
                     throw new ArgumentNullException("trAction");
 
                 StateDescriptor<T> descriptor = GetOrAddDescriptor(state);
-                descriptor.AddTransition(new StateEventTransition<T>(state, state, eventId, trAction));
+                descriptor.AddTransition(new StateEventTransition<T>(state, state, eventId, null, trAction));
             });
         }
 
@@ -56,7 +56,7 @@ namespace Machinarium.State
             _lock.Synchronized(() =>
             {
                 StateDescriptor<T> descriptor = GetOrAddDescriptor(from);
-                descriptor.AddTransition(new StateEventTransition<T>(from, to, eventId, trAction));
+                descriptor.AddTransition(new StateEventTransition<T>(from, to, eventId, null, trAction));
             });
         }
 
@@ -70,6 +70,19 @@ namespace Machinarium.State
             {
                 StateDescriptor<T> descriptor = GetOrAddDescriptor(from);
                 descriptor.AddTransition(new StateConditionalTransition<T>(from, to, condition, trAction));
+            });
+        }
+
+        [System.Diagnostics.DebuggerHidden]
+        public void AddTransition(T from, object eventId, Func<bool> condition, T to, Action trAction = null)
+        {
+            if (condition == null)
+                throw new ArgumentNullException("condition");
+
+            _lock.Synchronized(() =>
+            {
+                StateDescriptor<T> descriptor = GetOrAddDescriptor(from);
+                descriptor.AddTransition(new StateEventTransition<T>(from, to, eventId, condition, trAction));
             });
         }
 
@@ -178,7 +191,7 @@ namespace Machinarium.State
             return currentDescriptor;
         }
 
-        //[System.Diagnostics.DebuggerHidden]
+        [System.Diagnostics.DebuggerHidden]
         private void CheckConditions()
         {
             StateDescriptor<T> currentDescriptor = FindDescriptor(Current);
@@ -190,7 +203,7 @@ namespace Machinarium.State
             }
         }
 
-        //[System.Diagnostics.DebuggerHidden]
+        [System.Diagnostics.DebuggerHidden]
         private void ChangeState(StateDescriptor<T> currentDescriptor, StateTransition<T> transition)
         {
             T oldState = Current;
@@ -233,7 +246,7 @@ namespace Machinarium.State
             return AsyncWait(s => stateToWait.Equals(s));
         }
 
-        //[System.Diagnostics.DebuggerHidden]
+        [System.Diagnostics.DebuggerHidden]
         private Task AsyncWaitInternal(Predicate<T> stateCondition)
         {
             if (stateCondition(Current))
@@ -244,7 +257,7 @@ namespace Machinarium.State
             return waiter.Task;
         }
 
-        //[System.Diagnostics.DebuggerHidden]
+        [System.Diagnostics.DebuggerHidden]
         public Task PushEventAndWait(object eventId, Predicate<T> stateCondition)
         {
             Task waitTask = null;
@@ -268,7 +281,7 @@ namespace Machinarium.State
             AsyncWait(stateToWait).Wait();
         }
 
-        //[System.Diagnostics.DebuggerHidden]
+        [System.Diagnostics.DebuggerHidden]
         private void ReleaseAwaiters()
         {
             var node = stateWaiters.First;

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core.Repository
     public class AlgoRepository : IDisposable
     {
         public enum States { Created, Scanning, Waiting, Watching, Closing, Closed }
-        public enum Events { Start, DoneScanning, ScanFailed, NextAttempt, CloseRequested, DoneClosing }
+        public enum Events { Start, DoneScanning, ScanFailed, NextAttempt, CloseRequested, DoneClosing, WatcherFail }
 
         private StateMachine<States> stateControl = new StateMachine<States>();
         private object scanUpdateLockObj = new object();
@@ -36,12 +36,14 @@ namespace TickTrader.Algo.Core.Repository
 
             stateControl.AddTransition(States.Created, Events.Start, States.Scanning);
             stateControl.AddTransition(States.Scanning, Events.DoneScanning, States.Watching);
+            stateControl.AddTransition(States.Scanning, Events.WatcherFail, () => isWatcherFailed = true);
             stateControl.AddTransition(States.Scanning, Events.CloseRequested, States.Closing);
             stateControl.AddTransition(States.Scanning, Events.ScanFailed, States.Waiting);
             stateControl.AddTransition(States.Waiting, Events.NextAttempt, States.Scanning);
             stateControl.AddTransition(States.Waiting, Events.CloseRequested, States.Closing);
             stateControl.AddTransition(States.Watching, Events.CloseRequested, States.Closing);
-            stateControl.AddTransition(States.Watching, () => isWatcherFailed, States.Scanning);
+            stateControl.AddTransition(States.Watching, Events.WatcherFail, States.Scanning);
+
             stateControl.AddTransition(States.Closing, Events.DoneClosing, States.Closed);
 
             stateControl.AddScheduledEvent(States.Waiting, Events.NextAttempt, 1000);
@@ -135,7 +137,7 @@ namespace TickTrader.Algo.Core.Repository
 
         void watcher_Error(object sender, ErrorEventArgs e)
         {
-            stateControl.ModifyConditions(() => isWatcherFailed = true);
+            stateControl.PushEvent(Events.WatcherFail);
         }
 
         void watcher_Renamed(object sender, RenamedEventArgs e)

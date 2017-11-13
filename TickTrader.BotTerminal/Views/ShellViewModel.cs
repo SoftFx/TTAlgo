@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateDisplayName()
         {
-            if (cManager.State == ConnectionManager.States.Online)
+            if (cManager.State == ConnectionModel.States.Online)
                 DisplayName = $"{cManager.Creds.Login} {cManager.Creds.Server.Address} - {EnvService.Instance.ApplicationName}";
         }
 
@@ -115,7 +115,7 @@ namespace TickTrader.BotTerminal
         {
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
-            CanDisconnect = state == ConnectionManager.States.Online && !ConnectionLock.IsLocked;
+            CanDisconnect = state == ConnectionModel.States.Online && !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }

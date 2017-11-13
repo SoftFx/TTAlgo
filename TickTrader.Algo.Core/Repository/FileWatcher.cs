@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core.Repository
     internal class FileWatcher : IDisposable
     {
         public enum States { Created, Loading, WatingForRetry, Ready, Closing, Closed }
-        public enum Events { Start, Changed, DoneLoad, DoneLoadRetry, NextRetry, CloseRequested, DoneClosing }
+        public enum Events { Start, Changed, DoneLoad, DoneLoadRetry, NextRetry, CloseRequested, DoneClosing, Rescan }
 
         private StateMachine<States> stateControl = new StateMachine<States>();
         private Dictionary<string, AlgoPluginRef> items = new Dictionary<string, AlgoPluginRef>();
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Core.Repository
             stateControl.AddTransition(States.Loading, Events.CloseRequested, States.Closing);
             stateControl.AddTransition(States.WatingForRetry, Events.NextRetry, States.Loading);
             stateControl.AddTransition(States.WatingForRetry, Events.CloseRequested, States.Closing);
-            stateControl.AddTransition(States.Ready, () => isRescanRequested, States.Loading);
+            stateControl.AddTransition(States.Ready, Events.Rescan, States.Loading);
             stateControl.AddTransition(States.Ready, Events.CloseRequested, States.Closing);
             stateControl.AddTransition(States.Closing, Events.DoneClosing, States.Closed);
 
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Core.Repository
 
         internal void CheckForChanges()
         {
-            stateControl.ModifyConditions(() => isRescanRequested = true);
+            stateControl.PushEvent(Events.Rescan);
         }
 
         internal void Rename(string newPath)

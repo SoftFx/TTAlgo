@@ -10,60 +10,75 @@ namespace TickTrader.Algo.Common.Model
 {
     public class ExecutionReport
     {
-        public string OrderId { get; }
-        public DateTime? Expiration { get; }
-        public DateTime? Created { get; }
-        public DateTime? Modified { get; }
-        public OrderCmdResultCodes RejectReason { get; }
-        public double? TakeProfit { get; }
-        public double? StopLoss { get; }
-        public string Text { get; }
-        public string Comment { get; }
-        public string Tag { get; }
-        public int? Magic { get; }
+        public string OrderId { get; set; }
+        public DateTime? Expiration { get; set; }
+        public DateTime? Created { get; set; }
+        public DateTime? Modified { get; set; }
+        public OrderCmdResultCodes RejectReason { get; set; }
+        public double? TakeProfit { get; set; }
+        public double? StopLoss { get; set; }
+        public string Text { get; set; }
+        public string Comment { get; set; }
+        public string Tag { get; set; }
+        public int? Magic { get; set; }
         public bool IsReducedOpenCommission { get; set; }
         public bool IsReducedCloseCommission { get; set; }
-        public bool ImmediateOrCancel { get; }
-        public bool MarketWithSlippage { get; }
-        public string ClosePositionRequestId { get; }
-        public double TradePrice { get; }
-        public AssetEntity[] Assets { get; }
-        public double? StopPrice { get; }
-        public double? AveragePrice { get; }
-        public string ClientOrderId { get; }
-        public string TradeRequestId { get; }
-        public OrderStatus OrderStatus { get; }
-        public ExecutionType ExecutionType { get; }
-        public string Symbol { get; }
-        public double ExecutedVolume { get; }
-        public double? InitialVolume { get; }
-        public double LeavesVolume { get; }
-        public double? MaxVisibleVolume { get; }
-        public double? TradeAmount { get; }
-        public double Commission { get; }
-        public double AgentCommission { get; }
-        public double Swap { get; }
-        public OrderType OrderType { get; }
-        public OrderSide OrderSide { get; }
-        public double? Price { get; }
-        public double Balance { get; }
+        public bool ImmediateOrCancel { get; set; }
+        public bool MarketWithSlippage { get; set; }
+        public string ClosePositionRequestId { get; set; }
+        public double TradePrice { get; set; }
+        public AssetEntity[] Assets { get; set; }
+        public double? StopPrice { get; set; }
+        public double? AveragePrice { get; set; }
+        public string ClientOrderId { get; set; }
+        public string TradeRequestId { get; set; }
+        public OrderStatus OrderStatus { get; set; }
+        public ExecutionType ExecutionType { get; set; }
+        public string Symbol { get; set; }
+        public double ExecutedVolume { get; set; }
+        public double? InitialVolume { get; set; }
+        public double LeavesVolume { get; set; }
+        public double? MaxVisibleVolume { get; set; }
+        public double? TradeAmount { get; set; }
+        public double Commission { get; set; }
+        public double AgentCommission { get; set; }
+        public double Swap { get; set; }
+        public OrderType OrderType { get; set; }
+        public OrderSide OrderSide { get; set; }
+        public double? Price { get; set; }
+        public double Balance { get; set; }
     }
 
     public enum ExecutionType
     {
-        None,
-        Opened,
-        Modified,
-        Expired,
-        Canceled,
-        Rejected,
-        Trade
+        None = -1,
+        New = 0,
+        Trade = 1,
+        Expired = 2,
+        Canceled = 3,
+        PendingCancel = 4,
+        Rejected = 5,
+        Calculated = 6,
+        PendingReplace = 7,
+        Replace = 8,
+        OrderStatus = 9,
+        PendingClose = 10
     }
 
     public enum OrderStatus
     {
-        Calculated,
-        Filled,
-        Rejected
+        None = -1,
+        New = 0,
+        Calculated = 1,
+        Filled = 2,
+        PartiallyFilled = 3,
+        Canceled = 4,
+        PendingCancel = 5,
+        Rejected = 6,
+        Expired = 7,
+        PendingReplace = 8,
+        Done = 9,
+        PendingClose = 10,
+        Activated = 11
     }
 }

@@ -13,7 +13,6 @@ namespace TickTrader.BotTerminal
         [DataMember(Name = "Accounts")]
         private DynamicList<AccountStorageEntry> _accounts;
 
-
         [DataMember]
         public string LastLogin { get; set; }
 
@@ -22,12 +21,10 @@ namespace TickTrader.BotTerminal
 
         public DynamicList<AccountStorageEntry> Accounts => _accounts;
 
-
         public AuthStorageModel()
         {
             _accounts = new DynamicList<AccountStorageEntry>();
         }
-
 
         public override AuthStorageModel Clone()
         {
@@ -38,7 +35,6 @@ namespace TickTrader.BotTerminal
                 _accounts = new DynamicList<AccountStorageEntry>(_accounts.Values.Select(a => a.Clone())),
             };
         }
-
 
         public void UpdateLast(string login, string server)
         {
@@ -60,8 +56,9 @@ namespace TickTrader.BotTerminal
                 _accounts.Values.Add(account);
             else
             {
-                if (_accounts.Values[index].Password != account.Password)
-                    _accounts.Values[index].Password = account.Password;
+                var toUpdate = _accounts[index];
+                toUpdate.Password = account.Password;
+                toUpdate.UseSfxProtocol = account.UseSfxProtocol;
             }
         }
     }
