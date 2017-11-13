@@ -40,6 +40,7 @@ namespace TickTrader.Algo.Core.Metadata
             PlotType = attribute.PlotType;
             Target = attribute.Target;
             Precision = attribute.Precision;
+            ZeroLine = attribute.ZeroLine;
 
             InitDisplayName(attribute.DisplayName);
         }
@@ -55,6 +56,7 @@ namespace TickTrader.Algo.Core.Metadata
         public override AlgoPropertyTypes PropertyType => AlgoPropertyTypes.OutputSeries;
         public OutputTargets Target { get; private set; }
         public int Precision { get; private set; }
+        public double ZeroLine { get; private set; }
 
         internal DataSeriesImpl<T> CreateOutput2<T>()
         {
