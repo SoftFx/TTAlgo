@@ -26,12 +26,20 @@ namespace TickTrader.Algo.Common.Model
             if (invert)
             {
                 for (int i = srcBars.Length - 1; i >= 0; i--)
+                {
+                    if(i > 0 && srcBars[i - 1].From == srcBars[i].From)
+                        continue; // skip duplicate
                     result.Add(Convert(srcBars[i]));
+                }
             }
             else
             {
                 for (int i = 0; i < srcBars.Length; i++)
+                {
+                    if (i > 0 && srcBars[i - 1].From == srcBars[i].From)
+                        continue; // skip duplicate
                     result.Add(Convert(srcBars[i]));
+                }
             }
 
             return result;

@@ -63,10 +63,12 @@ namespace TickTrader.BotTerminal
                 if (IsIndeterminate.Value)
                     throw new InvalidOperationException("You must call StartProgress() method before setting progress value.");
 
-                if (val < ProgressMin.Value || val > ProgressMax.Value)
-                    throw new InvalidOperationException();
-
-                Progress.Value = val;
+                if (val < ProgressMin.Value)
+                    Progress.Value = ProgressMin.Value;
+                else if (val > ProgressMax.Value)
+                    Progress.Value = ProgressMax.Value;
+                else
+                    Progress.Value = val;
             });
         }
 
