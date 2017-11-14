@@ -114,6 +114,7 @@ namespace TickTrader.DedicatedServer.WebAdmin.Server.Extensions
             {
                 Id = plugin.Descriptor.Id,
                 DisplayName = plugin.Descriptor.DisplayName,
+                UserDisplayName = plugin.Descriptor.UserDisplayName,
                 Type = plugin.Descriptor.AlgoLogicType.ToString(),
                 Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
             };
