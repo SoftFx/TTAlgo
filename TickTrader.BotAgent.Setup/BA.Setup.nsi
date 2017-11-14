@@ -12,7 +12,7 @@
 ; Parameters
 
 !ifndef PRODUCT_NAME
-  !define PRODUCT_NAME "TickTrader Dedicated Server"
+  !define PRODUCT_NAME "TickTrader Bot Agent"
 !endif
 
 !ifndef PRODUCT_BUILD
@@ -139,7 +139,7 @@ FunctionEnd
 !insertmacro UninstallBAMacro "un."
 
 
-Section "TickTrader Dedicated Server" Section1
+Section "TickTrader Bot Agent" Section1
 
 	ReadRegStr $R0 HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
 	${If} $R0 != "" 
