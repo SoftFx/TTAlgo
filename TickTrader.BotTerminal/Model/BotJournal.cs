@@ -34,6 +34,11 @@ namespace TickTrader.BotTerminal
                 WriteToLogger(item);
         }
 
+        public void LogStatus(string botName, string status)
+        {
+            GetOrAddLogger(botName).Trace(status);
+        }
+
         protected override void OnAppended(BotMessage item)
         {
             Statistics.Register(item);
