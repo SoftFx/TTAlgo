@@ -26,8 +26,6 @@
   <target name="Build" >
 	  <property name="Build.Target" value="Publish" />
     <call target="CleanUpFolder" />
-    <property name="AssemblyInfoFile" value="${SourcesDir}\TickTrader.BotTerminal\Properties\AssemblyInfo.cs" />
-    <call target="ReplaceBuild" />
     <call target="RunMSBuild" />
 	  <call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
@@ -210,25 +208,6 @@
       <arg value="workspace=${SourcesDir}${SolutionFile}" />
       <arg value="output=${OutpuFolder}" />
     </exec>
-  </target>
-
-  <target name="ReplaceBuild">
-    <property
-        name="cs.file"
-        value="${AssemblyInfoFile}" />
-
-    <loadfile file="${cs.file}" property="cs.file.content" encoding="UTF-8"/>
-    <attrib file="${cs.file}" readonly="false"/>
-    <regex
-      options="Singleline"
-      input="${cs.file.content}"
-      pattern="(?'BEFORE1'.*AssemblyVersion.*)(?'BUILD1'\d+\.\d+\.\d+\.\d+)(?'AFTER1'.*)(?'BEFORE2'AssemblyFileVersion.*)(?'BUILD2'\d+\.\d+\.\d+\.\d+)(?'AFTER2'.*)" />
-    <echo
-      encoding="UTF-8"
-      file="${cs.file}"
-      message="${BEFORE1}${Build}${AFTER1}${BEFORE2}${Build}${AFTER2}"
-      append="false" />
-    <attrib file="${cs.file}" readonly="true"/>
   </target>
 
 </project>
