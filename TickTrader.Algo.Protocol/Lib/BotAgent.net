@@ -52,8 +52,9 @@ protocol BotAgent(1,0)
         {
         	recv AccountListReport(AccountListReport)
         	{
-        		return;
+
         	}
+            repeat;
         }
     }
 
@@ -63,8 +64,9 @@ protocol BotAgent(1,0)
         {
         	send AccountListReport(AccountListReport)
         	{
-        		return;
+        		
         	}
+            repeat;
         }
     }
 }

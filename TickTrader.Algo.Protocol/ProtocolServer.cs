@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Protocol
 
         public ProtocolServer(IBotAgentServer agentServer)
         {
-            AgentServer = AgentServer;
+            AgentServer = agentServer;
 
             Listener = new BotAgentServerListener(AgentServer);
 

@@ -9,6 +9,12 @@ namespace TickTrader.Algo.Protocol
         public BotModelEntity[] Bots { get; set; }
 
 
+        public AccountModelEntity()
+        {
+            Key = new AccountKeyEntity();
+        }
+
+
         internal void UpdateModel(AccountModel model)
         {
             Key.UpdateModel(model.Key);
