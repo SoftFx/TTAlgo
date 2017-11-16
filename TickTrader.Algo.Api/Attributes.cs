@@ -27,6 +27,10 @@ namespace TickTrader.Algo.Api
         public PlotType PlotType { get; set; }
         public OutputTargets Target { get; set; }
         public int Precision { get; set; }
+        /// <summary>
+        /// Used to set the bottom of a column in histogram
+        /// </summary>
+        public double ZeroLine { get; set; }
     }
 
     [Serializable]
