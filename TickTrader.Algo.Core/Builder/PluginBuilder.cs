@@ -341,7 +341,6 @@ namespace TickTrader.Algo.Core
         {
             InvokePluginMethod(PluginProxy.InvokeOnStart);
             Logger.OnStart();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeOnStop()
@@ -355,6 +354,7 @@ namespace TickTrader.Algo.Core
         {
             InvokePluginMethod(PluginProxy.InvokeInit);
             Logger.OnInitialized();
+            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeOnQuote(Quote quote)
