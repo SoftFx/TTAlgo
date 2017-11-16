@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.BA.Models
         private BotLog _botLog;
         private AlgoData _algoData;
         private AlgoPluginRef _ref;
-        private ListenerProxy _stopListener;
+        private BotListenerProxy _botListener;
         private PackageStorage _packageRepo;
 
         public TradeBotModel(TradeBotModelConfig config)
@@ -236,6 +236,7 @@ namespace TickTrader.BotAgent.BA.Models
                     ChangeState(BotStates.Stopping);
                     await Task.Factory.StartNew(() => executor?.Stop());
                 }
+                _botListener?.Stop();
                 DisposeExecutor();
             }
 
@@ -292,9 +293,10 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.Isolated = Isolated;
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
-                _stopListener = new ListenerProxy(executor, () => StopInternal(null, true), logRecs => _botLog.Update(logRecs));
+                _botListener = new BotListenerProxy(executor, () => StopInternal(null, true), _botLog);
 
                 executor.Start();
+                _botListener.Start();
 
                 lock (_syncObj) ChangeState(BotStates.Online);
             }
@@ -311,7 +313,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void DisposeExecutor()
         {
-            _stopListener.Dispose();
+            _botListener?.Dispose();
             executor?.Dispose();
         }
 
@@ -393,40 +395,6 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 if (State == BotStates.Stopping)
                     executor?.Abort();
-            }
-        }
-
-        private class ListenerProxy : CrossDomainObject
-        {
-            private PluginExecutor _executor;
-            private Action _onStopped;
-            private Action<BotLogRecord[]> _onLogRecords;
-
-            public ListenerProxy(PluginExecutor executor, Action onStopped, Action<BotLogRecord[]> onLogRecords)
-            {
-                _executor = executor;
-                _onStopped = onStopped;
-                _onLogRecords = onLogRecords;
-                executor.IsRunningChanged += Executor_IsRunningChanged1;
-                executor.InitLogging().NewRecords += ListenerProxy_NewRecords;
-            }
-
-            private void ListenerProxy_NewRecords(BotLogRecord[] recs)
-            {
-                _onLogRecords(recs);
-            }
-
-            private void Executor_IsRunningChanged1(PluginExecutor exec)
-            {
-                if (!exec.IsRunning)
-                    _onStopped();
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                _executor.IsRunningChanged -= Executor_IsRunningChanged1;
-                _executor.InitLogging().NewRecords -= ListenerProxy_NewRecords;
-                base.Dispose(disposing);
             }
         }
     }

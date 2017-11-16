@@ -119,6 +119,7 @@ namespace TickTrader.Algo.Common.Model
                 SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
                 Security = info.SecurityName,
                 SortOrder = info.SortOrder,
+                GroupSortOrder = info.GroupSortOrder,
                 SwapType = Convert(info.SwapType),
                 TripleSwapDay = info.TripleSwapDay,
                 HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction ?? 1,

@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Core
         public string InstanceId => _entity.InstanceId;
         public DateTime Modified => _entity.Modified;
         public DateTime Created => _entity.Created;
+        public DateTime Expiration => _entity.Expiration;
         public double ExecPrice => _entity.ExecPrice;
         public double ExecVolume => _entity.ExecVolume.Lots;
         public double LastFillPrice => _entity.LastFillPrice;

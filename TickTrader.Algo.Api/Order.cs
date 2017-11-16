@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Api
         string InstanceId { get; }
         DateTime Modified { get; }
         DateTime Created { get; }
+        DateTime Expiration { get; }
         double ExecPrice { get; }
         double ExecVolume { get; }
         double LastFillPrice { get; }

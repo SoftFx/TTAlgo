@@ -9,10 +9,11 @@ using NLog.Config;
 using System.IO;
 using TickTrader.BotAgent.Extensions;
 using System.Linq;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public class BotLog : IBotLog
+    public class BotLog : IBotLog, IBotWriter
     {
         private object _internalSync = new object();
         private object _sync;
@@ -62,32 +63,6 @@ namespace TickTrader.BotAgent.BA.Models
 
         public event Action<string> StatusUpdated;
 
-        internal void Update(BotLogRecord[] recrods)
-        {
-            lock (_sync)
-            {
-                foreach (var rec in recrods)
-                {
-                    if (rec.Severity == LogSeverities.CustomStatus)
-                    {
-                        Status = rec.Message;
-                        StatusUpdated?.Invoke(rec.Message);
-                    }
-                    else
-                        WriteLog(Convert(rec.Severity), rec.Message);
-                }
-            }
-        }
-
-        public void UpdateStatus(string status)
-        {
-            lock (_sync)
-            {
-                Status = status;
-                StatusUpdated?.Invoke(status);
-            }
-        }
-
         private void WriteLog(LogEntryType type, string message)
         {
             lock (_internalSync)
@@ -122,6 +97,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var logTarget = $"all-{botId}";
             var errTarget = $"error-{botId}";
+            var statusTarget = $"status-{botId}";
 
             var logFile = new FileTarget(logTarget)
             {
@@ -135,10 +111,18 @@ namespace TickTrader.BotAgent.BA.Models
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
             };
 
+            var statusFile = new FileTarget(statusTarget)
+            {
+                FileName = Layout.FromString($"{_logDirectory}${{shortdate}}-status{_fileExtension}"),
+                Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
+            };
+
             var logConfig = new LoggingConfiguration();
             logConfig.AddTarget(logFile);
             logConfig.AddTarget(errorFile);
-            logConfig.AddRule(LogLevel.Trace, LogLevel.Fatal, logTarget);
+            logConfig.AddTarget(statusFile);
+            logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
+            logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
 
             var nlogFactory = new LogFactory(logConfig);
@@ -188,5 +172,39 @@ namespace TickTrader.BotAgent.BA.Models
                 default: return LogEntryType.Info;
             }
         }
+
+
+        #region IBotWriter implementation
+
+        void IBotWriter.LogMesssages(IEnumerable<BotLogRecord> records)
+        {
+            lock (_sync)
+            {
+                foreach (var rec in records)
+                {
+                    if (rec.Severity != LogSeverities.CustomStatus)
+                        WriteLog(Convert(rec.Severity), rec.Message);
+                }
+            }
+        }
+
+        void IBotWriter.UpdateStatus(string status)
+        {
+            lock (_sync)
+            {
+                Status = status;
+                StatusUpdated?.Invoke(status);
+            }
+        }
+
+        void IBotWriter.LogStatus(string status)
+        {
+            lock (_sync)
+            {
+                _logger.Trace(status);
+            }
+        }
+
+        #endregion IBotWriter implementation
     }
 }

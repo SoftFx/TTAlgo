@@ -98,7 +98,7 @@ export class BotAddComponent implements OnInit {
 
             let localBotIdRequestRef = ++this._botIRequestdRef;
 
-            this._api.AutogenerateBotId(plugin.DisplayName)
+            this._api.AutogenerateBotId(plugin.UserDisplayName)
                 .filter(id => this._botIRequestdRef == localBotIdRequestRef && this.Setup && !this.Setup.InstanceId)
                 .subscribe(id => { if (this.Setup) this.Setup.InstanceId = id });
         }
