@@ -25,10 +25,10 @@ namespace TickTrader.Algo.Core
     public interface ITradeApi
     {
         Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
+        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration);
         Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId, OrderSide side);
         Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment);
+        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration);
         Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
         Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
     }
@@ -38,8 +38,8 @@ namespace TickTrader.Algo.Core
         void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
             string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag);
 
-        void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag);
+        void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string symbol, OrderType orderType, OrderSide side,
+            double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, OrderExecOptions options, string tag, DateTime? expiration);
 
         void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
             string orderId, OrderSide side);
@@ -47,8 +47,8 @@ namespace TickTrader.Algo.Core
         void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
             string orderId, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment);
 
-        void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol,
-            OrderType orderType, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment);
+        void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId, string orderId, string symbol, OrderType orderType, OrderSide side,
+            double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? tp, double? sl, string comment, DateTime? expiration);
 
         void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, string operationId,
             string orderId, double? volume);

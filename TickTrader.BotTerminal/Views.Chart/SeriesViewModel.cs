@@ -111,6 +111,7 @@ namespace TickTrader.BotTerminal
                 viewModel.Stroke = outputSetup.LineColor;
                 viewModel.Fill = new SolidColorBrush(outputSetup.LineColor);
                 viewModel.StrokeThickness = outputSetup.LineThickness;
+                viewModel.ZeroLineY = outputSetup.Descriptor.ZeroLine;
                 viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
                 viewModel.StyleKey = "IndicatorSeriesStyle_Histogram";
 

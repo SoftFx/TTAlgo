@@ -489,6 +489,7 @@ namespace TickTrader.Algo.Common.Model
                 InstanceId = this.InstanceId,
                 Created = this.Created ?? DateTime.MinValue,
                 Modified = this.Modified ?? DateTime.MinValue,
+                Expiration = Expiration ?? DateTime.MinValue,
                 ExecPrice = ExecPrice ?? double.NaN,
                 ExecVolume = ToVolume(ExecAmount, ExecAmountLots),
                 LastFillPrice = LastFillPrice ?? double.NaN,

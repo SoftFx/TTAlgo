@@ -61,6 +61,7 @@ export class PackageModel implements Serializable<PackageModel> {
 export class PluginModel implements Serializable<PluginModel>{
     public Id: string;
     public DisplayName: string;
+    public UserDisplayName: string;
     public Type: string;
     public ParamDescriptors: ParameterDescriptor[];
     public Package: string;
@@ -89,6 +90,7 @@ export class PluginModel implements Serializable<PluginModel>{
     public Deserialize(input: any): PluginModel {
         this.Id = input.Id;
         this.DisplayName = input.DisplayName;
+        this.UserDisplayName = input.UserDisplayName;
         this.Type = input.Type;
         this.ParamDescriptors = input.Parameters.map(p => new ParameterDescriptor().Deserialize(p));
 
