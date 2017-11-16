@@ -28,6 +28,7 @@
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>

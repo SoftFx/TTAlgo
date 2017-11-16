@@ -1,0 +1,70 @@
+protocol BotAgent(1,0)
+{
+	group PluginKey
+	{
+		string PackageName;
+		string DescriptorId;
+	}
+
+	group AccountKey
+	{
+		string Login;
+		string Server;
+	}
+
+    group BotModel
+    {
+        string InstanceId;
+        bool Isolated;
+        string Permissions;
+        uint32 State;
+        string Config;
+        AccountKey Account;
+        PluginKey Plugin;
+    }
+
+    group AccountModel
+    {
+        AccountKey Key;
+        BotModel[] Bots;
+    }
+
+    message Request
+	{
+		string Id;
+	}
+
+	message Report
+	{
+		string RequestId;
+	}
+
+    message AccountListRequest : Request;
+
+    message AccountListReport : Report
+    {
+        AccountModel[] Accounts;
+    }
+
+    processor Client()
+    {
+        send AccountListRequest(AccountListRequest)
+        {
+        	recv AccountListReport(AccountListReport)
+        	{
+        		return;
+        	}
+        }
+    }
+
+    processor Server()
+    {
+        recv AccountListRequest(AccountListRequest)
+        {
+        	send AccountListReport(AccountListReport)
+        	{
+        		return;
+        	}
+        }
+    }
+}
