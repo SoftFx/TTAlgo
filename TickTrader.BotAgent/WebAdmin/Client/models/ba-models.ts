@@ -393,7 +393,7 @@ export class SetupModel {
                 pDescriptor));
         setup.Account = null;
         setup.Symbol = "";
-        setup.Isolated = false;
+        setup.Isolated = true;
 
         let permissions = new TradeBotPermissions();
         permissions.TradeAllowed = true;
