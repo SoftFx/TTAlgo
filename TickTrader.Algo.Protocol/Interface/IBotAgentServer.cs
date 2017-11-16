@@ -6,6 +6,6 @@
 
         void Disconnected(int sessionId, string reason);
 
-        AccountListReportEntity GetAccountList();
+        AccountListReportEntity GetAccountList(string requestId);
     }
 }

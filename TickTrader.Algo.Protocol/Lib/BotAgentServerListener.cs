@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Protocol.Lib
 
         public override void OnAccountListRequest(Server server, Server.Session session, AccountListRequest message)
         {
-            var report = _server.GetAccountList();
+            var report = _server.GetAccountList(message.Id);
             server.Send(session.Id, report.ToMessage());
         }
     }

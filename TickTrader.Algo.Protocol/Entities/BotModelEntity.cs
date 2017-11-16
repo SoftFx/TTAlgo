@@ -4,19 +4,19 @@ namespace TickTrader.Algo.Protocol
 {
     public class BotModelEntity : IProtocolEntity<BotModel>
     {
-        public string InstanceId { get; internal set; }
+        public string InstanceId { get; set; }
 
-        public bool Isolated { get; internal set; }
+        public bool Isolated { get; set; }
 
-        public string Permissions { get; internal set; }
+        public string Permissions { get; set; }
 
-        public uint State { get; internal set; }
+        public uint State { get; set; }
 
-        public string Config { get; internal set; }
+        public string Config { get; set; }
 
-        public AccountKeyEntity Account { get; internal set; }
+        public AccountKeyEntity Account { get; set; }
 
-        public PluginKeyEntity Plugin { get; internal set; }
+        public PluginKeyEntity Plugin { get; set; }
 
 
         public BotModelEntity()

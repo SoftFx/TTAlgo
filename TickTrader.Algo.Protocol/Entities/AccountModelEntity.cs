@@ -4,9 +4,9 @@ namespace TickTrader.Algo.Protocol
 {
     public class AccountModelEntity : IProtocolEntity<AccountModel>
     {
-        public AccountKeyEntity Key { get; internal set; }
+        public AccountKeyEntity Key { get; set; }
 
-        public BotModelEntity[] Bots { get; internal set; }
+        public BotModelEntity[] Bots { get; set; }
 
 
         internal void UpdateModel(AccountModel model)

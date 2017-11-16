@@ -5,9 +5,9 @@ namespace TickTrader.Algo.Protocol
 {
     public class AccountListReportEntity
     {
-        public string RequestId { get; internal set; }
+        public string RequestId { get; set; }
 
-        public AccountModelEntity[] Accounts { get; internal set; }
+        public AccountModelEntity[] Accounts { get; set; }
 
 
         public AccountListReportEntity()

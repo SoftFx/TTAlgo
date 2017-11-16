@@ -4,9 +4,9 @@ namespace TickTrader.Algo.Protocol
 {
     public class PluginKeyEntity : IProtocolEntity<PluginKey>
     {
-        public string PackageName { get; internal set; }
+        public string PackageName { get; set; }
 
-        public string DescriptorId { get; internal set; }
+        public string DescriptorId { get; set; }
 
 
         internal void UpdateModel(PluginKey model)

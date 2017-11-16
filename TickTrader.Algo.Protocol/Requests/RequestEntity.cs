@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Protocol
 {
     public class RequestEntity
     {
-        public string Id { get; internal set; }
+        public string Id { get; set; }
 
 
         public RequestEntity()

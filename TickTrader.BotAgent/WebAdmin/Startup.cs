@@ -19,11 +19,15 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Microsoft.AspNetCore.Http;
+using TickTrader.Algo.Protocol;
+using TickTrader.BotAgent.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
     public class Startup
     {
+        private ProtocolServer _protocolServer;
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -121,12 +125,16 @@ namespace TickTrader.BotAgent.WebAdmin
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
+
+            _protocolServer = new ProtocolServer(new BotAgentServer(app.ApplicationServices));
+            _protocolServer.Start();
         }
 
         private void Shutdown(IServiceProvider services)
         {
             var server = services.GetRequiredService<IBotAgent>();
 
+            _protocolServer.Stop();
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
         }
     }

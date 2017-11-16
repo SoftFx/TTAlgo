@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Protocol
             serverOptions.Log.States = true;
             serverOptions.Log.Messages = true;
             serverOptions.ConnectionType = SoftFX.Net.Core.ConnectionType.Secure;
-            serverOptions.Certificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(@"..\..\certificate.pfx");
+            serverOptions.Certificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(@"certificate.pfx");
             serverOptions.RequireClientCertificate = false;
 
             Server = new Server("Bot Agent Server", serverOptions)

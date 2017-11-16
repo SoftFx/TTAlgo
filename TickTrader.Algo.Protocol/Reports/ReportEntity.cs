@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Protocol
 {
     public class ReportEntity
     {
-        public string RequestId { get; internal set; }
+        public string RequestId { get; set; }
 
 
         public ReportEntity()

@@ -40,6 +40,8 @@ namespace TickTrader.Algo.Protocol
             {
                 Listener = Listener,
             };
+
+            State = ClientState.Disconnected;
         }
 
 
@@ -62,6 +64,11 @@ namespace TickTrader.Algo.Protocol
                 ClientSession.Disconnect(null, "User request");
                 ClientSession.Join();
             }
+        }
+
+        public void RequestAccounts(AccountListRequestEntity request)
+        {
+            ClientSession.SendAccountListRequest(null, request.ToMessage());
         }
     }
 }
