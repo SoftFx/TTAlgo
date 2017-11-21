@@ -134,9 +134,13 @@ namespace TickTrader.Algo.Common.Model
 
             for (var i = from; i < to;)
             {
+                Debug.WriteLine(i.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " < " + to.ToString("MM/dd/yyyy hh:mm:ss.fff tt"));
+
                 yield return Task.Factory.StartNew(() =>
                 {
                     var cachedSlice = Cache.GetFirstRange(symbol, timeFrame, priceType, i, to);
+
+                    Debug.WriteLine(i.ToString("MM/dd/yyyy hh:mm:ss.fff tt"));
 
                     if (cachedSlice != null && cachedSlice.From == i)
                     {
@@ -147,9 +151,18 @@ namespace TickTrader.Algo.Common.Model
                     {
                         // download
                         var slice = DownloadBarSlice(symbol, timeFrame, priceType, i, chunkSize);
-                        _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
-                        i = slice.To;
-                        return new SliceInfo(slice.From, slice.To, slice.Bars.Count);
+                        if (slice != null)
+                        {
+                            _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
+                            i = slice.To;
+                            return new SliceInfo(slice.From, slice.To, slice.Bars.Count);
+                        }
+                        else
+                        {
+                            var lastFrom = i;
+                            i = to;
+                            return new SliceInfo(lastFrom, to, 0);
+                        }
                     }
                 });
             }
@@ -163,6 +176,10 @@ namespace TickTrader.Algo.Common.Model
         private BarStreamSlice DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
         {
             var result = connection.FeedProxy.Server.GetHistoryBars(symbol, startTime, count, FdkToAlgo.Convert(priceType), FdkToAlgo.ToBarPeriod(timeFrame));
+
+            if (result.From == result.To)
+                return null;
+
             var algoBars = FdkToAlgo.Convert(result.Bars, count < 0);
 
             var toCorrected = result.To.Value;
