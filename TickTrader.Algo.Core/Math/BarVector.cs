@@ -88,7 +88,7 @@ namespace TickTrader.Algo.Core.Math
             entity.High = System.Math.Max(bar.High, high);
             entity.Low = System.Math.Max(bar.Low, low);
             entity.Close = close;
-            entity.Volume = bar.Volume = volume;
+            entity.Volume = bar.Volume + volume;
             return entity;
         }
 
