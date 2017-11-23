@@ -1,4 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using TickTrader.BotAgent.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
@@ -18,6 +22,24 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         public static SslSettings GetSslSettings(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(AppSettings.Ssl)).Get<SslSettings>();
+        }
+
+        public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)
+        {
+            var sslConf = config.GetSslSettings();
+
+            if (sslConf == null)
+                throw new ArgumentException("SSL configuration not found");
+
+            if (string.IsNullOrWhiteSpace(sslConf.File))
+                throw new ArgumentException("Certificate file is not defined");
+
+            var pfxFile = sslConf.File;
+
+            if (!pfxFile.IsPathAbsolute())
+                pfxFile = Path.Combine(contentRoot, pfxFile);
+
+            return new X509Certificate2(pfxFile, sslConf.Password);
         }
     }
 }

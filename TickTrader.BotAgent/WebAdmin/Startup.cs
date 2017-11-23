@@ -126,7 +126,7 @@ namespace TickTrader.BotAgent.WebAdmin
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            _protocolServer = new ProtocolServer(new BotAgentServer(app.ApplicationServices));
+            _protocolServer = new ProtocolServer(new BotAgentServer(services, Configuration), Configuration.GetCertificate(env.ContentRootPath));
             _protocolServer.Start();
         }
 

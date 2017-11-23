@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -10,12 +11,14 @@ namespace TickTrader.BotAgent.Protocol
     public class BotAgentServer : IBotAgentServer
     {
         private IBotAgent _botAgent;
+        private IConfiguration _serverConfig;
         private ILogger<BotAgentServer> _logger;
 
 
-        public BotAgentServer(IServiceProvider services)
+        public BotAgentServer(IServiceProvider services, IConfiguration serverConfig)
         {
             _botAgent = services.GetRequiredService<IBotAgent>();
+            _serverConfig = serverConfig;
             _logger = services.GetRequiredService<ILogger<BotAgentServer>>();
         }
 

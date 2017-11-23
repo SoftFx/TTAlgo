@@ -1,5 +1,6 @@
 ﻿using SoftFX.Net.BotAgent;
 using System;
+using System.Security.Cryptography.X509Certificates;
 using TickTrader.Algo.Protocol.Lib;
 
 namespace TickTrader.Algo.Protocol
@@ -19,7 +20,7 @@ namespace TickTrader.Algo.Protocol
         public IBotAgentServer AgentServer { get; }
 
 
-        public ProtocolServer(IBotAgentServer agentServer)
+        public ProtocolServer(IBotAgentServer agentServer, X509Certificate2 cert)
         {
             AgentServer = agentServer;
 
@@ -33,7 +34,7 @@ namespace TickTrader.Algo.Protocol
             serverOptions.Log.States = true;
             serverOptions.Log.Messages = true;
             serverOptions.ConnectionType = SoftFX.Net.Core.ConnectionType.Secure;
-            serverOptions.Certificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(@"certificate.pfx");
+            serverOptions.Certificate = cert;
             serverOptions.RequireClientCertificate = false;
 
             Server = new Server("Bot Agent Server", serverOptions)

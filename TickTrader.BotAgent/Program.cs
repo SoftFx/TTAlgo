@@ -49,7 +49,7 @@ namespace TickTrader.BotAgent
 
                 var config = EnsureDefaultConfiguration(pathToAppSettings);
 
-                var cert = GetCertificate(config, logger, pathToContentRoot);
+                var cert = config.GetCertificate(pathToContentRoot);
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
@@ -64,35 +64,12 @@ namespace TickTrader.BotAgent
                 if (isService)
                     host.RunAsCustomService();
                 else
-                    host.Run();
+                    host.DebugAsCustomService(args);
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
             }
-        }
-
-        private static X509Certificate2 GetCertificate(IConfiguration config, Logger logger, string contentRoot)
-        {
-            var sslConf = config.GetSslSettings();
-
-            ValidateSslConfiguration(sslConf, logger);
-
-            var pfxFile = sslConf.File;
-
-            if (!pfxFile.IsPathAbsolute())
-                pfxFile = Path.Combine(contentRoot, pfxFile);
-
-            return new X509Certificate2(pfxFile, sslConf.Password);
-        }
-
-        private static void ValidateSslConfiguration(SslSettings sslConf, Logger logger)
-        {
-            if (sslConf == null)
-                throw new ArgumentException("SSL configuration not found");
-
-            if(string.IsNullOrWhiteSpace(sslConf.File))
-                throw new ArgumentException("Certificate file is not defined");
         }
 
         private static IConfiguration EnsureDefaultConfiguration(string configFile)
