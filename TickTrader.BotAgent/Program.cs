@@ -64,7 +64,7 @@ namespace TickTrader.BotAgent
                 if (isService)
                     host.RunAsCustomService();
                 else
-                    host.DebugAsCustomService(args);
+                    host.Run();
             }
             catch (Exception ex)
             {

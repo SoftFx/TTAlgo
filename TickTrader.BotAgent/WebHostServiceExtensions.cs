@@ -10,11 +10,5 @@ namespace TickTrader.BotAgent
             var webHostService = new BAHostService(host);
             ServiceBase.Run(webHostService);
         }
-
-        public static void DebugAsCustomService(this IWebHost host, string[] args)
-        {
-            var webHostService = new BAHostService(host);
-            webHostService.LaunchConsoleMode(args);
-        }
     }
 }

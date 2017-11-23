@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using TickTrader.BotAgent.BA;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace TickTrader.BotAgent
 {
@@ -15,17 +14,6 @@ namespace TickTrader.BotAgent
         {
             _server = host.Services.GetRequiredService<IBotAgent>();
             _logger = host.Services.GetRequiredService<ILogger<BAHostService>>();
-        }
-
-        internal void LaunchConsoleMode(string[] args)
-        {
-            OnStart(args);
-            var s = "";
-            while (s != "q" && s != "quit" && s != "exit")
-            {
-                s = Console.ReadLine();
-            }
-            OnStop();
         }
 
         protected override void OnStarting(string[] args)
