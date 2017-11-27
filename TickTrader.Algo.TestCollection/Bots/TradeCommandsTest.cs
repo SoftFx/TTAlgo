@@ -264,7 +264,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             {
                 _errorCount++;
                 _errorTextList.Add(e.Message + " in test market order");
-        }
+                
+            }
         }
 
         private async Task OpenMarketOrderNet()
@@ -512,11 +513,11 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (!order.RemainingVolume.E(orderVolume))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong volume");
 
-            if (price != null && !order.Price.E(price.Value))
-                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong price");
+            if (price != null && !EqualPrices(order.Price, price.Value))
+                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong price: required = " + price + ", current = " + order.Price);
 
-            if (stopPrice != null && !order.StopPrice.E(stopPrice.Value))
-                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong stopPrice");
+            if (stopPrice != null && !EqualPrices(order.StopPrice, stopPrice.Value))
+                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong stopPrice: required = " + stopPrice + ", current = " + order.StopPrice);
 
             if (comment != null && !comment.Equals(order.Comment))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong comment: " + comment);
@@ -524,17 +525,22 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (maxVisibleVolume != null && !order.MaxVisibleVolume.E(maxVisibleVolume.Value))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong maxVisibleVolume");
 
-            if (takeProfit != null && !order.TakeProfit.E(takeProfit.Value))
-                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong takeProfit");
+            if (takeProfit != null && !EqualPrices(order.TakeProfit, takeProfit.Value))
+                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong takeProfit: required = " + takeProfit + ", current = " + order.TakeProfit);
 
-            if (stopLoss != null && !order.StopLoss.E(stopLoss.Value))
-                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong stopLoss");
+            if (stopLoss != null && !EqualPrices(order.StopLoss, stopLoss.Value))
+                throw new ApplicationException("Verification failed - order #" + orderId + " has wrong stopLoss: required = " + stopLoss + ", current = " + order.StopLoss);
 
             if (tag != null && !tag.Equals(order.Tag))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong tag: " + tag);
 
             if(expiration != null && !order.Expiration.Equals(expiration))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong expiration: " + expiration);
+        }
+
+        private bool EqualPrices(double a, double b)
+        {
+            return (a - b <= Symbol.Point);
         }
 
         private void VerifyOrderDeleted(string orderId)
