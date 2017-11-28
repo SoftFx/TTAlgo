@@ -540,7 +540,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private bool EqualPrices(double a, double b)
         {
-            return a.E(b);
+            return Math.Abs(a - b) <= Symbol.Point;
         }
 
         private void VerifyOrderDeleted(string orderId)
