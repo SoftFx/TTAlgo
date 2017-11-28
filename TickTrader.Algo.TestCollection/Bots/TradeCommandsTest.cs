@@ -167,7 +167,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             bool[] asyncModes = {false, true};
             string[] tags = {null, tag};
             _errorTextList = new List<string>();
-            _diff = Math.Ceiling((Symbol.Ask - Symbol.Bid) / Symbol.Point) * Symbol.Point * 2;
+            _diff = Math.Ceiling((Symbol.Ask / Symbol.Point) / 100 ) * Symbol.Point * 2;
             
 
             foreach (var orderSide in sides)
