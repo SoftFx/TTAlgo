@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Lib
@@ -21,10 +22,10 @@ namespace TickTrader.Algo.Core.Lib
             return new CrossDomainAdapter<T>(enumerator);
         }
 
-        public static IAsyncEnumerator<T[]> AsPagedAsync<T>(this IAsyncCrossDomainEnumerator<T> enumerator)
+        public static IAsyncEnumerator<T> AsAsync<T>(this IAsyncCrossDomainEnumerator<T> enumerator)
         {
             if (enumerator == null)
-                return Empty<T[]>();
+                return Empty<T>();
 
             return new AsyncEnumeratorAdapter<T>(enumerator);
         }
@@ -87,23 +88,39 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
-        internal class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T[]>
+        internal class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
         {
-            private IAsyncCrossDomainEnumerator<T> _proxy;
+            private static readonly Task<bool> TrueResult = Task.FromResult(true);
+            private static readonly Task<bool> FalseResult = Task.FromResult(false);
 
-            public T[] Current { get; private set; }
+            private IAsyncCrossDomainEnumerator<T> _proxy;
+            private T[] _page;
+            private int _index;
+
+            public T Current { get; private set; }
 
             public AsyncEnumeratorAdapter(IAsyncCrossDomainEnumerator<T> proxy)
             {
                 _proxy = proxy;
             }
 
-            public async Task<T[]> GetNextPage()
+            private async Task<bool> GetNextPage()
             {
                 using (var taskProxy = new CrossDomainTaskProxy<T[]>())
                 {
                     _proxy.GetNextPage(taskProxy);
-                    return await taskProxy.Task;
+                    _page = await taskProxy.Task;
+                    if (_page != null && _page.Length > 0)
+                    {
+                        _index = 0;
+                        Current = _page[0];
+                        return true;
+                    }
+                    else
+                    {
+                        _index = -1;
+                        return false;
+                    }
                 }
             }
 
@@ -112,14 +129,16 @@ namespace TickTrader.Algo.Core.Lib
                 _proxy.Dispose();
             }
 
-            public async Task<bool> Next()
+            public Task<bool> Next()
             {
-                using (var taskProxy = new CrossDomainTaskProxy<T[]>())
-                {
-                    _proxy.GetNextPage(taskProxy);
-                    Current = await taskProxy.Task;
-                    return Current != null;
-                }
+                if (_index == -1)
+                    return FalseResult;
+
+                if (_page == null || _index >= _page.Length)
+                    return GetNextPage();
+
+                Current = _page[_index++];
+                return TrueResult;
             }
         }
 

@@ -130,6 +130,7 @@
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
     <Compile Include="Isolation\IsolationContext.cs" />
     <Compile Include="Isolation\Link.cs" />
+    <Compile Include="Lib\AsyncBuffer.cs" />
     <Compile Include="Lib\AsyncEnumerator.cs" />
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />

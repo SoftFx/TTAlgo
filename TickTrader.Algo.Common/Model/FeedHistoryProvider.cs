@@ -10,6 +10,7 @@ using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Math;
 using TickTrader.SeriesStorage;
 using TickTrader.Server.QuoteHistory.Serialization;
@@ -45,6 +46,8 @@ namespace TickTrader.Algo.Common.Model
             return Deinit();
         }
 
+        #region Public Interface
+
         public FeedCache Cache => _diskCache;
 
         public async Task Init()
@@ -72,7 +75,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            throw new NotSupportedException();
+            return connection.FeedProxy.GetAvailableRange(symbol, priceType, timeFrame);
 
             //if (timeFrame != TimeFrames.Ticks)
             //{
@@ -83,200 +86,283 @@ namespace TickTrader.Algo.Common.Model
             //    throw new Exception("Ticks is not supported!");
         }
 
-        public async Task<List<BarEntity>> GetBarSlice(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
         {
-            var slice = await DownloadBarSlice(symbol, timeFrame, priceType, startTime, count);
-            _diskCache.Put(symbol, timeFrame, priceType, slice.From, slice.To, slice.Bars.ToArray());
-            return slice.Bars;
+            return connection.FeedProxy.DownloadBarPage(symbol, startTime, count, priceType, timeFrame);
         }
 
-        public IAsyncEnumerator<BarStreamSlice> EnumerateBars(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
-        {
-            return EnumerateBarsInternal(symbol, timeFrame, priceType, from, to).ToAsyncEnumerator();
-        }
-
-        private IEnumerable<Task<BarStreamSlice>> EnumerateBarsInternal(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
-        {
-            for (var i = from; i < to;)
-            {
-                Func<Task< BarStreamSlice>> nextSliceFunc = async ()=>
-                {
-                    var cachedSlice = Cache.GetFirstBarSlice(symbol, timeFrame, priceType, i, to);
-
-                    if (cachedSlice != null && cachedSlice.From == i)
-                    {
-                        i = cachedSlice.To;
-                        return new BarStreamSlice(cachedSlice.From, cachedSlice.To, cachedSlice.Content.ToList());
-                    }
-                    else
-                    {
-                        // download
-                        var slice = await DownloadBarSlice(symbol, timeFrame, priceType, i, SliceMaxSize);
-                        _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
-                        i = slice.To;
-                        return slice;
-                    }
-                };
-
-                yield return nextSliceFunc();
-            }
-        }
-
-        private IEnumerable<Task<SliceInfo>> DownloadBarsInternal(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
-        {
-            const int chunkSize = 8000;
-
-            for (var i = from; i < to;)
-            {
-                Func<Task<SliceInfo>> nextSliceFunc = async () =>
-                {
-                    var cachedSlice = Cache.GetFirstRange(symbol, timeFrame, priceType, i, to);
-
-                    if (cachedSlice != null && cachedSlice.From == i)
-                    {
-                        i = cachedSlice.To;
-                        return new SliceInfo(cachedSlice.From, cachedSlice.To, -1);
-                    }
-                    else
-                    {
-                        // download
-                        var slice = await DownloadBarSlice(symbol, timeFrame, priceType, i, chunkSize);
-                        _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
-                        i = slice.To;
-                        return new SliceInfo(slice.From, slice.To, slice.Bars.Count);
-                    }
-                };
-
-                yield return nextSliceFunc();
-            }
-        }
+        //public IAsyncEnumerator<BarStreamSlice> GetBars(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        //{
+        //    var buffer = new AsyncBuffer<BarStreamSlice>(2);
+        //    EnumerateBarsInternal(buffer, symbol, timeFrame, priceType, from, to);
+        //    return buffer;
+        //}
 
         public IAsyncEnumerator<SliceInfo> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            return DownloadBarsInternal(symbol, timeFrame, priceType, from, to).ToAsyncEnumerator();
+            var buffer = new AsyncBuffer<SliceInfo>();
+            PopulateBarCache(buffer, symbol, timeFrame, priceType, from, to);
+            return buffer;
+
+            //return PopulateBarCache(symbol, timeFrame, priceType, from, to).ToAsyncEnumerator();
         }
-
-        private async Task<BarStreamSlice> DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
-        {
-            var algoBars = await connection.FeedProxy.GetHistoryBars(symbol, startTime, count, priceType, timeFrame);
-            if (count < 0)
-                algoBars.Reverse();
-
-            var from = algoBars.First().OpenTime;
-            var to =  algoBars.Last().CloseTime;
-
-            //var toCorrected = result.To.Value;
-
-            //if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To)
-            //{
-            //    var sampler = BarSampler.Get(timeFrame);
-            //    var barBoundaries = sampler.GetBar(result.To.Value);
-            //    toCorrected = barBoundaries.Close;
-            //}
-
-            return new BarStreamSlice(from, to, algoBars);
-        }
-
-        //private IEnumerable<Task<TickStreamSlice>> EnumerateTicksInternal()
-        //{
-
-        //}
 
         public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
         {
-            return DownloadTicksInternal(symbol, timeFrame, from, to).ToAsyncEnumerator();
+            throw new NotImplementedException();
+            //return DownloadTicksInternal(symbol, timeFrame, from, to).ToAsyncEnumerator();
         }
 
-        private IEnumerable<Task<SliceInfo>> DownloadTicksInternal(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        #endregion
+
+        private async Task<DateTime> DownloadBarsInternal(Func<BarStreamSlice, Task<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
-            var includeLevel2 = timeFrame == TimeFrames.TicksLevel2;
-
-            for (var i = to; i > from;)
+            using (var barEnum = connection.FeedProxy.DownloadBars(key.Symbol, from, to, key.PriceType.Value, key.Frame))
             {
-                Func<Task < SliceInfo>> nextTask = async ()=>
+                var i = from;
+                while (await barEnum.Next().ConfigureAwait(false))
                 {
-                    var cachedSlice = Cache.GetLastRange(symbol, timeFrame, null, from, i);
+                    var bars = barEnum.Current;
+                    var sliceTo = bars.Last().CloseTime;
+                    System.Diagnostics.Debug.WriteLine("barEnum.Next() {0} - {1}", i, sliceTo);
+                    var slice = new BarStreamSlice(i, sliceTo, bars);
+                    Cache.Put(key, slice.From, slice.To, slice.Bars);
+                    if (!await outputAction(slice).ConfigureAwait(false))
+                        break;
+                    i = sliceTo;
+                }
+                return i;
+            }
+        }
 
-                    if (cachedSlice != null && cachedSlice.To == i)
+        private async void EnumerateBarSlices(AsyncBuffer<BarStreamSlice> buffer, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        {
+            var key = new FeedCacheKey(symbol, timeFrame, priceType);
+            var i = from;
+            foreach (var cacheItem in Cache.IterateBarCache(key, from, to))
+            {
+                if (cacheItem.From == i)
+                {
+                    var writeFlag = await buffer.WriteAsync(new BarStreamSlice(cacheItem.From, cacheItem.To, cacheItem.Content.ToArray()));
+                    if (!writeFlag)
+                        return;
+                    i = cacheItem.To;
+                }
+                else
+                    i = await DownloadBarsInternal(s => buffer.WriteAsync(s), key, i, cacheItem.From);
+            }
+
+            if (i < to)
+                i =  await DownloadBarsInternal(s => buffer.WriteAsync(s), key, i, to);
+        }
+
+        private async void PopulateBarCache(AsyncBuffer<SliceInfo> buffer, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        {
+            try
+            {
+                var key = new FeedCacheKey(symbol, timeFrame, priceType);
+                var i = from;
+                foreach (var cacheItem in Cache.IterateCacheKeys(key, from, to))
+                {
+                    if (cacheItem.From == i)
                     {
-                        i = cachedSlice.From;
-                        return new SliceInfo(cachedSlice.From, cachedSlice.To, -1);
+                        var writeFlag = await buffer.WriteAsync(new SliceInfo(cacheItem.From, cacheItem.To, 0));
+                        if (!writeFlag)
+                            return;
+                        i = cacheItem.To;
                     }
                     else
-                    {
-                        // download
-                        var slices = await DownloadTickFile(symbol, i, includeLevel2).ConfigureAwait(false);
-                        if (slices == null || slices.Count == 0)
-                        {
-                            // end of data
-                            var emptyInfo = new SliceInfo(from, i, 0);
-                            i = from;
-                            return emptyInfo;
-                        }
+                        i = await DownloadBarsInternal(s => buffer.WriteAsync(ToInfo(s)), key, i, cacheItem.From);
+                }
 
-                        int count = 0;
-                        foreach (var slice in slices)
-                        {
-                            _diskCache.Put(symbol, timeFrame, slice);
-                            count += slice.Content.Count;
-                        }
-                        var slicesFrom = slices.First().From;
-                        var info = new SliceInfo(slicesFrom, i, count);
-                        i = slicesFrom;
-                        return info;
-                    }
-                };
+                if (i < to)
+                    i = await DownloadBarsInternal(s => buffer.WriteAsync(ToInfo(s)), key, i, to);
 
-                yield return nextTask();
+                buffer.Dispose();
             }
-        }
-
-        private async Task<List<Slice<DateTime, QuoteEntity>>> DownloadTickFile(string symbol, DateTime refTimePoint, bool includeLevel2)
-        {
-            var proxy = connection.FeedProxy;
-            var result = await proxy.DownloadTickFiles(symbol, Decrease(refTimePoint), includeLevel2);
-
-            if (result == null || result.Files.Count == 0)
-                return null;
-
-            var fileFrom = result.From.Value;
-            var fileTo = result.To.Value;
-
-            var slicer = new TimeBasedSlicer<QuoteEntity>(fileFrom, fileTo, SliceMaxSize, q => q.Time);
-
-            foreach (var fileBytes in result.Files)
+            catch (Exception ex)
             {
-                var ticks = DeserializeTicksFile(fileBytes.ToArray(), includeLevel2);
-                slicer.Write(ticks.Select(t => Convert(t, symbol)).ToArray());
+                buffer.SetFailed(ex);
             }
-
-            return slicer;
         }
 
-        private List<TT.TickValue> DeserializeTicksFile(byte[] fileBytes, bool level2)
+        private SliceInfo ToInfo(BarStreamSlice slice)
         {
-            var filename = level2 ? "ticks level2" : "ticks";
-            IFormatter<TT.TickValue> formatter = level2 ? (IFormatter<TT.TickValue>)FeedTickLevel2Formatter.Instance : FeedTickFormatter.Instance;
-            var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(formatter, filename);
-            return serializer.Deserialize(fileBytes);
+            return new SliceInfo(slice.From, slice.To, slice.Bars.Length);
         }
 
-        public static QuoteEntity Convert(TT.TickValue tick, string symbol)
-        {
-            var bids = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Bid)
-                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
-                .ToArray();
-            var asks = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Ask)
-                .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
-                .ToArray();
+        //private async IEnumerable<Task<BarStreamSlice>> EnumerateBarsInternal(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        //{
+        //    var buffer = new AsyncBuffer<BarStreamSlice>(2);
 
-            return new QuoteEntity(symbol, tick.Time, bids, asks);
-        }
+        //    await buffer.Write(null);
 
-        private DateTime Decrease(DateTime val)
-        {
-            return new DateTime(val.Ticks - 1);
-        }
+
+        //for (var i = from; i < to;)
+        //{
+        //    Func<Task< BarStreamSlice>> nextSliceFunc = async ()=>
+        //    {
+        //        var cachedSlice = Cache.GetFirstBarSlice(symbol, timeFrame, priceType, i, to);
+
+        //        if (cachedSlice != null && cachedSlice.From == i)
+        //        {
+        //            i = cachedSlice.To;
+        //            return new BarStreamSlice(cachedSlice.From, cachedSlice.To, cachedSlice.Content.ToList());
+        //        }
+        //        else
+        //        {
+        //            // download
+        //            var slice = await DownloadBarSlice(symbol, timeFrame, priceType, i, SliceMaxSize);
+        //            _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
+        //            i = slice.To;
+        //            return slice;
+        //        }
+        //    };
+
+        //    yield return nextSliceFunc();
+        //}
+        //}
+
+        //private IEnumerable<Task<SliceInfo>> DownloadBarsInternal(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        //{
+        //    const int chunkSize = 8000;
+
+        //    for (var i = from; i < to;)
+        //    {
+        //        Func<Task<SliceInfo>> nextSliceFunc = async () =>
+        //        {
+        //            var cachedSlice = await Task.Factory.StartNew(() => Cache.GetFirstRange(symbol, timeFrame, priceType, i, to));
+
+        //            if (cachedSlice != null && cachedSlice.From == i)
+        //            {
+        //                i = cachedSlice.To;
+        //                return new SliceInfo(cachedSlice.From, cachedSlice.To, -1);
+        //            }
+        //            else
+        //            {
+        //                // download
+        //                var slice = await DownloadBarSlice(symbol, timeFrame, priceType, i, chunkSize);
+        //                _diskCache.Put(symbol, timeFrame, priceType, i, slice.To, slice.Bars.ToArray());
+        //                i = slice.To;
+        //                return new SliceInfo(slice.From, slice.To, slice.Bars.Count);
+        //            }
+        //        };
+
+        //        yield return nextSliceFunc();
+        //    }
+        //}
+
+        //private async Task<BarStreamSlice> DownloadBarSlice(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime startTime, int count)
+        //{
+        //    var algoBars = await connection.FeedProxy.DownloadBars(symbol, startTime, count, priceType, timeFrame);
+        //    if (count < 0)
+        //        algoBars.Reverse();
+
+        //    var from = algoBars.First().OpenTime;
+        //    var to =  algoBars.Last().CloseTime;
+
+        //    //var toCorrected = result.To.Value;
+
+        //    //if (algoBars.Count > 0 && algoBars.Last().OpenTime == result.To)
+        //    //{
+        //    //    var sampler = BarSampler.Get(timeFrame);
+        //    //    var barBoundaries = sampler.GetBar(result.To.Value);
+        //    //    toCorrected = barBoundaries.Close;
+        //    //}
+
+        //    return new BarStreamSlice(from, to, algoBars);
+        //}
+
+        //private IEnumerable<Task<SliceInfo>> DownloadTicksInternal(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        //{
+        //    var includeLevel2 = timeFrame == TimeFrames.TicksLevel2;
+
+        //    for (var i = to; i > from;)
+        //    {
+        //        Func<Task < SliceInfo>> nextTask = async ()=>
+        //        {
+        //            var cachedSlice = Cache.GetLastRange(symbol, timeFrame, null, from, i);
+
+        //            if (cachedSlice != null && cachedSlice.To == i)
+        //            {
+        //                i = cachedSlice.From;
+        //                return new SliceInfo(cachedSlice.From, cachedSlice.To, -1);
+        //            }
+        //            else
+        //            {
+        //                 download
+        //                var slices = await DownloadTickFile(symbol, i, includeLevel2).ConfigureAwait(false);
+        //                if (slices == null || slices.Count == 0)
+        //                {
+        //                     end of data
+        //                    var emptyInfo = new SliceInfo(from, i, 0);
+        //                    i = from;
+        //                    return emptyInfo;
+        //                }
+
+        //                int count = 0;
+        //                foreach (var slice in slices)
+        //                {
+        //                    _diskCache.Put(symbol, timeFrame, slice);
+        //                    count += slice.Content.Count;
+        //                }
+        //                var slicesFrom = slices.First().From;
+        //                var info = new SliceInfo(slicesFrom, i, count);
+        //                i = slicesFrom;
+        //                return info;
+        //            }
+        //        };
+
+        //        yield return nextTask();
+        //    }
+        //}
+
+        //private async Task<List<Slice<DateTime, QuoteEntity>>> DownloadTickFile(string symbol, DateTime refTimePoint, bool includeLevel2)
+        //{
+        //    var proxy = connection.FeedProxy;
+        //    var result = await proxy.DownloadTickFiles(symbol, Decrease(refTimePoint), includeLevel2);
+
+        //    if (result == null || result.Files.Count == 0)
+        //        return null;
+
+        //    var fileFrom = result.From.Value;
+        //    var fileTo = result.To.Value;
+
+        //    var slicer = new TimeBasedSlicer<QuoteEntity>(fileFrom, fileTo, SliceMaxSize, q => q.Time);
+
+        //    foreach (var fileBytes in result.Files)
+        //    {
+        //        var ticks = DeserializeTicksFile(fileBytes.ToArray(), includeLevel2);
+        //        slicer.Write(ticks.Select(t => Convert(t, symbol)).ToArray());
+        //    }
+
+        //    return slicer;
+        //}
+
+        //private List<TT.TickValue> DeserializeTicksFile(byte[] fileBytes, bool level2)
+        //{
+        //    var filename = level2 ? "ticks level2" : "ticks";
+        //    IFormatter<TT.TickValue> formatter = level2 ? (IFormatter<TT.TickValue>)FeedTickLevel2Formatter.Instance : FeedTickFormatter.Instance;
+        //    var serializer = new ItemsZipSerializer<TT.TickValue, List<TT.TickValue>>(formatter, filename);
+        //    return serializer.Deserialize(fileBytes);
+        //}
+
+        //private static QuoteEntity Convert(TT.TickValue tick, string symbol)
+        //{
+        //    var bids = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Bid)
+        //        .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
+        //        .ToArray();
+        //    var asks = tick.Level2.Where(l => l.Type == TickTrader.Common.Business.FxPriceType.Ask)
+        //        .Select(l => new BookEntryEntity((double)l.Price, l.Volume))
+        //        .ToArray();
+
+        //    return new QuoteEntity(symbol, tick.Time, bids, asks);
+        //}
+
+        //private DateTime Decrease(DateTime val)
+        //{
+        //    return new DateTime(val.Ticks - 1);
+        //}
     }
 
     internal class TimeBasedSlicer<T> : List<Slice<DateTime, T>>
@@ -375,7 +461,7 @@ namespace TickTrader.Algo.Common.Model
 
     public class BarStreamSlice
     {
-        public BarStreamSlice(DateTime from, DateTime to, List<BarEntity> barList)
+        public BarStreamSlice(DateTime from, DateTime to, BarEntity[] barList)
         {
             From = from;
             To = to;
@@ -384,7 +470,7 @@ namespace TickTrader.Algo.Common.Model
 
         public DateTime From { get; }
         public DateTime To { get; }
-        public List<BarEntity> Bars { get; }
+        public BarEntity[] Bars { get; }
     }
 
     public class TickStreamSlice

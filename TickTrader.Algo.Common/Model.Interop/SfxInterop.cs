@@ -12,6 +12,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
 using API = TickTrader.Algo.Api;
+using TickTrader.FDK.QuoteStore;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -37,6 +38,9 @@ namespace TickTrader.Algo.Common.Model
             _tradeProxy = new FDK.OrderEntry.Client("trade.proxy");
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
+            _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
+            _tradeProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
+            _feedHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
         }
 
         public async Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken)
@@ -65,6 +69,11 @@ namespace TickTrader.Algo.Common.Model
         {
             await _feedHistoryProxy.ConnectAsync(address);
             await _feedHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+        }
+
+        private void OnDisconnect()
+        {
+            Disconnected?.Invoke(this, ConnectionErrorCodes.Unknown);
         }
 
         public Task Disconnect()
@@ -114,29 +123,75 @@ namespace TickTrader.Algo.Common.Model
             return _feedProxy.SubscribeQuotesAsync(symbols, depth);
         }
 
-        public IAsyncEnumerator<BarEntity[]> GetHistoryBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        public IAsyncEnumerator<BarEntity[]> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        {
+            var buffer = new AsyncBuffer<BarEntity[]>();
+            var eTask = _feedHistoryProxy.DownloadBarsAsync(Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to);
+            DownloadBarsToBuffer(buffer, eTask);
+            return buffer;
+        }
+
+        private async void DownloadBarsToBuffer(AsyncBuffer<BarEntity[]> buffer, Task<BarEnumerator> enumTask)
+        {
+            const int pageSize = 2000;
+
+            try
+            {
+                using (var e = await enumTask)
+                {
+                    var page = new List<BarEntity>();
+
+                    while (true)
+                    {
+                        var bar = await e.NextAsync();
+                        if (bar == null)
+                            break;
+
+                        page.Add(Convert(bar));
+                        if (page.Count >= pageSize)
+                        {
+                            await buffer.WriteAsync(page.ToArray());
+                            page.Clear();
+                        }
+                    }
+
+                    if (page.Count > 0)
+                        await buffer.WriteAsync(page.ToArray());
+                }
+
+                buffer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                buffer.SetFailed(ex);
+            }
+        }
+
+        public async Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod)
+        {
+            var result = new List<BarEntity>();
+
+            var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, count);
+            return bars.Select(Convert).ToArray();
+        }
+
+        public IAsyncEnumerator<QuoteEntity[]> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<List<BarEntity>> GetHistoryBars(string symbol, DateTime startTime, int count, BarPriceType priceType, TimeFrames timeFrame)
+        public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            var result = new List<BarEntity>();
+            throw new NotImplementedException();
+        }
 
-            using (var enumerator = await _feedHistoryProxy.DownloadBarsAsync(
-                Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ConvertBack(timeFrame), DateTime.MinValue, startTime))
+        public async Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        {
+            using (var e = await _feedHistoryProxy.DownloadBarsAsync(
+                Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue, DateTime.MinValue))
             {
-                for (int i = 0; i < count; i++)
-                {
-                    var bar = await enumerator.NextAsync();
-                    if (bar == null)
-                        break;
-
-                    result.Add(Convert(bar));
-                }
+                return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
             }
-
-            return result;
         }
 
         #endregion
@@ -167,26 +222,6 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public Task<HistoryFilesPackage> DownloadTickFiles(string symbol, DateTime refTimePoint, bool includeLevel2)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> OpenOrder(OpenOrderRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> CancelOrder(CancelOrderRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> ModifyOrder(ReplaceOrderRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> CloseOrder(CloseOrderRequest request)
         {
             throw new NotImplementedException();
         }
@@ -344,11 +379,6 @@ namespace TickTrader.Algo.Common.Model
 
                 default: throw new ArgumentException("Unsupported order side: " + fdkSide);
             }
-        }
-
-        private static string ConvertBack(Api.TimeFrames timeframe)
-        {
-            return ToBarPeriod(timeframe).ToString();
         }
 
         private static BarPeriod ToBarPeriod(Api.TimeFrames timeframe)

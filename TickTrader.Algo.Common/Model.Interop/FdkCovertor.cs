@@ -13,6 +13,25 @@ namespace TickTrader.Algo.Common.Model
 {
     public static class FdkConvertor
     {
+        public static IEnumerable<BarEntity> ConvertAndFilter(this IEnumerable<Bar> srcBars)
+        {
+            return ConvertAndFilter(srcBars, DateTime.MinValue);
+        }
+
+        public static IEnumerable<BarEntity> ConvertAndFilter(this IEnumerable<Bar> srcBars, DateTime initialTimeEdge)
+        {
+            var timeEdge = initialTimeEdge;
+
+            foreach (var bar in srcBars)
+            {
+                if (bar.From > timeEdge)
+                {
+                    yield return Convert(bar);
+                    timeEdge = bar.From;
+                }
+            }
+        }
+
         public static void Convert(IEnumerable<Bar> srcBars, List<BarEntity> dstBars)
         {
             foreach (var bar in srcBars)

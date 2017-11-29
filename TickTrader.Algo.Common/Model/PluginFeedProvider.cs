@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Common.Model
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
         {
-            return history.GetBarSlice(symbolCode, priceType, timeFrame, from, size).Result;
+            return history.GetBarPage(symbolCode, priceType, timeFrame, from, size).Result.ToList();
         }
 
         public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)

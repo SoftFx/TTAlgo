@@ -297,25 +297,65 @@ namespace TickTrader.Algo.Common.Model
             return requestProcessor.EnqueueTask(() => _feedProxy.Server.SubscribeToQuotes(symbols, depth));
         }
 
-        public Task<HistoryFilesPackage> DownloadTickFiles(string symbol, DateTime refTimePoint, bool includeLevel2)
+        public IAsyncEnumerator<BarEntity[]> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
-            throw new NotImplementedException();
+            var buffer = new AsyncBuffer<BarEntity[]>();
+            var fdkPriceType = FdkConvertor.Convert(priceType);
+            var fdkBarPeriod = FdkConvertor.ToBarPeriod(barPeriod);
+
+            requestProcessor.EnqueueTask(() =>
+            {
+                try
+                {
+                    var bars = _feedProxy.Server.GetBarsHistory(symbol, fdkPriceType, fdkBarPeriod, from, to);
+                    foreach (var page in bars.ConvertAndFilter(from).SplitIntoPages(2000))
+                    {
+                        if (!buffer.Write(page))
+                            break;
+                    }
+                    buffer.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    buffer.SetFailed(ex);
+                }
+            });
+
+            return buffer;
         }
 
-        public IAsyncEnumerator<BarEntity[]> GetHistoryBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<BarEntity>> GetHistoryBars(string symbol, DateTime startTime, int count, BarPriceType priceType, TimeFrames barPeriod)
+        public Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod)
         {
             var fdkPriceType = FdkConvertor.Convert(priceType);
             var fdkBarPeriod = FdkConvertor.ToBarPeriod(barPeriod);
 
             return requestProcessor.EnqueueTask(() =>
             {
-                var result = _feedProxy.Server.GetHistoryBars(symbol, startTime, count, fdkPriceType, fdkBarPeriod);
-                return FdkConvertor.Convert(result.Bars).ToList();
+                var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
+                var barArray = FdkConvertor.Convert(result.Bars).ToArray();
+                if (count < 0)
+                    Array.Reverse(barArray);
+                return barArray;
+            });
+        }
+
+        public IAsyncEnumerator<QuoteEntity[]> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        {
+            return requestProcessor.EnqueueTask(() =>
+            {
+                var fakeTimePoint = new DateTime(2017, 1, 1);
+                var result = _feedProxy.Server.GetHistoryBars(symbol, fakeTimePoint, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
+                return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
             });
         }
 
@@ -340,26 +380,6 @@ namespace TickTrader.Algo.Common.Model
         public Task<PositionEntity[]> GetPositions()
         {
             return Task.FromResult(Positions);
-        }
-
-        public Task<OrderCmdResult> OpenOrder(OpenOrderRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> CancelOrder(CancelOrderRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> ModifyOrder(ReplaceOrderRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderCmdResult> CloseOrder(CloseOrderRequest request)
-        {
-            throw new NotImplementedException();
         }
 
         public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)

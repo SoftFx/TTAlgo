@@ -41,6 +41,24 @@ namespace TickTrader.Algo.Common.Lib
             return new AsyncAdapter<T>(srcEnumerable);
         }
 
+        public static IEnumerable<T[]> SplitIntoPages<T>(this IEnumerable<T> src, int pageSize)
+        {
+            var page = new List<T>();
+
+            foreach (var item in src)
+            {
+                if (page.Count >= pageSize)
+                {
+                    yield return page.ToArray();
+                    page.Clear();
+                }
+                page.Add(item);
+            }
+
+            if (page.Count > 0)
+                yield return page.ToArray();
+        }
+
         private class AsyncAdapter<T> : IAsyncEnumerator<T>, IDisposable
         {
             private IEnumerator<Task<T>> _srcEnumerator;

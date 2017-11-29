@@ -134,30 +134,31 @@ namespace TickTrader.BotTerminal
             {
                 observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
-                var barEnumerator = _client.History.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
-
-                while (await barEnumerator.Next())
+                using (var barEnumerator = _client.History.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to))
                 {
-                    var info = barEnumerator.Current;
-                    if (info.Count > 0)
+                    while (await barEnumerator.Next())
                     {
-                        downloadedCount += info.Count;
-                        var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
-                        if (watch.ElapsedMilliseconds > 0)
-                            msg += "\nBar per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
-                        observer.SetMessage(msg);
+                        var info = barEnumerator.Current;
+                        if (info.Count > 0)
+                        {
+                            downloadedCount += info.Count;
+                            var msg = "Downloading... " + downloadedCount + " bars are downloaded.";
+                            if (watch.ElapsedMilliseconds > 0)
+                                msg += "\nBar per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
+                            observer.SetMessage(msg);
+                        }
+
+                        observer?.SetProgress(info.To.GetAbsoluteDay());
+
+                        if (cancelToken.IsCancellationRequested)
+                        {
+                            observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
+                            return;
+                        }
                     }
 
-                    observer?.SetProgress(info.To.GetAbsoluteDay());
-
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
-                        return;
-                    }
+                    observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
                 }
-
-                observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
             }
             else
             {
@@ -166,26 +167,28 @@ namespace TickTrader.BotTerminal
 
                 observer?.StartProgress(0, totalDays);
 
-                var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
-
-                while (await tickEnumerator.Next())
+                using (var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, timeFrame, from, to))
                 {
-                    var info = tickEnumerator.Current;
-                    if (info.Count > 0)
-                    {
-                        downloadedCount += info.Count;
-                        var msg = "Downloading... " + downloadedCount + " ticks are downloaded.";
-                        if (watch.ElapsedMilliseconds > 0)
-                            msg += "\nTicks per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
-                        observer.SetMessage(msg);
-                    }
 
-                    observer?.SetProgress(endDay - info.From.GetAbsoluteDay());
-
-                    if (cancelToken.IsCancellationRequested)
+                    while (await tickEnumerator.Next())
                     {
-                        observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
-                        return;
+                        var info = tickEnumerator.Current;
+                        if (info.Count > 0)
+                        {
+                            downloadedCount += info.Count;
+                            var msg = "Downloading... " + downloadedCount + " ticks are downloaded.";
+                            if (watch.ElapsedMilliseconds > 0)
+                                msg += "\nTicks per second: " + Math.Round(((double)downloadedCount * 1000) / watch.ElapsedMilliseconds);
+                            observer.SetMessage(msg);
+                        }
+
+                        observer?.SetProgress(endDay - info.From.GetAbsoluteDay());
+
+                        if (cancelToken.IsCancellationRequested)
+                        {
+                            observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
+                            return;
+                        }
                     }
                 }
 

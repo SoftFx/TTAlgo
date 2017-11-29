@@ -29,26 +29,27 @@ namespace TickTrader.Algo.Common.Model
         private ConnectRequest connectRequest;
         private ConnectRequest lastConnectRequest;
         private Request disconnectRequest;
-        private bool canRecconect;
         private bool wasConnected;
 
         public ConnectionModel(ConnectionOptions options, IStateMachineSync stateSync = null)
         {
             _options = options;
 
+            Func<bool> canRecconect = ()=> wasConnected && LastError != ConnectionErrorCodes.BlockedAccount && LastError != ConnectionErrorCodes.InvalidCredentials;
+
             _stateControl = new StateMachine<States>(stateSync);
             _stateSync = _stateControl.SyncContext;
             _stateControl.AddTransition(States.Offline, Events.OnRequest, States.Connecting);
-            _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, () => canRecconect, States.Connecting);
+            _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
                 ()=> disconnectRequest != null || connectRequest != null || LastError != ConnectionErrorCodes.None, States.Disconnecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
-            _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, ()=> canRecconect, States.OfflineRetry);
+            _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
             _stateControl.AddTransition(States.Online, Events.LostConnection, States.Disconnecting);
             _stateControl.AddTransition(States.Online, Events.OnRequest, States.Disconnecting);
             _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, () => connectRequest != null, States.Connecting);
-            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, ()=> canRecconect, States.OfflineRetry);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
 
             _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
@@ -151,7 +152,6 @@ namespace TickTrader.Algo.Common.Model
                 if (sender == _interop && (State == States.Online || State == States.Connecting))
                 {
                     LastError = code;
-                    canRecconect = wasConnected && LastError != ConnectionErrorCodes.BlockedAccount && LastError != ConnectionErrorCodes.InvalidCredentials;
                     _stateControl.PushEvent(Events.LostConnection);
                 }
             });
@@ -267,8 +267,6 @@ namespace TickTrader.Algo.Common.Model
 
         private async void DoDisconnect()
         {
-            wasConnected = false;
-
             await Deinitialize();
 
             try

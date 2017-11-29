@@ -29,17 +29,17 @@ namespace TickTrader.BotTerminal
 
         public void OpenWindow(IScreen wndModel)
         {
-            var wnd = _adapter.GetOrCreateWindow(wndModel);
+            var wnd = _adapter.GetOrCreateMdiWindow(wndModel);
             wnd.Show();
             wnd.Activate();
         }
 
         public void OpenMdiWindow(IScreen wndModel)
         {
-            _adapter.GetOrCreateWindow(wndModel, MdiSetup).Show();
+            _adapter.GetOrCreateMdiWindow(wndModel, MdiSetup).Show();
         }
 
-        public static void OpenWindow(IScreen wndModel, IViewAware owner)
+        public static void OpenWindow(IScreen wndModel, IViewAware parent)
         {
             staticManager.ShowWindow(wndModel);
         }
@@ -97,9 +97,16 @@ namespace TickTrader.BotTerminal
             _wndModels.Remove(wndKey);
         }
 
-        public bool? ShowDialog(IScreen dlgModel)
+        public bool? ShowDialog(IScreen dlgModel, IViewAware parent = null)
         {
-            return _adapter.ShowDialog(dlgModel);
+            var wnd = _adapter.CreateWindow(dlgModel);
+            if (parent != null)
+            {
+                wnd.ShowInTaskbar = false;
+                wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                wnd.Owner = (Window)parent.GetView();
+            }
+            return wnd.ShowDialog();
         }
 
         private class CaliburnAdapter : Caliburn.Micro.WindowManager
@@ -116,7 +123,7 @@ namespace TickTrader.BotTerminal
                 return _windows.GetOrDefault(rootModel);
             }
 
-            public Window GetOrCreateWindow(object rootModel, Action<Window> setupAction = null)
+            public Window GetOrCreateMdiWindow(object rootModel, Action<Window> setupAction = null)
             {
                 var wnd = _windows.GetOrDefault(rootModel);
                 if (wnd == null)
@@ -134,6 +141,16 @@ namespace TickTrader.BotTerminal
                     };
                 }
                 return wnd;
+            }
+
+            public Window CreateWindow(object rootModel)
+            {
+                return base.CreateWindow(rootModel, false, null, null);
+            }
+
+            protected override Window CreateWindow(object rootModel, bool isDialog, object context, IDictionary<string, object> settings)
+            {
+                return base.CreateWindow(rootModel, isDialog, context, settings);
             }
         }
     }

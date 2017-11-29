@@ -69,8 +69,8 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            var barArray = await ClientModel.History.GetBarSlice(SymbolCode, Api.BarPriceType.Bid, timeframe, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
-            //barArray.Reverse();
+            var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
+            var barArray = await ClientModel.History.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
             //var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
@@ -82,8 +82,8 @@ namespace TickTrader.BotTerminal
             barCollection.ChangeTimeframe(TimeFrame);
             barCollection.Append(barArray);
 
-            if (barArray.Count > 0)
-                InitBoundaries(barArray.Count, barArray.First().OpenTime, barArray.Last().OpenTime);
+            if (barArray.Length > 0)
+                InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)

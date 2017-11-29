@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
             if (dialogResult == null && HasStartedBots)
             {
                 var closeDlg = new CloseChartDialogViewModel(this);
-                shell.ToolWndManager.ShowDialog(closeDlg);
+                shell.ToolWndManager.ShowDialog(closeDlg, this);
                 dialogResult = closeDlg.IsConfirmed;
             }
 

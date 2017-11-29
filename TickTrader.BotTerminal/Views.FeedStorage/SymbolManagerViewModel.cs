@@ -126,7 +126,7 @@ namespace TickTrader.BotTerminal
 
         public void Download(ManagedOnlineSymbol symbol)
         {
-            _wndManager.ShowDialog(new FeedDownloadViewModel(_clientModel, symbol?.Model as SymbolModel));
+            _wndManager.ShowDialog(new FeedDownloadViewModel(_clientModel, symbol?.Model as SymbolModel), this);
         }
 
         public void Import()
@@ -137,7 +137,7 @@ namespace TickTrader.BotTerminal
         public void Import(ManagedCustomSymbol symbol)
         {
             using (var symbolList = _customManagedSymbols.TransformToList())
-                _wndManager.ShowDialog(new FeedImportViewModel(symbolList, symbol));
+                _wndManager.ShowDialog(new FeedImportViewModel(symbolList, symbol), this);
         }
 
         public void AddSymbol()
@@ -146,10 +146,10 @@ namespace TickTrader.BotTerminal
             {
                 var model = new SymbolCfgEditorViewModel(null, currencies, _customManagedSymbols.Snapshot.ContainsKey);
 
-                if (_wndManager.ShowDialog(model) == true)
+                if (_wndManager.ShowDialog(model, this) == true)
                 {
                     var actionModel = new ActionDialogViewModel("Adding symbol...", () => _customStorage.Add(model.GetResultingSymbol()));
-                    _wndManager.ShowDialog(actionModel);
+                    _wndManager.ShowDialog(actionModel, this);
                 }
             }
         }
@@ -160,31 +160,31 @@ namespace TickTrader.BotTerminal
             {
                 var model = new SymbolCfgEditorViewModel(symbol.Model, currencies, _customManagedSymbols.Snapshot.ContainsKey);
 
-                if (_wndManager.ShowDialog(model) == true)
+                if (_wndManager.ShowDialog(model, this) == true)
                 {
                     var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _customStorage.Update(model.GetResultingSymbol()));
-                    _wndManager.ShowDialog(actionModel);
+                    _wndManager.ShowDialog(actionModel, this);
                 }
             }
         }
 
         public void Export(CacheSeriesInfoViewModel series)
         {
-            _wndManager.ShowDialog(new FeedExportViewModel(series.Key, series.Storage));
+            _wndManager.ShowDialog(new FeedExportViewModel(series.Key, series.Storage), this);
         }
 
         public void RemoveSymbol(ManagedCustomSymbol symbolModel)
         {
             var actionModel = new ActionDialogViewModel("Removing symbol...",
                     () => _customStorage.Remove(symbolModel.Name));
-            _wndManager.ShowDialog(actionModel);
+            _wndManager.ShowDialog(actionModel, this);
         }
 
         public void RemoveSeries(CacheSeriesInfoViewModel series)
         {
             var actionModel = new ActionDialogViewModel("Removing series...",
                    () => series.Storage.RemoveSeries(series.Key));
-            _wndManager.ShowDialog(actionModel);
+            _wndManager.ShowDialog(actionModel, this);
         }
 
         private async void DoUpdateSizes()

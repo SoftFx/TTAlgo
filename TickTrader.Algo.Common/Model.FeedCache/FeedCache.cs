@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Common.Model
                 var min = DateTime.MinValue;
                 var max = DateTime.MaxValue;
 
-                foreach (var r in IterateCacheKeys(key))
+                foreach (var r in IterateCacheKeysInternal(key))
                 {
                     if (!hasValues)
                     {
@@ -108,6 +108,11 @@ namespace TickTrader.Algo.Common.Model
 
                 return GetSeries(key)?.GetSize();
             }
+        }
+
+        public IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return IterateCacheKeysInternal(key, from, to).GetSyncWrapper(_syncObj);
         }
 
         #region Bar History
@@ -143,12 +148,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key)
+        private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey key)
         {
-            return IterateCacheKeys(key, DateTime.MinValue, DateTime.MaxValue);
+            return IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue);
         }
 
-        private IEnumerable<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
+        private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey key, DateTime from, DateTime to)
         {
             return GetSeries(key)?.IterateRanges(from, to) ?? Enumerable.Empty<KeyRange<DateTime>>();
         }
@@ -179,16 +184,21 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
+        public void Put(FeedCacheKey key, DateTime from, DateTime to, BarEntity[] values)
         {
             lock (_syncObj)
             {
                 CheckState();
 
-                var key = new FeedCacheKey(symbol, frame, priceType);
                 var collection = GetSeries<BarEntity>(key, true);
                 collection.Write(from, to, values);
             }
+        }
+
+
+        public void Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
+        {
+            Put(new FeedCacheKey(symbol, frame, priceType), from, to, values);
         }
 
         #endregion

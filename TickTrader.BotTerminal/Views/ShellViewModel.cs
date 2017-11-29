@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -79,6 +80,13 @@ namespace TickTrader.BotTerminal
 
             storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
 
+            cManager.StateChanged += (f, t) =>
+            {
+                NotifyOfPropertyChange(nameof(ConnectionState));
+                NotifyOfPropertyChange(nameof(CurrentServerName));
+            };
+            //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
+
             LogStateLoop();
 
             _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
@@ -154,14 +162,14 @@ namespace TickTrader.BotTerminal
         public override void CanClose(Action<bool> callback)
         {
             var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
-            wndManager.ShowDialog(exit);
+            wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
                 storage.ProfileManager.Stop();
                 if (exit.HasStartedBots)
                 {
                     var shutdown = new ShutdownDialogViewModel(Charts);
-                    wndManager.ShowDialog(shutdown);
+                    wndManager.ShowDialog(shutdown, this);
                 }
             }
             callback(exit.IsConfirmed);
@@ -178,7 +186,7 @@ namespace TickTrader.BotTerminal
                 if (creds == null || !creds.HasPassword)
                 {
                     LoginDialogViewModel model = new LoginDialogViewModel(cManager, creds);
-                    wndManager.ShowDialog(model);
+                    wndManager.ShowDialog(model, this);
                 }
                 else
                     cManager.TriggerConnect(creds);
@@ -192,7 +200,7 @@ namespace TickTrader.BotTerminal
         public void About()
         {
             AboutDialogViewModel model = new AboutDialogViewModel();
-            wndManager.ShowDialog(model);
+            wndManager.ShowDialog(model, this);
         }
 
         public void Exit()
@@ -219,6 +227,9 @@ namespace TickTrader.BotTerminal
         public ProfileManagerViewModel ProfileManager { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public WindowManager ToolWndManager => wndManager;
+
+        public ConnectionModel.States ConnectionState => cManager.Connection.State;
+        public string CurrentServerName => cManager.Connection.CurrentServer;
 
         public NotificationsViewModel Notifications { get; private set; }
 
@@ -316,7 +327,7 @@ namespace TickTrader.BotTerminal
             if (_smbManager == null)
                 _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
 
-            wndManager.ShowDialog(_smbManager);
+            wndManager.ShowDialog(_smbManager, this);
         }
 
         public void CloseChart(object chart)
@@ -350,7 +361,7 @@ namespace TickTrader.BotTerminal
         public void ReloadProfile(CancellationToken token)
         {
             var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
-            wndManager.ShowDialog(loading);
+            wndManager.ShowDialog(loading, this);
         }
 
         #endregion

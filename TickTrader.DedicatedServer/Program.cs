@@ -21,6 +21,7 @@ using System.Security.Cryptography.X509Certificates;
 using TickTrader.DedicatedServer.WebAdmin.Server.Extensions;
 using TickTrader.DedicatedServer.Extensions;
 using NLog;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.DedicatedServer
 {
@@ -181,7 +182,7 @@ namespace TickTrader.DedicatedServer
                             accountsList = server.Accounts.ToList();
                         acc = CommandUi.Choose("account", accountsList, GetDisplayName);
                         var result = acc.TestConnection().Result;
-                        if (result == Algo.Common.Model.ConnectionErrorCodes.None)
+                        if (result == ConnectionErrorCodes.None)
                             Console.WriteLine("Valid connection.");
                         else
                             Console.WriteLine("Error = " + acc.TestConnection().Result);
@@ -193,7 +194,7 @@ namespace TickTrader.DedicatedServer
                         var accKey = new AccountKey(acc.Username, acc.Address);
                         ConnectionInfo info;
                         var getInfoError = server.GetAccountInfo(accKey, out info);
-                        if (getInfoError == Algo.Common.Model.ConnectionErrorCodes.None)
+                        if (getInfoError == ConnectionErrorCodes.None)
                         {
                             Console.WriteLine();
                             Console.WriteLine("Symbols:");

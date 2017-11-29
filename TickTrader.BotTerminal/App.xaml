@@ -23,9 +23,9 @@
                     <l:Theme ThemeName="Classic" StylePrefix="Classic">
                         <ResourceDictionary Source="Resx/Themes/Classic.xaml"/>
                     </l:Theme>
-                    <l:Theme ThemeName="Dark">
+                    <!--<l:Theme ThemeName="Dark">
                         <ResourceDictionary Source="Resx/Themes/Dark.xaml"/>
-                    </l:Theme>
+                    </l:Theme>-->
                     <!--<l:Theme ThemeName="Light">
                         <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
                     </l:Theme>-->

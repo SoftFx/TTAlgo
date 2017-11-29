@@ -35,19 +35,19 @@ namespace TickTrader.Algo.Core
             return AsyncEnumerator.ToEnumerable(() => _provider?.GetTradeHistory(to, skipCancelOrders));
         }
 
-        public IAsyncEnumerator<TradeReport[]> GetAsync(bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders)
         {
-            return _provider?.GetTradeHistory(skipCancelOrders).AsPagedAsync();
+            return _provider?.GetTradeHistory(skipCancelOrders).AsAsync();
         }
 
-        public IAsyncEnumerator<TradeReport[]> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
         {
-            return _provider?.GetTradeHistory(from, to, skipCancelOrders).AsPagedAsync();
+            return _provider?.GetTradeHistory(from, to, skipCancelOrders).AsAsync();
         }
 
-        public IAsyncEnumerator<TradeReport[]> GetRangeAsync(DateTime to, bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders)
         {
-            return _provider?.GetTradeHistory(to, skipCancelOrders).AsPagedAsync();
+            return _provider?.GetTradeHistory(to, skipCancelOrders).AsAsync();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
