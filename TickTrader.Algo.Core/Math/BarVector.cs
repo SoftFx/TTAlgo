@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core.Math
             entity.CloseTime = bar.CloseTime;
             entity.Open = bar.Open;
             entity.High = System.Math.Max(bar.High, high);
-            entity.Low = System.Math.Max(bar.Low, low);
+            entity.Low = System.Math.Min(bar.Low, low);
             entity.Close = close;
             entity.Volume = bar.Volume + volume;
             return entity;
