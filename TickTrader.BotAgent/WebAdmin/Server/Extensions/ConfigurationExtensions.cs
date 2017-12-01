@@ -24,6 +24,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return configuration.GetSection(nameof(AppSettings.Ssl)).Get<SslSettings>();
         }
 
+        public static ProtocolSettings GetProtocolSettings(this IConfiguration configuration)
+        {
+            return configuration.GetSection(nameof(AppSettings.Protocol)).Get<ProtocolSettings>();
+        }
+
         public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)
         {
             var sslConf = config.GetSslSettings();
@@ -40,6 +45,35 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 pfxFile = Path.Combine(contentRoot, pfxFile);
 
             return new X509Certificate2(pfxFile, sslConf.Password);
+        }
+
+        public static ProtocolServerSettings GetProtocolServerSettings(this IConfiguration config, string contentRoot)
+        {
+            var creds = config.GetCredentials();
+
+            if (creds == null)
+                throw new ArgumentException("Server credentials not found");
+
+            var protocolConfig = config.GetProtocolSettings();
+
+            if (protocolConfig == null)
+                throw new ArgumentException("Protocol configuration not found");
+
+            if (protocolConfig.ListeningPort < 0 || protocolConfig.ListeningPort > 65535)
+                throw new ArgumentException("Invalid port number");
+
+            var certificate = config.GetCertificate(contentRoot);
+
+            var serverSettings = new ProtocolServerSettings
+            {
+                ServerName = "BotAgentServer",
+                Certificate = certificate,
+                ProtocolSettings = protocolConfig,
+                Login = creds.Login,
+                Password = creds.Password,
+            };
+
+            return serverSettings;
         }
     }
 }

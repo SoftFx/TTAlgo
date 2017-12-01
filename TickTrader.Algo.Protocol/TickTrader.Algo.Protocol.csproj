@@ -44,13 +44,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\ToAlgo.cs" />
+    <Compile Include="Converters\ToSfx.cs" />
     <Compile Include="Entities\AccountKeyEntity.cs" />
     <Compile Include="Entities\AccountModelEntity.cs" />
     <Compile Include="Entities\BotModelEntity.cs" />
     <Compile Include="Entities\IProtocolEntity.cs" />
     <Compile Include="Entities\PluginKeyEntity.cs" />
+    <Compile Include="Entities\PluginPermissionsEntity.cs" />
+    <Compile Include="Extensions\ProtocolSettingsExtensions.cs" />
     <Compile Include="Interface\IBotAgentClient.cs" />
     <Compile Include="Interface\IBotAgentServer.cs" />
+    <Compile Include="Interface\IClientSettings.cs" />
+    <Compile Include="Interface\IProtocolSettings.cs" />
+    <Compile Include="Interface\IServerSettings.cs" />
     <Compile Include="Lib\BotAgent.cs" />
     <Compile Include="Lib\BotAgentClientListener.cs" />
     <Compile Include="Lib\BotAgentServerListener.cs" />

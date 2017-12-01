@@ -1,6 +1,5 @@
 ﻿using SoftFX.Net.BotAgent;
 using System;
-using System.Security.Cryptography.X509Certificates;
 using TickTrader.Algo.Protocol.Lib;
 
 namespace TickTrader.Algo.Protocol
@@ -19,28 +18,13 @@ namespace TickTrader.Algo.Protocol
 
         public IBotAgentServer AgentServer { get; }
 
+        public IServerSettings Settings { get; }
 
-        public ProtocolServer(IBotAgentServer agentServer, X509Certificate2 cert)
+
+        public ProtocolServer(IBotAgentServer agentServer, IServerSettings settings)
         {
             AgentServer = agentServer;
-
-            Listener = new BotAgentServerListener(AgentServer);
-
-            var serverOptions = new ServerOptions(8443)
-            {
-                SessionThreadCount = 3
-            };
-            serverOptions.Log.Events = true;
-            serverOptions.Log.States = true;
-            serverOptions.Log.Messages = true;
-            serverOptions.ConnectionType = SoftFX.Net.Core.ConnectionType.Secure;
-            serverOptions.Certificate = cert;
-            serverOptions.RequireClientCertificate = false;
-
-            Server = new Server("Bot Agent Server", serverOptions)
-            {
-                Listener = Listener,
-            };
+            Settings = settings;
 
             State = ServerState.Stopped;
         }
@@ -50,6 +34,13 @@ namespace TickTrader.Algo.Protocol
         {
             if (State == ServerState.Started)
                 throw new Exception("Server is already started");
+
+            Listener = new BotAgentServerListener(AgentServer);
+
+            Server = new Server(Settings.ServerName, Settings.CreateServerOptions())
+            {
+                Listener = Listener,
+            };
 
             Server.Start();
 

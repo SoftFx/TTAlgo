@@ -18,28 +18,13 @@ namespace TickTrader.Algo.Protocol
 
         public IBotAgentClient AgentClient { get; }
 
-        public string ServerAddress { get; }
+        public IClientSessionSettings SessionSettings { get; }
 
 
-        public ProtocolClient(IBotAgentClient agentClient, string serverAddress)
+        public ProtocolClient(IBotAgentClient agentClient, IClientSessionSettings settings)
         {
             AgentClient = agentClient;
-
-            Listener = new BotAgentClientListener(AgentClient);
-            ServerAddress = serverAddress;
-
-            var clientSessionOptions = new ClientSessionOptions(8443);
-            clientSessionOptions.Log.Events = true;
-            clientSessionOptions.Log.States = true;
-            clientSessionOptions.Log.Messages = true;
-
-            clientSessionOptions.ServerCertificateName = "certificate.pfx";
-            clientSessionOptions.ConnectionType = SoftFX.Net.Core.ConnectionType.Secure;
-
-            ClientSession = new ClientSession("Bot Agent Client", clientSessionOptions)
-            {
-                Listener = Listener,
-            };
+            SessionSettings = settings;
 
             State = ClientState.Disconnected;
         }
@@ -50,7 +35,14 @@ namespace TickTrader.Algo.Protocol
             if (State == ClientState.Connected)
                 throw new Exception("Client is already connected");
 
-            ClientSession.Connect(null, ServerAddress);
+            Listener = new BotAgentClientListener(AgentClient);
+
+            ClientSession = new ClientSession(SessionSettings.ServerAddress, SessionSettings.CreateClientOptions())
+            {
+                Listener = Listener,
+            };
+
+            ClientSession.Connect(null, SessionSettings.ServerAddress);
 
             State = ClientState.Connected;
         }

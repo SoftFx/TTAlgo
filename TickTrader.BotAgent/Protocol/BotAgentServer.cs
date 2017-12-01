@@ -46,11 +46,10 @@ namespace TickTrader.BotAgent.Protocol
                         {
                             InstanceId = bot.Id,
                             Isolated = bot.Isolated,
+                            State = (BotState)((int)bot.State),
+                            Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed },
                             Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
-                            State = (uint)bot.State,
                             Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
-                            Config = "empty",
-                            Permissions = "empty",
                         }).ToArray(),
                     }).ToArray()
             };

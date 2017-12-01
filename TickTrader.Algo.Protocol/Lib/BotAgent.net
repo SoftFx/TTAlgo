@@ -1,24 +1,84 @@
 protocol BotAgent(1,0)
 {
-	group PluginKey
-	{
-		string PackageName;
-		string DescriptorId;
-	}
+    message LoginRequest
+    {
+        ustring Username;
+        ustring Password;
+    }
 
-	group AccountKey
-	{
-		string Login;
-		string Server;
-	}
+    message LoginReport;
+
+    enum LoginRejectReason
+    {
+        InvalidCredentials,
+        InternalServerError,
+    }
+
+    message LoginReject
+    {
+        LoginRejectReason Reason;
+        ustring? Text;
+    }
+
+    message LogoutRequest;
+
+    enum LogoutReason
+    {
+        ClientRequest,
+        ServerLogout,
+        InternalServerError,
+    }
+
+    message LogoutReport
+    {
+        LogoutReason Reason;
+        ustring? Text;
+    }
+
+    message Request
+    {
+        string Id;
+    }
+
+    message Report
+    {
+        string RequestId;
+    }
+
+    group PluginKey
+    {
+        string PackageName;
+        string DescriptorId;
+    }
+
+    group AccountKey
+    {
+        string Login;
+        string Server;
+    }
+
+    group PluginPermissions
+    {
+        bool TradeAllowed;
+    }
+
+    enum BotState
+    {
+        Offline,
+        Starting,
+        Faulted,
+        Online,
+        Stopping,
+        Broken,
+        Reconnecting,
+    }
 
     group BotModel
     {
         string InstanceId;
         bool Isolated;
-        string Permissions;
-        uint32 State;
-        string Config;
+        BotState State;
+        PluginPermissions Permissions;
         AccountKey Account;
         PluginKey Plugin;
     }
@@ -29,16 +89,6 @@ protocol BotAgent(1,0)
         BotModel[] Bots;
     }
 
-    message Request
-	{
-		string Id;
-	}
-
-	message Report
-	{
-		string RequestId;
-	}
-
     message AccountListRequest : Request;
 
     message AccountListReport : Report
@@ -48,25 +98,105 @@ protocol BotAgent(1,0)
 
     processor Client()
     {
-        send AccountListRequest(AccountListRequest)
+        send LoginRequest(LoginRequest)
         {
-        	recv AccountListReport(AccountListReport)
-        	{
+            recv LoginReport(LoginReport)
+            {
+            }
+            or recv LoginReject(LoginReject)
+            {
+                return;
+            }
+        }
 
-        	}
+        send (Request)
+        {
             repeat;
+        }
+        or recv (Report)
+        {
+            repeat;
+        }
+        or recv LogoutReport(LogoutReport)
+        {
+            return;
+        }
+        or send LogoutRequest(LogoutRequest)
+        {
+            recv (Report)
+            {
+                repeat;
+            }
+            or recv LogoutReport(LogoutReport)
+            {
+                return;
+            }
         }
     }
 
     processor Server()
     {
+        recv LoginRequest(LoginRequest)
+        {
+            send (LoginReport)
+            {
+            }
+            or send (LoginReject)
+            {
+                return;
+            }
+        }
+
+        recv (Request)
+        {
+            repeat;
+        }
+        or send (Report)
+        {
+            repeat;
+        }
+        or send (LogoutReport)
+        {
+            return;
+        }
+        or recv LogoutRequest(LogoutRequest)
+        {
+            send (Report)
+            {
+                repeat;
+            }
+            or send (LogoutReport)
+            {
+                return;
+            }
+        }
+    }
+
+    processor ClientRequest(string) : Client
+    (
+        Request.Id,
+        Report.RequestId
+    )
+    {
+        send AccountListRequest(AccountListRequest)
+        {
+            recv AccountListReport(AccountListReport)
+            {
+            }
+        }
+    }
+
+    processor ServerRequest(string) : Server
+    (
+        Request.Id,
+        Report.RequestId
+    )
+    {
         recv AccountListRequest(AccountListRequest)
         {
-        	send AccountListReport(AccountListReport)
-        	{
-        		
-        	}
-            repeat;
+            send (AccountListReport)
+            {
+            }
         }
     }
 }
