@@ -102,7 +102,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             Account = new AccountModel(_core, AccountModelOptions.None);
             Symbols = (SymbolManager)_core.Symbols;
-            FeedHistory = FeedHistoryProviderModel.CreateLightProxy(Connection);
+            FeedHistory = new FeedHistoryProviderModel(Connection, ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
             TradeApi = new TradeExecutor(_core);
 
             ManageConnection();
