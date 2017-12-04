@@ -207,7 +207,12 @@ namespace TickTrader.Algo.Common.Model
                         return TradeCommand.Limit;
                 case OrderType.Market: return TradeCommand.Market;
                 case OrderType.Stop: return TradeCommand.Stop;
-                case OrderType.StopLimit: return TradeCommand.StopLimit;
+                case OrderType.StopLimit:
+                    if (options.IsFlagSet(OrderExecOptions.ImmediateOrCancel))
+                        return TradeCommand.StopLimit_IoC;
+                    else
+                        return TradeCommand.StopLimit;
+                    ;
             }
 
             throw new Exception("Not Supported: " + type);
