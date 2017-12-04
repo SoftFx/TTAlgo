@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.27004.2008
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{20363DD1-DC16-41EE-AA8A-77306EB75479}"
 EndProject
@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Algo", "Algo", "{51B8AFF5-4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Terminal", "Terminal", "{DFCF5276-C414-4F2F-B664-D3EB3BEAB44E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DedicatedServer", "DedicatedServer", "{EAFDF5CB-7010-4EA0-8D57-4D5035362975}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BotAgent", "BotAgent", "{EAFDF5CB-7010-4EA0-8D57-4D5035362975}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VS.Integration", "VS.Integration", "{D3EF348C-8ACE-4A5A-BF20-842CD9BE0484}"
 EndProject
@@ -51,7 +51,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.VS.Template
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.TestCollection", "TickTrader.Algo.TestCollection\TickTrader.Algo.TestCollection.csproj", "{3AE398F5-5506-4375-B29B-DCC43AC58F24}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.DedicatedServer", "TickTrader.DedicatedServer\TickTrader.DedicatedServer.csproj", "{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TickTrader.BotAgent", "TickTrader.BotAgent\TickTrader.BotAgent.csproj", "{3B1B99F1-33CB-40E0-B54C-9CEC9AE86B2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.VersionTest", "TickTrader.Algo.VersionTest\TickTrader.Algo.VersionTest.csproj", "{D1A91113-21C6-4AAE-A2F1-34A7014D468F}"
 EndProject
@@ -64,7 +64,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		nuget.config = nuget.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.DedicatedServer.CmdUtil", "TickTrader.DedicatedServer.CmdUtil\TickTrader.DedicatedServer.CmdUtil.csproj", "{3250282E-6337-46DC-9438-FDE2C0FB37DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotAgent.CmdUtil", "TickTrader.BotAgent.CmdUtil\TickTrader.BotAgent.CmdUtil.csproj", "{3250282E-6337-46DC-9438-FDE2C0FB37DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage", "TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj", "{6664E69F-2180-4D7E-B51E-C81C9F5CC47D}"
 EndProject
@@ -386,5 +386,8 @@ Global
 		{CB30B69A-DE4D-4819-8E83-CF5DD80CD060} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{AF05CCD3-0E2F-4F8A-8124-27B16162A0C1} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
 		{7E5888D8-162B-4736-BE1B-E39EC114F4C3} = {20363DD1-DC16-41EE-AA8A-77306EB75479}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}
 	EndGlobalSection
 EndGlobal

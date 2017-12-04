@@ -28,6 +28,7 @@ namespace TickTrader.Algo.Core
             Comment = src.Comment;
             Created = src.Created;
             Modified = src.Modified;
+            Expiration = src.Expiration;
             UserTag = src.UserTag;
             InstanceId = src.InstanceId;
             ExecPrice = src.ExecPrice;
@@ -53,6 +54,7 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
+        public DateTime Expiration { get; set; }
         public string UserTag { get; set; }
         public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
@@ -109,6 +111,7 @@ namespace TickTrader.Algo.Core
         public string InstanceId { get { return ""; } }
         public DateTime Created { get { return DateTime.MinValue; } }
         public DateTime Modified { get { return DateTime.MinValue; } }
+        public DateTime Expiration { get { return DateTime.MinValue; } }
         public bool IsNull { get { return true; } }
         public double ExecPrice { get { return double.NaN; } }
         public double ExecVolume { get { return double.NaN; } }

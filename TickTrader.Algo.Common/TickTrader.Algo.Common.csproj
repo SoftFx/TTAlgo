@@ -105,6 +105,7 @@
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AssetModel.cs" />
+    <Compile Include="Model\BotListenerProxy.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Model\FdkExtension.cs" />
     <Compile Include="Model\FdkToAlgo.cs" />
