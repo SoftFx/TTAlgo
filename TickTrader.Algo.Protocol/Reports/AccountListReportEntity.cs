@@ -15,17 +15,6 @@ namespace TickTrader.Algo.Protocol
             RequestId = Guid.NewGuid().ToString();
             Accounts = new AccountModelEntity[0];
         }
-
-        internal AccountListReportEntity(AccountListReport report)
-        {
-            RequestId = report.RequestId;
-            Accounts = new AccountModelEntity[report.Accounts.Length];
-            for (var i = 0; i < report.Accounts.Length; i++)
-            {
-                Accounts[i] = new AccountModelEntity();
-                Accounts[i].UpdateSelf(report.Accounts[i]);
-            }
-        }
     }
 
 

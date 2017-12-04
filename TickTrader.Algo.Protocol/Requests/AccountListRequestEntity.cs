@@ -12,11 +12,6 @@ namespace TickTrader.Algo.Protocol
         {
             Id = Guid.NewGuid().ToString();
         }
-
-        internal AccountListRequestEntity(AccountListRequest request)
-        {
-            Id = request.Id;
-        }
     }
 
 
@@ -24,14 +19,12 @@ namespace TickTrader.Algo.Protocol
     {
         internal static AccountListRequestEntity ToEntity(this AccountListRequest request)
         {
-            var res = new AccountListRequestEntity { Id = request.Id };
-            return res;
+            return new AccountListRequestEntity { Id = request.Id };
         }
 
         internal static AccountListRequest ToMessage(this AccountListRequestEntity request)
         {
-            var res = new AccountListRequest(0) { Id = request.Id };
-            return res;
+            return new AccountListRequest(0) { Id = request.Id };
         }
     }
 }

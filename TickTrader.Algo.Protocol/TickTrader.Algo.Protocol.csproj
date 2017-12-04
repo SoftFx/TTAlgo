@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.3.4\lib\net45\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="SoftFX.Net.Core">
       <HintPath>..\lib\SoftFX.Net.Core.dll</HintPath>
     </Reference>
@@ -52,6 +55,7 @@
     <Compile Include="Entities\IProtocolEntity.cs" />
     <Compile Include="Entities\PluginKeyEntity.cs" />
     <Compile Include="Entities\PluginPermissionsEntity.cs" />
+    <Compile Include="Extensions\LoggerHelper.cs" />
     <Compile Include="Extensions\ProtocolSettingsExtensions.cs" />
     <Compile Include="Interface\IBotAgentClient.cs" />
     <Compile Include="Interface\IBotAgentServer.cs" />
@@ -65,10 +69,23 @@
     <Compile Include="ProtocolClient.cs" />
     <Compile Include="ProtocolServer.cs" />
     <Compile Include="Reports\AccountListReportEntity.cs" />
+    <Compile Include="Reports\LoginRejectEntity.cs" />
+    <Compile Include="Reports\LoginReportEntity.cs" />
+    <Compile Include="Reports\LogoutReportEntity.cs" />
     <Compile Include="Requests\AccountListRequestEntity.cs" />
+    <Compile Include="Requests\LoginRequestEntity.cs" />
+    <Compile Include="Requests\LogoutRequestEntity.cs" />
     <Compile Include="Requests\RequestEntity.cs" />
     <Compile Include="Reports\ReportEntity.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Machinarium\Machinarium.csproj">
+      <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
+      <Name>Machinarium</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

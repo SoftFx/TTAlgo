@@ -12,11 +12,6 @@ namespace TickTrader.Algo.Protocol
         {
             RequestId = Guid.NewGuid().ToString();
         }
-
-        internal ReportEntity(Report report)
-        {
-            RequestId = report.RequestId;
-        }
     }
 
 
@@ -24,14 +19,12 @@ namespace TickTrader.Algo.Protocol
     {
         internal static ReportEntity ToEntity(this Report report)
         {
-            var res = new ReportEntity { RequestId = report.RequestId };
-            return res;
+            return new ReportEntity { RequestId = report.RequestId };
         }
 
         internal static Report ToMessage(this ReportEntity report)
         {
-            var res = new Report(0) { RequestId = report.RequestId };
-            return res;
+            return new Report(0) { RequestId = report.RequestId };
         }
     }
 }

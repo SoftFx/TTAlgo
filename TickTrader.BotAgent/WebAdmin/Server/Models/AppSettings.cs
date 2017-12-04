@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         public static ProtocolSettings DefaultProtocolSettings => new ProtocolSettings
         {
             ListeningPort = 8443,
-            LogDirectoryName = "ProtocolLogs",
+            LogDirectoryName = "Logs",
             LogEvents = true,
             LogStates = true,
             LogMessages = true,

@@ -27,5 +27,33 @@ namespace TickTrader.Algo.Protocol
                     throw new ArgumentException();
             }
         }
+
+        internal static Sfx.LoginRejectReason Convert(LoginRejectReason reason)
+        {
+            switch (reason)
+            {
+                case LoginRejectReason.InvalidCredentials:
+                    return Sfx.LoginRejectReason.InvalidCredentials;
+                case LoginRejectReason.InternalServerError:
+                    return Sfx.LoginRejectReason.InternalServerError;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        internal static Sfx.LogoutReason Convert(LogoutReason reason)
+        {
+            switch (reason)
+            {
+                case LogoutReason.ClientRequest:
+                    return Sfx.LogoutReason.ClientRequest;
+                case LogoutReason.ServerLogout:
+                    return Sfx.LogoutReason.ServerLogout;
+                case LogoutReason.InternalServerError:
+                    return Sfx.LogoutReason.InternalServerError;
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

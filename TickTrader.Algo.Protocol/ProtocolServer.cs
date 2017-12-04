@@ -1,20 +1,24 @@
-﻿using SoftFX.Net.BotAgent;
+﻿using NLog;
+using SoftFX.Net.BotAgent;
 using System;
 using TickTrader.Algo.Protocol.Lib;
 
 namespace TickTrader.Algo.Protocol
 {
-    public enum ServerState { Started, Stopped }
+    public enum ServerStates { Started, Stopped }
 
 
     public class ProtocolServer
     {
+        private readonly ILogger _logger;
+
+
         internal Server Server { get; set; }
 
         internal BotAgentServerListener Listener { get; set; }
 
 
-        public ServerState State { get; private set; }
+        public ServerStates State { get; private set; }
 
         public IBotAgentServer AgentServer { get; }
 
@@ -26,16 +30,18 @@ namespace TickTrader.Algo.Protocol
             AgentServer = agentServer;
             Settings = settings;
 
-            State = ServerState.Stopped;
+            _logger = LoggerHelper.GetLogger("Protocol.Server", Settings.ProtocolSettings.LogDirectoryName, Settings.ServerName);
+
+            State = ServerStates.Stopped;
         }
 
 
         public void Start()
         {
-            if (State == ServerState.Started)
+            if (State == ServerStates.Started)
                 throw new Exception("Server is already started");
 
-            Listener = new BotAgentServerListener(AgentServer);
+            Listener = new BotAgentServerListener(AgentServer, _logger);
 
             Server = new Server(Settings.ServerName, Settings.CreateServerOptions())
             {
@@ -44,14 +50,14 @@ namespace TickTrader.Algo.Protocol
 
             Server.Start();
 
-            State = ServerState.Started;
+            State = ServerStates.Started;
         }
 
         public void Stop()
         {
-            if (State == ServerState.Started)
+            if (State == ServerStates.Started)
             {
-                State = ServerState.Stopped;
+                State = ServerStates.Stopped;
 
                 Server.Stop(null);
                 Server.Join();
