@@ -27,11 +27,6 @@ namespace TickTrader.Algo.Common.Model
         Task<OrderEntity[]> GetTradeRecords();
         Task<PositionEntity[]> GetPositions();
 
-        //Task<OrderCmdResult> OpenOrder(OpenOrderRequest request);
-        //Task<OrderCmdResult> CancelOrder(CancelOrderRequest request);
-        //Task<OrderCmdResult> ModifyOrder(ReplaceOrderRequest request);
-        //Task<OrderCmdResult> CloseOrder(CloseOrderRequest request);
-
         IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders);
 
         event Action<PositionEntity> PositionReport;
@@ -53,7 +48,5 @@ namespace TickTrader.Algo.Common.Model
         IAsyncEnumerator<QuoteEntity[]> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2);
         Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2);
         Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame);
-        //Task<List<BarEntity>> GetHistoryBars(string symbol, DateTime startTime, int count, BarPriceType priceType, TimeFrames barPeriod);
-        //Task<HistoryFilesPackage> DownloadTickFiles(string symbol, DateTime refTimePoint, bool includeLevel2);
     }
 }

@@ -47,19 +47,24 @@ namespace TickTrader.Algo.Common.Model
             groups.Remove(symbol);
         }
 
-        public void Init()
+        public async Task Init()
         {
             foreach (var group in groups.Values)
                 group.CurrentDepth = group.MaxDepth;
 
             requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
             EnqueuBatchSubscription();
+            await GetQuoteSnapshot();
         }
 
         public async Task Stop()
         {
             requestQueue.Complete();
             await requestQueue.Completion;
+        }
+
+        private async Task GetQuoteSnapshot()
+        {
         }
 
         private void EnqueuBatchSubscription()

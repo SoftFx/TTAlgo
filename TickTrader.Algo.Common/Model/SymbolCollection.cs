@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Common.Model
         public async Task Initialize()
         {
             Merge(await _core.FeedProxy.GetSymbols());
-            Distributor.Init();
+            await Distributor.Init();
         }
 
         public IFeedSubscription SubscribeAll()

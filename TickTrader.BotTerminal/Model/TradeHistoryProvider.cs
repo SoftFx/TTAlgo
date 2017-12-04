@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
 
         private bool IsBalanceOperation(TradeReportEntity item)
         {
-            return item.TradeTransactionReportType == OrderExecAction.DepositWithdraw;
+            return item.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
         }
 
         private void TradeTransactionReport(TradeReportEntity report)

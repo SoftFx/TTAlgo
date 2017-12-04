@@ -21,5 +21,6 @@ namespace TickTrader.Algo.Core
         public double? StopLoss { get; set; }
         public double? TrakeProfit { get; set; }
         public string Comment { get; set; }
+        public string Tag { get; set; }
     }
 }

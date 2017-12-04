@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Core
 
         #region FDK compatibility
 
-        public OrderExecAction TradeTransactionReportType { get; set; }
+        public TradeExecActions TradeTransactionReportType { get; set; }
         public double? OpenConversionRate { get; set; }
         public double? OrderLastFillAmount { get; set; }
         public double? OrderFillPrice { get; set; }
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core
         public double? CloseConversionRate { get; set; }
         public double AgentCommission { get; set; }
         public double? PosRemainingPrice { get; set; }
-        public OrderSide PosRemainingSide { get; set; }
+        public OrderSide? PosRemainingSide { get; set; }
         public DateTime PositionModified { get; set; }
         public string CommCurrency { get; set; }
         public int ActionId { get; set; }

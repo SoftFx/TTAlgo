@@ -84,6 +84,7 @@ namespace TickTrader.BotTerminal
             {
                 NotifyOfPropertyChange(nameof(ConnectionState));
                 NotifyOfPropertyChange(nameof(CurrentServerName));
+                NotifyOfPropertyChange(nameof(ProtocolName));
             };
             //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
 
@@ -230,6 +231,7 @@ namespace TickTrader.BotTerminal
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
+        public string ProtocolName => cManager.Connection.CurrentProtocol;
 
         public NotificationsViewModel Notifications { get; private set; }
 

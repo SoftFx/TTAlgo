@@ -480,7 +480,10 @@ namespace TickTrader.Algo.Common.Model
             {
                 var result = await _asyncBlock.ReceiveAsync().ConfigureAwait(false);
                 if (result is Exception)
-                    throw (Exception)result;
+                {
+                    var ex = (Exception)result;
+                    throw new Exception(ex.Message, ex);
+                }
                 Current = (TradeReportEntity[])result;
                 return Current != null;
             }

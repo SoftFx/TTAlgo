@@ -35,14 +35,14 @@ namespace TickTrader.Algo.Common.Model
         {
             _options = options;
 
-            Func<bool> canRecconect = ()=> wasConnected && LastError != ConnectionErrorCodes.BlockedAccount && LastError != ConnectionErrorCodes.InvalidCredentials;
+            Func<bool> canRecconect = () => wasConnected && LastError != ConnectionErrorCodes.BlockedAccount && LastError != ConnectionErrorCodes.InvalidCredentials;
 
             _stateControl = new StateMachine<States>(stateSync);
             _stateSync = _stateControl.SyncContext;
             _stateControl.AddTransition(States.Offline, Events.OnRequest, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
-                ()=> disconnectRequest != null || connectRequest != null || LastError != ConnectionErrorCodes.None, States.Disconnecting);
+                () => disconnectRequest != null || connectRequest != null || LastError != ConnectionErrorCodes.None, States.Disconnecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Common.Model
                 Connected?.Invoke();
             });
 
-            _stateControl.StateChanged += (f,t) =>
+            _stateControl.StateChanged += (f, t) =>
             {
                 StateChanged?.Invoke(f, t);
                 logger.Debug("STATE {0} ({1}:{2})", t, CurrentLogin, CurrentServer);
@@ -77,6 +77,7 @@ namespace TickTrader.Algo.Common.Model
         public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
         public string CurrentLogin { get; private set; }
         public string CurrentServer { get; private set; }
+        public string CurrentProtocol { get; private set; }
         public bool IsConnecting => State == States.Connecting;
         public bool IsOnline => State == States.Online;
         public bool IsOffline => State == States.Offline || State == States.OfflineRetry;
@@ -182,6 +183,7 @@ namespace TickTrader.Algo.Common.Model
 
                 CurrentLogin = request.Usermame;
                 CurrentServer = request.Address;
+                CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
 
                 request.CancelToken.Register(() =>
                 {

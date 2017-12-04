@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Common.Model
                 ClientOrderId = record.ClientOrderId,
                 Price = record.Price ?? double.NaN,
                 StopPrice = record.StopPrice ?? double.NaN,
-                Side = Convert( record.Side),
+                Side = Convert(record.Side).Value,
                 Created = record.Created ?? DateTime.MinValue,
                 Swap = record.Swap,
                 Modified = record.Modified ?? DateTime.MinValue,
@@ -232,8 +232,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public static Api.OrderSide Convert(TradeRecordSide fdkSide)
+        public static Api.OrderSide? Convert(TradeRecordSide fdkSide)
         {
+            if (fdkSide == (TradeRecordSide)(-1)) // ugly fix for FDK bug
+                return null;
+
+
             switch (fdkSide)
             {
                 case TradeRecordSide.Buy: return Api.OrderSide.Buy;
@@ -408,9 +412,9 @@ namespace TickTrader.Algo.Common.Model
                 SrcAssetCurrency = report.SrcAssetCurrency,
                 SrcAssetMovement = report.SrcAssetMovement,
                 SrcAssetToUsdConversionRate = report.SrcAssetToUsdConversionRate,
-                TradeRecordSide = Convert(report.TradeRecordSide),
+                TradeRecordSide = Convert(report.TradeRecordSide).Value,
                 TradeRecordType =  Convert(report.TradeRecordType),
-                //TradeTransactionReportType = Convert(report.TradeTransactionReportType),
+                TradeTransactionReportType = Convert(report.TradeTransactionReportType),
                 ReqOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
                 Tag = report.Tag,
@@ -539,7 +543,7 @@ namespace TickTrader.Algo.Common.Model
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
                 OrderType = Convert(report.OrderType),
-                OrderSide = Convert(report.OrderSide),
+                OrderSide = Convert(report.OrderSide).Value,
                 Price = report.Price,
                 Balance = report.Balance
             };

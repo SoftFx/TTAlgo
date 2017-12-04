@@ -77,13 +77,14 @@ namespace TickTrader.BotTerminal
             CurrentAsk = symbol.CurrentAsk;
             CurrentBid = symbol.CurrentBid;
 
-            stateController.AddTransition(States.Idle, () => isUpdateRequired && isConnected, States.LoadingData);
+            stateController.AddTransition(States.Idle, () => isConnected, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
             stateController.AddTransition(States.LoadingData, Events.LoadFailed, States.Faulted);
-            stateController.AddTransition(States.Online, () => isUpdateRequired && isConnected, States.Stopping);
-            stateController.AddTransition(States.Faulted, () => isUpdateRequired && isConnected, States.Stopping);
+            stateController.AddTransition(States.Online, () => isUpdateRequired || !isConnected, States.Stopping);
+            stateController.AddTransition(States.Faulted, () => isUpdateRequired || !isConnected, States.Stopping);
             //stateController.AddTransition(States.Stopping, () => isUpdateRequired && isConnected, States.LoadingData);
             stateController.AddTransition(States.Stopping, Events.Stopped, States.Idle);
+            stateController.AddTransition(States.Stopping, () => isConnected, States.LoadingData);
 
             stateController.OnEnter(States.LoadingData, ()=> Update(CancellationToken.None));
             stateController.OnEnter(States.Online, StartIndicators);

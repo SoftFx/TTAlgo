@@ -341,6 +341,10 @@
             <StatusBarItem DockPanel.Dock="Right" Width="100"/>
             <Separator DockPanel.Dock="Right"/>
             <StatusBarItem DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ProtocolName}"/>
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem DockPanel.Dock="Right">
                 <Control Template="{StaticResource ConnectionStateIndicator}" />
             </StatusBarItem>
             <Separator DockPanel.Dock="Right"/>

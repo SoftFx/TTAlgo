@@ -240,7 +240,7 @@ namespace TickTrader.BotTerminal
                 {
                     var key = GetTransactionKey(tradeTransaction);
                     if (!_tradesList.ContainsKey(key) &&
-                        !(SkipCancel && tradeTransaction.ActionType == Algo.Core.OrderExecAction.Canceled) &&
+                        !(SkipCancel && tradeTransaction.ActionType == TradeExecActions.OrderCanceled) &&
                         (Period == TimePeriod.LastHour
                             ? tradeTransaction.CloseTime.ToLocalTime() > From
                             : tradeTransaction.CloseTime.ToLocalTime().Between(From, To)))

@@ -79,6 +79,9 @@
     <Reference Include="TickTrader.FDK.QuoteStore">
       <HintPath>..\lib\SFX\TickTrader.FDK.QuoteStore.dll</HintPath>
     </Reference>
+    <Reference Include="TickTrader.FDK.TradeCapture">
+      <HintPath>..\lib\SFX\TickTrader.FDK.TradeCapture.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\HistoryFilesPackage.cs" />

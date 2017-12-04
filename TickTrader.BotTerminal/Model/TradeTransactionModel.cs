@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
             IsPending = transaction.TradeRecordType == OrderType.Limit
                 || transaction.TradeRecordType == OrderType.Stop
                 || transaction.TradeRecordType == OrderType.StopLimit;
-            IsBalanceTransaction = transaction.TradeTransactionReportType == OrderExecAction.DepositWithdraw;
+            IsBalanceTransaction = transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
 
             OrderId = GetId(transaction);
             OpenTime = GetOpenTime(transaction);
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
         public DateTime OpenTime { get; protected set; }
         public AggregatedTransactionType Type { get; protected set; }
         public TransactionSide Side { get; protected set; }
-        public OrderExecAction ActionType { get; protected set; }
+        public TradeExecActions ActionType { get; protected set; }
         public string Symbol { get; protected set; }
         public double OpenQuantity { get; protected set; }
         public double OpenPrice { get; protected set; }
@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
-            if (transaction.TradeTransactionReportType == OrderExecAction.DepositWithdraw)
+            if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
                 return transaction.TransactionAmount > 0 ? AggregatedTransactionType.Deposit : AggregatedTransactionType.Withdrawal;
 
             switch (transaction.TradeRecordType)
