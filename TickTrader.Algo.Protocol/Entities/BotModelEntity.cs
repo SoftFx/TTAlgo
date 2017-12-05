@@ -31,6 +31,7 @@ namespace TickTrader.Algo.Protocol
 
         public BotModelEntity()
         {
+            Permissions = new PluginPermissionsEntity();
             Account = new AccountKeyEntity();
             Plugin = new PluginKeyEntity();
         }

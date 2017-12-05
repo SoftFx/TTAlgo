@@ -1,36 +1,30 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
+using TickTrader.BotAgent.WebAdmin.Server.Extensions;
+using TickTrader.BotAgent.WebAdmin.Server.Models;
 
-namespace TickTrader.BotAgent.Protocol
+namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
     public class BotAgentServer : IBotAgentServer
     {
         private IBotAgent _botAgent;
-        private IConfiguration _serverConfig;
-        private ILogger<BotAgentServer> _logger;
+        private ServerCredentials _serverCreds;
 
 
         public BotAgentServer(IServiceProvider services, IConfiguration serverConfig)
         {
             _botAgent = services.GetRequiredService<IBotAgent>();
-            _serverConfig = serverConfig;
-            _logger = services.GetRequiredService<ILogger<BotAgentServer>>();
+            _serverCreds = serverConfig.GetCredentials();
         }
 
 
-        public void Connected(int sessionId)
+        public bool ValidateCreds(string login, string password)
         {
-            _logger.LogDebug($"Session {sessionId} connected");
-        }
-
-        public void Disconnected(int sessionId, string reason)
-        {
-            _logger.LogDebug($"Session {sessionId} disconnected: {reason}");
+            return _serverCreds.Login == login && _serverCreds.Password == password;
         }
 
         public AccountListReportEntity GetAccountList(string requestId)

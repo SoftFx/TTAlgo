@@ -32,9 +32,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         {
             ListeningPort = 8443,
             LogDirectoryName = "Logs",
-            LogEvents = true,
-            LogStates = true,
-            LogMessages = true,
+            LogEvents = false,
+            LogStates = false,
+            LogMessages = false,
         };
     }
 }

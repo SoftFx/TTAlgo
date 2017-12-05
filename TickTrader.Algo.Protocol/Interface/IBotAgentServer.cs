@@ -2,9 +2,7 @@
 {
     public interface IBotAgentServer
     {
-        void Connected(int sessionId);
-
-        void Disconnected(int sessionId, string reason);
+        bool ValidateCreds(string login, string password);
 
         AccountListReportEntity GetAccountList(string requestId);
     }

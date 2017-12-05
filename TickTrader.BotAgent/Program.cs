@@ -78,6 +78,10 @@ namespace TickTrader.BotAgent
             {
                 CreateDefaultConfig(configFile);
             }
+            else
+            {
+                MigrateConfig(configFile);
+            }
 
             var builder = new ConfigurationBuilder()
               .AddJsonFile(configFile, optional: false)
@@ -90,6 +94,24 @@ namespace TickTrader.BotAgent
         {
             var appSettings = AppSettings.Default;
             SaveConfig(configFile, appSettings);
+        }
+
+        private static void MigrateConfig(string configFile)
+        {
+            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(System.IO.File.ReadAllText(configFile));
+
+            var anyChanges = false;
+
+            if (currentSettings.Protocol == null)
+            {
+                currentSettings.Protocol = AppSettings.Default.Protocol;
+                anyChanges = true;
+            }
+
+            if (anyChanges)
+            {
+                SaveConfig(configFile, currentSettings);
+            }
         }
 
         private static void SaveConfig(string configFile, AppSettings appSettings)

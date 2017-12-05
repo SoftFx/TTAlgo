@@ -1,6 +1,7 @@
 ﻿using NLog;
 using SoftFX.Net.BotAgent;
 using System;
+using Sfx = SoftFX.Net.BotAgent;
 
 namespace TickTrader.Algo.Protocol.Lib
 {
@@ -41,12 +42,48 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
+        public override void OnLoginRequest(Server server, Server.Session session, LoginRequest message)
+        {
+            try
+            {
+                var res = _server.ValidateCreds(message.Username, message.Password);
+                if (res)
+                {
+                    _logger.Info($"Client {session.Id} logged in");
+                    session.Send(new LoginReport(0));
+                }
+                else
+                {
+                    session.Send(new LoginReject(0) { Reason = Sfx.LoginRejectReason.InvalidCredentials });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                session.Send(new LoginReject(0) { Reason = Sfx.LoginRejectReason.InternalServerError, Text = ex.Message });
+            }
+        }
+
+        public override void OnLogoutRequest(Server server, Server.Session session, LogoutRequest message)
+        {
+            try
+            {
+                _logger.Info($"Client {session.Id} logged out");
+                session.Send(new LogoutReport(0) { Reason = Sfx.LogoutReason.ClientRequest });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                session.Send(new LogoutReport(0) { Reason = Sfx.LogoutReason.InternalServerError, Text = ex.Message });
+            }
+        }
+
         public override void OnAccountListRequest(Server server, Server.Session session, AccountListRequest message)
         {
             try
             {
                 var report = _server.GetAccountList(message.Id);
-                server.Send(session.Id, report.ToMessage());
+                session.Send(report.ToMessage());
             }
             catch (Exception ex)
             {

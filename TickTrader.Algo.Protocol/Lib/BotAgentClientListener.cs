@@ -1,6 +1,7 @@
 ﻿using NLog;
 using SoftFX.Net.BotAgent;
 using System;
+using Sfx = SoftFX.Net.BotAgent;
 
 namespace TickTrader.Algo.Protocol.Lib
 {
@@ -13,6 +14,9 @@ namespace TickTrader.Algo.Protocol.Lib
         public event Action Connected = delegate { };
         public event Action ConnectionError = delegate { };
         public event Action Disconnected = delegate { };
+        public event Action Login = delegate { };
+        public event Action<string> LoginReject = delegate { };
+        public event Action<string> Logout = delegate { };
 
 
         public BotAgentClientListener(IBotAgentClient client, ILogger logger)
@@ -26,8 +30,8 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                Connected();
                 _logger.Info($"Connected to server, sessionId = {clientSession.Guid}");
+                Connected();
             }
             catch (Exception ex)
             {
@@ -39,8 +43,8 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
+                _logger.Info($"Connection error, sessionId = {clientSession.Guid}");
                 ConnectionError();
-                _logger.Info($"Failed to connect to server, sessionId = {clientSession.Guid}");
             }
             catch (Exception ex)
             {
@@ -52,12 +56,100 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                Disconnected();
                 _logger.Info($"Disconnected from server, sessionId = {clientSession.Guid}");
+                Disconnected();
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Listener failure {clientSession.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnLoginReport(ClientSession session, LoginRequestClientContext LoginRequestClientContext, LoginReport message)
+        {
+            try
+            {
+                _logger.Info($"Successfull login, sessionId = {session.Guid}");
+                Login();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnLoginReject(ClientSession session, LoginRequestClientContext LoginRequestClientContext, LoginReject message)
+        {
+            try
+            {
+                var reason = "";
+                switch (message.Reason)
+                {
+                    case Sfx.LoginRejectReason.InvalidCredentials:
+                        reason = "Invalid username or password";
+                        break;
+                    case Sfx.LoginRejectReason.InternalServerError:
+                        reason = $"Internal server error: {message.Text}";
+                        break;
+                }
+                _logger.Info($"Server rejected login, sessionId = {session.Guid}: {reason}");
+                LoginReject(reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnLogoutReport(ClientSession session, LogoutReport message)
+        {
+            try
+            {
+                var reason = "";
+                switch (message.Reason)
+                {
+                    case Sfx.LogoutReason.ClientRequest:
+                        reason = "Client requested logout";
+                        break;
+                    case Sfx.LogoutReason.ServerLogout:
+                        reason = "Server forced logout";
+                        break;
+                    case Sfx.LogoutReason.InternalServerError:
+                        reason = $"Internal server error: {message.Text}";
+                        break;
+                }
+                _logger.Info($"Logout, sessionId = {session.Guid}: {reason}");
+                LoginReject(reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnLogoutReport(ClientSession session, LogoutRequestClientContext LogoutRequestClientContext, LogoutReport message)
+        {
+            try
+            {
+                var reason = "";
+                switch (message.Reason)
+                {
+                    case Sfx.LogoutReason.ClientRequest:
+                        reason = "Client requested logout";
+                        break;
+                    case Sfx.LogoutReason.ServerLogout:
+                        reason = "Server forced logout";
+                        break;
+                    case Sfx.LogoutReason.InternalServerError:
+                        reason = $"Internal server error: {message.Text}";
+                        break;
+                }
+                _logger.Info($"Logout, sessionId = {session.Guid}: {reason}");
+                LoginReject(reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
 
