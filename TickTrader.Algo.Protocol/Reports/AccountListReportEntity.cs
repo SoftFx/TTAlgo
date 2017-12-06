@@ -1,18 +1,14 @@
 ﻿using SoftFX.Net.BotAgent;
-using System;
 
 namespace TickTrader.Algo.Protocol
 {
-    public class AccountListReportEntity
+    public class AccountListReportEntity : ReportEntity
     {
-        public string RequestId { get; set; }
-
         public AccountModelEntity[] Accounts { get; set; }
 
 
-        public AccountListReportEntity()
+        public AccountListReportEntity() : base()
         {
-            RequestId = Guid.NewGuid().ToString();
             Accounts = new AccountModelEntity[0];
         }
     }

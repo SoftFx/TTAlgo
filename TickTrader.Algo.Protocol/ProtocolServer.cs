@@ -5,7 +5,7 @@ using TickTrader.Algo.Protocol.Lib;
 
 namespace TickTrader.Algo.Protocol
 {
-    public enum ServerStates { Started, Stopped }
+    public enum ServerStates { Started, Stopped, Faulted }
 
 
     public class ProtocolServer
@@ -38,29 +38,44 @@ namespace TickTrader.Algo.Protocol
 
         public void Start()
         {
-            if (State == ServerStates.Started)
-                throw new Exception("Server is already started");
-
-            Listener = new BotAgentServerListener(AgentServer, _logger);
-
-            Server = new Server(Settings.ServerName, Settings.CreateServerOptions())
+            try
             {
-                Listener = Listener,
-            };
+                if (State != ServerStates.Stopped)
+                    throw new Exception($"Server is already {State}");
 
-            Server.Start();
+                Listener = new BotAgentServerListener(AgentServer, _logger);
 
-            State = ServerStates.Started;
+                Server = new Server(Settings.ServerName, Settings.CreateServerOptions())
+                {
+                    Listener = Listener,
+                };
+
+                Server.Start();
+
+                State = ServerStates.Started;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to start protocol server: {ex.Message}");
+                State = ServerStates.Faulted;
+            }
         }
 
         public void Stop()
         {
-            if (State == ServerStates.Started)
+            try
             {
-                State = ServerStates.Stopped;
+                if (State == ServerStates.Started)
+                {
+                    State = ServerStates.Stopped;
 
-                Server.Stop(null);
-                Server.Join();
+                    Server.Stop(null);
+                    Server.Join();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to stop protocol server: {ex.Message}");
             }
         }
     }

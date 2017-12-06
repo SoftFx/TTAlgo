@@ -78,6 +78,19 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
+        public override void OnSubscribeRequest(Server server, Server.Session session, SubscribeRequest message)
+        {
+            try
+            {
+                // TODO: Add subscription and unsubscription
+                session.Send(new SubscribeReport(0) { RequestId = message.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+            }
+        }
+
         public override void OnAccountListRequest(Server server, Server.Session session, AccountListRequest message)
         {
             try

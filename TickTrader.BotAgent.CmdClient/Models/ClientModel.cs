@@ -19,6 +19,10 @@ namespace TickTrader.BotAgent.CmdClient
         internal void Start()
         {
             _cmdEngine.Run();
+            if (_protocolClient != null)
+            {
+                _protocolClient.Disconnect();
+            }
         }
 
 
@@ -62,6 +66,13 @@ namespace TickTrader.BotAgent.CmdClient
 
         private void AccountInfoCommand()
         {
+            Console.WriteLine($"{_protocolClient.State} - {_protocolClient.LastError}");
+
+            if (_protocolClient.State != ClientStates.Online)
+            {
+                return;
+            }
+
             var acc = CommandUi.Choose("account", _agentClient.Accounts, a => $"{a.Key.Server} - {a.Key.Login}");
 
             Console.WriteLine($"{acc.Key.Server} - {acc.Key.Login}");

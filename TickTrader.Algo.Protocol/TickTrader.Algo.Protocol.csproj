@@ -72,11 +72,13 @@
     <Compile Include="Reports\LoginRejectEntity.cs" />
     <Compile Include="Reports\LoginReportEntity.cs" />
     <Compile Include="Reports\LogoutReportEntity.cs" />
+    <Compile Include="Reports\SubcribeReportEntity.cs" />
     <Compile Include="Requests\AccountListRequestEntity.cs" />
     <Compile Include="Requests\LoginRequestEntity.cs" />
     <Compile Include="Requests\LogoutRequestEntity.cs" />
     <Compile Include="Requests\RequestEntity.cs" />
     <Compile Include="Reports\ReportEntity.cs" />
+    <Compile Include="Requests\SubscribeRequestEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

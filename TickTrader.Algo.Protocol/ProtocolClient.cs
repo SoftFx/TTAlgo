@@ -103,8 +103,6 @@ namespace TickTrader.Algo.Protocol
 
         private void StartConnecting()
         {
-            LastError = "";
-
             Listener = new BotAgentClientListener(AgentClient, _logger);
 
             Listener.Connected += ListenerOnConnected;
@@ -113,6 +111,7 @@ namespace TickTrader.Algo.Protocol
             Listener.Login += ListenerOnLogin;
             Listener.LoginReject += ListenerOnLoginReject;
             Listener.Logout += ListenerOnLogout;
+            Listener.Subscribed += ListenerOnSubscribed;
 
             ClientSession = new ClientSession(SessionSettings.ServerAddress, SessionSettings.CreateClientOptions())
             {
@@ -133,9 +132,9 @@ namespace TickTrader.Algo.Protocol
             _stateMachine.PushEvent(ClientEvents.Disconnected);
         }
 
-        private void ListenerOnConnectionError()
+        private void ListenerOnConnectionError(string text)
         {
-            LastError = "Connection error";
+            LastError = $"Connection error: {text}";
             _stateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
@@ -154,6 +153,11 @@ namespace TickTrader.Algo.Protocol
         {
             LastError = reason;
             _stateMachine.PushEvent(ClientEvents.LoggedOut);
+        }
+
+        private void ListenerOnSubscribed()
+        {
+            _stateMachine.PushEvent(ClientEvents.Initialized);
         }
 
         private void StartDisconnecting()
@@ -175,6 +179,7 @@ namespace TickTrader.Algo.Protocol
                 Listener.Login -= ListenerOnLogin;
                 Listener.LoginReject -= ListenerOnLoginReject;
                 Listener.Logout -= ListenerOnLogout;
+                Listener.Subscribed -= ListenerOnSubscribed;
 
                 Listener = null;
             }
@@ -193,8 +198,8 @@ namespace TickTrader.Algo.Protocol
 
         private void Init()
         {
-            ClientSession.SendAccountListRequest(null, new AccountListRequest(0));
-            _stateMachine.PushEvent(ClientEvents.Initialized);
+            ClientSession.SendAccountListRequest(null, new AccountListRequestEntity().ToMessage());
+            ClientSession.SendSubscribeRequest(null, new SubscribeRequestEntity().ToMessage());
         }
     }
 }

@@ -12,11 +12,12 @@ namespace TickTrader.Algo.Protocol.Lib
 
 
         public event Action Connected = delegate { };
-        public event Action ConnectionError = delegate { };
+        public event Action<string> ConnectionError = delegate { };
         public event Action Disconnected = delegate { };
         public event Action Login = delegate { };
         public event Action<string> LoginReject = delegate { };
         public event Action<string> Logout = delegate { };
+        public event Action Subscribed = delegate { };
 
 
         public BotAgentClientListener(IBotAgentClient client, ILogger logger)
@@ -39,12 +40,12 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
-        public override void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext)
+        public override void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext, string text)
         {
             try
             {
-                _logger.Info($"Connection error, sessionId = {clientSession.Guid}");
-                ConnectionError();
+                _logger.Info($"Connection error: {text}, sessionId = {clientSession.Guid}");
+                ConnectionError(text);
             }
             catch (Exception ex)
             {
@@ -56,7 +57,7 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _logger.Info($"Disconnected from server, sessionId = {clientSession.Guid}");
+                _logger.Info($"Disconnected from server: {text}, sessionId = {clientSession.Guid}");
                 Disconnected();
             }
             catch (Exception ex)
@@ -146,6 +147,19 @@ namespace TickTrader.Algo.Protocol.Lib
                 }
                 _logger.Info($"Logout, sessionId = {session.Guid}: {reason}");
                 LoginReject(reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnSubscribeReport(ClientSession session, SubscribeRequestClientContext SubscribeRequestClientContext, SubscribeReport message)
+        {
+            try
+            {
+                _logger.Info($"Client subscribed, sessionId = {session.Guid}");
+                Subscribed();
             }
             catch (Exception ex)
             {
