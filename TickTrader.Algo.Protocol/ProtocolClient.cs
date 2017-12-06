@@ -103,6 +103,8 @@ namespace TickTrader.Algo.Protocol
 
         private void StartConnecting()
         {
+            LastError = "";
+
             Listener = new BotAgentClientListener(AgentClient, _logger);
 
             Listener.Connected += ListenerOnConnected;

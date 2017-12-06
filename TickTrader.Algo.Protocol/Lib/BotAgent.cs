@@ -2003,6 +2003,198 @@ namespace SoftFX.Net.BotAgent
         MessageData data_;
     }
     
+    enum UpdateType
+    {
+        Added = 0,
+        Updated = 1,
+        Removed = 2,
+    }
+    
+    struct UpdateTypeArray
+    {
+        public UpdateTypeArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public UpdateType this[int index]
+        {
+            set
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                data_.SetUInt(itemOffset, (uint) value);
+            }
+            
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                return (UpdateType) data_.GetUInt(itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct UpdateTypeNullArray
+    {
+        public UpdateTypeNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public UpdateType? this[int index]
+        {
+            set
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                if (value.HasValue)
+                {
+                    data_.SetUIntNull(itemOffset, (uint) value.Value);
+                }
+                else
+                    data_.SetUIntNull(itemOffset, null);
+            }
+            
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                uint? value = data_.GetUIntNull(itemOffset);
+                
+                if (value.HasValue)
+                    return (UpdateType) value.Value;
+                
+                return null;
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct Update
+    {
+        public static implicit operator Message(Update message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public Update(int i)
+        {
+            info_ = BotAgent.Info.Update;
+            data_ = new MessageData(20);
+            
+            data_.SetInt(4, 7);
+        }
+        
+        public Update(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.Update))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public UpdateType Type
+        {
+            set { data_.SetUInt(16, (uint) value); }
+            
+            get { return (UpdateType) data_.GetUInt(16); }
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public Update Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new Update(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
     struct PluginKey
     {
         public PluginKey(MessageData data, int offset)
@@ -2013,66 +2205,167 @@ namespace SoftFX.Net.BotAgent
         
         public string PackageName
         {
-            set { data_.SetString(offset_ + 0, value); }
+            set { data_.SetUString(offset_ + 0, value); }
             
-            get { return data_.GetString(offset_ + 0); }
+            get { return data_.GetUString(offset_ + 0); }
         }
         
         public int GetPackageNameLength()
         {
-            return data_.GetStringLength(offset_ + 0);
+            return data_.GetUStringLength(offset_ + 0);
         }
         
         public void SetPackageName(char[] value, int offset, int count)
         {
-            data_.SetString(offset_ + 0, value, offset, count);
+            data_.SetUString(offset_ + 0, value, offset, count);
         }
         
         public void GetPackageName(char[] value, int offset)
         {
-            data_.GetString(offset_ + 0, value, offset);
+            data_.GetUString(offset_ + 0, value, offset);
         }
         
         public void ReadPackageName(Stream stream, int size)
         {
-            data_.ReadString(offset_ + 0, stream, size);
+            data_.ReadUString(offset_ + 0, stream, size);
         }
         
         public void WritePackageName(Stream stream)
         {
-            data_.WriteString(offset_ + 0, stream);
+            data_.WriteUString(offset_ + 0, stream);
         }
         
         public string DescriptorId
         {
-            set { data_.SetString(offset_ + 8, value); }
+            set { data_.SetUString(offset_ + 8, value); }
             
-            get { return data_.GetString(offset_ + 8); }
+            get { return data_.GetUString(offset_ + 8); }
         }
         
         public int GetDescriptorIdLength()
         {
-            return data_.GetStringLength(offset_ + 8);
+            return data_.GetUStringLength(offset_ + 8);
         }
         
         public void SetDescriptorId(char[] value, int offset, int count)
         {
-            data_.SetString(offset_ + 8, value, offset, count);
+            data_.SetUString(offset_ + 8, value, offset, count);
         }
         
         public void GetDescriptorId(char[] value, int offset)
         {
-            data_.GetString(offset_ + 8, value, offset);
+            data_.GetUString(offset_ + 8, value, offset);
         }
         
         public void ReadDescriptorId(Stream stream, int size)
         {
-            data_.ReadString(offset_ + 8, stream, size);
+            data_.ReadUString(offset_ + 8, stream, size);
         }
         
         public void WriteDescriptorId(Stream stream)
         {
-            data_.WriteString(offset_ + 8, stream);
+            data_.WriteUString(offset_ + 8, stream);
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginKeyNull
+    {
+        public PluginKeyNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 16);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public PluginKey Value
+        {
+            get { return new PluginKey(data_, GetDataOffset()); }
+        }
+        
+        public string PackageName
+        {
+            set { data_.SetUString(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 0); }
+        }
+        
+        public int GetPackageNameLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 0);
+        }
+        
+        public void SetPackageName(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 0, value, offset, count);
+        }
+        
+        public void GetPackageName(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 0, value, offset);
+        }
+        
+        public void ReadPackageName(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 0, stream, size);
+        }
+        
+        public void WritePackageName(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 0, stream);
+        }
+        
+        public string DescriptorId
+        {
+            set { data_.SetUString(GetDataOffset() + 8, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 8); }
+        }
+        
+        public int GetDescriptorIdLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 8);
+        }
+        
+        public void SetDescriptorId(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 8, value, offset, count);
+        }
+        
+        public void GetDescriptorId(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 8, value, offset);
+        }
+        
+        public void ReadDescriptorId(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 8, stream, size);
+        }
+        
+        public void WriteDescriptorId(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 8, stream);
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
         }
         
         MessageData data_;
@@ -2111,6 +2404,1104 @@ namespace SoftFX.Net.BotAgent
         int offset_;
     }
     
+    struct PluginKeyNullArray
+    {
+        public PluginKeyNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginKeyNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new PluginKeyNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    enum PluginType
+    {
+        Indicator = 0,
+        Robot = 1,
+        Unknown = 2,
+    }
+    
+    struct PluginTypeArray
+    {
+        public PluginTypeArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginType this[int index]
+        {
+            set
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                data_.SetUInt(itemOffset, (uint) value);
+            }
+            
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                return (PluginType) data_.GetUInt(itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginTypeNullArray
+    {
+        public PluginTypeNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginType? this[int index]
+        {
+            set
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                if (value.HasValue)
+                {
+                    data_.SetUIntNull(itemOffset, (uint) value.Value);
+                }
+                else
+                    data_.SetUIntNull(itemOffset, null);
+            }
+            
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                uint? value = data_.GetUIntNull(itemOffset);
+                
+                if (value.HasValue)
+                    return (PluginType) value.Value;
+                
+                return null;
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginDescriptor
+    {
+        public PluginDescriptor(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public string ApiVersion
+        {
+            set { data_.SetUString(offset_ + 0, value); }
+            
+            get { return data_.GetUString(offset_ + 0); }
+        }
+        
+        public int GetApiVersionLength()
+        {
+            return data_.GetUStringLength(offset_ + 0);
+        }
+        
+        public void SetApiVersion(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 0, value, offset, count);
+        }
+        
+        public void GetApiVersion(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 0, value, offset);
+        }
+        
+        public void ReadApiVersion(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 0, stream, size);
+        }
+        
+        public void WriteApiVersion(Stream stream)
+        {
+            data_.WriteUString(offset_ + 0, stream);
+        }
+        
+        public string Id
+        {
+            set { data_.SetUString(offset_ + 8, value); }
+            
+            get { return data_.GetUString(offset_ + 8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetUStringLength(offset_ + 8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteUString(offset_ + 8, stream);
+        }
+        
+        public string DisplayName
+        {
+            set { data_.SetUString(offset_ + 16, value); }
+            
+            get { return data_.GetUString(offset_ + 16); }
+        }
+        
+        public int GetDisplayNameLength()
+        {
+            return data_.GetUStringLength(offset_ + 16);
+        }
+        
+        public void SetDisplayName(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 16, value, offset, count);
+        }
+        
+        public void GetDisplayName(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 16, value, offset);
+        }
+        
+        public void ReadDisplayName(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 16, stream, size);
+        }
+        
+        public void WriteDisplayName(Stream stream)
+        {
+            data_.WriteUString(offset_ + 16, stream);
+        }
+        
+        public string UserDisplayName
+        {
+            set { data_.SetUString(offset_ + 24, value); }
+            
+            get { return data_.GetUString(offset_ + 24); }
+        }
+        
+        public int GetUserDisplayNameLength()
+        {
+            return data_.GetUStringLength(offset_ + 24);
+        }
+        
+        public void SetUserDisplayName(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 24, value, offset, count);
+        }
+        
+        public void GetUserDisplayName(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 24, value, offset);
+        }
+        
+        public void ReadUserDisplayName(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 24, stream, size);
+        }
+        
+        public void WriteUserDisplayName(Stream stream)
+        {
+            data_.WriteUString(offset_ + 24, stream);
+        }
+        
+        public string Category
+        {
+            set { data_.SetUString(offset_ + 32, value); }
+            
+            get { return data_.GetUString(offset_ + 32); }
+        }
+        
+        public int GetCategoryLength()
+        {
+            return data_.GetUStringLength(offset_ + 32);
+        }
+        
+        public void SetCategory(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 32, value, offset, count);
+        }
+        
+        public void GetCategory(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 32, value, offset);
+        }
+        
+        public void ReadCategory(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 32, stream, size);
+        }
+        
+        public void WriteCategory(Stream stream)
+        {
+            data_.WriteUString(offset_ + 32, stream);
+        }
+        
+        public string Version
+        {
+            set { data_.SetUString(offset_ + 40, value); }
+            
+            get { return data_.GetUString(offset_ + 40); }
+        }
+        
+        public int GetVersionLength()
+        {
+            return data_.GetUStringLength(offset_ + 40);
+        }
+        
+        public void SetVersion(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 40, value, offset, count);
+        }
+        
+        public void GetVersion(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 40, value, offset);
+        }
+        
+        public void ReadVersion(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 40, stream, size);
+        }
+        
+        public void WriteVersion(Stream stream)
+        {
+            data_.WriteUString(offset_ + 40, stream);
+        }
+        
+        public string Description
+        {
+            set { data_.SetUString(offset_ + 48, value); }
+            
+            get { return data_.GetUString(offset_ + 48); }
+        }
+        
+        public int GetDescriptionLength()
+        {
+            return data_.GetUStringLength(offset_ + 48);
+        }
+        
+        public void SetDescription(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 48, value, offset, count);
+        }
+        
+        public void GetDescription(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 48, value, offset);
+        }
+        
+        public void ReadDescription(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 48, stream, size);
+        }
+        
+        public void WriteDescription(Stream stream)
+        {
+            data_.WriteUString(offset_ + 48, stream);
+        }
+        
+        public string Copyright
+        {
+            set { data_.SetUString(offset_ + 56, value); }
+            
+            get { return data_.GetUString(offset_ + 56); }
+        }
+        
+        public int GetCopyrightLength()
+        {
+            return data_.GetUStringLength(offset_ + 56);
+        }
+        
+        public void SetCopyright(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 56, value, offset, count);
+        }
+        
+        public void GetCopyright(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 56, value, offset);
+        }
+        
+        public void ReadCopyright(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 56, stream, size);
+        }
+        
+        public void WriteCopyright(Stream stream)
+        {
+            data_.WriteUString(offset_ + 56, stream);
+        }
+        
+        public PluginType Type
+        {
+            set { data_.SetUInt(offset_ + 64, (uint) value); }
+            
+            get { return (PluginType) data_.GetUInt(offset_ + 64); }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginDescriptorNull
+    {
+        public PluginDescriptorNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 68);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public PluginDescriptor Value
+        {
+            get { return new PluginDescriptor(data_, GetDataOffset()); }
+        }
+        
+        public string ApiVersion
+        {
+            set { data_.SetUString(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 0); }
+        }
+        
+        public int GetApiVersionLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 0);
+        }
+        
+        public void SetApiVersion(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 0, value, offset, count);
+        }
+        
+        public void GetApiVersion(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 0, value, offset);
+        }
+        
+        public void ReadApiVersion(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 0, stream, size);
+        }
+        
+        public void WriteApiVersion(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 0, stream);
+        }
+        
+        public string Id
+        {
+            set { data_.SetUString(GetDataOffset() + 8, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 8, stream);
+        }
+        
+        public string DisplayName
+        {
+            set { data_.SetUString(GetDataOffset() + 16, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 16); }
+        }
+        
+        public int GetDisplayNameLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 16);
+        }
+        
+        public void SetDisplayName(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 16, value, offset, count);
+        }
+        
+        public void GetDisplayName(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 16, value, offset);
+        }
+        
+        public void ReadDisplayName(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 16, stream, size);
+        }
+        
+        public void WriteDisplayName(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 16, stream);
+        }
+        
+        public string UserDisplayName
+        {
+            set { data_.SetUString(GetDataOffset() + 24, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 24); }
+        }
+        
+        public int GetUserDisplayNameLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 24);
+        }
+        
+        public void SetUserDisplayName(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 24, value, offset, count);
+        }
+        
+        public void GetUserDisplayName(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 24, value, offset);
+        }
+        
+        public void ReadUserDisplayName(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 24, stream, size);
+        }
+        
+        public void WriteUserDisplayName(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 24, stream);
+        }
+        
+        public string Category
+        {
+            set { data_.SetUString(GetDataOffset() + 32, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 32); }
+        }
+        
+        public int GetCategoryLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 32);
+        }
+        
+        public void SetCategory(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 32, value, offset, count);
+        }
+        
+        public void GetCategory(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 32, value, offset);
+        }
+        
+        public void ReadCategory(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 32, stream, size);
+        }
+        
+        public void WriteCategory(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 32, stream);
+        }
+        
+        public string Version
+        {
+            set { data_.SetUString(GetDataOffset() + 40, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 40); }
+        }
+        
+        public int GetVersionLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 40);
+        }
+        
+        public void SetVersion(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 40, value, offset, count);
+        }
+        
+        public void GetVersion(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 40, value, offset);
+        }
+        
+        public void ReadVersion(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 40, stream, size);
+        }
+        
+        public void WriteVersion(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 40, stream);
+        }
+        
+        public string Description
+        {
+            set { data_.SetUString(GetDataOffset() + 48, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 48); }
+        }
+        
+        public int GetDescriptionLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 48);
+        }
+        
+        public void SetDescription(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 48, value, offset, count);
+        }
+        
+        public void GetDescription(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 48, value, offset);
+        }
+        
+        public void ReadDescription(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 48, stream, size);
+        }
+        
+        public void WriteDescription(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 48, stream);
+        }
+        
+        public string Copyright
+        {
+            set { data_.SetUString(GetDataOffset() + 56, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 56); }
+        }
+        
+        public int GetCopyrightLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 56);
+        }
+        
+        public void SetCopyright(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 56, value, offset, count);
+        }
+        
+        public void GetCopyright(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 56, value, offset);
+        }
+        
+        public void ReadCopyright(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 56, stream, size);
+        }
+        
+        public void WriteCopyright(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 56, stream);
+        }
+        
+        public PluginType Type
+        {
+            set { data_.SetUInt(GetDataOffset() + 64, (uint) value); }
+            
+            get { return (PluginType) data_.GetUInt(GetDataOffset() + 64); }
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginDescriptorArray
+    {
+        public PluginDescriptorArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 68);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginDescriptor this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 68);
+                
+                return new PluginDescriptor(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginDescriptorNullArray
+    {
+        public PluginDescriptorNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginDescriptorNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new PluginDescriptorNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginInfo
+    {
+        public PluginInfo(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public PluginKey Key
+        {
+            get { return new PluginKey(data_, offset_ + 0); }
+        }
+        
+        public PluginDescriptor Descriptor
+        {
+            get { return new PluginDescriptor(data_, offset_ + 16); }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginInfoNull
+    {
+        public PluginInfoNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 84);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public PluginInfo Value
+        {
+            get { return new PluginInfo(data_, GetDataOffset()); }
+        }
+        
+        public PluginKey Key
+        {
+            get { return new PluginKey(data_, GetDataOffset() + 0); }
+        }
+        
+        public PluginDescriptor Descriptor
+        {
+            get { return new PluginDescriptor(data_, GetDataOffset() + 16); }
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginInfoArray
+    {
+        public PluginInfoArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 84);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginInfo this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 84);
+                
+                return new PluginInfo(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginInfoNullArray
+    {
+        public PluginInfoNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginInfoNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new PluginInfoNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PackageModel
+    {
+        public PackageModel(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public string Name
+        {
+            set { data_.SetUString(offset_ + 0, value); }
+            
+            get { return data_.GetUString(offset_ + 0); }
+        }
+        
+        public int GetNameLength()
+        {
+            return data_.GetUStringLength(offset_ + 0);
+        }
+        
+        public void SetName(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 0, value, offset, count);
+        }
+        
+        public void GetName(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 0, value, offset);
+        }
+        
+        public void ReadName(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 0, stream, size);
+        }
+        
+        public void WriteName(Stream stream)
+        {
+            data_.WriteUString(offset_ + 0, stream);
+        }
+        
+        public DateTime Created
+        {
+            set { data_.SetDateTime(offset_ + 8, value); }
+            
+            get { return data_.GetDateTime(offset_ + 8); }
+        }
+        
+        public PluginInfoArray Plugins
+        {
+            get { return new PluginInfoArray(data_, offset_ + 16); }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PackageModelNull
+    {
+        public PackageModelNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 24);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public PackageModel Value
+        {
+            get { return new PackageModel(data_, GetDataOffset()); }
+        }
+        
+        public string Name
+        {
+            set { data_.SetUString(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 0); }
+        }
+        
+        public int GetNameLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 0);
+        }
+        
+        public void SetName(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 0, value, offset, count);
+        }
+        
+        public void GetName(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 0, value, offset);
+        }
+        
+        public void ReadName(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 0, stream, size);
+        }
+        
+        public void WriteName(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 0, stream);
+        }
+        
+        public DateTime Created
+        {
+            set { data_.SetDateTime(GetDataOffset() + 8, value); }
+            
+            get { return data_.GetDateTime(GetDataOffset() + 8); }
+        }
+        
+        public PluginInfoArray Plugins
+        {
+            get { return new PluginInfoArray(data_, GetDataOffset() + 16); }
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PackageModelArray
+    {
+        public PackageModelArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 24);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PackageModel this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 24);
+                
+                return new PackageModel(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PackageModelNullArray
+    {
+        public PackageModelNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PackageModelNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new PackageModelNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
     struct AccountKey
     {
         public AccountKey(MessageData data, int offset)
@@ -2121,66 +3512,167 @@ namespace SoftFX.Net.BotAgent
         
         public string Login
         {
-            set { data_.SetString(offset_ + 0, value); }
+            set { data_.SetUString(offset_ + 0, value); }
             
-            get { return data_.GetString(offset_ + 0); }
+            get { return data_.GetUString(offset_ + 0); }
         }
         
         public int GetLoginLength()
         {
-            return data_.GetStringLength(offset_ + 0);
+            return data_.GetUStringLength(offset_ + 0);
         }
         
         public void SetLogin(char[] value, int offset, int count)
         {
-            data_.SetString(offset_ + 0, value, offset, count);
+            data_.SetUString(offset_ + 0, value, offset, count);
         }
         
         public void GetLogin(char[] value, int offset)
         {
-            data_.GetString(offset_ + 0, value, offset);
+            data_.GetUString(offset_ + 0, value, offset);
         }
         
         public void ReadLogin(Stream stream, int size)
         {
-            data_.ReadString(offset_ + 0, stream, size);
+            data_.ReadUString(offset_ + 0, stream, size);
         }
         
         public void WriteLogin(Stream stream)
         {
-            data_.WriteString(offset_ + 0, stream);
+            data_.WriteUString(offset_ + 0, stream);
         }
         
         public string Server
         {
-            set { data_.SetString(offset_ + 8, value); }
+            set { data_.SetUString(offset_ + 8, value); }
             
-            get { return data_.GetString(offset_ + 8); }
+            get { return data_.GetUString(offset_ + 8); }
         }
         
         public int GetServerLength()
         {
-            return data_.GetStringLength(offset_ + 8);
+            return data_.GetUStringLength(offset_ + 8);
         }
         
         public void SetServer(char[] value, int offset, int count)
         {
-            data_.SetString(offset_ + 8, value, offset, count);
+            data_.SetUString(offset_ + 8, value, offset, count);
         }
         
         public void GetServer(char[] value, int offset)
         {
-            data_.GetString(offset_ + 8, value, offset);
+            data_.GetUString(offset_ + 8, value, offset);
         }
         
         public void ReadServer(Stream stream, int size)
         {
-            data_.ReadString(offset_ + 8, stream, size);
+            data_.ReadUString(offset_ + 8, stream, size);
         }
         
         public void WriteServer(Stream stream)
         {
-            data_.WriteString(offset_ + 8, stream);
+            data_.WriteUString(offset_ + 8, stream);
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct AccountKeyNull
+    {
+        public AccountKeyNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 16);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public AccountKey Value
+        {
+            get { return new AccountKey(data_, GetDataOffset()); }
+        }
+        
+        public string Login
+        {
+            set { data_.SetUString(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 0); }
+        }
+        
+        public int GetLoginLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 0);
+        }
+        
+        public void SetLogin(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 0, value, offset, count);
+        }
+        
+        public void GetLogin(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 0, value, offset);
+        }
+        
+        public void ReadLogin(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 0, stream, size);
+        }
+        
+        public void WriteLogin(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 0, stream);
+        }
+        
+        public string Server
+        {
+            set { data_.SetUString(GetDataOffset() + 8, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 8); }
+        }
+        
+        public int GetServerLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 8);
+        }
+        
+        public void SetServer(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 8, value, offset, count);
+        }
+        
+        public void GetServer(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 8, value, offset);
+        }
+        
+        public void ReadServer(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 8, stream, size);
+        }
+        
+        public void WriteServer(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 8, stream);
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
         }
         
         MessageData data_;
@@ -2219,6 +3711,38 @@ namespace SoftFX.Net.BotAgent
         int offset_;
     }
     
+    struct AccountKeyNullArray
+    {
+        public AccountKeyNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public AccountKeyNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new AccountKeyNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
     struct PluginPermissions
     {
         public PluginPermissions(MessageData data, int offset)
@@ -2232,6 +3756,50 @@ namespace SoftFX.Net.BotAgent
             set { data_.SetBool(offset_ + 0, value); }
             
             get { return data_.GetBool(offset_ + 0); }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginPermissionsNull
+    {
+        public PluginPermissionsNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 1);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public PluginPermissions Value
+        {
+            get { return new PluginPermissions(data_, GetDataOffset()); }
+        }
+        
+        public bool TradeAllowed
+        {
+            set { data_.SetBool(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetBool(GetDataOffset() + 0); }
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
         }
         
         MessageData data_;
@@ -2263,6 +3831,38 @@ namespace SoftFX.Net.BotAgent
                 int itemOffset = data_.GetArrayItemOffset(offset_, index, 1);
                 
                 return new PluginPermissions(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct PluginPermissionsNullArray
+    {
+        public PluginPermissionsNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginPermissionsNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new PluginPermissionsNull(data_, itemOffset);
             }
         }
         
@@ -2377,34 +3977,34 @@ namespace SoftFX.Net.BotAgent
         
         public string InstanceId
         {
-            set { data_.SetString(offset_ + 0, value); }
+            set { data_.SetUString(offset_ + 0, value); }
             
-            get { return data_.GetString(offset_ + 0); }
+            get { return data_.GetUString(offset_ + 0); }
         }
         
         public int GetInstanceIdLength()
         {
-            return data_.GetStringLength(offset_ + 0);
+            return data_.GetUStringLength(offset_ + 0);
         }
         
         public void SetInstanceId(char[] value, int offset, int count)
         {
-            data_.SetString(offset_ + 0, value, offset, count);
+            data_.SetUString(offset_ + 0, value, offset, count);
         }
         
         public void GetInstanceId(char[] value, int offset)
         {
-            data_.GetString(offset_ + 0, value, offset);
+            data_.GetUString(offset_ + 0, value, offset);
         }
         
         public void ReadInstanceId(Stream stream, int size)
         {
-            data_.ReadString(offset_ + 0, stream, size);
+            data_.ReadUString(offset_ + 0, stream, size);
         }
         
         public void WriteInstanceId(Stream stream)
         {
-            data_.WriteString(offset_ + 0, stream);
+            data_.WriteUString(offset_ + 0, stream);
         }
         
         public bool Isolated
@@ -2434,6 +4034,104 @@ namespace SoftFX.Net.BotAgent
         public PluginKey Plugin
         {
             get { return new PluginKey(data_, offset_ + 30); }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct BotModelNull
+    {
+        public BotModelNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 46);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public BotModel Value
+        {
+            get { return new BotModel(data_, GetDataOffset()); }
+        }
+        
+        public string InstanceId
+        {
+            set { data_.SetUString(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 0); }
+        }
+        
+        public int GetInstanceIdLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 0);
+        }
+        
+        public void SetInstanceId(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 0, value, offset, count);
+        }
+        
+        public void GetInstanceId(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 0, value, offset);
+        }
+        
+        public void ReadInstanceId(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 0, stream, size);
+        }
+        
+        public void WriteInstanceId(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 0, stream);
+        }
+        
+        public bool Isolated
+        {
+            set { data_.SetBool(GetDataOffset() + 8, value); }
+            
+            get { return data_.GetBool(GetDataOffset() + 8); }
+        }
+        
+        public BotState State
+        {
+            set { data_.SetUInt(GetDataOffset() + 9, (uint) value); }
+            
+            get { return (BotState) data_.GetUInt(GetDataOffset() + 9); }
+        }
+        
+        public PluginPermissions Permissions
+        {
+            get { return new PluginPermissions(data_, GetDataOffset() + 13); }
+        }
+        
+        public AccountKey Account
+        {
+            get { return new AccountKey(data_, GetDataOffset() + 14); }
+        }
+        
+        public PluginKey Plugin
+        {
+            get { return new PluginKey(data_, GetDataOffset() + 30); }
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
         }
         
         MessageData data_;
@@ -2472,6 +4170,38 @@ namespace SoftFX.Net.BotAgent
         int offset_;
     }
     
+    struct BotModelNullArray
+    {
+        public BotModelNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public BotModelNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new BotModelNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
     struct AccountModel
     {
         public AccountModel(MessageData data, int offset)
@@ -2488,6 +4218,53 @@ namespace SoftFX.Net.BotAgent
         public BotModelArray Bots
         {
             get { return new BotModelArray(data_, offset_ + 16); }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
+    struct AccountModelNull
+    {
+        public AccountModelNull(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void New()
+        {
+            data_.NewGroup(offset_, 24);
+        }
+        
+        public bool HasValue
+        {
+            get { return data_.GetInt(offset_) != 0; }
+        }
+        
+        public AccountModel Value
+        {
+            get { return new AccountModel(data_, GetDataOffset()); }
+        }
+        
+        public AccountKey Key
+        {
+            get { return new AccountKey(data_, GetDataOffset() + 0); }
+        }
+        
+        public BotModelArray Bots
+        {
+            get { return new BotModelArray(data_, GetDataOffset() + 16); }
+        }
+        
+        int GetDataOffset()
+        {
+            int dataOffset = data_.GetInt(offset_);
+            
+            if (dataOffset == 0)
+                throw new Exception("Group is not allocated");
+            
+            return dataOffset;
         }
         
         MessageData data_;
@@ -2526,6 +4303,38 @@ namespace SoftFX.Net.BotAgent
         int offset_;
     }
     
+    struct AccountModelNullArray
+    {
+        public AccountModelNullArray(MessageData data, int offset)
+        {
+            data_ = data;
+            offset_ = offset;
+        }
+        
+        public void Resize(int length)
+        {
+            data_.ResizeArray(offset_, length, 4);
+        }
+        
+        public int Length
+        {
+            get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public AccountModelNull this[int index]
+        {
+            get
+            {
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+                
+                return new AccountModelNull(data_, itemOffset);
+            }
+        }
+        
+        MessageData data_;
+        int offset_;
+    }
+    
     struct AccountListRequest
     {
         public static implicit operator Request(AccountListRequest message)
@@ -2543,7 +4352,7 @@ namespace SoftFX.Net.BotAgent
             info_ = BotAgent.Info.AccountListRequest;
             data_ = new MessageData(16);
             
-            data_.SetInt(4, 7);
+            data_.SetInt(4, 8);
         }
         
         public AccountListRequest(MessageInfo info, MessageData data)
@@ -2640,7 +4449,7 @@ namespace SoftFX.Net.BotAgent
             info_ = BotAgent.Info.AccountListReport;
             data_ = new MessageData(24);
             
-            data_.SetInt(4, 8);
+            data_.SetInt(4, 9);
         }
         
         public AccountListReport(MessageInfo info, MessageData data)
@@ -2725,6 +4534,743 @@ namespace SoftFX.Net.BotAgent
         MessageData data_;
     }
     
+    struct PackageListRequest
+    {
+        public static implicit operator Request(PackageListRequest message)
+        {
+            return new Request(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(PackageListRequest message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public PackageListRequest(int i)
+        {
+            info_ = BotAgent.Info.PackageListRequest;
+            data_ = new MessageData(16);
+            
+            data_.SetInt(4, 10);
+        }
+        
+        public PackageListRequest(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.PackageListRequest))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public PackageListRequest Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new PackageListRequest(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct PackageListReport
+    {
+        public static implicit operator Report(PackageListReport message)
+        {
+            return new Report(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(PackageListReport message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public PackageListReport(int i)
+        {
+            info_ = BotAgent.Info.PackageListReport;
+            data_ = new MessageData(24);
+            
+            data_.SetInt(4, 11);
+        }
+        
+        public PackageListReport(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.PackageListReport))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string RequestId
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetRequestIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetRequestId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetRequestId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadRequestId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteRequestId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public PackageModelArray Packages
+        {
+            get { return new PackageModelArray(data_, 16); }
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public PackageListReport Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new PackageListReport(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct SubscribeRequest
+    {
+        public static implicit operator Request(SubscribeRequest message)
+        {
+            return new Request(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(SubscribeRequest message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public SubscribeRequest(int i)
+        {
+            info_ = BotAgent.Info.SubscribeRequest;
+            data_ = new MessageData(16);
+            
+            data_.SetInt(4, 12);
+        }
+        
+        public SubscribeRequest(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.SubscribeRequest))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public SubscribeRequest Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new SubscribeRequest(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct SubscribeReport
+    {
+        public static implicit operator Report(SubscribeReport message)
+        {
+            return new Report(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(SubscribeReport message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public SubscribeReport(int i)
+        {
+            info_ = BotAgent.Info.SubscribeReport;
+            data_ = new MessageData(16);
+            
+            data_.SetInt(4, 13);
+        }
+        
+        public SubscribeReport(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.SubscribeReport))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string RequestId
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetRequestIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetRequestId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetRequestId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadRequestId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteRequestId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public SubscribeReport Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new SubscribeReport(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct AccountModelUpdate
+    {
+        public static implicit operator Update(AccountModelUpdate message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(AccountModelUpdate message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public AccountModelUpdate(int i)
+        {
+            info_ = BotAgent.Info.AccountModelUpdate;
+            data_ = new MessageData(68);
+            
+            data_.SetInt(4, 14);
+        }
+        
+        public AccountModelUpdate(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.AccountModelUpdate))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public UpdateType Type
+        {
+            set { data_.SetUInt(16, (uint) value); }
+            
+            get { return (UpdateType) data_.GetUInt(16); }
+        }
+        
+        public AccountModelNull OldItem
+        {
+            get { return new AccountModelNull(data_, 20); }
+        }
+        
+        public AccountModelNull NewItem
+        {
+            get { return new AccountModelNull(data_, 44); }
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public AccountModelUpdate Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new AccountModelUpdate(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct BotModelUpdate
+    {
+        public static implicit operator Update(BotModelUpdate message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(BotModelUpdate message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public BotModelUpdate(int i)
+        {
+            info_ = BotAgent.Info.BotModelUpdate;
+            data_ = new MessageData(112);
+            
+            data_.SetInt(4, 15);
+        }
+        
+        public BotModelUpdate(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.BotModelUpdate))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public UpdateType Type
+        {
+            set { data_.SetUInt(16, (uint) value); }
+            
+            get { return (UpdateType) data_.GetUInt(16); }
+        }
+        
+        public BotModelNull OldItem
+        {
+            get { return new BotModelNull(data_, 20); }
+        }
+        
+        public BotModelNull NewItem
+        {
+            get { return new BotModelNull(data_, 66); }
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public BotModelUpdate Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new BotModelUpdate(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct PackageModelUpdate
+    {
+        public static implicit operator Update(PackageModelUpdate message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(PackageModelUpdate message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public PackageModelUpdate(int i)
+        {
+            info_ = BotAgent.Info.PackageModelUpdate;
+            data_ = new MessageData(68);
+            
+            data_.SetInt(4, 16);
+        }
+        
+        public PackageModelUpdate(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.PackageModelUpdate))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public UpdateType Type
+        {
+            set { data_.SetUInt(16, (uint) value); }
+            
+            get { return (UpdateType) data_.GetUInt(16); }
+        }
+        
+        public PackageModelNull OldItem
+        {
+            get { return new PackageModelNull(data_, 20); }
+        }
+        
+        public PackageModelNull NewItem
+        {
+            get { return new PackageModelNull(data_, 44); }
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public PackageModelUpdate Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new PackageModelUpdate(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    
+    
     
     
     
@@ -2766,6 +5312,11 @@ namespace SoftFX.Net.BotAgent
             return message.Info.Is(Info.Report);
         }
         
+        public static bool Update(Message message)
+        {
+            return message.Info.Is(Info.Update);
+        }
+        
         public static bool AccountListRequest(Request message)
         {
             return message.Info.Is(Info.AccountListRequest);
@@ -2784,6 +5335,76 @@ namespace SoftFX.Net.BotAgent
         public static bool AccountListReport(Message message)
         {
             return message.Info.Is(Info.AccountListReport);
+        }
+        
+        public static bool PackageListRequest(Request message)
+        {
+            return message.Info.Is(Info.PackageListRequest);
+        }
+        
+        public static bool PackageListRequest(Message message)
+        {
+            return message.Info.Is(Info.PackageListRequest);
+        }
+        
+        public static bool PackageListReport(Report message)
+        {
+            return message.Info.Is(Info.PackageListReport);
+        }
+        
+        public static bool PackageListReport(Message message)
+        {
+            return message.Info.Is(Info.PackageListReport);
+        }
+        
+        public static bool SubscribeRequest(Request message)
+        {
+            return message.Info.Is(Info.SubscribeRequest);
+        }
+        
+        public static bool SubscribeRequest(Message message)
+        {
+            return message.Info.Is(Info.SubscribeRequest);
+        }
+        
+        public static bool SubscribeReport(Report message)
+        {
+            return message.Info.Is(Info.SubscribeReport);
+        }
+        
+        public static bool SubscribeReport(Message message)
+        {
+            return message.Info.Is(Info.SubscribeReport);
+        }
+        
+        public static bool AccountModelUpdate(Update message)
+        {
+            return message.Info.Is(Info.AccountModelUpdate);
+        }
+        
+        public static bool AccountModelUpdate(Message message)
+        {
+            return message.Info.Is(Info.AccountModelUpdate);
+        }
+        
+        public static bool BotModelUpdate(Update message)
+        {
+            return message.Info.Is(Info.BotModelUpdate);
+        }
+        
+        public static bool BotModelUpdate(Message message)
+        {
+            return message.Info.Is(Info.BotModelUpdate);
+        }
+        
+        public static bool PackageModelUpdate(Update message)
+        {
+            return message.Info.Is(Info.PackageModelUpdate);
+        }
+        
+        public static bool PackageModelUpdate(Message message)
+        {
+            return message.Info.Is(Info.PackageModelUpdate);
         }
     }
     
@@ -2859,6 +5480,16 @@ namespace SoftFX.Net.BotAgent
             return new Report(message.Info, message.Data);
         }
         
+        public static Message Message(Update message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static Update Update(Message message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
         public static Request Request(AccountListRequest message)
         {
             return new Request(message.Info, message.Data);
@@ -2898,6 +5529,146 @@ namespace SoftFX.Net.BotAgent
         {
             return new AccountListReport(message.Info, message.Data);
         }
+        
+        public static Request Request(PackageListRequest message)
+        {
+            return new Request(message.Info, message.Data);
+        }
+        
+        public static PackageListRequest PackageListRequest(Request message)
+        {
+            return new PackageListRequest(message.Info, message.Data);
+        }
+        
+        public static Message Message(PackageListRequest message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static PackageListRequest PackageListRequest(Message message)
+        {
+            return new PackageListRequest(message.Info, message.Data);
+        }
+        
+        public static Report Report(PackageListReport message)
+        {
+            return new Report(message.Info, message.Data);
+        }
+        
+        public static PackageListReport PackageListReport(Report message)
+        {
+            return new PackageListReport(message.Info, message.Data);
+        }
+        
+        public static Message Message(PackageListReport message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static PackageListReport PackageListReport(Message message)
+        {
+            return new PackageListReport(message.Info, message.Data);
+        }
+        
+        public static Request Request(SubscribeRequest message)
+        {
+            return new Request(message.Info, message.Data);
+        }
+        
+        public static SubscribeRequest SubscribeRequest(Request message)
+        {
+            return new SubscribeRequest(message.Info, message.Data);
+        }
+        
+        public static Message Message(SubscribeRequest message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static SubscribeRequest SubscribeRequest(Message message)
+        {
+            return new SubscribeRequest(message.Info, message.Data);
+        }
+        
+        public static Report Report(SubscribeReport message)
+        {
+            return new Report(message.Info, message.Data);
+        }
+        
+        public static SubscribeReport SubscribeReport(Report message)
+        {
+            return new SubscribeReport(message.Info, message.Data);
+        }
+        
+        public static Message Message(SubscribeReport message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static SubscribeReport SubscribeReport(Message message)
+        {
+            return new SubscribeReport(message.Info, message.Data);
+        }
+        
+        public static Update Update(AccountModelUpdate message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
+        public static AccountModelUpdate AccountModelUpdate(Update message)
+        {
+            return new AccountModelUpdate(message.Info, message.Data);
+        }
+        
+        public static Message Message(AccountModelUpdate message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static AccountModelUpdate AccountModelUpdate(Message message)
+        {
+            return new AccountModelUpdate(message.Info, message.Data);
+        }
+        
+        public static Update Update(BotModelUpdate message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
+        public static BotModelUpdate BotModelUpdate(Update message)
+        {
+            return new BotModelUpdate(message.Info, message.Data);
+        }
+        
+        public static Message Message(BotModelUpdate message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static BotModelUpdate BotModelUpdate(Message message)
+        {
+            return new BotModelUpdate(message.Info, message.Data);
+        }
+        
+        public static Update Update(PackageModelUpdate message)
+        {
+            return new Update(message.Info, message.Data);
+        }
+        
+        public static PackageModelUpdate PackageModelUpdate(Update message)
+        {
+            return new PackageModelUpdate(message.Info, message.Data);
+        }
+        
+        public static Message Message(PackageModelUpdate message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static PackageModelUpdate PackageModelUpdate(Message message)
+        {
+            return new PackageModelUpdate(message.Info, message.Data);
+        }
     }
     
     class Info
@@ -2913,7 +5684,13 @@ namespace SoftFX.Net.BotAgent
             ConstructLogoutReport();
             ConstructRequest();
             ConstructReport();
+            ConstructUpdateType();
+            ConstructUpdate();
             ConstructPluginKey();
+            ConstructPluginType();
+            ConstructPluginDescriptor();
+            ConstructPluginInfo();
+            ConstructPackageModel();
             ConstructAccountKey();
             ConstructPluginPermissions();
             ConstructBotState();
@@ -2921,6 +5698,13 @@ namespace SoftFX.Net.BotAgent
             ConstructAccountModel();
             ConstructAccountListRequest();
             ConstructAccountListReport();
+            ConstructPackageListRequest();
+            ConstructPackageListReport();
+            ConstructSubscribeRequest();
+            ConstructSubscribeReport();
+            ConstructAccountModelUpdate();
+            ConstructBotModelUpdate();
+            ConstructPackageModelUpdate();
             ConstructBotAgent();
         }
         
@@ -3096,19 +5880,68 @@ namespace SoftFX.Net.BotAgent
             Report.fields[0] = RequestId;
         }
         
+        static void ConstructUpdateType()
+        {
+            EnumMemberInfo Added = new EnumMemberInfo();
+            Added.name = "Added";
+            Added.value = 0;
+            
+            EnumMemberInfo Updated = new EnumMemberInfo();
+            Updated.name = "Updated";
+            Updated.value = 1;
+            
+            EnumMemberInfo Removed = new EnumMemberInfo();
+            Removed.name = "Removed";
+            Removed.value = 2;
+            
+            UpdateType = new EnumInfo();
+            UpdateType.name = "UpdateType";
+            UpdateType.minSize = 4;
+            UpdateType.members = new EnumMemberInfo[3];
+            UpdateType.members[0] = Added;
+            UpdateType.members[1] = Updated;
+            UpdateType.members[2] = Removed;
+        }
+        
+        static void ConstructUpdate()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            FieldInfo Type = new FieldInfo();
+            Type.name = "Type";
+            Type.offset = 16;
+            Type.type = FieldType.Enum;
+            Type.enumInfo = Info.UpdateType;
+            Type.optional = false;
+            Type.repeatable = false;
+            
+            Update = new MessageInfo();
+            Update.name = "Update";
+            Update.id = 7;
+            Update.minSize = 20;
+            Update.fields = new FieldInfo[2];
+            Update.fields[0] = Id;
+            Update.fields[1] = Type;
+        }
+        
         static void ConstructPluginKey()
         {
             FieldInfo PackageName = new FieldInfo();
             PackageName.name = "PackageName";
             PackageName.offset = 0;
-            PackageName.type = FieldType.String;
+            PackageName.type = FieldType.UString;
             PackageName.optional = false;
             PackageName.repeatable = false;
             
             FieldInfo DescriptorId = new FieldInfo();
             DescriptorId.name = "DescriptorId";
             DescriptorId.offset = 8;
-            DescriptorId.type = FieldType.String;
+            DescriptorId.type = FieldType.UString;
             DescriptorId.optional = false;
             DescriptorId.repeatable = false;
             
@@ -3120,19 +5953,182 @@ namespace SoftFX.Net.BotAgent
             PluginKey.fields[1] = DescriptorId;
         }
         
+        static void ConstructPluginType()
+        {
+            EnumMemberInfo Indicator = new EnumMemberInfo();
+            Indicator.name = "Indicator";
+            Indicator.value = 0;
+            
+            EnumMemberInfo Robot = new EnumMemberInfo();
+            Robot.name = "Robot";
+            Robot.value = 1;
+            
+            EnumMemberInfo Unknown = new EnumMemberInfo();
+            Unknown.name = "Unknown";
+            Unknown.value = 2;
+            
+            PluginType = new EnumInfo();
+            PluginType.name = "PluginType";
+            PluginType.minSize = 4;
+            PluginType.members = new EnumMemberInfo[3];
+            PluginType.members[0] = Indicator;
+            PluginType.members[1] = Robot;
+            PluginType.members[2] = Unknown;
+        }
+        
+        static void ConstructPluginDescriptor()
+        {
+            FieldInfo ApiVersion = new FieldInfo();
+            ApiVersion.name = "ApiVersion";
+            ApiVersion.offset = 0;
+            ApiVersion.type = FieldType.UString;
+            ApiVersion.optional = false;
+            ApiVersion.repeatable = false;
+            
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.UString;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            FieldInfo DisplayName = new FieldInfo();
+            DisplayName.name = "DisplayName";
+            DisplayName.offset = 16;
+            DisplayName.type = FieldType.UString;
+            DisplayName.optional = false;
+            DisplayName.repeatable = false;
+            
+            FieldInfo UserDisplayName = new FieldInfo();
+            UserDisplayName.name = "UserDisplayName";
+            UserDisplayName.offset = 24;
+            UserDisplayName.type = FieldType.UString;
+            UserDisplayName.optional = false;
+            UserDisplayName.repeatable = false;
+            
+            FieldInfo Category = new FieldInfo();
+            Category.name = "Category";
+            Category.offset = 32;
+            Category.type = FieldType.UString;
+            Category.optional = false;
+            Category.repeatable = false;
+            
+            FieldInfo Version = new FieldInfo();
+            Version.name = "Version";
+            Version.offset = 40;
+            Version.type = FieldType.UString;
+            Version.optional = false;
+            Version.repeatable = false;
+            
+            FieldInfo Description = new FieldInfo();
+            Description.name = "Description";
+            Description.offset = 48;
+            Description.type = FieldType.UString;
+            Description.optional = false;
+            Description.repeatable = false;
+            
+            FieldInfo Copyright = new FieldInfo();
+            Copyright.name = "Copyright";
+            Copyright.offset = 56;
+            Copyright.type = FieldType.UString;
+            Copyright.optional = false;
+            Copyright.repeatable = false;
+            
+            FieldInfo Type = new FieldInfo();
+            Type.name = "Type";
+            Type.offset = 64;
+            Type.type = FieldType.Enum;
+            Type.enumInfo = Info.PluginType;
+            Type.optional = false;
+            Type.repeatable = false;
+            
+            PluginDescriptor = new GroupInfo();
+            PluginDescriptor.name = "PluginDescriptor";
+            PluginDescriptor.minSize = 68;
+            PluginDescriptor.fields = new FieldInfo[9];
+            PluginDescriptor.fields[0] = ApiVersion;
+            PluginDescriptor.fields[1] = Id;
+            PluginDescriptor.fields[2] = DisplayName;
+            PluginDescriptor.fields[3] = UserDisplayName;
+            PluginDescriptor.fields[4] = Category;
+            PluginDescriptor.fields[5] = Version;
+            PluginDescriptor.fields[6] = Description;
+            PluginDescriptor.fields[7] = Copyright;
+            PluginDescriptor.fields[8] = Type;
+        }
+        
+        static void ConstructPluginInfo()
+        {
+            FieldInfo Key = new FieldInfo();
+            Key.name = "Key";
+            Key.offset = 0;
+            Key.type = FieldType.Group;
+            Key.groupInfo = Info.PluginKey;
+            Key.optional = false;
+            Key.repeatable = false;
+            
+            FieldInfo Descriptor = new FieldInfo();
+            Descriptor.name = "Descriptor";
+            Descriptor.offset = 16;
+            Descriptor.type = FieldType.Group;
+            Descriptor.groupInfo = Info.PluginDescriptor;
+            Descriptor.optional = false;
+            Descriptor.repeatable = false;
+            
+            PluginInfo = new GroupInfo();
+            PluginInfo.name = "PluginInfo";
+            PluginInfo.minSize = 84;
+            PluginInfo.fields = new FieldInfo[2];
+            PluginInfo.fields[0] = Key;
+            PluginInfo.fields[1] = Descriptor;
+        }
+        
+        static void ConstructPackageModel()
+        {
+            FieldInfo Name = new FieldInfo();
+            Name.name = "Name";
+            Name.offset = 0;
+            Name.type = FieldType.UString;
+            Name.optional = false;
+            Name.repeatable = false;
+            
+            FieldInfo Created = new FieldInfo();
+            Created.name = "Created";
+            Created.offset = 8;
+            Created.type = FieldType.DateTime;
+            Created.optional = false;
+            Created.repeatable = false;
+            
+            FieldInfo Plugins = new FieldInfo();
+            Plugins.name = "Plugins";
+            Plugins.offset = 16;
+            Plugins.type = FieldType.Group;
+            Plugins.groupInfo = Info.PluginInfo;
+            Plugins.optional = false;
+            Plugins.repeatable = true;
+            
+            PackageModel = new GroupInfo();
+            PackageModel.name = "PackageModel";
+            PackageModel.minSize = 24;
+            PackageModel.fields = new FieldInfo[3];
+            PackageModel.fields[0] = Name;
+            PackageModel.fields[1] = Created;
+            PackageModel.fields[2] = Plugins;
+        }
+        
         static void ConstructAccountKey()
         {
             FieldInfo Login = new FieldInfo();
             Login.name = "Login";
             Login.offset = 0;
-            Login.type = FieldType.String;
+            Login.type = FieldType.UString;
             Login.optional = false;
             Login.repeatable = false;
             
             FieldInfo Server = new FieldInfo();
             Server.name = "Server";
             Server.offset = 8;
-            Server.type = FieldType.String;
+            Server.type = FieldType.UString;
             Server.optional = false;
             Server.repeatable = false;
             
@@ -3208,7 +6204,7 @@ namespace SoftFX.Net.BotAgent
             FieldInfo InstanceId = new FieldInfo();
             InstanceId.name = "InstanceId";
             InstanceId.offset = 0;
-            InstanceId.type = FieldType.String;
+            InstanceId.type = FieldType.UString;
             InstanceId.optional = false;
             InstanceId.repeatable = false;
             
@@ -3301,7 +6297,7 @@ namespace SoftFX.Net.BotAgent
             AccountListRequest = new MessageInfo();
             AccountListRequest.parentInfo = Request;
             AccountListRequest.name = "AccountListRequest";
-            AccountListRequest.id = 7;
+            AccountListRequest.id = 8;
             AccountListRequest.minSize = 16;
             AccountListRequest.fields = new FieldInfo[1];
             AccountListRequest.fields[0] = Id;
@@ -3327,12 +6323,230 @@ namespace SoftFX.Net.BotAgent
             AccountListReport = new MessageInfo();
             AccountListReport.parentInfo = Report;
             AccountListReport.name = "AccountListReport";
-            AccountListReport.id = 8;
+            AccountListReport.id = 9;
             AccountListReport.minSize = 24;
             AccountListReport.fields = new FieldInfo[2];
             AccountListReport.fields[0] = RequestId;
             AccountListReport.fields[1] = Accounts;
         }
+        
+        static void ConstructPackageListRequest()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            PackageListRequest = new MessageInfo();
+            PackageListRequest.parentInfo = Request;
+            PackageListRequest.name = "PackageListRequest";
+            PackageListRequest.id = 10;
+            PackageListRequest.minSize = 16;
+            PackageListRequest.fields = new FieldInfo[1];
+            PackageListRequest.fields[0] = Id;
+        }
+        
+        static void ConstructPackageListReport()
+        {
+            FieldInfo RequestId = new FieldInfo();
+            RequestId.name = "RequestId";
+            RequestId.offset = 8;
+            RequestId.type = FieldType.String;
+            RequestId.optional = false;
+            RequestId.repeatable = false;
+            
+            FieldInfo Packages = new FieldInfo();
+            Packages.name = "Packages";
+            Packages.offset = 16;
+            Packages.type = FieldType.Group;
+            Packages.groupInfo = Info.PackageModel;
+            Packages.optional = false;
+            Packages.repeatable = true;
+            
+            PackageListReport = new MessageInfo();
+            PackageListReport.parentInfo = Report;
+            PackageListReport.name = "PackageListReport";
+            PackageListReport.id = 11;
+            PackageListReport.minSize = 24;
+            PackageListReport.fields = new FieldInfo[2];
+            PackageListReport.fields[0] = RequestId;
+            PackageListReport.fields[1] = Packages;
+        }
+        
+        static void ConstructSubscribeRequest()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            SubscribeRequest = new MessageInfo();
+            SubscribeRequest.parentInfo = Request;
+            SubscribeRequest.name = "SubscribeRequest";
+            SubscribeRequest.id = 12;
+            SubscribeRequest.minSize = 16;
+            SubscribeRequest.fields = new FieldInfo[1];
+            SubscribeRequest.fields[0] = Id;
+        }
+        
+        static void ConstructSubscribeReport()
+        {
+            FieldInfo RequestId = new FieldInfo();
+            RequestId.name = "RequestId";
+            RequestId.offset = 8;
+            RequestId.type = FieldType.String;
+            RequestId.optional = false;
+            RequestId.repeatable = false;
+            
+            SubscribeReport = new MessageInfo();
+            SubscribeReport.parentInfo = Report;
+            SubscribeReport.name = "SubscribeReport";
+            SubscribeReport.id = 13;
+            SubscribeReport.minSize = 16;
+            SubscribeReport.fields = new FieldInfo[1];
+            SubscribeReport.fields[0] = RequestId;
+        }
+        
+        static void ConstructAccountModelUpdate()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            FieldInfo Type = new FieldInfo();
+            Type.name = "Type";
+            Type.offset = 16;
+            Type.type = FieldType.Enum;
+            Type.enumInfo = Info.UpdateType;
+            Type.optional = false;
+            Type.repeatable = false;
+            
+            FieldInfo OldItem = new FieldInfo();
+            OldItem.name = "OldItem";
+            OldItem.offset = 20;
+            OldItem.type = FieldType.Group;
+            OldItem.groupInfo = Info.AccountModel;
+            OldItem.optional = true;
+            OldItem.repeatable = false;
+            
+            FieldInfo NewItem = new FieldInfo();
+            NewItem.name = "NewItem";
+            NewItem.offset = 44;
+            NewItem.type = FieldType.Group;
+            NewItem.groupInfo = Info.AccountModel;
+            NewItem.optional = true;
+            NewItem.repeatable = false;
+            
+            AccountModelUpdate = new MessageInfo();
+            AccountModelUpdate.parentInfo = Update;
+            AccountModelUpdate.name = "AccountModelUpdate";
+            AccountModelUpdate.id = 14;
+            AccountModelUpdate.minSize = 68;
+            AccountModelUpdate.fields = new FieldInfo[4];
+            AccountModelUpdate.fields[0] = Id;
+            AccountModelUpdate.fields[1] = Type;
+            AccountModelUpdate.fields[2] = OldItem;
+            AccountModelUpdate.fields[3] = NewItem;
+        }
+        
+        static void ConstructBotModelUpdate()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            FieldInfo Type = new FieldInfo();
+            Type.name = "Type";
+            Type.offset = 16;
+            Type.type = FieldType.Enum;
+            Type.enumInfo = Info.UpdateType;
+            Type.optional = false;
+            Type.repeatable = false;
+            
+            FieldInfo OldItem = new FieldInfo();
+            OldItem.name = "OldItem";
+            OldItem.offset = 20;
+            OldItem.type = FieldType.Group;
+            OldItem.groupInfo = Info.BotModel;
+            OldItem.optional = true;
+            OldItem.repeatable = false;
+            
+            FieldInfo NewItem = new FieldInfo();
+            NewItem.name = "NewItem";
+            NewItem.offset = 66;
+            NewItem.type = FieldType.Group;
+            NewItem.groupInfo = Info.BotModel;
+            NewItem.optional = true;
+            NewItem.repeatable = false;
+            
+            BotModelUpdate = new MessageInfo();
+            BotModelUpdate.parentInfo = Update;
+            BotModelUpdate.name = "BotModelUpdate";
+            BotModelUpdate.id = 15;
+            BotModelUpdate.minSize = 112;
+            BotModelUpdate.fields = new FieldInfo[4];
+            BotModelUpdate.fields[0] = Id;
+            BotModelUpdate.fields[1] = Type;
+            BotModelUpdate.fields[2] = OldItem;
+            BotModelUpdate.fields[3] = NewItem;
+        }
+        
+        static void ConstructPackageModelUpdate()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            FieldInfo Type = new FieldInfo();
+            Type.name = "Type";
+            Type.offset = 16;
+            Type.type = FieldType.Enum;
+            Type.enumInfo = Info.UpdateType;
+            Type.optional = false;
+            Type.repeatable = false;
+            
+            FieldInfo OldItem = new FieldInfo();
+            OldItem.name = "OldItem";
+            OldItem.offset = 20;
+            OldItem.type = FieldType.Group;
+            OldItem.groupInfo = Info.PackageModel;
+            OldItem.optional = true;
+            OldItem.repeatable = false;
+            
+            FieldInfo NewItem = new FieldInfo();
+            NewItem.name = "NewItem";
+            NewItem.offset = 44;
+            NewItem.type = FieldType.Group;
+            NewItem.groupInfo = Info.PackageModel;
+            NewItem.optional = true;
+            NewItem.repeatable = false;
+            
+            PackageModelUpdate = new MessageInfo();
+            PackageModelUpdate.parentInfo = Update;
+            PackageModelUpdate.name = "PackageModelUpdate";
+            PackageModelUpdate.id = 16;
+            PackageModelUpdate.minSize = 68;
+            PackageModelUpdate.fields = new FieldInfo[4];
+            PackageModelUpdate.fields[0] = Id;
+            PackageModelUpdate.fields[1] = Type;
+            PackageModelUpdate.fields[2] = OldItem;
+            PackageModelUpdate.fields[3] = NewItem;
+        }
+        
+        
         
         
         
@@ -3351,8 +6565,16 @@ namespace SoftFX.Net.BotAgent
             BotAgent.AddMessageInfo(LogoutReport);
             BotAgent.AddMessageInfo(Request);
             BotAgent.AddMessageInfo(Report);
+            BotAgent.AddMessageInfo(Update);
             BotAgent.AddMessageInfo(AccountListRequest);
             BotAgent.AddMessageInfo(AccountListReport);
+            BotAgent.AddMessageInfo(PackageListRequest);
+            BotAgent.AddMessageInfo(PackageListReport);
+            BotAgent.AddMessageInfo(SubscribeRequest);
+            BotAgent.AddMessageInfo(SubscribeReport);
+            BotAgent.AddMessageInfo(AccountModelUpdate);
+            BotAgent.AddMessageInfo(BotModelUpdate);
+            BotAgent.AddMessageInfo(PackageModelUpdate);
         }
         
         public static MessageInfo LoginRequest;
@@ -3364,7 +6586,13 @@ namespace SoftFX.Net.BotAgent
         public static MessageInfo LogoutReport;
         public static MessageInfo Request;
         public static MessageInfo Report;
+        public static EnumInfo UpdateType;
+        public static MessageInfo Update;
         public static GroupInfo PluginKey;
+        public static EnumInfo PluginType;
+        public static GroupInfo PluginDescriptor;
+        public static GroupInfo PluginInfo;
+        public static GroupInfo PackageModel;
         public static GroupInfo AccountKey;
         public static GroupInfo PluginPermissions;
         public static EnumInfo BotState;
@@ -3372,6 +6600,13 @@ namespace SoftFX.Net.BotAgent
         public static GroupInfo AccountModel;
         public static MessageInfo AccountListRequest;
         public static MessageInfo AccountListReport;
+        public static MessageInfo PackageListRequest;
+        public static MessageInfo PackageListReport;
+        public static MessageInfo SubscribeRequest;
+        public static MessageInfo SubscribeReport;
+        public static MessageInfo AccountModelUpdate;
+        public static MessageInfo BotModelUpdate;
+        public static MessageInfo PackageModelUpdate;
         public static ProtocolInfo BotAgent;
     }
     
@@ -3413,6 +6648,20 @@ namespace SoftFX.Net.BotAgent
     class AccountListRequestClientContext : ClientContext
     {
         public AccountListRequestClientContext(bool waitable) : base(waitable)
+        {
+        }
+    }
+    
+    class PackageListRequestClientContext : ClientContext
+    {
+        public PackageListRequestClientContext(bool waitable) : base(waitable)
+        {
+        }
+    }
+    
+    class SubscribeRequestClientContext : ClientContext
+    {
+        public SubscribeRequestClientContext(bool waitable) : base(waitable)
         {
         }
     }
@@ -3503,20 +6752,22 @@ namespace SoftFX.Net.BotAgent
             coreOptions.Log.Messages = options.Log.Messages;
             
             coreSession_ = new Core.ClientSession(name, Info.BotAgent, coreOptions);
-            coreSession_.OnConnect = new Core.ClientSession.OnConnectDelegate(this.OnCoreConnect);
-            coreSession_.OnConnectError = new Core.ClientSession.OnConnectErrorDelegate(this.OnCoreConnectError);
-            coreSession_.OnDisconnect = new Core.ClientSession.OnDisconnectDelegate(this.OnCoreDisconnect);
-            coreSession_.OnReceive = new Core.ClientSession.OnReceiveDelegate(this.OnCoreReceive);
-            coreSession_.OnSend = new Core.ClientSession.OnSendDelegate(this.OnCoreSend);
+            coreSessionListener_ = new CoreClientSessionListener(this);
+            coreSession_.Listener = coreSessionListener_;
             
             stateMutex_ = new object();
             connected_ = false;
             
-            Event_LoginReport_103_13_LoginReport_ = new Event_LoginReport_103_13_LoginReport(this);
-            Event_LoginReject_103_13_LoginReject_ = new Event_LoginReject_103_13_LoginReject(this);
-            Event_LogoutReport_112_9_LogoutReport_ = new Event_LogoutReport_112_9_LogoutReport(this);
-            Event_LogoutReport_126_13_LogoutReport_ = new Event_LogoutReport_126_13_LogoutReport(this);
-            Event_AccountListReport_183_13_AccountListReport_ = new Event_AccountListReport_183_13_AccountListReport(this);
+            Event_LoginReport_178_13_LoginReport_ = new Event_LoginReport_178_13_LoginReport(this);
+            Event_LoginReject_178_13_LoginReject_ = new Event_LoginReject_178_13_LoginReject(this);
+            Event_LogoutReport_187_9_LogoutReport_ = new Event_LogoutReport_187_9_LogoutReport(this);
+            Event_LogoutReport_205_13_LogoutReport_ = new Event_LogoutReport_205_13_LogoutReport(this);
+            Event_AccountModelUpdate_271_9_AccountModelUpdate_ = new Event_AccountModelUpdate_271_9_AccountModelUpdate(this);
+            Event_BotModelUpdate_271_9_BotModelUpdate_ = new Event_BotModelUpdate_271_9_BotModelUpdate(this);
+            Event_PackageModelUpdate_271_9_PackageModelUpdate_ = new Event_PackageModelUpdate_271_9_PackageModelUpdate(this);
+            Event_AccountListReport_306_13_AccountListReport_ = new Event_AccountListReport_306_13_AccountListReport(this);
+            Event_PackageListReport_312_13_PackageListReport_ = new Event_PackageListReport_312_13_PackageListReport(this);
+            Event_SubscribeReport_318_13_SubscribeReport_ = new Event_SubscribeReport_318_13_SubscribeReport(this);
             
             event_ = null;
         }
@@ -3712,6 +6963,94 @@ namespace SoftFX.Net.BotAgent
             }
         }
         
+        public void SendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+        {
+            lock (stateMutex_)
+            {
+                if (ClientProcessor_ == null)
+                    throw new Exception(string.Format("Session is not active : {0}({1})", coreSession_.Name, coreSession_.Guid));
+                
+                if (coreSession_.LogEvents)
+                    coreSession_.LogEvent("SendPackageListRequest({0})", message.ToString());
+                
+                ClientProcessor_.PreprocessSend(message);
+                
+                string key = message.Id;
+                ClientRequestProcessor ClientRequestProcessor;
+                
+                if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                {
+                    ClientRequestProcessor = new ClientRequestProcessor(this, key);
+                    ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                }
+                
+                ClientRequestProcessor.PreprocessSendPackageListRequest(context, message);
+                
+                if (context != null)
+                    context.Reset();
+                
+                coreSession_.Send(message);
+                
+                ClientRequest:
+                
+                ClientRequestProcessor.PostprocessSendPackageListRequest(context, message);
+                
+                if (ClientRequestProcessor.Completed)
+                    ClientRequestProcessorDictionary_.Remove(key);
+                
+                Client:
+                
+                ClientProcessor_.PostprocessSend(message);
+                
+                if (ClientProcessor_.Completed)
+                    coreSession_.Disconnect("Client disconnect");
+            }
+        }
+        
+        public void SendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+        {
+            lock (stateMutex_)
+            {
+                if (ClientProcessor_ == null)
+                    throw new Exception(string.Format("Session is not active : {0}({1})", coreSession_.Name, coreSession_.Guid));
+                
+                if (coreSession_.LogEvents)
+                    coreSession_.LogEvent("SendSubscribeRequest({0})", message.ToString());
+                
+                ClientProcessor_.PreprocessSend(message);
+                
+                string key = message.Id;
+                ClientRequestProcessor ClientRequestProcessor;
+                
+                if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                {
+                    ClientRequestProcessor = new ClientRequestProcessor(this, key);
+                    ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                }
+                
+                ClientRequestProcessor.PreprocessSendSubscribeRequest(context, message);
+                
+                if (context != null)
+                    context.Reset();
+                
+                coreSession_.Send(message);
+                
+                ClientRequest:
+                
+                ClientRequestProcessor.PostprocessSendSubscribeRequest(context, message);
+                
+                if (ClientRequestProcessor.Completed)
+                    ClientRequestProcessorDictionary_.Remove(key);
+                
+                Client:
+                
+                ClientProcessor_.PostprocessSend(message);
+                
+                if (ClientProcessor_.Completed)
+                    coreSession_.Disconnect("Client disconnect");
+            }
+        }
+        
         public void Send(Message message)
         {
             lock (stateMutex_)
@@ -3723,6 +7062,33 @@ namespace SoftFX.Net.BotAgent
                     coreSession_.LogEvent("Send({0})", message.ToString());
                 
                 ClientProcessor_.PreprocessSend(message);
+                
+                if (Is.Update(message))
+                {
+                    Update Update = Cast.Update(message);
+                    
+                    string key = Update.Id;
+                    ClientUpdateProcessor ClientUpdateProcessor;
+                    
+                    if (! ClientUpdateProcessorDictionary_.TryGetValue(key, out ClientUpdateProcessor))
+                    {
+                        ClientUpdateProcessor = new ClientUpdateProcessor(this, key);
+                        ClientUpdateProcessorDictionary_.Add(key, ClientUpdateProcessor);
+                    }
+                    
+                    ClientUpdateProcessor.PreprocessSend(message);
+                    
+                    coreSession_.Send(message);
+                    
+                    ClientUpdate:
+                    
+                    ClientUpdateProcessor.PostprocessSend(message);
+                    
+                    if (ClientUpdateProcessor.Completed)
+                        ClientUpdateProcessorDictionary_.Remove(key);
+                    
+                    goto Client;
+                }
                 
                 if (Is.Request(message))
                 {
@@ -3846,16 +7212,16 @@ namespace SoftFX.Net.BotAgent
             {
                 session_ = session;
                 
-                State_101_9_ = new State_101_9(this);
-                State_103_13_ = new State_103_13(this);
-                State_112_9_ = new State_112_9(this);
-                State_126_13_ = new State_126_13(this);
+                State_176_9_ = new State_176_9(this);
+                State_178_13_ = new State_178_13(this);
+                State_187_9_ = new State_187_9(this);
+                State_205_13_ = new State_205_13(this);
                 State_0_ = new State_0(this);
                 
-                state_ = State_101_9_;
+                state_ = State_176_9_;
                 
                 if (session_.coreSession_.LogStates)
-                    session_.coreSession_.LogState("Client : 101_9");
+                    session_.coreSession_.LogState("Client : 176_9");
             }
             
             public bool Completed
@@ -3929,9 +7295,9 @@ namespace SoftFX.Net.BotAgent
                 protected ClientProcessor processor_;
             }
             
-            class State_101_9 : State
+            class State_176_9 : State
             {
-                public State_101_9(ClientProcessor processor) : base(processor)
+                public State_176_9(ClientProcessor processor) : base(processor)
                 {
                 }
                 
@@ -3941,17 +7307,17 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    processor_.State_103_13_.LoginRequestClientContext_ = context;
+                    processor_.State_178_13_.LoginRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_103_13_;
+                    processor_.state_ = processor_.State_178_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("Client : 103_13");
+                        processor_.session_.coreSession_.LogState("Client : 178_13");
                 }
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 101_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 176_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -3963,17 +7329,17 @@ namespace SoftFX.Net.BotAgent
                     if (Is.LoginRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 101_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 176_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
                 {
                     if (Is.LoginRequest(message))
                     {
-                        processor_.state_ = processor_.State_103_13_;
+                        processor_.state_ = processor_.State_178_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 103_13");
+                            processor_.session_.coreSession_.LogState("Client : 178_13");
                         
                         return;
                     }
@@ -3981,7 +7347,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 101_9 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 176_9 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -3989,15 +7355,15 @@ namespace SoftFX.Net.BotAgent
                 }
             }
             
-            class State_103_13 : State
+            class State_178_13 : State
             {
-                public State_103_13(ClientProcessor processor) : base(processor)
+                public State_178_13(ClientProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 103_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 178_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -4006,7 +7372,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 103_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 178_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -4015,7 +7381,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 103_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 178_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -4030,18 +7396,18 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LoginReport_103_13_LoginReport_.LoginRequestClientContext_ = LoginRequestClientContext_;
-                            processor_.session_.Event_LoginReport_103_13_LoginReport_.LoginReport_ = LoginReport;
+                            processor_.session_.Event_LoginReport_178_13_LoginReport_.LoginRequestClientContext_ = LoginRequestClientContext_;
+                            processor_.session_.Event_LoginReport_178_13_LoginReport_.LoginReport_ = LoginReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LoginReport_103_13_LoginReport_;
+                            processor_.session_.event_ = processor_.session_.Event_LoginReport_178_13_LoginReport_;
                         }
                         
                         LoginRequestClientContext_ = null;
                         
-                        processor_.state_ = processor_.State_112_9_;
+                        processor_.state_ = processor_.State_187_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 112_9");
+                            processor_.session_.coreSession_.LogState("Client : 187_9");
                         
                         return;
                     }
@@ -4052,10 +7418,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LoginReject_103_13_LoginReject_.LoginRequestClientContext_ = LoginRequestClientContext_;
-                            processor_.session_.Event_LoginReject_103_13_LoginReject_.LoginReject_ = LoginReject;
+                            processor_.session_.Event_LoginReject_178_13_LoginReject_.LoginRequestClientContext_ = LoginRequestClientContext_;
+                            processor_.session_.Event_LoginReject_178_13_LoginReject_.LoginReject_ = LoginReject;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LoginReject_103_13_LoginReject_;
+                            processor_.session_.event_ = processor_.session_.Event_LoginReject_178_13_LoginReject_;
                         }
                         
                         LoginRequestClientContext_ = null;
@@ -4068,7 +7434,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 103_13 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 178_13 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -4080,15 +7446,15 @@ namespace SoftFX.Net.BotAgent
                 public LoginRequestClientContext LoginRequestClientContext_;
             }
             
-            class State_112_9 : State
+            class State_187_9 : State
             {
-                public State_112_9(ClientProcessor processor) : base(processor)
+                public State_187_9(ClientProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 112_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 187_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -4101,12 +7467,12 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    processor_.State_126_13_.LogoutRequestClientContext_ = context;
+                    processor_.State_205_13_.LogoutRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_126_13_;
+                    processor_.state_ = processor_.State_205_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("Client : 126_13");
+                        processor_.session_.coreSession_.LogState("Client : 205_13");
                 }
                 
                 public override void PreprocessSend(Message message)
@@ -4117,27 +7483,27 @@ namespace SoftFX.Net.BotAgent
                     if (Is.LogoutRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 112_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 187_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
                 {
                     if (Is.Request(message))
                     {
-                        processor_.state_ = processor_.State_112_9_;
+                        processor_.state_ = processor_.State_187_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 112_9");
+                            processor_.session_.coreSession_.LogState("Client : 187_9");
                         
                         return;
                     }
                     
                     if (Is.LogoutRequest(message))
                     {
-                        processor_.state_ = processor_.State_126_13_;
+                        processor_.state_ = processor_.State_205_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 126_13");
+                            processor_.session_.coreSession_.LogState("Client : 205_13");
                         
                         return;
                     }
@@ -4149,10 +7515,22 @@ namespace SoftFX.Net.BotAgent
                     {
                         Report Report = Cast.Report(message);
                         
-                        processor_.state_ = processor_.State_112_9_;
+                        processor_.state_ = processor_.State_187_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 112_9");
+                            processor_.session_.coreSession_.LogState("Client : 187_9");
+                        
+                        return;
+                    }
+                    
+                    if (Is.Update(message))
+                    {
+                        Update Update = Cast.Update(message);
+                        
+                        processor_.state_ = processor_.State_187_9_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("Client : 187_9");
                         
                         return;
                     }
@@ -4163,9 +7541,9 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LogoutReport_112_9_LogoutReport_.LogoutReport_ = LogoutReport;
+                            processor_.session_.Event_LogoutReport_187_9_LogoutReport_.LogoutReport_ = LogoutReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_112_9_LogoutReport_;
+                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_187_9_LogoutReport_;
                         }
                         
                         processor_.state_ = processor_.State_0_;
@@ -4176,7 +7554,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 112_9 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 187_9 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -4184,15 +7562,15 @@ namespace SoftFX.Net.BotAgent
                 }
             }
             
-            class State_126_13 : State
+            class State_205_13 : State
             {
-                public State_126_13(ClientProcessor processor) : base(processor)
+                public State_205_13(ClientProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 126_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 205_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -4201,7 +7579,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 126_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 205_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -4210,7 +7588,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 126_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 205_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -4223,10 +7601,22 @@ namespace SoftFX.Net.BotAgent
                     {
                         Report Report = Cast.Report(message);
                         
-                        processor_.state_ = processor_.State_126_13_;
+                        processor_.state_ = processor_.State_205_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 126_13");
+                            processor_.session_.coreSession_.LogState("Client : 205_13");
+                        
+                        return;
+                    }
+                    
+                    if (Is.Update(message))
+                    {
+                        Update Update = Cast.Update(message);
+                        
+                        processor_.state_ = processor_.State_205_13_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("Client : 205_13");
                         
                         return;
                     }
@@ -4237,10 +7627,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LogoutReport_126_13_LogoutReport_.LogoutRequestClientContext_ = LogoutRequestClientContext_;
-                            processor_.session_.Event_LogoutReport_126_13_LogoutReport_.LogoutReport_ = LogoutReport;
+                            processor_.session_.Event_LogoutReport_205_13_LogoutReport_.LogoutRequestClientContext_ = LogoutRequestClientContext_;
+                            processor_.session_.Event_LogoutReport_205_13_LogoutReport_.LogoutReport_ = LogoutReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_126_13_LogoutReport_;
+                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_205_13_LogoutReport_;
                         }
                         
                         LogoutRequestClientContext_ = null;
@@ -4253,7 +7643,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 126_13 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 205_13 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -4306,10 +7696,183 @@ namespace SoftFX.Net.BotAgent
             
             ClientSession session_;
             
-            State_101_9 State_101_9_;
-            State_103_13 State_103_13_;
-            State_112_9 State_112_9_;
-            State_126_13 State_126_13_;
+            State_176_9 State_176_9_;
+            State_178_13 State_178_13_;
+            State_187_9 State_187_9_;
+            State_205_13 State_205_13_;
+            State_0 State_0_;
+            
+            State state_;
+        }
+        
+        class ClientUpdateProcessor
+        {
+            public ClientUpdateProcessor(ClientSession session, string id)
+            {
+                session_ = session;
+                id_ = id;
+                
+                State_271_9_ = new State_271_9(this);
+                State_0_ = new State_0(this);
+                
+                state_ = State_271_9_;
+                
+                if (session_.coreSession_.LogStates)
+                    session_.coreSession_.LogState("ClientUpdate({0}) : 271_9", id_);
+            }
+            
+            public bool Completed
+            {
+                get { return state_ == State_0_; }
+            }
+            
+            public void PreprocessSend(Message message)
+            {
+                state_.PreprocessSend(message);
+            }
+            
+            public void PostprocessSend(Message message)
+            {
+                state_.PostprocessSend(message);
+            }
+            
+            public void ProcessReceive(Message message)
+            {
+                state_.ProcessReceive(message);
+            }
+            
+            public void ProcessDisconnect(List<ClientContext> contextList)
+            {
+                state_.ProcessDisconnect(contextList);
+            }
+            
+            abstract class State
+            {
+                public State(ClientUpdateProcessor processor)
+                {
+                    processor_ = processor;
+                }
+                
+                public abstract void PreprocessSend(Message message);
+                
+                public abstract void PostprocessSend(Message message);
+                
+                public abstract void ProcessReceive(Message message);
+                
+                public abstract void ProcessDisconnect(List<ClientContext> contextList);
+                
+                protected ClientUpdateProcessor processor_;
+            }
+            
+            class State_271_9 : State
+            {
+                public State_271_9(ClientUpdateProcessor processor) : base(processor)
+                {
+                }
+                
+                public override void PreprocessSend(Message message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientUpdate({2}) : 271_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSend(Message message)
+                {
+                }
+                
+                public override void ProcessReceive(Message message)
+                {
+                    if (Is.AccountModelUpdate(message))
+                    {
+                        AccountModelUpdate AccountModelUpdate = Cast.AccountModelUpdate(message);
+                        
+                        if (processor_.session_.event_ == null)
+                        {
+                            processor_.session_.Event_AccountModelUpdate_271_9_AccountModelUpdate_.AccountModelUpdate_ = AccountModelUpdate;
+                            
+                            processor_.session_.event_ = processor_.session_.Event_AccountModelUpdate_271_9_AccountModelUpdate_;
+                        }
+                        
+                        processor_.state_ = processor_.State_0_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientUpdate({0}) : 0", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    if (Is.BotModelUpdate(message))
+                    {
+                        BotModelUpdate BotModelUpdate = Cast.BotModelUpdate(message);
+                        
+                        if (processor_.session_.event_ == null)
+                        {
+                            processor_.session_.Event_BotModelUpdate_271_9_BotModelUpdate_.BotModelUpdate_ = BotModelUpdate;
+                            
+                            processor_.session_.event_ = processor_.session_.Event_BotModelUpdate_271_9_BotModelUpdate_;
+                        }
+                        
+                        processor_.state_ = processor_.State_0_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientUpdate({0}) : 0", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    if (Is.PackageModelUpdate(message))
+                    {
+                        PackageModelUpdate PackageModelUpdate = Cast.PackageModelUpdate(message);
+                        
+                        if (processor_.session_.event_ == null)
+                        {
+                            processor_.session_.Event_PackageModelUpdate_271_9_PackageModelUpdate_.PackageModelUpdate_ = PackageModelUpdate;
+                            
+                            processor_.session_.event_ = processor_.session_.Event_PackageModelUpdate_271_9_PackageModelUpdate_;
+                        }
+                        
+                        processor_.state_ = processor_.State_0_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientUpdate({0}) : 0", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientUpdate({0}) : 271_9 : {1}", processor_.id_, message.Info.name));
+                }
+                
+                public override void ProcessDisconnect(List<ClientContext> contextList)
+                {
+                }
+            }
+            
+            class State_0 : State
+            {
+                public State_0(ClientUpdateProcessor processor) : base(processor)
+                {
+                }
+                
+                public override void PreprocessSend(Message message)
+                {
+                }
+                
+                public override void PostprocessSend(Message message)
+                {
+                }
+                
+                public override void ProcessReceive(Message message)
+                {
+                }
+                
+                public override void ProcessDisconnect(List<ClientContext> contextList)
+                {
+                }
+            }
+            
+            ClientSession session_;
+            string id_;
+            
+            State_271_9 State_271_9_;
             State_0 State_0_;
             
             State state_;
@@ -4322,14 +7885,16 @@ namespace SoftFX.Net.BotAgent
                 session_ = session;
                 id_ = id;
                 
-                State_181_9_ = new State_181_9(this);
-                State_183_13_ = new State_183_13(this);
+                State_304_9_ = new State_304_9(this);
+                State_306_13_ = new State_306_13(this);
+                State_312_13_ = new State_312_13(this);
+                State_318_13_ = new State_318_13(this);
                 State_0_ = new State_0(this);
                 
-                state_ = State_181_9_;
+                state_ = State_304_9_;
                 
                 if (session_.coreSession_.LogStates)
-                    session_.coreSession_.LogState("ClientRequest({0}) : 181_9", id_);
+                    session_.coreSession_.LogState("ClientRequest({0}) : 304_9", id_);
             }
             
             public bool Completed
@@ -4345,6 +7910,26 @@ namespace SoftFX.Net.BotAgent
             public void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
             {
                 state_.PostprocessSendAccountListRequest(context, message);
+            }
+            
+            public void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+            {
+                state_.PreprocessSendPackageListRequest(context, message);
+            }
+            
+            public void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+            {
+                state_.PostprocessSendPackageListRequest(context, message);
+            }
+            
+            public void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+            {
+                state_.PreprocessSendSubscribeRequest(context, message);
+            }
+            
+            public void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+            {
+                state_.PostprocessSendSubscribeRequest(context, message);
             }
             
             public void PreprocessSend(Message message)
@@ -4378,6 +7963,14 @@ namespace SoftFX.Net.BotAgent
                 
                 public abstract void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message);
                 
+                public abstract void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message);
+                
+                public abstract void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message);
+                
+                public abstract void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message);
+                
+                public abstract void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message);
+                
                 public abstract void PreprocessSend(Message message);
                 
                 public abstract void PostprocessSend(Message message);
@@ -4389,9 +7982,9 @@ namespace SoftFX.Net.BotAgent
                 protected ClientRequestProcessor processor_;
             }
             
-            class State_181_9 : State
+            class State_304_9 : State
             {
-                public State_181_9(ClientRequestProcessor processor) : base(processor)
+                public State_304_9(ClientRequestProcessor processor) : base(processor)
                 {
                 }
                 
@@ -4401,12 +7994,40 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    processor_.State_183_13_.AccountListRequestClientContext_ = context;
+                    processor_.State_306_13_.AccountListRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_183_13_;
+                    processor_.state_ = processor_.State_306_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 183_13", processor_.id_);
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 306_13", processor_.id_);
+                }
+                
+                public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                    processor_.State_312_13_.PackageListRequestClientContext_ = context;
+                    
+                    processor_.state_ = processor_.State_312_13_;
+                    
+                    if (processor_.session_.coreSession_.LogStates)
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 312_13", processor_.id_);
+                }
+                
+                public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                }
+                
+                public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                    processor_.State_318_13_.SubscribeRequestClientContext_ = context;
+                    
+                    processor_.state_ = processor_.State_318_13_;
+                    
+                    if (processor_.session_.coreSession_.LogStates)
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 318_13", processor_.id_);
                 }
                 
                 public override void PreprocessSend(Message message)
@@ -4414,17 +8035,43 @@ namespace SoftFX.Net.BotAgent
                     if (Is.AccountListRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 181_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    if (Is.PackageListRequest(message))
+                        return;
+                    
+                    if (Is.SubscribeRequest(message))
+                        return;
+                    
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 304_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
                 {
                     if (Is.AccountListRequest(message))
                     {
-                        processor_.state_ = processor_.State_183_13_;
+                        processor_.state_ = processor_.State_306_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 183_13", processor_.id_);
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 306_13", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    if (Is.PackageListRequest(message))
+                    {
+                        processor_.state_ = processor_.State_312_13_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 312_13", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    if (Is.SubscribeRequest(message))
+                    {
+                        processor_.state_ = processor_.State_318_13_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 318_13", processor_.id_);
                         
                         return;
                     }
@@ -4432,7 +8079,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 181_9 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 304_9 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -4440,24 +8087,42 @@ namespace SoftFX.Net.BotAgent
                 }
             }
             
-            class State_183_13 : State
+            class State_306_13 : State
             {
-                public State_183_13(ClientRequestProcessor processor) : base(processor)
+                public State_306_13(ClientRequestProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 183_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
                 }
                 
+                public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                }
+                
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 183_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -4472,10 +8137,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_AccountListReport_183_13_AccountListReport_.AccountListRequestClientContext_ = AccountListRequestClientContext_;
-                            processor_.session_.Event_AccountListReport_183_13_AccountListReport_.AccountListReport_ = AccountListReport;
+                            processor_.session_.Event_AccountListReport_306_13_AccountListReport_.AccountListRequestClientContext_ = AccountListRequestClientContext_;
+                            processor_.session_.Event_AccountListReport_306_13_AccountListReport_.AccountListReport_ = AccountListReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_AccountListReport_183_13_AccountListReport_;
+                            processor_.session_.event_ = processor_.session_.Event_AccountListReport_306_13_AccountListReport_;
                         }
                         
                         AccountListRequestClientContext_ = null;
@@ -4488,7 +8153,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 183_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 306_13 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -4498,6 +8163,162 @@ namespace SoftFX.Net.BotAgent
                 }
                 
                 public AccountListRequestClientContext AccountListRequestClientContext_;
+            }
+            
+            class State_312_13 : State
+            {
+                public State_312_13(ClientRequestProcessor processor) : base(processor)
+                {
+                }
+                
+                public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                }
+                
+                public override void PreprocessSend(Message message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSend(Message message)
+                {
+                }
+                
+                public override void ProcessReceive(Message message)
+                {
+                    if (Is.PackageListReport(message))
+                    {
+                        PackageListReport PackageListReport = Cast.PackageListReport(message);
+                        
+                        if (processor_.session_.event_ == null)
+                        {
+                            processor_.session_.Event_PackageListReport_312_13_PackageListReport_.PackageListRequestClientContext_ = PackageListRequestClientContext_;
+                            processor_.session_.Event_PackageListReport_312_13_PackageListReport_.PackageListReport_ = PackageListReport;
+                            
+                            processor_.session_.event_ = processor_.session_.Event_PackageListReport_312_13_PackageListReport_;
+                        }
+                        
+                        PackageListRequestClientContext_ = null;
+                        
+                        processor_.state_ = processor_.State_0_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 0", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 312_13 : {1}", processor_.id_, message.Info.name));
+                }
+                
+                public override void ProcessDisconnect(List<ClientContext> contextList)
+                {
+                    if (PackageListRequestClientContext_ != null)
+                        contextList.Add(PackageListRequestClientContext_);
+                }
+                
+                public PackageListRequestClientContext PackageListRequestClientContext_;
+            }
+            
+            class State_318_13 : State
+            {
+                public State_318_13(ClientRequestProcessor processor) : base(processor)
+                {
+                }
+                
+                public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                }
+                
+                public override void PreprocessSend(Message message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSend(Message message)
+                {
+                }
+                
+                public override void ProcessReceive(Message message)
+                {
+                    if (Is.SubscribeReport(message))
+                    {
+                        SubscribeReport SubscribeReport = Cast.SubscribeReport(message);
+                        
+                        if (processor_.session_.event_ == null)
+                        {
+                            processor_.session_.Event_SubscribeReport_318_13_SubscribeReport_.SubscribeRequestClientContext_ = SubscribeRequestClientContext_;
+                            processor_.session_.Event_SubscribeReport_318_13_SubscribeReport_.SubscribeReport_ = SubscribeReport;
+                            
+                            processor_.session_.event_ = processor_.session_.Event_SubscribeReport_318_13_SubscribeReport_;
+                        }
+                        
+                        SubscribeRequestClientContext_ = null;
+                        
+                        processor_.state_ = processor_.State_0_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 0", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 318_13 : {1}", processor_.id_, message.Info.name));
+                }
+                
+                public override void ProcessDisconnect(List<ClientContext> contextList)
+                {
+                    if (SubscribeRequestClientContext_ != null)
+                        contextList.Add(SubscribeRequestClientContext_);
+                }
+                
+                public SubscribeRequestClientContext SubscribeRequestClientContext_;
             }
             
             class State_0 : State
@@ -4511,6 +8332,22 @@ namespace SoftFX.Net.BotAgent
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                }
+                
+                public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
                 }
                 
@@ -4534,8 +8371,10 @@ namespace SoftFX.Net.BotAgent
             ClientSession session_;
             string id_;
             
-            State_181_9 State_181_9_;
-            State_183_13 State_183_13_;
+            State_304_9 State_304_9_;
+            State_306_13 State_306_13_;
+            State_312_13 State_312_13_;
+            State_318_13 State_318_13_;
             State_0 State_0_;
             
             State state_;
@@ -4553,9 +8392,9 @@ namespace SoftFX.Net.BotAgent
             protected ClientSession session_;
         }
         
-        class Event_LoginReport_103_13_LoginReport : Event
+        class Event_LoginReport_178_13_LoginReport : Event
         {
-            public Event_LoginReport_103_13_LoginReport(ClientSession clientSession) : base(clientSession)
+            public Event_LoginReport_178_13_LoginReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -4588,9 +8427,9 @@ namespace SoftFX.Net.BotAgent
             public LoginReport LoginReport_;
         }
         
-        class Event_LoginReject_103_13_LoginReject : Event
+        class Event_LoginReject_178_13_LoginReject : Event
         {
-            public Event_LoginReject_103_13_LoginReject(ClientSession clientSession) : base(clientSession)
+            public Event_LoginReject_178_13_LoginReject(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -4623,9 +8462,9 @@ namespace SoftFX.Net.BotAgent
             public LoginReject LoginReject_;
         }
         
-        class Event_LogoutReport_112_9_LogoutReport : Event
+        class Event_LogoutReport_187_9_LogoutReport : Event
         {
-            public Event_LogoutReport_112_9_LogoutReport(ClientSession clientSession) : base(clientSession)
+            public Event_LogoutReport_187_9_LogoutReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -4651,9 +8490,9 @@ namespace SoftFX.Net.BotAgent
             public LogoutReport LogoutReport_;
         }
         
-        class Event_LogoutReport_126_13_LogoutReport : Event
+        class Event_LogoutReport_205_13_LogoutReport : Event
         {
-            public Event_LogoutReport_126_13_LogoutReport(ClientSession clientSession) : base(clientSession)
+            public Event_LogoutReport_205_13_LogoutReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -4686,9 +8525,93 @@ namespace SoftFX.Net.BotAgent
             public LogoutReport LogoutReport_;
         }
         
-        class Event_AccountListReport_183_13_AccountListReport : Event
+        class Event_AccountModelUpdate_271_9_AccountModelUpdate : Event
         {
-            public Event_AccountListReport_183_13_AccountListReport(ClientSession clientSession) : base(clientSession)
+            public Event_AccountModelUpdate_271_9_AccountModelUpdate(ClientSession clientSession) : base(clientSession)
+            {
+            }
+            
+            public override void Dispatch()
+            {
+                if (session_.coreSession_.LogEvents)
+                    session_.coreSession_.LogEvent("OnAccountModelUpdate({0})", AccountModelUpdate_.ToString());
+                
+                if (session_.listener_ != null)
+                {
+                    try
+                    {
+                        session_.listener_.OnAccountModelUpdate(session_, AccountModelUpdate_);
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                AccountModelUpdate_ = new AccountModelUpdate();
+            }
+            
+            public AccountModelUpdate AccountModelUpdate_;
+        }
+        
+        class Event_BotModelUpdate_271_9_BotModelUpdate : Event
+        {
+            public Event_BotModelUpdate_271_9_BotModelUpdate(ClientSession clientSession) : base(clientSession)
+            {
+            }
+            
+            public override void Dispatch()
+            {
+                if (session_.coreSession_.LogEvents)
+                    session_.coreSession_.LogEvent("OnBotModelUpdate({0})", BotModelUpdate_.ToString());
+                
+                if (session_.listener_ != null)
+                {
+                    try
+                    {
+                        session_.listener_.OnBotModelUpdate(session_, BotModelUpdate_);
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                BotModelUpdate_ = new BotModelUpdate();
+            }
+            
+            public BotModelUpdate BotModelUpdate_;
+        }
+        
+        class Event_PackageModelUpdate_271_9_PackageModelUpdate : Event
+        {
+            public Event_PackageModelUpdate_271_9_PackageModelUpdate(ClientSession clientSession) : base(clientSession)
+            {
+            }
+            
+            public override void Dispatch()
+            {
+                if (session_.coreSession_.LogEvents)
+                    session_.coreSession_.LogEvent("OnPackageModelUpdate({0})", PackageModelUpdate_.ToString());
+                
+                if (session_.listener_ != null)
+                {
+                    try
+                    {
+                        session_.listener_.OnPackageModelUpdate(session_, PackageModelUpdate_);
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                PackageModelUpdate_ = new PackageModelUpdate();
+            }
+            
+            public PackageModelUpdate PackageModelUpdate_;
+        }
+        
+        class Event_AccountListReport_306_13_AccountListReport : Event
+        {
+            public Event_AccountListReport_306_13_AccountListReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -4721,13 +8644,120 @@ namespace SoftFX.Net.BotAgent
             public AccountListReport AccountListReport_;
         }
         
-        void OnCoreConnect(Core.ClientSession clientSession)
+        class Event_PackageListReport_312_13_PackageListReport : Event
+        {
+            public Event_PackageListReport_312_13_PackageListReport(ClientSession clientSession) : base(clientSession)
+            {
+            }
+            
+            public override void Dispatch()
+            {
+                if (session_.coreSession_.LogEvents)
+                    session_.coreSession_.LogEvent("OnPackageListReport({0})", PackageListReport_.ToString());
+                
+                if (session_.listener_ != null)
+                {
+                    try
+                    {
+                        session_.listener_.OnPackageListReport(session_, PackageListRequestClientContext_, PackageListReport_);
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                if (PackageListRequestClientContext_ != null)
+                    PackageListRequestClientContext_.SetCompleted();
+                
+                PackageListReport_ = new PackageListReport();
+                
+                PackageListRequestClientContext_ = null;
+            }
+            
+            public PackageListRequestClientContext PackageListRequestClientContext_;
+            
+            public PackageListReport PackageListReport_;
+        }
+        
+        class Event_SubscribeReport_318_13_SubscribeReport : Event
+        {
+            public Event_SubscribeReport_318_13_SubscribeReport(ClientSession clientSession) : base(clientSession)
+            {
+            }
+            
+            public override void Dispatch()
+            {
+                if (session_.coreSession_.LogEvents)
+                    session_.coreSession_.LogEvent("OnSubscribeReport({0})", SubscribeReport_.ToString());
+                
+                if (session_.listener_ != null)
+                {
+                    try
+                    {
+                        session_.listener_.OnSubscribeReport(session_, SubscribeRequestClientContext_, SubscribeReport_);
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                if (SubscribeRequestClientContext_ != null)
+                    SubscribeRequestClientContext_.SetCompleted();
+                
+                SubscribeReport_ = new SubscribeReport();
+                
+                SubscribeRequestClientContext_ = null;
+            }
+            
+            public SubscribeRequestClientContext SubscribeRequestClientContext_;
+            
+            public SubscribeReport SubscribeReport_;
+        }
+        
+        class CoreClientSessionListener : Core.ClientSessionListener
+        {
+            public CoreClientSessionListener(ClientSession session)
+            {
+                session_ = session;
+            }
+            
+            public override void OnConnect(Core.ClientSession clientSession)
+            {
+                session_.OnCoreConnect();
+            }
+            
+            public override void OnConnectError(Core.ClientSession clientSession, string text)
+            {
+                session_.OnCoreConnectError(text);
+            }
+            
+            public override void OnDisconnect(Core.ClientSession clientSession, string text)
+            {
+                session_.OnCoreDisconnect(text);
+            }
+            
+            public override void OnReceive(Core.ClientSession clientSession, Message message)
+            {
+                session_.OnCoreReceive(message);
+            }
+            
+            public override void OnSend(Core.ClientSession clientSession)
+            {
+                session_.OnCoreSend();
+            }
+            
+            ClientSession session_;
+        }
+        
+        void OnCoreConnect()
         {
             ConnectClientContext connectContext;
             
             lock (stateMutex_)
             {
                 ClientProcessor_ = new ClientProcessor(this);
+                
+                ClientUpdateProcessorDictionary_ = new SortedDictionary<string, ClientUpdateProcessor>();
                 
                 ClientRequestProcessorDictionary_ = new SortedDictionary<string, ClientRequestProcessor>();
                 
@@ -4753,7 +8783,7 @@ namespace SoftFX.Net.BotAgent
                 connectContext.SetCompleted();
         }
         
-        void OnCoreConnectError(Core.ClientSession clientSession)
+        void OnCoreConnectError(string text)
         {
             ConnectClientContext connectContext;
             
@@ -4767,7 +8797,7 @@ namespace SoftFX.Net.BotAgent
             {
                 try
                 {
-                    listener_.OnConnectError(this, connectContext);
+                    listener_.OnConnectError(this, connectContext, text);
                 }
                 catch
                 {
@@ -4778,7 +8808,7 @@ namespace SoftFX.Net.BotAgent
                 connectContext.SetCompleted();
         }
         
-        void OnCoreDisconnect(Core.ClientSession clientSession, string text)
+        void OnCoreDisconnect(string text)
         {
             DisconnectClientContext disconnectContext;
             List<ClientContext> contexList = new List<ClientContext>();
@@ -4787,6 +8817,11 @@ namespace SoftFX.Net.BotAgent
             {
                 disconnectContext = disconnectContext_;
                 disconnectContext_ = null;
+                
+                foreach(var processor in ClientUpdateProcessorDictionary_)
+                    processor.Value.ProcessDisconnect(contexList);
+                
+                ClientUpdateProcessorDictionary_ = null;
                 
                 foreach(var processor in ClientRequestProcessorDictionary_)
                     processor.Value.ProcessDisconnect(contexList);
@@ -4815,11 +8850,34 @@ namespace SoftFX.Net.BotAgent
                 disconnectContext.SetCompleted();
         }
         
-        void OnCoreReceive(Core.ClientSession clientSession, Message message)
+        void OnCoreReceive(Message message)
         {
             lock (stateMutex_)
             {
                 ClientProcessor_.ProcessReceive(message);
+                
+                if (Is.Update(message))
+                {
+                    Update Update = Cast.Update(message);
+                    
+                    string key = Update.Id;
+                    ClientUpdateProcessor ClientUpdateProcessor;
+                    
+                    if (! ClientUpdateProcessorDictionary_.TryGetValue(key, out ClientUpdateProcessor))
+                    {
+                        ClientUpdateProcessor = new ClientUpdateProcessor(this, key);
+                        ClientUpdateProcessorDictionary_.Add(key, ClientUpdateProcessor);
+                    }
+                    
+                    ClientUpdateProcessor.ProcessReceive(message);
+                    
+                    ClientUpdate:
+                    
+                    if (ClientUpdateProcessor.Completed)
+                        ClientUpdateProcessorDictionary_.Remove(key);
+                    
+                    goto Client;
+                }
                 
                 if (Is.Request(message))
                 {
@@ -4896,7 +8954,7 @@ namespace SoftFX.Net.BotAgent
             }
         }
         
-        void OnCoreSend(Core.ClientSession clientSession)
+        void OnCoreSend()
         {
             if (listener_ != null)
             {
@@ -4911,6 +8969,7 @@ namespace SoftFX.Net.BotAgent
         }
         
         Core.ClientSession coreSession_;
+        CoreClientSessionListener coreSessionListener_;
         
         ClientSessionListener listener_;
         
@@ -4920,13 +8979,19 @@ namespace SoftFX.Net.BotAgent
         bool connected_;
         
         ClientProcessor ClientProcessor_;
+        SortedDictionary<string, ClientUpdateProcessor> ClientUpdateProcessorDictionary_;
         SortedDictionary<string, ClientRequestProcessor> ClientRequestProcessorDictionary_;
         
-        Event_LoginReport_103_13_LoginReport Event_LoginReport_103_13_LoginReport_;
-        Event_LoginReject_103_13_LoginReject Event_LoginReject_103_13_LoginReject_;
-        Event_LogoutReport_112_9_LogoutReport Event_LogoutReport_112_9_LogoutReport_;
-        Event_LogoutReport_126_13_LogoutReport Event_LogoutReport_126_13_LogoutReport_;
-        Event_AccountListReport_183_13_AccountListReport Event_AccountListReport_183_13_AccountListReport_;
+        Event_LoginReport_178_13_LoginReport Event_LoginReport_178_13_LoginReport_;
+        Event_LoginReject_178_13_LoginReject Event_LoginReject_178_13_LoginReject_;
+        Event_LogoutReport_187_9_LogoutReport Event_LogoutReport_187_9_LogoutReport_;
+        Event_LogoutReport_205_13_LogoutReport Event_LogoutReport_205_13_LogoutReport_;
+        Event_AccountModelUpdate_271_9_AccountModelUpdate Event_AccountModelUpdate_271_9_AccountModelUpdate_;
+        Event_BotModelUpdate_271_9_BotModelUpdate Event_BotModelUpdate_271_9_BotModelUpdate_;
+        Event_PackageModelUpdate_271_9_PackageModelUpdate Event_PackageModelUpdate_271_9_PackageModelUpdate_;
+        Event_AccountListReport_306_13_AccountListReport Event_AccountListReport_306_13_AccountListReport_;
+        Event_PackageListReport_312_13_PackageListReport Event_PackageListReport_312_13_PackageListReport_;
+        Event_SubscribeReport_318_13_SubscribeReport Event_SubscribeReport_318_13_SubscribeReport_;
         
         Event event_;
     }
@@ -4937,7 +9002,7 @@ namespace SoftFX.Net.BotAgent
         {
         }
         
-        public virtual void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext)
+        public virtual void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext, string text)
         {
         }
         
@@ -4961,7 +9026,27 @@ namespace SoftFX.Net.BotAgent
         {
         }
         
+        public virtual void OnAccountModelUpdate(ClientSession session, AccountModelUpdate message)
+        {
+        }
+        
+        public virtual void OnBotModelUpdate(ClientSession session, BotModelUpdate message)
+        {
+        }
+        
+        public virtual void OnPackageModelUpdate(ClientSession session, PackageModelUpdate message)
+        {
+        }
+        
         public virtual void OnAccountListReport(ClientSession session, AccountListRequestClientContext AccountListRequestClientContext, AccountListReport message)
+        {
+        }
+        
+        public virtual void OnPackageListReport(ClientSession session, PackageListRequestClientContext PackageListRequestClientContext, PackageListReport message)
+        {
+        }
+        
+        public virtual void OnSubscribeReport(ClientSession session, SubscribeRequestClientContext SubscribeRequestClientContext, SubscribeReport message)
         {
         }
         
@@ -5062,10 +9147,8 @@ namespace SoftFX.Net.BotAgent
             coreOptions.Log.Messages = options.Log.Messages;
             
             coreServer_ = new Core.Server(name, Info.BotAgent, coreOptions);
-            coreServer_.OnConnect = new Core.Server.OnConnectDelegate(this.OnCoreConnect);
-            coreServer_.OnDisconnect = new Core.Server.OnDisconnectDelegate(this.OnCoreDisconnect);
-            coreServer_.OnReceive = new Core.Server.OnReceiveDelegate(this.OnCoreReceive);
-            coreServer_.OnSend = new Core.Server.OnSendDelegate(this.OnCoreSend);
+            coreServerListener_ = new CoreServerListener(this);
+            coreServer_.Listener = coreServerListener_;
             
             stateMutex_ = new object();
             started_ = false;
@@ -5234,9 +9317,11 @@ namespace SoftFX.Net.BotAgent
                 
                 stateMutex_ = new object();
                 
-                Event_LoginRequest_139_9_LoginRequest_ = new Event_LoginRequest_139_9_LoginRequest(this);
-                Event_LogoutRequest_150_9_LogoutRequest_ = new Event_LogoutRequest_150_9_LogoutRequest(this);
-                Event_AccountListRequest_195_9_AccountListRequest_ = new Event_AccountListRequest_195_9_AccountListRequest(this);
+                Event_LoginRequest_222_9_LoginRequest_ = new Event_LoginRequest_222_9_LoginRequest(this);
+                Event_LogoutRequest_233_9_LogoutRequest_ = new Event_LogoutRequest_233_9_LogoutRequest(this);
+                Event_AccountListRequest_330_9_AccountListRequest_ = new Event_AccountListRequest_330_9_AccountListRequest(this);
+                Event_PackageListRequest_330_9_PackageListRequest_ = new Event_PackageListRequest_330_9_PackageListRequest(this);
+                Event_SubscribeRequest_330_9_SubscribeRequest_ = new Event_SubscribeRequest_330_9_SubscribeRequest(this);
                 
                 event_ = null;
             }
@@ -5292,6 +9377,33 @@ namespace SoftFX.Net.BotAgent
                         coreSession_.LogEvent("Send({0})", message.ToString());
                     
                     ServerProcessor_.PreprocessSend(message);
+                    
+                    if (Is.Update(message))
+                    {
+                        Update Update = Cast.Update(message);
+                        
+                        string key = Update.Id;
+                        ServerUpdateProcessor ServerUpdateProcessor;
+                        
+                        if (! ServerUpdateProcessorDictionary_.TryGetValue(key, out ServerUpdateProcessor))
+                        {
+                            ServerUpdateProcessor = new ServerUpdateProcessor(this, key);
+                            ServerUpdateProcessorDictionary_.Add(key, ServerUpdateProcessor);
+                        }
+                        
+                        ServerUpdateProcessor.PreprocessSend(message);
+                        
+                        coreSession_.Send(message);
+                        
+                        ServerUpdate:
+                        
+                        ServerUpdateProcessor.PostprocessSend(message);
+                        
+                        if (ServerUpdateProcessor.Completed)
+                            ServerUpdateProcessorDictionary_.Remove(key);
+                        
+                        goto Server;
+                    }
                     
                     if (Is.Request(message))
                     {
@@ -5389,16 +9501,16 @@ namespace SoftFX.Net.BotAgent
                 {
                     session_ = session;
                     
-                    State_139_9_ = new State_139_9(this);
-                    State_141_13_ = new State_141_13(this);
-                    State_150_9_ = new State_150_9(this);
-                    State_164_13_ = new State_164_13(this);
+                    State_222_9_ = new State_222_9(this);
+                    State_224_13_ = new State_224_13(this);
+                    State_233_9_ = new State_233_9(this);
+                    State_251_13_ = new State_251_13(this);
                     State_0_ = new State_0(this);
                     
-                    state_ = State_139_9_;
+                    state_ = State_222_9_;
                     
                     if (session_.coreSession_.LogStates)
-                        session_.coreSession_.LogState("Server : 139_9");
+                        session_.coreSession_.LogState("Server : 222_9");
                 }
                 
                 public bool Completed
@@ -5444,15 +9556,15 @@ namespace SoftFX.Net.BotAgent
                     protected ServerProcessor processor_;
                 }
                 
-                class State_139_9 : State
+                class State_222_9 : State
                 {
-                    public State_139_9(ServerProcessor processor) : base(processor)
+                    public State_222_9(ServerProcessor processor) : base(processor)
                     {
                     }
                     
                     public override void PreprocessSend(Message message)
                     {
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 139_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 222_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -5467,20 +9579,20 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_LoginRequest_139_9_LoginRequest_.LoginRequest_ = LoginRequest;
+                                processor_.session_.Event_LoginRequest_222_9_LoginRequest_.LoginRequest_ = LoginRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_LoginRequest_139_9_LoginRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_LoginRequest_222_9_LoginRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_141_13_;
+                            processor_.state_ = processor_.State_224_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 141_13");
+                                processor_.session_.coreSession_.LogState("Server : 224_13");
                             
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 139_9 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 222_9 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -5488,9 +9600,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_141_13 : State
+                class State_224_13 : State
                 {
-                    public State_141_13(ServerProcessor processor) : base(processor)
+                    public State_224_13(ServerProcessor processor) : base(processor)
                     {
                     }
                     
@@ -5502,17 +9614,17 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LoginReject(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 141_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 224_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
                     {
                         if (Is.LoginReport(message))
                         {
-                            processor_.state_ = processor_.State_150_9_;
+                            processor_.state_ = processor_.State_233_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 150_9");
+                                processor_.session_.coreSession_.LogState("Server : 233_9");
                             
                             return;
                         }
@@ -5530,7 +9642,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 141_13 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 224_13 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -5538,9 +9650,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_150_9 : State
+                class State_233_9 : State
                 {
-                    public State_150_9(ServerProcessor processor) : base(processor)
+                    public State_233_9(ServerProcessor processor) : base(processor)
                     {
                     }
                     
@@ -5549,20 +9661,33 @@ namespace SoftFX.Net.BotAgent
                         if (Is.Report(message))
                             return;
                         
+                        if (Is.Update(message))
+                            return;
+                        
                         if (Is.LogoutReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 150_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 233_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
                     {
                         if (Is.Report(message))
                         {
-                            processor_.state_ = processor_.State_150_9_;
+                            processor_.state_ = processor_.State_233_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 150_9");
+                                processor_.session_.coreSession_.LogState("Server : 233_9");
+                            
+                            return;
+                        }
+                        
+                        if (Is.Update(message))
+                        {
+                            processor_.state_ = processor_.State_233_9_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("Server : 233_9");
                             
                             return;
                         }
@@ -5584,10 +9709,10 @@ namespace SoftFX.Net.BotAgent
                         {
                             Request Request = Cast.Request(message);
                             
-                            processor_.state_ = processor_.State_150_9_;
+                            processor_.state_ = processor_.State_233_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 150_9");
+                                processor_.session_.coreSession_.LogState("Server : 233_9");
                             
                             return;
                         }
@@ -5598,20 +9723,20 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_LogoutRequest_150_9_LogoutRequest_.LogoutRequest_ = LogoutRequest;
+                                processor_.session_.Event_LogoutRequest_233_9_LogoutRequest_.LogoutRequest_ = LogoutRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_LogoutRequest_150_9_LogoutRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_LogoutRequest_233_9_LogoutRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_164_13_;
+                            processor_.state_ = processor_.State_251_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 164_13");
+                                processor_.session_.coreSession_.LogState("Server : 251_13");
                             
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 150_9 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 233_9 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -5619,9 +9744,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_164_13 : State
+                class State_251_13 : State
                 {
-                    public State_164_13(ServerProcessor processor) : base(processor)
+                    public State_251_13(ServerProcessor processor) : base(processor)
                     {
                     }
                     
@@ -5630,20 +9755,33 @@ namespace SoftFX.Net.BotAgent
                         if (Is.Report(message))
                             return;
                         
+                        if (Is.Update(message))
+                            return;
+                        
                         if (Is.LogoutReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 164_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 251_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
                     {
                         if (Is.Report(message))
                         {
-                            processor_.state_ = processor_.State_164_13_;
+                            processor_.state_ = processor_.State_251_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 164_13");
+                                processor_.session_.coreSession_.LogState("Server : 251_13");
+                            
+                            return;
+                        }
+                        
+                        if (Is.Update(message))
+                        {
+                            processor_.state_ = processor_.State_251_13_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("Server : 251_13");
                             
                             return;
                         }
@@ -5661,7 +9799,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 164_13 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 251_13 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -5694,10 +9832,164 @@ namespace SoftFX.Net.BotAgent
                 
                 Session session_;
                 
-                State_139_9 State_139_9_;
-                State_141_13 State_141_13_;
-                State_150_9 State_150_9_;
-                State_164_13 State_164_13_;
+                State_222_9 State_222_9_;
+                State_224_13 State_224_13_;
+                State_233_9 State_233_9_;
+                State_251_13 State_251_13_;
+                State_0 State_0_;
+                
+                State state_;
+            }
+            
+            class ServerUpdateProcessor
+            {
+                public ServerUpdateProcessor(Session session, string id)
+                {
+                    session_ = session;
+                    id_ = id;
+                    
+                    State_287_9_ = new State_287_9(this);
+                    State_0_ = new State_0(this);
+                    
+                    state_ = State_287_9_;
+                    
+                    if (session_.coreSession_.LogStates)
+                        session_.coreSession_.LogState("ServerUpdate({0}) : 287_9", id_);
+                }
+                
+                public bool Completed
+                {
+                    get { return state_ == State_0_; }
+                }
+                
+                public void PreprocessSend(Message message)
+                {
+                    state_.PreprocessSend(message);
+                }
+                
+                public void PostprocessSend(Message message)
+                {
+                    state_.PostprocessSend(message);
+                }
+                
+                public void ProcessReceive(Message message)
+                {
+                    state_.ProcessReceive(message);
+                }
+                
+                public void ProcessDisconnect(List<ServerContext> contextList)
+                {
+                    state_.ProcessDisconnect(contextList);
+                }
+                
+                abstract class State
+                {
+                    public State(ServerUpdateProcessor processor)
+                    {
+                        processor_ = processor;
+                    }
+                    
+                    public abstract void PreprocessSend(Message message);
+                    
+                    public abstract void PostprocessSend(Message message);
+                    
+                    public abstract void ProcessReceive(Message message);
+                    
+                    public abstract void ProcessDisconnect(List<ServerContext> contextList);
+                    
+                    protected ServerUpdateProcessor processor_;
+                }
+                
+                class State_287_9 : State
+                {
+                    public State_287_9(ServerUpdateProcessor processor) : base(processor)
+                    {
+                    }
+                    
+                    public override void PreprocessSend(Message message)
+                    {
+                        if (Is.AccountModelUpdate(message))
+                            return;
+                        
+                        if (Is.BotModelUpdate(message))
+                            return;
+                        
+                        if (Is.PackageModelUpdate(message))
+                            return;
+                        
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerUpdate({2}) : 287_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void PostprocessSend(Message message)
+                    {
+                        if (Is.AccountModelUpdate(message))
+                        {
+                            processor_.state_ = processor_.State_0_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerUpdate({0}) : 0", processor_.id_);
+                            
+                            return;
+                        }
+                        
+                        if (Is.BotModelUpdate(message))
+                        {
+                            processor_.state_ = processor_.State_0_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerUpdate({0}) : 0", processor_.id_);
+                            
+                            return;
+                        }
+                        
+                        if (Is.PackageModelUpdate(message))
+                        {
+                            processor_.state_ = processor_.State_0_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerUpdate({0}) : 0", processor_.id_);
+                            
+                            return;
+                        }
+                    }
+                    
+                    public override void ProcessReceive(Message message)
+                    {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerUpdate({0}) : 287_9 : {1}", processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void ProcessDisconnect(List<ServerContext> contextList)
+                    {
+                    }
+                }
+                
+                class State_0 : State
+                {
+                    public State_0(ServerUpdateProcessor processor) : base(processor)
+                    {
+                    }
+                    
+                    public override void PreprocessSend(Message message)
+                    {
+                    }
+                    
+                    public override void PostprocessSend(Message message)
+                    {
+                    }
+                    
+                    public override void ProcessReceive(Message message)
+                    {
+                    }
+                    
+                    public override void ProcessDisconnect(List<ServerContext> contextList)
+                    {
+                    }
+                }
+                
+                Session session_;
+                string id_;
+                
+                State_287_9 State_287_9_;
                 State_0 State_0_;
                 
                 State state_;
@@ -5710,14 +10002,16 @@ namespace SoftFX.Net.BotAgent
                     session_ = session;
                     id_ = id;
                     
-                    State_195_9_ = new State_195_9(this);
-                    State_197_13_ = new State_197_13(this);
+                    State_330_9_ = new State_330_9(this);
+                    State_332_13_ = new State_332_13(this);
+                    State_338_13_ = new State_338_13(this);
+                    State_344_13_ = new State_344_13(this);
                     State_0_ = new State_0(this);
                     
-                    state_ = State_195_9_;
+                    state_ = State_330_9_;
                     
                     if (session_.coreSession_.LogStates)
-                        session_.coreSession_.LogState("ServerRequest({0}) : 195_9", id_);
+                        session_.coreSession_.LogState("ServerRequest({0}) : 330_9", id_);
                 }
                 
                 public bool Completed
@@ -5763,15 +10057,15 @@ namespace SoftFX.Net.BotAgent
                     protected ServerRequestProcessor processor_;
                 }
                 
-                class State_195_9 : State
+                class State_330_9 : State
                 {
-                    public State_195_9(ServerRequestProcessor processor) : base(processor)
+                    public State_330_9(ServerRequestProcessor processor) : base(processor)
                     {
                     }
                     
                     public override void PreprocessSend(Message message)
                     {
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 195_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 330_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -5786,20 +10080,58 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_AccountListRequest_195_9_AccountListRequest_.AccountListRequest_ = AccountListRequest;
+                                processor_.session_.Event_AccountListRequest_330_9_AccountListRequest_.AccountListRequest_ = AccountListRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_AccountListRequest_195_9_AccountListRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_AccountListRequest_330_9_AccountListRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_197_13_;
+                            processor_.state_ = processor_.State_332_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 197_13", processor_.id_);
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 332_13", processor_.id_);
                             
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 195_9 : {1}", processor_.id_, message.Info.name));
+                        if (Is.PackageListRequest(message))
+                        {
+                            PackageListRequest PackageListRequest = Cast.PackageListRequest(message);
+                            
+                            if (processor_.session_.event_ == null)
+                            {
+                                processor_.session_.Event_PackageListRequest_330_9_PackageListRequest_.PackageListRequest_ = PackageListRequest;
+                                
+                                processor_.session_.event_ = processor_.session_.Event_PackageListRequest_330_9_PackageListRequest_;
+                            }
+                            
+                            processor_.state_ = processor_.State_338_13_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 338_13", processor_.id_);
+                            
+                            return;
+                        }
+                        
+                        if (Is.SubscribeRequest(message))
+                        {
+                            SubscribeRequest SubscribeRequest = Cast.SubscribeRequest(message);
+                            
+                            if (processor_.session_.event_ == null)
+                            {
+                                processor_.session_.Event_SubscribeRequest_330_9_SubscribeRequest_.SubscribeRequest_ = SubscribeRequest;
+                                
+                                processor_.session_.event_ = processor_.session_.Event_SubscribeRequest_330_9_SubscribeRequest_;
+                            }
+                            
+                            processor_.state_ = processor_.State_344_13_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 344_13", processor_.id_);
+                            
+                            return;
+                        }
+                        
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 330_9 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -5807,9 +10139,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_197_13 : State
+                class State_332_13 : State
                 {
-                    public State_197_13(ServerRequestProcessor processor) : base(processor)
+                    public State_332_13(ServerRequestProcessor processor) : base(processor)
                     {
                     }
                     
@@ -5818,7 +10150,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.AccountListReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 197_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 332_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -5836,7 +10168,81 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 197_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 332_13 : {1}", processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void ProcessDisconnect(List<ServerContext> contextList)
+                    {
+                    }
+                }
+                
+                class State_338_13 : State
+                {
+                    public State_338_13(ServerRequestProcessor processor) : base(processor)
+                    {
+                    }
+                    
+                    public override void PreprocessSend(Message message)
+                    {
+                        if (Is.PackageListReport(message))
+                            return;
+                        
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 338_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void PostprocessSend(Message message)
+                    {
+                        if (Is.PackageListReport(message))
+                        {
+                            processor_.state_ = processor_.State_0_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 0", processor_.id_);
+                            
+                            return;
+                        }
+                    }
+                    
+                    public override void ProcessReceive(Message message)
+                    {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 338_13 : {1}", processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void ProcessDisconnect(List<ServerContext> contextList)
+                    {
+                    }
+                }
+                
+                class State_344_13 : State
+                {
+                    public State_344_13(ServerRequestProcessor processor) : base(processor)
+                    {
+                    }
+                    
+                    public override void PreprocessSend(Message message)
+                    {
+                        if (Is.SubscribeReport(message))
+                            return;
+                        
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 344_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void PostprocessSend(Message message)
+                    {
+                        if (Is.SubscribeReport(message))
+                        {
+                            processor_.state_ = processor_.State_0_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 0", processor_.id_);
+                            
+                            return;
+                        }
+                    }
+                    
+                    public override void ProcessReceive(Message message)
+                    {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 344_13 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -5870,8 +10276,10 @@ namespace SoftFX.Net.BotAgent
                 Session session_;
                 string id_;
                 
-                State_195_9 State_195_9_;
-                State_197_13 State_197_13_;
+                State_330_9 State_330_9_;
+                State_332_13 State_332_13_;
+                State_338_13 State_338_13_;
+                State_344_13 State_344_13_;
                 State_0 State_0_;
                 
                 State state_;
@@ -5889,9 +10297,9 @@ namespace SoftFX.Net.BotAgent
                 protected Session session_;
             }
             
-            class Event_LoginRequest_139_9_LoginRequest : Event
+            class Event_LoginRequest_222_9_LoginRequest : Event
             {
-                public Event_LoginRequest_139_9_LoginRequest(Session session) : base(session)
+                public Event_LoginRequest_222_9_LoginRequest(Session session) : base(session)
                 {
                 }
                 
@@ -5917,9 +10325,9 @@ namespace SoftFX.Net.BotAgent
                 public LoginRequest LoginRequest_;
             }
             
-            class Event_LogoutRequest_150_9_LogoutRequest : Event
+            class Event_LogoutRequest_233_9_LogoutRequest : Event
             {
-                public Event_LogoutRequest_150_9_LogoutRequest(Session session) : base(session)
+                public Event_LogoutRequest_233_9_LogoutRequest(Session session) : base(session)
                 {
                 }
                 
@@ -5945,9 +10353,9 @@ namespace SoftFX.Net.BotAgent
                 public LogoutRequest LogoutRequest_;
             }
             
-            class Event_AccountListRequest_195_9_AccountListRequest : Event
+            class Event_AccountListRequest_330_9_AccountListRequest : Event
             {
-                public Event_AccountListRequest_195_9_AccountListRequest(Session session) : base(session)
+                public Event_AccountListRequest_330_9_AccountListRequest(Session session) : base(session)
                 {
                 }
                 
@@ -5973,11 +10381,69 @@ namespace SoftFX.Net.BotAgent
                 public AccountListRequest AccountListRequest_;
             }
             
+            class Event_PackageListRequest_330_9_PackageListRequest : Event
+            {
+                public Event_PackageListRequest_330_9_PackageListRequest(Session session) : base(session)
+                {
+                }
+                
+                public override void Dispatch()
+                {
+                    if (session_.coreSession_.LogEvents)
+                        session_.coreSession_.LogEvent("OnPackageListRequest({0})", PackageListRequest_.ToString());
+                    
+                    if (session_.server_.listener_ != null)
+                    {
+                        try
+                        {
+                            session_.server_.listener_.OnPackageListRequest(session_.server_, session_, PackageListRequest_);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    PackageListRequest_ = new PackageListRequest();
+                }
+                
+                public PackageListRequest PackageListRequest_;
+            }
+            
+            class Event_SubscribeRequest_330_9_SubscribeRequest : Event
+            {
+                public Event_SubscribeRequest_330_9_SubscribeRequest(Session session) : base(session)
+                {
+                }
+                
+                public override void Dispatch()
+                {
+                    if (session_.coreSession_.LogEvents)
+                        session_.coreSession_.LogEvent("OnSubscribeRequest({0})", SubscribeRequest_.ToString());
+                    
+                    if (session_.server_.listener_ != null)
+                    {
+                        try
+                        {
+                            session_.server_.listener_.OnSubscribeRequest(session_.server_, session_, SubscribeRequest_);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    SubscribeRequest_ = new SubscribeRequest();
+                }
+                
+                public SubscribeRequest SubscribeRequest_;
+            }
+            
             internal void OnCoreConnect()
             {
                 lock (stateMutex_)
                 {
                     ServerProcessor_ = new ServerProcessor(this);
+                    
+                    ServerUpdateProcessorDictionary_ = new SortedDictionary<string, ServerUpdateProcessor>();
                     
                     ServerRequestProcessorDictionary_ = new SortedDictionary<string, ServerRequestProcessor>();
                     
@@ -6003,6 +10469,11 @@ namespace SoftFX.Net.BotAgent
                 
                 lock (stateMutex_)
                 {
+                    foreach(var processor in ServerUpdateProcessorDictionary_)
+                        processor.Value.ProcessDisconnect(contexList);
+                    
+                    ServerUpdateProcessorDictionary_ = null;
+                    
                     foreach(var processor in ServerRequestProcessorDictionary_)
                         processor.Value.ProcessDisconnect(contexList);
                     
@@ -6032,6 +10503,29 @@ namespace SoftFX.Net.BotAgent
                 lock (stateMutex_)
                 {
                     ServerProcessor_.ProcessReceive(message);
+                    
+                    if (Is.Update(message))
+                    {
+                        Update Update = Cast.Update(message);
+                        
+                        string key = Update.Id;
+                        ServerUpdateProcessor ServerUpdateProcessor;
+                        
+                        if (! ServerUpdateProcessorDictionary_.TryGetValue(key, out ServerUpdateProcessor))
+                        {
+                            ServerUpdateProcessor = new ServerUpdateProcessor(this, key);
+                            ServerUpdateProcessorDictionary_.Add(key, ServerUpdateProcessor);
+                        }
+                        
+                        ServerUpdateProcessor.ProcessReceive(message);
+                        
+                        ServerUpdate:
+                        
+                        if (ServerUpdateProcessor.Completed)
+                            ServerUpdateProcessorDictionary_.Remove(key);
+                        
+                        goto Server;
+                    }
                     
                     if (Is.Request(message))
                     {
@@ -6130,54 +10624,68 @@ namespace SoftFX.Net.BotAgent
             object stateMutex_;
             
             ServerProcessor ServerProcessor_;
+            SortedDictionary<string, ServerUpdateProcessor> ServerUpdateProcessorDictionary_;
             SortedDictionary<string, ServerRequestProcessor> ServerRequestProcessorDictionary_;
             
-            Event_LoginRequest_139_9_LoginRequest Event_LoginRequest_139_9_LoginRequest_;
-            Event_LogoutRequest_150_9_LogoutRequest Event_LogoutRequest_150_9_LogoutRequest_;
-            Event_AccountListRequest_195_9_AccountListRequest Event_AccountListRequest_195_9_AccountListRequest_;
+            Event_LoginRequest_222_9_LoginRequest Event_LoginRequest_222_9_LoginRequest_;
+            Event_LogoutRequest_233_9_LogoutRequest Event_LogoutRequest_233_9_LogoutRequest_;
+            Event_AccountListRequest_330_9_AccountListRequest Event_AccountListRequest_330_9_AccountListRequest_;
+            Event_PackageListRequest_330_9_PackageListRequest Event_PackageListRequest_330_9_PackageListRequest_;
+            Event_SubscribeRequest_330_9_SubscribeRequest Event_SubscribeRequest_330_9_SubscribeRequest_;
             
             Event event_;
         }
         
-        void OnCoreConnect(Core.Server coreServer, Core.Server.Session coreSession)
+        class CoreServerListener : Core.ServerListener
         {
-            Session session = new Session(this, coreSession);
-            
-            lock (stateMutex_)
+            public CoreServerListener(Server server)
             {
-                sessionDictionary_.Add(session.Id, session);
+                server_ = server;
             }
             
-            coreSession.Data = session;
-            
-            session.OnCoreConnect();
-        }
-        
-        void OnCoreDisconnect(Core.Server coreServer, Core.Server.Session coreSession, string text)
-        {
-            Session session = ((Session) coreSession.Data);
-            
-            session.OnCoreDisconnect(text);
-            
-            coreSession.Data = null;
-            
-            lock (stateMutex_)
+            public override void OnConnect(Core.Server coreServer, Core.Server.Session coreSession)
             {
-                sessionDictionary_.Remove(session.Id);
+                Session session = new Session(server_, coreSession);
+                
+                lock (server_.stateMutex_)
+                {
+                    server_.sessionDictionary_.Add(session.Id, session);
+                }
+                
+                coreSession.Data = session;
+                
+                session.OnCoreConnect();
             }
-        }
-        
-        void OnCoreReceive(Core.Server coreServer, Core.Server.Session coreSession, Message message)
-        {
-            ((Session) coreSession.Data).OnCoreReceive(message);
-        }
-        
-        void OnCoreSend(Core.Server coreServer, Core.Server.Session coreSession)
-        {
-            ((Session) coreSession.Data).OnCoreSend();
+            
+            public override void OnDisconnect(Core.Server coreServer, Core.Server.Session coreSession, string text)
+            {
+                Session session = ((Session) coreSession.Data);
+                
+                session.OnCoreDisconnect(text);
+                
+                coreSession.Data = null;
+                
+                lock (server_.stateMutex_)
+                {
+                    server_.sessionDictionary_.Remove(session.Id);
+                }
+            }
+            
+            public override void OnReceive(Core.Server coreServer, Core.Server.Session coreSession, Message message)
+            {
+                ((Session) coreSession.Data).OnCoreReceive(message);
+            }
+            
+            public override void OnSend(Core.Server coreServer, Core.Server.Session coreSession)
+            {
+                ((Session) coreSession.Data).OnCoreSend();
+            }
+            
+            Server server_;
         }
         
         Core.Server coreServer_;
+        CoreServerListener coreServerListener_;
         
         ServerListener listener_;
         
@@ -6206,6 +10714,14 @@ namespace SoftFX.Net.BotAgent
         }
         
         public virtual void OnAccountListRequest(Server server, Server.Session session, AccountListRequest message)
+        {
+        }
+        
+        public virtual void OnPackageListRequest(Server server, Server.Session session, PackageListRequest message)
+        {
+        }
+        
+        public virtual void OnSubscribeRequest(Server server, Server.Session session, SubscribeRequest message)
         {
         }
         

@@ -45,16 +45,62 @@ protocol BotAgent(1,0)
         string RequestId;
     }
 
+    enum UpdateType
+    {
+        Added,
+        Updated,
+        Removed,
+    }
+
+    message Update
+    {
+        string Id;
+        UpdateType Type;
+    }
+
     group PluginKey
     {
-        string PackageName;
-        string DescriptorId;
+        ustring PackageName;
+        ustring DescriptorId;
+    }
+
+    enum PluginType
+    {
+        Indicator,
+        Robot,
+        Unknown,
+    }
+
+    group PluginDescriptor
+    {
+        ustring ApiVersion;
+        ustring Id;
+        ustring DisplayName;
+        ustring UserDisplayName;
+        ustring Category;
+        ustring Version;
+        ustring Description;
+        ustring Copyright;
+        PluginType Type;
+    }
+
+    group PluginInfo
+    {
+        PluginKey Key;
+        PluginDescriptor Descriptor;
+    }
+
+    group PackageModel
+    {
+        ustring Name;
+        timestamp Created;
+        PluginInfo[] Plugins;
     }
 
     group AccountKey
     {
-        string Login;
-        string Server;
+        ustring Login;
+        ustring Server;
     }
 
     group PluginPermissions
@@ -75,7 +121,7 @@ protocol BotAgent(1,0)
 
     group BotModel
     {
-        string InstanceId;
+        ustring InstanceId;
         bool Isolated;
         BotState State;
         PluginPermissions Permissions;
@@ -94,6 +140,35 @@ protocol BotAgent(1,0)
     message AccountListReport : Report
     {
         AccountModel[] Accounts;
+    }
+
+    message PackageListRequest : Request;
+
+    message PackageListReport : Report
+    {
+        PackageModel[] Packages;
+    }
+
+    message SubscribeRequest : Request;
+
+    message SubscribeReport : Report;
+
+    message AccountModelUpdate : Update
+    {
+        AccountModel? OldItem;
+        AccountModel? NewItem;
+    }
+
+    message BotModelUpdate : Update
+    {
+        BotModel? OldItem;
+        BotModel? NewItem;
+    }
+
+    message PackageModelUpdate : Update
+    {
+        PackageModel? OldItem;
+        PackageModel? NewItem;
     }
 
     processor Client()
@@ -117,6 +192,10 @@ protocol BotAgent(1,0)
         {
             repeat;
         }
+        or recv (Update)
+        {
+            repeat;
+        }
         or recv LogoutReport(LogoutReport)
         {
             return;
@@ -124,6 +203,10 @@ protocol BotAgent(1,0)
         or send LogoutRequest(LogoutRequest)
         {
             recv (Report)
+            {
+                repeat;
+            }
+            or recv (Update)
             {
                 repeat;
             }
@@ -155,6 +238,10 @@ protocol BotAgent(1,0)
         {
             repeat;
         }
+        or send (Update)
+        {
+            repeat;
+        }
         or send (LogoutReport)
         {
             return;
@@ -165,10 +252,46 @@ protocol BotAgent(1,0)
             {
                 repeat;
             }
+            or send (Update)
+            {
+                repeat;
+            }
             or send (LogoutReport)
             {
                 return;
             }
+        }
+    }
+
+    processor ClientUpdate(string) : Client
+    (
+        Update.Id
+    )
+    {
+        recv AccountModelUpdate(AccountModelUpdate)
+        {
+        }
+        or recv BotModelUpdate(BotModelUpdate)
+        {
+        }
+        or recv PackageModelUpdate(PackageModelUpdate)
+        {
+        }
+    }
+
+    processor ServerUpdate(string) : Server
+    (
+        Update.Id
+    )
+    {
+        send (AccountModelUpdate)
+        {
+        }
+        or send (BotModelUpdate)
+        {
+        }
+        or send (PackageModelUpdate)
+        {
         }
     }
 
@@ -184,6 +307,18 @@ protocol BotAgent(1,0)
             {
             }
         }
+        or send PackageListRequest(PackageListRequest)
+        {
+            recv PackageListReport(PackageListReport)
+            {
+            }
+        }
+        or send SubscribeRequest(SubscribeRequest)
+        {
+            recv SubscribeReport(SubscribeReport)
+            {
+            }
+        }
     }
 
     processor ServerRequest(string) : Server
@@ -195,6 +330,18 @@ protocol BotAgent(1,0)
         recv AccountListRequest(AccountListRequest)
         {
             send (AccountListReport)
+            {
+            }
+        }
+        or recv PackageListRequest(PackageListRequest)
+        {
+            send (PackageListReport)
+            {
+            }
+        }
+        or recv SubscribeRequest(SubscribeRequest)
+        {
+            send (SubscribeReport)
             {
             }
         }
