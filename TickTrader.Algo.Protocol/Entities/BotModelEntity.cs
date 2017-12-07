@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Protocol
     }
 
 
-    public class BotModelEntity : IProtocolEntity<BotModel>
+    public class BotModelEntity
     {
         public string InstanceId { get; set; }
 
@@ -55,17 +55,6 @@ namespace TickTrader.Algo.Protocol
             Permissions.UpdateSelf(model.Permissions);
             Account.UpdateSelf(model.Account);
             Plugin.UpdateSelf(model.Plugin);
-        }
-
-
-        void IProtocolEntity<BotModel>.UpdateModel(BotModel model)
-        {
-            UpdateModel(model);
-        }
-
-        void IProtocolEntity<BotModel>.UpdateSelf(BotModel model)
-        {
-            UpdateSelf(model);
         }
     }
 }

@@ -11,6 +11,10 @@ namespace TickTrader.Algo.Protocol.Lib
         private IBotAgentServer _server;
 
 
+        public event Action<int> SessionSubscribed = delegate { };
+        public event Action<int> SessionUnsubscribed = delegate { };
+
+
         public BotAgentServerListener(IBotAgentServer server, ILogger logger)
         {
             _server = server;
@@ -35,6 +39,7 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 _logger.Info($"Disconnected client {session.Id}: {text}");
+                SessionUnsubscribed(session.Id);
             }
             catch (Exception ex)
             {
@@ -69,6 +74,7 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 _logger.Info($"Client {session.Id} logged out");
+                SessionUnsubscribed(session.Id);
                 session.Send(new LogoutReport(0) { Reason = Sfx.LogoutReason.ClientRequest });
             }
             catch (Exception ex)
@@ -82,7 +88,7 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                // TODO: Add subscription and unsubscription
+                SessionSubscribed(session.Id);
                 session.Send(new SubscribeReport(0) { RequestId = message.Id });
             }
             catch (Exception ex)
@@ -95,7 +101,22 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                var report = _server.GetAccountList(message.Id);
+                var report = _server.GetAccountList();
+                report.RequestId = message.Id;
+                session.Send(report.ToMessage());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+            }
+        }
+
+        public override void OnPackageListRequest(Server server, Server.Session session, PackageListRequest message)
+        {
+            try
+            {
+                var report = _server.GetPackageList();
+                report.RequestId = message.Id;
                 session.Send(report.ToMessage());
             }
             catch (Exception ex)

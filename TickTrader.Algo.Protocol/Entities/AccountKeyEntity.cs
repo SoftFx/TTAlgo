@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Protocol
 {
-    public class AccountKeyEntity : IProtocolEntity<AccountKey>
+    public class AccountKeyEntity
     {
         public string Login { get; set; }
 
@@ -19,17 +19,6 @@ namespace TickTrader.Algo.Protocol
         {
             Login = model.Login;
             Server = model.Server;
-        }
-
-
-        void IProtocolEntity<AccountKey>.UpdateModel(AccountKey model)
-        {
-            UpdateModel(model);
-        }
-
-        void IProtocolEntity<AccountKey>.UpdateSelf(AccountKey model)
-        {
-            UpdateSelf(model);
         }
     }
 }

@@ -52,7 +52,9 @@
     <Compile Include="Entities\AccountKeyEntity.cs" />
     <Compile Include="Entities\AccountModelEntity.cs" />
     <Compile Include="Entities\BotModelEntity.cs" />
-    <Compile Include="Entities\IProtocolEntity.cs" />
+    <Compile Include="Entities\PackageModelEntity.cs" />
+    <Compile Include="Entities\PluginDescriptorEntity.cs" />
+    <Compile Include="Entities\PluginInfoEntity.cs" />
     <Compile Include="Entities\PluginKeyEntity.cs" />
     <Compile Include="Entities\PluginPermissionsEntity.cs" />
     <Compile Include="Extensions\LoggerHelper.cs" />
@@ -72,13 +74,19 @@
     <Compile Include="Reports\LoginRejectEntity.cs" />
     <Compile Include="Reports\LoginReportEntity.cs" />
     <Compile Include="Reports\LogoutReportEntity.cs" />
+    <Compile Include="Reports\PackageListReportEntity.cs" />
     <Compile Include="Reports\SubcribeReportEntity.cs" />
     <Compile Include="Requests\AccountListRequestEntity.cs" />
     <Compile Include="Requests\LoginRequestEntity.cs" />
     <Compile Include="Requests\LogoutRequestEntity.cs" />
+    <Compile Include="Requests\PackageListRequestEntity.cs" />
     <Compile Include="Requests\RequestEntity.cs" />
     <Compile Include="Reports\ReportEntity.cs" />
     <Compile Include="Requests\SubscribeRequestEntity.cs" />
+    <Compile Include="Updates\AccountModelUpdateEntity.cs" />
+    <Compile Include="Updates\BotModelUpdateEntity.cs" />
+    <Compile Include="Updates\PackageModelUpdateEntity.cs" />
+    <Compile Include="Updates\UpdateEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

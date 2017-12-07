@@ -178,5 +178,53 @@ namespace TickTrader.Algo.Protocol.Lib
                 _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
+
+        public override void OnPackageListReport(ClientSession session, PackageListRequestClientContext PackageListRequestClientContext, PackageListReport message)
+        {
+            try
+            {
+                _client.SetPackageList(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnAccountModelUpdate(ClientSession session, AccountModelUpdate message)
+        {
+            try
+            {
+                _client.UpdateAccount(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnBotModelUpdate(ClientSession session, BotModelUpdate message)
+        {
+            try
+            {
+                _client.UpdateBot(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnPackageModelUpdate(ClientSession session, PackageModelUpdate message)
+        {
+            try
+            {
+                _client.UpdatePackage(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
     }
 }

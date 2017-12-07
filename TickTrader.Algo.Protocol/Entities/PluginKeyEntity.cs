@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Protocol
 {
-    public class PluginKeyEntity : IProtocolEntity<PluginKey>
+    public class PluginKeyEntity
     {
         public string PackageName { get; set; }
 
@@ -19,17 +19,6 @@ namespace TickTrader.Algo.Protocol
         {
             PackageName = model.PackageName;
             DescriptorId = model.DescriptorId;
-        }
-
-
-        void IProtocolEntity<PluginKey>.UpdateModel(PluginKey model)
-        {
-            UpdateModel(model);
-        }
-
-        void IProtocolEntity<PluginKey>.UpdateSelf(PluginKey model)
-        {
-            UpdateSelf(model);
         }
     }
 }

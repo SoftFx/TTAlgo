@@ -55,5 +55,33 @@ namespace TickTrader.Algo.Protocol
                     throw new ArgumentException();
             }
         }
+
+        internal static PluginType Convert(Sfx.PluginType type)
+        {
+            switch (type)
+            {
+                case Sfx.PluginType.Indicator:
+                    return PluginType.Indicator;
+                case Sfx.PluginType.Robot:
+                    return PluginType.Robot;
+                default:
+                    return PluginType.Unknown;
+            }
+        }
+
+        internal static UpdateType Convert(Sfx.UpdateType type)
+        {
+            switch (type)
+            {
+                case Sfx.UpdateType.Added:
+                    return UpdateType.Added;
+                case Sfx.UpdateType.Updated:
+                    return UpdateType.Updated;
+                case Sfx.UpdateType.Removed:
+                    return UpdateType.Removed;
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

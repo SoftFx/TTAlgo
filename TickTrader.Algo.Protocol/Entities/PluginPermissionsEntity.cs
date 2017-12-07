@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Protocol
 {
-    public class PluginPermissionsEntity : IProtocolEntity<PluginPermissions>
+    public class PluginPermissionsEntity
     {
         public bool TradeAllowed { get; set; }
 
@@ -15,17 +15,6 @@ namespace TickTrader.Algo.Protocol
         internal void UpdateSelf(PluginPermissions model)
         {
             TradeAllowed = model.TradeAllowed;
-        }
-
-
-        void IProtocolEntity<PluginPermissions>.UpdateModel(PluginPermissions model)
-        {
-            UpdateModel(model);
-        }
-
-        void IProtocolEntity<PluginPermissions>.UpdateSelf(PluginPermissions model)
-        {
-            UpdateSelf(model);
         }
     }
 }

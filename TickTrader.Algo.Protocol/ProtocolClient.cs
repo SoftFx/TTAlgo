@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Protocol
         private void ListenerOnLoginReject(string reason)
         {
             LastError = reason;
-            _stateMachine.PushEvent(ClientEvents.LoggedIn);
+            _stateMachine.PushEvent(ClientEvents.LoginReject);
         }
 
         private void ListenerOnLogout(string reason)

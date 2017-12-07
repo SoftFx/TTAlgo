@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>SoftFx.Net.Core</id>
+    <id>SoftFX.Net.Core</id>
     <version>1.0.0.0</version>
     <authors>SoftFX</authors>
     <owners>SoftFX</owners>
@@ -9,6 +9,6 @@
     <description>SFX protocol core</description>
   </metadata>
   <files>
-    <file src="..\SoftFx.Net.Core.dll" target="lib" />
+    <file src="..\SoftFX.Net.Core.dll" target="lib" />
   </files>
 </package>
