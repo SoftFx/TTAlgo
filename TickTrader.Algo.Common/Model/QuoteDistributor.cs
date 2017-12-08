@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Common.Model
         private List<Subscription> allSymbolSubscriptions = new List<Subscription>();
         private Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
         private ActionBlock<SubscriptionTask> requestQueue;
+        private CancellationTokenSource cancelAllrequests;
 
         public QuoteDistributor(ClientCore client)
         {
@@ -52,28 +53,65 @@ namespace TickTrader.Algo.Common.Model
             foreach (var group in groups.Values)
                 group.CurrentDepth = group.MaxDepth;
 
-            requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
-            EnqueuBatchSubscription();
+            StartQueue();
+            await DoBatchSubscription();
             await GetQuoteSnapshot();
         }
 
         public async Task Stop()
         {
-            requestQueue.Complete();
-            await requestQueue.Completion;
+            await StopQueue();
         }
 
         private async Task GetQuoteSnapshot()
         {
+            try
+            {
+                foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
+                {
+                    var depth = group.Key;
+                    var symbols = group.Select(s => s.Symbol).ToArray();
+                    EnqueueSubscriptionRequest(depth, symbols);
+
+                    var quotes = await _client.FeedProxy.GetQuoteSnapshot(symbols, depth);
+                    quotes.Foreach(UpdateRate);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to get snapshot! " + ex.Message);
+            }
         }
 
-        private void EnqueuBatchSubscription()
+        private void StartQueue()
+        {
+            cancelAllrequests = new CancellationTokenSource();
+            var queueOptions = new ExecutionDataflowBlockOptions { CancellationToken = cancelAllrequests.Token };
+
+            requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
+        }
+
+        private async Task StopQueue()
+        {
+            if (requestQueue != null)
+            {
+                cancelAllrequests.Cancel();
+                requestQueue.Complete();
+                await requestQueue.Completion;
+                cancelAllrequests = null;
+                requestQueue = null;
+            }
+        }
+
+        private async Task DoBatchSubscription()
         {
             foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
             {
                 var depth = group.Key;
                 var symbols = group.Select(s => s.Symbol).ToArray();
                 EnqueueSubscriptionRequest(depth, symbols);
+
+                await InvokeSubscribeAsync(new SubscriptionTask(symbols, depth));
             }
         }
 
@@ -128,8 +166,15 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task InvokeSubscribeAsync(SubscriptionTask task)
         {
-            await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
-            logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
+            try
+            {
+                await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
+                logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to subscribe! " + ex.Message);
+            }
         }
 
         private struct SubscriptionTask

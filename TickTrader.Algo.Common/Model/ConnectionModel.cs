@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model
 
             _stateControl = new StateMachine<States>(stateSync);
             _stateSync = _stateControl.SyncContext;
-            _stateControl.AddTransition(States.Offline, Events.OnRequest, States.Connecting);
+            _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
                 () => disconnectRequest != null || connectRequest != null || LastError != ConnectionErrorCodes.None, States.Disconnecting);

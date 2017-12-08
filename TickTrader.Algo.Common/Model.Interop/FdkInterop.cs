@@ -297,6 +297,11 @@ namespace TickTrader.Algo.Common.Model
             return requestProcessor.EnqueueTask(() => _feedProxy.Server.SubscribeToQuotes(symbols, depth));
         }
 
+        public Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
+        {
+            return Task.FromResult(new QuoteEntity[0]);
+        }
+
         public IAsyncEnumerator<BarEntity[]> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
             var buffer = new AsyncBuffer<BarEntity[]>();

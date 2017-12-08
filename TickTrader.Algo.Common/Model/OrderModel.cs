@@ -60,6 +60,8 @@ namespace TickTrader.Algo.Common.Model
 
         event Action<BL.IOrderModel> BL.IOrderModel.EssentialParametersChanged { add { } remove { } }
 
+        private double LotSize => symbolModel.LotSize;
+
         #region Order Properties
 
         public string Id { get; private set; }
@@ -432,27 +434,27 @@ namespace TickTrader.Algo.Common.Model
             return new OrderEntity(Id)
             {
                 ClientOrderId = this.clientOrderId,
-                RemainingVolume = ToVolume(RemainingAmount, RemainingAmountLots),
-                RequestedVolume = ToVolume(Amount, AmountLots),
-                MaxVisibleVolume = ToVolume(MaxVisibleVolume, AmountToLots(MaxVisibleVolume)),
+                RemainingVolume = (double)RemainingAmount,
+                RequestedVolume = (double)Amount,
+                MaxVisibleVolume = (double?)MaxVisibleVolume,
                 Symbol = Symbol,
                 Type = orderType,
                 Side = Side,
                 Price = (OrderType == OrderType.Stop ? double.NaN : (OrderType == OrderType.StopLimit ? (double?)LimitPrice : (double?)(Price)) ?? double.NaN),
-                StopPrice = (double?)StopPrice ?? double.NaN,
-                StopLoss = stopLoss ?? double.NaN,
-                TakeProfit = takeProfit ?? double.NaN,
+                StopPrice = (double?)StopPrice,
+                StopLoss = stopLoss,
+                TakeProfit = takeProfit,
                 Comment = this.Comment,
                 UserTag = this.Tag,
                 InstanceId = this.InstanceId,
-                Created = this.Created ?? DateTime.MinValue,
-                Modified = this.Modified ?? DateTime.MinValue,
-                ExecPrice = ExecPrice ?? double.NaN,
-                ExecVolume = ToVolume(ExecAmount, ExecAmountLots),
-                LastFillPrice = LastFillPrice ?? double.NaN,
-                LastFillVolume = ToVolume(LastFillAmount, LastFillAmountLots),
-                Swap = (double)Swap,
-                Commission = (double)Commission
+                Created = this.Created,
+                Modified = this.Modified,
+                ExecPrice = ExecPrice,
+                ExecVolume = ExecAmount,
+                LastFillPrice = LastFillPrice,
+                LastFillVolume = LastFillAmount,
+                Swap = (double)(Swap ?? 0),
+                Commission = (double)(Commission ?? 0)
             };
         }
 
@@ -462,19 +464,19 @@ namespace TickTrader.Algo.Common.Model
             this.RemainingAmount = (decimal)record.Volume;
             this.OrderType = record.Type;
             this.Side = record.Side;
-            this.MaxVisibleVolume = (decimal?)record.MaxVisibleVolume.Units.AsNullable();
-            this.Price = (decimal?)(record.Type == OrderType.StopLimit ? record.StopPrice : record.NullablePrice) ?? 0M;
-            this.LimitPrice = (decimal?)(record.Type == OrderType.StopLimit || record.Type == OrderType.Limit ? (decimal?)record.Price : null);
+            this.MaxVisibleVolume = (decimal?)record.MaxVisibleVolume;
+            this.Price = (decimal?)(record.Type == OrderType.StopLimit ? record.StopPrice : record.Price) ?? 0M;
+            this.LimitPrice = (decimal?)(record.Type == OrderType.StopLimit || record.Type == OrderType.Limit ? record.Price : null);
             this.StopPrice = (decimal?)(record.Type == OrderType.StopLimit ? (decimal?)record.StopPrice : record.Type == OrderType.Stop ? (decimal?)record.Price : null);
             this.Created = record.Created;
             this.Modified = record.Modified;
-            this.Expiration = record.NullableExpiration;
+            this.Expiration = record.Expiration;
             this.Comment = record.Comment;
             this.Tag = record.UserTag;
             this.StopLoss = record.StopLoss;
             this.TakeProfit = record.TakeProfit;
-            this.Swap = (decimal)record.Swap;
-            this.Commission = (decimal)record.Commission;
+            this.Swap = (decimal?)record.Swap;
+            this.Commission = (decimal?)record.Commission;
             if (record.ImmediateOrCancel)
             {
                 this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -505,7 +507,7 @@ namespace TickTrader.Algo.Common.Model
             this.Swap = (decimal)report.Swap;
             this.Commission = (decimal)report.Commission;
             this.ExecPrice = report.AveragePrice;
-            this.ExecAmount = report.ExecutedVolume;
+            this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
         }

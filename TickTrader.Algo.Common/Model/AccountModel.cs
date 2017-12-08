@@ -56,6 +56,8 @@ namespace TickTrader.Algo.Common.Model
         public int Leverage { get; private set; }
         public AccountCalculatorModel Calc { get; private set; }
 
+        public event Action<ExecutionReport, OrderModel, OrderExecAction> OrderUpdate;
+
         public void Init()
         {
             var cache = _client.Cache;
@@ -286,12 +288,14 @@ namespace TickTrader.Algo.Common.Model
         {
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = new OrderModel(report, orderResolver);
             ExecReportToAlgo(algoAction, OrderEntityAction.None, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
@@ -299,17 +303,20 @@ namespace TickTrader.Algo.Common.Model
             orders.Remove(report.OrderId);
             var order = new OrderModel(report, orderResolver);
             ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
         {
             ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
+            OrderUpdate?.Invoke(report, null, algoAction);
         }
 
         private void UpdateAsset(AssetEntity assetInfo)

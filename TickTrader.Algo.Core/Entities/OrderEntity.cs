@@ -40,44 +40,39 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public TradeVolume RequestedVolume { get; set; }
-        public TradeVolume RemainingVolume { get; set; }
+        public double? RequestedVolume { get; set; }
+        public double RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
-        public double Price { get; set; }
-        public double? NullablePrice => Price.AsNullable();
-        public double StopLoss { get; set; }
-        public double TakeProfit { get; set; }
+        public double? Price { get; set; }
+        public double? StopLoss { get; set; }
+        public double? TakeProfit { get; set; }
         public string Comment { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime Modified { get; set; }
+        public DateTime? Created { get; set; }
+        public DateTime? Modified { get; set; }
         public string UserTag { get; set; }
         public string InstanceId { get; set; }
         public bool IsNull { get { return false; } }
-        public double ExecPrice { get; set; }
-        public TradeVolume ExecVolume { get; set; }
-        public double LastFillPrice { get; set; }
-        public TradeVolume LastFillVolume { get; set; }
+        public double? ExecPrice { get; set; }
+        public double? ExecVolume { get; set; }
+        public double? LastFillPrice { get; set; }
+        public double? LastFillVolume { get; set; }
         public double Swap { get; set; }
         public double Commission { get; set; }
         public static Order Null { get; private set; }
-        public double StopPrice { get; set; }
-        public TradeVolume MaxVisibleVolume { get; set; }
-        public DateTime? NullableExpiration { get; set; }
-        public DateTime Expiration => NullableExpiration ?? DateTime.MinValue;
-        public bool IsExpirationSet => NullableExpiration != null;
+        public double? StopPrice { get; set; }
+        public double? MaxVisibleVolume { get; set; }
+        public DateTime? Expiration { get; set; }
         public OrderExecOptions Options { get; set; }
         public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 
         static OrderEntity() { Null = new NullOrder(); }
 
         #region FDK compatibility
-
         public string OrderId => Id;
-        public double Volume => RemainingVolume.Units;
-        public double InitialVolume => RequestedVolume.Units;
-
+        public double Volume => RemainingVolume;
+        public double? InitialVolume => RequestedVolume;
         #endregion
     }
 

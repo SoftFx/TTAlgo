@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Common.Model
         private const int LogoutTimeoutMs = 60 * 1000;
         private const int DisconnectTimeoutMs = 60 * 1000;
 
+        private static IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<SfxInterop>();
+
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
 
@@ -57,34 +59,48 @@ namespace TickTrader.Algo.Common.Model
                 ConnectFeed(address, login, password),
                 ConnectTrade(address, login, password),
                 ConnectFeedHistory(address, login, password),
-                ConnectTradeHistory(address, login, password));
+                ConnectTradeHistory(address, login, password))
+                .AddCancelation(cancelToken);
 
             return ConnectionErrorCodes.None;
         }
 
         private async Task ConnectFeed(string address, string login, string password)
         {
+            logger.Debug("Feed: Connecting...");
             await _feedProxy.ConnectAsync(address);
+            logger.Debug("Feed: Connected.");
             await _feedProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            logger.Debug("Feed: Logged in.");
         }
 
         private async Task ConnectTrade(string address, string login, string password)
         {
+            logger.Debug("Trade: Connecting...");
             await _tradeProxy.ConnectAsync(address);
+            logger.Debug("Trade: Connected.");
             await _tradeProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            logger.Debug("Trade logged in.");
         }
 
         private async Task ConnectFeedHistory(string address, string login, string password)
         {
+            logger.Debug("Feed.History: Connecting...");
             await _feedHistoryProxy.ConnectAsync(address);
+            logger.Debug("Feed.History: Connected.");
             await _feedHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            logger.Debug("Feed.History: Logged in.");
         }
 
         private async Task ConnectTradeHistory(string address, string login, string password)
         {
+            logger.Debug("Trade.History: Connecting...");
             await _tradeHistoryProxy.ConnectAsync(address);
+            logger.Debug("Trade.History: Connected.");
             await _tradeHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxy.SubscribeTradesAsync(false);
+            logger.Debug("Trade.History: Subscribed.");
         }
 
         private void OnDisconnect()
@@ -105,24 +121,28 @@ namespace TickTrader.Algo.Common.Model
         {
             await _feedProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
             await _feedProxy.DisconnectAsync("");
+            logger.Debug("Feed dicconnected.");
         }
 
         private async Task DisconnectFeedHstory()
         {
             await _feedHistoryProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
             await _feedHistoryProxy.DisconnectAsync("");
+            logger.Debug("Feed history dicconnected.");
         }
 
         private async Task DisconnectTrade()
         {
             await _feedProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
             await _feedProxy.DisconnectAsync("");
+            logger.Debug("Trade dicconnected.");
         }
 
         private async Task DisconnectTradeHstory()
         {
             await _tradeHistoryProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
             await _tradeHistoryProxy.DisconnectAsync("");
+            logger.Debug("Trade history dicconnected.");
         }
 
         #region IFeedServerApi
@@ -144,6 +164,12 @@ namespace TickTrader.Algo.Common.Model
         public Task SubscribeToQuotes(string[] symbols, int depth)
         {
             return _feedProxy.SubscribeQuotesAsync(symbols, depth);
+        }
+
+        public async Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
+        {
+            var array = await _feedProxy.GetQuotesAsync(symbols, depth);
+            return array.Select(Convert).ToArray();
         }
 
         public IAsyncEnumerator<BarEntity[]> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
@@ -337,7 +363,7 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (ExecutionException eex)
             {
-                var reason = Convert(eex.Report.RejectReason, eex.Message);
+                var reason = Convert(eex.Reports.Last().RejectReason, eex.Message);
                 callback.Invoke(reason);
             }
             catch (Exception)
@@ -559,16 +585,32 @@ namespace TickTrader.Algo.Common.Model
                 Comment = record.Comment,
                 Type = Convert(record.OrderType),
                 ClientOrderId = record.ClientOrderId,
-                Price = record.Price ?? double.NaN,
-                StopPrice = record.StopPrice ?? double.NaN,
+                Price = record.Price,
+                StopPrice = record.StopPrice,
                 Side = Convert(record.OrderSide),
-                Created = record.Created ?? DateTime.MinValue,
+                Created = record.Created,
                 Swap = record.Swap,
-                Modified = record.Modified ?? DateTime.MinValue,
-                StopLoss = record.StopLoss ?? double.NaN,
-                TakeProfit = record.TakeProfit ?? double.NaN,
+                Modified = record.Modified,
+                StopLoss = record.StopLoss,
+                TakeProfit = record.TakeProfit,
                 Commission = record.Commission,
+                ExecVolume = record.ExecutedVolume,
+                UserTag = record.Tag,
+                RemainingVolume = record.LeavesVolume,
+                RequestedVolume = record.InitialVolume,
+                Expiration = record.Expiration,
+                MaxVisibleVolume = record.MaxVisibleVolume,
+                ExecPrice = record.AveragePrice,
+                Options = GetOptions(record)
             };
+        }
+
+        private static OrderExecOptions GetOptions(SFX.ExecutionReport record)
+        {
+            var isLimit = record.OrderType == SFX.OrderType.Limit || record.OrderType == SFX.OrderType.StopLimit;
+            if (isLimit && record.OrderTimeInForce == OrderTimeInForce.ImmediateOrCancel)
+                return OrderExecOptions.ImmediateOrCancel;
+            return OrderExecOptions.None;
         }
 
         private static ExecutionReport ConvertToEr(SFX.ExecutionReport report, string operationId = null)
@@ -865,6 +907,6 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        #endregion  
+        #endregion
     }
 }

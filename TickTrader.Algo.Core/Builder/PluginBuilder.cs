@@ -27,9 +27,9 @@ namespace TickTrader.Algo.Core
         {
             Descriptor = descriptor;
             marketData = new MarketDataImpl(this);
-            Account = new AccountAccessor(this);
             Symbols = new SymbolsCollection(marketData);
             Currencies = new CurrenciesCollection();
+            Account = new AccountAccessor(this);
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
 
