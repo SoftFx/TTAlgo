@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Protocol.Lib
                         break;
                 }
                 _logger.Info($"Logout, sessionId = {session.Guid}: {reason}");
-                LoginReject(reason);
+                Logout(reason);
             }
             catch (Exception ex)
             {
@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Protocol.Lib
                         break;
                 }
                 _logger.Info($"Logout, sessionId = {session.Guid}: {reason}");
-                LoginReject(reason);
+                Logout(reason);
             }
             catch (Exception ex)
             {

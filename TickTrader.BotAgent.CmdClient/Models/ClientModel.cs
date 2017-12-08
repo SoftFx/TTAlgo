@@ -28,8 +28,9 @@ namespace TickTrader.BotAgent.CmdClient
 
         private void RegisterCommands()
         {
-            _cmdEngine.RegsiterCommand("login", LoginCommand);
-            _cmdEngine.RegsiterCommand("account info", AccountInfoCommand);
+            _cmdEngine.RegisterCommand("login", LoginCommand);
+            _cmdEngine.RegisterCommand("account info", AccountInfoCommand);
+            _cmdEngine.RegisterCommand("package info", PackageInfoCommand);
         }
 
         private void LoginCommand()
@@ -56,7 +57,7 @@ namespace TickTrader.BotAgent.CmdClient
 
             if (_protocolClient != null && _protocolClient.State != ClientStates.Offline)
             {
-                _protocolClient.Disconnect().Wait();
+                _protocolClient.Disconnect();
             }
 
             _agentClient = new BotAgentClient();
@@ -64,11 +65,24 @@ namespace TickTrader.BotAgent.CmdClient
             _protocolClient.Connect().Wait();
         }
 
-        private void AccountInfoCommand()
+        private bool CheckConnectionState()
         {
+            if (_protocolClient == null)
+            {
+                Console.WriteLine("Run login command first");
+                return false;
+            }
+
             Console.WriteLine($"{_protocolClient.State} - {_protocolClient.LastError}");
 
-            if (_protocolClient.State != ClientStates.Online)
+            Console.WriteLine();
+
+            return _protocolClient.State == ClientStates.Online;
+        }
+
+        private void AccountInfoCommand()
+        {
+            if (!CheckConnectionState())
             {
                 return;
             }
@@ -85,6 +99,33 @@ namespace TickTrader.BotAgent.CmdClient
                 Console.WriteLine($"state: {bot.State}");
                 Console.WriteLine($"descriptor: {bot.Plugin.DescriptorId}");
                 Console.WriteLine($"package: {bot.Plugin.PackageName}");
+                Console.WriteLine();
+            }
+        }
+
+        private void PackageInfoCommand()
+        {
+            if (!CheckConnectionState())
+            {
+                return;
+            }
+
+            var package = CommandUi.Choose("package", _agentClient.Packages, p => p.Name);
+
+            Console.WriteLine($"Name: {package.Name}");
+            Console.WriteLine($"Created: {package.Created}");
+            foreach (var plugins in package.Plugins)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"ApiVersion: {plugins.Descriptor.ApiVersion}");
+                Console.WriteLine($"Id: {plugins.Descriptor.Id}");
+                Console.WriteLine($"DisplayName: {plugins.Descriptor.DisplayName}");
+                Console.WriteLine($"UserDisplayName: {plugins.Descriptor.UserDisplayName}");
+                Console.WriteLine($"Version: {plugins.Descriptor.Version}");
+                Console.WriteLine($"Description: {plugins.Descriptor.Description}");
+                Console.WriteLine($"Category: {plugins.Descriptor.Category}");
+                Console.WriteLine($"Copyright: {plugins.Descriptor.Copyright}");
+                Console.WriteLine($"Type: {plugins.Descriptor.Type}");
                 Console.WriteLine();
             }
         }

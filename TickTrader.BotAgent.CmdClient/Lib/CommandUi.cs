@@ -12,7 +12,7 @@ namespace TickTrader.BotAgent.CmdClient
         {
         }
 
-        public void RegsiterCommand(string cmdName, Action cmdImpl)
+        public void RegisterCommand(string cmdName, Action cmdImpl)
         {
             _commands.Add(new Tuple<string, Action>(cmdName, cmdImpl));
         }

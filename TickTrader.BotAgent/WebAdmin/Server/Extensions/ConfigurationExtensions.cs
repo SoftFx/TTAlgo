@@ -62,6 +62,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig.ListeningPort < 0 || protocolConfig.ListeningPort > 65535)
                 throw new ArgumentException("Invalid port number");
 
+            protocolConfig.LogDirectoryName = Path.Combine(contentRoot, protocolConfig.LogDirectoryName);
+
             var certificate = config.GetCertificate(contentRoot);
 
             var serverSettings = new ProtocolServerSettings

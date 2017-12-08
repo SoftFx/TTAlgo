@@ -90,9 +90,27 @@ namespace TickTrader.Algo.Protocol
             }, s => s == ClientStates.Online || s == ClientStates.Offline);
         }
 
-        public Task Disconnect()
+        public void Disconnect()
         {
-            return _stateMachine.PushEventAndWait(ClientEvents.LogoutRequest, ClientStates.Offline);
+            _stateMachine.PushEventAndWait(ClientEvents.LogoutRequest, ClientStates.Offline).Wait();
+
+            if (ClientSession != null)
+            {
+                ClientSession.Join();
+            }
+
+            if (Listener != null)
+            {
+                Listener.Connected -= ListenerOnConnected;
+                Listener.Disconnected -= ListenerOnDisconnected;
+                Listener.ConnectionError -= ListenerOnConnectionError;
+                Listener.Login -= ListenerOnLogin;
+                Listener.LoginReject -= ListenerOnLoginReject;
+                Listener.Logout -= ListenerOnLogout;
+                Listener.Subscribed -= ListenerOnSubscribed;
+
+                Listener = null;
+            }
         }
 
         public void RequestAccounts(AccountListRequestEntity request)
@@ -165,24 +183,11 @@ namespace TickTrader.Algo.Protocol
             if (ClientSession != null)
             {
                 ClientSession.Disconnect(null, "User request");
-                ClientSession.Join();
             }
         }
 
         private void DeInit()
         {
-            if (Listener != null)
-            {
-                Listener.Connected -= ListenerOnConnected;
-                Listener.Disconnected -= ListenerOnDisconnected;
-                Listener.ConnectionError -= ListenerOnConnectionError;
-                Listener.Login -= ListenerOnLogin;
-                Listener.LoginReject -= ListenerOnLoginReject;
-                Listener.Logout -= ListenerOnLogout;
-                Listener.Subscribed -= ListenerOnSubscribed;
-
-                Listener = null;
-            }
             _stateMachine.PushEvent(ClientEvents.Deinitialized);
         }
 
@@ -199,6 +204,7 @@ namespace TickTrader.Algo.Protocol
         private void Init()
         {
             ClientSession.SendAccountListRequest(null, new AccountListRequestEntity().ToMessage());
+            ClientSession.SendPackageListRequest(null, new PackageListRequestEntity().ToMessage());
             ClientSession.SendSubscribeRequest(null, new SubscribeRequestEntity().ToMessage());
         }
     }
