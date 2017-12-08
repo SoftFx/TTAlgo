@@ -78,7 +78,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                                 Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
                                 Descriptor = new PluginDescriptorEntity
                                 {
-                                    ApiVersion = plugin.Descriptor.ApiVersion.ToString(),
+                                    ApiVersion = plugin.Descriptor.ApiVersionStr,
                                     Id = plugin.Descriptor.Id,
                                     DisplayName = plugin.Descriptor.DisplayName,
                                     UserDisplayName = plugin.Descriptor.UserDisplayName,

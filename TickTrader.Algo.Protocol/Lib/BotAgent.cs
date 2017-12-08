@@ -2539,14 +2539,14 @@ namespace SoftFX.Net.BotAgent
         
         public string ApiVersion
         {
-            set { data_.SetUString(offset_ + 0, value); }
+            set { data_.SetUStringNull(offset_ + 0, value); }
             
-            get { return data_.GetUString(offset_ + 0); }
+            get { return data_.GetUStringNull(offset_ + 0); }
         }
         
-        public int GetApiVersionLength()
+        public int? GetApiVersionLength()
         {
-            return data_.GetUStringLength(offset_ + 0);
+            return data_.GetUStringNullLength(offset_ + 0);
         }
         
         public void SetApiVersion(char[] value, int offset, int count)
@@ -2667,14 +2667,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Category
         {
-            set { data_.SetUString(offset_ + 32, value); }
+            set { data_.SetUStringNull(offset_ + 32, value); }
             
-            get { return data_.GetUString(offset_ + 32); }
+            get { return data_.GetUStringNull(offset_ + 32); }
         }
         
-        public int GetCategoryLength()
+        public int? GetCategoryLength()
         {
-            return data_.GetUStringLength(offset_ + 32);
+            return data_.GetUStringNullLength(offset_ + 32);
         }
         
         public void SetCategory(char[] value, int offset, int count)
@@ -2699,14 +2699,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Version
         {
-            set { data_.SetUString(offset_ + 40, value); }
+            set { data_.SetUStringNull(offset_ + 40, value); }
             
-            get { return data_.GetUString(offset_ + 40); }
+            get { return data_.GetUStringNull(offset_ + 40); }
         }
         
-        public int GetVersionLength()
+        public int? GetVersionLength()
         {
-            return data_.GetUStringLength(offset_ + 40);
+            return data_.GetUStringNullLength(offset_ + 40);
         }
         
         public void SetVersion(char[] value, int offset, int count)
@@ -2731,14 +2731,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Description
         {
-            set { data_.SetUString(offset_ + 48, value); }
+            set { data_.SetUStringNull(offset_ + 48, value); }
             
-            get { return data_.GetUString(offset_ + 48); }
+            get { return data_.GetUStringNull(offset_ + 48); }
         }
         
-        public int GetDescriptionLength()
+        public int? GetDescriptionLength()
         {
-            return data_.GetUStringLength(offset_ + 48);
+            return data_.GetUStringNullLength(offset_ + 48);
         }
         
         public void SetDescription(char[] value, int offset, int count)
@@ -2763,14 +2763,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Copyright
         {
-            set { data_.SetUString(offset_ + 56, value); }
+            set { data_.SetUStringNull(offset_ + 56, value); }
             
-            get { return data_.GetUString(offset_ + 56); }
+            get { return data_.GetUStringNull(offset_ + 56); }
         }
         
-        public int GetCopyrightLength()
+        public int? GetCopyrightLength()
         {
-            return data_.GetUStringLength(offset_ + 56);
+            return data_.GetUStringNullLength(offset_ + 56);
         }
         
         public void SetCopyright(char[] value, int offset, int count)
@@ -2829,14 +2829,14 @@ namespace SoftFX.Net.BotAgent
         
         public string ApiVersion
         {
-            set { data_.SetUString(GetDataOffset() + 0, value); }
+            set { data_.SetUStringNull(GetDataOffset() + 0, value); }
             
-            get { return data_.GetUString(GetDataOffset() + 0); }
+            get { return data_.GetUStringNull(GetDataOffset() + 0); }
         }
         
-        public int GetApiVersionLength()
+        public int? GetApiVersionLength()
         {
-            return data_.GetUStringLength(GetDataOffset() + 0);
+            return data_.GetUStringNullLength(GetDataOffset() + 0);
         }
         
         public void SetApiVersion(char[] value, int offset, int count)
@@ -2957,14 +2957,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Category
         {
-            set { data_.SetUString(GetDataOffset() + 32, value); }
+            set { data_.SetUStringNull(GetDataOffset() + 32, value); }
             
-            get { return data_.GetUString(GetDataOffset() + 32); }
+            get { return data_.GetUStringNull(GetDataOffset() + 32); }
         }
         
-        public int GetCategoryLength()
+        public int? GetCategoryLength()
         {
-            return data_.GetUStringLength(GetDataOffset() + 32);
+            return data_.GetUStringNullLength(GetDataOffset() + 32);
         }
         
         public void SetCategory(char[] value, int offset, int count)
@@ -2989,14 +2989,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Version
         {
-            set { data_.SetUString(GetDataOffset() + 40, value); }
+            set { data_.SetUStringNull(GetDataOffset() + 40, value); }
             
-            get { return data_.GetUString(GetDataOffset() + 40); }
+            get { return data_.GetUStringNull(GetDataOffset() + 40); }
         }
         
-        public int GetVersionLength()
+        public int? GetVersionLength()
         {
-            return data_.GetUStringLength(GetDataOffset() + 40);
+            return data_.GetUStringNullLength(GetDataOffset() + 40);
         }
         
         public void SetVersion(char[] value, int offset, int count)
@@ -3021,14 +3021,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Description
         {
-            set { data_.SetUString(GetDataOffset() + 48, value); }
+            set { data_.SetUStringNull(GetDataOffset() + 48, value); }
             
-            get { return data_.GetUString(GetDataOffset() + 48); }
+            get { return data_.GetUStringNull(GetDataOffset() + 48); }
         }
         
-        public int GetDescriptionLength()
+        public int? GetDescriptionLength()
         {
-            return data_.GetUStringLength(GetDataOffset() + 48);
+            return data_.GetUStringNullLength(GetDataOffset() + 48);
         }
         
         public void SetDescription(char[] value, int offset, int count)
@@ -3053,14 +3053,14 @@ namespace SoftFX.Net.BotAgent
         
         public string Copyright
         {
-            set { data_.SetUString(GetDataOffset() + 56, value); }
+            set { data_.SetUStringNull(GetDataOffset() + 56, value); }
             
-            get { return data_.GetUString(GetDataOffset() + 56); }
+            get { return data_.GetUStringNull(GetDataOffset() + 56); }
         }
         
-        public int GetCopyrightLength()
+        public int? GetCopyrightLength()
         {
-            return data_.GetUStringLength(GetDataOffset() + 56);
+            return data_.GetUStringNullLength(GetDataOffset() + 56);
         }
         
         public void SetCopyright(char[] value, int offset, int count)
@@ -5982,7 +5982,7 @@ namespace SoftFX.Net.BotAgent
             ApiVersion.name = "ApiVersion";
             ApiVersion.offset = 0;
             ApiVersion.type = FieldType.UString;
-            ApiVersion.optional = false;
+            ApiVersion.optional = true;
             ApiVersion.repeatable = false;
             
             FieldInfo Id = new FieldInfo();
@@ -6010,28 +6010,28 @@ namespace SoftFX.Net.BotAgent
             Category.name = "Category";
             Category.offset = 32;
             Category.type = FieldType.UString;
-            Category.optional = false;
+            Category.optional = true;
             Category.repeatable = false;
             
             FieldInfo Version = new FieldInfo();
             Version.name = "Version";
             Version.offset = 40;
             Version.type = FieldType.UString;
-            Version.optional = false;
+            Version.optional = true;
             Version.repeatable = false;
             
             FieldInfo Description = new FieldInfo();
             Description.name = "Description";
             Description.offset = 48;
             Description.type = FieldType.UString;
-            Description.optional = false;
+            Description.optional = true;
             Description.repeatable = false;
             
             FieldInfo Copyright = new FieldInfo();
             Copyright.name = "Copyright";
             Copyright.offset = 56;
             Copyright.type = FieldType.UString;
-            Copyright.optional = false;
+            Copyright.optional = true;
             Copyright.repeatable = false;
             
             FieldInfo Type = new FieldInfo();

@@ -73,14 +73,14 @@ protocol BotAgent(1,0)
 
     group PluginDescriptor
     {
-        ustring ApiVersion;
+        ustring? ApiVersion;
         ustring Id;
         ustring DisplayName;
         ustring UserDisplayName;
-        ustring Category;
-        ustring Version;
-        ustring Description;
-        ustring Copyright;
+        ustring? Category;
+        ustring? Version;
+        ustring? Description;
+        ustring? Copyright;
         PluginType Type;
     }
 
