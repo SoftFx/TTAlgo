@@ -28,6 +28,7 @@ namespace TickTrader.Algo.Core
             Comment = src.Comment;
             Created = src.Created;
             Modified = src.Modified;
+            Expiration = src.Expiration;
             UserTag = src.UserTag;
             InstanceId = src.InstanceId;
             ExecPrice = src.ExecPrice;
@@ -35,6 +36,8 @@ namespace TickTrader.Algo.Core
             LastFillPrice = src.LastFillPrice;
             LastFillVolume = src.LastFillVolume;
             Swap = src.Swap;
+            MarginCurrency = src.MarginCurrency;
+            ProfitCurrency = src.ProfitCurrency;
             Commission = src.Commission;
         }
 
@@ -49,6 +52,7 @@ namespace TickTrader.Algo.Core
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
         public string Comment { get; set; }
+        public DateTime? Expiration { get; set; }
         public DateTime? Created { get; set; }
         public DateTime? Modified { get; set; }
         public string UserTag { get; set; }
@@ -61,6 +65,8 @@ namespace TickTrader.Algo.Core
         public double Swap { get; set; }
         public double Commission { get; set; }
         public static Order Null { get; private set; }
+        public string MarginCurrency { get; set; }
+        public string ProfitCurrency { get; set; }
         public double? StopPrice { get; set; }
         public double? MaxVisibleVolume { get; set; }
         public DateTime? Expiration { get; set; }
@@ -113,6 +119,7 @@ namespace TickTrader.Algo.Core
         public string InstanceId { get { return ""; } }
         public DateTime Created { get { return DateTime.MinValue; } }
         public DateTime Modified { get { return DateTime.MinValue; } }
+        public DateTime Expiration { get { return DateTime.MinValue; } }
         public bool IsNull { get { return true; } }
         public double ExecPrice { get { return double.NaN; } }
         public double ExecVolume { get { return double.NaN; } }

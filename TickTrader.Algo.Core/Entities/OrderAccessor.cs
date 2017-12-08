@@ -2,6 +2,7 @@
 using TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using BL = TickTrader.BusinessLogic;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.Core
 {
@@ -61,6 +62,7 @@ namespace TickTrader.Algo.Core
         public string Comment => _entity.Comment;
         public string Tag => _entity.UserTag;
         public string InstanceId => _entity.InstanceId;
+        public DateTime Expiration => _entity.Expiration?? DateTime.MinValue;
         public DateTime Modified => _entity.Modified ?? DateTime.MinValue;
         public DateTime Created => _entity.Created ?? DateTime.MinValue;
         public double ExecPrice => _entity.ExecPrice ?? double.NaN;
@@ -84,13 +86,17 @@ namespace TickTrader.Algo.Core
         public decimal? Commission => (decimal)_entity.Commission;
         public decimal? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
-        public decimal Amount { get => (decimal)RequestedVolume; set => throw new NotImplementedException(); }
+        public decimal Amount { get => (decimal)_entity.RequestedVolume.Units; set => throw new NotImplementedException(); }
         public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => throw new NotImplementedException(); }
         decimal? BL.IOrderModel.Profit { get => (decimal)Profit; set => Profit = (double)value; }
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
         decimal? BL.ICommonOrder.Price { get => (decimal)((Type == OrderType.Stop || Type == OrderType.StopLimit) ? StopPrice :  Price); set => throw new NotImplementedException(); }
+        bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
+        bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
+        string BL.ICommonOrder.MarginCurrency { get => _entity.MarginCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.ProfitCurrency { get => _entity.ProfitCurrency; set => throw new NotImplementedException(); }
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 

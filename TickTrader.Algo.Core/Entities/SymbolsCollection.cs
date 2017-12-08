@@ -80,6 +80,7 @@ namespace TickTrader.Algo.Core
         private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
         {
             private Dictionary<string, SymbolAccessor> symbols = new Dictionary<string, SymbolAccessor>();
+            private List<SymbolAccessor> sortedSymbols;
 
             public Symbol this[string symbolCode]
             {
@@ -92,6 +93,17 @@ namespace TickTrader.Algo.Core
                     if (!symbols.TryGetValue(symbolCode, out smb))
                         return new NullSymbol(symbolCode);
                     return smb;
+                }
+            }
+
+            private List<SymbolAccessor> SortedSymbols
+            {
+                get
+                {
+                    if (sortedSymbols == null)
+                        sortedSymbols = symbols.Values.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ToList();
+
+                    return sortedSymbols;
                 }
             }
 
@@ -109,26 +121,28 @@ namespace TickTrader.Algo.Core
             public void Clear()
             {
                 symbols.Clear();
+                sortedSymbols = null;
             }
 
             public void Add(SymbolAccessor symbol)
             {
                 symbols.Add(symbol.Name, symbol);
+                sortedSymbols = null;
             }
 
             public IEnumerable<SymbolAccessor> GetInnerCollection()
             {
-                return symbols.Values;
+                return SortedSymbols;
             }
 
             public IEnumerator<Symbol> GetEnumerator()
             {
-                return symbols.Values.GetEnumerator();
+                return SortedSymbols.GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return symbols.Values.GetEnumerator();
+                return SortedSymbols.GetEnumerator();
             }
         }
     }

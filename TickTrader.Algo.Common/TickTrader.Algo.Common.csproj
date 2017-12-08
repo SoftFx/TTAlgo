@@ -63,7 +63,7 @@
     <Reference Include="TickTrader.BusinessObjects">
       <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.Common, Version=1.25.5.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+    <Reference Include="TickTrader.Common">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
@@ -127,7 +127,7 @@
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AssetModel.cs" />
-    <Compile Include="Entities\BarHistoryReport.cs" />
+    <Compile Include="Model\BotListenerProxy.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Entities\ExecutionReport.cs" />
     <Compile Include="Model\EntityCache.cs" />

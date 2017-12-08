@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
 using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
+using BO = TickTrader.BusinessObjects;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class SymbolModel : ISymbolInfo, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
+    public class SymbolModel : BO.ISymbolInfo, Setup.ISymbolInfo
     {
         private IFeedSubscription subscription;
 
@@ -48,8 +49,14 @@ namespace TickTrader.Algo.Common.Model
 
         protected QuoteDistributor Distributor { get; private set; }
 
-        #region ISymbolInfo
+        #region BO ISymbolInfo
 
+        string BO.ISymbolInfo.Security => Descriptor.SecurityName;
+        int BO.ISymbolInfo.SortOrder => Descriptor.SortOrder;
+        BO.SwapType BO.ISymbolInfo.SwapType => FdkToAlgo.Convert(Descriptor.SwapType);
+        int BO.ISymbolInfo.TripleSwapDay => Descriptor.TripleSwapDay;
+        double BO.ISymbolInfo.HiddenLimitOrderMarginReduction => Descriptor.HiddenLimitOrderMarginReduction ?? 1;
+        BO.MarginCalculationModes BO.ISymbolInfo.MarginMode => FdkToAlgo.Convert(Descriptor.MarginCalcMode);
         string ISymbolInfo.Symbol { get { return Name; } }
         double ISymbolInfo.ContractSizeFractional { get { return Descriptor.RoundLot; } }
         string ISymbolInfo.MarginCurrency { get { return Descriptor.Currency; } }

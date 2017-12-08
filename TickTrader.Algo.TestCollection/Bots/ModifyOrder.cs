@@ -1,8 +1,9 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.1", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.2", Category = "Test Orders",
         Description = "Modify Order by OrderId" +
                       "Prints order execution result to bot status window. ")]
     public class ModifyOrder : TradeBotCommon
@@ -28,11 +29,15 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Take Profit", DefaultValue = null, IsRequired = false)]
         public double? TakeProfit { get; set; }
 
+        [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
+        public int? ExpirationTimeout { get; set; }
+
         protected override void OnStart()
         {
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
-            var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment);
+            var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
+                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null);
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(typeof(Order), result.ResultingOrder));

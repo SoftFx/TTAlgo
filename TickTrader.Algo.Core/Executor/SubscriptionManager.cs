@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Core
         //private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
         //private HashSet<IAllRatesSubscription> allSymbolsSubscribers = new HashSet<IAllRatesSubscription>();
         private Dictionary<string, SubscriptionCollection> subscribersBySymbol = new Dictionary<string, SubscriptionCollection>();
+        private DateTime _startTime;
 
         public SubscriptionManager(IFixtureContext context)
         {
@@ -22,6 +23,7 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
+            _startTime = DateTime.UtcNow;
             foreach (var entry in subscribersBySymbol)
             {
                 if (entry.Value.GetMaxDepth() != 1)
@@ -35,7 +37,10 @@ namespace TickTrader.Algo.Core
 
         public void OnUpdateEvent(Quote quote)
         {
-            GetListOrNull(quote.Symbol)?.OnUpdate(quote);
+            if (quote.Time > _startTime) // old quotes from snapshot should not be sent as new quotes
+            {
+                GetListOrNull(quote.Symbol)?.OnUpdate(quote);
+            }
         }
 
         public void SetUserSubscription(string symbol, int depth)
@@ -57,7 +62,10 @@ namespace TickTrader.Algo.Core
         public void ClearUserSubscriptions()
         {
             foreach (var collection in subscribersBySymbol.Values)
+            {
                 collection.UserSubscription = null;
+                collection.CurrentDepth = 1;
+            }
         }
 
         private void UpdateSubscription(string symbol, SubscriptionCollection subscribers)
@@ -70,6 +78,7 @@ namespace TickTrader.Algo.Core
             {
                 var request = new CrossdomainRequest() { Feed = _context.FeedProvider, Symbol = symbol, Depth = newDepth };
                 _context.FeedProvider.Sync.Invoke(request.SetDepth);
+                subscribers.CurrentDepth = newDepth;
             }
         }
 
@@ -132,7 +141,7 @@ namespace TickTrader.Algo.Core
             }
 
             public SubscriptionFixture UserSubscription { get; set; }
-            public int CurrentDepth { get; private set; }
+            public int CurrentDepth { get; set; }
 
             public void OnUpdate(Quote quote)
             {

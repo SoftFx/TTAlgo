@@ -242,9 +242,9 @@ namespace TickTrader.Algo.Common.Model
                         if (!double.IsNaN(report.Balance))
                             Balance = report.Balance;
 
-                        if (report.LeavesVolume != 0)
+                        if (report.OrderStatus == OrderStatus.PartiallyFilled)
                             OnOrderUpdated(report, OrderExecAction.Closed);
-                        else
+                        if (report.OrderStatus == OrderStatus.Filled)
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
                     else if (report.OrderType == OrderType.Market

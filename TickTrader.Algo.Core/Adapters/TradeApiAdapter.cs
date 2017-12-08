@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core
         }
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, OrderExecOptions options, string tag)
+            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
             OrderCmdResult resultEntity;
             string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Core
                     Tag = isolationTag
                 };
 
-                resultEntity = await api.OpenOrder(isAysnc, request);
+                resultEntity = await api.OpenOrder(isAysnc, symbol, orderType, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, isolationTag, expiration);
 
                 if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
                     resultEntity = new TradeResultEntity(resultEntity.ResultCode, new OrderAccessor(orderToOpen));
@@ -212,6 +212,10 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToClose);
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + result.ResultCode);
+                return new TradeResultEntity(result.ResultCode, orderToClose);
                 logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
                 return new TradeResultEntity(ex.ErrorCode, orderToClose);
             }

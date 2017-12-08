@@ -42,6 +42,10 @@ namespace TickTrader.Algo.Core
         public float SwapSizeShort { get; set; }
         public string Security { get; set; }
         public int SortOrder { get; set; }
+        public int GroupSortOrder { get; set; }
+        public BO.SwapType SwapType { get; set; }
+        public int TripleSwapDay { get; set; }
+        public double HiddenLimitOrderMarginReduction { get; set; }
 
         #region FDK Compatibility
 

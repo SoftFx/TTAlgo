@@ -392,6 +392,10 @@ namespace TickTrader.Algo.Common.Model
         }
         public double? LastFillAmountLots { get; private set; }
 
+        public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
+
+        public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
+
         #endregion
 
         #region IOrderModel
@@ -425,6 +429,14 @@ namespace TickTrader.Algo.Common.Model
             set => throw new NotImplementedException();
         }
 
+        bool ICommonOrder.IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
+
+        bool ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
+
+        string ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
+
+        string ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
+
         public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
 
         #endregion
@@ -447,6 +459,8 @@ namespace TickTrader.Algo.Common.Model
                 Comment = this.Comment,
                 UserTag = this.Tag,
                 InstanceId = this.InstanceId,
+                MarginCurrency = MarginCurrency,
+                ProfitCurrency = ProfitCurrency,
                 Created = this.Created,
                 Modified = this.Modified,
                 ExecPrice = ExecPrice,

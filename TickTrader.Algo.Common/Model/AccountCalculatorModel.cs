@@ -14,6 +14,8 @@ namespace TickTrader.Algo.Common.Model
 {
     public abstract class AccountCalculatorModel
     {
+        protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<AccountCalculatorModel>();
+
         private ClientCore _client;
         private IFeedSubscription _subscription;
 
@@ -121,6 +123,8 @@ namespace TickTrader.Algo.Common.Model
 
         protected class AccountAdapter : IMarginAccountInfo, ICashAccountInfo
         {
+            private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<AccountAdapter>();
+
             private AccountModel acc;
 
             public AccountAdapter(AccountModel acc)
@@ -157,36 +161,57 @@ namespace TickTrader.Algo.Common.Model
             public long Id { get { return 0; } }
             public int Leverage { get { return acc.Leverage; } }
 
-            public IEnumerable<IOrderModel> Orders { get { return acc.Orders.Snapshot.Values; } }
-            public IEnumerable<IPositionModel> Positions { get { return acc.Positions.Snapshot.Values; } }
+            public IEnumerable<IOrderModel> Orders { get { return Enumerable.Empty<IOrderModel>(); } }
+            public IEnumerable<IPositionModel> Positions { get { return Enumerable.Empty<IPositionModel>(); } }
             public IEnumerable<IAssetModel> Assets { get { return acc.Assets.Snapshot.Values; } }
 
             private void Orders_Updated(DictionaryUpdateArgs<string, OrderModel> args)
             {
-                if (args.Action == DLinqAction.Insert)
-                    OrderAdded(args.NewItem);
-                else if (args.Action == DLinqAction.Replace)
-                    OrderReplaced(args.NewItem);
-                else if (args.Action == DLinqAction.Remove)
-                    OrderRemoved(args.OldItem);
+                try
+                {
+                    if (args.Action == DLinqAction.Insert)
+                        OrderAdded(args.NewItem);
+                    else if (args.Action == DLinqAction.Replace)
+                        OrderReplaced(args.NewItem);
+                    else if (args.Action == DLinqAction.Remove)
+                        OrderRemoved(args.OldItem);
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex, "Order update failed.");
+                }
             }
 
             private void Positions_Updated(DictionaryUpdateArgs<string, PositionModel> args)
             {
-                if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
-                    PositionChanged(args.NewItem, PositionChageTypes.AddedModified);
-                else if (args.Action == DLinqAction.Remove)
-                    PositionChanged(args.OldItem, PositionChageTypes.Removed);
+                try
+                {
+                    if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
+                        PositionChanged(args.NewItem, PositionChageTypes.AddedModified);
+                    else if (args.Action == DLinqAction.Remove)
+                        PositionChanged(args.OldItem, PositionChageTypes.Removed);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Position update failed.");
+                }
             }
 
             private void Assets_Updated(DictionaryUpdateArgs<string, AssetModel> args)
             {
-                if (args.Action == DLinqAction.Insert)
-                    AssetsChanged(args.NewItem, AssetChangeTypes.Added);
-                else if (args.Action == DLinqAction.Replace)
-                    AssetsChanged(args.NewItem, AssetChangeTypes.Replaced);
-                else if(args.Action == DLinqAction.Remove)
-                    AssetsChanged(args.OldItem, AssetChangeTypes.Removed);
+                try
+                {
+                    if (args.Action == DLinqAction.Insert)
+                        AssetsChanged(args.NewItem, AssetChangeTypes.Added);
+                    else if (args.Action == DLinqAction.Replace)
+                        AssetsChanged(args.NewItem, AssetChangeTypes.Replaced);
+                    else if (args.Action == DLinqAction.Remove)
+                        AssetsChanged(args.OldItem, AssetChangeTypes.Removed);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Asset update failed.");
+                }
             }
 
             public void LogInfo(string message)
@@ -226,6 +251,30 @@ namespace TickTrader.Algo.Common.Model
                     MarginLevel = calc.MarginLevel;
                     OnUpdate();
                 };
+
+                foreach (var group in acc.Orders.Snapshot.Values.GroupBy(o => o.Symbol))
+                {
+                    try
+                    {
+                        calc.AddOrdersBunch(group);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, $"Adding orders by {group.Key} failed.");
+                    }
+                }
+
+                foreach (var pos in acc.Positions.Snapshot.Values)
+                {
+                    try
+                    {
+                        calc.Update(pos, PositionChageTypes.AddedModified);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, $"Adding position by {pos.Symbol} failed.");
+                    }
+                }
             }
 
             public override void Recalculate()
@@ -242,6 +291,18 @@ namespace TickTrader.Algo.Common.Model
                 : base(acc, client)
             {
                 this.calc = new CashAccountCalculator(Account, MarketModel);
+
+                foreach (var group in acc.Orders.Snapshot.Values.GroupBy(o => o.Symbol))
+                {
+                    try
+                    {
+                        calc.AddOrdersBunch(group);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, $"Adding orders by {group.Key} failed.");
+                    }
+                }
             }
         }
 

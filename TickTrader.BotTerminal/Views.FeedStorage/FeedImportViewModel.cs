@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using CoreMath = TickTrader.Algo.Core.Math;
 
@@ -65,10 +66,10 @@ namespace TickTrader.BotTerminal
         public void Import()
         {
             IsActionVisible.Set();
-            ActionRunner.Start(DoImport);
+            ActionRunner.Start((o, c) => DoImport(o, c));
         }
 
-        private void DoImport(CancellationToken cToken)
+        private void DoImport(IActionObserver observer, CancellationToken cToken)
         {
             var pageSize = 8000;
 
@@ -76,6 +77,9 @@ namespace TickTrader.BotTerminal
             var importer = SelectedImporter.Value;
             var timeFrame = SelectedTimeFrame.Value;
             var priceType = SelectedPriceType.Value;
+            long count = 0;
+
+            observer?.SetMessage("Importing... \n");
 
             if (!timeFrame.IsTicks())
             {
@@ -84,11 +88,13 @@ namespace TickTrader.BotTerminal
                 foreach (var bar in importer.ImportBars())
                 {
                     vector.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                    count++;
 
                     if (vector.Count >= pageSize + 1)
                     {
                         var page = vector.RemoveFromStart(pageSize);
                         symbol.WriteSlice(timeFrame, priceType, page.First().OpenTime, page.Last().CloseTime, page);
+                        observer.SetMessage(string.Format("Importing...  {0} bars are imported.", count));
                     }
                 }
 
@@ -97,6 +103,8 @@ namespace TickTrader.BotTerminal
                     var page = vector.ToArray();
                     symbol.WriteSlice(timeFrame, priceType, page.First().OpenTime, page.Last().CloseTime, page);
                 }
+
+                observer.SetMessage(string.Format("Done importing. {0} bars were imported.", count));
             }
             else
             {
@@ -105,11 +113,13 @@ namespace TickTrader.BotTerminal
                 foreach (var tick in importer.ImportQuotes())
                 {
                     tickVector.Add(tick);
+                    count++;
 
                     if (tickVector.Count >= pageSize + 1)
                     {
                         var page = RemoveFromStart(tickVector, pageSize);
                         symbol.WriteSlice(timeFrame, page.First().Time, tickVector.Last().Time, page);
+                        observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
                     }
                 }
 
@@ -119,6 +129,8 @@ namespace TickTrader.BotTerminal
                     var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
                     symbol.WriteSlice(timeFrame, page.First().Time, toCorrected, page);
                 }
+
+                observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));
             }
         }
 
