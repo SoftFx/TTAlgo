@@ -5,6 +5,7 @@ namespace TickTrader.Algo.Protocol
     public enum LoginRejectReason
     {
         InvalidCredentials,
+        VersionMismatch,
         InternalServerError,
     }
 

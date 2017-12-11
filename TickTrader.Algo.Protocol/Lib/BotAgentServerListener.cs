@@ -54,8 +54,16 @@ namespace TickTrader.Algo.Protocol.Lib
                 var res = _server.ValidateCreds(message.Username, message.Password);
                 if (res)
                 {
-                    _logger.Info($"Client {session.Id} logged in");
-                    session.Send(new LoginReport(0));
+                    var currentVersion = VersionSpec.ResolveVersion(session.ClientMajorVersion, session.ClientMinorVersion, out var reason);
+                    if (currentVersion == -1)
+                    {
+                        session.Send(new LoginReject(0) { Reason = Sfx.LoginRejectReason.VersionMismatch, Text = reason });
+                    }
+                    else
+                    {
+                        _logger.Info($"Client {session.Id} logged in");
+                        session.Send(new LoginReport(0) { CurrentVersion = currentVersion });
+                    }
                 }
                 else
                 {
@@ -102,6 +110,20 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 var report = _server.GetAccountList();
+                report.RequestId = message.Id;
+                session.Send(report.ToMessage());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+            }
+        }
+
+        public override void OnBotListRequest(Server server, Server.Session session, BotListRequest message)
+        {
+            try
+            {
+                var report = _server.GetBotList();
                 report.RequestId = message.Id;
                 session.Send(report.ToMessage());
             }

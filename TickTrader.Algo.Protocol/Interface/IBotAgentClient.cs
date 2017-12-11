@@ -6,6 +6,8 @@
 
         void SetAccountList(AccountListReportEntity report);
 
+        void SetBotList(BotListReportEntity report);
+
         void SetPackageList(PackageListReportEntity report);
 
         #endregion Initialization

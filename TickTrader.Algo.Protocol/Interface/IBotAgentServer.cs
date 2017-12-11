@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Protocol
 
         AccountListReportEntity GetAccountList();
 
+        BotListReportEntity GetBotList();
+
         PackageListReportEntity GetPackageList();
 
         #endregion Initialization

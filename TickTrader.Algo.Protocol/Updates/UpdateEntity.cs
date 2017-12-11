@@ -25,17 +25,14 @@ namespace TickTrader.Algo.Protocol
     }
 
 
-    public abstract class UpdateEntity<T> : UpdateEntity
+    public abstract class UpdateEntity<T> : UpdateEntity where T : new()
     {
-        public T OldItem { get; set; }
-
-        public T NewItem { get; set; }
+        public T Item { get; set; }
 
 
         public UpdateEntity() : base()
         {
-            OldItem = default(T);
-            NewItem = default(T);
+            Item = new T();
         }
     }
 

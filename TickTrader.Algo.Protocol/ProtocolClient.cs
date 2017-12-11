@@ -32,6 +32,8 @@ namespace TickTrader.Algo.Protocol
 
         public IClientSessionSettings SessionSettings { get; }
 
+        public VersionSpec VersionSpec { get; internal set; }
+
 
         public ProtocolClient(IBotAgentClient agentClient, IClientSessionSettings settings)
         {
@@ -39,6 +41,7 @@ namespace TickTrader.Algo.Protocol
             SessionSettings = settings;
 
             _logger = LoggerHelper.GetLogger("Protocol.Client", SessionSettings.ProtocolSettings.LogDirectoryName, SessionSettings.ServerAddress);
+            VersionSpec = new VersionSpec();
 
             _stateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
 
@@ -156,8 +159,10 @@ namespace TickTrader.Algo.Protocol
             _stateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
-        private void ListenerOnLogin()
+        private void ListenerOnLogin(int currentVersion)
         {
+            VersionSpec = new VersionSpec(currentVersion);
+            _logger.Info($"Current version set to {VersionSpec.CurrentVersionStr}");
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
         }
 
@@ -204,6 +209,7 @@ namespace TickTrader.Algo.Protocol
         private void Init()
         {
             ClientSession.SendAccountListRequest(null, new AccountListRequestEntity().ToMessage());
+            ClientSession.SendBotListRequest(null, new BotListRequestEntity().ToMessage());
             ClientSession.SendPackageListRequest(null, new PackageListRequestEntity().ToMessage());
             ClientSession.SendSubscribeRequest(null, new SubscribeRequestEntity().ToMessage());
         }

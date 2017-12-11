@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotAgent.CmdClient
@@ -87,11 +88,12 @@ namespace TickTrader.BotAgent.CmdClient
                 return;
             }
 
-            var acc = CommandUi.Choose("account", _agentClient.Accounts, a => $"{a.Key.Server} - {a.Key.Login}");
+            var acc = CommandUi.Choose("account", _agentClient.Accounts, a => $"{a.Server} - {a.Login}");
+            var bots = _agentClient.Bots.Where(b => b.Account.Server == acc.Server && b.Account.Login == acc.Login).ToList();
 
-            Console.WriteLine($"{acc.Key.Server} - {acc.Key.Login}");
-            Console.WriteLine($"Bots cnt: {acc.Bots.Length}");
-            foreach (var bot in acc.Bots)
+            Console.WriteLine($"{acc.Server} - {acc.Login}");
+            Console.WriteLine($"Bots cnt: {bots.Count}");
+            foreach (var bot in bots)
             {
                 Console.WriteLine();
                 Console.WriteLine($"id: {bot.InstanceId}");

@@ -6,11 +6,15 @@ protocol BotAgent(1,0)
         ustring Password;
     }
 
-    message LoginReport;
+    message LoginReport
+    {
+        int32 CurrentVersion;
+    }
 
     enum LoginRejectReason
     {
         InvalidCredentials,
+        VersionMismatch,
         InternalServerError,
     }
 
@@ -131,8 +135,8 @@ protocol BotAgent(1,0)
 
     group AccountModel
     {
-        AccountKey Key;
-        BotModel[] Bots;
+        ustring Login;
+        ustring Server;
     }
 
     message AccountListRequest : Request;
@@ -140,6 +144,13 @@ protocol BotAgent(1,0)
     message AccountListReport : Report
     {
         AccountModel[] Accounts;
+    }
+
+    message BotListRequest : Request;
+
+    message BotListReport : Report
+    {
+        BotModel[] Bots;
     }
 
     message PackageListRequest : Request;
@@ -155,20 +166,17 @@ protocol BotAgent(1,0)
 
     message AccountModelUpdate : Update
     {
-        AccountModel? OldItem;
-        AccountModel? NewItem;
+        AccountModel Item;
     }
 
     message BotModelUpdate : Update
     {
-        BotModel? OldItem;
-        BotModel? NewItem;
+        BotModel Item;
     }
 
     message PackageModelUpdate : Update
     {
-        PackageModel? OldItem;
-        PackageModel? NewItem;
+        PackageModel Item;
     }
 
     processor Client()
@@ -307,6 +315,12 @@ protocol BotAgent(1,0)
             {
             }
         }
+        or send BotListRequest(BotListRequest)
+        {
+            recv BotListReport(BotListReport)
+            {
+            }
+        }
         or send PackageListRequest(PackageListRequest)
         {
             recv PackageListReport(PackageListReport)
@@ -330,6 +344,12 @@ protocol BotAgent(1,0)
         recv AccountListRequest(AccountListRequest)
         {
             send (AccountListReport)
+            {
+            }
+        }
+        or recv BotListRequest(BotListRequest)
+        {
+            send (BotListReport)
             {
             }
         }

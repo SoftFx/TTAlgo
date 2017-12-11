@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Protocol
             {
                 case Sfx.LoginRejectReason.InvalidCredentials:
                     return LoginRejectReason.InvalidCredentials;
+                case Sfx.LoginRejectReason.VersionMismatch:
+                    return LoginRejectReason.VersionMismatch;
                 case Sfx.LoginRejectReason.InternalServerError:
                     return LoginRejectReason.InternalServerError;
                 default:

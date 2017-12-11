@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Protocol.Lib
         public event Action Connected = delegate { };
         public event Action<string> ConnectionError = delegate { };
         public event Action Disconnected = delegate { };
-        public event Action Login = delegate { };
+        public event Action<int> Login = delegate { };
         public event Action<string> LoginReject = delegate { };
         public event Action<string> Logout = delegate { };
         public event Action Subscribed = delegate { };
@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 _logger.Info($"Successfull login, sessionId = {session.Guid}");
-                Login();
+                Login(message.CurrentVersion);
             }
             catch (Exception ex)
             {
@@ -88,6 +88,9 @@ namespace TickTrader.Algo.Protocol.Lib
                 {
                     case Sfx.LoginRejectReason.InvalidCredentials:
                         reason = "Invalid username or password";
+                        break;
+                    case Sfx.LoginRejectReason.VersionMismatch:
+                        reason = message.Text;
                         break;
                     case Sfx.LoginRejectReason.InternalServerError:
                         reason = $"Internal server error: {message.Text}";
@@ -172,6 +175,18 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 _client.SetAccountList(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnBotListReport(ClientSession session, BotListRequestClientContext BotListRequestClientContext, BotListReport message)
+        {
+            try
+            {
+                _client.SetBotList(message.ToEntity());
             }
             catch (Exception ex)
             {

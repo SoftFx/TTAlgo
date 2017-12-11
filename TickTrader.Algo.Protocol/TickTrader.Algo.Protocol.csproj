@@ -47,8 +47,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Converters\ToAlgo.cs" />
-    <Compile Include="Converters\ToSfx.cs" />
+    <Compile Include="Infrastructure\ToAlgo.cs" />
+    <Compile Include="Infrastructure\ToSfx.cs" />
     <Compile Include="Entities\AccountKeyEntity.cs" />
     <Compile Include="Entities\AccountModelEntity.cs" />
     <Compile Include="Entities\BotModelEntity.cs" />
@@ -57,8 +57,9 @@
     <Compile Include="Entities\PluginInfoEntity.cs" />
     <Compile Include="Entities\PluginKeyEntity.cs" />
     <Compile Include="Entities\PluginPermissionsEntity.cs" />
-    <Compile Include="Extensions\LoggerHelper.cs" />
-    <Compile Include="Extensions\ProtocolSettingsExtensions.cs" />
+    <Compile Include="Infrastructure\LoggerHelper.cs" />
+    <Compile Include="Infrastructure\ProtocolSettingsExtensions.cs" />
+    <Compile Include="Infrastructure\VersionSpec.cs" />
     <Compile Include="Interface\IBotAgentClient.cs" />
     <Compile Include="Interface\IBotAgentServer.cs" />
     <Compile Include="Interface\IClientSettings.cs" />
@@ -71,12 +72,14 @@
     <Compile Include="ProtocolClient.cs" />
     <Compile Include="ProtocolServer.cs" />
     <Compile Include="Reports\AccountListReportEntity.cs" />
+    <Compile Include="Reports\BotListReportEntity.cs" />
     <Compile Include="Reports\LoginRejectEntity.cs" />
     <Compile Include="Reports\LoginReportEntity.cs" />
     <Compile Include="Reports\LogoutReportEntity.cs" />
     <Compile Include="Reports\PackageListReportEntity.cs" />
     <Compile Include="Reports\SubcribeReportEntity.cs" />
     <Compile Include="Requests\AccountListRequestEntity.cs" />
+    <Compile Include="Requests\BotListRequestEntity.cs" />
     <Compile Include="Requests\LoginRequestEntity.cs" />
     <Compile Include="Requests\LogoutRequestEntity.cs" />
     <Compile Include="Requests\PackageListRequestEntity.cs" />

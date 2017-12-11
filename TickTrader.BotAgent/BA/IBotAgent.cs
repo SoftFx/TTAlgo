@@ -92,6 +92,7 @@ namespace TickTrader.BotAgent.BA
         bool IsValid { get; }
 
         bool NameEquals(string name);
+        IEnumerable<PluginInfo> GetPlugins();
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 

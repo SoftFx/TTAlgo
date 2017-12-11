@@ -1326,7 +1326,7 @@ namespace SoftFX.Net.BotAgent
         public LoginReport(int i)
         {
             info_ = BotAgent.Info.LoginReport;
-            data_ = new MessageData(8);
+            data_ = new MessageData(12);
             
             data_.SetInt(4, 1);
         }
@@ -1338,6 +1338,13 @@ namespace SoftFX.Net.BotAgent
             
             info_ = info;
             data_ = data;
+        }
+        
+        public int CurrentVersion
+        {
+            set { data_.SetInt(8, value); }
+            
+            get { return data_.GetInt(8); }
         }
         
         public int Size
@@ -1379,7 +1386,8 @@ namespace SoftFX.Net.BotAgent
     enum LoginRejectReason
     {
         InvalidCredentials = 0,
-        InternalServerError = 1,
+        VersionMismatch = 1,
+        InternalServerError = 2,
     }
     
     struct LoginRejectReasonArray
@@ -4210,14 +4218,68 @@ namespace SoftFX.Net.BotAgent
             offset_ = offset;
         }
         
-        public AccountKey Key
+        public string Login
         {
-            get { return new AccountKey(data_, offset_ + 0); }
+            set { data_.SetUString(offset_ + 0, value); }
+            
+            get { return data_.GetUString(offset_ + 0); }
         }
         
-        public BotModelArray Bots
+        public int GetLoginLength()
         {
-            get { return new BotModelArray(data_, offset_ + 16); }
+            return data_.GetUStringLength(offset_ + 0);
+        }
+        
+        public void SetLogin(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 0, value, offset, count);
+        }
+        
+        public void GetLogin(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 0, value, offset);
+        }
+        
+        public void ReadLogin(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 0, stream, size);
+        }
+        
+        public void WriteLogin(Stream stream)
+        {
+            data_.WriteUString(offset_ + 0, stream);
+        }
+        
+        public string Server
+        {
+            set { data_.SetUString(offset_ + 8, value); }
+            
+            get { return data_.GetUString(offset_ + 8); }
+        }
+        
+        public int GetServerLength()
+        {
+            return data_.GetUStringLength(offset_ + 8);
+        }
+        
+        public void SetServer(char[] value, int offset, int count)
+        {
+            data_.SetUString(offset_ + 8, value, offset, count);
+        }
+        
+        public void GetServer(char[] value, int offset)
+        {
+            data_.GetUString(offset_ + 8, value, offset);
+        }
+        
+        public void ReadServer(Stream stream, int size)
+        {
+            data_.ReadUString(offset_ + 8, stream, size);
+        }
+        
+        public void WriteServer(Stream stream)
+        {
+            data_.WriteUString(offset_ + 8, stream);
         }
         
         MessageData data_;
@@ -4234,7 +4296,7 @@ namespace SoftFX.Net.BotAgent
         
         public void New()
         {
-            data_.NewGroup(offset_, 24);
+            data_.NewGroup(offset_, 16);
         }
         
         public bool HasValue
@@ -4247,14 +4309,68 @@ namespace SoftFX.Net.BotAgent
             get { return new AccountModel(data_, GetDataOffset()); }
         }
         
-        public AccountKey Key
+        public string Login
         {
-            get { return new AccountKey(data_, GetDataOffset() + 0); }
+            set { data_.SetUString(GetDataOffset() + 0, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 0); }
         }
         
-        public BotModelArray Bots
+        public int GetLoginLength()
         {
-            get { return new BotModelArray(data_, GetDataOffset() + 16); }
+            return data_.GetUStringLength(GetDataOffset() + 0);
+        }
+        
+        public void SetLogin(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 0, value, offset, count);
+        }
+        
+        public void GetLogin(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 0, value, offset);
+        }
+        
+        public void ReadLogin(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 0, stream, size);
+        }
+        
+        public void WriteLogin(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 0, stream);
+        }
+        
+        public string Server
+        {
+            set { data_.SetUString(GetDataOffset() + 8, value); }
+            
+            get { return data_.GetUString(GetDataOffset() + 8); }
+        }
+        
+        public int GetServerLength()
+        {
+            return data_.GetUStringLength(GetDataOffset() + 8);
+        }
+        
+        public void SetServer(char[] value, int offset, int count)
+        {
+            data_.SetUString(GetDataOffset() + 8, value, offset, count);
+        }
+        
+        public void GetServer(char[] value, int offset)
+        {
+            data_.GetUString(GetDataOffset() + 8, value, offset);
+        }
+        
+        public void ReadServer(Stream stream, int size)
+        {
+            data_.ReadUString(GetDataOffset() + 8, stream, size);
+        }
+        
+        public void WriteServer(Stream stream)
+        {
+            data_.WriteUString(GetDataOffset() + 8, stream);
         }
         
         int GetDataOffset()
@@ -4281,7 +4397,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Resize(int length)
         {
-            data_.ResizeArray(offset_, length, 24);
+            data_.ResizeArray(offset_, length, 16);
         }
         
         public int Length
@@ -4293,7 +4409,7 @@ namespace SoftFX.Net.BotAgent
         {
             get
             {
-                int itemOffset = data_.GetArrayItemOffset(offset_, index, 24);
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 16);
                 
                 return new AccountModel(data_, itemOffset);
             }
@@ -4534,6 +4650,205 @@ namespace SoftFX.Net.BotAgent
         MessageData data_;
     }
     
+    struct BotListRequest
+    {
+        public static implicit operator Request(BotListRequest message)
+        {
+            return new Request(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(BotListRequest message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public BotListRequest(int i)
+        {
+            info_ = BotAgent.Info.BotListRequest;
+            data_ = new MessageData(16);
+            
+            data_.SetInt(4, 10);
+        }
+        
+        public BotListRequest(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.BotListRequest))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string Id
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public BotListRequest Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new BotListRequest(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
+    struct BotListReport
+    {
+        public static implicit operator Report(BotListReport message)
+        {
+            return new Report(message.Info, message.Data);
+        }
+        
+        public static implicit operator Message(BotListReport message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public BotListReport(int i)
+        {
+            info_ = BotAgent.Info.BotListReport;
+            data_ = new MessageData(24);
+            
+            data_.SetInt(4, 11);
+        }
+        
+        public BotListReport(MessageInfo info, MessageData data)
+        {
+            if (! info.Is(BotAgent.Info.BotListReport))
+                throw new Exception("Invalid message type cast operation");
+            
+            info_ = info;
+            data_ = data;
+        }
+        
+        public string RequestId
+        {
+            set { data_.SetString(8, value); }
+            
+            get { return data_.GetString(8); }
+        }
+        
+        public int GetRequestIdLength()
+        {
+            return data_.GetStringLength(8);
+        }
+        
+        public void SetRequestId(char[] value, int offset, int count)
+        {
+            data_.SetString(8, value, offset, count);
+        }
+        
+        public void GetRequestId(char[] value, int offset)
+        {
+            data_.GetString(8, value, offset);
+        }
+        
+        public void ReadRequestId(Stream stream, int size)
+        {
+            data_.ReadString(8, stream, size);
+        }
+        
+        public void WriteRequestId(Stream stream)
+        {
+            data_.WriteString(8, stream);
+        }
+        
+        public BotModelArray Bots
+        {
+            get { return new BotModelArray(data_, 16); }
+        }
+        
+        public int Size
+        {
+            get { return data_.GetInt(0); }
+        }
+        
+        public MessageInfo Info
+        {
+            get { return info_; }
+        }
+        
+        public MessageData Data
+        {
+            get { return data_; }
+        }
+        
+        public BotListReport Clone()
+        {
+            MessageData data = data_.Clone();
+            
+            return new BotListReport(info_, data);
+        }
+        
+        public void Reset()
+        {
+            data_.Reset(info_.minSize);
+        }
+        
+        public override string ToString()
+        {
+            return data_.ToString(info_);
+        }
+        
+        MessageInfo info_;
+        MessageData data_;
+    }
+    
     struct PackageListRequest
     {
         public static implicit operator Request(PackageListRequest message)
@@ -4551,7 +4866,7 @@ namespace SoftFX.Net.BotAgent
             info_ = BotAgent.Info.PackageListRequest;
             data_ = new MessageData(16);
             
-            data_.SetInt(4, 10);
+            data_.SetInt(4, 12);
         }
         
         public PackageListRequest(MessageInfo info, MessageData data)
@@ -4648,7 +4963,7 @@ namespace SoftFX.Net.BotAgent
             info_ = BotAgent.Info.PackageListReport;
             data_ = new MessageData(24);
             
-            data_.SetInt(4, 11);
+            data_.SetInt(4, 13);
         }
         
         public PackageListReport(MessageInfo info, MessageData data)
@@ -4750,7 +5065,7 @@ namespace SoftFX.Net.BotAgent
             info_ = BotAgent.Info.SubscribeRequest;
             data_ = new MessageData(16);
             
-            data_.SetInt(4, 12);
+            data_.SetInt(4, 14);
         }
         
         public SubscribeRequest(MessageInfo info, MessageData data)
@@ -4847,7 +5162,7 @@ namespace SoftFX.Net.BotAgent
             info_ = BotAgent.Info.SubscribeReport;
             data_ = new MessageData(16);
             
-            data_.SetInt(4, 13);
+            data_.SetInt(4, 15);
         }
         
         public SubscribeReport(MessageInfo info, MessageData data)
@@ -4942,9 +5257,9 @@ namespace SoftFX.Net.BotAgent
         public AccountModelUpdate(int i)
         {
             info_ = BotAgent.Info.AccountModelUpdate;
-            data_ = new MessageData(68);
+            data_ = new MessageData(36);
             
-            data_.SetInt(4, 14);
+            data_.SetInt(4, 16);
         }
         
         public AccountModelUpdate(MessageInfo info, MessageData data)
@@ -4995,14 +5310,9 @@ namespace SoftFX.Net.BotAgent
             get { return (UpdateType) data_.GetUInt(16); }
         }
         
-        public AccountModelNull OldItem
+        public AccountModel Item
         {
-            get { return new AccountModelNull(data_, 20); }
-        }
-        
-        public AccountModelNull NewItem
-        {
-            get { return new AccountModelNull(data_, 44); }
+            get { return new AccountModel(data_, 20); }
         }
         
         public int Size
@@ -5056,9 +5366,9 @@ namespace SoftFX.Net.BotAgent
         public BotModelUpdate(int i)
         {
             info_ = BotAgent.Info.BotModelUpdate;
-            data_ = new MessageData(112);
+            data_ = new MessageData(66);
             
-            data_.SetInt(4, 15);
+            data_.SetInt(4, 17);
         }
         
         public BotModelUpdate(MessageInfo info, MessageData data)
@@ -5109,14 +5419,9 @@ namespace SoftFX.Net.BotAgent
             get { return (UpdateType) data_.GetUInt(16); }
         }
         
-        public BotModelNull OldItem
+        public BotModel Item
         {
-            get { return new BotModelNull(data_, 20); }
-        }
-        
-        public BotModelNull NewItem
-        {
-            get { return new BotModelNull(data_, 66); }
+            get { return new BotModel(data_, 20); }
         }
         
         public int Size
@@ -5170,9 +5475,9 @@ namespace SoftFX.Net.BotAgent
         public PackageModelUpdate(int i)
         {
             info_ = BotAgent.Info.PackageModelUpdate;
-            data_ = new MessageData(68);
+            data_ = new MessageData(44);
             
-            data_.SetInt(4, 16);
+            data_.SetInt(4, 18);
         }
         
         public PackageModelUpdate(MessageInfo info, MessageData data)
@@ -5223,14 +5528,9 @@ namespace SoftFX.Net.BotAgent
             get { return (UpdateType) data_.GetUInt(16); }
         }
         
-        public PackageModelNull OldItem
+        public PackageModel Item
         {
-            get { return new PackageModelNull(data_, 20); }
-        }
-        
-        public PackageModelNull NewItem
-        {
-            get { return new PackageModelNull(data_, 44); }
+            get { return new PackageModel(data_, 20); }
         }
         
         public int Size
@@ -5335,6 +5635,26 @@ namespace SoftFX.Net.BotAgent
         public static bool AccountListReport(Message message)
         {
             return message.Info.Is(Info.AccountListReport);
+        }
+        
+        public static bool BotListRequest(Request message)
+        {
+            return message.Info.Is(Info.BotListRequest);
+        }
+        
+        public static bool BotListRequest(Message message)
+        {
+            return message.Info.Is(Info.BotListRequest);
+        }
+        
+        public static bool BotListReport(Report message)
+        {
+            return message.Info.Is(Info.BotListReport);
+        }
+        
+        public static bool BotListReport(Message message)
+        {
+            return message.Info.Is(Info.BotListReport);
         }
         
         public static bool PackageListRequest(Request message)
@@ -5530,6 +5850,46 @@ namespace SoftFX.Net.BotAgent
             return new AccountListReport(message.Info, message.Data);
         }
         
+        public static Request Request(BotListRequest message)
+        {
+            return new Request(message.Info, message.Data);
+        }
+        
+        public static BotListRequest BotListRequest(Request message)
+        {
+            return new BotListRequest(message.Info, message.Data);
+        }
+        
+        public static Message Message(BotListRequest message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static BotListRequest BotListRequest(Message message)
+        {
+            return new BotListRequest(message.Info, message.Data);
+        }
+        
+        public static Report Report(BotListReport message)
+        {
+            return new Report(message.Info, message.Data);
+        }
+        
+        public static BotListReport BotListReport(Report message)
+        {
+            return new BotListReport(message.Info, message.Data);
+        }
+        
+        public static Message Message(BotListReport message)
+        {
+            return new Message(message.Info, message.Data);
+        }
+        
+        public static BotListReport BotListReport(Message message)
+        {
+            return new BotListReport(message.Info, message.Data);
+        }
+        
         public static Request Request(PackageListRequest message)
         {
             return new Request(message.Info, message.Data);
@@ -5698,6 +6058,8 @@ namespace SoftFX.Net.BotAgent
             ConstructAccountModel();
             ConstructAccountListRequest();
             ConstructAccountListReport();
+            ConstructBotListRequest();
+            ConstructBotListReport();
             ConstructPackageListRequest();
             ConstructPackageListReport();
             ConstructSubscribeRequest();
@@ -5735,12 +6097,19 @@ namespace SoftFX.Net.BotAgent
         
         static void ConstructLoginReport()
         {
+            FieldInfo CurrentVersion = new FieldInfo();
+            CurrentVersion.name = "CurrentVersion";
+            CurrentVersion.offset = 8;
+            CurrentVersion.type = FieldType.Int;
+            CurrentVersion.optional = false;
+            CurrentVersion.repeatable = false;
             
             LoginReport = new MessageInfo();
             LoginReport.name = "LoginReport";
             LoginReport.id = 1;
-            LoginReport.minSize = 8;
-            LoginReport.fields = new FieldInfo[0];
+            LoginReport.minSize = 12;
+            LoginReport.fields = new FieldInfo[1];
+            LoginReport.fields[0] = CurrentVersion;
         }
         
         static void ConstructLoginRejectReason()
@@ -5749,16 +6118,21 @@ namespace SoftFX.Net.BotAgent
             InvalidCredentials.name = "InvalidCredentials";
             InvalidCredentials.value = 0;
             
+            EnumMemberInfo VersionMismatch = new EnumMemberInfo();
+            VersionMismatch.name = "VersionMismatch";
+            VersionMismatch.value = 1;
+            
             EnumMemberInfo InternalServerError = new EnumMemberInfo();
             InternalServerError.name = "InternalServerError";
-            InternalServerError.value = 1;
+            InternalServerError.value = 2;
             
             LoginRejectReason = new EnumInfo();
             LoginRejectReason.name = "LoginRejectReason";
             LoginRejectReason.minSize = 4;
-            LoginRejectReason.members = new EnumMemberInfo[2];
+            LoginRejectReason.members = new EnumMemberInfo[3];
             LoginRejectReason.members[0] = InvalidCredentials;
-            LoginRejectReason.members[1] = InternalServerError;
+            LoginRejectReason.members[1] = VersionMismatch;
+            LoginRejectReason.members[2] = InternalServerError;
         }
         
         static void ConstructLoginReject()
@@ -6261,28 +6635,26 @@ namespace SoftFX.Net.BotAgent
         
         static void ConstructAccountModel()
         {
-            FieldInfo Key = new FieldInfo();
-            Key.name = "Key";
-            Key.offset = 0;
-            Key.type = FieldType.Group;
-            Key.groupInfo = Info.AccountKey;
-            Key.optional = false;
-            Key.repeatable = false;
+            FieldInfo Login = new FieldInfo();
+            Login.name = "Login";
+            Login.offset = 0;
+            Login.type = FieldType.UString;
+            Login.optional = false;
+            Login.repeatable = false;
             
-            FieldInfo Bots = new FieldInfo();
-            Bots.name = "Bots";
-            Bots.offset = 16;
-            Bots.type = FieldType.Group;
-            Bots.groupInfo = Info.BotModel;
-            Bots.optional = false;
-            Bots.repeatable = true;
+            FieldInfo Server = new FieldInfo();
+            Server.name = "Server";
+            Server.offset = 8;
+            Server.type = FieldType.UString;
+            Server.optional = false;
+            Server.repeatable = false;
             
             AccountModel = new GroupInfo();
             AccountModel.name = "AccountModel";
-            AccountModel.minSize = 24;
+            AccountModel.minSize = 16;
             AccountModel.fields = new FieldInfo[2];
-            AccountModel.fields[0] = Key;
-            AccountModel.fields[1] = Bots;
+            AccountModel.fields[0] = Login;
+            AccountModel.fields[1] = Server;
         }
         
         static void ConstructAccountListRequest()
@@ -6330,6 +6702,51 @@ namespace SoftFX.Net.BotAgent
             AccountListReport.fields[1] = Accounts;
         }
         
+        static void ConstructBotListRequest()
+        {
+            FieldInfo Id = new FieldInfo();
+            Id.name = "Id";
+            Id.offset = 8;
+            Id.type = FieldType.String;
+            Id.optional = false;
+            Id.repeatable = false;
+            
+            BotListRequest = new MessageInfo();
+            BotListRequest.parentInfo = Request;
+            BotListRequest.name = "BotListRequest";
+            BotListRequest.id = 10;
+            BotListRequest.minSize = 16;
+            BotListRequest.fields = new FieldInfo[1];
+            BotListRequest.fields[0] = Id;
+        }
+        
+        static void ConstructBotListReport()
+        {
+            FieldInfo RequestId = new FieldInfo();
+            RequestId.name = "RequestId";
+            RequestId.offset = 8;
+            RequestId.type = FieldType.String;
+            RequestId.optional = false;
+            RequestId.repeatable = false;
+            
+            FieldInfo Bots = new FieldInfo();
+            Bots.name = "Bots";
+            Bots.offset = 16;
+            Bots.type = FieldType.Group;
+            Bots.groupInfo = Info.BotModel;
+            Bots.optional = false;
+            Bots.repeatable = true;
+            
+            BotListReport = new MessageInfo();
+            BotListReport.parentInfo = Report;
+            BotListReport.name = "BotListReport";
+            BotListReport.id = 11;
+            BotListReport.minSize = 24;
+            BotListReport.fields = new FieldInfo[2];
+            BotListReport.fields[0] = RequestId;
+            BotListReport.fields[1] = Bots;
+        }
+        
         static void ConstructPackageListRequest()
         {
             FieldInfo Id = new FieldInfo();
@@ -6342,7 +6759,7 @@ namespace SoftFX.Net.BotAgent
             PackageListRequest = new MessageInfo();
             PackageListRequest.parentInfo = Request;
             PackageListRequest.name = "PackageListRequest";
-            PackageListRequest.id = 10;
+            PackageListRequest.id = 12;
             PackageListRequest.minSize = 16;
             PackageListRequest.fields = new FieldInfo[1];
             PackageListRequest.fields[0] = Id;
@@ -6368,7 +6785,7 @@ namespace SoftFX.Net.BotAgent
             PackageListReport = new MessageInfo();
             PackageListReport.parentInfo = Report;
             PackageListReport.name = "PackageListReport";
-            PackageListReport.id = 11;
+            PackageListReport.id = 13;
             PackageListReport.minSize = 24;
             PackageListReport.fields = new FieldInfo[2];
             PackageListReport.fields[0] = RequestId;
@@ -6387,7 +6804,7 @@ namespace SoftFX.Net.BotAgent
             SubscribeRequest = new MessageInfo();
             SubscribeRequest.parentInfo = Request;
             SubscribeRequest.name = "SubscribeRequest";
-            SubscribeRequest.id = 12;
+            SubscribeRequest.id = 14;
             SubscribeRequest.minSize = 16;
             SubscribeRequest.fields = new FieldInfo[1];
             SubscribeRequest.fields[0] = Id;
@@ -6405,7 +6822,7 @@ namespace SoftFX.Net.BotAgent
             SubscribeReport = new MessageInfo();
             SubscribeReport.parentInfo = Report;
             SubscribeReport.name = "SubscribeReport";
-            SubscribeReport.id = 13;
+            SubscribeReport.id = 15;
             SubscribeReport.minSize = 16;
             SubscribeReport.fields = new FieldInfo[1];
             SubscribeReport.fields[0] = RequestId;
@@ -6428,32 +6845,23 @@ namespace SoftFX.Net.BotAgent
             Type.optional = false;
             Type.repeatable = false;
             
-            FieldInfo OldItem = new FieldInfo();
-            OldItem.name = "OldItem";
-            OldItem.offset = 20;
-            OldItem.type = FieldType.Group;
-            OldItem.groupInfo = Info.AccountModel;
-            OldItem.optional = true;
-            OldItem.repeatable = false;
-            
-            FieldInfo NewItem = new FieldInfo();
-            NewItem.name = "NewItem";
-            NewItem.offset = 44;
-            NewItem.type = FieldType.Group;
-            NewItem.groupInfo = Info.AccountModel;
-            NewItem.optional = true;
-            NewItem.repeatable = false;
+            FieldInfo Item = new FieldInfo();
+            Item.name = "Item";
+            Item.offset = 20;
+            Item.type = FieldType.Group;
+            Item.groupInfo = Info.AccountModel;
+            Item.optional = false;
+            Item.repeatable = false;
             
             AccountModelUpdate = new MessageInfo();
             AccountModelUpdate.parentInfo = Update;
             AccountModelUpdate.name = "AccountModelUpdate";
-            AccountModelUpdate.id = 14;
-            AccountModelUpdate.minSize = 68;
-            AccountModelUpdate.fields = new FieldInfo[4];
+            AccountModelUpdate.id = 16;
+            AccountModelUpdate.minSize = 36;
+            AccountModelUpdate.fields = new FieldInfo[3];
             AccountModelUpdate.fields[0] = Id;
             AccountModelUpdate.fields[1] = Type;
-            AccountModelUpdate.fields[2] = OldItem;
-            AccountModelUpdate.fields[3] = NewItem;
+            AccountModelUpdate.fields[2] = Item;
         }
         
         static void ConstructBotModelUpdate()
@@ -6473,32 +6881,23 @@ namespace SoftFX.Net.BotAgent
             Type.optional = false;
             Type.repeatable = false;
             
-            FieldInfo OldItem = new FieldInfo();
-            OldItem.name = "OldItem";
-            OldItem.offset = 20;
-            OldItem.type = FieldType.Group;
-            OldItem.groupInfo = Info.BotModel;
-            OldItem.optional = true;
-            OldItem.repeatable = false;
-            
-            FieldInfo NewItem = new FieldInfo();
-            NewItem.name = "NewItem";
-            NewItem.offset = 66;
-            NewItem.type = FieldType.Group;
-            NewItem.groupInfo = Info.BotModel;
-            NewItem.optional = true;
-            NewItem.repeatable = false;
+            FieldInfo Item = new FieldInfo();
+            Item.name = "Item";
+            Item.offset = 20;
+            Item.type = FieldType.Group;
+            Item.groupInfo = Info.BotModel;
+            Item.optional = false;
+            Item.repeatable = false;
             
             BotModelUpdate = new MessageInfo();
             BotModelUpdate.parentInfo = Update;
             BotModelUpdate.name = "BotModelUpdate";
-            BotModelUpdate.id = 15;
-            BotModelUpdate.minSize = 112;
-            BotModelUpdate.fields = new FieldInfo[4];
+            BotModelUpdate.id = 17;
+            BotModelUpdate.minSize = 66;
+            BotModelUpdate.fields = new FieldInfo[3];
             BotModelUpdate.fields[0] = Id;
             BotModelUpdate.fields[1] = Type;
-            BotModelUpdate.fields[2] = OldItem;
-            BotModelUpdate.fields[3] = NewItem;
+            BotModelUpdate.fields[2] = Item;
         }
         
         static void ConstructPackageModelUpdate()
@@ -6518,32 +6917,23 @@ namespace SoftFX.Net.BotAgent
             Type.optional = false;
             Type.repeatable = false;
             
-            FieldInfo OldItem = new FieldInfo();
-            OldItem.name = "OldItem";
-            OldItem.offset = 20;
-            OldItem.type = FieldType.Group;
-            OldItem.groupInfo = Info.PackageModel;
-            OldItem.optional = true;
-            OldItem.repeatable = false;
-            
-            FieldInfo NewItem = new FieldInfo();
-            NewItem.name = "NewItem";
-            NewItem.offset = 44;
-            NewItem.type = FieldType.Group;
-            NewItem.groupInfo = Info.PackageModel;
-            NewItem.optional = true;
-            NewItem.repeatable = false;
+            FieldInfo Item = new FieldInfo();
+            Item.name = "Item";
+            Item.offset = 20;
+            Item.type = FieldType.Group;
+            Item.groupInfo = Info.PackageModel;
+            Item.optional = false;
+            Item.repeatable = false;
             
             PackageModelUpdate = new MessageInfo();
             PackageModelUpdate.parentInfo = Update;
             PackageModelUpdate.name = "PackageModelUpdate";
-            PackageModelUpdate.id = 16;
-            PackageModelUpdate.minSize = 68;
-            PackageModelUpdate.fields = new FieldInfo[4];
+            PackageModelUpdate.id = 18;
+            PackageModelUpdate.minSize = 44;
+            PackageModelUpdate.fields = new FieldInfo[3];
             PackageModelUpdate.fields[0] = Id;
             PackageModelUpdate.fields[1] = Type;
-            PackageModelUpdate.fields[2] = OldItem;
-            PackageModelUpdate.fields[3] = NewItem;
+            PackageModelUpdate.fields[2] = Item;
         }
         
         
@@ -6568,6 +6958,8 @@ namespace SoftFX.Net.BotAgent
             BotAgent.AddMessageInfo(Update);
             BotAgent.AddMessageInfo(AccountListRequest);
             BotAgent.AddMessageInfo(AccountListReport);
+            BotAgent.AddMessageInfo(BotListRequest);
+            BotAgent.AddMessageInfo(BotListReport);
             BotAgent.AddMessageInfo(PackageListRequest);
             BotAgent.AddMessageInfo(PackageListReport);
             BotAgent.AddMessageInfo(SubscribeRequest);
@@ -6600,6 +6992,8 @@ namespace SoftFX.Net.BotAgent
         public static GroupInfo AccountModel;
         public static MessageInfo AccountListRequest;
         public static MessageInfo AccountListReport;
+        public static MessageInfo BotListRequest;
+        public static MessageInfo BotListReport;
         public static MessageInfo PackageListRequest;
         public static MessageInfo PackageListReport;
         public static MessageInfo SubscribeRequest;
@@ -6648,6 +7042,13 @@ namespace SoftFX.Net.BotAgent
     class AccountListRequestClientContext : ClientContext
     {
         public AccountListRequestClientContext(bool waitable) : base(waitable)
+        {
+        }
+    }
+    
+    class BotListRequestClientContext : ClientContext
+    {
+        public BotListRequestClientContext(bool waitable) : base(waitable)
         {
         }
     }
@@ -6758,16 +7159,17 @@ namespace SoftFX.Net.BotAgent
             stateMutex_ = new object();
             connected_ = false;
             
-            Event_LoginReport_178_13_LoginReport_ = new Event_LoginReport_178_13_LoginReport(this);
-            Event_LoginReject_178_13_LoginReject_ = new Event_LoginReject_178_13_LoginReject(this);
-            Event_LogoutReport_187_9_LogoutReport_ = new Event_LogoutReport_187_9_LogoutReport(this);
-            Event_LogoutReport_205_13_LogoutReport_ = new Event_LogoutReport_205_13_LogoutReport(this);
-            Event_AccountModelUpdate_271_9_AccountModelUpdate_ = new Event_AccountModelUpdate_271_9_AccountModelUpdate(this);
-            Event_BotModelUpdate_271_9_BotModelUpdate_ = new Event_BotModelUpdate_271_9_BotModelUpdate(this);
-            Event_PackageModelUpdate_271_9_PackageModelUpdate_ = new Event_PackageModelUpdate_271_9_PackageModelUpdate(this);
-            Event_AccountListReport_306_13_AccountListReport_ = new Event_AccountListReport_306_13_AccountListReport(this);
-            Event_PackageListReport_312_13_PackageListReport_ = new Event_PackageListReport_312_13_PackageListReport(this);
-            Event_SubscribeReport_318_13_SubscribeReport_ = new Event_SubscribeReport_318_13_SubscribeReport(this);
+            Event_LoginReport_186_13_LoginReport_ = new Event_LoginReport_186_13_LoginReport(this);
+            Event_LoginReject_186_13_LoginReject_ = new Event_LoginReject_186_13_LoginReject(this);
+            Event_LogoutReport_195_9_LogoutReport_ = new Event_LogoutReport_195_9_LogoutReport(this);
+            Event_LogoutReport_213_13_LogoutReport_ = new Event_LogoutReport_213_13_LogoutReport(this);
+            Event_AccountModelUpdate_279_9_AccountModelUpdate_ = new Event_AccountModelUpdate_279_9_AccountModelUpdate(this);
+            Event_BotModelUpdate_279_9_BotModelUpdate_ = new Event_BotModelUpdate_279_9_BotModelUpdate(this);
+            Event_PackageModelUpdate_279_9_PackageModelUpdate_ = new Event_PackageModelUpdate_279_9_PackageModelUpdate(this);
+            Event_AccountListReport_314_13_AccountListReport_ = new Event_AccountListReport_314_13_AccountListReport(this);
+            Event_BotListReport_320_13_BotListReport_ = new Event_BotListReport_320_13_BotListReport(this);
+            Event_PackageListReport_326_13_PackageListReport_ = new Event_PackageListReport_326_13_PackageListReport(this);
+            Event_SubscribeReport_332_13_SubscribeReport_ = new Event_SubscribeReport_332_13_SubscribeReport(this);
             
             event_ = null;
         }
@@ -6950,6 +7352,50 @@ namespace SoftFX.Net.BotAgent
                 ClientRequest:
                 
                 ClientRequestProcessor.PostprocessSendAccountListRequest(context, message);
+                
+                if (ClientRequestProcessor.Completed)
+                    ClientRequestProcessorDictionary_.Remove(key);
+                
+                Client:
+                
+                ClientProcessor_.PostprocessSend(message);
+                
+                if (ClientProcessor_.Completed)
+                    coreSession_.Disconnect("Client disconnect");
+            }
+        }
+        
+        public void SendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+        {
+            lock (stateMutex_)
+            {
+                if (ClientProcessor_ == null)
+                    throw new Exception(string.Format("Session is not active : {0}({1})", coreSession_.Name, coreSession_.Guid));
+                
+                if (coreSession_.LogEvents)
+                    coreSession_.LogEvent("SendBotListRequest({0})", message.ToString());
+                
+                ClientProcessor_.PreprocessSend(message);
+                
+                string key = message.Id;
+                ClientRequestProcessor ClientRequestProcessor;
+                
+                if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                {
+                    ClientRequestProcessor = new ClientRequestProcessor(this, key);
+                    ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                }
+                
+                ClientRequestProcessor.PreprocessSendBotListRequest(context, message);
+                
+                if (context != null)
+                    context.Reset();
+                
+                coreSession_.Send(message);
+                
+                ClientRequest:
+                
+                ClientRequestProcessor.PostprocessSendBotListRequest(context, message);
                 
                 if (ClientRequestProcessor.Completed)
                     ClientRequestProcessorDictionary_.Remove(key);
@@ -7212,16 +7658,16 @@ namespace SoftFX.Net.BotAgent
             {
                 session_ = session;
                 
-                State_176_9_ = new State_176_9(this);
-                State_178_13_ = new State_178_13(this);
-                State_187_9_ = new State_187_9(this);
-                State_205_13_ = new State_205_13(this);
+                State_184_9_ = new State_184_9(this);
+                State_186_13_ = new State_186_13(this);
+                State_195_9_ = new State_195_9(this);
+                State_213_13_ = new State_213_13(this);
                 State_0_ = new State_0(this);
                 
-                state_ = State_176_9_;
+                state_ = State_184_9_;
                 
                 if (session_.coreSession_.LogStates)
-                    session_.coreSession_.LogState("Client : 176_9");
+                    session_.coreSession_.LogState("Client : 184_9");
             }
             
             public bool Completed
@@ -7295,9 +7741,9 @@ namespace SoftFX.Net.BotAgent
                 protected ClientProcessor processor_;
             }
             
-            class State_176_9 : State
+            class State_184_9 : State
             {
-                public State_176_9(ClientProcessor processor) : base(processor)
+                public State_184_9(ClientProcessor processor) : base(processor)
                 {
                 }
                 
@@ -7307,17 +7753,17 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    processor_.State_178_13_.LoginRequestClientContext_ = context;
+                    processor_.State_186_13_.LoginRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_178_13_;
+                    processor_.state_ = processor_.State_186_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("Client : 178_13");
+                        processor_.session_.coreSession_.LogState("Client : 186_13");
                 }
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 176_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 184_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -7329,17 +7775,17 @@ namespace SoftFX.Net.BotAgent
                     if (Is.LoginRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 176_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 184_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
                 {
                     if (Is.LoginRequest(message))
                     {
-                        processor_.state_ = processor_.State_178_13_;
+                        processor_.state_ = processor_.State_186_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 178_13");
+                            processor_.session_.coreSession_.LogState("Client : 186_13");
                         
                         return;
                     }
@@ -7347,7 +7793,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 176_9 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 184_9 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -7355,15 +7801,15 @@ namespace SoftFX.Net.BotAgent
                 }
             }
             
-            class State_178_13 : State
+            class State_186_13 : State
             {
-                public State_178_13(ClientProcessor processor) : base(processor)
+                public State_186_13(ClientProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 178_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 186_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -7372,7 +7818,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 178_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 186_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -7381,7 +7827,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 178_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 186_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -7396,18 +7842,18 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LoginReport_178_13_LoginReport_.LoginRequestClientContext_ = LoginRequestClientContext_;
-                            processor_.session_.Event_LoginReport_178_13_LoginReport_.LoginReport_ = LoginReport;
+                            processor_.session_.Event_LoginReport_186_13_LoginReport_.LoginRequestClientContext_ = LoginRequestClientContext_;
+                            processor_.session_.Event_LoginReport_186_13_LoginReport_.LoginReport_ = LoginReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LoginReport_178_13_LoginReport_;
+                            processor_.session_.event_ = processor_.session_.Event_LoginReport_186_13_LoginReport_;
                         }
                         
                         LoginRequestClientContext_ = null;
                         
-                        processor_.state_ = processor_.State_187_9_;
+                        processor_.state_ = processor_.State_195_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 187_9");
+                            processor_.session_.coreSession_.LogState("Client : 195_9");
                         
                         return;
                     }
@@ -7418,10 +7864,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LoginReject_178_13_LoginReject_.LoginRequestClientContext_ = LoginRequestClientContext_;
-                            processor_.session_.Event_LoginReject_178_13_LoginReject_.LoginReject_ = LoginReject;
+                            processor_.session_.Event_LoginReject_186_13_LoginReject_.LoginRequestClientContext_ = LoginRequestClientContext_;
+                            processor_.session_.Event_LoginReject_186_13_LoginReject_.LoginReject_ = LoginReject;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LoginReject_178_13_LoginReject_;
+                            processor_.session_.event_ = processor_.session_.Event_LoginReject_186_13_LoginReject_;
                         }
                         
                         LoginRequestClientContext_ = null;
@@ -7434,7 +7880,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 178_13 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 186_13 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -7446,15 +7892,15 @@ namespace SoftFX.Net.BotAgent
                 public LoginRequestClientContext LoginRequestClientContext_;
             }
             
-            class State_187_9 : State
+            class State_195_9 : State
             {
-                public State_187_9(ClientProcessor processor) : base(processor)
+                public State_195_9(ClientProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 187_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 195_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -7467,12 +7913,12 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    processor_.State_205_13_.LogoutRequestClientContext_ = context;
+                    processor_.State_213_13_.LogoutRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_205_13_;
+                    processor_.state_ = processor_.State_213_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("Client : 205_13");
+                        processor_.session_.coreSession_.LogState("Client : 213_13");
                 }
                 
                 public override void PreprocessSend(Message message)
@@ -7483,27 +7929,27 @@ namespace SoftFX.Net.BotAgent
                     if (Is.LogoutRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 187_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 195_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
                 {
                     if (Is.Request(message))
                     {
-                        processor_.state_ = processor_.State_187_9_;
+                        processor_.state_ = processor_.State_195_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 187_9");
+                            processor_.session_.coreSession_.LogState("Client : 195_9");
                         
                         return;
                     }
                     
                     if (Is.LogoutRequest(message))
                     {
-                        processor_.state_ = processor_.State_205_13_;
+                        processor_.state_ = processor_.State_213_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 205_13");
+                            processor_.session_.coreSession_.LogState("Client : 213_13");
                         
                         return;
                     }
@@ -7515,10 +7961,10 @@ namespace SoftFX.Net.BotAgent
                     {
                         Report Report = Cast.Report(message);
                         
-                        processor_.state_ = processor_.State_187_9_;
+                        processor_.state_ = processor_.State_195_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 187_9");
+                            processor_.session_.coreSession_.LogState("Client : 195_9");
                         
                         return;
                     }
@@ -7527,10 +7973,10 @@ namespace SoftFX.Net.BotAgent
                     {
                         Update Update = Cast.Update(message);
                         
-                        processor_.state_ = processor_.State_187_9_;
+                        processor_.state_ = processor_.State_195_9_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 187_9");
+                            processor_.session_.coreSession_.LogState("Client : 195_9");
                         
                         return;
                     }
@@ -7541,9 +7987,9 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LogoutReport_187_9_LogoutReport_.LogoutReport_ = LogoutReport;
+                            processor_.session_.Event_LogoutReport_195_9_LogoutReport_.LogoutReport_ = LogoutReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_187_9_LogoutReport_;
+                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_195_9_LogoutReport_;
                         }
                         
                         processor_.state_ = processor_.State_0_;
@@ -7554,7 +8000,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 187_9 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 195_9 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -7562,15 +8008,15 @@ namespace SoftFX.Net.BotAgent
                 }
             }
             
-            class State_205_13 : State
+            class State_213_13 : State
             {
-                public State_205_13(ClientProcessor processor) : base(processor)
+                public State_213_13(ClientProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 205_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 213_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -7579,7 +8025,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 205_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 213_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -7588,7 +8034,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 205_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 213_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -7601,10 +8047,10 @@ namespace SoftFX.Net.BotAgent
                     {
                         Report Report = Cast.Report(message);
                         
-                        processor_.state_ = processor_.State_205_13_;
+                        processor_.state_ = processor_.State_213_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 205_13");
+                            processor_.session_.coreSession_.LogState("Client : 213_13");
                         
                         return;
                     }
@@ -7613,10 +8059,10 @@ namespace SoftFX.Net.BotAgent
                     {
                         Update Update = Cast.Update(message);
                         
-                        processor_.state_ = processor_.State_205_13_;
+                        processor_.state_ = processor_.State_213_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("Client : 205_13");
+                            processor_.session_.coreSession_.LogState("Client : 213_13");
                         
                         return;
                     }
@@ -7627,10 +8073,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_LogoutReport_205_13_LogoutReport_.LogoutRequestClientContext_ = LogoutRequestClientContext_;
-                            processor_.session_.Event_LogoutReport_205_13_LogoutReport_.LogoutReport_ = LogoutReport;
+                            processor_.session_.Event_LogoutReport_213_13_LogoutReport_.LogoutRequestClientContext_ = LogoutRequestClientContext_;
+                            processor_.session_.Event_LogoutReport_213_13_LogoutReport_.LogoutReport_ = LogoutReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_205_13_LogoutReport_;
+                            processor_.session_.event_ = processor_.session_.Event_LogoutReport_213_13_LogoutReport_;
                         }
                         
                         LogoutRequestClientContext_ = null;
@@ -7643,7 +8089,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 205_13 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 213_13 : {0}", message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -7696,10 +8142,10 @@ namespace SoftFX.Net.BotAgent
             
             ClientSession session_;
             
-            State_176_9 State_176_9_;
-            State_178_13 State_178_13_;
-            State_187_9 State_187_9_;
-            State_205_13 State_205_13_;
+            State_184_9 State_184_9_;
+            State_186_13 State_186_13_;
+            State_195_9 State_195_9_;
+            State_213_13 State_213_13_;
             State_0 State_0_;
             
             State state_;
@@ -7712,13 +8158,13 @@ namespace SoftFX.Net.BotAgent
                 session_ = session;
                 id_ = id;
                 
-                State_271_9_ = new State_271_9(this);
+                State_279_9_ = new State_279_9(this);
                 State_0_ = new State_0(this);
                 
-                state_ = State_271_9_;
+                state_ = State_279_9_;
                 
                 if (session_.coreSession_.LogStates)
-                    session_.coreSession_.LogState("ClientUpdate({0}) : 271_9", id_);
+                    session_.coreSession_.LogState("ClientUpdate({0}) : 279_9", id_);
             }
             
             public bool Completed
@@ -7764,15 +8210,15 @@ namespace SoftFX.Net.BotAgent
                 protected ClientUpdateProcessor processor_;
             }
             
-            class State_271_9 : State
+            class State_279_9 : State
             {
-                public State_271_9(ClientUpdateProcessor processor) : base(processor)
+                public State_279_9(ClientUpdateProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientUpdate({2}) : 271_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientUpdate({2}) : 279_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -7787,9 +8233,9 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_AccountModelUpdate_271_9_AccountModelUpdate_.AccountModelUpdate_ = AccountModelUpdate;
+                            processor_.session_.Event_AccountModelUpdate_279_9_AccountModelUpdate_.AccountModelUpdate_ = AccountModelUpdate;
                             
-                            processor_.session_.event_ = processor_.session_.Event_AccountModelUpdate_271_9_AccountModelUpdate_;
+                            processor_.session_.event_ = processor_.session_.Event_AccountModelUpdate_279_9_AccountModelUpdate_;
                         }
                         
                         processor_.state_ = processor_.State_0_;
@@ -7806,9 +8252,9 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_BotModelUpdate_271_9_BotModelUpdate_.BotModelUpdate_ = BotModelUpdate;
+                            processor_.session_.Event_BotModelUpdate_279_9_BotModelUpdate_.BotModelUpdate_ = BotModelUpdate;
                             
-                            processor_.session_.event_ = processor_.session_.Event_BotModelUpdate_271_9_BotModelUpdate_;
+                            processor_.session_.event_ = processor_.session_.Event_BotModelUpdate_279_9_BotModelUpdate_;
                         }
                         
                         processor_.state_ = processor_.State_0_;
@@ -7825,9 +8271,9 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_PackageModelUpdate_271_9_PackageModelUpdate_.PackageModelUpdate_ = PackageModelUpdate;
+                            processor_.session_.Event_PackageModelUpdate_279_9_PackageModelUpdate_.PackageModelUpdate_ = PackageModelUpdate;
                             
-                            processor_.session_.event_ = processor_.session_.Event_PackageModelUpdate_271_9_PackageModelUpdate_;
+                            processor_.session_.event_ = processor_.session_.Event_PackageModelUpdate_279_9_PackageModelUpdate_;
                         }
                         
                         processor_.state_ = processor_.State_0_;
@@ -7838,7 +8284,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientUpdate({0}) : 271_9 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientUpdate({0}) : 279_9 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -7872,7 +8318,7 @@ namespace SoftFX.Net.BotAgent
             ClientSession session_;
             string id_;
             
-            State_271_9 State_271_9_;
+            State_279_9 State_279_9_;
             State_0 State_0_;
             
             State state_;
@@ -7885,16 +8331,17 @@ namespace SoftFX.Net.BotAgent
                 session_ = session;
                 id_ = id;
                 
-                State_304_9_ = new State_304_9(this);
-                State_306_13_ = new State_306_13(this);
-                State_312_13_ = new State_312_13(this);
-                State_318_13_ = new State_318_13(this);
+                State_312_9_ = new State_312_9(this);
+                State_314_13_ = new State_314_13(this);
+                State_320_13_ = new State_320_13(this);
+                State_326_13_ = new State_326_13(this);
+                State_332_13_ = new State_332_13(this);
                 State_0_ = new State_0(this);
                 
-                state_ = State_304_9_;
+                state_ = State_312_9_;
                 
                 if (session_.coreSession_.LogStates)
-                    session_.coreSession_.LogState("ClientRequest({0}) : 304_9", id_);
+                    session_.coreSession_.LogState("ClientRequest({0}) : 312_9", id_);
             }
             
             public bool Completed
@@ -7910,6 +8357,16 @@ namespace SoftFX.Net.BotAgent
             public void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
             {
                 state_.PostprocessSendAccountListRequest(context, message);
+            }
+            
+            public void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+            {
+                state_.PreprocessSendBotListRequest(context, message);
+            }
+            
+            public void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+            {
+                state_.PostprocessSendBotListRequest(context, message);
             }
             
             public void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -7963,6 +8420,10 @@ namespace SoftFX.Net.BotAgent
                 
                 public abstract void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message);
                 
+                public abstract void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message);
+                
+                public abstract void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message);
+                
                 public abstract void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message);
                 
                 public abstract void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message);
@@ -7982,9 +8443,9 @@ namespace SoftFX.Net.BotAgent
                 protected ClientRequestProcessor processor_;
             }
             
-            class State_304_9 : State
+            class State_312_9 : State
             {
-                public State_304_9(ClientRequestProcessor processor) : base(processor)
+                public State_312_9(ClientRequestProcessor processor) : base(processor)
                 {
                 }
                 
@@ -7994,12 +8455,26 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    processor_.State_306_13_.AccountListRequestClientContext_ = context;
+                    processor_.State_314_13_.AccountListRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_306_13_;
+                    processor_.state_ = processor_.State_314_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 306_13", processor_.id_);
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 314_13", processor_.id_);
+                }
+                
+                public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                }
+                
+                public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                    processor_.State_320_13_.BotListRequestClientContext_ = context;
+                    
+                    processor_.state_ = processor_.State_320_13_;
+                    
+                    if (processor_.session_.coreSession_.LogStates)
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 320_13", processor_.id_);
                 }
                 
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -8008,12 +8483,12 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    processor_.State_312_13_.PackageListRequestClientContext_ = context;
+                    processor_.State_326_13_.PackageListRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_312_13_;
+                    processor_.state_ = processor_.State_326_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 312_13", processor_.id_);
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 326_13", processor_.id_);
                 }
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -8022,12 +8497,12 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    processor_.State_318_13_.SubscribeRequestClientContext_ = context;
+                    processor_.State_332_13_.SubscribeRequestClientContext_ = context;
                     
-                    processor_.state_ = processor_.State_318_13_;
+                    processor_.state_ = processor_.State_332_13_;
                     
                     if (processor_.session_.coreSession_.LogStates)
-                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 318_13", processor_.id_);
+                        processor_.session_.coreSession_.LogState("ClientRequest({0}) : 332_13", processor_.id_);
                 }
                 
                 public override void PreprocessSend(Message message)
@@ -8035,43 +8510,56 @@ namespace SoftFX.Net.BotAgent
                     if (Is.AccountListRequest(message))
                         return;
                     
+                    if (Is.BotListRequest(message))
+                        return;
+                    
                     if (Is.PackageListRequest(message))
                         return;
                     
                     if (Is.SubscribeRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 304_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
                 {
                     if (Is.AccountListRequest(message))
                     {
-                        processor_.state_ = processor_.State_306_13_;
+                        processor_.state_ = processor_.State_314_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 306_13", processor_.id_);
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 314_13", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    if (Is.BotListRequest(message))
+                    {
+                        processor_.state_ = processor_.State_320_13_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 320_13", processor_.id_);
                         
                         return;
                     }
                     
                     if (Is.PackageListRequest(message))
                     {
-                        processor_.state_ = processor_.State_312_13_;
+                        processor_.state_ = processor_.State_326_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 312_13", processor_.id_);
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 326_13", processor_.id_);
                         
                         return;
                     }
                     
                     if (Is.SubscribeRequest(message))
                     {
-                        processor_.state_ = processor_.State_318_13_;
+                        processor_.state_ = processor_.State_332_13_;
                         
                         if (processor_.session_.coreSession_.LogStates)
-                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 318_13", processor_.id_);
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 332_13", processor_.id_);
                         
                         return;
                     }
@@ -8079,7 +8567,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 304_9 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 312_9 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8087,24 +8575,33 @@ namespace SoftFX.Net.BotAgent
                 }
             }
             
-            class State_306_13 : State
+            class State_314_13 : State
             {
-                public State_306_13(ClientRequestProcessor processor) : base(processor)
+                public State_314_13(ClientRequestProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 314_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
                 }
                 
+                public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 314_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                }
+                
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 314_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -8113,7 +8610,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 314_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -8122,7 +8619,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 306_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 314_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8137,10 +8634,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_AccountListReport_306_13_AccountListReport_.AccountListRequestClientContext_ = AccountListRequestClientContext_;
-                            processor_.session_.Event_AccountListReport_306_13_AccountListReport_.AccountListReport_ = AccountListReport;
+                            processor_.session_.Event_AccountListReport_314_13_AccountListReport_.AccountListRequestClientContext_ = AccountListRequestClientContext_;
+                            processor_.session_.Event_AccountListReport_314_13_AccountListReport_.AccountListReport_ = AccountListReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_AccountListReport_306_13_AccountListReport_;
+                            processor_.session_.event_ = processor_.session_.Event_AccountListReport_314_13_AccountListReport_;
                         }
                         
                         AccountListRequestClientContext_ = null;
@@ -8153,7 +8650,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 306_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 314_13 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8165,24 +8662,33 @@ namespace SoftFX.Net.BotAgent
                 public AccountListRequestClientContext AccountListRequestClientContext_;
             }
             
-            class State_312_13 : State
+            class State_320_13 : State
             {
-                public State_312_13(ClientRequestProcessor processor) : base(processor)
+                public State_320_13(ClientRequestProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 320_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
                 }
                 
+                public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 320_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                }
+                
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 320_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -8191,7 +8697,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 320_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -8200,7 +8706,94 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 312_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 320_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSend(Message message)
+                {
+                }
+                
+                public override void ProcessReceive(Message message)
+                {
+                    if (Is.BotListReport(message))
+                    {
+                        BotListReport BotListReport = Cast.BotListReport(message);
+                        
+                        if (processor_.session_.event_ == null)
+                        {
+                            processor_.session_.Event_BotListReport_320_13_BotListReport_.BotListRequestClientContext_ = BotListRequestClientContext_;
+                            processor_.session_.Event_BotListReport_320_13_BotListReport_.BotListReport_ = BotListReport;
+                            
+                            processor_.session_.event_ = processor_.session_.Event_BotListReport_320_13_BotListReport_;
+                        }
+                        
+                        BotListRequestClientContext_ = null;
+                        
+                        processor_.state_ = processor_.State_0_;
+                        
+                        if (processor_.session_.coreSession_.LogStates)
+                            processor_.session_.coreSession_.LogState("ClientRequest({0}) : 0", processor_.id_);
+                        
+                        return;
+                    }
+                    
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 320_13 : {1}", processor_.id_, message.Info.name));
+                }
+                
+                public override void ProcessDisconnect(List<ClientContext> contextList)
+                {
+                    if (BotListRequestClientContext_ != null)
+                        contextList.Add(BotListRequestClientContext_);
+                }
+                
+                public BotListRequestClientContext BotListRequestClientContext_;
+            }
+            
+            class State_326_13 : State
+            {
+                public State_326_13(ClientRequestProcessor processor) : base(processor)
+                {
+                }
+                
+                public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 326_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 326_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 326_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 326_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
+                {
+                }
+                
+                public override void PreprocessSend(Message message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 326_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8215,10 +8808,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_PackageListReport_312_13_PackageListReport_.PackageListRequestClientContext_ = PackageListRequestClientContext_;
-                            processor_.session_.Event_PackageListReport_312_13_PackageListReport_.PackageListReport_ = PackageListReport;
+                            processor_.session_.Event_PackageListReport_326_13_PackageListReport_.PackageListRequestClientContext_ = PackageListRequestClientContext_;
+                            processor_.session_.Event_PackageListReport_326_13_PackageListReport_.PackageListReport_ = PackageListReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_PackageListReport_312_13_PackageListReport_;
+                            processor_.session_.event_ = processor_.session_.Event_PackageListReport_326_13_PackageListReport_;
                         }
                         
                         PackageListRequestClientContext_ = null;
@@ -8231,7 +8824,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 312_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 326_13 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8243,24 +8836,33 @@ namespace SoftFX.Net.BotAgent
                 public PackageListRequestClientContext PackageListRequestClientContext_;
             }
             
-            class State_318_13 : State
+            class State_332_13 : State
             {
-                public State_318_13(ClientRequestProcessor processor) : base(processor)
+                public State_332_13(ClientRequestProcessor processor) : base(processor)
                 {
                 }
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 332_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
                 }
                 
+                public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 332_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                }
+                
+                public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                }
+                
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 332_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -8269,7 +8871,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 332_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -8278,7 +8880,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 318_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 332_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8293,10 +8895,10 @@ namespace SoftFX.Net.BotAgent
                         
                         if (processor_.session_.event_ == null)
                         {
-                            processor_.session_.Event_SubscribeReport_318_13_SubscribeReport_.SubscribeRequestClientContext_ = SubscribeRequestClientContext_;
-                            processor_.session_.Event_SubscribeReport_318_13_SubscribeReport_.SubscribeReport_ = SubscribeReport;
+                            processor_.session_.Event_SubscribeReport_332_13_SubscribeReport_.SubscribeRequestClientContext_ = SubscribeRequestClientContext_;
+                            processor_.session_.Event_SubscribeReport_332_13_SubscribeReport_.SubscribeReport_ = SubscribeReport;
                             
-                            processor_.session_.event_ = processor_.session_.Event_SubscribeReport_318_13_SubscribeReport_;
+                            processor_.session_.event_ = processor_.session_.Event_SubscribeReport_332_13_SubscribeReport_;
                         }
                         
                         SubscribeRequestClientContext_ = null;
@@ -8309,7 +8911,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 318_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 332_13 : {1}", processor_.id_, message.Info.name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8332,6 +8934,14 @@ namespace SoftFX.Net.BotAgent
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
+                {
+                }
+                
+                public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
+                {
+                }
+                
+                public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
                 {
                 }
                 
@@ -8371,10 +8981,11 @@ namespace SoftFX.Net.BotAgent
             ClientSession session_;
             string id_;
             
-            State_304_9 State_304_9_;
-            State_306_13 State_306_13_;
-            State_312_13 State_312_13_;
-            State_318_13 State_318_13_;
+            State_312_9 State_312_9_;
+            State_314_13 State_314_13_;
+            State_320_13 State_320_13_;
+            State_326_13 State_326_13_;
+            State_332_13 State_332_13_;
             State_0 State_0_;
             
             State state_;
@@ -8392,9 +9003,9 @@ namespace SoftFX.Net.BotAgent
             protected ClientSession session_;
         }
         
-        class Event_LoginReport_178_13_LoginReport : Event
+        class Event_LoginReport_186_13_LoginReport : Event
         {
-            public Event_LoginReport_178_13_LoginReport(ClientSession clientSession) : base(clientSession)
+            public Event_LoginReport_186_13_LoginReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8427,9 +9038,9 @@ namespace SoftFX.Net.BotAgent
             public LoginReport LoginReport_;
         }
         
-        class Event_LoginReject_178_13_LoginReject : Event
+        class Event_LoginReject_186_13_LoginReject : Event
         {
-            public Event_LoginReject_178_13_LoginReject(ClientSession clientSession) : base(clientSession)
+            public Event_LoginReject_186_13_LoginReject(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8462,9 +9073,9 @@ namespace SoftFX.Net.BotAgent
             public LoginReject LoginReject_;
         }
         
-        class Event_LogoutReport_187_9_LogoutReport : Event
+        class Event_LogoutReport_195_9_LogoutReport : Event
         {
-            public Event_LogoutReport_187_9_LogoutReport(ClientSession clientSession) : base(clientSession)
+            public Event_LogoutReport_195_9_LogoutReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8490,9 +9101,9 @@ namespace SoftFX.Net.BotAgent
             public LogoutReport LogoutReport_;
         }
         
-        class Event_LogoutReport_205_13_LogoutReport : Event
+        class Event_LogoutReport_213_13_LogoutReport : Event
         {
-            public Event_LogoutReport_205_13_LogoutReport(ClientSession clientSession) : base(clientSession)
+            public Event_LogoutReport_213_13_LogoutReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8525,9 +9136,9 @@ namespace SoftFX.Net.BotAgent
             public LogoutReport LogoutReport_;
         }
         
-        class Event_AccountModelUpdate_271_9_AccountModelUpdate : Event
+        class Event_AccountModelUpdate_279_9_AccountModelUpdate : Event
         {
-            public Event_AccountModelUpdate_271_9_AccountModelUpdate(ClientSession clientSession) : base(clientSession)
+            public Event_AccountModelUpdate_279_9_AccountModelUpdate(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8553,9 +9164,9 @@ namespace SoftFX.Net.BotAgent
             public AccountModelUpdate AccountModelUpdate_;
         }
         
-        class Event_BotModelUpdate_271_9_BotModelUpdate : Event
+        class Event_BotModelUpdate_279_9_BotModelUpdate : Event
         {
-            public Event_BotModelUpdate_271_9_BotModelUpdate(ClientSession clientSession) : base(clientSession)
+            public Event_BotModelUpdate_279_9_BotModelUpdate(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8581,9 +9192,9 @@ namespace SoftFX.Net.BotAgent
             public BotModelUpdate BotModelUpdate_;
         }
         
-        class Event_PackageModelUpdate_271_9_PackageModelUpdate : Event
+        class Event_PackageModelUpdate_279_9_PackageModelUpdate : Event
         {
-            public Event_PackageModelUpdate_271_9_PackageModelUpdate(ClientSession clientSession) : base(clientSession)
+            public Event_PackageModelUpdate_279_9_PackageModelUpdate(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8609,9 +9220,9 @@ namespace SoftFX.Net.BotAgent
             public PackageModelUpdate PackageModelUpdate_;
         }
         
-        class Event_AccountListReport_306_13_AccountListReport : Event
+        class Event_AccountListReport_314_13_AccountListReport : Event
         {
-            public Event_AccountListReport_306_13_AccountListReport(ClientSession clientSession) : base(clientSession)
+            public Event_AccountListReport_314_13_AccountListReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8644,9 +9255,44 @@ namespace SoftFX.Net.BotAgent
             public AccountListReport AccountListReport_;
         }
         
-        class Event_PackageListReport_312_13_PackageListReport : Event
+        class Event_BotListReport_320_13_BotListReport : Event
         {
-            public Event_PackageListReport_312_13_PackageListReport(ClientSession clientSession) : base(clientSession)
+            public Event_BotListReport_320_13_BotListReport(ClientSession clientSession) : base(clientSession)
+            {
+            }
+            
+            public override void Dispatch()
+            {
+                if (session_.coreSession_.LogEvents)
+                    session_.coreSession_.LogEvent("OnBotListReport({0})", BotListReport_.ToString());
+                
+                if (session_.listener_ != null)
+                {
+                    try
+                    {
+                        session_.listener_.OnBotListReport(session_, BotListRequestClientContext_, BotListReport_);
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                if (BotListRequestClientContext_ != null)
+                    BotListRequestClientContext_.SetCompleted();
+                
+                BotListReport_ = new BotListReport();
+                
+                BotListRequestClientContext_ = null;
+            }
+            
+            public BotListRequestClientContext BotListRequestClientContext_;
+            
+            public BotListReport BotListReport_;
+        }
+        
+        class Event_PackageListReport_326_13_PackageListReport : Event
+        {
+            public Event_PackageListReport_326_13_PackageListReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8679,9 +9325,9 @@ namespace SoftFX.Net.BotAgent
             public PackageListReport PackageListReport_;
         }
         
-        class Event_SubscribeReport_318_13_SubscribeReport : Event
+        class Event_SubscribeReport_332_13_SubscribeReport : Event
         {
-            public Event_SubscribeReport_318_13_SubscribeReport(ClientSession clientSession) : base(clientSession)
+            public Event_SubscribeReport_332_13_SubscribeReport(ClientSession clientSession) : base(clientSession)
             {
             }
             
@@ -8982,16 +9628,17 @@ namespace SoftFX.Net.BotAgent
         SortedDictionary<string, ClientUpdateProcessor> ClientUpdateProcessorDictionary_;
         SortedDictionary<string, ClientRequestProcessor> ClientRequestProcessorDictionary_;
         
-        Event_LoginReport_178_13_LoginReport Event_LoginReport_178_13_LoginReport_;
-        Event_LoginReject_178_13_LoginReject Event_LoginReject_178_13_LoginReject_;
-        Event_LogoutReport_187_9_LogoutReport Event_LogoutReport_187_9_LogoutReport_;
-        Event_LogoutReport_205_13_LogoutReport Event_LogoutReport_205_13_LogoutReport_;
-        Event_AccountModelUpdate_271_9_AccountModelUpdate Event_AccountModelUpdate_271_9_AccountModelUpdate_;
-        Event_BotModelUpdate_271_9_BotModelUpdate Event_BotModelUpdate_271_9_BotModelUpdate_;
-        Event_PackageModelUpdate_271_9_PackageModelUpdate Event_PackageModelUpdate_271_9_PackageModelUpdate_;
-        Event_AccountListReport_306_13_AccountListReport Event_AccountListReport_306_13_AccountListReport_;
-        Event_PackageListReport_312_13_PackageListReport Event_PackageListReport_312_13_PackageListReport_;
-        Event_SubscribeReport_318_13_SubscribeReport Event_SubscribeReport_318_13_SubscribeReport_;
+        Event_LoginReport_186_13_LoginReport Event_LoginReport_186_13_LoginReport_;
+        Event_LoginReject_186_13_LoginReject Event_LoginReject_186_13_LoginReject_;
+        Event_LogoutReport_195_9_LogoutReport Event_LogoutReport_195_9_LogoutReport_;
+        Event_LogoutReport_213_13_LogoutReport Event_LogoutReport_213_13_LogoutReport_;
+        Event_AccountModelUpdate_279_9_AccountModelUpdate Event_AccountModelUpdate_279_9_AccountModelUpdate_;
+        Event_BotModelUpdate_279_9_BotModelUpdate Event_BotModelUpdate_279_9_BotModelUpdate_;
+        Event_PackageModelUpdate_279_9_PackageModelUpdate Event_PackageModelUpdate_279_9_PackageModelUpdate_;
+        Event_AccountListReport_314_13_AccountListReport Event_AccountListReport_314_13_AccountListReport_;
+        Event_BotListReport_320_13_BotListReport Event_BotListReport_320_13_BotListReport_;
+        Event_PackageListReport_326_13_PackageListReport Event_PackageListReport_326_13_PackageListReport_;
+        Event_SubscribeReport_332_13_SubscribeReport Event_SubscribeReport_332_13_SubscribeReport_;
         
         Event event_;
     }
@@ -9039,6 +9686,10 @@ namespace SoftFX.Net.BotAgent
         }
         
         public virtual void OnAccountListReport(ClientSession session, AccountListRequestClientContext AccountListRequestClientContext, AccountListReport message)
+        {
+        }
+        
+        public virtual void OnBotListReport(ClientSession session, BotListRequestClientContext BotListRequestClientContext, BotListReport message)
         {
         }
         
@@ -9317,11 +9968,12 @@ namespace SoftFX.Net.BotAgent
                 
                 stateMutex_ = new object();
                 
-                Event_LoginRequest_222_9_LoginRequest_ = new Event_LoginRequest_222_9_LoginRequest(this);
-                Event_LogoutRequest_233_9_LogoutRequest_ = new Event_LogoutRequest_233_9_LogoutRequest(this);
-                Event_AccountListRequest_330_9_AccountListRequest_ = new Event_AccountListRequest_330_9_AccountListRequest(this);
-                Event_PackageListRequest_330_9_PackageListRequest_ = new Event_PackageListRequest_330_9_PackageListRequest(this);
-                Event_SubscribeRequest_330_9_SubscribeRequest_ = new Event_SubscribeRequest_330_9_SubscribeRequest(this);
+                Event_LoginRequest_230_9_LoginRequest_ = new Event_LoginRequest_230_9_LoginRequest(this);
+                Event_LogoutRequest_241_9_LogoutRequest_ = new Event_LogoutRequest_241_9_LogoutRequest(this);
+                Event_AccountListRequest_344_9_AccountListRequest_ = new Event_AccountListRequest_344_9_AccountListRequest(this);
+                Event_BotListRequest_344_9_BotListRequest_ = new Event_BotListRequest_344_9_BotListRequest(this);
+                Event_PackageListRequest_344_9_PackageListRequest_ = new Event_PackageListRequest_344_9_PackageListRequest(this);
+                Event_SubscribeRequest_344_9_SubscribeRequest_ = new Event_SubscribeRequest_344_9_SubscribeRequest(this);
                 
                 event_ = null;
             }
@@ -9501,16 +10153,16 @@ namespace SoftFX.Net.BotAgent
                 {
                     session_ = session;
                     
-                    State_222_9_ = new State_222_9(this);
-                    State_224_13_ = new State_224_13(this);
-                    State_233_9_ = new State_233_9(this);
-                    State_251_13_ = new State_251_13(this);
+                    State_230_9_ = new State_230_9(this);
+                    State_232_13_ = new State_232_13(this);
+                    State_241_9_ = new State_241_9(this);
+                    State_259_13_ = new State_259_13(this);
                     State_0_ = new State_0(this);
                     
-                    state_ = State_222_9_;
+                    state_ = State_230_9_;
                     
                     if (session_.coreSession_.LogStates)
-                        session_.coreSession_.LogState("Server : 222_9");
+                        session_.coreSession_.LogState("Server : 230_9");
                 }
                 
                 public bool Completed
@@ -9556,15 +10208,15 @@ namespace SoftFX.Net.BotAgent
                     protected ServerProcessor processor_;
                 }
                 
-                class State_222_9 : State
+                class State_230_9 : State
                 {
-                    public State_222_9(ServerProcessor processor) : base(processor)
+                    public State_230_9(ServerProcessor processor) : base(processor)
                     {
                     }
                     
                     public override void PreprocessSend(Message message)
                     {
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 222_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 230_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -9579,20 +10231,20 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_LoginRequest_222_9_LoginRequest_.LoginRequest_ = LoginRequest;
+                                processor_.session_.Event_LoginRequest_230_9_LoginRequest_.LoginRequest_ = LoginRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_LoginRequest_222_9_LoginRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_LoginRequest_230_9_LoginRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_224_13_;
+                            processor_.state_ = processor_.State_232_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 224_13");
+                                processor_.session_.coreSession_.LogState("Server : 232_13");
                             
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 222_9 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 230_9 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -9600,9 +10252,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_224_13 : State
+                class State_232_13 : State
                 {
-                    public State_224_13(ServerProcessor processor) : base(processor)
+                    public State_232_13(ServerProcessor processor) : base(processor)
                     {
                     }
                     
@@ -9614,17 +10266,17 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LoginReject(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 224_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 232_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
                     {
                         if (Is.LoginReport(message))
                         {
-                            processor_.state_ = processor_.State_233_9_;
+                            processor_.state_ = processor_.State_241_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 233_9");
+                                processor_.session_.coreSession_.LogState("Server : 241_9");
                             
                             return;
                         }
@@ -9642,7 +10294,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 224_13 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 232_13 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -9650,9 +10302,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_233_9 : State
+                class State_241_9 : State
                 {
-                    public State_233_9(ServerProcessor processor) : base(processor)
+                    public State_241_9(ServerProcessor processor) : base(processor)
                     {
                     }
                     
@@ -9667,27 +10319,27 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LogoutReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 233_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 241_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
                     {
                         if (Is.Report(message))
                         {
-                            processor_.state_ = processor_.State_233_9_;
+                            processor_.state_ = processor_.State_241_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 233_9");
+                                processor_.session_.coreSession_.LogState("Server : 241_9");
                             
                             return;
                         }
                         
                         if (Is.Update(message))
                         {
-                            processor_.state_ = processor_.State_233_9_;
+                            processor_.state_ = processor_.State_241_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 233_9");
+                                processor_.session_.coreSession_.LogState("Server : 241_9");
                             
                             return;
                         }
@@ -9709,10 +10361,10 @@ namespace SoftFX.Net.BotAgent
                         {
                             Request Request = Cast.Request(message);
                             
-                            processor_.state_ = processor_.State_233_9_;
+                            processor_.state_ = processor_.State_241_9_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 233_9");
+                                processor_.session_.coreSession_.LogState("Server : 241_9");
                             
                             return;
                         }
@@ -9723,20 +10375,20 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_LogoutRequest_233_9_LogoutRequest_.LogoutRequest_ = LogoutRequest;
+                                processor_.session_.Event_LogoutRequest_241_9_LogoutRequest_.LogoutRequest_ = LogoutRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_LogoutRequest_233_9_LogoutRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_LogoutRequest_241_9_LogoutRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_251_13_;
+                            processor_.state_ = processor_.State_259_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 251_13");
+                                processor_.session_.coreSession_.LogState("Server : 259_13");
                             
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 233_9 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 241_9 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -9744,9 +10396,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_251_13 : State
+                class State_259_13 : State
                 {
-                    public State_251_13(ServerProcessor processor) : base(processor)
+                    public State_259_13(ServerProcessor processor) : base(processor)
                     {
                     }
                     
@@ -9761,27 +10413,27 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LogoutReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 251_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 259_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
                     {
                         if (Is.Report(message))
                         {
-                            processor_.state_ = processor_.State_251_13_;
+                            processor_.state_ = processor_.State_259_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 251_13");
+                                processor_.session_.coreSession_.LogState("Server : 259_13");
                             
                             return;
                         }
                         
                         if (Is.Update(message))
                         {
-                            processor_.state_ = processor_.State_251_13_;
+                            processor_.state_ = processor_.State_259_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("Server : 251_13");
+                                processor_.session_.coreSession_.LogState("Server : 259_13");
                             
                             return;
                         }
@@ -9799,7 +10451,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 251_13 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 259_13 : {0}", message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -9832,10 +10484,10 @@ namespace SoftFX.Net.BotAgent
                 
                 Session session_;
                 
-                State_222_9 State_222_9_;
-                State_224_13 State_224_13_;
-                State_233_9 State_233_9_;
-                State_251_13 State_251_13_;
+                State_230_9 State_230_9_;
+                State_232_13 State_232_13_;
+                State_241_9 State_241_9_;
+                State_259_13 State_259_13_;
                 State_0 State_0_;
                 
                 State state_;
@@ -9848,13 +10500,13 @@ namespace SoftFX.Net.BotAgent
                     session_ = session;
                     id_ = id;
                     
-                    State_287_9_ = new State_287_9(this);
+                    State_295_9_ = new State_295_9(this);
                     State_0_ = new State_0(this);
                     
-                    state_ = State_287_9_;
+                    state_ = State_295_9_;
                     
                     if (session_.coreSession_.LogStates)
-                        session_.coreSession_.LogState("ServerUpdate({0}) : 287_9", id_);
+                        session_.coreSession_.LogState("ServerUpdate({0}) : 295_9", id_);
                 }
                 
                 public bool Completed
@@ -9900,9 +10552,9 @@ namespace SoftFX.Net.BotAgent
                     protected ServerUpdateProcessor processor_;
                 }
                 
-                class State_287_9 : State
+                class State_295_9 : State
                 {
-                    public State_287_9(ServerUpdateProcessor processor) : base(processor)
+                    public State_295_9(ServerUpdateProcessor processor) : base(processor)
                     {
                     }
                     
@@ -9917,7 +10569,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.PackageModelUpdate(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerUpdate({2}) : 287_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerUpdate({2}) : 295_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -9955,7 +10607,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerUpdate({0}) : 287_9 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerUpdate({0}) : 295_9 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -9989,7 +10641,7 @@ namespace SoftFX.Net.BotAgent
                 Session session_;
                 string id_;
                 
-                State_287_9 State_287_9_;
+                State_295_9 State_295_9_;
                 State_0 State_0_;
                 
                 State state_;
@@ -10002,16 +10654,17 @@ namespace SoftFX.Net.BotAgent
                     session_ = session;
                     id_ = id;
                     
-                    State_330_9_ = new State_330_9(this);
-                    State_332_13_ = new State_332_13(this);
-                    State_338_13_ = new State_338_13(this);
-                    State_344_13_ = new State_344_13(this);
+                    State_344_9_ = new State_344_9(this);
+                    State_346_13_ = new State_346_13(this);
+                    State_352_13_ = new State_352_13(this);
+                    State_358_13_ = new State_358_13(this);
+                    State_364_13_ = new State_364_13(this);
                     State_0_ = new State_0(this);
                     
-                    state_ = State_330_9_;
+                    state_ = State_344_9_;
                     
                     if (session_.coreSession_.LogStates)
-                        session_.coreSession_.LogState("ServerRequest({0}) : 330_9", id_);
+                        session_.coreSession_.LogState("ServerRequest({0}) : 344_9", id_);
                 }
                 
                 public bool Completed
@@ -10057,15 +10710,15 @@ namespace SoftFX.Net.BotAgent
                     protected ServerRequestProcessor processor_;
                 }
                 
-                class State_330_9 : State
+                class State_344_9 : State
                 {
-                    public State_330_9(ServerRequestProcessor processor) : base(processor)
+                    public State_344_9(ServerRequestProcessor processor) : base(processor)
                     {
                     }
                     
                     public override void PreprocessSend(Message message)
                     {
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 330_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 344_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -10080,15 +10733,34 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_AccountListRequest_330_9_AccountListRequest_.AccountListRequest_ = AccountListRequest;
+                                processor_.session_.Event_AccountListRequest_344_9_AccountListRequest_.AccountListRequest_ = AccountListRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_AccountListRequest_330_9_AccountListRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_AccountListRequest_344_9_AccountListRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_332_13_;
+                            processor_.state_ = processor_.State_346_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 332_13", processor_.id_);
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 346_13", processor_.id_);
+                            
+                            return;
+                        }
+                        
+                        if (Is.BotListRequest(message))
+                        {
+                            BotListRequest BotListRequest = Cast.BotListRequest(message);
+                            
+                            if (processor_.session_.event_ == null)
+                            {
+                                processor_.session_.Event_BotListRequest_344_9_BotListRequest_.BotListRequest_ = BotListRequest;
+                                
+                                processor_.session_.event_ = processor_.session_.Event_BotListRequest_344_9_BotListRequest_;
+                            }
+                            
+                            processor_.state_ = processor_.State_352_13_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 352_13", processor_.id_);
                             
                             return;
                         }
@@ -10099,15 +10771,15 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_PackageListRequest_330_9_PackageListRequest_.PackageListRequest_ = PackageListRequest;
+                                processor_.session_.Event_PackageListRequest_344_9_PackageListRequest_.PackageListRequest_ = PackageListRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_PackageListRequest_330_9_PackageListRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_PackageListRequest_344_9_PackageListRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_338_13_;
+                            processor_.state_ = processor_.State_358_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 338_13", processor_.id_);
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 358_13", processor_.id_);
                             
                             return;
                         }
@@ -10118,20 +10790,20 @@ namespace SoftFX.Net.BotAgent
                             
                             if (processor_.session_.event_ == null)
                             {
-                                processor_.session_.Event_SubscribeRequest_330_9_SubscribeRequest_.SubscribeRequest_ = SubscribeRequest;
+                                processor_.session_.Event_SubscribeRequest_344_9_SubscribeRequest_.SubscribeRequest_ = SubscribeRequest;
                                 
-                                processor_.session_.event_ = processor_.session_.Event_SubscribeRequest_330_9_SubscribeRequest_;
+                                processor_.session_.event_ = processor_.session_.Event_SubscribeRequest_344_9_SubscribeRequest_;
                             }
                             
-                            processor_.state_ = processor_.State_344_13_;
+                            processor_.state_ = processor_.State_364_13_;
                             
                             if (processor_.session_.coreSession_.LogStates)
-                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 344_13", processor_.id_);
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 364_13", processor_.id_);
                             
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 330_9 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 344_9 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -10139,9 +10811,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_332_13 : State
+                class State_346_13 : State
                 {
-                    public State_332_13(ServerRequestProcessor processor) : base(processor)
+                    public State_346_13(ServerRequestProcessor processor) : base(processor)
                     {
                     }
                     
@@ -10150,7 +10822,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.AccountListReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 332_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 346_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -10168,7 +10840,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 332_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 346_13 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -10176,9 +10848,46 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_338_13 : State
+                class State_352_13 : State
                 {
-                    public State_338_13(ServerRequestProcessor processor) : base(processor)
+                    public State_352_13(ServerRequestProcessor processor) : base(processor)
+                    {
+                    }
+                    
+                    public override void PreprocessSend(Message message)
+                    {
+                        if (Is.BotListReport(message))
+                            return;
+                        
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 352_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void PostprocessSend(Message message)
+                    {
+                        if (Is.BotListReport(message))
+                        {
+                            processor_.state_ = processor_.State_0_;
+                            
+                            if (processor_.session_.coreSession_.LogStates)
+                                processor_.session_.coreSession_.LogState("ServerRequest({0}) : 0", processor_.id_);
+                            
+                            return;
+                        }
+                    }
+                    
+                    public override void ProcessReceive(Message message)
+                    {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 352_13 : {1}", processor_.id_, message.Info.name));
+                    }
+                    
+                    public override void ProcessDisconnect(List<ServerContext> contextList)
+                    {
+                    }
+                }
+                
+                class State_358_13 : State
+                {
+                    public State_358_13(ServerRequestProcessor processor) : base(processor)
                     {
                     }
                     
@@ -10187,7 +10896,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.PackageListReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 338_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 358_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -10205,7 +10914,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 338_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 358_13 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -10213,9 +10922,9 @@ namespace SoftFX.Net.BotAgent
                     }
                 }
                 
-                class State_344_13 : State
+                class State_364_13 : State
                 {
-                    public State_344_13(ServerRequestProcessor processor) : base(processor)
+                    public State_364_13(ServerRequestProcessor processor) : base(processor)
                     {
                     }
                     
@@ -10224,7 +10933,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.SubscribeReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 344_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 364_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -10242,7 +10951,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 344_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 364_13 : {1}", processor_.id_, message.Info.name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -10276,10 +10985,11 @@ namespace SoftFX.Net.BotAgent
                 Session session_;
                 string id_;
                 
-                State_330_9 State_330_9_;
-                State_332_13 State_332_13_;
-                State_338_13 State_338_13_;
-                State_344_13 State_344_13_;
+                State_344_9 State_344_9_;
+                State_346_13 State_346_13_;
+                State_352_13 State_352_13_;
+                State_358_13 State_358_13_;
+                State_364_13 State_364_13_;
                 State_0 State_0_;
                 
                 State state_;
@@ -10297,9 +11007,9 @@ namespace SoftFX.Net.BotAgent
                 protected Session session_;
             }
             
-            class Event_LoginRequest_222_9_LoginRequest : Event
+            class Event_LoginRequest_230_9_LoginRequest : Event
             {
-                public Event_LoginRequest_222_9_LoginRequest(Session session) : base(session)
+                public Event_LoginRequest_230_9_LoginRequest(Session session) : base(session)
                 {
                 }
                 
@@ -10325,9 +11035,9 @@ namespace SoftFX.Net.BotAgent
                 public LoginRequest LoginRequest_;
             }
             
-            class Event_LogoutRequest_233_9_LogoutRequest : Event
+            class Event_LogoutRequest_241_9_LogoutRequest : Event
             {
-                public Event_LogoutRequest_233_9_LogoutRequest(Session session) : base(session)
+                public Event_LogoutRequest_241_9_LogoutRequest(Session session) : base(session)
                 {
                 }
                 
@@ -10353,9 +11063,9 @@ namespace SoftFX.Net.BotAgent
                 public LogoutRequest LogoutRequest_;
             }
             
-            class Event_AccountListRequest_330_9_AccountListRequest : Event
+            class Event_AccountListRequest_344_9_AccountListRequest : Event
             {
-                public Event_AccountListRequest_330_9_AccountListRequest(Session session) : base(session)
+                public Event_AccountListRequest_344_9_AccountListRequest(Session session) : base(session)
                 {
                 }
                 
@@ -10381,9 +11091,37 @@ namespace SoftFX.Net.BotAgent
                 public AccountListRequest AccountListRequest_;
             }
             
-            class Event_PackageListRequest_330_9_PackageListRequest : Event
+            class Event_BotListRequest_344_9_BotListRequest : Event
             {
-                public Event_PackageListRequest_330_9_PackageListRequest(Session session) : base(session)
+                public Event_BotListRequest_344_9_BotListRequest(Session session) : base(session)
+                {
+                }
+                
+                public override void Dispatch()
+                {
+                    if (session_.coreSession_.LogEvents)
+                        session_.coreSession_.LogEvent("OnBotListRequest({0})", BotListRequest_.ToString());
+                    
+                    if (session_.server_.listener_ != null)
+                    {
+                        try
+                        {
+                            session_.server_.listener_.OnBotListRequest(session_.server_, session_, BotListRequest_);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    BotListRequest_ = new BotListRequest();
+                }
+                
+                public BotListRequest BotListRequest_;
+            }
+            
+            class Event_PackageListRequest_344_9_PackageListRequest : Event
+            {
+                public Event_PackageListRequest_344_9_PackageListRequest(Session session) : base(session)
                 {
                 }
                 
@@ -10409,9 +11147,9 @@ namespace SoftFX.Net.BotAgent
                 public PackageListRequest PackageListRequest_;
             }
             
-            class Event_SubscribeRequest_330_9_SubscribeRequest : Event
+            class Event_SubscribeRequest_344_9_SubscribeRequest : Event
             {
-                public Event_SubscribeRequest_330_9_SubscribeRequest(Session session) : base(session)
+                public Event_SubscribeRequest_344_9_SubscribeRequest(Session session) : base(session)
                 {
                 }
                 
@@ -10627,11 +11365,12 @@ namespace SoftFX.Net.BotAgent
             SortedDictionary<string, ServerUpdateProcessor> ServerUpdateProcessorDictionary_;
             SortedDictionary<string, ServerRequestProcessor> ServerRequestProcessorDictionary_;
             
-            Event_LoginRequest_222_9_LoginRequest Event_LoginRequest_222_9_LoginRequest_;
-            Event_LogoutRequest_233_9_LogoutRequest Event_LogoutRequest_233_9_LogoutRequest_;
-            Event_AccountListRequest_330_9_AccountListRequest Event_AccountListRequest_330_9_AccountListRequest_;
-            Event_PackageListRequest_330_9_PackageListRequest Event_PackageListRequest_330_9_PackageListRequest_;
-            Event_SubscribeRequest_330_9_SubscribeRequest Event_SubscribeRequest_330_9_SubscribeRequest_;
+            Event_LoginRequest_230_9_LoginRequest Event_LoginRequest_230_9_LoginRequest_;
+            Event_LogoutRequest_241_9_LogoutRequest Event_LogoutRequest_241_9_LogoutRequest_;
+            Event_AccountListRequest_344_9_AccountListRequest Event_AccountListRequest_344_9_AccountListRequest_;
+            Event_BotListRequest_344_9_BotListRequest Event_BotListRequest_344_9_BotListRequest_;
+            Event_PackageListRequest_344_9_PackageListRequest Event_PackageListRequest_344_9_PackageListRequest_;
+            Event_SubscribeRequest_344_9_SubscribeRequest Event_SubscribeRequest_344_9_SubscribeRequest_;
             
             Event event_;
         }
@@ -10714,6 +11453,10 @@ namespace SoftFX.Net.BotAgent
         }
         
         public virtual void OnAccountListRequest(Server server, Server.Session session, AccountListRequest message)
+        {
+        }
+        
+        public virtual void OnBotListRequest(Server server, Server.Session session, BotListRequest message)
         {
         }
         

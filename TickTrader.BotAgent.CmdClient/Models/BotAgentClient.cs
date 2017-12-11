@@ -6,10 +6,13 @@ namespace TickTrader.BotAgent.CmdClient
     public class BotAgentClient : IBotAgentClient
     {
         private DynamicList<AccountModelEntity> _accounts;
+        private DynamicList<BotModelEntity> _bots;
         private DynamicList<PackageModelEntity> _packages;
 
 
         public IObservableListSource<AccountModelEntity> Accounts { get; }
+
+        public IObservableListSource<BotModelEntity> Bots { get; }
 
         public IObservableListSource<PackageModelEntity> Packages { get; }
 
@@ -17,9 +20,11 @@ namespace TickTrader.BotAgent.CmdClient
         public BotAgentClient()
         {
             _accounts = new DynamicList<AccountModelEntity>();
+            _bots = new DynamicList<BotModelEntity>();
             _packages = new DynamicList<PackageModelEntity>();
 
             Accounts = _accounts.AsObservable();
+            Bots = _bots.AsObservable();
             Packages = _packages.AsObservable();
         }
 
@@ -30,6 +35,15 @@ namespace TickTrader.BotAgent.CmdClient
             foreach (var acc in report.Accounts)
             {
                 _accounts.Add(acc);
+            }
+        }
+
+        public void SetBotList(BotListReportEntity report)
+        {
+            _bots.Clear();
+            foreach (var acc in report.Bots)
+            {
+                _bots.Add(acc);
             }
         }
 
@@ -47,7 +61,7 @@ namespace TickTrader.BotAgent.CmdClient
             switch (update.Type)
             {
                 case UpdateType.Added:
-                    _accounts.Add(update.NewItem);
+                    _accounts.Add(update.Item);
                     break;
                 case UpdateType.Updated:
                     break;
@@ -61,6 +75,7 @@ namespace TickTrader.BotAgent.CmdClient
             switch (update.Type)
             {
                 case UpdateType.Added:
+                    _bots.Add(update.Item);
                     break;
                 case UpdateType.Updated:
                     break;
@@ -74,7 +89,7 @@ namespace TickTrader.BotAgent.CmdClient
             switch (update.Type)
             {
                 case UpdateType.Added:
-                    _packages.Add(update.NewItem);
+                    _packages.Add(update.Item);
                     break;
                 case UpdateType.Updated:
                     break;

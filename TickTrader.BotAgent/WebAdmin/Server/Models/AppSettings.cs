@@ -34,7 +34,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             LogDirectoryName = "Logs",
             LogEvents = false,
             LogStates = false,
-            LogMessages = false,
+            LogMessages = true,
         };
     }
 }

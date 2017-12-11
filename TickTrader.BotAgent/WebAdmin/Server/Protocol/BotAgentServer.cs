@@ -48,17 +48,25 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 Accounts = _botAgent.Accounts.Select(
                     acc => new AccountModelEntity
                     {
-                        Key = new AccountKeyEntity { Server = acc.Address, Login = acc.Username },
-                        Bots = acc.TradeBots.Select(
-                            bot => new BotModelEntity
-                            {
-                                InstanceId = bot.Id,
-                                Isolated = bot.Isolated,
-                                State = ToProtocol.Convert(bot.State),
-                                Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed },
-                                Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
-                                Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
-                            }).ToArray(),
+                        Login = acc.Username,
+                        Server = acc.Address,
+                    }).ToArray(),
+            };
+        }
+
+        public BotListReportEntity GetBotList()
+        {
+            return new BotListReportEntity
+            {
+                Bots = _botAgent.TradeBots.Select(
+                    bot => new BotModelEntity
+                    {
+                        InstanceId = bot.Id,
+                        Isolated = bot.Isolated,
+                        State = ToProtocol.Convert(bot.State),
+                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed },
+                        Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
+                        Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
                     }).ToArray(),
             };
         }
@@ -72,7 +80,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     {
                         Name = package.Name,
                         Created = package.Created,
-                        Plugins = package.GetPluginsByType(Algo.Core.Metadata.AlgoTypes.Robot).Select(
+                        Plugins = package.GetPlugins().Select(
                             plugin => new PluginInfoEntity
                             {
                                 Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
@@ -101,9 +109,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 AccountUpdated(new AccountModelUpdateEntity
                 {
                     Type = ToProtocol.Convert(action),
-                    NewItem = new AccountModelEntity
+                    Item = new AccountModelEntity
                     {
-                        Key = new AccountKeyEntity { Server = account.Address, Login = account.Username },
+                        Login = account.Username,
+                        Server = account.Address,
                     },
                 });
             }
@@ -120,7 +129,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 BotUpdated(new BotModelUpdateEntity
                 {
                     Type = ToProtocol.Convert(action),
-                    NewItem = new BotModelEntity
+                    Item = new BotModelEntity
                     {
                         InstanceId = bot.Id,
                         Isolated = bot.Isolated,
@@ -144,11 +153,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 PackageUpdated(new PackageModelUpdateEntity
                 {
                     Type = ToProtocol.Convert(action),
-                    NewItem = new PackageModelEntity
+                    Item = new PackageModelEntity
                     {
                         Name = package.Name,
                         Created = package.Created,
-                        Plugins = package.GetPluginsByType(Algo.Core.Metadata.AlgoTypes.Robot).Select(
+                        Plugins = package.GetPlugins().Select(
                             plugin => new PluginInfoEntity
                             {
                                 Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
