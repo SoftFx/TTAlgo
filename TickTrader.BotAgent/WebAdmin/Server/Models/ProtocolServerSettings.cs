@@ -10,9 +10,5 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         public X509Certificate2 Certificate { get; set; }
 
         public IProtocolSettings ProtocolSettings { get; set; }
-
-        public string Login { get; set; }
-
-        public string Password { get; set; }
     }
 }

@@ -9,9 +9,5 @@ namespace TickTrader.Algo.Protocol
         X509Certificate2 Certificate { get; }
 
         IProtocolSettings ProtocolSettings { get; }
-
-        string Login { get; }
-
-        string Password { get; }
     }
 }

@@ -2,8 +2,12 @@
 {
     public class VersionSpec
     {
+        // Should be syncronized with BotAgent.net version
         public const int MajorVersion = 1;
         public const int MinorVersion = 0;
+
+
+        public static string LatestVersion => $"{MajorVersion}.{MinorVersion}";
 
 
         public int CurrentVersion { get; }

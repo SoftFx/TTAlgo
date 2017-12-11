@@ -26,11 +26,11 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _logger.Info($"Connected client {session.Id}");
+                _logger.Info($"Connected client {session.Guid}");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
 
@@ -38,12 +38,12 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _logger.Info($"Disconnected client {session.Id}: {text}");
+                _logger.Info($"Disconnected client {session.Guid}: {text}");
                 SessionUnsubscribed(session.Id);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
 
@@ -55,13 +55,14 @@ namespace TickTrader.Algo.Protocol.Lib
                 if (res)
                 {
                     var currentVersion = VersionSpec.ResolveVersion(session.ClientMajorVersion, session.ClientMinorVersion, out var reason);
+                    _logger.Info($"Client {session.Guid} version = {session.ClientMajorVersion}.{session.ClientMinorVersion}. Server version = {VersionSpec.LatestVersion}. Resolved minor version = {currentVersion}");
                     if (currentVersion == -1)
                     {
                         session.Send(new LoginReject(0) { Reason = Sfx.LoginRejectReason.VersionMismatch, Text = reason });
                     }
                     else
                     {
-                        _logger.Info($"Client {session.Id} logged in");
+                        _logger.Info($"Client {session.Guid} logged in");
                         session.Send(new LoginReport(0) { CurrentVersion = currentVersion });
                     }
                 }
@@ -72,7 +73,7 @@ namespace TickTrader.Algo.Protocol.Lib
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
                 session.Send(new LoginReject(0) { Reason = Sfx.LoginRejectReason.InternalServerError, Text = ex.Message });
             }
         }
@@ -81,13 +82,13 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _logger.Info($"Client {session.Id} logged out");
+                _logger.Info($"Client {session.Guid} logged out");
                 SessionUnsubscribed(session.Id);
                 session.Send(new LogoutReport(0) { Reason = Sfx.LogoutReason.ClientRequest });
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
                 session.Send(new LogoutReport(0) { Reason = Sfx.LogoutReason.InternalServerError, Text = ex.Message });
             }
         }
@@ -101,7 +102,7 @@ namespace TickTrader.Algo.Protocol.Lib
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
 
@@ -115,7 +116,7 @@ namespace TickTrader.Algo.Protocol.Lib
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
 
@@ -129,7 +130,7 @@ namespace TickTrader.Algo.Protocol.Lib
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
 
@@ -143,7 +144,7 @@ namespace TickTrader.Algo.Protocol.Lib
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Listener failure {session.Id}: {ex.Message}");
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
         }
     }

@@ -49,11 +49,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
         public static ProtocolServerSettings GetProtocolServerSettings(this IConfiguration config, string contentRoot)
         {
-            var creds = config.GetCredentials();
-
-            if (creds == null)
-                throw new ArgumentException("Server credentials not found");
-
             var protocolConfig = config.GetProtocolSettings();
 
             if (protocolConfig == null)
@@ -71,8 +66,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 ServerName = "BotAgentServer",
                 Certificate = certificate,
                 ProtocolSettings = protocolConfig,
-                Login = creds.Login,
-                Password = creds.Password,
             };
 
             return serverSettings;

@@ -30,6 +30,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent = services.GetRequiredService<IBotAgent>();
             _serverCreds = serverConfig.GetCredentials();
 
+            if (_serverCreds == null)
+                throw new Exception("Server credentials not found");
+
             _botAgent.AccountChanged += OnAccountChanged;
             _botAgent.BotChanged += OnBotChanged;
             _botAgent.PackageChanged += OnPackageChanged;

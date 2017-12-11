@@ -30,6 +30,7 @@ namespace TickTrader.BotAgent.CmdClient
         private void RegisterCommands()
         {
             _cmdEngine.RegisterCommand("login", LoginCommand);
+            _cmdEngine.RegisterCommand("connection status", ConnectionStatusCommand);
             _cmdEngine.RegisterCommand("account info", AccountInfoCommand);
             _cmdEngine.RegisterCommand("package info", PackageInfoCommand);
         }
@@ -63,7 +64,7 @@ namespace TickTrader.BotAgent.CmdClient
 
             _agentClient = new BotAgentClient();
             _protocolClient = new ProtocolClient(_agentClient, clientConfig);
-            _protocolClient.Connect().Wait();
+            _protocolClient.Connect();
         }
 
         private bool CheckConnectionState()
@@ -79,6 +80,16 @@ namespace TickTrader.BotAgent.CmdClient
             Console.WriteLine();
 
             return _protocolClient.State == ClientStates.Online;
+        }
+
+        private void ConnectionStatusCommand()
+        {
+            if (!CheckConnectionState())
+            {
+                return;
+            }
+
+            Console.WriteLine($"Current version: {_protocolClient.VersionSpec.CurrentVersionStr}");
         }
 
         private void AccountInfoCommand()

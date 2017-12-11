@@ -1,3 +1,4 @@
+// Protocol version should be syncronized with VersionSpec.cs
 protocol BotAgent(1,0)
 {
     message LoginRequest
