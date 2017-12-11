@@ -53,10 +53,10 @@ namespace TickTrader.Algo.Common.Model
 
         string BO.ISymbolInfo.Security => Descriptor.SecurityName;
         int BO.ISymbolInfo.SortOrder => Descriptor.SortOrder;
-        BO.SwapType BO.ISymbolInfo.SwapType => FdkToAlgo.Convert(Descriptor.SwapType);
+        BO.SwapType BO.ISymbolInfo.SwapType => Descriptor.SwapType;
         int BO.ISymbolInfo.TripleSwapDay => Descriptor.TripleSwapDay;
         double BO.ISymbolInfo.HiddenLimitOrderMarginReduction => Descriptor.HiddenLimitOrderMarginReduction ?? 1;
-        BO.MarginCalculationModes BO.ISymbolInfo.MarginMode => FdkToAlgo.Convert(Descriptor.MarginCalcMode);
+        BO.MarginCalculationModes BO.ISymbolInfo.MarginMode => Descriptor.MarginMode;
         string ISymbolInfo.Symbol { get { return Name; } }
         double ISymbolInfo.ContractSizeFractional { get { return Descriptor.RoundLot; } }
         string ISymbolInfo.MarginCurrency { get { return Descriptor.Currency; } }
@@ -67,10 +67,6 @@ namespace TickTrader.Algo.Common.Model
         bool ISymbolInfo.SwapEnabled { get { return true; } }
         float ISymbolInfo.SwapSizeLong { get { return (float)Descriptor.SwapSizeLong; } }
         float ISymbolInfo.SwapSizeShort { get { return (float)Descriptor.SwapSizeShort; } }
-        string ISymbolInfo.Security { get { return ""; } }
-        int ISymbolInfo.SortOrder { get { return 0; } }
-
-        TickTrader.BusinessObjects.MarginCalculationModes ISymbolInfo.MarginMode => Descriptor.MarginMode;
 
         #endregion
 

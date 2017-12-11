@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, OrderFilteredCollection> byTagFilterCache;
         private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
         private TradeHistoryAdapter _historyAdapter;
+        private bool _blEventsEnabled;
 
         public AccountAccessor(PluginBuilder builder)
         {
@@ -67,6 +68,37 @@ namespace TickTrader.Algo.Core
         internal void FireResetEvent()
         {
             builder.InvokePluginMethod(() => Reset());
+        }
+
+        public void EnableBlEvents()
+        {
+            Orders.Added += OnOrderAdded;
+            Orders.Replaced += OnOrderReplaced;
+            Orders.Removed += OnOrderRemoved;
+
+            NetPositions.PositionUpdated += OnPositionUpdated;
+            NetPositions.PositionRemoved += OnPositionRemoved;
+
+            Assets.AssetChanged += OnAssetsChanged;
+
+            _blEventsEnabled = true;
+        }
+
+        public void DisableBlEvents()
+        {
+            if (_blEventsEnabled)
+            {
+                Orders.Added -= OnOrderAdded;
+                Orders.Replaced -= OnOrderReplaced;
+                Orders.Removed -= OnOrderRemoved;
+
+                NetPositions.PositionUpdated -= OnPositionUpdated;
+                NetPositions.PositionRemoved -= OnPositionRemoved;
+
+                Assets.AssetChanged -= OnAssetsChanged;
+
+                _blEventsEnabled = false;
+            }
         }
 
         public OrderList OrdersByTag(string orderTag)
@@ -167,15 +199,57 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        public event Action<BL.IOrderModel> OrderAdded { add { Orders.Added += value; } remove { Orders.Added -= value; } }
+        public event Action<BL.IOrderModel> OrderAdded = delegate { };
         public event Action<IEnumerable<BL.IOrderModel>> OrdersAdded { add { } remove { } }
-        public event Action<BL.IOrderModel> OrderRemoved { add { Orders.Removed += value; } remove { Orders.Removed -= value; } }
-        public event Action<BL.IOrderModel> OrderReplaced { add { Orders.Replaced += value; } remove { Orders.Replaced -= value; } }
+        public event Action<BL.IOrderModel> OrderRemoved = delegate { };
+        public event Action<BL.IOrderModel> OrderReplaced = delegate { };
         public event Action BalanceUpdated = delegate { };
         public event Action Reset = delegate { };
         public event Action<BL.IPositionModel, BL.PositionChageTypes> PositionChanged;
         public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
 
         #endregion
+
+        private void OnOrderAdded(BL.IOrderModel order)
+        {
+            UpdateAccountInfo(() => OrderAdded?.Invoke(order));
+        }
+
+        private void OnOrderReplaced(BL.IOrderModel order)
+        {
+            UpdateAccountInfo(() => OrderReplaced?.Invoke(order));
+        }
+
+        private void OnOrderRemoved(BL.IOrderModel order)
+        {
+            UpdateAccountInfo(() => OrderRemoved?.Invoke(order));
+        }
+
+        private void OnPositionUpdated(BL.IPositionModel position)
+        {
+            UpdateAccountInfo(() => PositionChanged?.Invoke(position, BL.PositionChageTypes.AddedModified));
+        }
+
+        private void OnPositionRemoved(BL.IPositionModel position)
+        {
+            UpdateAccountInfo(() => PositionChanged?.Invoke(position, BL.PositionChageTypes.Removed));
+        }
+
+        private void OnAssetsChanged(BL.IAssetModel asset, AssetChangeType type)
+        {
+            UpdateAccountInfo(() => AssetsChanged?.Invoke(asset, TickTraderToAlgo.Convert(type)));
+        }
+
+        private void UpdateAccountInfo(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                builder.Logger.OnError(ex);
+            }
+        }
     }
 }

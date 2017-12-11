@@ -185,8 +185,25 @@ namespace TickTrader.Algo.Common.Model
                 SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
                 SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
                 Security = info.SecurityName,
-                SortOrder = 0 // ??
+                GroupSortOrder = info.GroupSortOrder,
+                SortOrder = info.SortOrder,
+                SwapType = Convert(info.SwapType),
+                TripleSwapDay = info.TripleSwapDay,
+                IsTradeEnabled = info.IsTradeEnabled,
+                Description = info.Description,
+                DefaultSlippage = info.DefaultSlippage,
+                HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction
             };
+        }
+
+        public static BO.SwapType Convert(SwapType type)
+        {
+            switch (type)
+            {
+                case SwapType.PercentPerYear: return BO.SwapType.PercentPerYear;
+                case SwapType.Points: return BO.SwapType.Points;
+                default: throw new NotImplementedException();
+            }
         }
 
         public static TickTrader.BusinessObjects.MarginCalculationModes Convert(MarginCalcMode mode)
@@ -496,18 +513,6 @@ namespace TickTrader.Algo.Common.Model
                 case Api.BarPriceType.Bid: return PriceType.Bid;
             }
             throw new NotImplementedException("Unsupported price type: " + priceType);
-        }
-
-        public static BarHistoryReport ToBarReport(DataHistoryInfo info)
-        {
-            return new BarHistoryReport()
-            {
-                Bars = Convert(info.Bars).ToList(),
-                From = info.From,
-                To  = info.To,
-                FromAll = info.FromAll, 
-                ToAll = info.ToAll
-            };
         }
 
         public static ExecutionReport Convert(SoftFX.Extended.ExecutionReport report)

@@ -45,17 +45,15 @@ namespace TickTrader.Algo.Core
         public int GroupSortOrder { get; set; }
         public BO.SwapType SwapType { get; set; }
         public int TripleSwapDay { get; set; }
-        public double HiddenLimitOrderMarginReduction { get; set; }
+        public double? HiddenLimitOrderMarginReduction { get; set; }
 
         #region FDK Compatibility
 
         public double MinCommission { get; }
         public string MinCommissionCurrency { get; }
         //public BL.SwapType SwapType { get; }
-        public int TripleSwapDay { get; }
         public double? DefaultSlippage { get; set; }
         public bool IsTradeEnabled { get; set; }
-        public int GroupSortOrder { get; }
         public int CurrencySortOrder { get; }
         public int SettlementCurrencySortOrder { get; }
         public int CurrencyPrecision { get; }
@@ -63,7 +61,6 @@ namespace TickTrader.Algo.Core
         public string StatusGroupId { get; }
         public string SecurityName => Security;
         public string SecurityDescription { get; }
-        public double? HiddenLimitOrderMarginReduction { get; }
         public string Currency => BaseCurrencyCode;
         public string SettlementCurrency => CounterCurrencyCode;
         public int Precision => Digits;

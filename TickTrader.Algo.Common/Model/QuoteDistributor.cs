@@ -253,14 +253,14 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            protected Quote TruncateQuote(Quote quote)
+            protected QuoteEntity TruncateQuote(QuoteEntity quote)
             {
                 if (bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
                 {
                     return quote;
                 }
                 depth = depth < 1 ? 1 : depth;
-                return new Quote(quote.Symbol, quote.CreatingTime, quote.Bids.Take(depth).ToArray(), quote.Asks.Take(depth).ToArray());
+                return new QuoteEntity(quote.Symbol, quote.CreatingTime, quote.BidList.Take(depth).ToArray(), quote.AskList.Take(depth).ToArray());
             }
         }
 

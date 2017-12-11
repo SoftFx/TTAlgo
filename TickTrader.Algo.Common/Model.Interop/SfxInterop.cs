@@ -12,6 +12,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
 using API = TickTrader.Algo.Api;
+using BO = TickTrader.BusinessObjects;
 using TickTrader.FDK.QuoteStore;
 using TickTrader.FDK.TradeCapture;
 
@@ -407,12 +408,29 @@ namespace TickTrader.Algo.Common.Model
                 StopOrderMarginReduction = info.StopOrderMarginReduction ?? 0,
                 MarginHedged = info.MarginHedge,
                 MarginMode = Convert(info.MarginCalcMode),
-                SwapEnabled = true, // ???
+                SwapEnabled = info.IsSwapEnabled(),
                 SwapSizeLong = (float)(info.SwapSizeLong ?? 0),
                 SwapSizeShort = (float)(info.SwapSizeShort ?? 0),
                 Security = info.SecurityName,
-                SortOrder = 0 // ??
+                GroupSortOrder = info.GroupSortOrder,
+                SortOrder = info.SortOrder,
+                SwapType = Convert(info.SwapType),
+                TripleSwapDay = info.TripleSwapDay,
+                IsTradeEnabled = info.IsTradeEnabled,
+                Description = info.Description,
+                DefaultSlippage = info.DefaultSlippage,
+                HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction                
             };
+        }
+
+        private static BO.SwapType Convert(SwapType type)
+        {
+            switch (type)
+            {
+                case SwapType.PercentPerYear: return BO.SwapType.PercentPerYear;
+                case SwapType.Points: return BO.SwapType.Points;
+                default: throw new NotImplementedException();
+            }
         }
 
         private static Api.CommissionChargeType Convert(SFX.CommissionChargeType fdkChargeType)

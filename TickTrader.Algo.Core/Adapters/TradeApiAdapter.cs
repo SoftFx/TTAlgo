@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
             var limPrice = type != OrderType.Stop ? price : (double?)null;
             var stopPrice = type == OrderType.Stop ? price : (double?)null;
 
-            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag);
+            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
         }
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
@@ -96,10 +96,11 @@ namespace TickTrader.Algo.Core
                     StopLoss = sl,
                     Comment = comment,
                     Options = options,
-                    Tag = isolationTag
+                    Tag = isolationTag,
+                    Expiration = expiration
                 };
 
-                resultEntity = await api.OpenOrder(isAysnc, symbol, orderType, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, isolationTag, expiration);
+                resultEntity = await api.OpenOrder(isAysnc, request);
 
                 if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
                     resultEntity = new TradeResultEntity(resultEntity.ResultCode, new OrderAccessor(orderToOpen));
@@ -212,21 +213,17 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToClose);
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToClose);
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
                 return new TradeResultEntity(ex.ErrorCode, orderToClose);
             }
         }
 
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment);
+            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null);
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
         {
             Order orderToModify = null;
 

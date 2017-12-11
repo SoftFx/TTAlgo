@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core
         public decimal? Commission => (decimal)_entity.Commission;
         public decimal? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
-        public decimal Amount { get => (decimal)_entity.RequestedVolume.Units; set => throw new NotImplementedException(); }
+        public decimal Amount { get => (decimal)RequestedVolume; set => throw new NotImplementedException(); }
         public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => throw new NotImplementedException(); }
         decimal? BL.IOrderModel.Profit { get => (decimal)Profit; set => Profit = (double)value; }
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }

@@ -429,13 +429,10 @@ namespace TickTrader.Algo.Common.Model
             set => throw new NotImplementedException();
         }
 
-        bool ICommonOrder.IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
-
-        bool ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
-
-        string ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
-
-        string ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
+        bool BL.ICommonOrder.IsHidden => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value == 0;
+        bool BL.ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
+        string BL.ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
 
         public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
 

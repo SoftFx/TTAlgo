@@ -69,7 +69,6 @@ namespace TickTrader.Algo.Core
         public string ProfitCurrency { get; set; }
         public double? StopPrice { get; set; }
         public double? MaxVisibleVolume { get; set; }
-        public DateTime? Expiration { get; set; }
         public OrderExecOptions Options { get; set; }
         public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
 

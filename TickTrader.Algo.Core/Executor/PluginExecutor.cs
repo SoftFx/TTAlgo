@@ -243,51 +243,58 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("EXECUTOR START!");
 
-                Validate();
+                    Validate();
 
-                // Setup builder
+                    // Setup builder
 
-                builder = new PluginBuilder(descriptor);
-                builder.MainSymbol = MainSymbolCode;
-                InitMetadata();
-                InitWorkingFolder();
-                builder.TradeApi = accFixture;
-                builder.TradeHistoryProvider = tradeHistoryProvider;
-                builder.Id = _botInstanceId;
-                builder.Isolated = _isolated;
-                builder.Permissions = _permissions;
-                builder.Diagnostics = this;
-                builder.Logger = pluginLogger ?? Null.Logger;
-                builder.OnAsyncAction = OnAsyncAction;
-                builder.OnExit = OnExit;
-                //builder.OnException = OnException;
+                    builder = new PluginBuilder(descriptor);
+                    builder.MainSymbol = MainSymbolCode;
+                    InitMetadata();
+                    InitWorkingFolder();
+                    builder.TradeApi = accFixture;
+                    builder.TradeHistoryProvider = tradeHistoryProvider;
+                    builder.Id = _botInstanceId;
+                    builder.Isolated = _isolated;
+                    builder.Permissions = _permissions;
+                    builder.Diagnostics = this;
+                    builder.Logger = pluginLogger ?? Null.Logger;
+                    builder.OnAsyncAction = OnAsyncAction;
+                    builder.OnExit = OnExit;
+                    //builder.OnException = OnException;
 
-                // Setup strategy
+                    // Setup strategy
 
-                iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
-                fStrategy.Init(this, bStrategy, ApplyNewRate);
-                fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
-                setupActions.ForEach(a => a());
-                BindAllOutputs();
-                iStrategy.EnqueueTradeUpdate(b => b.InvokeInit()); // enqueue init
+                    iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
+                    fStrategy.Init(this, bStrategy, ApplyNewRate);
+                    fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
+                    setupActions.ForEach(a => a());
+                    BindAllOutputs();
+                    iStrategy.EnqueueTradeUpdate(b => b.InvokeInit()); // enqueue init
 
-                // Start
+                    // Start
 
-                pluginLogger?.Start();
-                statusFixture.Start();
-                accFixture.Start();
-                calcFixture.Start();
-                fStrategy.Start(); // enqueue build action
+                    pluginLogger?.Start();
+                    statusFixture.Start();
+                    accFixture.Start();
+                    calcFixture.Start();
+                    fStrategy.Start(); // enqueue build action
 
-                iStrategy.EnqueueTradeUpdate(b => b.InvokeOnStart());
+                    iStrategy.EnqueueTradeUpdate(b => b.InvokeOnStart());
 
-                iStrategy.Start(); // Must be last action! It starts queue processing.
+                    iStrategy.Start(); // Must be last action! It starts queue processing.
 
-                // Update state
+                    // Update state
 
-                ChangeState(States.Running);
+                    ChangeState(States.Running);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Exception of type " + ex.GetType().Name + " has been thrown: " + ex.ToString());
+                }
             }
         }
 
