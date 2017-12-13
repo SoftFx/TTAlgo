@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Protocol
             {
                 ServerCertificateName = settings.ServerCertificateName,
                 ConnectionType = SoftFX.Net.Core.ConnectionType.Secure,
-                ConnectMaxCount = 3,
+                ConnectMaxCount = 1,
             };
 
             clientSessionOptions.Log.Directory = settings.ProtocolSettings.LogDirectoryName;

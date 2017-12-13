@@ -85,5 +85,18 @@ namespace TickTrader.Algo.Protocol
                     throw new ArgumentException();
             }
         }
+
+        internal static Sfx.RequestExecState Convert(RequestExecState type)
+        {
+            switch (type)
+            {
+                case RequestExecState.Completed:
+                    return Sfx.RequestExecState.Completed;
+                case RequestExecState.InternalServerError:
+                    return Sfx.RequestExecState.InternalServerError;
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

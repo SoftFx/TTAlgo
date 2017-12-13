@@ -1,6 +1,7 @@
 ﻿using NLog;
 using SoftFX.Net.BotAgent;
 using System;
+using System.Threading.Tasks;
 using Sfx = SoftFX.Net.BotAgent;
 
 namespace TickTrader.Algo.Protocol.Lib
@@ -174,7 +175,11 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _client.SetAccountList(message.ToEntity());
+                var reportEntity = message.ToEntity();
+                if (!ProcessReport(AccountListRequestClientContext, reportEntity))
+                {
+                    _client.InitAccountList(reportEntity);
+                }
             }
             catch (Exception ex)
             {
@@ -186,7 +191,11 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _client.SetBotList(message.ToEntity());
+                var reportEntity = message.ToEntity();
+                if (!ProcessReport(BotListRequestClientContext, reportEntity))
+                {
+                    _client.InitBotList(reportEntity);
+                }
             }
             catch (Exception ex)
             {
@@ -198,7 +207,11 @@ namespace TickTrader.Algo.Protocol.Lib
         {
             try
             {
-                _client.SetPackageList(message.ToEntity());
+                var reportEntity = message.ToEntity();
+                if (!ProcessReport(PackageListRequestClientContext, reportEntity))
+                {
+                    _client.InitPackageList(reportEntity);
+                }
             }
             catch (Exception ex)
             {
@@ -240,6 +253,22 @@ namespace TickTrader.Algo.Protocol.Lib
             {
                 _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
             }
+        }
+
+
+        /// <summary>
+        /// Puts report result into TaskcompletionSource if one is present
+        /// </summary>
+        /// <returns>true if successful, false otherwise</returns>
+        private static bool ProcessReport<T>(ClientContext requestContext, T reportEntity)
+        {
+            var tcs = requestContext?.Data as TaskCompletionSource<T>;
+            if (tcs != null)
+            {
+                tcs.SetResult(reportEntity);
+                return true;
+            }
+            return false;
         }
     }
 }

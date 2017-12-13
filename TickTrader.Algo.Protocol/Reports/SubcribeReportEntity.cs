@@ -11,12 +11,12 @@ namespace TickTrader.Algo.Protocol
     {
         internal static SubscribeReportEntity ToEntity(this SubscribeReport report)
         {
-            return new SubscribeReportEntity { RequestId = report.RequestId };
+            return new SubscribeReportEntity { RequestId = report.RequestId, RequestState = ToAlgo.Convert(report.RequestState), Text = report.Text };
         }
 
         internal static SubscribeReport ToMessage(this SubscribeReportEntity report)
         {
-            return new SubscribeReport(0) { RequestId = report.RequestId };
+            return new SubscribeReport(0) { RequestId = report.RequestId, RequestState = ToSfx.Convert(report.RequestState), Text = report.Text };
         }
     }
 }

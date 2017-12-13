@@ -98,11 +98,12 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 SessionSubscribed(session.Id);
-                session.Send(new SubscribeReport(0) { RequestId = message.Id });
+                session.Send(new SubscribeReport(0) { RequestId = message.Id, RequestState = Sfx.RequestExecState.Completed });
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+                session.Send(new SubscribeReport(0) { RequestId = message.Id, RequestState = Sfx.RequestExecState.InternalServerError, Text = ex.Message });
             }
         }
 
@@ -117,6 +118,7 @@ namespace TickTrader.Algo.Protocol.Lib
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+                session.Send(new AccountListReport(0) { RequestId = message.Id, RequestState = Sfx.RequestExecState.InternalServerError, Text = ex.Message });
             }
         }
 
@@ -131,6 +133,7 @@ namespace TickTrader.Algo.Protocol.Lib
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+                session.Send(new BotListReport(0) { RequestId = message.Id, RequestState = Sfx.RequestExecState.InternalServerError, Text = ex.Message });
             }
         }
 
@@ -145,6 +148,7 @@ namespace TickTrader.Algo.Protocol.Lib
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+                session.Send(new PackageListReport(0) { RequestId = message.Id, RequestState = Sfx.RequestExecState.InternalServerError, Text = ex.Message });
             }
         }
     }

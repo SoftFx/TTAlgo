@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Protocol
     {
         internal static BotListReportEntity ToEntity(this BotListReport report)
         {
-            var res = new BotListReportEntity { RequestId = report.RequestId };
+            var res = new BotListReportEntity { RequestId = report.RequestId, RequestState = ToAlgo.Convert(report.RequestState), Text = report.Text };
             res.Bots = new BotModelEntity[report.Bots.Length];
             for (var i = 0; i < report.Bots.Length; i++)
             {
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Protocol
 
         internal static BotListReport ToMessage(this BotListReportEntity report)
         {
-            var res = new BotListReport(0) { RequestId = report.RequestId };
+            var res = new BotListReport(0) { RequestId = report.RequestId, RequestState = ToSfx.Convert(report.RequestState), Text = report.Text };
             res.Bots.Resize(report.Bots.Length);
             for (var i = 0; i < report.Bots.Length; i++)
             {

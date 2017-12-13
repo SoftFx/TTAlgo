@@ -45,9 +45,17 @@ protocol BotAgent(1,0)
         string Id;
     }
 
+    enum RequestExecState
+    {
+        Completed,
+        InternalServerError,
+    }
+
     message Report
     {
         string RequestId;
+        RequestExecState RequestState;
+        ustring? Text;
     }
 
     enum UpdateType

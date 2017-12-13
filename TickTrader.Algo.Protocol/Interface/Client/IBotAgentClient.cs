@@ -4,11 +4,11 @@
     {
         #region Initialization
 
-        void SetAccountList(AccountListReportEntity report);
+        void InitAccountList(AccountListReportEntity report);
 
-        void SetBotList(BotListReportEntity report);
+        void InitBotList(BotListReportEntity report);
 
-        void SetPackageList(PackageListReportEntity report);
+        void InitPackageList(PackageListReportEntity report);
 
         #endregion Initialization
 

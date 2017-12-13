@@ -29,7 +29,7 @@ namespace TickTrader.BotAgent.CmdClient
         }
 
 
-        public void SetAccountList(AccountListReportEntity report)
+        public void InitAccountList(AccountListReportEntity report)
         {
             _accounts.Clear();
             foreach (var acc in report.Accounts)
@@ -38,7 +38,7 @@ namespace TickTrader.BotAgent.CmdClient
             }
         }
 
-        public void SetBotList(BotListReportEntity report)
+        public void InitBotList(BotListReportEntity report)
         {
             _bots.Clear();
             foreach (var acc in report.Bots)
@@ -47,7 +47,7 @@ namespace TickTrader.BotAgent.CmdClient
             }
         }
 
-        public void SetPackageList(PackageListReportEntity report)
+        public void InitPackageList(PackageListReportEntity report)
         {
             _packages.Clear();
             foreach (var package in report.Packages)

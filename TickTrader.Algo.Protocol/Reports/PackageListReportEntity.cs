@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Protocol
     {
         internal static PackageListReportEntity ToEntity(this PackageListReport report)
         {
-            var res = new PackageListReportEntity { RequestId = report.RequestId };
+            var res = new PackageListReportEntity { RequestId = report.RequestId, RequestState = ToAlgo.Convert(report.RequestState), Text = report.Text };
             res.Packages = new PackageModelEntity[report.Packages.Length];
             for (var i = 0; i < report.Packages.Length; i++)
             {
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Protocol
 
         internal static PackageListReport ToMessage(this PackageListReportEntity report)
         {
-            var res = new PackageListReport(0) { RequestId = report.RequestId };
+            var res = new PackageListReport(0) { RequestId = report.RequestId, RequestState = ToSfx.Convert(report.RequestState), Text = report.Text };
             res.Packages.Resize(report.Packages.Length);
             for (var i = 0; i < report.Packages.Length; i++)
             {

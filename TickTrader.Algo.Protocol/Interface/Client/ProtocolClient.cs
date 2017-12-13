@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Protocol
     public enum ClientStates { Offline, Online, Connecting, Disconnecting, LoggingIn, LoggingOut, Initializing, Deinitializing };
 
 
-    public enum ClientEvents { Started, Connected, Disconnected, ConnectionError, VersionMismatch, LoggedIn, LoggedOut, LoginReject, Initialized, Deinitialized, LogoutRequest }
+    public enum ClientEvents { Started, Connected, Disconnected, ConnectionError, LoggedIn, LoggedOut, LoginReject, Initialized, Deinitialized, LogoutRequest }
 
 
     public class ProtocolClient
@@ -35,6 +35,12 @@ namespace TickTrader.Algo.Protocol
         public VersionSpec VersionSpec { get; internal set; }
 
 
+        public event Action Connecting = delegate { };
+        public event Action Connected = delegate { };
+        public event Action Disconnecting = delegate { };
+        public event Action Disconnected = delegate { };
+
+
         public ProtocolClient(IBotAgentClient agentClient, IClientSessionSettings settings)
         {
             AgentClient = agentClient;
@@ -45,28 +51,26 @@ namespace TickTrader.Algo.Protocol
 
             _stateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
 
-            _stateMachine.StateChanged += (from, to) => _logger.Debug($"STATE {from} -> {to}");
-            _stateMachine.EventFired += e => _logger.Debug($"EVENT {e}");
+            _stateMachine.StateChanged += StateMachineOnStateChanged;
+            _stateMachine.EventFired += StateMachineOnEventFired;
 
             _stateMachine.AddTransition(ClientStates.Offline, ClientEvents.Started, ClientStates.Connecting);
             _stateMachine.AddTransition(ClientStates.Connecting, ClientEvents.Connected, ClientStates.LoggingIn);
             _stateMachine.AddTransition(ClientStates.Connecting, ClientEvents.ConnectionError, ClientStates.Deinitializing);
-            _stateMachine.AddTransition(ClientStates.Connecting, ClientEvents.LogoutRequest, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.LoggedIn, ClientStates.Initializing);
-            _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.LoginReject, ClientStates.Deinitializing);
-            _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.VersionMismatch, ClientStates.Disconnecting);
+            _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.LoginReject, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.LoggingIn, ClientEvents.Disconnected, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.Initialized, ClientStates.Online);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.Disconnected, ClientStates.Deinitializing);
-            _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.LoggedOut, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.LoggedOut, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.Initializing, ClientEvents.LogoutRequest, ClientStates.LoggingOut);
             _stateMachine.AddTransition(ClientStates.Online, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Online, ClientEvents.Disconnected, ClientStates.Deinitializing);
-            _stateMachine.AddTransition(ClientStates.Online, ClientEvents.LoggedOut, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.Online, ClientEvents.LoggedOut, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.Online, ClientEvents.LogoutRequest, ClientStates.LoggingOut);
-            _stateMachine.AddTransition(ClientStates.LoggingOut, ClientEvents.LoggedOut, ClientStates.Deinitializing);
+            _stateMachine.AddTransition(ClientStates.LoggingOut, ClientEvents.LoggedOut, ClientStates.Disconnecting);
             _stateMachine.AddTransition(ClientStates.LoggingOut, ClientEvents.ConnectionError, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.LoggingOut, ClientEvents.Disconnected, ClientStates.Deinitializing);
             _stateMachine.AddTransition(ClientStates.Disconnecting, ClientEvents.Disconnected, ClientStates.Deinitializing);
@@ -77,7 +81,6 @@ namespace TickTrader.Algo.Protocol
             _stateMachine.OnEnter(ClientStates.LoggingIn, SendLogin);
             _stateMachine.OnEnter(ClientStates.Initializing, Init);
             _stateMachine.OnEnter(ClientStates.LoggingOut, SendLogout);
-            _stateMachine.OnEnter(ClientStates.Disconnecting, StartDisconnecting);
             _stateMachine.OnEnter(ClientStates.Deinitializing, DeInit);
         }
 
@@ -93,34 +96,13 @@ namespace TickTrader.Algo.Protocol
             }, s => s == ClientStates.Online || s == ClientStates.Offline);
         }
 
-        public void Disconnect()
+        public Task Disconnect()
         {
-            _stateMachine.PushEventAndWait(ClientEvents.LogoutRequest, ClientStates.Offline).Wait();
-
-            if (ClientSession != null)
-            {
-                ClientSession.Join();
-            }
-
-            if (Listener != null)
-            {
-                Listener.Connected -= ListenerOnConnected;
-                Listener.Disconnected -= ListenerOnDisconnected;
-                Listener.ConnectionError -= ListenerOnConnectionError;
-                Listener.Login -= ListenerOnLogin;
-                Listener.LoginReject -= ListenerOnLoginReject;
-                Listener.Logout -= ListenerOnLogout;
-                Listener.Subscribed -= ListenerOnSubscribed;
-
-                Listener = null;
-            }
+            return _stateMachine.PushEventAndWait(ClientEvents.LogoutRequest, ClientStates.Offline);
         }
 
-        public void RequestAccounts(AccountListRequestEntity request)
-        {
-            ClientSession.SendAccountListRequest(null, request.ToMessage());
-        }
 
+        #region Connection routine
 
         private void StartConnecting()
         {
@@ -183,17 +165,32 @@ namespace TickTrader.Algo.Protocol
             _stateMachine.PushEvent(ClientEvents.Initialized);
         }
 
-        private void StartDisconnecting()
-        {
-            if (ClientSession != null)
-            {
-                ClientSession.Disconnect(null, "User request");
-            }
-        }
-
         private void DeInit()
         {
-            _stateMachine.PushEvent(ClientEvents.Deinitialized);
+            Task.Factory.StartNew(() =>
+            {
+                if (ClientSession != null)
+                {
+                    ClientSession.Join();
+
+                    ClientSession = null;
+                }
+
+                if (Listener != null)
+                {
+                    Listener.Connected -= ListenerOnConnected;
+                    Listener.Disconnected -= ListenerOnDisconnected;
+                    Listener.ConnectionError -= ListenerOnConnectionError;
+                    Listener.Login -= ListenerOnLogin;
+                    Listener.LoginReject -= ListenerOnLoginReject;
+                    Listener.Logout -= ListenerOnLogout;
+                    Listener.Subscribed -= ListenerOnSubscribed;
+
+                    Listener = null;
+                }
+
+                _stateMachine.PushEvent(ClientEvents.Deinitialized);
+            });
         }
 
         private void SendLogin()
@@ -213,5 +210,69 @@ namespace TickTrader.Algo.Protocol
             ClientSession.SendPackageListRequest(null, new PackageListRequestEntity().ToMessage());
             ClientSession.SendSubscribeRequest(null, new SubscribeRequestEntity().ToMessage());
         }
+
+        private void StateMachineOnStateChanged(ClientStates from, ClientStates to)
+        {
+            _logger.Debug($"STATE {from} -> {to}");
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    if (to == ClientStates.Connecting)
+                    {
+                        Connecting();
+                    }
+                    if (to == ClientStates.Online)
+                    {
+                        Connected();
+                    }
+                    if (from == ClientStates.Online)
+                    {
+                        Disconnecting();
+                    }
+                    if (to == ClientStates.Deinitializing)
+                    {
+                        Disconnected();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, $"Connection event failed: {ex.Message}");
+                }
+            });
+        }
+
+        private void StateMachineOnEventFired(object e)
+        {
+            _logger.Debug($"EVENT {e}");
+        }
+
+        #endregion Connection routine
+
+
+        #region Requests
+
+        public Task<AccountListReportEntity> RequestAccounts(AccountListRequestEntity request)
+        {
+            var tcs = new TaskCompletionSource<AccountListReportEntity>();
+            ClientSession.SendAccountListRequest(new AccountListRequestClientContext(false) { Data = tcs }, request.ToMessage());
+            return tcs.Task;
+        }
+
+        public Task<BotListReportEntity> RequestBots(BotListRequestEntity request)
+        {
+            var tcs = new TaskCompletionSource<BotListReportEntity>();
+            ClientSession.SendBotListRequest(new BotListRequestClientContext(false) { Data = tcs }, request.ToMessage());
+            return tcs.Task;
+        }
+
+        public Task<PackageListReportEntity> RequestPackages(PackageListRequestEntity request)
+        {
+            var tcs = new TaskCompletionSource<PackageListReportEntity>();
+            ClientSession.SendPackageListRequest(new PackageListRequestClientContext(false) { Data = tcs }, request.ToMessage());
+            return tcs.Task;
+        }
+
+        #endregion Requests
     }
 }
