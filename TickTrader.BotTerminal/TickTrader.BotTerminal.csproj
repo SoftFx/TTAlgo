@@ -284,6 +284,13 @@
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Protocol\BotAgentManager.cs" />
+    <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
+    <Compile Include="Model.Protocol\BotAgentStorageEntry.cs" />
+    <Compile Include="Model.Protocol\BotAgentStorageModel.cs" />
+    <Compile Include="Model.Protocol\ProtocolClientSettings.cs" />
+    <Compile Include="Model.Protocol\ProtocolConfigSection.cs" />
+    <Compile Include="Model.Protocol\ProtocolSettings.cs" />
     <Compile Include="Model\BotAggregator.cs" />
     <Compile Include="Model.Auth\AuthStorageEntry.cs" />
     <Compile Include="Model.Profiles\ChartStorageEntry.cs" />
@@ -403,6 +410,11 @@
     </Compile>
     <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
     <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
+    <Compile Include="Views.Protocol\BotAgentLoginDialogView.xaml.cs">
+      <DependentUpon>BotAgentLoginDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Protocol\BotAgentLoginDialogViewModel.cs" />
+    <Compile Include="Views.Protocol\BotAgentViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>
@@ -835,6 +847,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Protocol\BotAgentLoginDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.TradeInfo\AccountStatsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -948,6 +964,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj">
+      <Project>{7ae78bd0-33fd-421e-a16f-37adea680870}</Project>
+      <Name>TickTrader.Algo.Protocol</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Toaster\TickTrader.Toaster.csproj">
       <Project>{8e54fee6-d903-4e11-a003-cd2af022edd9}</Project>

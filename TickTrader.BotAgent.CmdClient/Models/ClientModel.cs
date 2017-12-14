@@ -63,8 +63,8 @@ namespace TickTrader.BotAgent.CmdClient
             }
 
             _agentClient = new BotAgentClient();
-            _protocolClient = new ProtocolClient(_agentClient, clientConfig);
-            _protocolClient.Connect();
+            _protocolClient = new ProtocolClient(_agentClient);
+            _protocolClient.TriggerConnect(clientConfig);
         }
 
         private bool CheckConnectionState()

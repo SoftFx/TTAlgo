@@ -24,13 +24,15 @@ namespace TickTrader.Algo.Protocol
         internal BotAgentClientListener Listener { get; set; }
 
 
+        public StateMachine<ClientStates> StateMachine => _stateMachine;
+
         public ClientStates State => _stateMachine.Current;
 
         public string LastError { get; internal set; }
 
         public IBotAgentClient AgentClient { get; }
 
-        public IClientSessionSettings SessionSettings { get; }
+        public IClientSessionSettings SessionSettings { get; internal set; }
 
         public VersionSpec VersionSpec { get; internal set; }
 
@@ -41,10 +43,9 @@ namespace TickTrader.Algo.Protocol
         public event Action Disconnected = delegate { };
 
 
-        public ProtocolClient(IBotAgentClient agentClient, IClientSessionSettings settings)
+        public ProtocolClient(IBotAgentClient agentClient)
         {
             AgentClient = agentClient;
-            SessionSettings = settings;
 
             _logger = LoggerHelper.GetLogger("Protocol.Client", SessionSettings.ProtocolSettings.LogDirectoryName, SessionSettings.ServerAddress);
             VersionSpec = new VersionSpec();
@@ -85,20 +86,34 @@ namespace TickTrader.Algo.Protocol
         }
 
 
-        public Task Connect()
+        public void TriggerConnect(IClientSessionSettings settings)
         {
-            return _stateMachine.ModifyConditionsAndWait(() =>
+            _stateMachine.SyncContext.Synchronized(() =>
             {
-                if (State != ClientStates.Offline)
+                if (_stateMachine.Current != ClientStates.Offline)
                     throw new Exception($"Cannot connect! Client is in state {State}");
 
+                SessionSettings = settings;
+
                 _stateMachine.PushEvent(ClientEvents.Started);
-            }, s => s == ClientStates.Online || s == ClientStates.Offline);
+            });
+        }
+
+        public Task Connect(IClientSessionSettings settings)
+        {
+            TriggerConnect(settings);
+            return _stateMachine.AsyncWait(s => s == ClientStates.Online || s == ClientStates.Offline);
+        }
+
+        public void TriggerDisconnect()
+        {
+            _stateMachine.PushEvent(ClientEvents.LogoutRequest);
         }
 
         public Task Disconnect()
         {
-            return _stateMachine.PushEventAndWait(ClientEvents.LogoutRequest, ClientStates.Offline);
+            TriggerDisconnect();
+            return _stateMachine.AsyncWait(ClientStates.Offline);
         }
 
 
