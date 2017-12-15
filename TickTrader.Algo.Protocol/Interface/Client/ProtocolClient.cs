@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Protocol
 
     public class ProtocolClient
     {
-        private readonly ILogger _logger;
+        private ILogger _logger;
         private StateMachine<ClientStates> _stateMachine;
 
 
@@ -47,7 +47,6 @@ namespace TickTrader.Algo.Protocol
         {
             AgentClient = agentClient;
 
-            _logger = LoggerHelper.GetLogger("Protocol.Client", SessionSettings.ProtocolSettings.LogDirectoryName, SessionSettings.ServerAddress);
             VersionSpec = new VersionSpec();
 
             _stateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
@@ -121,6 +120,8 @@ namespace TickTrader.Algo.Protocol
 
         private void StartConnecting()
         {
+            _logger = LoggerHelper.GetLogger("Protocol.Client", SessionSettings.ProtocolSettings.LogDirectoryName, SessionSettings.ServerAddress);
+
             Listener = new BotAgentClientListener(AgentClient, _logger);
 
             Listener.Connected += ListenerOnConnected;
@@ -228,7 +229,7 @@ namespace TickTrader.Algo.Protocol
 
         private void StateMachineOnStateChanged(ClientStates from, ClientStates to)
         {
-            _logger.Debug($"STATE {from} -> {to}");
+            _logger?.Debug($"STATE {from} -> {to}");
             Task.Factory.StartNew(() =>
             {
                 try
@@ -245,21 +246,21 @@ namespace TickTrader.Algo.Protocol
                     {
                         Disconnecting();
                     }
-                    if (to == ClientStates.Deinitializing)
+                    if (to == ClientStates.Offline)
                     {
                         Disconnected();
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, $"Connection event failed: {ex.Message}");
+                    _logger?.Error(ex, $"Connection event failed: {ex.Message}");
                 }
             });
         }
 
         private void StateMachineOnEventFired(object e)
         {
-            _logger.Debug($"EVENT {e}");
+            _logger?.Debug($"EVENT {e}");
         }
 
         #endregion Connection routine

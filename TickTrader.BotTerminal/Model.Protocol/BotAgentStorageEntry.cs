@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
 
         public BotAgentStorageEntry Clone()
         {
-            return new BotAgentStorageEntry(Login, Password, ServerAddress, Port, CertificateName);
+            return new BotAgentStorageEntry(Login, Password, ServerAddress, Port, CertificateName) { Connect = Connect };
         }
 
         public ProtocolClientSettings ToClientSettings()

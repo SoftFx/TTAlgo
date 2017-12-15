@@ -33,6 +33,7 @@
 
                 <!-- Views (temp!) -->
                 <ResourceDictionary Source="Views/AlgoListView.xaml" />
+                <ResourceDictionary Source="Views/BotListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
                 <ResourceDictionary Source="Views/JournalView.xaml" />

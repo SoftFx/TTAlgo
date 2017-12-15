@@ -22,6 +22,24 @@ namespace TickTrader.BotTerminal
         public BotAgentLoginDialogView()
         {
             InitializeComponent();
+            Loaded += BotAgentLoginDialogView_Loaded;
+        }
+
+
+        private void BotAgentLoginDialogView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var pwdContainer = DataContext as IPasswordContainer;
+
+            if (pwdContainer != null)
+            {
+                this.PasswordInput.Password = pwdContainer.Password;
+                this.PasswordInput.PasswordChanged += (s, a) => pwdContainer.Password = PasswordInput.Password;
+                pwdContainer.PropertyChanged += (s, a) =>
+                {
+                    if (a.PropertyName == nameof(IPasswordContainer.Password) && pwdContainer.Password != PasswordInput.Password)
+                        PasswordInput.Password = pwdContainer.Password;
+                };
+            }
         }
     }
 }

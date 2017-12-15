@@ -278,6 +278,9 @@
                             <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" >
                                 <ContentControl cal:View.Model="{Binding AlgoList}" />
                             </dk:LayoutAnchorable>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Bots}" CanClose="False" CanHide="False" >
+                                <ContentControl cal:View.Model="{Binding BotList}" />
+                            </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
                     </dk:LayoutPanel>
                     <dk:LayoutPanel Orientation="Vertical">

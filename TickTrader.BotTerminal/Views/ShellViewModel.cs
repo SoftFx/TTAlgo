@@ -26,6 +26,7 @@ namespace TickTrader.BotTerminal
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
         private BotsWarden botsWarden;
+        private BotAgentManager botAgentManager;
 
         public ShellViewModel()
         {
@@ -47,6 +48,9 @@ namespace TickTrader.BotTerminal
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
+            botAgentManager = new BotAgentManager(storage);
+            BotList = new BotListViewModel(this, botAgentManager);
+
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
@@ -60,7 +64,7 @@ namespace TickTrader.BotTerminal
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
 
             botsWarden = new BotsWarden(new BotAggregator(Charts));
-            
+
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
@@ -210,6 +214,7 @@ namespace TickTrader.BotTerminal
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
+        public BotListViewModel BotList { get; }
 
         public NotificationsViewModel Notifications { get; private set; }
 
@@ -220,6 +225,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
+                await botAgentManager.ShutdownDisconnect();
             }
             catch (Exception) { }
 
@@ -233,6 +239,7 @@ namespace TickTrader.BotTerminal
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
             ConnectLast();
+            botAgentManager.RestoreConnections();
         }
 
         private async void PrintSystemInfo()

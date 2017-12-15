@@ -330,4 +330,7 @@
   <data name="Order_StopPrice" xml:space="preserve">
     <value>Stop Price</value>
   </data>
+  <data name="Tab_Bots" xml:space="preserve">
+    <value>Боты</value>
+  </data>
 </root>

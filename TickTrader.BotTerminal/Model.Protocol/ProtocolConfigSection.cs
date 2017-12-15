@@ -26,12 +26,13 @@ namespace TickTrader.BotTerminal
 
     public class LoggingConfigElement : ConfigurationElement
     {
-        public string DirectoryName => (string)this["dir"];
-
+        [ConfigurationProperty("logEvents", IsRequired = true)]
         public bool LogEvents => (bool)this["logEvents"];
 
+        [ConfigurationProperty("logStates", IsRequired = true)]
         public bool LogStates => (bool)this["logStates"];
 
+        [ConfigurationProperty("logMessages", IsRequired = true)]
         public bool LogMessages => (bool)this["logMessages"];
     }
 
@@ -56,9 +57,6 @@ namespace TickTrader.BotTerminal
         [ConfigurationProperty("name", IsRequired = false)]
         public string Name => (string)this["name"];
 
-        [ConfigurationProperty("short", IsRequired = false)]
-        public string ShortName => (string)this["short"];
-
         [ConfigurationProperty("address", IsRequired = true)]
         public string Address => (string)this["address"];
 
@@ -67,8 +65,5 @@ namespace TickTrader.BotTerminal
 
         [ConfigurationProperty("certName", IsRequired = true)]
         public string CertificateName => (string)this["certName"];
-
-        [ConfigurationProperty("color", IsRequired = true)]
-        public string Color => (string)this["color"];
     }
 }

@@ -25,27 +25,42 @@ namespace TickTrader.BotTerminal
         {
             return new BotAgentStorageModel()
             {
-                _botAgents = new DynamicList<BotAgentStorageEntry>(_botAgents.Values.Select(a => a.Clone())),
+                _botAgents = new DynamicList<BotAgentStorageEntry>(_botAgents.Values.Select(b => b.Clone())),
             };
         }
 
 
-        public void Remove(BotAgentStorageEntry botAgent)
+        public void Remove(string server)
         {
-            var index = _botAgents.Values.IndexOf(a => a.Login == botAgent.Login && a.ServerAddress == botAgent.ServerAddress);
+            var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
             if (index != -1)
+            {
                 _botAgents.RemoveAt(index);
+            }
         }
 
-        public void Update(BotAgentStorageEntry botAgent)
+        public BotAgentStorageEntry Update(string login, string password, string server, int port, string certName)
         {
-            int index = _botAgents.Values.IndexOf(a => a.Login == botAgent.Login && a.ServerAddress == botAgent.ServerAddress);
-            if (index < 0)
-                _botAgents.Values.Add(botAgent);
-            else
+            var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
+            if (index == -1)
             {
-                if (_botAgents.Values[index].Password != botAgent.Password)
-                    _botAgents.Values[index].Password = botAgent.Password;
+                _botAgents.Add(new BotAgentStorageEntry { ServerAddress = server });
+                index = _botAgents.Count - 1;
+            }
+            _botAgents[index].Login = login;
+            _botAgents[index].Password = password;
+            _botAgents[index].Port = port;
+            _botAgents[index].CertificateName = certName;
+
+            return _botAgents[index];
+        }
+
+        public void UpdateConnect(string server, bool connect)
+        {
+            var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
+            if (index != -1)
+            {
+                _botAgents[index].Connect = connect;
             }
         }
     }

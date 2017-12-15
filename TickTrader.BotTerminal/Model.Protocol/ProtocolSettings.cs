@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
             var cfgSection = ProtocolConfigSection.GetCfgSection();
             var logsConfig = cfgSection.Logs;
 
-            LogDirectoryName = logsConfig.DirectoryName;
+            LogDirectoryName = EnvService.Instance.LogFolder;
             LogEvents = logsConfig.LogEvents;
             LogStates = logsConfig.LogStates;
             LogMessages = logsConfig.LogMessages;

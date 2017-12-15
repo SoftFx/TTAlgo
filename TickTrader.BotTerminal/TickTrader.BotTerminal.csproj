@@ -284,6 +284,7 @@
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
     <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageEntry.cs" />
@@ -433,6 +434,7 @@
       <DependentUpon>AssetsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
+    <Compile Include="Views\BotListViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -536,7 +538,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Behaviors\DragDrop\TransparentContainer.xaml">
@@ -870,6 +874,10 @@
     <Page Include="Views.TradeInfo\AssetsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BotListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
