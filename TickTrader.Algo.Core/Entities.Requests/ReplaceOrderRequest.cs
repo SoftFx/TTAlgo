@@ -22,5 +22,6 @@ namespace TickTrader.Algo.Core
         public double? TrakeProfit { get; set; }
         public string Comment { get; set; }
         public string Tag { get; set; }
+        public DateTime? Expiration { get; set; }
     }
 }

@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core
             var order = fixture.Remove(entity.Id);
             order?.Update(entity);
             if (order != null)
-                Removed(order);
+                Removed?.Invoke(order);
             return order;
         }
 

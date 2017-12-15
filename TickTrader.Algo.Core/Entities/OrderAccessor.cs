@@ -17,19 +17,22 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        internal OrderAccessor(OrderEntity entity)
-            : this(entity, (Symbol)null)
-        {
-        }
-
         internal OrderAccessor(OrderEntity entity, Symbol symbol)
         {
-            _entity = entity;
+            _entity = entity ?? throw new ArgumentNullException("entity");
             Margin = 0;
             Profit = 0;
 
             _symbol = symbol;
             _lotSize = symbol?.ContractSize ?? 1;
+        }
+
+        internal static Order GetAccessor(OrderEntity entity, Symbol symbol)
+        {
+            if (entity == null)
+                return Null.Order;
+
+            return new OrderAccessor(entity, symbol);
         }
 
         internal void Update(OrderEntity entity)
@@ -92,14 +95,20 @@ namespace TickTrader.Algo.Core
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.Price { get => (decimal)((Type == OrderType.Stop || Type == OrderType.StopLimit) ? StopPrice :  Price); set => throw new NotImplementedException(); }
+        decimal? BL.ICommonOrder.Price { get => GetDecPrice(); set => throw new NotImplementedException(); }
         bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
         bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
-        string BL.ICommonOrder.MarginCurrency { get => _entity.MarginCurrency; set => throw new NotImplementedException(); }
-        string BL.ICommonOrder.ProfitCurrency { get => _entity.ProfitCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.MarginCurrency { get => _symbol.BaseCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.ProfitCurrency { get => _symbol.CounterCurrency; set => throw new NotImplementedException(); }
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 
         #endregion
+
+        private decimal? GetDecPrice()
+        {
+            double? price = (Type == OrderType.Stop) ? _entity.StopPrice : _entity.Price;
+            return (decimal?)price;
+        }
     }
 }

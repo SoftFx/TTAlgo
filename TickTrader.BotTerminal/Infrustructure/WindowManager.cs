@@ -22,11 +22,6 @@ namespace TickTrader.BotTerminal
             _adapter = new CaliburnAdapter();
         }
 
-        public IScreen GetWindowModel(object key)
-        {
-            return _wndModels.GetValueOrDefault(key);
-        }
-
         public void OpenWindow(IScreen wndModel)
         {
             var wnd = _adapter.GetOrCreateMdiWindow(wndModel);
@@ -63,6 +58,15 @@ namespace TickTrader.BotTerminal
                 wnd.Owner = parentWnd;
         }
 
+        public void OpenOrActivateWindow(object wndKey, Func<IScreen> wndModelfactory)
+        {
+            IScreen existing = GetWindowModel(wndKey);
+            if (existing != null)
+                existing.Activate();
+            else
+                OpenMdiWindow(wndKey, wndModelfactory());
+        }
+
         public void OpenMdiWindow(object wndKey, IScreen wndModel)
         {
             IScreen existing = GetWindowModel(wndKey);
@@ -73,23 +77,28 @@ namespace TickTrader.BotTerminal
                 else
                     existing.Activate();
             }
-            //wndModel.Deactivated += WndModel_Deactivated;
+            wndModel.Deactivated += WndModel_Deactivated;
             _wndModels[wndKey] = wndModel;
             OpenMdiWindow(wndModel);
         }
 
-        //private void WndModel_Deactivated(object sender, DeactivationEventArgs e)
-        //{
-        //    if (e.WasClosed)
-        //    {
-        //        var wndModel = sender as IScreen;
-        //        wndModel.Deactivated -= WndModel_Deactivated;
+        private IScreen GetWindowModel(object key)
+        {
+            return _wndModels.GetValueOrDefault(key);
+        }
 
-        //        var keyValue = _wndModels.FirstOrDefault(m => m.Value == wndModel);
-        //        if (keyValue.Key != null)
-        //            _wndModels.Remove(keyValue.Key);
-        //    }
-        //}
+        private void WndModel_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            if (e.WasClosed)
+            {
+                var wndModel = sender as IScreen;
+                wndModel.Deactivated -= WndModel_Deactivated;
+
+                var keyValue = _wndModels.FirstOrDefault(m => m.Value == wndModel);
+                if (keyValue.Key != null)
+                    _wndModels.Remove(keyValue.Key);
+            }
+        }
 
         public void CloseWindowByKey(object wndKey)
         {

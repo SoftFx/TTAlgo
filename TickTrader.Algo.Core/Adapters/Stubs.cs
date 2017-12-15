@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Core
     internal class NullTradeApi : TradeCommands
     {
         private static Task<OrderCmdResult> rejectResult
-            = Task.FromResult<OrderCmdResult>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, OrderEntity.Null));
+            = Task.FromResult<OrderCmdResult>(new OrderResultEntity(OrderCmdResultCodes.Unsupported, null));
 
         public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {

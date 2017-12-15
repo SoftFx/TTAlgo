@@ -24,10 +24,10 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeApi
     {
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, OpenOrderRequest request);
-        Task<OrderCmdResult> CancelOrder(bool isAysnc, CancelOrderRequest request);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, ReplaceOrderRequest request);
-        Task<OrderCmdResult> CloseOrder(bool isAysnc, CloseOrderRequest request);
+        Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request);
+        Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request);
+        Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderRequest request);
+        Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderRequest request);
     }
 
     public interface ITradeExecutor

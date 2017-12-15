@@ -15,8 +15,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         public double Volume { get; set; }
 
         private int _testCount;
-        private int _errorCount;
-        private List<string> _errorTextList;
+        private List<string> _errors = new List<string>();
 
         protected override async void OnStart()
         {
@@ -48,15 +47,15 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 if (orderType == OrderType.Limit)
                 {
-                    price -= Symbol.Point * 100000;
-                    secondPrice -= Symbol.Point * 50000;
-                    newPrice -= Symbol.Point * 25000;
+                    price -= Symbol.Point * 1000;
+                    secondPrice -= Symbol.Point * 500;
+                    newPrice -= Symbol.Point * 250;
                 }
                 else
                 {
-                    price += Symbol.Point * 100000;
-                    secondPrice += Symbol.Point * 50000;
-                    newPrice += Symbol.Point * 25000;
+                    price += Symbol.Point * 1000;
+                    secondPrice += Symbol.Point * 500;
+                    newPrice += Symbol.Point * 250;
                 }
             }
             else
@@ -65,15 +64,15 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 if (orderType == OrderType.Limit)
                 {
-                    price += Symbol.Point * 100000;
-                    secondPrice += Symbol.Point * 50000;
-                    newPrice += Symbol.Point * 25000;
+                    price += Symbol.Point * 1000;
+                    secondPrice += Symbol.Point * 500;
+                    newPrice += Symbol.Point * 250;
                 }
                 else
                 {
-                    price -= Symbol.Point * 100000;
-                    secondPrice -= Symbol.Point * 50000;
-                    newPrice -= Symbol.Point * 25000;
+                    price -= Symbol.Point * 1000;
+                    secondPrice -= Symbol.Point * 5000;
+                    newPrice -= Symbol.Point * 2500;
                 }
 
             }
@@ -119,7 +118,6 @@ namespace TickTrader.Algo.TestCollection.Bots
                 await TestAddModifyTakeProfit(someOrder.Id, isAsync);
             }
 
-
             if (orderType != OrderType.Market)
             {
                 await TestAddModifyExpiration(someOrder.Id, isAsync);
@@ -154,7 +152,6 @@ namespace TickTrader.Algo.TestCollection.Bots
                     ThrowOnError(CancelOrder(someOrder.Id));
                 VerifyOrderDeleted(someOrder.Id);
             }
-
         }
 
         private async Task Test()
@@ -165,148 +162,68 @@ namespace TickTrader.Algo.TestCollection.Bots
             InitSidesAndTypes(sides, types);
             bool[] asyncModes = {false, true};
             string[] tags = {null, tag};
-            _errorTextList = new List<string>();
+            _errors = new List<string>();
 
             foreach (var orderSide in sides)
+            {
                 foreach (var orderType in types)
+                {
                     foreach (var asyncMode in asyncModes)
+                    {
                         foreach (var someTag in tags)
                         {
-                            var isIoc = false;
-                            try
-                            {
-                                await PerfomOrder(orderType, orderSide, asyncMode, OrderExecOptions.None, someTag);
-                                isIoc = true;
-                                if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                    await PerfomOrder(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
-                            }
-                            catch (Exception e)
-                            {
-                                _errorCount++;
-                                _errorTextList.Add(e.Message
-                                    + ((isIoc) ? "in IOC " : "in ")
-                                    + ((asyncMode) ? "async " : " ") 
-                                    + orderSide + " " + orderType + " order" 
-                                    + ((someTag != null) ? " with Tag" : ""));
-                            }
+                            await DoOrderTest(orderType, orderSide, asyncMode, false, someTag);
+                            if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
+                                await DoOrderTest(orderType, orderSide, asyncMode, true, someTag);
                         }
-
-            await OpenMarketOrder(Account.Type);
+                    }
+                }
+            }
 
             PrintStatus();
+        }
+
+        private async Task DoOrderTest(OrderType orderType, OrderSide orderSide, bool asyncMode, bool isIoc, string tag)
+        {
+            string testCfgDescription = (asyncMode ? "[a] " : " ")
+                    + orderSide + " " + orderType + " "
+                    + (isIoc ? "(IoC)" : "")
+                    + (tag != null ? " +Tag" : "");
+
+            Print("ORDER TEST: " + testCfgDescription);
+
+            try
+            {
+                await PerfomOrder(orderType, orderSide, asyncMode, isIoc ? OrderExecOptions.ImmediateOrCancel : OrderExecOptions.None, tag);
+            }
+            catch (AggregateException ae)
+            {
+                OnError(testCfgDescription, ae.InnerException.Message);
+            }
+            catch (Exception e)
+            {
+                OnError(testCfgDescription, e.Message);
+            }
+        }
+
+        private void OnError(string testName, string message)
+        {
+            _errors.Add(testName + ": " + message);
         }
 
         private void PrintStatus()
         {
             var stringBuilder = new StringBuilder();
-            foreach (var str in _errorTextList)
+            foreach (var str in _errors)
                 stringBuilder.AppendLine(str);
 
-            if (_errorCount == 0)
+            if (_errors.Count == 0)
                 Status.WriteLine("Test success: " + _testCount + " passed");
-
             else
             {
-                Status.WriteLine("Test failed: " + _errorCount + " errors in " + _testCount + " tests");
+                Status.WriteLine("Test failed: " + _errors.Count + " errors in " + _testCount + " tests");
                 Status.WriteLine(stringBuilder.ToString());
             }
-        }
-
-        private void OpenMarketOrderGross(OrderSide orderSide)
-        {
-            _testCount++;
-            Print("Test - Open " + orderSide + " Market 1");
-            var pos1 = ThrowOnError(OpenMarketOrder(orderSide, Volume * 2));
-            VerifyOrder(pos1.Id, OrderType.Position, orderSide, Volume * 2);
-
-            _testCount++;
-            Print("Test - Close " + orderSide + " Market 1 (partially)");
-            ThrowOnError(CloseOrder(pos1.Id, Volume));
-            VerifyOrder(pos1.Id, OrderType.Position, orderSide, Volume);
-
-            _testCount++;
-            Print("Test - Close " + orderSide + " Market 1");
-            ThrowOnError(CloseOrder(pos1.Id, Volume));
-            VerifyOrderDeleted(pos1.Id);
-
-            _testCount++;
-            Print("Test - Open " + orderSide + " Market 2");
-            var pos2 = ThrowOnError(OpenMarketOrder(orderSide, Volume));
-            VerifyOrder(pos2.Id, OrderType.Position, orderSide, Volume);
-
-            _testCount++;
-            Print("Test - Open " + orderSide + " Market 3");
-            var oppositeOrderSide = (orderSide == OrderSide.Sell) ? OrderSide.Buy : OrderSide.Sell;
-            var pos3 = ThrowOnError(OpenMarketOrder(oppositeOrderSide, Volume));
-            VerifyOrder(pos3.Id, OrderType.Position, oppositeOrderSide, Volume);
-
-            _testCount++;
-            Print("Test - Close " + orderSide + " Market 2 by " + oppositeOrderSide + " Market 3");
-            ThrowOnError(CloseOrderBy(pos2.Id, pos3.Id));
-
-            VerifyOrderDeleted(pos2.Id);
-            VerifyOrderDeleted(pos3.Id);
-
-        }
-
-        private async Task OpenMarketOrder(AccountTypes curType)
-        {
-            switch (curType)
-            {
-                case AccountTypes.Gross:
-                    OpenMarketOrderGross(OrderSide.Buy);
-                    OpenMarketOrderGross(OrderSide.Sell);
-                    break;
-
-                case AccountTypes.Net:
-                    await OpenMarketOrderNet();
-                    break;
-
-                case AccountTypes.Cash:
-                    await OpenMarketOrderCash();
-                    break;
-
-                default:
-                    throw new Exception("Invalid account type " + Account.Type);
-            }
-        }
-
-        private async Task OpenMarketOrderNet()
-        {
-            _testCount++;
-            Print("Test - Open " + OrderSide.Buy + " Market 1");
-            ThrowOnError(OpenMarketOrder(OrderSide.Buy, Volume));
-
-            _testCount++;
-            Print("Test - Open opposite " + OrderSide.Sell + " Market 2");
-            ThrowOnError(OpenMarketOrder(OrderSide.Sell, Volume));
-
-            _testCount++;
-            Print("Async test - Open " + OrderSide.Buy + " Market 3");
-            ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Market, OrderSide.Buy, Volume, null, Symbol.Ask, null));
-
-            _testCount++;
-            Print("Async test - Open opposite " + OrderSide.Sell + " Market 4");
-            ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Market, OrderSide.Sell, Volume, null, Symbol.Bid, null));
-        }
-
-        private async Task OpenMarketOrderCash()
-        {
-            _testCount++;
-            Print("Test - Open " + OrderSide.Buy + " Market 1");
-            ThrowOnError(OpenMarketOrder(OrderSide.Buy, Volume));
-
-            _testCount++;
-            Print("Test - Open opposite " + OrderSide.Sell + " Market 2");
-            ThrowOnError(OpenMarketOrder(OrderSide.Sell, Volume));
-
-            _testCount++;
-            Print("Async test - Open " + OrderSide.Buy + " Market 3");
-            ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Market, OrderSide.Buy, Volume, null, Symbol.Ask, null));
-
-            _testCount++;
-            Print("Async test - Open opposite " + OrderSide.Sell + " Market 4");
-            ThrowOnError(await OpenOrderAsync(Symbol.Name, OrderType.Market, OrderSide.Sell, Volume, null, Symbol.Bid, null));
         }
 
         private async Task TestAddModifyComment(string orderId, bool isAsync)
@@ -393,8 +310,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         private async Task TestAddModifyTakeProfit(string orderId, bool isAsync)
         {
             var order = Account.Orders[orderId];
-            var takeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + Symbol.Point * 100000) : (Symbol.Bid - Symbol.Point * 100000);
-            var newTakeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + Symbol.Point * 150000) : (Symbol.Bid - Symbol.Point * 150000);
+            var takeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + Symbol.Point * 10) : (Symbol.Bid - Symbol.Point * 10);
+            var newTakeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + Symbol.Point * 15) : (Symbol.Bid - Symbol.Point * 15);
             var title = (isAsync) ? "Async test: " : "Test: ";
 
             _testCount++;
@@ -418,8 +335,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         private async Task TestAddModifyStopLoss(string orderId, bool isAsync)
         {
             var order = Account.Orders[orderId];
-            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - Symbol.Point * 100000) : (Symbol.Bid + Symbol.Point * 100000);
-            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - Symbol.Point * 150000) : (Symbol.Bid + Symbol.Point * 150000);
+            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - Symbol.Point * 10) : (Symbol.Bid + Symbol.Point * 10);
+            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - Symbol.Point * 15) : (Symbol.Bid + Symbol.Point * 15);
             var title = (isAsync) ? "Async test: " : "Test: ";
 
             _testCount++;
@@ -525,7 +442,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (tag != null && !tag.Equals(order.Tag))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong tag: " + tag);
 
-            if(expiration != null && !order.Expiration.Equals(expiration))
+            if (expiration != null && !order.Expiration.Equals(expiration))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong expiration: " + expiration);
         }
 

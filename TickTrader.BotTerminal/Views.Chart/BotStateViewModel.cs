@@ -66,18 +66,12 @@ namespace TickTrader.BotTerminal
         {
             var key = $"BotSettings {Bot.InstanceId}";
 
-            var wnd = _wndManager.GetWindowModel(key);
-            if (wnd != null)
-            {
-                wnd.Activate();
-            }
-            else
+            _wndManager.OpenOrActivateWindow(key, () =>
             {
                 var pSetup = new PluginSetupViewModel(Bot);
                 pSetup.Closed += PluginSetupViewClosed;
-
-                _wndManager.OpenMdiWindow(key, pSetup);
-            }
+                return pSetup;
+            });
         }
 
         private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)

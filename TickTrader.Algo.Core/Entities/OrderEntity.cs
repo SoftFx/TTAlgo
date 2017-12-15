@@ -36,8 +36,6 @@ namespace TickTrader.Algo.Core
             LastFillPrice = src.LastFillPrice;
             LastFillVolume = src.LastFillVolume;
             Swap = src.Swap;
-            MarginCurrency = src.MarginCurrency;
-            ProfitCurrency = src.ProfitCurrency;
             Commission = src.Commission;
         }
 
@@ -65,8 +63,6 @@ namespace TickTrader.Algo.Core
         public double Swap { get; set; }
         public double Commission { get; set; }
         public static Order Null { get; private set; }
-        public string MarginCurrency { get; set; }
-        public string ProfitCurrency { get; set; }
         public double? StopPrice { get; set; }
         public double? MaxVisibleVolume { get; set; }
         public OrderExecOptions Options { get; set; }

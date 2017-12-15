@@ -247,10 +247,12 @@ namespace TickTrader.Algo.Common.Model
                         if (report.OrderStatus == OrderStatus.Filled)
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == OrderType.Market
-                        && (Type == AccountTypes.Net || Type == AccountTypes.Cash))
+                    else if (report.OrderType == OrderType.Market)
                     {
-                        OnMarketFilled(report, OrderExecAction.Filled);
+                        if (Type == AccountTypes.Gross)
+                            MockMarkedFilled(report);
+                        else if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
+                            OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
@@ -289,6 +291,15 @@ namespace TickTrader.Algo.Common.Model
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
             OrderUpdate?.Invoke(report, order, algoAction);
+        }
+
+        private void MockMarkedFilled(ExecutionReport report)
+        {
+            var order = new OrderModel(report, orderResolver);
+            order.OrderType = OrderType.Position;
+            order.RemainingAmount = order.Amount;
+            ExecReportToAlgo(OrderExecAction.Opened, OrderEntityAction.Added, report, order);
+            OrderUpdate?.Invoke(report, order, OrderExecAction.Opened);
         }
 
         private void OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)

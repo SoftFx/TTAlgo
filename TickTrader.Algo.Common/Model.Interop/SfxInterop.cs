@@ -337,7 +337,7 @@ namespace TickTrader.Algo.Common.Model
         {
             ExecuteOrderOperation(request, callback, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side),
-                r.CurrentVolume, r.MaxVisibleVolume, r.Price, r.StopPrice, null, null,
+                r.CurrentVolume, r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
                 r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
         }
 
@@ -355,9 +355,10 @@ namespace TickTrader.Algo.Common.Model
         private async void ExecuteOrderOperation<TReq>(TReq request, CrossDomainCallback<OrderCmdResultCodes> callback, Func<TReq, Task<SFX.ExecutionReport[]>> operationDef)
             where TReq : OrderRequest
         {
+            var operationId = request.OperationId;
+
             try
             {
-                var operationId = request.OperationId;
                 var result = await operationDef(request);
                 foreach (var er in result)
                     ExecutionReport?.Invoke(ConvertToEr(er, operationId));
@@ -365,10 +366,13 @@ namespace TickTrader.Algo.Common.Model
             catch (ExecutionException eex)
             {
                 var reason = Convert(eex.Reports.Last().RejectReason, eex.Message);
-                callback.Invoke(reason);
+                foreach (var er in eex.Reports)
+                    ExecutionReport?.Invoke(ConvertToEr(er, operationId));
+                //callback.Invoke(reason);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.Error(ex);
                 callback.Invoke(OrderCmdResultCodes.UnknownError);
             }
         }
@@ -380,6 +384,14 @@ namespace TickTrader.Algo.Common.Model
             else if (expiration != null)
                 return OrderTimeInForce.GoodTillDate;
             return OrderTimeInForce.GoodTillCancel;
+        }
+
+        private OrderTimeInForce GetTimeInForce(DateTime? expiration)
+        {
+            if (expiration == null)
+                return OrderTimeInForce.GoodTillCancel;
+            else
+                return OrderTimeInForce.GoodTillDate;
         }
 
         #endregion
@@ -619,7 +631,9 @@ namespace TickTrader.Algo.Common.Model
                 Expiration = record.Expiration,
                 MaxVisibleVolume = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
-                Options = GetOptions(record)
+                Options = GetOptions(record),
+                LastFillPrice = record.TradePrice,
+                LastFillVolume = record.TradeAmount,
             };
         }
 
@@ -633,6 +647,9 @@ namespace TickTrader.Algo.Common.Model
 
         private static ExecutionReport ConvertToEr(SFX.ExecutionReport report, string operationId = null)
         {
+            if (report.ExecutionType == SFX.ExecutionType.Rejected && report.RejectReason == RejectReason.None)
+                report.RejectReason = RejectReason.Other; // Some plumbing. Sometimes we recieve Rejects with no RejectReason
+
             return new ExecutionReport()
             {
                 OrderId = report.OrderId,
@@ -670,7 +687,7 @@ namespace TickTrader.Algo.Common.Model
                 OrderType = Convert(report.OrderType),
                 OrderSide = Convert(report.OrderSide),
                 Price = report.Price,
-                Balance = report.Balance ?? 0
+                Balance = report.Balance ?? 0,
             };
         }
 
@@ -702,9 +719,9 @@ namespace TickTrader.Algo.Common.Model
                     }
                 case RejectReason.None:
                     {
-                        if (message.StartsWith("Order Not Found"))
+                        if (message != null && message.StartsWith("Order Not Found"))
                             return Api.OrderCmdResultCodes.OrderNotFound;
-                        break;
+                        return OrderCmdResultCodes.Ok;
                     }
             }
             return Api.OrderCmdResultCodes.UnknownError;
