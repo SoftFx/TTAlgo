@@ -122,6 +122,8 @@ namespace TickTrader.Algo.Protocol
         {
             _logger = LoggerHelper.GetLogger("Protocol.Client", SessionSettings.ProtocolSettings.LogDirectoryName, SessionSettings.ServerAddress);
 
+            LastError = null;
+
             Listener = new BotAgentClientListener(AgentClient, _logger);
 
             Listener.Connected += ListenerOnConnected;
@@ -172,7 +174,7 @@ namespace TickTrader.Algo.Protocol
 
         private void ListenerOnLogout(string reason)
         {
-            LastError = reason;
+            //LastError = reason;
             _stateMachine.PushEvent(ClientEvents.LoggedOut);
         }
 

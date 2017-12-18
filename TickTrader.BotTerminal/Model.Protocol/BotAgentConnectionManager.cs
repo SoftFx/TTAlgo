@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
@@ -20,7 +21,6 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
 
-        private string _server;
         private DynamicList<AccountModelEntity> _accounts;
         private DynamicList<BotModelEntity> _bots;
         private DynamicList<PackageModelEntity> _packages;
@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _reconnectTokenSrc;
         private bool _needReconnect;
         private bool _hasRequest;
+        private ISyncContext _syncContext;
 
 
         public string Server => _protocolClient.SessionSettings.ServerAddress;
@@ -55,6 +56,8 @@ namespace TickTrader.BotTerminal
         public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds)
         {
             Creds = botAgentCreds;
+
+            _syncContext = new DispatcherSync();
 
             _accounts = new DynamicList<AccountModelEntity>();
             _bots = new DynamicList<BotModelEntity>();
@@ -137,6 +140,7 @@ namespace TickTrader.BotTerminal
 
         private void ClientOnDisconnected()
         {
+            ClearCache();
             _stateControl.PushEvent(Events.Disconnected);
             if (_needReconnect)
             {
@@ -182,109 +186,137 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void ClearCache()
+        {
+            _syncContext.Invoke(() =>
+            {
+                _accounts.Clear();
+                _bots.Clear();
+                _packages.Clear();
+            });
+        }
+
 
         #region IBotAgentClient implementation
 
         public void InitAccountList(AccountListReportEntity report)
         {
-            _accounts.Clear();
-            foreach (var acc in report.Accounts)
+            _syncContext.Invoke(() =>
             {
-                _accounts.Add(acc);
-            }
+                _accounts.Clear();
+                foreach (var acc in report.Accounts)
+                {
+                    _accounts.Add(acc);
+                }
+            });
         }
 
         public void InitBotList(BotListReportEntity report)
         {
-            _bots.Clear();
-            foreach (var acc in report.Bots)
+            _syncContext.Invoke(() =>
             {
-                _bots.Add(acc);
-            }
+                _bots.Clear();
+                foreach (var acc in report.Bots)
+                {
+                    _bots.Add(acc);
+                }
+            });
         }
 
         public void InitPackageList(PackageListReportEntity report)
         {
-            _packages.Clear();
-            foreach (var package in report.Packages)
+            _syncContext.Invoke(() =>
             {
-                _packages.Add(package);
-            }
+                _packages.Clear();
+                foreach (var package in report.Packages)
+                {
+                    _packages.Add(package);
+                }
+            });
         }
 
         public void UpdateAccount(AccountModelUpdateEntity update)
         {
-            var acc = update.Item;
-            switch (update.Type)
+            _syncContext.Invoke(() =>
             {
-                case UpdateType.Added:
-                    _accounts.Add(acc);
-                    break;
-                case UpdateType.Updated:
-                    var i = _accounts.Values.IndexOf(a => acc.Login == a.Login && acc.Server == a.Server);
-                    if (i >= 0)
-                    {
-                        _accounts[i] = update.Item;
-                    }
-                    break;
-                case UpdateType.Removed:
-                    var j = _accounts.Values.IndexOf(a => acc.Login == a.Login && acc.Server == a.Server);
-                    if (j >= 0)
-                    {
-                        _accounts.RemoveAt(j);
-                    }
-                    break;
-            }
+                var acc = update.Item;
+                switch (update.Type)
+                {
+                    case UpdateType.Added:
+                        _accounts.Add(acc);
+                        break;
+                    case UpdateType.Updated:
+                        var i = _accounts.Values.IndexOf(a => acc.Login == a.Login && acc.Server == a.Server);
+                        if (i >= 0)
+                        {
+                            _accounts[i] = update.Item;
+                        }
+                        break;
+                    case UpdateType.Removed:
+                        var j = _accounts.Values.IndexOf(a => acc.Login == a.Login && acc.Server == a.Server);
+                        if (j >= 0)
+                        {
+                            _accounts.RemoveAt(j);
+                        }
+                        break;
+                }
+            });
         }
 
         public void UpdateBot(BotModelUpdateEntity update)
         {
-            var bot = update.Item;
-            switch (update.Type)
+            _syncContext.Invoke(() =>
             {
-                case UpdateType.Added:
-                    _bots.Add(bot);
-                    break;
-                case UpdateType.Updated:
-                    var i = _bots.Values.IndexOf(b => bot.InstanceId == b.InstanceId);
-                    if (i >= 0)
-                    {
-                        _bots[i] = bot;
-                    }
-                    break;
-                case UpdateType.Removed:
-                    var j = _bots.Values.IndexOf(b => bot.InstanceId == b.InstanceId);
-                    if (j >= 0)
-                    {
-                        _bots.RemoveAt(j);
-                    }
-                    break;
-            }
+                var bot = update.Item;
+                switch (update.Type)
+                {
+                    case UpdateType.Added:
+                        _bots.Add(bot);
+                        break;
+                    case UpdateType.Updated:
+                        var i = _bots.Values.IndexOf(b => bot.InstanceId == b.InstanceId);
+                        if (i >= 0)
+                        {
+                            _bots[i] = bot;
+                        }
+                        break;
+                    case UpdateType.Removed:
+                        var j = _bots.Values.IndexOf(b => bot.InstanceId == b.InstanceId);
+                        if (j >= 0)
+                        {
+                            _bots.RemoveAt(j);
+                        }
+                        break;
+                }
+            });
         }
 
         public void UpdatePackage(PackageModelUpdateEntity update)
         {
-            var package = update.Item;
-            switch (update.Type)
+            _syncContext.Invoke(() =>
             {
-                case UpdateType.Added:
-                    _packages.Add(update.Item);
-                    break;
-                case UpdateType.Updated:
-                    var i = _packages.Values.IndexOf(p => package.Name == p.Name);
-                    if (i >= 0)
-                    {
-                        _packages[i] = package;
-                    }
-                    break;
-                case UpdateType.Removed:
-                    var j = _packages.Values.IndexOf(p => package.Name == p.Name);
-                    if (j >= 0)
-                    {
-                        _packages.RemoveAt(j);
-                    }
-                    break;
-            }
+                var package = update.Item;
+                switch (update.Type)
+                {
+                    case UpdateType.Added:
+                        _packages.Add(update.Item);
+                        break;
+                    case UpdateType.Updated:
+                        var i = _packages.Values.IndexOf(p => package.Name == p.Name);
+                        if (i >= 0)
+                        {
+                            _packages[i] = package;
+                        }
+                        break;
+                    case UpdateType.Removed:
+                        var j = _packages.Values.IndexOf(p => package.Name == p.Name);
+                        if (j >= 0)
+                        {
+                            _packages.RemoveAt(j);
+                        }
+                        break;
+                }
+            });
         }
 
         #endregion

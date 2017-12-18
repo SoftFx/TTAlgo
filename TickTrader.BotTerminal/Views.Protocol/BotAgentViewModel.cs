@@ -7,7 +7,6 @@ namespace TickTrader.BotTerminal
     internal class BotAgentViewModel : PropertyChangedBase
     {
         private string _server;
-        private string _status;
 
 
         public BotAgentConnectionManager Connection { get; }
@@ -25,18 +24,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public string Status
-        {
-            get => _status;
-            set
-            {
-                if (_status == value)
-                    return;
-
-                _status = value;
-                NotifyOfPropertyChange(nameof(Status));
-            }
-        }
+        public string Status => Connection.Status;
 
         public IObservableListSource<BotModelEntity> Bots => Connection.Bots;
 
@@ -46,15 +34,15 @@ namespace TickTrader.BotTerminal
             Connection = connection;
 
             _server = connection.Creds.ServerAddress;
-            _status = connection.Status;
 
             Connection.StateChanged += ConnectionOnStateChanged;
         }
 
+
         private void ConnectionOnStateChanged()
         {
             Server = Connection.Server;
-            Status = Connection.Status;
+            NotifyOfPropertyChange(nameof(Status));
         }
     }
 }

@@ -17,26 +17,104 @@
 
                 <TreeViewItem Header="Local"/>
 
-                <TreeViewItem ItemsSource="{Binding BotAgents}">
-                    <TreeViewItem.HeaderTemplate>
-                        <DataTemplate>
-                            <Border BorderThickness="0">
-                                <DockPanel>
-                                    <TextBlock DockPanel.Dock="Left" Text="Bot Agents" />
-                                    <l:FlatButton DockPanel.Dock="Right" Content="+" BorderThickness="0"
-                                                  cal:Message.Attach="AddBotAgent" />
-                                </DockPanel>
-                            </Border>
-                        </DataTemplate>
-                    </TreeViewItem.HeaderTemplate>
+                <TreeViewItem Header="Bot Agents" ItemsSource="{Binding BotAgents}">
+                    <TreeViewItem.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Add BotAgent" cal:Message.Attach="AddBotAgent" />
+                        </ContextMenu>
+                    </TreeViewItem.ContextMenu>
+                    <TreeViewItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True"/>
+                            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TreeViewItem, AncestorLevel=1}}"/>
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu>
+                                        <MenuItem Header="Connect" cal:Message.Attach="ConnectBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                        <MenuItem Header="Disconnect" cal:Message.Attach="DisconnectBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                        <MenuItem Header="Change connection" cal:Message.Attach="ChangeBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                        <MenuItem Header="Remove connection" cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                    </ContextMenu>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Bots}">
-                            <TextBlock Text="{Binding Server}" ToolTip="{Binding Status}"/>
+                        <HierarchicalDataTemplate DataType="{x:Type l:BotAgentViewModel}" ItemsSource="{Binding Bots}">
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Resources>
+                                    <Style TargetType="Ellipse">
+                                        <Style.Setters>
+                                            <Setter Property="Fill" Value="Red"/>
+                                        </Style.Setters>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="Offline">
+                                                <Setter Property="Fill" Value="Gray"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Connecting">
+                                                <Setter Property="Fill" Value="Yellow"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="LoggingIn">
+                                                <Setter Property="Fill" Value="Yellow"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Initializing">
+                                                <Setter Property="Fill" Value="Yellow"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Online">
+                                                <Setter Property="Fill" Value="Green"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Disconnecting">
+                                                <Setter Property="Fill" Value="Orange"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="LoggingOut">
+                                                <Setter Property="Fill" Value="Orange"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Deinitializing">
+                                                <Setter Property="Fill" Value="Orange"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Resources>
+                                <Ellipse Width="10" Height="10" StrokeThickness="0" Margin="5,0" />
+                                <TextBlock Text="{Binding Server}" ToolTip="{Binding Status}"/>
+                            </StackPanel>
                             <HierarchicalDataTemplate.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderThickness="0">
-                                        <TextBlock Text="{Binding Path=InstanceId}"/>
-                                    </Border>
+                                    <StackPanel Orientation="Horizontal">
+                                        <StackPanel.Resources>
+                                            <Style TargetType="Ellipse">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding State}" Value="Offline">
+                                                        <Setter Property="Fill" Value="Gray"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Starting">
+                                                        <Setter Property="Fill" Value="Yellow"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Online">
+                                                        <Setter Property="Fill" Value="Green"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Stopping">
+                                                        <Setter Property="Fill" Value="Orange"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Reconnecting">
+                                                        <Setter Property="Fill" Value="Yellow"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Broken">
+                                                        <Setter Property="Fill" Value="Red"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Faulted">
+                                                        <Setter Property="Fill" Value="Red"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Resources>
+                                        <Ellipse Width="10" Height="10" StrokeThickness="0" Margin="5,0" />
+                                        <TextBlock Text="{Binding Path=InstanceId}" ToolTip="{Binding State}"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </HierarchicalDataTemplate.ItemTemplate>
                         </HierarchicalDataTemplate>
