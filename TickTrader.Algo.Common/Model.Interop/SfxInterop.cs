@@ -38,10 +38,10 @@ namespace TickTrader.Algo.Common.Model
         
         public SfxInterop()
         {
-            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy", 5030, false, "c:\\temp\\Logs", true);
-            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", 5050, false, "c:\\temp\\Logs", true);
-            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", 5040, false, "c:\\temp\\Logs", true);
-            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", 5060, false, "c:\\temp\\Logs", true);
+            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy"); // 5030, false, "c:\\temp\\Logs", true);
+            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy");// 5050, false, "c:\\temp\\Logs", true);
+            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy"); // 5040, false, "c:\\temp\\Logs", true);
+            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy"); // 5060, false, "c:\\temp\\Logs", true);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
             _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
