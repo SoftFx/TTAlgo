@@ -38,10 +38,10 @@ namespace TickTrader.Algo.Common.Model
         
         public SfxInterop()
         {
-            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy");
-            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy");
-            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy");
-            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy");
+            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy", 5030, false, "c:\\temp\\Logs", true);
+            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", 5050, false, "c:\\temp\\Logs", true);
+            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", 5040, false, "c:\\temp\\Logs", true);
+            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", 5060, false, "c:\\temp\\Logs", true);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
             _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
@@ -120,30 +120,78 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task DisconnectFeed()
         {
-            await _feedProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
-            await _feedProxy.DisconnectAsync("");
-            logger.Debug("Feed dicconnected.");
+            await Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    _feedProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _feedProxy.Disconnect("");
+                }
+
+                _feedProxy.Dispose();
+
+                logger.Debug("Feed dicconnected.");
+            });
         }
 
         private async Task DisconnectFeedHstory()
         {
-            await _feedHistoryProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
-            await _feedHistoryProxy.DisconnectAsync("");
-            logger.Debug("Feed history dicconnected.");
+            await Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    _feedHistoryProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _feedHistoryProxy.Disconnect("");
+                }
+
+                _feedHistoryProxy.Dispose();
+
+                logger.Debug("Feed history dicconnected.");
+            });
         }
 
         private async Task DisconnectTrade()
         {
-            await _feedProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
-            await _feedProxy.DisconnectAsync("");
-            logger.Debug("Trade dicconnected.");
+            await Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    _tradeProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _tradeProxy.Disconnect("");
+                }
+
+                _tradeProxy.Dispose();
+
+                logger.Debug("Trade dicconnected.");
+            });
         }
 
         private async Task DisconnectTradeHstory()
         {
-            await _tradeHistoryProxy.LogoutAsync("").AddTimeout(LogoutTimeoutMs);
-            await _tradeHistoryProxy.DisconnectAsync("");
-            logger.Debug("Trade history dicconnected.");
+            await Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    _tradeHistoryProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _tradeHistoryProxy.Disconnect("");
+                }
+
+                _tradeHistoryProxy.Dispose();
+
+                logger.Debug("Trade history dicconnected.");
+            });
         }
 
         #region IFeedServerApi
