@@ -18,7 +18,7 @@ using TickTrader.FDK.TradeCapture;
 
 namespace TickTrader.Algo.Common.Model
 {
-    internal class SfxInterop : CrossDomainObject, IServerInterop, IFeedServerApi, ITradeServerApi
+    internal class SfxInterop : IServerInterop, IFeedServerApi, ITradeServerApi
     {
         private const int ConnectTimeoutMs = 60 * 1000;
         private const int LogoutTimeoutMs = 60 * 1000;
@@ -363,9 +363,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
+        public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
         {
-            ExecuteOrderOperation(request, callback, r =>
+            return ExecuteOrderOperation(request, r =>
             {
                 var timeInForce = GetTimeInForce(r.Options, r.Expiration);
                 var operationId = r.OperationId;
@@ -376,22 +376,22 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
+        public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
         {
-            ExecuteOrderOperation(request, callback, r => _tradeProxy.CancelOrderAsync(r.OperationId, "", r.OrderId));
+            return ExecuteOrderOperation(request, r => _tradeProxy.CancelOrderAsync(r.OperationId, "", r.OrderId));
         }
 
-        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
+        public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
         {
-            ExecuteOrderOperation(request, callback, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
+            return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side),
                 r.CurrentVolume, r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
                 r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
         }
 
-        public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
+        public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
         {
-            ExecuteOrderOperation(request, callback, r =>
+            return ExecuteOrderOperation(request, r =>
             {
                 if (request.ByOrderId != null)
                     return _tradeProxy.ClosePositionByAsync(r.OperationId, r.OrderId, r.ByOrderId);
@@ -400,7 +400,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        private async void ExecuteOrderOperation<TReq>(TReq request, CrossDomainCallback<OrderCmdResultCodes> callback, Func<TReq, Task<SFX.ExecutionReport[]>> operationDef)
+        private async Task<OrderCmdResultCodes> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<SFX.ExecutionReport[]>> operationDef)
             where TReq : OrderRequest
         {
             var operationId = request.OperationId;
@@ -410,18 +410,19 @@ namespace TickTrader.Algo.Common.Model
                 var result = await operationDef(request);
                 foreach (var er in result)
                     ExecutionReport?.Invoke(ConvertToEr(er, operationId));
+                return OrderCmdResultCodes.Ok;
             }
             catch (ExecutionException eex)
             {
                 var reason = Convert(eex.Reports.Last().RejectReason, eex.Message);
                 foreach (var er in eex.Reports)
                     ExecutionReport?.Invoke(ConvertToEr(er, operationId));
-                //callback.Invoke(reason);
+                return reason;
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
-                callback.Invoke(OrderCmdResultCodes.UnknownError);
+                return OrderCmdResultCodes.UnknownError;
             }
         }
 

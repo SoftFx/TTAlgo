@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model
         event Action<IServerInterop, ConnectionErrorCodes> Disconnected;
     }
 
-    public interface ITradeServerApi : ITradeExecutor
+    public interface ITradeServerApi
     {
         Task<AccountEntity> GetAccountInfo();
         Task<OrderEntity[]> GetTradeRecords();
@@ -34,6 +34,11 @@ namespace TickTrader.Algo.Common.Model
         //event Action<AccountInfoEventArgs> AccountInfoReceived;
         event Action<TradeReportEntity> TradeTransactionReport;
         event Action<BalanceOperationReport> BalanceOperation;
+
+        Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request);
+        Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request);
+        Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request);
+        Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request);
     }
 
     public interface IFeedServerApi

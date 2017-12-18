@@ -392,24 +392,24 @@ namespace TickTrader.Algo.Common.Model
             return new StreamDownloader(_tradeProxy.Server, from, to, skipCancelOrders);
         }
 
-        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
+        public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
         {
-            _executor.SendOpenOrder(callback, request);
+            return _executor.SendOpenOrder(request);
         }
 
-        public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
+        public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
         {
-            _executor.SendCancelOrder(callback, request);
+            return _executor.SendCancelOrder(request);
         }
 
-        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
+        public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
         {
-            _executor.SendModifyOrder(callback, request);
+            return _executor.SendModifyOrder(request);
         }
 
-        public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
+        public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
         {
-            _executor.SendCloseOrder(callback, request);
+            return _executor.SendCloseOrder(request);
         }
 
         #endregion

@@ -44,6 +44,7 @@ namespace TickTrader.BotTerminal
             this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
             //this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
+            TradeApi = new PluginTradeApiProvider(Connection);
 
             _accountInfo = Account;
             _journal = journal;
@@ -196,7 +197,7 @@ namespace TickTrader.BotTerminal
         public event Action Disconnected;
 
         public ConnectionModel Connection { get; private set; }
-        public ITradeServerApi TradeApi => Connection.TradeProxy;
+        public ITradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
         public TradeHistoryProviderModel TradeHistory { get; }
         public SymbolCollectionModel Symbols { get; private set; }

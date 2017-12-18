@@ -155,6 +155,7 @@
     <Compile Include="Model\OrderModel.cs" />
     <Compile Include="Model\AggregatedOrderType.cs" />
     <Compile Include="Model\PluginFeedProvider.cs" />
+    <Compile Include="Model\PluginTradeApiProvider.cs" />
     <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
     <Compile Include="Model\SymbolCollection.cs" />

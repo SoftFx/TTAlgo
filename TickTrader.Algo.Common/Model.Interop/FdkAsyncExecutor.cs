@@ -11,7 +11,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Common.Model.Interop
 {
-    internal class FdkAsyncExecutor : ITradeExecutor
+    internal class FdkAsyncExecutor
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FdkAsyncExecutor>();
 
@@ -31,9 +31,9 @@ namespace TickTrader.Algo.Common.Model.Interop
             orderQueue.LinkTo(orderSender);
         }
 
-        public void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
+        public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
         {
-            EnqueueTradeOp("OpenOrder", callback, () =>
+            return EnqueueTradeOp("OpenOrder", () =>
             {
                 var operationId = request.OperationId;
                 var orderType = request.Type;
@@ -65,13 +65,13 @@ namespace TickTrader.Algo.Common.Model.Interop
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
                 _tradeProxy.Server.SendOrderEx(operationId, request.Symbol, Convert(orderType, request.Options), Convert(request.Side),
-                    volume, maxVisVolume, px, stopPx, sl, tp, null, request.Comment, request.Tag, null);
+                    volume, maxVisVolume, px, stopPx, sl, tp, request.Expiration, request.Comment, request.Tag, null);
             });
         }
 
-        public void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
+        public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
         {
-            EnqueueTradeOp("CancelOrder", callback, () =>
+            return EnqueueTradeOp("CancelOrder", () =>
             {
                 var orderId = request.OrderId;
                 var operationId = request.OperationId;
@@ -82,9 +82,9 @@ namespace TickTrader.Algo.Common.Model.Interop
             });
         }
 
-        public void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
+        public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
         {
-            EnqueueTradeOp("ModifyOrder", callback, () =>
+            return EnqueueTradeOp("ModifyOrder", () =>
             {
                 var orderId = request.OrderId;
                 var orderType = request.Type;
@@ -100,13 +100,13 @@ namespace TickTrader.Algo.Common.Model.Interop
 
                 _tradeProxy.Server.ModifyTradeRecordEx(request.OperationId, orderId, request.Symbol,
                     ToRecordType(orderType), Convert(request.Side), request.CurrentVolume, maxVisVolume, px, stopPx,
-                    request.StopLoss, request.TrakeProfit, null, request.Comment, null, null);
+                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null);
             });
         }
 
-        public void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
+        public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
         {
-            EnqueueTradeOp("CloseOrder", callback, () =>
+            return EnqueueTradeOp("CloseOrder", () =>
             {
                 var orderId = request.OrderId;
                 var byOrderId = request.ByOrderId;
@@ -135,12 +135,12 @@ namespace TickTrader.Algo.Common.Model.Interop
             });
         }
 
-        private void EnqueueTradeOp(string opName, CrossDomainCallback<OrderCmdResultCodes> callback, Action tradeOpDef)
+        private Task<OrderCmdResultCodes> EnqueueTradeOp(string opName, Action tradeOpDef)
         {
-            EnqueueTask(() =>
+            return EnqueueTask(() =>
             {
                 var result = HandleErrors(opName, tradeOpDef);
-                callback.Invoke(result);
+                return result;
             });
         }
 
@@ -219,6 +219,13 @@ namespace TickTrader.Algo.Common.Model.Interop
         private Task EnqueueTask(Action taskDef)
         {
             var task = new Task(taskDef);
+            orderQueue.Post(task);
+            return task;
+        }
+
+        private Task<T> EnqueueTask<T>(Func<T> taskDef)
+        {
+            var task = new Task<T>(taskDef);
             orderQueue.Post(task);
             return task;
         }

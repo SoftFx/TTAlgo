@@ -105,6 +105,7 @@ namespace TickTrader.BotAgent.BA.Models
             Account = new AccountModel(_core, AccountModelOptions.None);
             Symbols = (SymbolManager)_core.Symbols;
             FeedHistory = new FeedHistoryProviderModel(Connection, ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
+            TradeApi = new PluginTradeApiProvider(Connection);
 
             ManageConnection();
         }
@@ -117,7 +118,7 @@ namespace TickTrader.BotAgent.BA.Models
         public SymbolManager Symbols { get; private set; }
         public Dictionary<string, CurrencyEntity> Currencies { get; private set; }
         public FeedHistoryProviderModel FeedHistory { get; private set; }
-        public ITradeServerApi TradeApi => Connection.TradeProxy;
+        public ITradeExecutor TradeApi { get; private set; }
         public bool IsReconnecting
         {
             get
