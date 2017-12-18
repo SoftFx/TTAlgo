@@ -25,6 +25,8 @@ namespace TickTrader.Algo.Protocol
 
         event Action<PackageModelUpdateEntity> PackageUpdated;
 
+        event Action<BotStateUpdateEntity> BotStateUpdated;
+
         #endregion Updates
     }
 }

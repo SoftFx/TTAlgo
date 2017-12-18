@@ -41,12 +41,12 @@ namespace TickTrader.Algo.Protocol
     {
         internal static UpdateEntity ToEntity(this Update update)
         {
-            return new UpdateEntity { Id = update.Id };
+            return new UpdateEntity { Id = update.Id, Type = ToAlgo.Convert(update.Type) };
         }
 
         internal static Update ToMessage(this UpdateEntity update)
         {
-            return new Update(0) { Id = update.Id };
+            return new Update(0) { Id = update.Id, Type = ToSfx.Convert(update.Type) };
         }
     }
 }

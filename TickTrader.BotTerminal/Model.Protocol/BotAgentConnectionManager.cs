@@ -319,6 +319,27 @@ namespace TickTrader.BotTerminal
             });
         }
 
+        public void UpdateBotState(BotStateUpdateEntity update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                var i = _bots.Values.IndexOf(b => update.BotId == b.InstanceId);
+                if (i >= 0)
+                {
+                    _bots[i].State = update.State;
+                    _bots[i] = new BotModelEntity
+                    {
+                        InstanceId = _bots[i].InstanceId,
+                        Account = _bots[i].Account,
+                        Isolated = _bots[i].Isolated,
+                        State = _bots[i].State,
+                        Permissions = _bots[i].Permissions,
+                        Plugin = _bots[i].Plugin,
+                    }; // TEMP: Trigger update
+                }
+            });
+        }
+
         #endregion
     }
 }

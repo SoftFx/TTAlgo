@@ -23,6 +23,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<AccountModelUpdateEntity> AccountUpdated = delegate { };
         public event Action<BotModelUpdateEntity> BotUpdated = delegate { };
         public event Action<PackageModelUpdateEntity> PackageUpdated = delegate { };
+        public event Action<BotStateUpdateEntity> BotStateUpdated = delegate { };
 
 
         public BotAgentServer(IServiceProvider services, IConfiguration serverConfig)
@@ -36,6 +37,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.AccountChanged += OnAccountChanged;
             _botAgent.BotChanged += OnBotChanged;
             _botAgent.PackageChanged += OnPackageChanged;
+            _botAgent.BotStateChanged += OnBotStateChanged;
         }
 
 
@@ -178,6 +180,22 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                                 },
                             }).ToArray(),
                     }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to send update: {ex.Message}", ex);
+            }
+        }
+
+        private void OnBotStateChanged(ITradeBot bot)
+        {
+            try
+            {
+                BotStateUpdated(new BotStateUpdateEntity
+                {
+                    BotId = bot.Id,
+                    State = ToProtocol.Convert(bot.State),
                 });
             }
             catch (Exception ex)

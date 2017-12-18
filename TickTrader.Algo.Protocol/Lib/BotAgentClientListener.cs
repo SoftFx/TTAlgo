@@ -255,6 +255,18 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
+        public override void OnBotStateUpdate(ClientSession session, BotStateUpdate message)
+        {
+            try
+            {
+                _client.UpdateBotState(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
 
         /// <summary>
         /// Puts report result into TaskcompletionSource if one is present

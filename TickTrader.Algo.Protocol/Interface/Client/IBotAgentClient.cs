@@ -21,6 +21,8 @@
 
         void UpdatePackage(PackageModelUpdateEntity update);
 
+        void UpdateBotState(BotStateUpdateEntity update);
+
         #endregion Updates
     }
 }

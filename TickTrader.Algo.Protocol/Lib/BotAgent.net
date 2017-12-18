@@ -1,5 +1,5 @@
 // Protocol version should be syncronized with VersionSpec.cs
-protocol BotAgent(1,0)
+protocol BotAgent(1,1)
 {
     message LoginRequest
     {
@@ -188,6 +188,12 @@ protocol BotAgent(1,0)
         PackageModel Item;
     }
 
+    message BotStateUpdate : Update
+    {
+        ustring BotId;
+        BotState State;
+    }
+
     processor Client()
     {
         send LoginRequest(LoginRequest)
@@ -294,6 +300,9 @@ protocol BotAgent(1,0)
         or recv PackageModelUpdate(PackageModelUpdate)
         {
         }
+        or recv BotStateUpdate(BotStateUpdate)
+        {
+        }
     }
 
     processor ServerUpdate(string) : Server
@@ -308,6 +317,9 @@ protocol BotAgent(1,0)
         {
         }
         or send (PackageModelUpdate)
+        {
+        }
+        or send (BotStateUpdate)
         {
         }
     }

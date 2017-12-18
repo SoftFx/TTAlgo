@@ -63,6 +63,7 @@ namespace TickTrader.Algo.Protocol
                 AgentServer.AccountUpdated += OnAccountUpdated;
                 AgentServer.BotUpdated += OnBotUpdated;
                 AgentServer.PackageUpdated += OnPackageUpdated;
+                AgentServer.BotStateUpdated += OnBotStateUpdated;
             }
             catch (Exception ex)
             {
@@ -83,6 +84,7 @@ namespace TickTrader.Algo.Protocol
                     AgentServer.AccountUpdated -= OnAccountUpdated;
                     AgentServer.BotUpdated -= OnBotUpdated;
                     AgentServer.PackageUpdated -= OnPackageUpdated;
+                    AgentServer.BotStateUpdated -= OnBotStateUpdated;
 
                     State = ServerStates.Stopped;
 
@@ -135,6 +137,11 @@ namespace TickTrader.Algo.Protocol
         }
 
         private void OnPackageUpdated(PackageModelUpdateEntity update)
+        {
+            SendUpdate(update.ToMessage());
+        }
+
+        private void OnBotStateUpdated(BotStateUpdateEntity update)
         {
             SendUpdate(update.ToMessage());
         }

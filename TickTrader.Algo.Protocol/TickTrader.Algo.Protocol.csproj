@@ -88,6 +88,7 @@
     <Compile Include="Requests\SubscribeRequestEntity.cs" />
     <Compile Include="Updates\AccountModelUpdateEntity.cs" />
     <Compile Include="Updates\BotModelUpdateEntity.cs" />
+    <Compile Include="Updates\BotStateUpdateEntity.cs" />
     <Compile Include="Updates\PackageModelUpdateEntity.cs" />
     <Compile Include="Updates\UpdateEntity.cs" />
   </ItemGroup>
