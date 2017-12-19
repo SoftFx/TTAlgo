@@ -18,7 +18,13 @@ namespace TickTrader.Algo.Common.Lib
 
         public static Task AddCancelation(this Task awaitable, CancellationToken cancellationToken)
         {
-            return Task.WhenAny(awaitable, cancellationToken.WhenCanceled());
+            return Task.WhenAny(awaitable, cancellationToken.WhenCanceled())
+                .ContinueWith(t =>
+                {
+                    if (awaitable.IsCompleted)
+                        awaitable.Wait(); // re-throw exceptions
+                });
+            
         }
     }
 }

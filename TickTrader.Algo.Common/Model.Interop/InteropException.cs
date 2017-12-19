@@ -16,6 +16,27 @@ namespace TickTrader.Algo.Common.Model.Interop
         public ConnectionErrorCodes ErrorCode { get; }
     }
 
+    public class ConnectionErrorInfo
+    {
+        private static readonly ConnectionErrorInfo okSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.None);
+        private static readonly ConnectionErrorInfo unknownSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Unknown);
+        private static readonly ConnectionErrorInfo canceledSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Canceled);
+
+        public static ConnectionErrorInfo Ok => okSingleton;
+        public static ConnectionErrorInfo UnknownNoText => unknownSingleton;
+        public static ConnectionErrorInfo Canceled => canceledSingleton;
+
+
+        public ConnectionErrorInfo(ConnectionErrorCodes code, string message = null)
+        {
+            Code = code;
+            TextMessage = message;
+        }
+
+        public ConnectionErrorCodes Code { get; }
+        public string TextMessage { get; }
+    }
+
     public enum ConnectionErrorCodes
     {
         None,

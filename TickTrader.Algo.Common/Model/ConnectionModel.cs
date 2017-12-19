@@ -35,14 +35,14 @@ namespace TickTrader.Algo.Common.Model
         {
             _options = options;
 
-            Func<bool> canRecconect = () => wasConnected && LastError != ConnectionErrorCodes.BlockedAccount && LastError != ConnectionErrorCodes.InvalidCredentials;
+            Func<bool> canRecconect = () => wasConnected && LastErrorCode != ConnectionErrorCodes.BlockedAccount && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
 
             _stateControl = new StateMachine<States>(stateSync);
             _stateSync = _stateControl.SyncContext;
             _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
-                () => disconnectRequest != null || connectRequest != null || LastError != ConnectionErrorCodes.None, States.Disconnecting);
+                () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
@@ -73,8 +73,9 @@ namespace TickTrader.Algo.Common.Model
 
         public IFeedServerApi FeedProxy => _interop.FeedApi;
         public ITradeServerApi TradeProxy => _interop.TradeApi;
-        public ConnectionErrorCodes LastError { get; private set; }
-        public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
+        public ConnectionErrorInfo LastError { get; private set; }
+        public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
+        public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }
         public string CurrentLogin { get; private set; }
         public string CurrentServer { get; private set; }
         public string CurrentProtocol { get; private set; }
@@ -92,7 +93,7 @@ namespace TickTrader.Algo.Common.Model
         public States State => _stateControl.Current;
         public bool IsReconnecting { get; private set; }
 
-        public Task<ConnectionErrorCodes> Connect(string username, string password, string address, bool useSfxProtocol, CancellationToken cToken)
+        public Task<ConnectionErrorInfo> Connect(string username, string password, string address, bool useSfxProtocol, CancellationToken cToken)
         {
             var request = new ConnectRequest(username, password, address, useSfxProtocol, cToken);
 
@@ -146,13 +147,13 @@ namespace TickTrader.Algo.Common.Model
             return completion;
         }
 
-        private void _interop_Disconnected(IServerInterop sender, ConnectionErrorCodes code)
+        private void _interop_Disconnected(IServerInterop sender, ConnectionErrorInfo errInfo)
         {
             _stateControl.ModifyConditions(() =>
             {
                 if (sender == _interop && (State == States.Online || State == States.Connecting))
                 {
-                    LastError = code;
+                    LastError = errInfo;
                     _stateControl.PushEvent(Events.LostConnection);
                 }
             });
@@ -179,7 +180,7 @@ namespace TickTrader.Algo.Common.Model
             try
             {
                 connectCancelSrc = new CancellationTokenSource();
-                LastError = ConnectionErrorCodes.None;
+                LastError = null;
 
                 CurrentLogin = request.Usermame;
                 CurrentServer = request.Address;
@@ -200,7 +201,7 @@ namespace TickTrader.Algo.Common.Model
                 Connecting?.Invoke();
 
                 var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token).ConfigureAwait(false);
-                if (result != ConnectionErrorCodes.None)
+                if (result.Code != ConnectionErrorCodes.None)
                 {
                     OnFailedConnect(request, result);
                     return;
@@ -216,7 +217,7 @@ namespace TickTrader.Algo.Common.Model
                         logger.Error(ex);
                         await Deinitialize();
                         await DisconnectProxy();
-                        OnFailedConnect(request, ConnectionErrorCodes.Unknown);
+                        OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
                         return;
                     }
                 }
@@ -224,23 +225,23 @@ namespace TickTrader.Algo.Common.Model
             catch (Exception ex)
             {
                 logger.Error(ex);
-                OnFailedConnect(request, ConnectionErrorCodes.Unknown);
+                OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
                 return;
             }
 
             _stateControl.PushEvent(Events.Connected);
-            request.Complete(ConnectionErrorCodes.None);
+            request.Complete(ConnectionErrorInfo.Ok);
         }
 
-        private void OnFailedConnect(ConnectRequest requets, ConnectionErrorCodes code)
+        private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
         {
             _stateControl.ModifyConditions(() =>
             {
-                LastError = code;
+                LastError = erroInfo;
                 _stateControl.PushEvent(Events.ConnectFailed);
             });
 
-            requets.Complete(code);
+            requets.Complete(erroInfo);
         }
 
         private async Task DisconnectProxy()
@@ -284,7 +285,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (disconnectRequest != null)
                 {
-                    disconnectRequest.Complete(ConnectionErrorCodes.None);
+                    disconnectRequest.Complete(ConnectionErrorInfo.Ok);
                     disconnectRequest = null;
                     wasConnected = false;
                     IsReconnecting = false;
@@ -295,13 +296,13 @@ namespace TickTrader.Algo.Common.Model
 
         private class Request
         {
-            private TaskCompletionSource<ConnectionErrorCodes> _src = new TaskCompletionSource<ConnectionErrorCodes>();
+            private TaskCompletionSource<ConnectionErrorInfo> _src = new TaskCompletionSource<ConnectionErrorInfo>();
 
-            public Task<ConnectionErrorCodes> Completion => _src.Task;
+            public Task<ConnectionErrorInfo> Completion => _src.Task;
 
-            public void Complete(ConnectionErrorCodes code)
+            public void Complete(ConnectionErrorInfo errInfo)
             {
-                _src.TrySetResult(code);
+                _src.TrySetResult(errInfo);
             }
 
             public void Cancel()

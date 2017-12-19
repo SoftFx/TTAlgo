@@ -48,9 +48,9 @@ namespace TickTrader.BotTerminal
                 else if (IsUsualDisconnect(from, to))
                     journal.Info("{0}: logout from {1}", GetLast().Login, GetLast().Server.Name);
                 else if (IsFailedConnection(from, to))
-                    journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastError);
+                    journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
                 else if (IsUnexpectedDisconnect(from, to))
-                    journal.Error("{0}: connection to {1} lost [{2}]",  GetLast().Login, GetLast().Server.Name, Connection.LastError);
+                    journal.Error("{0}: connection to {1} lost [{2}]",  GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
 
                 logger.Debug("STATE {0}", to);
 
@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
             Connect(entry.Login, entry.Password, entry.Server.Address, entry.UseSfxProtocol, true, CancellationToken.None).Forget();
         }
 
-        public async Task<ConnectionErrorCodes> Connect(string login, string password, string server, bool useSfx, bool savePwd, CancellationToken cToken)
+        public async Task<ConnectionErrorInfo> Connect(string login, string password, string server, bool useSfx, bool savePwd, CancellationToken cToken)
         {
             logger.Debug("Connect to {0}, {1}", login, server);
 
@@ -128,14 +128,14 @@ namespace TickTrader.BotTerminal
             {
                 await initTask;
 
-                var code = await Connection.Connect(login, password, server, useSfx, cToken);
+                var result = await Connection.Connect(login, password, server, useSfx, cToken);
 
-                if (code == ConnectionErrorCodes.None)
+                if (result.Code == ConnectionErrorCodes.None)
                     SaveLogin(newCreds);
 
-                return code;
+                return result;
             }
-            catch (TaskCanceledException) { return ConnectionErrorCodes.Canceled; }
+            catch (TaskCanceledException) { return ConnectionErrorInfo.Canceled; }
         }
 
         public void TriggerDisconnect()

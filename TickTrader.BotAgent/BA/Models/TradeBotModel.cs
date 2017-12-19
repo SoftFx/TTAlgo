@@ -129,9 +129,9 @@ namespace TickTrader.BotAgent.BA.Models
                 else if (client.ConnectionState == ConnectionStates.Disconnecting || client.ConnectionState == ConnectionStates.Offline)
                 {
                     if (State == BotStates.Online && client.IsReconnecting)
-                        ChangeState(BotStates.Reconnecting, client.Connection.HasError ? client.Connection.LastError.ToString() : null);
+                        ChangeState(BotStates.Reconnecting, client.Connection.HasError ? client.Connection.LastErrorCode.ToString() : null);
                     if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
-                        StopInternal(client.Connection.LastError.ToString());
+                        StopInternal(client.Connection.LastErrorCode.ToString());
                 }
             }
         }

@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
         private string login;
         private string password;
         private string server;
-        private ConnectionErrorCodes error;
+        private ConnectionErrorInfo error;
         private bool isConnecting;
         private bool isValid;
         private bool savePassword;
@@ -119,16 +119,40 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool HasError { get { return error != ConnectionErrorCodes.None; } }
+        public bool ShowErrorCode { get; private set; }
+        public bool ShowErrorText { get; private set; }
+        public ConnectionErrorCodes ErrorCode => error?.Code ?? ConnectionErrorCodes.None;
+        public string ErrorText => error?.TextMessage;
 
-        public ConnectionErrorCodes Error
+        public ConnectionErrorInfo Error
         {
             get { return error; }
             set
             {
                 error = value;
+
+                if (error == null)
+                {
+                    ShowErrorCode = false;
+                    ShowErrorText = false;
+                }
+                else if (error.Code == ConnectionErrorCodes.Unknown && !string.IsNullOrWhiteSpace(error.TextMessage))
+                {
+                    ShowErrorCode = false;
+                    ShowErrorText = true;
+                }
+                else
+                {
+                    ShowErrorCode = true;
+                    ShowErrorText = false;
+                }
+
+
                 NotifyOfPropertyChange(nameof(Error));
-                NotifyOfPropertyChange(nameof(HasError));
+                NotifyOfPropertyChange(nameof(ErrorText));
+                NotifyOfPropertyChange(nameof(ShowErrorCode));
+                NotifyOfPropertyChange(nameof(ShowErrorText));
+                NotifyOfPropertyChange(nameof(ErrorCode));
             }
         }
 
@@ -168,18 +192,18 @@ namespace TickTrader.BotTerminal
         public async void Connect()
         {
             IsConnecting = true;
-            Error = ConnectionErrorCodes.None;
+            Error = null;
             try
             {
                 string address = ResolveServerAddress();
                 Error = await cManager.Connect(login, password, address, useSfx, savePassword, CancellationToken.None);
-                if (Error == ConnectionErrorCodes.None)
+                if (Error.Code == ConnectionErrorCodes.None)
                     Done();
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "Connect Failed.");
-                Error = ConnectionErrorCodes.Unknown;
+                Error = ConnectionErrorInfo.UnknownNoText;
             }
 
             IsConnecting = false;

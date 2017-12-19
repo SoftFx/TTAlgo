@@ -329,9 +329,9 @@ namespace TickTrader.BotAgent.BA.Models
             else if (IsUsualDisconnect(oldState, newState))
                 _log.LogDebug("{0}: logout from {1}", Username, Address);
             else if (IsFailedConnection(oldState, newState))
-                _log.LogDebug("{0}: connect to {1} failed [{2}]", Username, Address, Connection.LastError);
+                _log.LogDebug("{0}: connect to {1} failed [{2}]", Username, Address, Connection.LastErrorCode);
             else if (IsUnexpectedDisconnect(oldState, newState))
-                _log.LogDebug("{0}: connection to {1} lost [{2}]", Username, Address, Connection.LastError);
+                _log.LogDebug("{0}: connection to {1} lost [{2}]", Username, Address, Connection.LastErrorCode);
         }
 
         private bool IsConnected(ConnectionStates from, ConnectionStates to)
@@ -362,7 +362,7 @@ namespace TickTrader.BotAgent.BA.Models
             ChangeState(ConnectionStates.Connecting);
             _connectCancellation = new CancellationTokenSource();
 
-            _lastErrorCode = await Connection.Connect(Username, Password, Address, false, _connectCancellation.Token);
+            _lastErrorCode = (await Connection.Connect(Username, Password, Address, false, _connectCancellation.Token)).Code;
             _currentErrorCode = _lastErrorCode;
 
             if (_lastErrorCode == ConnectionErrorCodes.None)

@@ -27,14 +27,14 @@ namespace TickTrader.Algo.Common.Model
         private FdkAsyncExecutor _executor;
         private ActionBlock<Task> requestProcessor;
 
-        private TaskCompletionSource<ConnectionErrorCodes> _connectEvent;
+        private TaskCompletionSource<ConnectionErrorInfo> _connectEvent;
         private bool isFeedLoggedIn;
         private bool isTradeLoggedIn;
         private bool isFeedCacheLoaded;
         private bool isTradeCacheLoaded;
         private bool isSymbolsLoaded;
 
-        public event Action<IServerInterop, ConnectionErrorCodes> Disconnected;
+        public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Common.Model
             _options = options;
         }
 
-        public async Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken)
+        public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
         {
             if (_options.EnableFixLogs)
             {
@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Common.Model
             CreateFeedProxy(address, login, password, _options.EnableFixLogs);
             CreateTradeProxy(address, login, password, _options.EnableFixLogs);
 
-            _connectEvent = new TaskCompletionSource<ConnectionErrorCodes>();
+            _connectEvent = new TaskCompletionSource<ConnectionErrorInfo>();
 
             _feedProxy.Tick += (s, e) => Tick?.Invoke(FdkConvertor.Convert(e.Tick));
             _tradeProxy.PositionReport += (s, a) => PositionReport?.Invoke(FdkConvertor.Convert(a.Report));
@@ -72,9 +72,9 @@ namespace TickTrader.Algo.Common.Model
             _feedProxy.Start();
             _tradeProxy.Start();
 
-            var resultCode =  await _connectEvent.Task;
+            var result =  await _connectEvent.Task;
 
-            if (resultCode == ConnectionErrorCodes.None)
+            if (result.Code == ConnectionErrorCodes.None)
             {
                 requestProcessor = TaskMahcine.Create();
                 _executor = new FdkAsyncExecutor(_tradeProxy);
@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
             else
                 await Disconnect();
 
-            return resultCode;
+            return result;
         }
 
         private void CreateFeedProxy(string address, string login, string password, bool logsEnabled)
@@ -151,7 +151,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 updateAction();
                 if (isFeedCacheLoaded && isTradeCacheLoaded && isSymbolsLoaded && isTradeLoggedIn && isFeedLoggedIn)
-                    _connectEvent.TrySetResult(ConnectionErrorCodes.None);
+                    _connectEvent.TrySetResult(new ConnectionErrorInfo(ConnectionErrorCodes.None));
             }
         }
 
@@ -238,10 +238,10 @@ namespace TickTrader.Algo.Common.Model
         {
             UpdateState(() =>
             {
-                var code = Convert(e.Reason);
+                var info = new ConnectionErrorInfo(Convert(e.Reason), e.Text);
 
-                if (!_connectEvent.TrySetResult(code))
-                    Disconnected?.Invoke(this, code);
+                if (!_connectEvent.TrySetResult(info))
+                    Disconnected?.Invoke(this, info);
             });
         }
 
@@ -249,10 +249,10 @@ namespace TickTrader.Algo.Common.Model
         {
             UpdateState(() =>
             {
-                var code = Convert(e.Reason);
+                var info = new ConnectionErrorInfo(Convert(e.Reason), e.Text);
 
-                if (!_connectEvent.TrySetResult(code))
-                    Disconnected?.Invoke(this, code);
+                if (!_connectEvent.TrySetResult(info))
+                    Disconnected?.Invoke(this, info);
             });
         }
 

@@ -32,6 +32,8 @@ namespace TickTrader.Algo.Core
             NetPositions.PositionRemoved += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.Removed);
 
             Assets.AssetChanged += (a, c) => AssetsChanged?.Invoke(a, TickTraderToAlgo.Convert(c));
+
+            EnableBlEvents();
         }
 
         public OrdersCollection Orders { get; private set; }
@@ -70,7 +72,7 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => Reset());
         }
 
-        public void EnableBlEvents()
+        private void EnableBlEvents()
         {
             Orders.Added += OnOrderAdded;
             Orders.Replaced += OnOrderReplaced;
@@ -84,7 +86,7 @@ namespace TickTrader.Algo.Core
             _blEventsEnabled = true;
         }
 
-        public void DisableBlEvents()
+        private void DisableBlEvents()
         {
             if (_blEventsEnabled)
             {

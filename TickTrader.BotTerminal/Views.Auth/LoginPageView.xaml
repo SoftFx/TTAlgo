@@ -66,9 +66,15 @@
         <CheckBox Grid.Row="8" Grid.ColumnSpan="2" Content="Use new protocol" Margin="0,0,0,4" IsChecked="{Binding UseSfxProtocol}"/>
         <CheckBox Grid.Row="9" Grid.ColumnSpan="2" Name="SavePassword" Content="Remember Password"/>
         <TextBlock Grid.Row="10" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                   Text="{l:ResxBinding Error, Prefix=ConnectionErrorCode_}"
+                   Text="{l:ResxBinding ErrorCode, Prefix=ConnectionErrorCode_}"
                    TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                   Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
+                   Foreground="{DynamicResource Shell_WarningForeground}"
+                   Visibility="{Binding ShowErrorCode, Converter={StaticResource BoolToVis}}"/>
+        <TextBlock Grid.Row="10" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                   Text="{Binding ErrorText}"
+                   TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource Shell_WarningForeground}"
+                   Visibility="{Binding ShowErrorText, Converter={StaticResource BoolToVis}}"/>
         <l:FlatButton Grid.Row="11" Margin="8"
                       x:Name="Connect"
                       Content="Connect" 

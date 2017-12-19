@@ -12,13 +12,13 @@ namespace TickTrader.Algo.Common.Model
 {
     public interface IServerInterop
     {
-        Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken);
+        Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken);
         Task Disconnect();
 
         IFeedServerApi FeedApi { get; }
         ITradeServerApi TradeApi { get; }
 
-        event Action<IServerInterop, ConnectionErrorCodes> Disconnected;
+        event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
     }
 
     public interface ITradeServerApi

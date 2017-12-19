@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Common.Model
         private FDK.OrderEntry.Client _tradeProxy;
         private FDK.TradeCapture.Client _tradeHistoryProxy;
 
-        public event Action<IServerInterop, ConnectionErrorCodes> Disconnected;
+        public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
         
         public SfxInterop()
         {
@@ -44,26 +44,38 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy"); // 5060, false, "c:\\temp\\Logs", true);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
-            _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
-            _tradeProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
+            _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _tradeProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
             _tradeProxy.OrderUpdateEvent += (c, rep) => ExecutionReport?.Invoke(ConvertToEr(rep));
             _tradeProxy.PositionUpdateEvent += (c, rep) => PositionReport?.Invoke(Convert(rep));
             _tradeProxy.BalanceUpdateEvent += (c, rep) => BalanceOperation?.Invoke(Convert(rep));
-            _tradeHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
+            _tradeHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
-            _feedHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect();
+            _feedHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
         }
 
-        public async Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken)
+        public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
         {
-            await Task.WhenAll(
-                ConnectFeed(address, login, password),
-                ConnectTrade(address, login, password),
-                ConnectFeedHistory(address, login, password),
-                ConnectTradeHistory(address, login, password))
-                .AddCancelation(cancelToken);
+            try
+            {
+                await Task.WhenAll(
+                    ConnectFeed(address, login, password),
+                    ConnectTrade(address, login, password),
+                    ConnectFeedHistory(address, login, password),
+                    ConnectTradeHistory(address, login, password))
+                    .AddCancelation(cancelToken);
+            }
+            catch (AggregateException aex)
+            {
+                var ex = aex.InnerExceptions.First();
+                return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
+            }
 
-            return ConnectionErrorCodes.None;
+            return new ConnectionErrorInfo(ConnectionErrorCodes.None);
         }
 
         private async Task ConnectFeed(string address, string login, string password)
@@ -104,9 +116,9 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Subscribed.");
         }
 
-        private void OnDisconnect()
+        private void OnDisconnect(string text)
         {
-            Disconnected?.Invoke(this, ConnectionErrorCodes.Unknown);
+            Disconnected?.Invoke(this, new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, text));
         }
 
         public Task Disconnect()
