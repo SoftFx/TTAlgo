@@ -88,7 +88,7 @@ namespace TickTrader.BotAgent.BA.Models
             foreach (var bot in toRemove)
                 _bots.Remove(bot);
 
-            Connection = new ConnectionModel(new ConnectionOptions() { EnableFixLogs = false });
+            Connection = new ConnectionModel(new ConnectionOptions() { EnableLogs = false });
             Connection.Disconnected += () =>
             {
                 lock (_sync)

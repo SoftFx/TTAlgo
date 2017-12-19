@@ -192,7 +192,7 @@ namespace TickTrader.Algo.Common.Model
                 });
 
                 if (request.UseSfx)
-                    _interop = new SfxInterop();
+                    _interop = new SfxInterop(_options);
                 else
                     _interop = new FdkInterop(_options);
 
@@ -332,6 +332,7 @@ namespace TickTrader.Algo.Common.Model
 
     public class ConnectionOptions
     {
-        public bool EnableFixLogs { get; set; }
+        public bool EnableLogs { get; set; }
+        public string LogsFolder { get; set; }
     }
 }
