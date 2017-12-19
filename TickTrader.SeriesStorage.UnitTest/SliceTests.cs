@@ -19,27 +19,33 @@ namespace TickTrader.SeriesStorage.UnitTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void SliceTest_Check_LeftBorder()
         {
-            var slice = CreateSlice(2, 10, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-            slice.Check();
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var slice = CreateSlice(2, 10, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
+                slice.Check();
+            });
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void SliceTest_Check_RightBorder()
         {
-            var slice = CreateSlice(0, 2, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-            slice.Check();
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var slice = CreateSlice(0, 2, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
+                slice.Check();
+            });
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void SliceTest_Check_RightBorder_Exact()
         {
-            var slice = CreateSlice(2, 3, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-            slice.Check();
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var slice = CreateSlice(2, 3, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
+                slice.Check();
+            });
         }
 
         [TestMethod]
@@ -128,7 +134,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             var slice = CreateSlice(1, 10, new MockItem(1, "one"), new MockItem(3, "three"), new MockItem(7, "seven"));
             var result = slice.GetSegment(2, 9);
             var actual = result.Content.Select(i => i.Value).ToList();
-            var expected = new String[] {  "three", "seven" };
+            var expected = new String[] { "three", "seven" };
             CollectionAssert.AreEqual(expected, actual);
         }
 
