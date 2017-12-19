@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
 
             InitAuthData();
 
-            var connectionOptions = new ConnectionOptions() { EnableFixLogs = BotTerminal.Properties.Settings.Default.EnableFixLogs };
+            var connectionOptions = new ConnectionOptions() { EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs, LogsFolder = EnvService.Instance.LogFolder };
             Connection = new ConnectionModel(connectionOptions, new DispatcherStateMachineSync());
 
             Connection.StateChanged += (from, to) =>

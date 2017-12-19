@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Common.Model
 
         public async Task<ConnectionErrorCodes> Connect(string address, string login, string password, CancellationToken cancelToken)
         {
-            if (_options.EnableFixLogs)
+            if (_options.EnableLogs)
             {
                 if (!Directory.Exists(LogPath))
                     Directory.CreateDirectory(LogPath);
@@ -58,8 +58,8 @@ namespace TickTrader.Algo.Common.Model
             isTradeCacheLoaded = false;
             isSymbolsLoaded = false;
 
-            CreateFeedProxy(address, login, password, _options.EnableFixLogs);
-            CreateTradeProxy(address, login, password, _options.EnableFixLogs);
+            CreateFeedProxy(address, login, password, _options.EnableLogs);
+            CreateTradeProxy(address, login, password, _options.EnableLogs);
 
             _connectEvent = new TaskCompletionSource<ConnectionErrorCodes>();
 
