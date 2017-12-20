@@ -132,78 +132,66 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task DisconnectFeed()
         {
-            await Task.Factory.StartNew(() =>
+            try
             {
-                try
-                {
-                    _feedProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _feedProxy.Disconnect("");
-                }
+                await _feedProxy.LogoutAsync("");
+            }
+            catch (Exception)
+            {
+                await _feedProxy.DisconnectAsync("");
+            }
 
-                _feedProxy.Dispose();
+            _feedProxy.Dispose();
 
-                logger.Debug("Feed dicconnected.");
-            });
+            logger.Debug("Feed dicconnected.");
         }
 
         private async Task DisconnectFeedHstory()
         {
-            await Task.Factory.StartNew(() =>
+            try
             {
-                try
-                {
-                    _feedHistoryProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _feedHistoryProxy.Disconnect("");
-                }
+                await _feedHistoryProxy.LogoutAsync("");
+            }
+            catch (Exception)
+            {
+                await _feedHistoryProxy.DisconnectAsync("");
+            }
 
-                _feedHistoryProxy.Dispose();
+            _feedHistoryProxy.Dispose();
 
-                logger.Debug("Feed history dicconnected.");
-            });
+            logger.Debug("Feed history dicconnected.");
         }
 
         private async Task DisconnectTrade()
         {
-            await Task.Factory.StartNew(() =>
+            try
             {
-                try
-                {
-                    _tradeProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _tradeProxy.Disconnect("");
-                }
+                await _tradeProxy.LogoutAsync("");
+            }
+            catch (Exception)
+            {
+                await _tradeProxy.DisconnectAsync("");
+            }
 
-                _tradeProxy.Dispose();
+            _tradeProxy.Dispose();
 
-                logger.Debug("Trade dicconnected.");
-            });
+            logger.Debug("Trade dicconnected.");
         }
 
         private async Task DisconnectTradeHstory()
         {
-            await Task.Factory.StartNew(() =>
+            try
             {
-                try
-                {
-                    _tradeHistoryProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _tradeHistoryProxy.Disconnect("");
-                }
+                await _tradeHistoryProxy.LogoutAsync("");
+            }
+            catch (Exception)
+            {
+                await _tradeHistoryProxy.DisconnectAsync("");
+            }
 
-                _tradeHistoryProxy.Dispose();
+            _tradeHistoryProxy.Dispose();
 
-                logger.Debug("Trade history dicconnected.");
-            });
+            logger.Debug("Trade history dicconnected.");
         }
 
         #region IFeedServerApi
@@ -341,30 +329,23 @@ namespace TickTrader.Algo.Common.Model
 
         private async void DownloadTradeHistoryToBuffer(AsyncBuffer<TradeReportEntity[]> buffer, Task<TradeTransactionReportEnumerator> enumTask)
         {
-            const int pageSize = 2000;
+            const int pageSize = 500;
 
             try
             {
                 using (var e = await enumTask)
                 {
-                    var page = new List<TradeReportEntity>();
+                    var page = new TradeTransactionReport[pageSize];
 
                     while (true)
                     {
-                        var rep = await e.NextAsync();
-                        if (rep == null)
+                        var pageCount = await e.NextAsync(page);
+                        await Task.Factory.StartNew(() => { });
+                        if (pageCount == 0)
                             break;
-
-                        page.Add(Convert(rep));
-                        if (page.Count >= pageSize)
-                        {
-                            await buffer.WriteAsync(page.ToArray());
-                            page.Clear();
-                        }
+                        var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
+                        await buffer.WriteAsync(convertedPage);
                     }
-
-                    if (page.Count > 0)
-                        await buffer.WriteAsync(page.ToArray());
                 }
 
                 buffer.Dispose();

@@ -54,12 +54,15 @@ namespace TickTrader.Algo.Core.Lib
                 enumerator.GetNextPage(callback);
                 var page = callback.Result;
 
+                if (page == null)
+                    break;
+
                 foreach (var i in page)
                     yield return i;
             }
         }
 
-        internal class CrossDomainAdapter<T> : IAsyncCrossDomainEnumerator<T>
+        internal class CrossDomainAdapter<T> : CrossDomainObject, IAsyncCrossDomainEnumerator<T>
             where T : class
         {
             private IAsyncEnumerator<T[]> _enumerator;
@@ -69,9 +72,11 @@ namespace TickTrader.Algo.Core.Lib
                 _enumerator = enumerator;
             }
 
-            public void Dispose()
+            public override void Dispose()
             {
                 _enumerator.Dispose();
+
+                base.Dispose();
             }
 
             public void GetNextPage(CrossDomainTaskProxy<T[]> pageCallback)

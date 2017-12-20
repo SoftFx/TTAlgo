@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 Symbol = record.Symbol,
                 Comment = record.Comment,
-                Type = Convert(record.Type),
+                Type = Convert(record.Type) ?? Api.OrderType.Market,
                 ClientOrderId = record.ClientOrderId,
                 Price = record.Price,
                 StopPrice = record.StopPrice,
@@ -240,8 +240,11 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public static Api.OrderType Convert(TradeRecordType fdkType)
+        public static Api.OrderType? Convert(TradeRecordType fdkType)
         {
+            if (fdkType == (TradeRecordType)(-1)) // ugly fix for FDK bug
+                return null;
+
             switch (fdkType)
             {
                 case TradeRecordType.Limit: return Algo.Api.OrderType.Limit;
@@ -258,7 +261,6 @@ namespace TickTrader.Algo.Common.Model
         {
             if (fdkSide == (TradeRecordSide)(-1)) // ugly fix for FDK bug
                 return null;
-
 
             switch (fdkSide)
             {
@@ -434,8 +436,8 @@ namespace TickTrader.Algo.Common.Model
                 SrcAssetCurrency = report.SrcAssetCurrency,
                 SrcAssetMovement = report.SrcAssetMovement,
                 SrcAssetToUsdConversionRate = report.SrcAssetToUsdConversionRate,
-                TradeRecordSide = Convert(report.TradeRecordSide).Value,
-                TradeRecordType =  Convert(report.TradeRecordType),
+                TradeRecordSide = Convert(report.TradeRecordSide) ?? Api.OrderSide.Buy,
+                TradeRecordType =  Convert(report.TradeRecordType) ?? Api.OrderType.Market,
                 TradeTransactionReportType = Convert(report.TradeTransactionReportType),
                 ReqOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
@@ -552,8 +554,8 @@ namespace TickTrader.Algo.Common.Model
                 Commission = report.Commission,
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
-                OrderType = Convert(report.OrderType),
-                OrderSide = Convert(report.OrderSide).Value,
+                OrderType = Convert(report.OrderType) ?? Api.OrderType.Market,
+                OrderSide = Convert(report.OrderSide) ?? Api.OrderSide.Buy,
                 Price = report.Price,
                 Balance = report.Balance
             };
