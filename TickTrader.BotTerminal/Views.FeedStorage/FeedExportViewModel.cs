@@ -261,9 +261,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private string GetCorrectPath()
+        {
+            if (!Path.HasExtension(FilePath))
+                return FilePath + ".csv";
+            return FilePath;
+        }
+
         public override void StartExport()
         {
-            _writer = new StreamWriter(File.Open(FilePath, FileMode.Create));
+            _writer = new StreamWriter(File.Open(GetCorrectPath(), FileMode.Create));
         }
 
         public override void ExportSlice(DateTime from, DateTime to, ArraySegment<BarEntity> values)
