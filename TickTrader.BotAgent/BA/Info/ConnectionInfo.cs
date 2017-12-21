@@ -13,7 +13,7 @@ namespace TickTrader.BotAgent.BA.Info
         {
             AccountType = client.Account.Type.Value;
             Symbols = client.Symbols.Snapshot.Values.Select(s => s.Descriptor).ToList();
-            Currencies = client.Currencies.Values.ToList();
+            Currencies = client.Currencies.Snapshot.Values.ToList();
         }
 
         public AccountTypes AccountType { get; }

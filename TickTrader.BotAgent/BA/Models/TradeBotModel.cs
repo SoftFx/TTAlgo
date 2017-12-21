@@ -277,7 +277,7 @@ namespace TickTrader.BotAgent.BA.Models
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
-                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
+                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies.Snapshot, new SyncAdapter(_syncObj));
                 executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
                 executor.MainSymbolCode = setupModel.MainSymbol;
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
