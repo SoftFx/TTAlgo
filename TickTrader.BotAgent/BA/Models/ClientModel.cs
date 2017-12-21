@@ -14,6 +14,7 @@ using TickTrader.BotAgent.BA.Info;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -116,7 +117,7 @@ namespace TickTrader.BotAgent.BA.Models
         public IEnumerable<ITradeBot> TradeBots => _bots;
         public AccountModel Account { get; private set; }
         public SymbolManager Symbols { get; private set; }
-        public Dictionary<string, CurrencyEntity> Currencies { get; private set; }
+        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _core.Currencies;
         public FeedHistoryProviderModel FeedHistory { get; private set; }
         public ITradeExecutor TradeApi { get; private set; }
         public bool IsReconnecting

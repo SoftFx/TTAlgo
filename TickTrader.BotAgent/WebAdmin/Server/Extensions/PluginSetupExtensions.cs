@@ -82,6 +82,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                         yield return new FileParameter { Id = param.Id, FileName = fileName };
 
                         break;
+                    case ParameterTypes.Boolean:
+                        yield return new BoolParameter() { Id = param.Id, Value = (bool)param.Value };
+                        break;
                 }
             }
         }
