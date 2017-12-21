@@ -98,6 +98,7 @@
     <Compile Include="Entities\MockOrder.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
+    <Compile Include="Entities\PositionAccessor.cs" />
     <Compile Include="Entities\PositionCollection.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
     <Compile Include="Entities\OrderEntity.cs" />

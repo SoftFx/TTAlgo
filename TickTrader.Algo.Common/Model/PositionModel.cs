@@ -39,17 +39,17 @@ namespace TickTrader.Algo.Common.Model
             Commission = (decimal)position.Commission;
             SettlementPrice = position.SettlementPrice;
             Side = position.Side;
-            Amount = position.Volume.Units;// Math.Max(position.BuyAmount, position.SellAmount);
+            Amount = position.Volume;// Math.Max(position.BuyAmount, position.SellAmount);
             Swap = (decimal)position.Swap;
             Price = position.Price; //  Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
 
             Long = new PositionSide();
             Short = new PositionSide();
 
-            Long.Amount = position.Long.Amount;
-            Long.Price = position.Long.Price;
-            Short.Amount = position.Short.Price;
-            Short.Price = position.Short.Amount;
+            Long.Amount = position.Side == OrderSide.Buy ? (decimal)Amount : 0;
+            Long.Price = position.Side == OrderSide.Buy ? (decimal)Price : 0;
+            Short.Amount = position.Side == OrderSide.Sell ? (decimal)Amount : 0;
+            Short.Price = position.Side == OrderSide.Sell ? (decimal)Price : 0;
 
             Long.ProfitUpdated = OnProfitUpdated;
             Short.ProfitUpdated = OnProfitUpdated;
@@ -254,12 +254,20 @@ namespace TickTrader.Algo.Common.Model
             return new PositionExecReport()
             {
                 ExecAction = action,
+                PositionInfo = ToAlgoPosition()
+            };
+        }
+
+        internal PositionEntity ToAlgoPosition()
+        {
+            return new PositionEntity
+            {
                 Symbol = this.Symbol,
                 AgentCommission = (double)this.AgentCommission,
                 Commission = (double)this.Commission,
                 SettlementPrice = this.SettlementPrice,
                 Side = this.Side,
-                Volume = new TradeVolume(this.Amount, AmountLots),
+                Volume = Amount,
                 Swap = (double)this.Swap,
                 Price = (double)this.Price
             };

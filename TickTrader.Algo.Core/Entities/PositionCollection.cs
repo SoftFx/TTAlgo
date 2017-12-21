@@ -9,7 +9,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class PositionCollection : IEnumerable<PositionEntity>
+    public class PositionCollection : IEnumerable<PositionAccessor>
     {
         private PluginBuilder _builder;
         private PositionsFixture _fixture = new PositionsFixture();
@@ -21,38 +21,38 @@ namespace TickTrader.Algo.Core
             _builder = builder;
         }
 
-        public PositionEntity UpdatePosition(PositionExecReport eReport)
+        public PositionAccessor UpdatePosition(PositionExecReport eReport)
         {
-            PositionEntity pos;
+            PositionAccessor pos;
 
             if (eReport.ExecAction == OrderExecAction.Closed)
             {
-                pos = _fixture.RemovePosition(eReport.Symbol);
+                pos = _fixture.RemovePosition(eReport.PositionInfo.Symbol);
                 PositionRemoved?.Invoke(pos);
             }
             else
             {
-                pos = _fixture.UpdatePosition(eReport);
+                pos = _fixture.UpdatePosition(eReport.PositionInfo, _builder.Symbols.GetOrDefault);
                 PositionUpdated?.Invoke(pos);
             }
 
             return pos;
         }
 
-        public PositionEntity GetPositionOrNull(string symbol)
+        public PositionAccessor GetPositionOrNull(string symbol)
         {
             return _fixture.GetOrDefault(symbol);
         }
 
-        public event Action<PositionEntity> PositionUpdated;
-        public event Action<PositionEntity> PositionRemoved;
+        public event Action<PositionAccessor> PositionUpdated;
+        public event Action<PositionAccessor> PositionRemoved;
 
         public void FirePositionUpdated(NetPositionModifiedEventArgs args)
         {
             _builder.InvokePluginMethod(() => _fixture.FirePositionModified(args));
         }
 
-        public IEnumerator<PositionEntity> GetEnumerator()
+        public IEnumerator<PositionAccessor> GetEnumerator()
         {
             return _fixture.Values.GetEnumerator();
         }
@@ -69,22 +69,22 @@ namespace TickTrader.Algo.Core
 
         internal class PositionsFixture : NetPositionList
         {
-            private ConcurrentDictionary<string, PositionEntity> _positions = new ConcurrentDictionary<string, PositionEntity>();
+            private ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
 
             public NetPosition this[string symbol]
             {
                 get
                 {
-                    PositionEntity entity;
+                    PositionAccessor entity;
                     if (!_positions.TryGetValue(symbol, out entity))
-                        return PositionEntity.CreateEmpty(symbol);
+                        return PositionAccessor.CreateEmpty(symbol);
                     return entity;
                 }
             }
 
             public int Count => _positions.Count;
 
-            internal IEnumerable<PositionEntity> Values => _positions.Values;
+            internal IEnumerable<PositionAccessor> Values => _positions.Values;
 
             public event Action<NetPositionModifiedEventArgs> Modified;
 
@@ -93,31 +93,31 @@ namespace TickTrader.Algo.Core
                 Modified?.Invoke(args);
             }
 
-            public PositionEntity UpdatePosition(PositionExecReport eReport)
+            public PositionAccessor UpdatePosition(PositionEntity entity, Func<string, Symbol> symbolProvider)
             {
-                PositionEntity pos;
+                PositionAccessor pos;
 
-                if (!_positions.TryGetValue(eReport.Symbol, out pos))
+                if (!_positions.TryGetValue(entity.Symbol, out pos))
                 {
-                    pos = new PositionEntity(eReport);
-                    _positions[eReport.Symbol] = pos;
+                    pos = new PositionAccessor(entity, symbolProvider);
+                    _positions[entity.Symbol] = pos;
                 }
                 else
-                    pos.Update(eReport);
+                    pos.Update(entity);
 
                 return pos;
             }
 
-            public PositionEntity RemovePosition(string symbol)
+            public PositionAccessor RemovePosition(string symbol)
             {
-                PositionEntity pos;
+                PositionAccessor pos;
                 _positions.TryRemove(symbol, out pos);
                 return pos;
             }
 
-            public PositionEntity GetOrDefault(string symbol)
+            public PositionAccessor GetOrDefault(string symbol)
             {
-                PositionEntity entity;
+                PositionAccessor entity;
                 _positions.TryGetValue(symbol, out entity);
                 return entity;
             }

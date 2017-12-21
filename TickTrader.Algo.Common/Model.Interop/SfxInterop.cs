@@ -132,66 +132,78 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task DisconnectFeed()
         {
-            try
+            await Task.Factory.StartNew(() =>
             {
-                await _feedProxy.LogoutAsync("");
-            }
-            catch (Exception)
-            {
-                await _feedProxy.DisconnectAsync("");
-            }
+                try
+                {
+                    _feedProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _feedProxy.Disconnect("");
+                }
 
-            _feedProxy.Dispose();
+                _feedProxy.Dispose();
 
-            logger.Debug("Feed dicconnected.");
+                logger.Debug("Feed dicconnected.");
+            });
         }
 
         private async Task DisconnectFeedHstory()
         {
-            try
+            await Task.Factory.StartNew(() =>
             {
-                await _feedHistoryProxy.LogoutAsync("");
-            }
-            catch (Exception)
-            {
-                await _feedHistoryProxy.DisconnectAsync("");
-            }
+                try
+                {
+                    _feedHistoryProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _feedHistoryProxy.Disconnect("");
+                }
 
-            _feedHistoryProxy.Dispose();
+                _feedHistoryProxy.Dispose();
 
-            logger.Debug("Feed history dicconnected.");
+                logger.Debug("Feed history dicconnected.");
+            });
         }
 
         private async Task DisconnectTrade()
         {
-            try
+            await Task.Factory.StartNew(() =>
             {
-                await _tradeProxy.LogoutAsync("");
-            }
-            catch (Exception)
-            {
-                await _tradeProxy.DisconnectAsync("");
-            }
+                try
+                {
+                    _tradeProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _tradeProxy.Disconnect("");
+                }
 
-            _tradeProxy.Dispose();
+                _tradeProxy.Dispose();
 
-            logger.Debug("Trade dicconnected.");
+                logger.Debug("Trade dicconnected.");
+            });
         }
 
         private async Task DisconnectTradeHstory()
         {
-            try
+            await Task.Factory.StartNew(() =>
             {
-                await _tradeHistoryProxy.LogoutAsync("");
-            }
-            catch (Exception)
-            {
-                await _tradeHistoryProxy.DisconnectAsync("");
-            }
+                try
+                {
+                    _tradeHistoryProxy.Logout("", -1);
+                }
+                catch (Exception)
+                {
+                    _tradeHistoryProxy.Disconnect("");
+                }
 
-            _tradeHistoryProxy.Dispose();
+                _tradeHistoryProxy.Dispose();
 
-            logger.Debug("Trade history dicconnected.");
+                logger.Debug("Trade history dicconnected.");
+            });
         }
 
         #region IFeedServerApi
@@ -333,14 +345,14 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                using (var e = await enumTask)
+                var e = await enumTask;
                 {
                     var page = new TradeTransactionReport[pageSize];
 
                     while (true)
                     {
                         var pageCount = await e.NextAsync(page);
-                        await Task.Factory.StartNew(() => { });
+                        await Task.Factory.StartNew(()=> { });
                         if (pageCount == 0)
                             break;
                         var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
@@ -771,10 +783,29 @@ namespace TickTrader.Algo.Common.Model
 
         private static PositionEntity Convert(SFX.Position p)
         {
+            API.OrderSide side;
+            double price;
+            double amount;
+
+            if (p.BuyAmount > 0)
+            {
+                side = API.OrderSide.Buy;
+                price = p.BuyPrice ?? 0;
+                amount = p.BuyAmount;
+            }
+            else
+            {
+                side = API.OrderSide.Sell;
+                price = p.SellPrice ?? 0;
+                amount = p.SellAmount;
+            }
+
             return new PositionEntity()
             {
+                Side = side,
+                Volume = amount,
+                Price = price,
                 Symbol = p.Symbol,
-                Margin = p.Margin ?? 0,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
             };

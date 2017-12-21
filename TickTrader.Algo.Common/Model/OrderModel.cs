@@ -486,14 +486,14 @@ namespace TickTrader.Algo.Common.Model
             this.TakeProfit = record.TakeProfit;
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
-            if (record.ImmediateOrCancel)
-            {
-                this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
-                this.ExecPrice = record.Price;
-                this.ExecAmount = record.Volume;
-                this.LastFillPrice = record.Price;
-                this.LastFillAmount = record.Volume;
-            }
+            //if (record.ImmediateOrCancel)
+            //{
+            //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
+            //    this.ExecPrice = record.Price;
+            //    this.ExecAmount = record.Volume;
+            //    this.LastFillPrice = record.Price;
+            //    this.LastFillAmount = record.Volume;
+            //}
         }
 
         private void Update(ExecutionReport report)

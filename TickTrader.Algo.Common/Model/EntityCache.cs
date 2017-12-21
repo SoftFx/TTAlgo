@@ -43,9 +43,7 @@ namespace TickTrader.Algo.Common.Model
             var getSymbolsTask = feedApi.GetSymbols();
             var getCurrenciesTask = feedApi.GetCurrencies();
             var getOrdersTask = tradeApi.GetTradeRecords();
-            //var getPositionsTask = tradeApi.GetPositions();
 
-            //await Task.WhenAll(getInfoTask, getSymbolsTask, getCurrenciesTask, getOrdersTask, getPositionsTask);
             await Task.WhenAll(getInfoTask, getSymbolsTask, getCurrenciesTask, getOrdersTask);
 
             _accProperty.Value = getInfoTask.Result;
@@ -62,9 +60,13 @@ namespace TickTrader.Algo.Common.Model
             foreach (var o in getOrdersTask.Result)
                 _orders.Add(o.OrderId, o);
 
-            _positions.Clear();
-            //foreach (var p in getPositionsTask.Result)
-                //_positions.Add(p.Symbol, p);
+            if (_accProperty.Value.Type == Api.AccountTypes.Net)
+            {
+                var fkdPositions = await tradeApi.GetPositions();
+                _positions.Clear();
+                foreach (var p in fkdPositions)
+                    _positions.Add(p.Symbol, p);
+            }
         }
 
         internal void Close()
