@@ -141,8 +141,8 @@ namespace TickTrader.Algo.Core
                 var accProxy = context.Builder.Account;
                 var positions = accProxy.NetPositions;
 
-                var oldPos = positions.GetPositionOrNull(report.Symbol);
-                var clone = oldPos?.Clone() ?? PositionEntity.CreateEmpty(report.Symbol);
+                var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
+                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
                 var pos = positions.UpdatePosition(report);
                 var isClosed = report.ExecAction == OrderExecAction.Closed;
 

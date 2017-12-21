@@ -114,10 +114,29 @@ namespace TickTrader.Algo.Common.Model
 
         public static PositionEntity Convert(Position p)
         {
+            Api.OrderSide side;
+            double price;
+            double amount;
+
+            if (p.BuyAmount > 0)
+            {
+                side = Api.OrderSide.Buy;
+                price = p.BuyPrice ?? 0;
+                amount = p.BuyAmount;
+            }
+            else
+            {
+                side = Api.OrderSide.Sell;
+                price = p.SellPrice ?? 0;
+                amount = p.SellAmount;
+            }
+
             return new PositionEntity()
             {
+                Side = side,
+                Volume = amount,
+                Price = price,
                 Symbol = p.Symbol,
-                Margin = p.Margin ?? 0,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
             };
