@@ -25,6 +25,7 @@ namespace TickTrader.BotTerminal
         public OrderModel Order { get; private set; }
         public int PriceDigits { get; private set; }
         public int ProfitDigits { get; private set; }
+        public decimal? Price => Order.OrderType == OrderType.StopLimit || Order.OrderType == OrderType.Stop ? Order.StopPrice : Order.LimitPrice;
 
         public RateDirectionTracker CurrentPrice => Order.OrderType != OrderType.Position ?
                                                     Order.Side == OrderSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
