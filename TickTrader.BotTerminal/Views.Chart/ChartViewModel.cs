@@ -169,6 +169,9 @@ namespace TickTrader.BotTerminal
             Bots.Foreach(b => algoEnv.IdProvider.RemovePlugin(b.Model.InstanceId));
 
             shell.ToolWndManager.CloseWindowByKey(this);
+
+            barChart.Dispose();
+            tickChart.Dispose();
         }
 
         public void OpenOrder()
@@ -420,7 +423,6 @@ namespace TickTrader.BotTerminal
         {
             charts.Clear();
             charts.Add(Chart);
-
 
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;

@@ -60,10 +60,10 @@ namespace TickTrader.Algo.Common.Model
             foreach (var o in getOrdersTask.Result)
                 _orders.Add(o.OrderId, o);
 
+            _positions.Clear();
             if (_accProperty.Value.Type == Api.AccountTypes.Net)
             {
                 var fkdPositions = await tradeApi.GetPositions();
-                _positions.Clear();
                 foreach (var p in fkdPositions)
                     _positions.Add(p.Symbol, p);
             }
