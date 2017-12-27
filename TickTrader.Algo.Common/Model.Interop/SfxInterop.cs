@@ -778,6 +778,8 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (message == "Trade Not Allowed")
                             return Api.OrderCmdResultCodes.TradeNotAllowed;
+                        else if (message != null && message.StartsWith("Not Enough Money"))
+                            return Api.OrderCmdResultCodes.NotEnoughMoney;
                         break;
                     }
                 case RejectReason.None:

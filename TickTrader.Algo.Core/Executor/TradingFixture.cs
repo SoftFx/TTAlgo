@@ -252,6 +252,9 @@ namespace TickTrader.Algo.Core
 
         private void UpdateBalance(PluginBuilder builder, OrderExecReport eReport)
         {
+            if (eReport.ExecAction == OrderExecAction.Rejected)
+                return;
+
             var acc = builder.Account;
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
