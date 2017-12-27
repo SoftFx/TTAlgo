@@ -38,10 +38,19 @@ namespace TickTrader.Algo.Common.Model
         
         public SfxInterop(ConnectionOptions options)
         {
-            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy", 5030, false, options.LogsFolder, options.EnableLogs);
-            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", 5050, false, options.LogsFolder, options.EnableLogs);
-            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", 5040, false, options.LogsFolder, options.EnableLogs);
-            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", 5060, false, options.LogsFolder, options.EnableLogs);
+            const int connectInterval = 10000;
+#if DEBUG
+            const int heartbeatInterval = 120000;
+#else
+            const int heartbeatInterval = 10000;
+#endif
+            const int connectAttempts = 1;
+            const int reconnectAttempts = 0;
+
+            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy", options.EnableLogs, 5030, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
+            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", options.EnableLogs, 5050, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
+            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", options.EnableLogs, 5040, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
+            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", options.EnableLogs, 5060, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
             _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
@@ -206,7 +215,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        #region IFeedServerApi
+#region IFeedServerApi
 
         public event Action<QuoteEntity> Tick;
 
@@ -304,9 +313,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        #endregion
+#endregion
 
-        #region ITradeServerApi
+#region ITradeServerApi
 
         public event Action<PositionEntity> PositionReport;
         public event Action<ExecutionReport> ExecutionReport;
@@ -448,9 +457,9 @@ namespace TickTrader.Algo.Common.Model
                 return OrderTimeInForce.GoodTillDate;
         }
 
-        #endregion
+#endregion
 
-        #region Convertors
+#region Convertors
 
         private static SymbolEntity Convert(SymbolInfo info)
         {
@@ -1015,6 +1024,6 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-        #endregion
+#endregion
     }
 }
