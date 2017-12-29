@@ -58,6 +58,10 @@
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" >
+                                        <TextBlock Text="Expiration: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.Expiration}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
                         </Setter>
