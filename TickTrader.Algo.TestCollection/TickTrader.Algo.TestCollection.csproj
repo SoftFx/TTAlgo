@@ -73,7 +73,7 @@
     <Compile Include="Bots\OpenMarket.cs" />
     <Compile Include="Bots\SubscriptionTestBot.cs" />
     <Compile Include="Bots\SymbolInfoBot.cs" />
-    <Compile Include="Bots\TradeCommandsTest.cs" />
+    <None Include="Bots\TradeCommandsTest.cs" />
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />

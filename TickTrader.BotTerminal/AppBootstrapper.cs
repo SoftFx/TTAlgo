@@ -21,9 +21,6 @@ namespace TickTrader.BotTerminal
         {
             LocaleSelector.Instance.ActivateDefault();
 
-//#if DEBUG
-//            Machinarium.Qnil.UnitTests.Launch();
-//#endif
             Initialize();
 
             ConfigureCaliburn();
