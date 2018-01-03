@@ -137,7 +137,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Server = account.Address,
                 Login = account.Username,
-                LastConnectionStatus = ConnectionErrorCodes.None
+                LastConnectionStatus = ConnectionErrorCodes.None,
+                UseNewProtocol = account.UseNewProtocol
             };
         }
 
