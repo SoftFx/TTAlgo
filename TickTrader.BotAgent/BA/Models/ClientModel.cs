@@ -187,6 +187,12 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext context)
+        {
+            UseNewProtocol = true;
+        }
+
         #region Connection Management
 
         public Task<ConnectionErrorCodes> TestConnection()
