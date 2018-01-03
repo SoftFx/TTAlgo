@@ -53,14 +53,14 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", options.EnableLogs, 5060, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
-            _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
-            _tradeProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _feedProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
+            _tradeProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeProxy.OrderUpdateEvent += (c, rep) => ExecutionReport?.Invoke(ConvertToEr(rep));
             _tradeProxy.PositionUpdateEvent += (c, rep) => PositionReport?.Invoke(Convert(rep));
             _tradeProxy.BalanceUpdateEvent += (c, rep) => BalanceOperation?.Invoke(Convert(rep));
-            _tradeHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _tradeHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
-            _feedHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
         }
 
         public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
@@ -412,7 +412,6 @@ namespace TickTrader.Algo.Common.Model
                     while (true)
                     {
                         var pageCount = await e.NextAsync(page);
-                        await Task.Factory.StartNew(()=> { });
                         if (pageCount == 0)
                             break;
                         var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
