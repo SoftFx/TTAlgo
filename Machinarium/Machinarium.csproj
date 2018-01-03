@@ -82,7 +82,6 @@
     <Compile Include="Qnil\ObservableWrapper2.cs" />
     <Compile Include="Qnil\OperatorBase.cs" />
     <Compile Include="Qnil\ListAdapter.cs" />
-    <Compile Include="Qnil\UnitTests.cs" />
     <Compile Include="State\StateDescriptor.cs" />
     <Compile Include="State\StateMachine.cs" />
     <Compile Include="State\StateMachineSync.cs" />
