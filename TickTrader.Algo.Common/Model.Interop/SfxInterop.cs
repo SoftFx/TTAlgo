@@ -258,25 +258,17 @@ namespace TickTrader.Algo.Common.Model
             {
                 using (var e = await enumTask)
                 {
-                    var page = new List<BarEntity>();
+                    var page = new SFX.Bar[pageSize];
 
                     while (true)
                     {
-                        var bar = await e.NextAsync();
-                        if (bar == null)
+                        var count = await e.NextAsync(page).ConfigureAwait(false);
+                        if (count <= 0)
                             break;
 
-                        page.Add(Convert(bar));
-                        if (page.Count >= pageSize)
-                        {
-                            if (!await buffer.WriteAsync(page.ToArray()))
-                                return;
-                            page.Clear();
-                        }
+                        var barArray = page.Take(count).Select(Convert).ToArray();
+                        await buffer.WriteAsync(barArray).ConfigureAwait(false);
                     }
-
-                    if (page.Count > 0)
-                        await buffer.WriteAsync(page.ToArray());
                 }
 
                 await buffer.CompleteWriteAsync();
@@ -315,30 +307,19 @@ namespace TickTrader.Algo.Common.Model
             {
                 using (var e = await enumTask)
                 {
-                    var page = new List<QuoteEntity>();
+                    var page = new SFX.Quote[pageSize];
 
                     while (true)
                     {
-                        var tick = await e.NextAsync();
-                        if (tick == null)
+                        var count = await e.NextAsync(page).ConfigureAwait(false);
+                        if (count <= 0)
                             break;
 
-                        if (tick.CreatingTime <= lastTickTime) // filter duplicate times
-                            continue;
+                        //await Task.Factory.StartNew(() => { });
 
-                        lastTickTime = tick.CreatingTime;
-
-                        page.Add(Convert(tick));
-                        if (page.Count >= pageSize)
-                        {
-                            if (!await buffer.WriteAsync(page.ToArray()))
-                                return;
-                            page.Clear();
-                        }
+                        var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
+                        await buffer.WriteAsync(tickArray).ConfigureAwait(false);
                     }
-
-                    if (page.Count > 0)
-                        await buffer.WriteAsync(page.ToArray());
                 }
 
                 await buffer.CompleteWriteAsync();
@@ -884,6 +865,22 @@ namespace TickTrader.Algo.Common.Model
                 OpenTime = fdkBar.From,
                 CloseTime = fdkBar.To
             };
+        }
+
+        public static QuoteEntity[] ConvertAndFilter(IEnumerable<SFX.Quote> src, ref DateTime timeEdge)
+        {
+            var list = new List<QuoteEntity>();
+
+            foreach (var item in src)
+            {
+                if (item.CreatingTime > timeEdge)
+                {
+                    list.Add(Convert(item));
+                    timeEdge = item.CreatingTime;
+                }
+            }
+
+            return list.ToArray();
         }
 
         private static QuoteEntity Convert(SFX.Quote fdkTick)
