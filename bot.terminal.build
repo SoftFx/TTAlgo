@@ -24,10 +24,12 @@
   </target>
 
   <target name="Build" >
-	  <property name="Build.Target" value="Publish" />
+	<property name="Build.Target" value="Build" />
     <call target="CleanUpFolder" />
     <call target="RunMSBuild" />
-	  <call target="CreateBinPackage" />
+    <property name="Build.Target" value="Publish" />
+    <call target="RunMSBuild" />
+	<call target="CreateBinPackage" />
     <call target="GenerateSetupHmtl" />
     <property name="Package.ProjectFolder" value="TickTrader.Algo.Indicators" />
     <call target="CreateAlgoPackage"/>
@@ -35,7 +37,7 @@
     <call target="CreateAlgoPackage"/>
     <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
     <call target="CreateAlgoPackage"/>
-	 <call target="CreateBAInstaller" />
+	<call target="CreateBAInstaller" />
   </target>
 
   <target name="Publish" >
@@ -57,7 +59,7 @@
     <property name="MSBuild.Configuration" value="${Configuration}" />
     <property name="MSBuild.Platform" value="Any CPU" />
 
-    <if test="${MSBuild.Target=='Publish' and property::exists('Publish.User') and  property::exists('Publish.Password')}">
+    <if test="${MSBuild.Target=='Publish' and property::exists('Publish.User') and property::exists('Publish.Password')}">
       <exec program="net">
         <arg value="use" />
         <arg value="${PublishFolder}" />
