@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public class Slice<TKey, TValue>
+    public class Slice<TKey, TValue> : ISlice<TKey>
         where TKey : IComparable
     {
         private Func<TValue, TKey> _keyFunc;

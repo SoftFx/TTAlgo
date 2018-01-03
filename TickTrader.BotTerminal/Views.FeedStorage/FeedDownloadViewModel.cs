@@ -160,16 +160,15 @@ namespace TickTrader.BotTerminal
                     observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
                 }
             }
-            else
+            else // ticks
             {
-                var endDay = to.GetAbsoluteDay();
-                var totalDays = endDay - from.GetAbsoluteDay();
+                //var endDay = to.GetAbsoluteDay();
+                //var totalDays = endDay - from.GetAbsoluteDay();
 
-                observer?.StartProgress(0, totalDays);
+                observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
                 using (var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, timeFrame, from, to))
                 {
-
                     while (await tickEnumerator.Next())
                     {
                         var info = tickEnumerator.Current;
@@ -182,7 +181,7 @@ namespace TickTrader.BotTerminal
                             observer.SetMessage(msg);
                         }
 
-                        observer?.SetProgress(endDay - info.From.GetAbsoluteDay());
+                        observer?.SetProgress(info.From.GetAbsoluteDay());
 
                         if (cancelToken.IsCancellationRequested)
                         {
