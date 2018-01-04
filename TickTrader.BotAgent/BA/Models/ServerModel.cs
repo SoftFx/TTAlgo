@@ -76,11 +76,11 @@ namespace TickTrader.BotAgent.BA.Models
             return testTask.Result;
         }
 
-        public ConnectionErrorCodes TestCreds(string login, string password, string server)
+        public ConnectionErrorCodes TestCreds(string login, string password, string server, bool useNewProtocol)
         {
             Task<ConnectionErrorCodes> testTask;
 
-            var acc = new ClientModel(server, login, password);
+            var acc = new ClientModel(server, login, password, useNewProtocol);
             acc.Init(SyncObj, _loggerFactory, _packageStorage);
             lock (SyncObj)
             {
@@ -110,7 +110,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         }
 
-        public void AddAccount(AccountKey accountId, string password)
+        public void AddAccount(AccountKey accountId, string password, bool useNewProtocol)
         {
             lock (SyncObj)
             {
@@ -121,7 +121,7 @@ namespace TickTrader.BotAgent.BA.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
+                    var newAcc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
                     InitAccount(newAcc);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
@@ -167,6 +167,15 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var acc = GetAccountOrThrow(key);
                 acc.ChangePassword(password);
+            }
+        }
+
+        public void ChangeAccountProtocol(AccountKey key)
+        {
+            lock (SyncObj)
+            {
+                var acc = GetAccountOrThrow(key);
+                acc.ChangeProtocol();
             }
         }
 

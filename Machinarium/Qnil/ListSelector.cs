@@ -65,6 +65,7 @@ namespace Machinarium.Qnil
             System.Diagnostics.Debug.WriteLine(prefix + " ADD");
 
             var newItem = selectFunc(srcItem);
+            innerList.Add(newItem);
             OnUpdated(new ListUpdateArgs<TResult>(this, DLinqAction.Insert, innerList.Count - 1, newItem));
         }
 

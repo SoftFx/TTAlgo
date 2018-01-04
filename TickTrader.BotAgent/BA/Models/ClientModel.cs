@@ -44,11 +44,12 @@ namespace TickTrader.BotAgent.BA.Models
         private int _startedBotsCount;
         private bool _shutdownRequested;
 
-        public ClientModel(string address, string username, string password)
+        public ClientModel(string address, string username, string password, bool useNewProtocol)
         {
             Address = address;
             Username = username;
             Password = password;
+            UseNewProtocol = useNewProtocol;
         }
 
         public void Init(object syncObj, ILoggerFactory loggerFactory, PackageStorage packageProvider)
@@ -163,6 +164,8 @@ namespace TickTrader.BotAgent.BA.Models
         public string Username { get; private set; }
         [DataMember(Name = "password")]
         public string Password { get; private set; }
+        [DataMember(Name = "useNewProtocol")]
+        public bool UseNewProtocol { get; private set; }
 
         public Task<ConnectionInfo> GetInfo()
         {
@@ -182,6 +185,12 @@ namespace TickTrader.BotAgent.BA.Models
                         , _requestCancellation.Token));
                 }
             }
+        }
+
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext context)
+        {
+            UseNewProtocol = true;
         }
 
         #region Connection Management
@@ -363,7 +372,7 @@ namespace TickTrader.BotAgent.BA.Models
             ChangeState(ConnectionStates.Connecting);
             _connectCancellation = new CancellationTokenSource();
 
-            _lastErrorCode = (await Connection.Connect(Username, Password, Address, false, _connectCancellation.Token)).Code;
+            _lastErrorCode = (await Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token)).Code;
             _currentErrorCode = _lastErrorCode;
 
             if (_lastErrorCode == ConnectionErrorCodes.None)
@@ -418,6 +427,20 @@ namespace TickTrader.BotAgent.BA.Models
             lock (_sync)
             {
                 Password = password;
+                CancelRequests();
+                if (ConnectionState != ConnectionStates.Offline && ConnectionState != ConnectionStates.Disconnecting)
+                    _stopRequested = true;
+                _connectCancellation?.Cancel();
+                Changed?.Invoke(this);
+                ManageConnection();
+            }
+        }
+
+        public void ChangeProtocol()
+        {
+            lock (_sync)
+            {
+                UseNewProtocol = !UseNewProtocol;
                 CancelRequests();
                 if (ConnectionState != ConnectionStates.Offline && ConnectionState != ConnectionStates.Disconnecting)
                     _stopRequested = true;

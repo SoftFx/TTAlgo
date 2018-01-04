@@ -90,7 +90,6 @@
     <Compile Include="Qnil\SetToListOperator.cs" />
     <Compile Include="Qnil\SetTransformOperator.cs" />
     <Compile Include="Qnil\SetUnionOperator.cs" />
-    <Compile Include="Qnil\UnitTests.cs" />
     <Compile Include="State\StateDescriptor.cs" />
     <Compile Include="State\StateMachine.cs" />
     <Compile Include="State\StateMachineSync.cs" />

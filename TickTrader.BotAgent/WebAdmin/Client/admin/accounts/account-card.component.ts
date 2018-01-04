@@ -13,6 +13,7 @@ export class AccountCardComponent {
     public ChangePasswordEnabled: boolean;
     public TestAccountEnabled: boolean;
     public ConfirmDeletionEnabled: boolean;
+    public ChangeProtocolEnabled: boolean;
 
     constructor(private _api: ApiService, private _toastr: ToastrService) { }
 
@@ -32,6 +33,10 @@ export class AccountCardComponent {
         this.ConfirmDeletionEnabled = true;
     }
 
+    public InitChangeProtocol() {
+        this.ChangeProtocolEnabled = true;
+    }
+
     public DeletionCanceled() {
         this.ConfirmDeletionEnabled = false;
     }
@@ -42,6 +47,10 @@ export class AccountCardComponent {
 
     public PasswordChangedOrCnaceled() {
         this.ChangePasswordEnabled = false;
+    }
+
+    public ProtocolChangedOrCnaceled() {
+        this.ChangeProtocolEnabled = false;
     }
 
     public TestCanceled() {

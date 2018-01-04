@@ -25,7 +25,8 @@ export class AccountAddComponent implements OnInit {
         this.AccountForm = this._fBuilder.group({
             Login: ["", Validators.required],
             Password: ["", Validators.required],
-            Server: ["", Validators.required]
+            Server: ["", Validators.required],
+            UseNewProtocol: true
         });
     }
 

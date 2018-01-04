@@ -159,7 +159,7 @@ namespace TickTrader.BotAgent
                         var newLogin = CommandUi.InputString("login");
                         var newPassword = CommandUi.InputString("password");
                         var newServer = CommandUi.InputString("server");
-                        server.AddAccount(new AccountKey(newLogin, newServer), newPassword);
+                        server.AddAccount(new AccountKey(newLogin, newServer), newPassword, false);
                         break;
 
                     case "remove":
