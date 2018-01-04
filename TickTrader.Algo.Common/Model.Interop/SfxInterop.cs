@@ -315,8 +315,6 @@ namespace TickTrader.Algo.Common.Model
                         if (count <= 0)
                             break;
 
-                        //await Task.Factory.StartNew(() => { });
-
                         var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
                         await buffer.WriteAsync(tickArray).ConfigureAwait(false);
                     }
