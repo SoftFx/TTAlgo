@@ -55,7 +55,7 @@ export class AccountAddComponent implements OnInit {
     }
 
     public Reset() {
-        this.AccountForm.reset();
+        this.AccountForm.reset({ UseNewProtocol: true });
     }
 
     public Cancel() {

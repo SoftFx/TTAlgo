@@ -88,7 +88,14 @@ namespace TickTrader.BotAgent.BA.Models
                 testTask = acc.TestConnection();
             }
 
-            return testTask.Result;
+            var testResult = testTask.Result;
+
+            if (!acc.ShutdownAsync().Wait(5000))
+            {
+                _logger.LogError($"Can't stop test connection to {server} - {login} via {(useNewProtocol ? "SFX" : "FIX")}");
+            }
+
+            return testResult;
         }
 
         public ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info)
@@ -140,15 +147,28 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void RemoveAccount(AccountKey accountId)
         {
+            ClientModel acc;
             lock (SyncObj)
             {
-                var acc = FindAccount(accountId);
+                acc = FindAccount(accountId);
                 if (acc != null)
                 {
                     if (acc.HasRunningBots)
                         throw new AccountLockedException("Account cannot be removed! Stop all bots and try again.");
 
                     acc.RemoveAllBots();
+                }
+            }
+
+            if (!acc.ShutdownAsync().Wait(5000))
+            {
+                throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username} via {(acc.UseNewProtocol ? "SFX" : "FIX")}");
+            }
+
+            lock (SyncObj)
+            {
+                if (acc != null)
+                {
                     _accounts.Remove(acc);
                     DisposeAccount(acc);
 
