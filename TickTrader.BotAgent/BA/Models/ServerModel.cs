@@ -29,7 +29,7 @@ namespace TickTrader.BotAgent.BA.Models
         private ILogger<ServerModel> _logger;
         private ILoggerFactory _loggerFactory;
         private Dictionary<string, TradeBotModel> _allBots;
-        private BotIdHelper botIdHelper;
+        private BotIdHelper _botIdHelper;
 
         private ServerModel(ILoggerFactory loggerFactory)
         {
@@ -48,7 +48,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void Init(ILoggerFactory loggerFactory)
         {
             SyncObj = new object();
-            botIdHelper = new BotIdHelper();
+            _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _logger = loggerFactory.CreateLogger<ServerModel>();
             _loggerFactory = loggerFactory;
@@ -66,9 +66,9 @@ namespace TickTrader.BotAgent.BA.Models
 
         public event Action<IAccount, ChangeAction> AccountChanged;
 
-        public ConnectionErrorCodes TestAccount(AccountKey accountId)
+        public ConnectionErrorInfo TestAccount(AccountKey accountId)
         {
-            Task<ConnectionErrorCodes> testTask;
+            Task<ConnectionErrorInfo> testTask;
 
             lock (SyncObj)
                 testTask = GetAccountOrThrow(accountId).TestConnection();
@@ -76,9 +76,9 @@ namespace TickTrader.BotAgent.BA.Models
             return testTask.Result;
         }
 
-        public ConnectionErrorCodes TestCreds(string login, string password, string server, bool useNewProtocol)
+        public ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol)
         {
-            Task<ConnectionErrorCodes> testTask;
+            Task<ConnectionErrorInfo> testTask;
 
             var acc = new ClientModel(server, login, password, useNewProtocol);
             acc.Init(SyncObj, _loggerFactory, _packageStorage);
@@ -261,8 +261,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void OnBotValidation(TradeBotModel bot)
         {
-            if (!botIdHelper.Validate(bot.Id))
-                throw new InvalidBotException($"The instance Id must be no more than {botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
+            if (!_botIdHelper.Validate(bot.Id))
+                throw new InvalidBotException($"The instance Id must be no more than {_botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
             if (_allBots.ContainsKey(bot.Id))
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
@@ -301,7 +301,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 while (true)
                 {
-                    var botId = botIdHelper.BuildId(botDescriptorName, seed.ToString());
+                    var botId = _botIdHelper.BuildId(botDescriptorName, seed.ToString());
                     if (!_allBots.ContainsKey(botId))
                         return botId;
 
