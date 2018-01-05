@@ -53,14 +53,14 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", options.EnableLogs, 5060, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
-            _feedProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
-            _tradeProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _feedProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
+            _tradeProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeProxy.OrderUpdateEvent += (c, rep) => ExecutionReport?.Invoke(ConvertToEr(rep));
             _tradeProxy.PositionUpdateEvent += (c, rep) => PositionReport?.Invoke(Convert(rep));
             _tradeProxy.BalanceUpdateEvent += (c, rep) => BalanceOperation?.Invoke(Convert(rep));
-            _tradeHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _tradeHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
-            _feedHistoryProxy.DisconnectEvent += (c, s, m) => OnDisconnect(m);
+            _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
         }
 
         public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
@@ -215,7 +215,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-#region IFeedServerApi
+        #region IFeedServerApi
 
         public event Action<QuoteEntity> Tick;
 
@@ -242,15 +242,15 @@ namespace TickTrader.Algo.Common.Model
             return array.Select(Convert).ToArray();
         }
 
-        public IAsyncEnumerator<BarEntity[]> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
-            var buffer = new AsyncBuffer<BarEntity[]>();
+            var buffer = new BarSliceBuffer(from, to);
             var eTask = _feedHistoryProxy.DownloadBarsAsync(Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to);
             DownloadBarsToBuffer(buffer, eTask);
             return buffer;
         }
 
-        private async void DownloadBarsToBuffer(AsyncBuffer<BarEntity[]> buffer, Task<BarEnumerator> enumTask)
+        private async void DownloadBarsToBuffer(SliceBuffer<BarEntity> buffer, Task<BarEnumerator> enumTask)
         {
             const int pageSize = 2000;
 
@@ -258,26 +258,20 @@ namespace TickTrader.Algo.Common.Model
             {
                 using (var e = await enumTask)
                 {
-                    var page = new List<BarEntity>();
+                    var page = new SFX.Bar[pageSize];
 
                     while (true)
                     {
-                        var bar = await e.NextAsync();
-                        if (bar == null)
+                        var count = await e.NextAsync(page).ConfigureAwait(false);
+                        if (count <= 0)
                             break;
 
-                        page.Add(Convert(bar));
-                        if (page.Count >= pageSize)
-                        {
-                            await buffer.WriteAsync(page.ToArray());
-                            page.Clear();
-                        }
+                        var barArray = page.Take(count).Select(Convert).ToArray();
+                        await buffer.WriteAsync(barArray).ConfigureAwait(false);
                     }
-
-                    if (page.Count > 0)
-                        await buffer.WriteAsync(page.ToArray());
                 }
 
+                await buffer.CompleteWriteAsync();
                 buffer.Dispose();
             }
             catch (Exception ex)
@@ -294,9 +288,45 @@ namespace TickTrader.Algo.Common.Model
             return bars.Select(Convert).ToArray();
         }
 
-        public IAsyncEnumerator<QuoteEntity[]> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        public IAsyncEnumerator<Slice<QuoteEntity>> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            var buffer = new QuoteSliceBuffer(from, to);
+            var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
+            var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
+            DownloadQuotesToBuffer(buffer, eTask);
+            return buffer;
+        }
+
+        private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
+        {
+            const int pageSize = 2000;
+
+            DateTime lastTickTime = DateTime.MinValue;
+
+            try
+            {
+                using (var e = await enumTask)
+                {
+                    var page = new SFX.Quote[pageSize];
+
+                    while (true)
+                    {
+                        var count = await e.NextAsync(page).ConfigureAwait(false);
+                        if (count <= 0)
+                            break;
+
+                        var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
+                        await buffer.WriteAsync(tickArray).ConfigureAwait(false);
+                    }
+                }
+
+                await buffer.CompleteWriteAsync();
+                buffer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                buffer.SetFailed(ex);
+            }
         }
 
         public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
@@ -313,9 +343,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-#endregion
+        #endregion
 
-#region ITradeServerApi
+        #region ITradeServerApi
 
         public event Action<PositionEntity> PositionReport;
         public event Action<ExecutionReport> ExecutionReport;
@@ -361,7 +391,6 @@ namespace TickTrader.Algo.Common.Model
                     while (true)
                     {
                         var pageCount = await e.NextAsync(page);
-                        await Task.Factory.StartNew(()=> { });
                         if (pageCount == 0)
                             break;
                         var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
@@ -457,9 +486,9 @@ namespace TickTrader.Algo.Common.Model
                 return OrderTimeInForce.GoodTillDate;
         }
 
-#endregion
+        #endregion
 
-#region Convertors
+        #region Convertors
 
         private static SymbolEntity Convert(SymbolInfo info)
         {
@@ -836,6 +865,22 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
+        public static QuoteEntity[] ConvertAndFilter(IEnumerable<SFX.Quote> src, ref DateTime timeEdge)
+        {
+            var list = new List<QuoteEntity>();
+
+            foreach (var item in src)
+            {
+                if (item.CreatingTime > timeEdge)
+                {
+                    list.Add(Convert(item));
+                    timeEdge = item.CreatingTime;
+                }
+            }
+
+            return list.ToArray();
+        }
+
         private static QuoteEntity Convert(SFX.Quote fdkTick)
         {
             return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
@@ -1026,6 +1071,6 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
-#endregion
+        #endregion
     }
 }

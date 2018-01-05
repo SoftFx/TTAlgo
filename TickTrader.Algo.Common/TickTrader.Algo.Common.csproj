@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\HistoryFilesPackage.cs" />
+    <Compile Include="Entitites\Slice.cs" />
     <Compile Include="Fdk.Serializers\BarFormatter.cs" />
     <Compile Include="Fdk.Serializers\ByteArrayBuilder.cs" />
     <Compile Include="Fdk.Serializers\Crc32HashExtension.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
     <Compile Include="Model.Interop\FdkInterop.cs" />
+    <Compile Include="Model.Interop\SliceBuffer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
     <Compile Include="Model.Interop\SfxInterop.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />

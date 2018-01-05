@@ -89,6 +89,13 @@ namespace TickTrader.SeriesStorage
         byte[] ReadByteArray(int size);
     }
 
+    public interface ISlice<T>
+    {
+        T From { get; }
+        T To { get; }
+        bool IsMissing { get; }
+    }
+
     public class KeyRange<TKey> : IComparable
         where TKey : IComparable
     {

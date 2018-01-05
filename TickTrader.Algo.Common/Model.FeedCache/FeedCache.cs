@@ -195,7 +195,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-
         public void Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
         {
             Put(new FeedCacheKey(symbol, frame, priceType), from, to, values);
@@ -218,6 +217,11 @@ namespace TickTrader.Algo.Common.Model
                 CheckState();
                 yield return entry;
             }
+        }
+
+        public void Put(FeedCacheKey key, DateTime from, DateTime to, QuoteEntity[] values)
+        {
+            Put(key.Symbol, key.Frame, from, to, values);
         }
 
         public void Put(string symbol, Api.TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)

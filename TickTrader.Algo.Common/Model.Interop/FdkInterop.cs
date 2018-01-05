@@ -302,9 +302,9 @@ namespace TickTrader.Algo.Common.Model
             return Task.FromResult(new QuoteEntity[0]);
         }
 
-        public IAsyncEnumerator<BarEntity[]> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
-            var buffer = new AsyncBuffer<BarEntity[]>();
+            var buffer = new BarSliceBuffer(from, to);
             var fdkPriceType = FdkConvertor.Convert(priceType);
             var fdkBarPeriod = FdkConvertor.ToBarPeriod(barPeriod);
 
@@ -318,6 +318,7 @@ namespace TickTrader.Algo.Common.Model
                         if (!buffer.Write(page))
                             break;
                     }
+                    buffer.CompleteWrite();
                     buffer.Dispose();
                 }
                 catch (Exception ex)
@@ -344,7 +345,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public IAsyncEnumerator<QuoteEntity[]> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        public IAsyncEnumerator<Slice<QuoteEntity>> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
             throw new NotImplementedException();
         }

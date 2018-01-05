@@ -67,6 +67,9 @@ namespace TickTrader.Algo.Common.Model
             var tradeRecords = cache.TradeRecords.Snapshot.Values;
             var positions = cache.Positions.Snapshot.Values;
 
+            System.Diagnostics.Debug.WriteLine(string.Format("Init() symbols:{0} orders:{1} positions:{2}",
+                cache.Symbols.Snapshot.Count, cache.TradeRecords.Snapshot.Count, cache.Positions.Snapshot.Count));
+
             UpdateData(accInfo, currencies.Snapshot, _client.Symbols, tradeRecords, positions, accInfo.Assets);
 
             if (_isCalcEnabled)
