@@ -36,6 +36,7 @@ export class AccountAddComponent implements OnInit {
         this.AddRequest = new ObservableRequest<AccountModel>(this._api.AddAccount(accountClone))
             .Subscribe(ok => {
                 this.Reset();
+                accountClone.Password = ""; // reset password for local clone
                 this.OnAdded.emit(accountClone);
             },
             err => {
