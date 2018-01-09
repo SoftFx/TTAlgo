@@ -285,5 +285,35 @@ namespace TickTrader.Algo.Api
         #endregion
 
         #endregion
+
+        #region Timer
+
+        public Timer CreateTimer(int periodMs, Action<Timer> callback)
+        {
+            return CreateTimer(TimeSpan.FromMilliseconds(periodMs), callback);
+        }
+
+        public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
+        {
+            return context.TimerApi.CreateTimer(period, callback);
+        }
+
+        public Task Delay(int periodMs)
+        {
+            return context.TimerApi.Delay(TimeSpan.FromMilliseconds(periodMs));
+        }
+
+        public Task Delay(TimeSpan period)
+        {
+            return context.TimerApi.Delay(period);
+        }
+
+        #endregion
+    }
+
+    public interface Timer : IDisposable
+    {
+        void Change(int periodMs);
+        void Change(TimeSpan period);
     }
 }

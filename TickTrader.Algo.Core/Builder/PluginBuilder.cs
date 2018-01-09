@@ -32,8 +32,8 @@ namespace TickTrader.Algo.Core
             Account = new AccountAccessor(this);
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
-
             Diagnostics = Null.Diagnostics;
+            TimerApi = Null.TimerApi;
 
             syncContext.OnAsyncAction = OnPluginThread;
 
@@ -41,6 +41,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginAdapter PluginProxy { get; private set; }
+        internal ITimerApi TimerApi { get; set; }
         public string MainSymbol { get; set; }
         public Tuple<string, BarPriceType> MainBufferId { get; set; }
         public SymbolsCollection Symbols { get; private set; }
@@ -81,7 +82,6 @@ namespace TickTrader.Algo.Core
                 Account.InstanceId = _instanceId;
             }
         }
-
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -263,6 +263,7 @@ namespace TickTrader.Algo.Core
         EnvironmentInfo IPluginContext.Environment => this;
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
+        ITimerApi IPluginContext.TimerApi => TimerApi;
 
         void IPluginContext.OnExit()
         {

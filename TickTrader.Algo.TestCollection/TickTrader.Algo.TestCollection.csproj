@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\FeedQueryBot.cs" />
-    <Compile Include="Bots\LimitModifyLoop.cs" />
+    <Compile Include="Bots\TradeLoadBot.cs" />
     <Compile Include="Bots\LogBot.cs" />
     <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\EnvironmentInfoBot.cs" />

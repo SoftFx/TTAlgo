@@ -7,10 +7,15 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Limit Modify Loop", Version = "1.0", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Trade Load Bot", Version = "1.0", Category = "Test Orders",
         Description = "")]
-    public class LimitModifyLoop : TradeBot
+    public class TradeLoadBot : TradeBot
     {
+        private int modifyCounter;
+
+        [Parameter]
+        public OrderLoadTypes Type { get; set; }
+
         [Parameter(DefaultValue = 10)]
         public double ParallelOrders { get; set; }
 
@@ -23,10 +28,21 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void OnStart()
         {
             for (int i = 0; i < ParallelOrders; i++)
-                KeepOrder(i, OrderSide.Buy, Volume);
+            {
+                if (Type == OrderLoadTypes.Modify)
+                    ModifyLoop(i, OrderSide.Buy, Volume);
+                else if (Type == OrderLoadTypes.OpenCancel)
+                    OpenCancelLoop(i, OrderSide.Buy, Volume);
+            }
+
+            CreateTimer(TimeSpan.FromSeconds(1), t =>
+            {
+                Status.Write("{0} operations per second", modifyCounter);
+                modifyCounter = 0;
+            });
         }
 
-        private async void KeepOrder(int orderTag, OrderSide orderSide, double orderVolume)
+        private async void ModifyLoop(int orderTag, OrderSide orderSide, double orderVolume)
         {
             var strTag = "LimitModifyLoop" + orderTag; 
 
@@ -44,6 +60,31 @@ namespace TickTrader.Algo.TestCollection.Bots
                     var newPrice = GetNewPrice(orderSide);
                     await OpenOrderAsync(Symbol.Name, OrderType.Limit, orderSide, orderVolume, newPrice, null, null, strTag);
                 }
+
+                modifyCounter++;
+            }
+        }
+
+        private async void OpenCancelLoop(int orderTag, OrderSide orderSide, double orderVolume)
+        {
+            var strTag = "LimitModifyLoop" + orderTag;
+
+            while (true)
+            {
+                var existing = Account.Orders.FirstOrDefault(o => o.Comment == strTag && o.Type == OrderType.Limit);
+
+                if (existing != null)
+                {
+                    var newPrice = GetNewPrice(orderSide);
+                    await CancelOrderAsync(existing.Id);
+                }
+                else
+                {
+                    var newPrice = GetNewPrice(orderSide);
+                    await OpenOrderAsync(Symbol.Name, OrderType.Limit, orderSide, orderVolume, newPrice, null, null, strTag);
+                }
+
+                modifyCounter++;
             }
         }
 
@@ -67,4 +108,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             return type == BarPriceType.Ask ? Symbol.Ask : Symbol.Bid;
         }
     }
+
+    public enum OrderLoadTypes { Modify, OpenCancel }
 }

@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Core
         private static readonly Asset asset = new NullAsset();
         private static readonly BarSeries barSeries = new BarSeriesProxy() { Buffer = new EmptyBuffer<Bar>() };
         private static readonly QuoteSeries quoteSeries = new QuoteSeriesProxy() { Buffer = new EmptyBuffer<Quote>() };
+        private static readonly ITimerApi timerApi = new NullTimerApi();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
@@ -42,11 +43,11 @@ namespace TickTrader.Algo.Core
         public static Asset Asset => asset;
         public static BarSeries BarSeries => barSeries;
         public static QuoteSeries QuoteSeries => quoteSeries;
+        internal static ITimerApi TimerApi => timerApi;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
     {
-        
         private IPluginLogger logger;
 
         public PluginLoggerAdapter()
@@ -281,6 +282,19 @@ namespace TickTrader.Algo.Core
 
         public void Unsubscribe(string symbol)
         {
+        }
+    }
+
+    public class NullTimerApi : ITimerApi
+    {
+        public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
+        {
+            throw new NotImplementedException("Timer API is not available!");
+        }
+
+        public Task Delay(TimeSpan period)
+        {
+            throw new NotImplementedException("Timer API is not available!");
         }
     }
 }

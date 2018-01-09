@@ -94,6 +94,7 @@ namespace TickTrader.Algo.Core
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
         void EnqueueTradeEvent(Action<PluginBuilder> action);
+        void EnqueueUserCallback(Action<PluginBuilder> action);
         void ProcessNextOrderUpdate();
         void OnInternalException(Exception ex);
 
