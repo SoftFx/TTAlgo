@@ -78,11 +78,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Indicator.md" />
     <None Include="packages.config" />
     <None Include="TradeBot.cs" />
     <None Include="AssemblyInfo.cs" />
     <None Include="Indicator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="TradeBot.md" />
   </ItemGroup>
   <ItemGroup>
     <VSTemplate Include="Indicator.vstemplate">
