@@ -35,8 +35,8 @@ namespace TickTrader.BotAgent.BA
         void RemoveAccount(AccountKey key);
         void ChangeAccountPassword(AccountKey key, string password);
         void ChangeAccountProtocol(AccountKey key);
-        ConnectionErrorCodes TestAccount(AccountKey accountId);
-        ConnectionErrorCodes TestCreds(string login, string password, string server, bool useNewProtocol);
+        ConnectionErrorInfo TestAccount(AccountKey accountId);
+        ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol);
 
         ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
 
@@ -53,7 +53,7 @@ namespace TickTrader.BotAgent.BA
         IEnumerable<ITradeBot> TradeBots { get; }
         bool UseNewProtocol { get; }
 
-        Task<ConnectionErrorCodes> TestConnection();
+        Task<ConnectionErrorInfo> TestConnection();
         void ChangePassword(string password);
 
         ITradeBot AddBot(TradeBotModelConfig config);

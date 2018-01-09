@@ -24,10 +24,6 @@ namespace TickTrader.Algo.Common.Model
         {
             _client = client;
             _isCalcEnabled = options.HasFlag(AccountModelOptions.EnableCalculator);
-
-            _client.BalanceReceived += OnBalanceOperation;
-            _client.ExecutionReportReceived += OnReport;
-            _client.PositionReportReceived += OnReport;
         }
 
         public event System.Action AccountTypeChanged = delegate { };
@@ -77,10 +73,18 @@ namespace TickTrader.Algo.Common.Model
                 Calc = AccountCalculatorModel.Create(this, _client);
                 Calc.Recalculate();
             }
+
+            _client.BalanceReceived += OnBalanceOperation;
+            _client.ExecutionReportReceived += OnReport;
+            _client.PositionReportReceived += OnReport;
         }
 
         public void Deinit()
         {
+            _client.BalanceReceived -= OnBalanceOperation;
+            _client.ExecutionReportReceived -= OnReport;
+            _client.PositionReportReceived -= OnReport;
+
             if (_isCalcEnabled && Calc != null)
             {
                 Calc.Dispose();

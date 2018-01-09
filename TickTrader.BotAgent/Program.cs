@@ -182,7 +182,7 @@ namespace TickTrader.BotAgent
                             accountsList = server.Accounts.ToList();
                         acc = CommandUi.Choose("account", accountsList, GetDisplayName);
                         var result = acc.TestConnection().Result;
-                        if (result == ConnectionErrorCodes.None)
+                        if (result.Code == ConnectionErrorCodes.None)
                             Console.WriteLine("Valid connection.");
                         else
                             Console.WriteLine("Error = " + acc.TestConnection().Result);

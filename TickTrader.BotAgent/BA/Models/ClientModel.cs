@@ -30,8 +30,8 @@ namespace TickTrader.BotAgent.BA.Models
         private CancellationTokenSource _connectCancellation;
         private CancellationTokenSource _requestCancellation;
         private List<Task> _requests;
-        private ConnectionErrorCodes _lastErrorCode;
-        private ConnectionErrorCodes _currentErrorCode;
+        private ConnectionErrorInfo _lastError;
+        private ConnectionErrorInfo _currentError;
         private ClientCore _core;
         private TaskCompletionSource<object> _disconnectCompletionSource;
 
@@ -141,9 +141,9 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 lock (_sync)
                 {
-                    return !(_currentErrorCode == ConnectionErrorCodes.BlockedAccount
-                   || _currentErrorCode == ConnectionErrorCodes.LoginDeleted
-                   || _currentErrorCode == ConnectionErrorCodes.InvalidCredentials);
+                    return !(_currentError.Code == ConnectionErrorCodes.BlockedAccount
+                   || _currentError.Code == ConnectionErrorCodes.LoginDeleted
+                   || _currentError.Code == ConnectionErrorCodes.InvalidCredentials);
                 }
             }
         }
@@ -178,8 +178,8 @@ namespace TickTrader.BotAgent.BA.Models
                     return AddPendingRequest(
                         new Task<ConnectionInfo>(() =>
                         {
-                            if (_lastErrorCode != ConnectionErrorCodes.None)
-                                throw new CommunicationException("Connection error! Code: " + _lastErrorCode, _lastErrorCode);
+                            if (_lastError.Code != ConnectionErrorCodes.None)
+                                throw new CommunicationException("Connection error! Code: " + _lastError.Code, _lastError.Code);
                             return new ConnectionInfo(this);
                         }
                         , _requestCancellation.Token));
@@ -195,14 +195,14 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Connection Management
 
-        public Task<ConnectionErrorCodes> TestConnection()
+        public Task<ConnectionErrorInfo> TestConnection()
         {
             lock (_sync)
             {
                 if (ConnectionState == ConnectionStates.Online)
-                    return Task.FromResult(ConnectionErrorCodes.None);
+                    return Task.FromResult(ConnectionErrorInfo.Ok);
                 else
-                    return AddPendingRequest(new Task<ConnectionErrorCodes>(() => _lastErrorCode, _requestCancellation.Token));
+                    return AddPendingRequest(new Task<ConnectionErrorInfo>(() => _lastError, _requestCancellation.Token));
             }
         }
 
@@ -366,16 +366,16 @@ namespace TickTrader.BotAgent.BA.Models
             _connectAfterCancellation?.Cancel();
             _connectAfterCancellation = null;
 
-            _currentErrorCode = ConnectionErrorCodes.None;
+            _currentError = ConnectionErrorInfo.Ok;
             _disconnectCompletionSource = new TaskCompletionSource<object>();
 
             ChangeState(ConnectionStates.Connecting);
             _connectCancellation = new CancellationTokenSource();
 
-            _lastErrorCode = (await Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token)).Code;
-            _currentErrorCode = _lastErrorCode;
+            _lastError = await Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
+            _currentError = _lastError;
 
-            if (_lastErrorCode == ConnectionErrorCodes.None)
+            if (_lastError.Code == ConnectionErrorCodes.None)
             {
                 await FeedHistory.Init();
 
@@ -388,7 +388,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             lock (_sync)
             {
-                if (_lastErrorCode == ConnectionErrorCodes.None)
+                if (_lastError.Code == ConnectionErrorCodes.None)
                 {
                     _lostConnection = false;
                     ChangeState(ConnectionStates.Online);
