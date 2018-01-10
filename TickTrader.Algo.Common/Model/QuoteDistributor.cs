@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +17,8 @@ namespace TickTrader.Algo.Common.Model
         private ClientCore _client;
         private List<Subscription> allSymbolSubscriptions = new List<Subscription>();
         private Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
-        private ActionBlock<Task> requestQueue;
+        private ActionBlock<SubscriptionTask> requestQueue;
+        private CancellationTokenSource cancelAllrequests;
 
         public QuoteDistributor(ClientCore client)
         {
@@ -48,37 +48,79 @@ namespace TickTrader.Algo.Common.Model
             groups.Remove(symbol);
         }
 
-        public void Init()
+        public async Task Init()
         {
             foreach (var group in groups.Values)
                 group.CurrentDepth = group.MaxDepth;
 
-            requestQueue = new ActionBlock<Task>(t => t.RunSynchronously());
-            EnqueuBatchSubscription();
+            StartQueue();
+            await DoBatchSubscription();
+            await GetQuoteSnapshot();
         }
 
         public async Task Stop()
         {
-            requestQueue.Complete();
-            await requestQueue.Completion;
+            await StopQueue();
         }
 
-        private void EnqueuBatchSubscription()
+        private async Task GetQuoteSnapshot()
+        {
+            try
+            {
+                foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
+                {
+                    var depth = group.Key;
+                    var symbols = group.Select(s => s.Symbol).ToArray();
+                    EnqueueSubscriptionRequest(depth, symbols);
+
+                    var quotes = await _client.FeedProxy.GetQuoteSnapshot(symbols, depth);
+                    quotes.Foreach(UpdateRate);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to get snapshot! " + ex.Message);
+            }
+        }
+
+        private void StartQueue()
+        {
+            cancelAllrequests = new CancellationTokenSource();
+            var queueOptions = new ExecutionDataflowBlockOptions { CancellationToken = cancelAllrequests.Token };
+
+            requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
+        }
+
+        private async Task StopQueue()
+        {
+            if (requestQueue != null)
+            {
+                cancelAllrequests.Cancel();
+                requestQueue.Complete();
+                await requestQueue.Completion;
+                cancelAllrequests = null;
+                requestQueue = null;
+            }
+        }
+
+        private async Task DoBatchSubscription()
         {
             foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
             {
                 var depth = group.Key;
                 var symbols = group.Select(s => s.Symbol).ToArray();
                 EnqueueSubscriptionRequest(depth, symbols);
+
+                await InvokeSubscribeAsync(new SubscriptionTask(symbols, depth));
             }
         }
 
-        void FeedProxy_Tick(SoftFX.Extended.Events.TickEventArgs e)
+        void FeedProxy_Tick(QuoteEntity e)
         {
-            UpdateRate(e.Tick);
+            UpdateRate(e);
         }
 
-        private void UpdateRate(Quote tick)
+        private void UpdateRate(QuoteEntity tick)
         {
             foreach (var subscription in allSymbolSubscriptions)
                 subscription.OnNewQuote(tick);
@@ -116,19 +158,35 @@ namespace TickTrader.Algo.Common.Model
             return group;
         }
 
-        private Task EnqueueSubscriptionRequest(int depth, params string[] symbols)
+        private void EnqueueSubscriptionRequest(int depth, params string[] symbols)
         {
             if (requestQueue != null) // online
+                requestQueue.Post(new SubscriptionTask(symbols, depth));
+        }
+
+        private async Task InvokeSubscribeAsync(SubscriptionTask task)
+        {
+            try
             {
-                var subscribeTask = new Task(() =>
-                {
-                    _client.FeedProxy.Server.SubscribeToQuotes(symbols, depth);
-                    logger.Debug("Subscribed to " + string.Join(",", symbols));
-                });
-                requestQueue.Post(subscribeTask);
-                return subscribeTask;
+                await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
+                logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
             }
-            return Task.FromResult<object>(this);
+            catch (Exception ex)
+            {
+                logger.Error("Failed to subscribe! " + ex.Message);
+            }
+        }
+
+        private struct SubscriptionTask
+        {
+            public SubscriptionTask(string[] symbols, int depth)
+            {
+                Symbols = symbols;
+                Depth = depth;
+            }
+
+            public string[] Symbols { get; }
+            public int Depth { get; }
         }
 
         private class Subscription : IFeedSubscription
@@ -136,14 +194,14 @@ namespace TickTrader.Algo.Common.Model
             protected QuoteDistributor parent;
             protected Dictionary<string, int> bySymbol = new Dictionary<string, int>();
 
-            public event Action<Quote> NewQuote;
+            public event Action<QuoteEntity> NewQuote;
 
             public Subscription(QuoteDistributor parent)
             {
                 this.parent = parent;
             }
 
-            public virtual void OnNewQuote(Quote newQuote)
+            public virtual void OnNewQuote(QuoteEntity newQuote)
             {
                 try
                 {
@@ -195,14 +253,14 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            protected Quote TruncateQuote(Quote quote)
+            protected QuoteEntity TruncateQuote(QuoteEntity quote)
             {
                 if (bySymbol.TryGetValue(quote.Symbol, out var depth) && depth == 0)
                 {
                     return quote;
                 }
                 depth = depth < 1 ? 1 : depth;
-                return new Quote(quote.Symbol, quote.CreatingTime, quote.Bids.Take(depth).ToArray(), quote.Asks.Take(depth).ToArray());
+                return new QuoteEntity(quote.Symbol, quote.CreatingTime, quote.BidList.Take(depth).ToArray(), quote.AskList.Take(depth).ToArray());
             }
         }
 
@@ -273,6 +331,6 @@ namespace TickTrader.Algo.Common.Model
     {
         void Add(string symbol, int depth = 1);
         void Remove(string symbol);
-        event Action<Quote> NewQuote;
+        event Action<QuoteEntity> NewQuote;
     }
 }

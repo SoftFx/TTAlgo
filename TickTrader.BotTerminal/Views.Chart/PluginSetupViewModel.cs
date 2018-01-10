@@ -31,17 +31,11 @@ namespace TickTrader.BotTerminal
 
         public bool IsEditMode { get { return Mode == PluginSetupMode.Edit; } }
         public bool IsCreationMode { get { return Mode == PluginSetupMode.New; } }
-
         public PluginSetupMode Mode { get; private set; }
-
         public bool IsEnabled { get { return _bot == null ? true : _bot.State == BotModelStates.Stopped; } }
-
         public PluginSetup Setup { get; private set; }
-
         public PluginCatalogItem PluginItem { get; private set; }
-
         public bool CanOk { get { return Setup.IsValid && IsInstanceIdValid && IsEnabled; } }
-
         public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid && Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot;
 
         public string InstanceId
@@ -57,16 +51,11 @@ namespace TickTrader.BotTerminal
         }
 
         public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(PluginItem.Descriptor, InstanceId);
-
         public bool Isolated { get; set; }
-
         public bool RunBot { get; set; }
-
         public PluginPermissions Permissions { get; set; }
 
-
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
-
 
         private PluginSetupViewModel()
         {

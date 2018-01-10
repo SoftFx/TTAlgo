@@ -9,9 +9,9 @@ namespace TickTrader.BotTerminal
 {
     internal class BotStateViewModel : Screen, IWindowModel
     {
-        private ToolWindowsManager _wndManager;
+        private WindowManager _wndManager;
 
-        public BotStateViewModel(TradeBotModel bot, ToolWindowsManager wndManager)
+        public BotStateViewModel(TradeBotModel bot, WindowManager wndManager)
         {
             _wndManager = wndManager;
             this.Bot = bot;
@@ -66,18 +66,12 @@ namespace TickTrader.BotTerminal
         {
             var key = $"BotSettings {Bot.InstanceId}";
 
-            var wnd = _wndManager.GetWindow(key);
-            if (wnd != null)
-            {
-                wnd.Activate();
-            }
-            else
+            _wndManager.OpenOrActivateWindow(key, () =>
             {
                 var pSetup = new PluginSetupViewModel(Bot);
                 pSetup.Closed += PluginSetupViewClosed;
-
-                _wndManager.OpenWindow(key, pSetup);
-            }
+                return pSetup;
+            });
         }
 
         private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)

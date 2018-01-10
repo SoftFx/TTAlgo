@@ -93,19 +93,12 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
         }
 
-        private async Task Print(IAsyncEnumerator<TradeReport> reports)
+        private async Task Print(IAsyncEnumerator<TradeReport> e)
         {
-            while (true)
+            while (await e.Next())
             {
-                var page = await reports.GetNextPage();
-                if (page == null)
-                    return;
-
-                foreach (var item in page)
-                {
-                    Print(item);
-                    count++;
-                }
+                Print(e.Current);
+                count++;
             }
         }
 

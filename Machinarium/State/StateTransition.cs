@@ -12,9 +12,9 @@ namespace Machinarium.State
         [System.Diagnostics.DebuggerHidden]
         public StateTransition(T from, T to, Action action)
         {
-            this.FromState = from;
-            this.ToState = to;
-            this.transitionAction = action;
+            FromState = from;
+            ToState = to;
+            transitionAction = action;
         }
 
         public T FromState { get; private set; }
@@ -31,15 +31,24 @@ namespace Machinarium.State
     internal class StateEventTransition<T> : StateTransition<T>
     {
         private object eventId;
+        private Func<bool> condition;
 
         [System.Diagnostics.DebuggerHidden]
-        public StateEventTransition(T from, T to, object eventId, Action action)
+        public StateEventTransition(T from, T to, object eventId, Func<bool> condition,  Action action)
             : base(from, to, action)
         {
             this.eventId = eventId;
+            this.condition = condition;
         }
 
         public object EventId { get { return eventId; } }
+        public bool IsConditional => condition != null;
+
+        [System.Diagnostics.DebuggerHidden]
+        public bool CheckCondition()
+        {
+            return condition?.Invoke() ?? true;
+        }
     }
 
     internal class StateConditionalTransition<T> : StateTransition<T>

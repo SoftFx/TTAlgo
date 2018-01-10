@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
     {
         private IFixtureContext context;
         private Dictionary<string, Currency> currencies;
-        private AccountEntity _account;
+        private AccountAccessor _account;
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
 
@@ -58,35 +58,20 @@ namespace TickTrader.Algo.Core
             DataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             DataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accType = DataProvider.AccountType;
-
-            builder.Account.Id = DataProvider.Account;
-            builder.Account.Type = accType;
+            var accType = DataProvider.AccountInfo.Type;
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
-
-            if (accType == Api.AccountTypes.Cash)
-            {
-                builder.Account.Balance = double.NaN;
-                builder.Account.BalanceCurrency = "";
-            }
-            else
-            {
-                builder.Account.Balance = (double)DataProvider.Balance;
-                builder.Account.BalanceCurrency = DataProvider.BalanceCurrency;
-                builder.Account.Leverage = DataProvider.Leverage;
-            }
 
             builder.Account.Orders.Clear();
             builder.Account.NetPositions.Clear();
             builder.Account.Assets.Clear();
 
+            builder.Account.Update(DataProvider.AccountInfo, currencies);
+
             foreach (var order in DataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
             foreach (var position in DataProvider.GetPositions())
                 builder.Account.NetPositions.UpdatePosition(position);
-            foreach (var asset in DataProvider.GetAssets())
-                builder.Account.Assets.Update(asset, currencies);
         }
 
         public void Stop()
@@ -116,6 +101,9 @@ namespace TickTrader.Algo.Core
 
         private static OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
         {
+            if (eReport.OrderCopy.Type == OrderType.Market) // workaround for Gross accounts
+                eReport.OrderCopy.Type = OrderType.Position;
+
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
             else if (eReport.Action == OrderEntityAction.Removed)
@@ -153,8 +141,8 @@ namespace TickTrader.Algo.Core
                 var accProxy = context.Builder.Account;
                 var positions = accProxy.NetPositions;
 
-                var oldPos = positions.GetPositionOrNull(report.Symbol);
-                var clone = oldPos?.Clone() ?? PositionEntity.CreateEmpty(report.Symbol);
+                var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
+                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
                 var pos = positions.UpdatePosition(report);
                 var isClosed = report.ExecAction == OrderExecAction.Closed;
 
@@ -242,8 +230,7 @@ namespace TickTrader.Algo.Core
                     // market orders
                     CallListener(eReport);
                     var order = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    var clone = order?.Clone() ?? new OrderAccessor(eReport.OrderCopy);
-                    context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                    context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(order, order)));
                 }
                 else
                 {
@@ -265,6 +252,9 @@ namespace TickTrader.Algo.Core
 
         private void UpdateBalance(PluginBuilder builder, OrderExecReport eReport)
         {
+            if (eReport.ExecAction == OrderExecAction.Rejected)
+                return;
+
             var acc = builder.Account;
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
@@ -294,54 +284,44 @@ namespace TickTrader.Algo.Core
         }
 
         #region TradeCommands impl
-        [Obsolete]
-        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? sl, double? tp, string comment, OrderExecOptions options, string tag)
+
+        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendOpenOrder(cbk, id, symbol, type, side, price, volume, tp, sl, comment, options, tag));
+            return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendOpenOrder(c, r));
         }
 
-        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double? price, double? stopPrice, double volume, double? maxVisibleVolume, double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
+        public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendOpenOrder(cbk, id, symbol, type, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, tag, expiration));
+            return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendCancelOrder(c, r));
         }
 
-        public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId, OrderSide side)
+        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendCancelOrder(cbk, id, orderId, side));
+            return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendModifyOrder(c, r));
         }
 
-        public Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
+        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderRequest request)
         {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendCloseOrder(cbk, id, orderId, closeVolumeLots));
-        }
-
-        public Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
-        {
-            return ExecDoubleOrderTradeRequest(isAysnc, (id, cbk) => _executor.SendCloseOrderBy(cbk, id, orderId, byOrderId));
-        }
-
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double price, double? sl, double? tp, string comment)
-        {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendModifyOrder(cbk, id, orderId, symbol, type, side, price, currentVolume, tp, sl, comment));
-        }
-
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, string symbol, OrderType type, OrderSide side, double currentVolume, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
-        {
-            return ExecTradeRequest(isAysnc, (id, cbk) => _executor.SendModifyOrder(cbk, id, orderId, symbol, type, side, price, stopPrice, currentVolume, maxVisibleVolume, tp, sl, comment, expiration));
+            if (request.ByOrderId != null)
+                return ExecDoubleOrderTradeRequest(isAysnc, request, (r, e, c) => e.SendCloseOrder(c, r));
+            else
+                return ExecTradeRequest(isAysnc, request, (r, e, c) => e.SendCloseOrder(c, r));
         }
 
         #endregion
 
-        private async Task<OrderCmdResult> ExecTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+        private async Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+            Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+            where TRequest : OrderRequest
         {
-            var resultTask = new TaskCompletionSource<OrderCmdResult>();
+            var resultTask = new TaskCompletionSource<TradeResultEntity>();
 
             string operationId = Guid.NewGuid().ToString();
 
             reportListeners.Add(operationId, rep =>
             {
                 reportListeners.Remove(operationId);
-                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, new OrderAccessor(rep.OrderCopy)));
+                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
             });
 
             Action<OrderCmdResultCodes> callbackAction = code =>
@@ -350,9 +330,11 @@ namespace TickTrader.Algo.Core
                     context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
             };
 
+            orderRequest.OperationId = operationId;
+
             using (var callback = new CrossDomainCallback<OrderCmdResultCodes>(callbackAction))
             {
-                executorInvoke(operationId, callback);
+                executorInvoke(orderRequest, _executor, callback);
 
                 if (!isAsync)
                 {
@@ -364,9 +346,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private async Task<OrderCmdResult> ExecDoubleOrderTradeRequest(bool isAsync, Action<string, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+        private async Task<TradeResultEntity> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+            Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
+            where TRequest : OrderRequest
         {
-            var resultTask = new TaskCompletionSource<OrderCmdResult>();
+            var resultTask = new TaskCompletionSource<TradeResultEntity>();
             var resultContainer = new List<OrderEntity>(2);
 
             string operationId = Guid.NewGuid().ToString();
@@ -377,7 +361,7 @@ namespace TickTrader.Algo.Core
                 if (resultContainer.Count == 2)
                 {
                     reportListeners.Remove(operationId);
-                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, new OrderAccessor(rep.OrderCopy)));
+                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
                 }
             });
 
@@ -387,10 +371,11 @@ namespace TickTrader.Algo.Core
                     context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
             };
 
+            orderRequest.OperationId = operationId;
+
             using (var callback = new CrossDomainCallback<OrderCmdResultCodes>(callbackAction))
             {
-
-                executorInvoke(operationId, callback);
+                executorInvoke(orderRequest, _executor, callback);
 
                 if (!isAsync)
                 {
@@ -402,9 +387,9 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)
+        private Task<TradeResultEntity> CreateResult(OrderCmdResultCodes code)
         {
-            return Task.FromResult<OrderCmdResult>(new TradeResultEntity(code));
+            return Task.FromResult<TradeResultEntity>(new TradeResultEntity(code));
         }
 
         private double ConvertVolume(double volumeInLots, Symbol smbMetadata)
@@ -431,7 +416,5 @@ namespace TickTrader.Algo.Core
         {
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
-
-
     }
 }

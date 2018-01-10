@@ -1,6 +1,4 @@
 ﻿using NLog;
-using SoftFX.Extended;
-using SoftFX.Extended.Reports;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,29 +28,30 @@ namespace TickTrader.BotTerminal
             _tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
         }
 
-        public Task<int> DownloadingHistoryAsync(DateTime from, DateTime to, bool skipCancel, CancellationToken token, Action<TransactionReport> reportHandler)
+        public async Task<int> DownloadingHistoryAsync(DateTime from, DateTime to, bool skipCancel, CancellationToken token, Action<TransactionReport> reportHandler)
         {
-            return Task.Run(() =>
+            token.ThrowIfCancellationRequested();
+
+            //var historyStream = _tradeClient.Connection.TradeProxy.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000, skipCancel);\
+
+            var historyStream = _tradeClient.Connection.TradeProxy.GetTradeHistory(from, to, skipCancel);
+
+            while (await historyStream.Next().ConfigureAwait(false))
             {
                 token.ThrowIfCancellationRequested();
 
-                var historyStream = _tradeClient.Connection.TradeProxy.Server.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000, skipCancel);
-
-                while (!historyStream.EndOfStream)
+                foreach (var report in historyStream.Current)
                 {
-                    token.ThrowIfCancellationRequested();
-
-                    var historyItem = TransactionReportFactory.Create(_tradeClient.Account.Type.Value, historyStream.Item, GetSymbolFor(historyStream.Item));
+                    var historyItem = TransactionReportFactory.Create(_tradeClient.Account.Type.Value, report, GetSymbolFor(report));
                     reportHandler(historyItem);
-
-                    historyStream.Next();
                 }
 
-                return 0;
-            }, token);
+            }
+
+            return 0;
         }
 
-        private SymbolModel GetSymbolFor(TradeTransactionReport transaction)
+        private SymbolModel GetSymbolFor(TradeReportEntity transaction)
         {
             SymbolModel symbolModel = null;
             if (!IsBalanceOperation(transaction))
@@ -70,26 +69,26 @@ namespace TickTrader.BotTerminal
             return symbolModel;
         }
 
-        private bool IsBalanceOperation(TradeTransactionReport item)
+        private bool IsBalanceOperation(TradeReportEntity item)
         {
-            return item.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
+            return item.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
         }
 
-        private void TradeTransactionReport(object sender, SoftFX.Extended.Events.TradeTransactionReportEventArgs e)
+        private void TradeTransactionReport(TradeReportEntity report)
         {
-            OnTradeReport(TransactionReportFactory.Create(_tradeClient.Account.Type.Value, e.Report, GetSymbolFor(e.Report)));
+            OnTradeReport(TransactionReportFactory.Create(_tradeClient.Account.Type.Value, report, GetSymbolFor(report)));
         }
     }
 
     static class TransactionReportFactory
     {
-        public static TransactionReport Create(AccountType accountType, TradeTransactionReport tTransaction, SymbolModel symbol = null)
+        public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, SymbolModel symbol = null)
         {
             switch (accountType)
             {
-                case AccountType.Gross: return new GrossTransactionModel(tTransaction, symbol);
-                case AccountType.Net: return new NetTransactionModel(tTransaction, symbol);
-                case AccountType.Cash: return new CashTransactionModel(tTransaction, symbol);
+                case AccountTypes.Gross: return new GrossTransactionModel(tTransaction, symbol);
+                case AccountTypes.Net: return new NetTransactionModel(tTransaction, symbol);
+                case AccountTypes.Cash: return new CashTransactionModel(tTransaction, symbol);
                 default: throw new NotSupportedException(accountType.ToString());
             }
         }

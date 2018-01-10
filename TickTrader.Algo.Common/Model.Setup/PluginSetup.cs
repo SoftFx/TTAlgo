@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         private void Validate()
         {
-            IsValid = Descriptor.Error == null && Parameters.All(p => !p.HasError);
+            IsValid = Descriptor.Error == null && _allProperties.All(p => !p.HasError);
             ValidityChanged();
         }
 

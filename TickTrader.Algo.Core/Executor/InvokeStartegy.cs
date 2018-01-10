@@ -290,29 +290,38 @@ namespace TickTrader.Algo.Core
             }
 
             Task toWait = null;
-            lock (syncObj)
+            var stopInvokedEvent = new TaskCompletionSource<bool>();
+            EnqueueCustomInvoke(b =>
             {
-                ClearQueues();
-                EnqueueTradeUpdate(b =>
+                try
                 {
                     System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
                     b.InvokeOnStop();
-                });
-                execStopFlag = true; //  stop queue
-                toWait = currentTask;
-            }
+                }
+                finally
+                {
+                    lock (syncObj)
+                    {
+                        ClearQueues();
+                        execStopFlag = true; //  stop queue
+                        toWait = currentTask;
+                    }
+                    stopInvokedEvent.TrySetResult(true);
+                }
+            });
 
+            await stopInvokedEvent.Task.ConfigureAwait(false);
 
+            System.Diagnostics.Debug.WriteLine("STRATEGY JOIN!");
             if (toWait != null)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY WAIT!");
                 try
                 {
                     await toWait.ConfigureAwait(false); // wait current invoke to end
                 }
                 catch { } //we logging this case on ProcessLoop
-                System.Diagnostics.Debug.WriteLine("STRATEGY DONE WAIT!");
             }
+            System.Diagnostics.Debug.WriteLine("STRATEGY DONE JOIN!");
 
             lock (syncObj)
             {

@@ -25,7 +25,8 @@ export class AccountAddComponent implements OnInit {
         this.AccountForm = this._fBuilder.group({
             Login: ["", Validators.required],
             Password: ["", Validators.required],
-            Server: ["", Validators.required]
+            Server: ["", Validators.required],
+            UseNewProtocol: true
         });
     }
 
@@ -35,6 +36,7 @@ export class AccountAddComponent implements OnInit {
         this.AddRequest = new ObservableRequest<AccountModel>(this._api.AddAccount(accountClone))
             .Subscribe(ok => {
                 this.Reset();
+                accountClone.Password = ""; // reset password for local clone
                 this.OnAdded.emit(accountClone);
             },
             err => {
@@ -54,7 +56,7 @@ export class AccountAddComponent implements OnInit {
     }
 
     public Reset() {
-        this.AccountForm.reset();
+        this.AccountForm.reset({ UseNewProtocol: true });
     }
 
     public Cancel() {

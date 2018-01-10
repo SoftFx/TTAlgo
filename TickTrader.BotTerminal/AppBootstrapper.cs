@@ -5,6 +5,8 @@ using NLog.Targets;
 using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
@@ -19,9 +21,6 @@ namespace TickTrader.BotTerminal
         {
             LocaleSelector.Instance.ActivateDefault();
 
-#if DEBUG
-            Machinarium.Qnil.UnitTests.Launch();
-#endif
             Initialize();
 
             ConfigureCaliburn();

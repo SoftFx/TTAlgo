@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
     public class OrdersCollection
     {
         private PluginBuilder builder;
-        private OrdersFixture fixture = new OrdersFixture();
+        private OrdersFixture fixture;
 
         internal OrderList OrderListImpl { get { return fixture; } }
         internal bool IsEnabled { get { return true; } }
@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
         internal OrdersCollection(PluginBuilder builder)
         {
             this.builder = builder;
+            fixture = new OrdersFixture(builder.Symbols);
         }
 
         public OrderAccessor Add(OrderEntity entity)
@@ -47,13 +48,13 @@ namespace TickTrader.Algo.Core
             var order = fixture.Remove(entity.Id);
             order?.Update(entity);
             if (order != null)
-                Removed(order);
+                Removed?.Invoke(order);
             return order;
         }
 
         public void Clear()
         {
-            fixture.CLear();
+            fixture.Clear();
         }
 
         public void FireOrderOpened(OrderOpenedEventArgs args)
@@ -98,6 +99,12 @@ namespace TickTrader.Algo.Core
         internal class OrdersFixture : OrderList, IEnumerable<OrderAccessor>
         {
             private ConcurrentDictionary<string, OrderAccessor> orders = new ConcurrentDictionary<string, OrderAccessor>();
+            private SymbolsCollection _symbols;
+
+            internal OrdersFixture(SymbolsCollection symbols)
+            {
+                _symbols = symbols;
+            }
 
             public int Count { get { return orders.Count; } }
 
@@ -114,7 +121,7 @@ namespace TickTrader.Algo.Core
 
             public OrderAccessor Add(OrderEntity entity)
             {
-                var accessor = new OrderAccessor(entity);
+                var accessor = new OrderAccessor(entity, _symbols.GetOrDefault);
                 if (!orders.TryAdd(entity.Id, accessor))
                     throw new ArgumentException("Order #" + entity.Id + " already exist!");
 
@@ -156,7 +163,7 @@ namespace TickTrader.Algo.Core
                 return entity;
             }
 
-            public void CLear()
+            public void Clear()
             {
                 orders.Clear();
             }
@@ -226,8 +233,6 @@ namespace TickTrader.Algo.Core
             {
                 return orders.Values.GetEnumerator();
             }
-        }
-
-       
+        }      
     }
 }

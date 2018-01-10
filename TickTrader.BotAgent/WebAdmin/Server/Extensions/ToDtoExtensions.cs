@@ -9,6 +9,7 @@ using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Core;
 using System.Reflection;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -136,7 +137,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Server = account.Address,
                 Login = account.Username,
-                LastConnectionStatus = ConnectionErrorCodes.None
+                LastConnectionStatus = ConnectionErrorCodes.None,
+                UseNewProtocol = account.UseNewProtocol
             };
         }
 

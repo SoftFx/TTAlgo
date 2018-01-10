@@ -10,12 +10,12 @@ namespace TickTrader.Algo.Core
     {
         private ITradeApi api;
         private SymbolProvider symbols;
-        private AccountEntity account;
+        private AccountAccessor account;
         private PluginLoggerAdapter logger;
         private string _isolationTag;
         private ITradePermissions _permissions;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountEntity account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
+        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
         {
             this.api = api;
             this.symbols = symbols;
@@ -25,302 +25,281 @@ namespace TickTrader.Algo.Core
             this._permissions = tradePermissions;
         }
 
-        [Obsolete]
-        public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
+        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
             double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
-            OrderCmdResult resultEntity;
-            string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
+            var limPrice = type != OrderType.Stop ? price : (double?)null;
+            var stopPrice = type == OrderType.Stop ? price : (double?)null;
 
-            var orderToOpen = new OrderEntity("-1")
-            {
-                Symbol = symbol,
-                Type = type,
-                Side = side,
-                RemainingVolume = new TradeVolume(0, volumeLots),
-                RequestedVolume = new TradeVolume(0, volumeLots),
-                MaxVisibleVolume = new TradeVolume(double.NaN, double.NaN),
-                Price = type != OrderType.Stop ? price : double.NaN,
-                StopPrice = type == OrderType.Stop ? price : double.NaN,
-                StopLoss = sl ?? double.NaN,
-                TakeProfit = tp ?? double.NaN,
-                Comment = comment,
-                UserTag = tag,
-                InstanceId = _isolationTag,
-            };
-
-            var smbMetadata = symbols.List[symbol];
-            if (smbMetadata.IsNull)
-            {
-                resultEntity = new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound, new OrderAccessor(orderToOpen));
-            }
-            else if (!_permissions.TradeAllowed)
-            {
-                resultEntity = new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, new OrderAccessor(orderToOpen));
-            }
-            else if(!ValidateVolume(volumeLots, smbMetadata))
-            {
-                resultEntity = new TradeResultEntity(OrderCmdResultCodes.IncorrectVolume, new OrderAccessor(orderToOpen));
-            }
-            else
-            {
-                volumeLots = RoundVolume(volumeLots, smbMetadata);
-                double volume = ConvertVolume(volumeLots, smbMetadata);
-                price = RoundPrice(price, smbMetadata, side);
-                sl = RoundPrice(sl, smbMetadata, side);
-                tp = RoundPrice(tp, smbMetadata, side);
-                LogOrderOpening(symbol, type, side, volumeLots, price, sl, tp);
-
-
-                resultEntity = await api.OpenOrder(isAysnc, symbol, type, side, price, volume, tp, sl, comment, options, isolationTag);
-
-                if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
-                {
-                    resultEntity = new TradeResultEntity(resultEntity.ResultCode, new OrderAccessor(orderToOpen));
-                }
-            }
-
-            LogOrderOpenResults(resultEntity);
-            return resultEntity;
+            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
         }
-
 
         public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
             double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
-            OrderCmdResult resultEntity;
+            OrderResultEntity resultEntity;
             string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
 
-            var orderToOpen = new OrderEntity("-1")
+            var orderToOpen = new MockOrder(symbol, orderType, side)
             {
-                Symbol = symbol,
-                Type = orderType,
-                Side = side,
-                RemainingVolume = new TradeVolume(0, volumeLots),
-                RequestedVolume = new TradeVolume(0, volumeLots),
-                MaxVisibleVolume = maxVisibleVolumeLots.HasValue ? new TradeVolume(0, maxVisibleVolumeLots.Value) : new TradeVolume(double.NaN, double.NaN),
+                RemainingVolume = volumeLots,
+                RequestedVolume = volumeLots,
+                MaxVisibleVolume = maxVisibleVolumeLots ?? double.NaN,
                 Price = price ?? double.NaN,
                 StopPrice = stopPrice ?? double.NaN,
                 StopLoss = sl ?? double.NaN,
                 TakeProfit = tp ?? double.NaN,
                 Comment = comment,
-                UserTag = tag,
+                Tag = tag,
                 InstanceId = _isolationTag,
             };
 
-            var smbMetadata = symbols.List[symbol];
-            if (smbMetadata.IsNull)
+            try
             {
-                resultEntity = new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound, new OrderAccessor(orderToOpen));
-            }
-            else if (!_permissions.TradeAllowed)
-            {
-                resultEntity = new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed, new OrderAccessor(orderToOpen));
-            }
-            else if (!ValidateVolume(volumeLots, smbMetadata))
-            {
-                resultEntity = new TradeResultEntity(OrderCmdResultCodes.IncorrectVolume, new OrderAccessor(orderToOpen));
-            }
-            else
-            {
+                var smbMetadata = GetSymbolOrThrow(symbol);
+                ValidateTradePersmission();
+                ValidateTradeEnabled(smbMetadata);
+
                 volumeLots = RoundVolume(volumeLots, smbMetadata);
                 double volume = ConvertVolume(volumeLots, smbMetadata);
-                double? maxVisibleVolume = maxVisibleVolumeLots.HasValue ? ConvertVolume(maxVisibleVolumeLots.Value, smbMetadata) : maxVisibleVolumeLots;
+                double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
                 price = RoundPrice(price, smbMetadata, side);
                 stopPrice = RoundPrice(stopPrice, smbMetadata, side);
                 sl = RoundPrice(sl, smbMetadata, side);
                 tp = RoundPrice(tp, smbMetadata, side);
+
+                if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
+                    ValidatePrice(price);
+
+                if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                    ValidateStopPrice(stopPrice);
+
+                ValidateVolume(volume);
+                ValidateTp(tp);
+                ValidateSl(sl);
+
                 LogOrderOpening(symbol, orderType, side, volumeLots, (stopPrice ?? price) ?? double.NaN, sl, tp);
 
-
-                resultEntity = await api.OpenOrder(isAysnc, symbol, orderType, side, price, stopPrice, volume, maxVisibleVolume, tp, sl, comment, options, isolationTag, expiration);
-
-                if (resultEntity.ResultCode != OrderCmdResultCodes.Ok)
+                var request = new OpenOrderRequest
                 {
-                    resultEntity = new TradeResultEntity(resultEntity.ResultCode, new OrderAccessor(orderToOpen));
-                }
+                    Symbol = symbol,
+                    Type = orderType,
+                    Side = side,
+                    Price = price,
+                    StopPrice = stopPrice,
+                    Volume = volume,
+                    MaxVisibleVolume = maxVisibleVolume,
+                    TakeProfit = tp,
+                    StopLoss = sl,
+                    Comment = comment,
+                    Options = options,
+                    Tag = isolationTag,
+                    Expiration = expiration
+                };
+
+                var orderResp = await api.OpenOrder(isAysnc, request);
+
+                if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen);
+                else
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata));
+            }
+            catch (OrderValidationError ex)
+            {
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen);
             }
 
             LogOrderOpenResults(resultEntity);
             return resultEntity;
         }
 
-
         public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {
-            if (!_permissions.TradeAllowed)
+            Order orderToCancel = null;
+
+            try
             {
-                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
-                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
+                ValidateTradePersmission();
+                orderToCancel = GetOrderOrThrow(orderId);
+
+                logger.PrintTrade("Canceling order #" + orderId);
+
+                var request = new CancelOrderRequest { OrderId = orderId, Side = orderToCancel.Side };
+                var result = await api.CancelOrder(isAysnc, request);
+
+                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
+                else
+                    logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
+
+                return new OrderResultEntity(result.ResultCode, orderToCancel);
             }
-
-            var orderToCancel = account.Orders.GetOrderOrNull(orderId);
-            if (orderToCancel == null)
-                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
-
-            logger.PrintTrade("Canceling order #" + orderId);
-
-            var result = await api.CancelOrder(isAysnc, orderId, orderToCancel.Side);
-
-            if (result.ResultCode == OrderCmdResultCodes.Ok)
-                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " canceled");
-            else
-                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
-
-            return new TradeResultEntity(result.ResultCode, orderToCancel);
+            catch (OrderValidationError ex)
+            {
+                logger.PrintTrade("→ FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToCancel);
+            }
         }
 
         public async Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
         {
-            if (!_permissions.TradeAllowed)
+            Order orderToClose = null;
+
+            try
             {
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
-                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
+                ValidateTradePersmission();
+                if (closeVolumeLots != null)
+                    ValidateVolume(closeVolumeLots.Value);
+
+                double? closeVolume = null;
+                orderToClose = GetOrderOrThrow(orderId);
+                var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
+
+                if (closeVolumeLots != null)
+                {
+                    closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
+                    closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
+                }
+
+                logger.PrintTrade("Closing order #" + orderId);
+
+                var request = new CloseOrderRequest { OrderId = orderId, Volume = closeVolume };
+
+                var result = await api.CloseOrder(isAysnc, request);
+
+                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                {
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
+                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
+                }
+                else
+                {
+                    logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                }
             }
-
-            double? closeVolume = null;
-
-            var orderToClose = account.Orders.GetOrderOrNull(orderId);
-            if (orderToClose == null)
-                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
-
-            var smbMetadata = symbols.List[orderToClose.Symbol];
-            if (smbMetadata.IsNull)
-                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
-
-            if (closeVolumeLots != null)
+            catch (OrderValidationError ex)
             {
-                closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
-                closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
-            }
-
-            logger.PrintTrade("Closing order #" + orderId);
-
-            var result = await api.CloseOrder(isAysnc, orderId, closeVolume);
-
-            if (result.ResultCode == OrderCmdResultCodes.Ok)
-            {
-                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed");
-                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
-            }
-            else
-            {
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToClose);
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToClose);
             }
         }
 
         public async Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
         {
-            Order orderToClose = account.Orders.GetOrderOrNull(orderId);
-            if (orderToClose == null)
-                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
+            Order orderToClose = null;
 
-            Order orderByClose = account.Orders.GetOrderOrNull(byOrderId);
-            if (orderByClose == null)
-                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
-
-            var result = await api.CloseOrderBy(isAysnc, orderId, byOrderId);
-
-            if (result.ResultCode == OrderCmdResultCodes.Ok)
+            try
             {
-                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
-                return new TradeResultEntity(result.ResultCode, orderToClose);
+                ValidateTradePersmission();
+
+                orderToClose = GetOrderOrThrow(orderId);
+                Order orderByClose = GetOrderOrThrow(byOrderId);
+                var request = new CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
+
+                var result = await api.CloseOrder(isAysnc, request);
+
+                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                {
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
+                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                }
+                else
+                {
+                    logger.PrintTrade("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                }
             }
-            else
+            catch (OrderValidationError ex)
             {
-                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToClose);
+                logger.PrintTrade("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToClose);
             }
         }
-        [Obsolete]
-        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
+
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            if (!_permissions.TradeAllowed)
-            {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
-                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
-            }
-
-            var orderToModify = account.Orders.GetOrderOrNull(orderId);
-            if (orderToModify == null)
-                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
-
-            var smbMetadata = symbols.List[orderToModify.Symbol];
-            if (smbMetadata.IsNull)
-            {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + OrderCmdResultCodes.SymbolNotFound);
-                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
-            }
-
-            double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
-            price = RoundPrice(price, smbMetadata, orderToModify.Side);
-            sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
-            tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
-
-            logger.PrintTrade("Modifying order #" + orderId);
-
-            var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, sl, tp, comment);
-
-            if (result.ResultCode == OrderCmdResultCodes.Ok)
-            {
-                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
-                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
-            }
-            else
-            {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToModify);
-            }
+            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null);
         }
 
         public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
         {
-            if (!_permissions.TradeAllowed)
+            Order orderToModify = null;
+
+            try
             {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + OrderCmdResultCodes.TradeNotAllowed);
-                return new TradeResultEntity(OrderCmdResultCodes.TradeNotAllowed);
+                ValidateTradePersmission();
+
+                orderToModify = GetOrderOrThrow(orderId);
+                var smbMetadata = GetSymbolOrThrow(orderToModify.Symbol);
+                var orderType = orderToModify.Type;
+
+                ValidateTradeEnabled(smbMetadata);
+
+                //if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
+                //    ValidatePrice(price);
+
+                //if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                //    ValidateStopPrice(stopPrice);
+
+                double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
+                double? orderMaxVisibleVolume = maxVisibleVolume.HasValue ? ConvertVolume(maxVisibleVolume.Value, smbMetadata) : maxVisibleVolume;
+                price = RoundPrice(price, smbMetadata, orderToModify.Side);
+                stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
+                sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
+                tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
+
+                ValidateSl(sl);
+                ValidateTp(tp);
+
+                logger.PrintTrade("Modifying order #" + orderId);
+
+                var request = new ReplaceOrderRequest
+                {
+                    OrderId = orderId,
+                    Symbol = orderToModify.Symbol,
+                    Type = orderToModify.Type,
+                    Side = orderToModify.Side,
+                    CurrentVolume = orderVolume,
+                    Price = price,
+                    StopPrice = stopPrice,
+                    StopLoss = sl,
+                    TrakeProfit = tp,
+                    Comment = comment,
+                    Expiration = expiration,
+                    MaxVisibleVolume = orderMaxVisibleVolume
+                };
+
+                var result = await api.ModifyOrder(isAysnc, request);
+
+                if (result.ResultCode == OrderCmdResultCodes.Ok)
+                {
+                    logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
+                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
+                }
+                else
+                {
+                    logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
+                    return new OrderResultEntity(result.ResultCode, orderToModify);
+                }
             }
-
-            var orderToModify = account.Orders.GetOrderOrNull(orderId);
-            if (orderToModify == null)
-                return new TradeResultEntity(OrderCmdResultCodes.OrderNotFound);
-
-            var smbMetadata = symbols.List[orderToModify.Symbol];
-            if (smbMetadata.IsNull)
+            catch (OrderValidationError ex)
             {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + OrderCmdResultCodes.SymbolNotFound);
-                return new TradeResultEntity(OrderCmdResultCodes.SymbolNotFound);
-            }
-
-            double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
-            double? orderMaxVisibleVolume = maxVisibleVolume.HasValue ? ConvertVolume(maxVisibleVolume.Value, smbMetadata) : maxVisibleVolume;
-            price = RoundPrice(price, smbMetadata, orderToModify.Side);
-            stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
-            sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
-            tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
-
-            logger.PrintTrade("Modifying order #" + orderId);
-
-            var result = await api.ModifyOrder(isAysnc, orderId, orderToModify.Symbol, orderToModify.Type, orderToModify.Side,
-                    orderVolume, price, stopPrice, orderMaxVisibleVolume, sl, tp, comment, expiration);
-
-            if (result.ResultCode == OrderCmdResultCodes.Ok)
-            {
-                logger.PrintTrade("→ SUCCESS: Order #" + orderId + " modified");
-                return new TradeResultEntity(result.ResultCode, result.ResultingOrder);
-            }
-            else
-            {
-                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + result.ResultCode);
-                return new TradeResultEntity(result.ResultCode, orderToModify);
+                logger.PrintTrade("→ FAILED Modifying order #" + orderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToModify);
             }
         }
 
         private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)
         {
-            return Task.FromResult<OrderCmdResult>(new TradeResultEntity(code));
+            return Task.FromResult<OrderCmdResult>(new OrderResultEntity(code));
+        }
+
+        private double? ConvertNullableVolume(double? volumeInLots, Symbol smbMetadata)
+        {
+            if (volumeInLots == null)
+                return null;
+            return ConvertVolume(volumeInLots.Value, smbMetadata);
         }
 
         private double ConvertVolume(double volumeInLots, Symbol smbMetadata)
@@ -355,10 +334,89 @@ namespace TickTrader.Algo.Core
             return new TradeVolume(oldVol.Units - byUnits, oldVol.Lots - byLots);
         }
 
-        private bool ValidateVolume(double volume, Symbol smbMetadata)
+        #region Validation
+
+        private Symbol GetSymbolOrThrow(string symbolName)
         {
-            return volume.Gte(smbMetadata.MinTradeVolume) && volume.Lte(smbMetadata.MaxTradeVolume);
+            var smbMetadata = symbols.List[symbolName];
+            if (smbMetadata.IsNull)
+                throw new OrderValidationError(OrderCmdResultCodes.SymbolNotFound);
+            return smbMetadata;
         }
+
+        private Order GetOrderOrThrow(string orderId)
+        {
+            var order = account.Orders.GetOrderOrNull(orderId);
+            if (order == null)
+                throw new OrderValidationError(OrderCmdResultCodes.OrderNotFound);
+            return order;
+        }
+
+        private void ValidateVolume(double volume)
+        {
+            if (volume <= 0 || double.IsNaN(volume) || double.IsInfinity(volume))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private void ValidateMaxVisibleVolume(double? volume)
+        {
+            if (!volume.HasValue)
+                return;
+
+            if (volume < 0 || double.IsNaN(volume.Value) || double.IsInfinity(volume.Value))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+        }
+
+        private void ValidatePrice(double? price)
+        {
+            if (price == null || price <= 0 || double.IsNaN(price.Value) || double.IsInfinity(price.Value))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+        }
+
+        private void ValidateStopPrice(double? price)
+        {
+            if (price == null || price <= 0 || double.IsNaN(price.Value) || double.IsInfinity(price.Value))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectStopPrice);
+        }
+
+        private void ValidateTp(double? tp)
+        {
+            if (tp == null)
+                return;
+
+            if (tp.Value <= 0 || double.IsNaN(tp.Value) || double.IsInfinity(tp.Value))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectTp);
+        }
+
+        private void ValidateSl(double? sl)
+        {
+            if (sl == null)
+                return;
+
+            if (sl.Value <= 0 || double.IsNaN(sl.Value) || double.IsInfinity(sl.Value))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectSl);
+        }
+
+        private void ValidateOrderId(string orderId)
+        {
+            long parsedId;
+            if (!long.TryParse(orderId, out parsedId))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectOrderId);
+        }
+
+        private void ValidateTradeEnabled(Symbol smbMetadata)
+        {
+            if (!smbMetadata.IsTradeAllowed)
+                throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
+        }
+
+        private void ValidateTradePersmission()
+        {
+            if (!_permissions.TradeAllowed)
+                throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
+        }
+
+        #endregion
 
         #region Logging
 
@@ -370,7 +428,7 @@ namespace TickTrader.Algo.Core
             logger.PrintTrade(logEntry.ToString());
         }
 
-        private void LogOrderOpenResults(OrderCmdResult result)
+        private void LogOrderOpenResults(OrderResultEntity result)
         {
             var order = result.ResultingOrder;
             StringBuilder logEntry = new StringBuilder();
@@ -380,7 +438,7 @@ namespace TickTrader.Algo.Core
                 logEntry.Append("→ SUCCESS: Opened ");
                 if (order != null)
                 {
-                    if (!double.IsNaN(order.LastFillPrice))
+                    if (!double.IsNaN(order.LastFillPrice) && !double.IsNaN(order.LastFillVolume))
                     {
                         logEntry.Append("#").Append(order.Id).Append(" ");
                         AppendOrderParams(logEntry, " ", order.Symbol, order.Type, order.Side,
@@ -437,8 +495,17 @@ namespace TickTrader.Algo.Core
                 logEntry.Append(" at price ").Append(price);
         }
 
-
-
         #endregion
     }
+
+    internal class OrderValidationError : Exception
+    {
+        public OrderValidationError(OrderCmdResultCodes code)
+        {
+            ErrorCode = code;
+        }
+
+        public OrderCmdResultCodes ErrorCode { get; }
+    }
+
 }

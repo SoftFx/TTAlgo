@@ -63,19 +63,27 @@ export enum ConnectionErrorCodes {
     Canceled
 }
 
+export class ConnectionErrorInfo {
+
+    public Code: ConnectionErrorCodes;
+
+    public TextMessage: string;
+}
+
 export class ConnectionTestResult {
 
-    public ConnectionErrorCode: ConnectionErrorCodes;
+    public ErrorInfo: ConnectionErrorInfo;
 
-    constructor(code: ConnectionErrorCodes) {
-        this.ConnectionErrorCode = code;
+    constructor(info: ConnectionErrorInfo) {
+        this.ErrorInfo = info;
     }
 
     public get Message(): string {
-        switch (this.ConnectionErrorCode) {
+        switch (this.ErrorInfo.Code) {
             case ConnectionErrorCodes.Unknown:
+                return this.ErrorInfo.TextMessage === null || this.ErrorInfo.TextMessage === "" ? "Internal server error" : this.ErrorInfo.TextMessage;
             case ConnectionErrorCodes.NetworkError:
-                return "Network Error";
+                return "Network error";
             case ConnectionErrorCodes.Timeout:
                 return "Timeout";
             case ConnectionErrorCodes.BlockedAccount:
@@ -97,7 +105,8 @@ export class ConnectionTestResult {
     }
 
     public get TestPassed(): boolean {
-        switch (this.ConnectionErrorCode) {
+        console.log(this.ErrorInfo);
+        switch (this.ErrorInfo.Code) {
             case ConnectionErrorCodes.Unknown:
             case ConnectionErrorCodes.NetworkError:
             case ConnectionErrorCodes.Timeout:

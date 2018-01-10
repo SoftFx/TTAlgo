@@ -61,6 +61,7 @@
     <Compile Include="Bots\FieldsTest.cs" />
     <Compile Include="Bots\OpenOrder.cs" />
     <Compile Include="Bots\OrderEventsBot.cs" />
+    <Compile Include="Bots\OnStopBot.cs" />
     <Compile Include="Bots\TradeBotCommon.cs" />
     <Compile Include="Bots\CancelAll.cs" />
     <Compile Include="Bots\CloseAll.cs" />

@@ -18,7 +18,6 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
-using SoftFX.Extended;
 using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
@@ -45,13 +44,14 @@ namespace TickTrader.BotTerminal
         private bool isLoading;
         private bool isUpdateRequired;
         private bool isConnected;
+        private bool _isDisposed;
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
         private ChartNavigator navigator;
         private long indicatorNextId = 1;
         private AxisBase timeAxis;
         private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
-        private List<Quote> updateQueue;
+        private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
 
         public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel client)
@@ -68,9 +68,10 @@ namespace TickTrader.BotTerminal
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
 
-            this.isConnected = client.IsConnected;
+            this.isConnected = client.IsConnected.Value;
             client.Connected += Connection_Connected;
-            client.Disconnected += Connection_Disconnected;
+            //client.Disconnected += Connection_Disconnected;
+            client.Deinitializing += Client_Deinitializing;
 
             subscription = symbol.Subscribe();
             subscription.NewQuote += OnRateUpdate;
@@ -78,13 +79,14 @@ namespace TickTrader.BotTerminal
             CurrentAsk = symbol.CurrentAsk;
             CurrentBid = symbol.CurrentBid;
 
-            stateController.AddTransition(States.Idle, () => isUpdateRequired && isConnected, States.LoadingData);
+            stateController.AddTransition(States.Idle, () => isConnected && !_isDisposed, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
             stateController.AddTransition(States.LoadingData, Events.LoadFailed, States.Faulted);
-            stateController.AddTransition(States.Online, () => isUpdateRequired && isConnected, States.Stopping);
-            stateController.AddTransition(States.Faulted, () => isUpdateRequired && isConnected, States.Stopping);
+            stateController.AddTransition(States.Online, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
+            stateController.AddTransition(States.Faulted, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
             //stateController.AddTransition(States.Stopping, () => isUpdateRequired && isConnected, States.LoadingData);
             stateController.AddTransition(States.Stopping, Events.Stopped, States.Idle);
+            stateController.AddTransition(States.Stopping, () => isConnected && !_isDisposed, States.LoadingData);
 
             stateController.OnEnter(States.LoadingData, ()=> Update(CancellationToken.None));
             stateController.OnEnter(States.Online, StartIndicators);
@@ -235,7 +237,7 @@ namespace TickTrader.BotTerminal
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
         protected abstract IndicatorModel CreateIndicator(PluginSetupViewModel setup);
-        protected abstract void ApplyUpdate(Quote update);
+        protected abstract void ApplyUpdate(QuoteEntity update);
 
         protected void Support(SelectableChartTypes chartType)
         {
@@ -250,7 +252,7 @@ namespace TickTrader.BotTerminal
             {
                 isUpdateRequired = false;
                 ClearData();
-                updateQueue = new List<Quote>();
+                updateQueue = new List<QuoteEntity>();
                 await StopEvent.InvokeAsync(this);
                 await LoadData(cToken);
                 ApplyQueue();
@@ -279,15 +281,20 @@ namespace TickTrader.BotTerminal
             Navigator.Extend(count, endDate);
         }
 
-        private void Connection_Disconnected()
-        {
-            stateController.ModifyConditions(() => isConnected = false);
-        }
+        //private void Connection_Disconnected()
+        //{
+        //    stateController.ModifyConditions(() => isConnected = false);
+        //}
 
         private void Connection_Connected()
         {
             stateController.ModifyConditions(() => isConnected = true);
             Connected?.Invoke();
+        }
+
+        private Task Client_Deinitializing(object sender, CancellationToken cancelToken)
+        {
+            return stateController.ModifyConditionsAndWait(() => isConnected = false, States.Idle);
         }
 
         private void AvailableIndicators_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -300,16 +307,30 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange("HasAvailableBotTraders");
         }
 
-        public void Dispose()
+        public async void Dispose()
         {
-            AvailableIndicators.CollectionChanged -= AvailableIndicators_CollectionChanged;
-            AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
-            AvailableIndicators.Dispose();
-            AvailableBotTraders.Dispose();
-            subscription.Dispose();
+            if (!_isDisposed)
+            {
+                try
+                {
+                    await stateController.ModifyConditionsAndWait(() => _isDisposed = true, States.Idle);
+
+                    AvailableIndicators.CollectionChanged -= AvailableIndicators_CollectionChanged;
+                    AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
+                    AvailableIndicators.Dispose();
+                    AvailableBotTraders.Dispose();
+                    subscription.Dispose();
+
+                    logger.Debug("Chart[" + Model.Name + "] disposed!");
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Dispose failed: " + ex.Message);
+                }
+            }
         }
 
-        protected virtual void OnRateUpdate(Quote tick)
+        protected virtual void OnRateUpdate(QuoteEntity tick)
         {
             if (stateController.Current == States.LoadingData)
                 updateQueue.Add(tick);

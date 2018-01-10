@@ -1,148 +1,211 @@
-﻿using Machinarium.State;
-using SoftFX.Extended;
-using SoftFX.Extended.Storage;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Math;
+using TickTrader.SeriesStorage;
+using TickTrader.Server.QuoteHistory.Serialization;
+using TT = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public abstract class FeedHistoryProviderModel
+    public class FeedHistoryProviderModel
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>();
 
-        public static FeedHistoryProviderModel CreateDiskStorage(ConnectionModel connection, string dataFolder, FeedHistoryFolderOptions folderOptions)
+        private const int SliceMaxSize = 8000;
+
+        private ConnectionModel connection;
+        private string _dataFolder;
+        private FeedHistoryFolderOptions _folderOptions;
+        private FeedCache _diskCache = new FeedCache();
+
+        public FeedHistoryProviderModel(ConnectionModel connection, string onlieDataFolder, FeedHistoryFolderOptions folderOptions)
         {
-            return new CachingImpl(connection, dataFolder, folderOptions);
+            _dataFolder = onlieDataFolder;
+            this.connection = connection;
+            _folderOptions = folderOptions;
         }
 
-        public static FeedHistoryProviderModel CreateLightProxy(ConnectionModel connection)
+        private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
         {
-            return new LightProxy(connection);
+            return Init();
         }
 
-        public abstract Task<Quote[]> GetTicks(string symbol, DateTime startTime, DateTime endTime, int depth);
-        public abstract Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, DateTime endTime);
-        public abstract Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, int count);
-        public virtual Task Init() { return Task.FromResult(1); }
-        public virtual Task Deinit() { return Task.FromResult(1); }
-
-        private class CachingImpl : FeedHistoryProviderModel
+        private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
-            private ConnectionModel connection;
-            private DataFeedStorage fdkStorage;
-            private BufferBlock<Task> requestQueue = new BufferBlock<Task>();
-            private ActionBlock<Task> requestProcessor;
-            private IDisposable pipeLink;
-            private string _dataFolder;
-            private FeedHistoryFolderOptions _folderOptions;
+            return Deinit();
+        }
 
-            public CachingImpl(ConnectionModel connection, string dataFolder, FeedHistoryFolderOptions folderOptions)
+        #region Public Interface
+
+        public FeedCache Cache => _diskCache;
+
+        public async Task Init()
+        {
+            var onlineFolder = _dataFolder;
+            if (_folderOptions == FeedHistoryFolderOptions.ServerHierarchy || _folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
+                onlineFolder = Path.Combine(onlineFolder, PathEscaper.Escape(connection.CurrentServer));
+            if (_folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
+                onlineFolder = Path.Combine(onlineFolder, PathEscaper.Escape(connection.CurrentLogin));
+
+            await Task.Factory.StartNew(() => _diskCache.Start(onlineFolder));
+        }
+
+        public async Task Deinit()
+        {
+            try
             {
-                _dataFolder = dataFolder;
-                this.connection = connection;
-                _folderOptions = folderOptions;
-
-                requestProcessor = new ActionBlock<Task>(t => t.RunSynchronously(), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1 });
+                await Task.Factory.StartNew(() => _diskCache.Stop());
             }
-
-            public override async Task Init()
+            catch (Exception ex)
             {
-                var historyFolder = _dataFolder;
-                if (_folderOptions == FeedHistoryFolderOptions.ServerHierarchy || _folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
-                    historyFolder = Path.Combine(historyFolder, PathEscaper.Escape(connection.CurrentServer));
-                if (_folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
-                    historyFolder = Path.Combine(historyFolder, PathEscaper.Escape(connection.CurrentLogin));
-
-                fdkStorage = await Task.Factory.StartNew(
-                    () => new DataFeedStorage(historyFolder, StorageProvider.Ntfs, 3, connection.FeedProxy, false, false));
-                pipeLink = requestQueue.LinkTo(requestProcessor); // start processing
+                logger.Error("Init ERROR " + ex.ToString());
             }
+        }
 
-            public async Task Deinit()
+        public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        {
+            return connection.FeedProxy.GetAvailableRange(symbol, priceType, timeFrame);
+        }
+
+        public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        {
+            return connection.FeedProxy.DownloadBarPage(symbol, startTime, count, priceType, timeFrame);
+        }
+
+        //public IAsyncEnumerator<BarStreamSlice> GetBars(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        //{
+        //    var buffer = new AsyncBuffer<BarStreamSlice>(2);
+        //    EnumerateBarsInternal(buffer, symbol, timeFrame, priceType, from, to);
+        //    return buffer;
+        //}
+
+        public IAsyncEnumerator<SliceInfo> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        {
+            var buffer = new AsyncBuffer<SliceInfo>();
+            GetSeriesData(buffer, symbol, timeFrame, priceType, from, to, GetCacheInfo, DownloadBarsInternal);
+            return buffer;
+        }
+
+        public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        {
+            var buffer = new AsyncBuffer<SliceInfo>();
+            GetSeriesData(buffer, symbol, timeFrame, null, from, to, GetCacheInfo, DownloadTicksInternal);
+            return buffer;
+        }
+
+        #endregion
+
+        private IEnumerable<SliceInfo> GetCacheInfo(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return _diskCache.IterateCacheKeys(key, from, to).Select(s => new SliceInfo(s.From, s.To, 0));
+        }
+
+        private Task<DateTime> DownloadBarsInternal(AsyncBuffer<Slice<BarEntity>> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return DownloadBarsInternal(s => buffer.WriteAsync(s), key, from, to);
+        }
+
+        private Task<DateTime> DownloadBarsInternal(AsyncBuffer<SliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return DownloadBarsInternal(s => buffer.WriteAsync(s), key, from, to);
+        }
+
+        private async Task<DateTime> DownloadBarsInternal(Func<Slice<BarEntity>, Task<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            using (var barEnum = connection.FeedProxy.DownloadBars(key.Symbol, from, to, key.PriceType.Value, key.Frame))
             {
-                try
+                var i = from;
+                while (await barEnum.Next().ConfigureAwait(false))
                 {
-                    pipeLink.Dispose(); // deattach buffer from the processor
+                    var slice = barEnum.Current;
+                    //var sliceTo = bars.Last().CloseTime;
+                    Debug.WriteLine("downloaded slice {0} - {1}", slice.From, slice.To);
+                    //var slice = new BarStreamSlice(i, sliceTo, bars);
+                    Cache.Put(key, slice.From, slice.To, slice.Items);
+                    if (!await outputAction(slice).ConfigureAwait(false))
+                        break;
+                    i = slice.To;
+                }
+                return i;
+            }
+        }
 
-                    await Task.Factory.StartNew(() =>
+        private Task<DateTime> DownloadTicksInternal(AsyncBuffer<Slice<QuoteEntity>> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return DownloadTicksInternal(s => buffer.WriteAsync(s), key, from, to);
+        }
+
+        private Task<DateTime> DownloadTicksInternal(AsyncBuffer<SliceInfo> buffer, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return DownloadTicksInternal(s => buffer.WriteAsync(s), key, from, to);
+        }
+
+        private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteEntity>, Task<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            var level2 = key.Frame == TimeFrames.TicksLevel2;
+
+            using (var barEnum = connection.FeedProxy.DownloadQuotes(key.Symbol, from, to, level2))
+            {
+                var i = from;
+                while (await barEnum.Next().ConfigureAwait(false))
+                {
+                    var slice = barEnum.Current;
+                    Debug.WriteLine("downloaded slice {0} - {1}", slice.From, slice.To);
+                    Cache.Put(key, slice.From, slice.To, slice.Items);
+                    if (!await outputAction(slice).ConfigureAwait(false))
+                        break;
+                    i = slice.To;
+                }
+                return i;
+            }
+        }
+
+        private async void GetSeriesData<TOut>(AsyncBuffer<TOut> buffer,
+            string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to,
+            Func<FeedCacheKey, DateTime, DateTime, IEnumerable<TOut>> cacheProvider,
+            Func<AsyncBuffer<TOut>, FeedCacheKey, DateTime, DateTime, Task<DateTime>> downloadProvider)
+            where TOut : SliceInfo
+        {
+            try
+            {
+                var key = new FeedCacheKey(symbol, timeFrame, priceType);
+                var i = from;
+                foreach (var cacheItem in cacheProvider(key, from, to))
+                {
+                    if (cacheItem.From == i)
                     {
-                        fdkStorage.Bind(null);
-                        fdkStorage.Dispose();
-                    });
+                        var writeFlag = await buffer.WriteAsync(cacheItem);
+                        if (!writeFlag)
+                            return;
+                        i = cacheItem.To;
+                    }
+                    else
+                        i = await downloadProvider(buffer, key, i, cacheItem.From);
                 }
-                catch (Exception ex)
-                {
-                    logger.Error("Init ERROR " + ex.ToString());
-                }
+
+                if (i < to)
+                    i = await downloadProvider(buffer, key, i, to);
+
+                buffer.Dispose();
             }
-
-            public override Task<Quote[]> GetTicks(string symbol, DateTime startTime, DateTime endTime, int depth)
+            catch (Exception ex)
             {
-                return Enqueue(() => fdkStorage.Online.GetQuotes(symbol, startTime, endTime, depth));
-            }
-
-            public override Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, DateTime endTime)
-            {
-                return Enqueue(() => fdkStorage.Online.GetBars(symbol, priceType, period, startTime, endTime));
-            }
-
-            public override Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, int count)
-            {
-                return Enqueue(() => fdkStorage.Online.GetBars(symbol, priceType, period, startTime, count));
-            }
-
-            private Task<TResult> Enqueue<TResult>(Func<TResult> handler)
-            {
-                Task<TResult> task = new Task<TResult>(handler);
-                requestQueue.Post(task);
-                return task;
-            }
-        }
-
-        private class LightProxy : FeedHistoryProviderModel
-        {
-            private ActionBlock<Task> _requestProcessor;
-            private ConnectionModel _connection;
-
-            public LightProxy(ConnectionModel connection)
-            {
-                _connection = connection;
-                _requestProcessor = new ActionBlock<Task>(t => t.RunSynchronously(), new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 10 });
-            }
-
-            public override Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, DateTime endTime)
-            {
-                return Enqueue(()=> _connection.FeedProxy.Server.GetBarsHistory(symbol, priceType, period, startTime, endTime).ToArray());
-            }
-
-            public override Task<Bar[]> GetBars(string symbol, PriceType priceType, BarPeriod period, DateTime startTime, int count)
-            {
-                return Enqueue(() => _connection.FeedProxy.Server.GetHistoryBars(symbol, startTime, count, priceType, period).Bars);
-            }
-
-            public override Task<Quote[]> GetTicks(string symbol, DateTime startTime, DateTime endTime, int depth)
-            {
-                throw new NotImplementedException("This feed provider does not support getting ticks!");
-            }
-
-            private Task<TResult> Enqueue<TResult>(Func<TResult> handler)
-            {
-                Task<TResult> task = new Task<TResult>(handler);
-                _requestProcessor.Post(task);
-                return task;
+                buffer.SetFailed(ex);
             }
         }
     }
 
-   
     public enum FeedHistoryFolderOptions
     {
         NoHierarchy, // places history right into specified folder

@@ -10,12 +10,10 @@ namespace TickTrader.BotTerminal
     {
         public const int Delay = 100;
 
-
         private Logger _logger;
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
         private CancellationToken _token;
-
 
         public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token)
         {
@@ -25,14 +23,12 @@ namespace TickTrader.BotTerminal
             _token = token;
         }
 
-
         protected override void OnInitialize()
         {
             base.OnInitialize();
 
             ApplyProfile();
         }
-
 
         private async void ApplyProfile()
         {

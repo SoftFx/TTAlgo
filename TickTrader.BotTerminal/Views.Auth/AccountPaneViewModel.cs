@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -58,7 +59,7 @@ namespace TickTrader.BotTerminal
         }
 
         public UiLock ConnectionLock { get; private set; }
-        public ConnectionManager.States ConnectionState { get { return cManager.State; } }
+        public ConnectionModel.States ConnectionState { get { return cManager.State; } }
         public AccountAuthEntry DisplayedAccount { get; set; }
         public ObservableCollection<AccountViewModel> Accounts { get { return accounts; } }
         public bool IsDropDownOpen

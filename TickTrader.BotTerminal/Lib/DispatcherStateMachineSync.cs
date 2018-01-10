@@ -11,7 +11,12 @@ namespace TickTrader.BotTerminal.Lib
     {
         public void Synchronized(Action syncAction)
         {
-            Caliburn.Micro.Execute.OnUIThread(syncAction);
+            App.Current.Dispatcher.Invoke(syncAction);
+        }
+
+        public T Synchronized<T>(Func<T> syncAction)
+        {
+            return App.Current.Dispatcher.Invoke(syncAction);
         }
     }
 }

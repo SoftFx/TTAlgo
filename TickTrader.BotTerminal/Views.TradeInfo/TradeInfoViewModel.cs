@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
             var grossPositions = new GrossPositionListViewModel(clientModel.Account, clientModel.Symbols, clientModel.Connection);
             Positions = new PositionListViewModel(netPositions, grossPositions);
             Orders = new OrderListViewModel(clientModel.Account, clientModel.Symbols, clientModel.Connection);
-            Assets = new AssetsViewModel(clientModel.Account, clientModel.Currencies, clientModel.Connection);
+            Assets = new AssetsViewModel(clientModel.Account, clientModel.Currencies.Snapshot, clientModel.Connection);
             AccountStats = new AccountStatsViewModel(clientModel);
         }
 

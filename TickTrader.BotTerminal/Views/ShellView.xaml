@@ -5,6 +5,7 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:dk="http://schemas.xceed.com/wpf/xaml/avalondock"
     xmlns:dkctrl="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+    xmlns:c="clr-namespace:TickTrader.Algo.Common.Model;assembly=TickTrader.Algo.Common"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <Menu x:Key="ShellMenu" x:Shared="False">
@@ -18,7 +19,7 @@
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
                                         SelectedItem="{Binding Source={x:Static l:LocaleSelector.Instance}, Path=SelectedLocale, Mode=TwoWay}"/>-->
-            <l:MenuItemSelector Header="{l:Resx Menu_Theme}"
+            <!--<l:MenuItemSelector Header="{l:Resx Menu_Theme}"
                                         ItemsSource="{Binding Source={x:Static l:ThemeSelector.Instance}, Path=ThemeNames}"
                                         SelectedItem="{l:Setting Theme}">
                 <l:MenuItemSelector.ItemTemplate>
@@ -26,7 +27,7 @@
                         <TextBlock Text="{l:ResxBinding Prefix=Theme_}"/>
                     </DataTemplate>
                 </l:MenuItemSelector.ItemTemplate>
-            </l:MenuItemSelector>
+            </l:MenuItemSelector>-->
             <MenuItem Header="Sounds" IsChecked="{l:Setting EnableSounds}" IsCheckable="True"></MenuItem>
             <MenuItem Header="Notifications" IsChecked="{l:Setting EnableNotifications}" IsCheckable="True"></MenuItem>
             <MenuItem Header="Restart Bots On Startup" IsChecked="{l:Setting RestartBotsOnStartup}" IsCheckable="True"></MenuItem>
@@ -39,11 +40,43 @@
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Tools}">
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
+            <MenuItem Header="Symbol Manager..." cal:Message.Attach="OpenStorageManager"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Help}">
             <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>
         </MenuItem>
     </Menu>
+    
+    <!-- Connection State Indicator (Classsic)-->
+    
+    <ControlTemplate x:Key="ConnectionStateIndicator">
+        <StackPanel Name="statePanel" Orientation="Horizontal">
+            <Ellipse x:Name="statusCircle" Width="9" Height="9" Margin="1 1 4 0" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding CurrentServerName}" />
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Connecting}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Yellow"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Connecting..."/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Online}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Green"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Online"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Disconnecting}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Orange"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Disconnecting..."/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Offline}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Gray"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Offline"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.OfflineRetry}">
+                <Setter TargetName="statusCircle" Property="Fill" Value="Red"/>
+                <Setter TargetName="statePanel" Property="ToolTip" Value="Lost connection! Wating for reconnect..."/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
 
     <!-- Old Template -->
 
@@ -161,16 +194,17 @@
     
     <!-- Classic Template -->
 
-    <Grid x:Key="ShellViewTemplate.Classic" Margin="5,0,5,4">
+    <Grid x:Key="ShellViewTemplate.Classic">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <ContentControl Content="{StaticResource ShellMenu}" />
 
         <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}"
-                           ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" >
+                           ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" Margin="5,0,5,4" >
 
             <dk:DockingManager.LayoutItemContainerStyleSelector>
                 <l:AvalonDockStyleSelector>
@@ -303,6 +337,20 @@
             </dk:LayoutRoot>
         </dk:DockingManager>
 
+        <StatusBar Grid.Row="2" Background="Transparent">
+            <StatusBarItem DockPanel.Dock="Right" Width="100"/>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem DockPanel.Dock="Right">
+                <TextBlock Text="{Binding ProtocolName}"/>
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem DockPanel.Dock="Right">
+                <Control Template="{StaticResource ConnectionStateIndicator}" />
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right"/>
+            <StatusBarItem/>
+        </StatusBar>
+
     </Grid>
 
     <Style x:Key="ShellViewStyle" TargetType="Window">
@@ -325,6 +373,7 @@
         <Setter Property="Icon" Value="{StaticResource MainAppIcon}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="ResizeMode" Value="CanResizeWithGrip"/>
         <Setter Property="Content">
             <Setter.Value>
                 <StaticResource ResourceKey="ShellViewTemplate.Classic"/>

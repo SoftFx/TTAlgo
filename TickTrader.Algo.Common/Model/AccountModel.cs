@@ -1,5 +1,3 @@
-using SoftFX.Extended;
-using SoftFX.Extended.Reports;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +5,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
-using FDK = SoftFX.Extended;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -16,9 +14,9 @@ namespace TickTrader.Algo.Common.Model
         private readonly DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
         private readonly DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
         private readonly DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
-        private AccountType? accType;
+        private AccountTypes? accType;
         private IOrderDependenciesResolver orderResolver;
-        private IDictionary<string, CurrencyInfo> _currencies;
+        private IReadOnlyDictionary<string, CurrencyEntity> _currencies;
         private ClientCore _client;
         private bool _isCalcEnabled;
 
@@ -26,10 +24,6 @@ namespace TickTrader.Algo.Common.Model
         {
             _client = client;
             _isCalcEnabled = options.HasFlag(AccountModelOptions.EnableCalculator);
-
-            _client.BalanceReceived += OnBalanceOperation;
-            _client.ExecutionReportReceived += OnReport;
-            _client.PositionReportReceived += OnReport;
         }
 
         public event System.Action AccountTypeChanged = delegate { };
@@ -37,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
         public IDynamicDictionarySource<string, OrderModel> Orders { get { return orders; } }
         public IDynamicDictionarySource<string, AssetModel> Assets { get { return assets; } }
 
-        public AccountType? Type
+        public AccountTypes? Type
         {
             get { return accType; }
             private set
@@ -50,6 +44,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        public string Id { get; private set; }
         public double Balance { get; private set; }
         public string BalanceCurrency { get; private set; }
         public int BalanceDigits { get; private set; }
@@ -57,36 +52,55 @@ namespace TickTrader.Algo.Common.Model
         public int Leverage { get; private set; }
         public AccountCalculatorModel Calc { get; private set; }
 
+        public event Action<ExecutionReport, OrderModel, OrderExecAction> OrderUpdate;
+
         public void Init()
         {
-            var cache = _client.TradeProxy.Cache;
+            var cache = _client.Cache;
             var currencies = _client.Currencies;
-            var accInfo = cache.AccountInfo;
-            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+            var accInfo = cache.AccountInfo.Value;
+            var balanceCurrencyInfo = currencies.Snapshot.Read(accInfo.BalanceCurrency);
+            var tradeRecords = cache.TradeRecords.Snapshot.Values;
+            var positions = cache.Positions.Snapshot.Values;
 
+            System.Diagnostics.Debug.WriteLine(string.Format("Init() symbols:{0} orders:{1} positions:{2}",
+                cache.Symbols.Snapshot.Count, cache.TradeRecords.Snapshot.Count, cache.Positions.Snapshot.Count));
 
-            UpdateData(accInfo, currencies, _client.Symbols, cache.TradeRecords, cache.Positions, cache.AccountInfo.Assets);
+            UpdateData(accInfo, currencies.Snapshot, _client.Symbols, tradeRecords, positions, accInfo.Assets);
 
             if (_isCalcEnabled)
             {
                 Calc = AccountCalculatorModel.Create(this, _client);
                 Calc.Recalculate();
             }
+
+            _client.BalanceReceived += OnBalanceOperation;
+            _client.ExecutionReportReceived += OnReport;
+            _client.PositionReportReceived += OnReport;
         }
 
         public void Deinit()
         {
-            if (_isCalcEnabled)
+            _client.BalanceReceived -= OnBalanceOperation;
+            _client.ExecutionReportReceived -= OnReport;
+            _client.PositionReportReceived -= OnReport;
+
+            if (_isCalcEnabled && Calc != null)
+            {
                 Calc.Dispose();
+                Calc = null;
+            }
         }
 
-        private void UpdateData(AccountInfo accInfo,
-            IDictionary<string, CurrencyInfo> currencies,
+        private void UpdateData(AccountEntity accInfo,
+            IReadOnlyDictionary<string, CurrencyEntity> currencies,
             IOrderDependenciesResolver orderResolver,
-            IEnumerable<FDK.TradeRecord> orders,
-            IEnumerable<Position> positions,
-            IEnumerable<AssetInfo> assets)
+            IEnumerable<OrderEntity> orders,
+            IEnumerable<PositionEntity> positions,
+            IEnumerable<AssetEntity> assets)
         {
+            Id = accInfo.Id;
+
             _currencies = currencies;
 
             this.positions.Clear();
@@ -95,14 +109,14 @@ namespace TickTrader.Algo.Common.Model
 
             this.orderResolver = orderResolver;
 
-            var balanceCurrencyInfo = currencies.GetOrDefault(accInfo.Currency);
+            var balanceCurrencyInfo = currencies.Read(accInfo.BalanceCurrency);
 
-            Account = accInfo.AccountId;
+            Account = accInfo.Id;
             Type = accInfo.Type;
             Balance = accInfo.Balance;
-            BalanceCurrency = accInfo.Currency;
+            BalanceCurrency = accInfo.BalanceCurrency;
             Leverage = accInfo.Leverage;
-            BalanceDigits = balanceCurrencyInfo?.Precision ?? 2;
+            BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
 
             foreach (var fdkPosition in positions)
                 this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, orderResolver));
@@ -120,36 +134,34 @@ namespace TickTrader.Algo.Common.Model
                 Calc.Recalculate();
         }
 
-        private void OnBalanceOperation(SoftFX.Extended.Events.NotificationEventArgs<BalanceOperation> e)
+        private void OnBalanceOperation(BalanceOperationReport report)
         {
-            if (Type == AccountType.Gross || Type == AccountType.Net)
+            if (Type == AccountTypes.Gross || Type == AccountTypes.Net)
             {
-                Balance = e.Data.Balance;
+                Balance = report.Balance;
                 OnBalanceChanged();
             }
-            else if (Type == AccountType.Cash)
+            else if (Type == AccountTypes.Cash)
             {
-                if (e.Data.Balance > 0)
+                if (report.Balance > 0)
                 {
-                    assets[e.Data.TransactionCurrency] = new AssetModel(e.Data.Balance, e.Data.TransactionCurrency, _currencies);
+                    assets[report.CurrencyCode] = new AssetModel(report.Balance, report.CurrencyCode, _currencies);
                 }
                 else
                 {
-                    if (assets.ContainsKey(e.Data.TransactionCurrency))
+                    if (assets.ContainsKey(report.CurrencyCode))
                     {
-                        assets.Remove(e.Data.TransactionCurrency);
+                        assets.Remove(report.CurrencyCode);
                     }
                 }
             }
 
-            AlgoEvent_BalanceUpdated(new BalanceOperationReport(e.Data.Balance, e.Data.TransactionCurrency, e.Data.TransactionAmount));
+            AlgoEvent_BalanceUpdated(new BalanceOperationReport(report.Balance, report.CurrencyCode, report.Amount));
         }
 
-        protected void OnReport(SoftFX.Extended.Events.PositionReportEventArgs e)
+        protected void OnReport(PositionEntity report)
         {
-            var report = e.Report;
-
-            if (IsEmpty(report))
+            if (report.IsEmpty)
                 OnPositionRemoved(report);
             else if (!positions.ContainsKey(report.Symbol))
                 OnPositionAdded(report);
@@ -157,19 +169,19 @@ namespace TickTrader.Algo.Common.Model
                 OnPositionUpdated(report);
         }
 
-        private void OnPositionUpdated(Position position)
+        private void OnPositionUpdated(PositionEntity position)
         {
             var model = UpsertPosition(position);
             AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Modified));
         }
 
-        private void OnPositionAdded(Position position)
+        private void OnPositionAdded(PositionEntity position)
         {
             var model = UpsertPosition(position);
             AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Opened));
         }
 
-        private void OnPositionRemoved(Position position)
+        private void OnPositionRemoved(PositionEntity position)
         {
             PositionModel model;
 
@@ -180,7 +192,7 @@ namespace TickTrader.Algo.Common.Model
             AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Closed));
         }
 
-        private PositionModel UpsertPosition(Position position)
+        private PositionModel UpsertPosition(PositionEntity position)
         {
             var positionModel = new PositionModel(position, orderResolver);
             positions[position.Symbol] = positionModel;
@@ -188,10 +200,8 @@ namespace TickTrader.Algo.Common.Model
             return positionModel;
         }
 
-        private void OnReport(SoftFX.Extended.Events.ExecutionReportEventArgs e)
+        private void OnReport(ExecutionReport report)
         {
-            var report = e.Report;
-
             switch (report.ExecutionType)
             {
                 case ExecutionType.Calculated:
@@ -223,18 +233,18 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Trade:
-                    if (report.OrderType == TradeRecordType.StopLimit)
+                    if (report.OrderType == OrderType.StopLimit)
                     {
                         OnOrderRemoved(report, OrderExecAction.Activated);
                     }
-                    else if (report.OrderType == TradeRecordType.Limit || report.OrderType == TradeRecordType.Stop)
+                    else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
                         if (report.LeavesVolume != 0)
                             OnOrderUpdated(report, OrderExecAction.Filled);
-                        else if (Type != AccountType.Gross)
+                        else if (Type != AccountTypes.Gross)
                             OnOrderRemoved(report, OrderExecAction.Filled);
                     }
-                    else if (report.OrderType == TradeRecordType.Position)
+                    else if (report.OrderType == OrderType.Position)
                     {
                         if (!double.IsNaN(report.Balance))
                             Balance = report.Balance;
@@ -244,15 +254,17 @@ namespace TickTrader.Algo.Common.Model
                         if (report.OrderStatus == OrderStatus.Filled)
                             OnOrderRemoved(report, OrderExecAction.Closed);
                     }
-                    else if (report.OrderType == TradeRecordType.Market
-                        && (Type == AccountType.Net || Type == AccountType.Cash))
+                    else if (report.OrderType == OrderType.Market)
                     {
-                        OnMarketFilled(report, OrderExecAction.Filled);
+                        if (Type == AccountTypes.Gross)
+                            MockMarkedFilled(report);
+                        else if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
+                            OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
 
-            if (Type == AccountType.Net && report.ExecutionType == ExecutionType.Trade)
+            if (Type == AccountTypes.Net && report.ExecutionType == ExecutionType.Trade)
             {
                 switch (report.OrderStatus)
                 {
@@ -267,7 +279,7 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            if (Type == AccountType.Cash)
+            if (Type == AccountTypes.Cash)
             {
                 foreach (var asset in report.Assets)
                     UpdateAsset(asset);
@@ -285,12 +297,23 @@ namespace TickTrader.Algo.Common.Model
         {
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
+        }
+
+        private void MockMarkedFilled(ExecutionReport report)
+        {
+            var order = new OrderModel(report, orderResolver);
+            order.OrderType = OrderType.Position;
+            order.RemainingAmount = order.Amount;
+            ExecReportToAlgo(OrderExecAction.Opened, OrderEntityAction.Added, report, order);
+            OrderUpdate?.Invoke(report, order, OrderExecAction.Opened);
         }
 
         private void OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = new OrderModel(report, orderResolver);
             ExecReportToAlgo(algoAction, OrderEntityAction.None, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
@@ -298,42 +321,34 @@ namespace TickTrader.Algo.Common.Model
             orders.Remove(report.OrderId);
             var order = new OrderModel(report, orderResolver);
             ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
             var order = UpsertOrder(report);
             ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
+            OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private void OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
         {
             ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
+            OrderUpdate?.Invoke(report, null, algoAction);
         }
 
-        private void UpdateAsset(AssetInfo assetInfo)
+        private void UpdateAsset(AssetEntity assetInfo)
         {
-            if (IsEmpty(assetInfo))
+            if (assetInfo.IsEmpty)
                 assets.Remove(assetInfo.Currency);
             else
                 assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
-        void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
-        {
-            Type = e.Information.Type;
-        }
-
-        private bool IsEmpty(Position position)
-        {
-            return position.BuyAmount == 0
-               && position.SellAmount == 0;
-        }
-
-        private bool IsEmpty(AssetInfo assetInfo)
-        {
-            return assetInfo.Balance == 0;
-        }
+        //void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
+        //{
+        //    Type = e.Information.Type;
+        //}
 
         #region IAccountInfoProvider
 
@@ -351,7 +366,7 @@ namespace TickTrader.Algo.Common.Model
             algoReport.ExecAction = action;
             algoReport.Action = entityAction;
             if (algoReport.ExecAction == OrderExecAction.Rejected)
-                algoReport.ResultCode = FdkToAlgo.Convert(report.RejectReason, report.Text);
+                algoReport.ResultCode = report.RejectReason;
             if (!double.IsNaN(report.Balance))
                 algoReport.NewBalance = report.Balance;
             if (report.Assets != null)
@@ -368,7 +383,21 @@ namespace TickTrader.Algo.Common.Model
             return report.ClientOrderId;
         }
 
-        AccountTypes IAccountInfoProvider.AccountType { get { return FdkToAlgo.Convert(Type.Value); } }
+        public AccountEntity AccountInfo
+        {
+            get
+            {
+                return new AccountEntity
+                {
+                    Id = Id,
+                    Balance = Balance,
+                    BalanceCurrency = BalanceCurrency,
+                    Leverage = Leverage,
+                    Type = Type.Value,
+                    Assets = Assets.Snapshot.Values.Select(a => a.ToAlgoAsset()).ToArray()
+                };
+            }
+        }
 
         void IAccountInfoProvider.SyncInvoke(Action syncAction)
         {
@@ -383,11 +412,6 @@ namespace TickTrader.Algo.Common.Model
         IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions()
         {
             return Positions.Snapshot.Select(pair => pair.Value.ToReport(OrderExecAction.Opened)).ToList();
-        }
-
-        IEnumerable<AssetEntity> IAccountInfoProvider.GetAssets()
-        {
-            return Assets.Snapshot.Select(pair => pair.Value.ToAlgoAsset()).ToList();
         }
 
         event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated

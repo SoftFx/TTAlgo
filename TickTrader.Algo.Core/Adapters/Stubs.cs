@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Core
         void OnExit();
     }
 
-    internal static class Null
+    public static class Null
     {
         private static readonly DiagnosticInfo nullDiagnostics = new NullDiagnosticInfo();
         private static readonly Order order = new NullOrder();
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Core
     internal class NullTradeApi : TradeCommands
     {
         private static Task<OrderCmdResult> rejectResult
-            = Task.FromResult<OrderCmdResult>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, OrderEntity.Null));
+            = Task.FromResult<OrderCmdResult>(new OrderResultEntity(OrderCmdResultCodes.Unsupported, null));
 
         public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
         {

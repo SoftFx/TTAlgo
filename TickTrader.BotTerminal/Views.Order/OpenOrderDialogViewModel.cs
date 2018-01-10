@@ -33,8 +33,8 @@ namespace TickTrader.BotTerminal
             Items.Add(marketOrderPage);
             Items.Add(pendingOrderPage);
 
-            UpdateState(clientModel.Connection.State.Current);
-            clientModel.Connection.State.StateChanged += State_StateChanged;
+            UpdateState(clientModel.Connection.State);
+            clientModel.Connection.StateChanged += State_StateChanged;
 
             if (preselectedSymbol != null)
                 SelectedSymbol = Symbols.FirstOrDefault(s => s.Name == preselectedSymbol);
@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
 
         public void Dispose()
         {
-            clientModel.Connection.State.StateChanged -= State_StateChanged;
+            clientModel.Connection.StateChanged -= State_StateChanged;
             Symbols.Dispose();
         }
 

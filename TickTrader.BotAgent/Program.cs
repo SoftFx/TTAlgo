@@ -21,6 +21,7 @@ using System.Security.Cryptography.X509Certificates;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.Extensions;
 using NLog;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.BotAgent
 {
@@ -158,7 +159,7 @@ namespace TickTrader.BotAgent
                         var newLogin = CommandUi.InputString("login");
                         var newPassword = CommandUi.InputString("password");
                         var newServer = CommandUi.InputString("server");
-                        server.AddAccount(new AccountKey(newLogin, newServer), newPassword);
+                        server.AddAccount(new AccountKey(newLogin, newServer), newPassword, false);
                         break;
 
                     case "remove":
@@ -181,7 +182,7 @@ namespace TickTrader.BotAgent
                             accountsList = server.Accounts.ToList();
                         acc = CommandUi.Choose("account", accountsList, GetDisplayName);
                         var result = acc.TestConnection().Result;
-                        if (result == Algo.Common.Model.ConnectionErrorCodes.None)
+                        if (result.Code == ConnectionErrorCodes.None)
                             Console.WriteLine("Valid connection.");
                         else
                             Console.WriteLine("Error = " + acc.TestConnection().Result);
@@ -193,7 +194,7 @@ namespace TickTrader.BotAgent
                         var accKey = new AccountKey(acc.Username, acc.Address);
                         ConnectionInfo info;
                         var getInfoError = server.GetAccountInfo(accKey, out info);
-                        if (getInfoError == Algo.Common.Model.ConnectionErrorCodes.None)
+                        if (getInfoError == ConnectionErrorCodes.None)
                         {
                             Console.WriteLine();
                             Console.WriteLine("Symbols:");

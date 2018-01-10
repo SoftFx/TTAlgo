@@ -12,6 +12,9 @@ using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.BA.Info;
 using TickTrader.BotAgent.Extensions;
+using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Core;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -27,8 +30,8 @@ namespace TickTrader.BotAgent.BA.Models
         private CancellationTokenSource _connectCancellation;
         private CancellationTokenSource _requestCancellation;
         private List<Task> _requests;
-        private ConnectionErrorCodes _lastErrorCode;
-        private ConnectionErrorCodes _currentErrorCode;
+        private ConnectionErrorInfo _lastError;
+        private ConnectionErrorInfo _currentError;
         private ClientCore _core;
         private TaskCompletionSource<object> _disconnectCompletionSource;
 
@@ -41,11 +44,12 @@ namespace TickTrader.BotAgent.BA.Models
         private int _startedBotsCount;
         private bool _shutdownRequested;
 
-        public ClientModel(string address, string username, string password)
+        public ClientModel(string address, string username, string password, bool useNewProtocol)
         {
             Address = address;
             Username = username;
             Password = password;
+            UseNewProtocol = useNewProtocol;
         }
 
         public void Init(object syncObj, ILoggerFactory loggerFactory, PackageStorage packageProvider)
@@ -86,7 +90,7 @@ namespace TickTrader.BotAgent.BA.Models
             foreach (var bot in toRemove)
                 _bots.Remove(bot);
 
-            Connection = new ConnectionModel(new ConnectionOptions() { EnableFixLogs = false });
+            Connection = new ConnectionModel(new ConnectionOptions() { EnableLogs = false });
             Connection.Disconnected += () =>
             {
                 lock (_sync)
@@ -102,8 +106,8 @@ namespace TickTrader.BotAgent.BA.Models
 
             Account = new AccountModel(_core, AccountModelOptions.None);
             Symbols = (SymbolManager)_core.Symbols;
-            FeedHistory = FeedHistoryProviderModel.CreateLightProxy(Connection);
-            TradeApi = new TradeExecutor(_core);
+            FeedHistory = new FeedHistoryProviderModel(Connection, ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
+            TradeApi = new PluginTradeApiProvider(Connection);
 
             ManageConnection();
         }
@@ -114,9 +118,9 @@ namespace TickTrader.BotAgent.BA.Models
         public IEnumerable<ITradeBot> TradeBots => _bots;
         public AccountModel Account { get; private set; }
         public SymbolManager Symbols { get; private set; }
-        public Dictionary<string, CurrencyInfo> Currencies { get; private set; }
+        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _core.Currencies;
         public FeedHistoryProviderModel FeedHistory { get; private set; }
-        public TradeExecutor TradeApi { get; private set; }
+        public ITradeExecutor TradeApi { get; private set; }
         public bool IsReconnecting
         {
             get
@@ -137,9 +141,9 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 lock (_sync)
                 {
-                    return !(_currentErrorCode == ConnectionErrorCodes.BlockedAccount
-                   || _currentErrorCode == ConnectionErrorCodes.LoginDeleted
-                   || _currentErrorCode == ConnectionErrorCodes.InvalidCredentials);
+                    return !(_currentError.Code == ConnectionErrorCodes.BlockedAccount
+                   || _currentError.Code == ConnectionErrorCodes.LoginDeleted
+                   || _currentError.Code == ConnectionErrorCodes.InvalidCredentials);
                 }
             }
         }
@@ -160,6 +164,8 @@ namespace TickTrader.BotAgent.BA.Models
         public string Username { get; private set; }
         [DataMember(Name = "password")]
         public string Password { get; private set; }
+        [DataMember(Name = "useNewProtocol")]
+        public bool UseNewProtocol { get; private set; }
 
         public Task<ConnectionInfo> GetInfo()
         {
@@ -172,8 +178,8 @@ namespace TickTrader.BotAgent.BA.Models
                     return AddPendingRequest(
                         new Task<ConnectionInfo>(() =>
                         {
-                            if (_lastErrorCode != ConnectionErrorCodes.None)
-                                throw new CommunicationException("Connection error! Code: " + _lastErrorCode, _lastErrorCode);
+                            if (_lastError.Code != ConnectionErrorCodes.None)
+                                throw new CommunicationException("Connection error! Code: " + _lastError.Code, _lastError.Code);
                             return new ConnectionInfo(this);
                         }
                         , _requestCancellation.Token));
@@ -181,18 +187,22 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext context)
+        {
+            UseNewProtocol = true;
+        }
+
         #region Connection Management
 
-
-
-        public Task<ConnectionErrorCodes> TestConnection()
+        public Task<ConnectionErrorInfo> TestConnection()
         {
             lock (_sync)
             {
                 if (ConnectionState == ConnectionStates.Online)
-                    return Task.FromResult(ConnectionErrorCodes.None);
+                    return Task.FromResult(ConnectionErrorInfo.Ok);
                 else
-                    return AddPendingRequest(new Task<ConnectionErrorCodes>(() => _lastErrorCode, _requestCancellation.Token));
+                    return AddPendingRequest(new Task<ConnectionErrorInfo>(() => _lastError, _requestCancellation.Token));
             }
         }
 
@@ -300,7 +310,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             await Symbols.Deinit();
             await FeedHistory.Deinit();
-            await Connection.DisconnectAsync();
+            await Connection.Disconnect();
 
             lock (_sync)
             {
@@ -329,9 +339,9 @@ namespace TickTrader.BotAgent.BA.Models
             else if (IsUsualDisconnect(oldState, newState))
                 _log.LogDebug("{0}: logout from {1}", Username, Address);
             else if (IsFailedConnection(oldState, newState))
-                _log.LogDebug("{0}: connect to {1} failed [{2}]", Username, Address, Connection.LastError);
+                _log.LogDebug("{0}: connect to {1} failed [{2}]", Username, Address, Connection.LastErrorCode);
             else if (IsUnexpectedDisconnect(oldState, newState))
-                _log.LogDebug("{0}: connection to {1} lost [{2}]", Username, Address, Connection.LastError);
+                _log.LogDebug("{0}: connection to {1} lost [{2}]", Username, Address, Connection.LastErrorCode);
         }
 
         private bool IsConnected(ConnectionStates from, ConnectionStates to)
@@ -356,31 +366,29 @@ namespace TickTrader.BotAgent.BA.Models
             _connectAfterCancellation?.Cancel();
             _connectAfterCancellation = null;
 
-            _currentErrorCode = ConnectionErrorCodes.None;
+            _currentError = ConnectionErrorInfo.Ok;
             _disconnectCompletionSource = new TaskCompletionSource<object>();
 
             ChangeState(ConnectionStates.Connecting);
             _connectCancellation = new CancellationTokenSource();
 
-            _lastErrorCode = await Connection.Connect(Username, Password, Address, _connectCancellation.Token);
-            _currentErrorCode = _lastErrorCode;
+            _lastError = await Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
+            _currentError = _lastError;
 
-            if (_lastErrorCode == ConnectionErrorCodes.None)
+            if (_lastError.Code == ConnectionErrorCodes.None)
             {
                 await FeedHistory.Init();
 
-                var fCache = Connection.FeedProxy.Cache;
-                var tCache = Connection.TradeProxy.Cache;
-                var symbols = fCache.Symbols;
-                Currencies = fCache.Currencies.ToDictionary(c => c.Name);
-                _core.Init();
+                var fCache = Connection.FeedProxy;
+                var tCache = Connection.TradeProxy;
+                await _core.Init();
                 await Task.Delay(1500); // ugly fix! Need to wait till quotes snapshot is loaded. Normal solution will be possible after some updates in FDK
                 Account.Init();
             }
 
             lock (_sync)
             {
-                if (_lastErrorCode == ConnectionErrorCodes.None)
+                if (_lastError.Code == ConnectionErrorCodes.None)
                 {
                     _lostConnection = false;
                     ChangeState(ConnectionStates.Online);
@@ -419,6 +427,20 @@ namespace TickTrader.BotAgent.BA.Models
             lock (_sync)
             {
                 Password = password;
+                CancelRequests();
+                if (ConnectionState != ConnectionStates.Offline && ConnectionState != ConnectionStates.Disconnecting)
+                    _stopRequested = true;
+                _connectCancellation?.Cancel();
+                Changed?.Invoke(this);
+                ManageConnection();
+            }
+        }
+
+        public void ChangeProtocol()
+        {
+            lock (_sync)
+            {
+                UseNewProtocol = !UseNewProtocol;
                 CancelRequests();
                 if (ConnectionState != ConnectionStates.Offline && ConnectionState != ConnectionStates.Disconnecting)
                     _stopRequested = true;
@@ -540,8 +562,6 @@ namespace TickTrader.BotAgent.BA.Models
             var toRemove = _bots.Where(b => b.Package == package).ToList();
             toRemove.ForEach(b => _bots.Remove(b));
         }
-
-
 
         #endregion
     }

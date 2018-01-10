@@ -1,5 +1,6 @@
-﻿using Machinarium.State;
-using SoftFX.Extended;
+﻿using Machinarium.ActorModel;
+using Machinarium.State;
+//using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
@@ -16,393 +18,321 @@ namespace TickTrader.Algo.Common.Model
     public class ConnectionModel
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
-        public enum States { Offline, Connecting, WaitingLogon, Initializing, Online, Deinitializing, Disconnecting }
-        public enum Events { Started, DoneConnecting, FailedConnecting, DoneInit, DoneDeinit, DoneDisconnecting, OnLogon, OnLogout, StopRequested }
+        public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
+        public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
 
-        private DataFeed feedProxy;
-        private DataTrade tradeProxy;
-        private StateMachine<States> stateControl;
-        private string address;
-        private string username;
-        private string password;
+        private StateMachine<States> _stateControl;
+        private IStateMachineSync _stateSync;
+        private IServerInterop _interop;
         private CancellationTokenSource connectCancelSrc;
-        private Task startTask;
-        private Task initTask;
-        private bool isFeedLoggedIn;
-        private bool isTradeLoggedIn;
-        private bool isFeedCacheLoaded;
-        private bool isTradeCacheLoaded;
-        private bool isSymbolsLoaded;
-        private ConnectionOptions options;
+        private ConnectionOptions _options;
+        private ConnectRequest connectRequest;
+        private ConnectRequest lastConnectRequest;
+        private Request disconnectRequest;
+        private bool wasConnected;
 
-        public ConnectionModel(ConnectionOptions options, IStateMachineSync sync = null)
+        public ConnectionModel(ConnectionOptions options, IStateMachineSync stateSync = null)
         {
-            this.options = options;
+            _options = options;
 
-            stateControl = new StateMachine<States>(sync);
+            Func<bool> canRecconect = () => wasConnected && LastErrorCode != ConnectionErrorCodes.BlockedAccount && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
 
-            stateControl.AddTransition(States.Offline, Events.Started, States.Connecting);
-            //stateControl.AddTransition(States.Offline, () => shouldReconnect, States.Initializing);
-            stateControl.AddTransition(States.Connecting, Events.DoneConnecting, States.WaitingLogon);
-            stateControl.AddTransition(States.Connecting, Events.FailedConnecting, States.Disconnecting);
-            stateControl.AddTransition(States.Connecting, Events.OnLogout, States.Disconnecting);
-            stateControl.AddTransition(States.Connecting, Events.StopRequested, States.Disconnecting);
-            stateControl.AddTransition(States.WaitingLogon, () => isSymbolsLoaded && isFeedLoggedIn && isTradeLoggedIn && isFeedCacheLoaded && isTradeCacheLoaded, States.Initializing);
-            stateControl.AddTransition(States.WaitingLogon, Events.OnLogout, States.Disconnecting);
-            stateControl.AddTransition(States.WaitingLogon, Events.StopRequested, States.Disconnecting);
-            stateControl.AddTransition(States.Initializing, Events.DoneInit, States.Online);
-            stateControl.AddTransition(States.Initializing, Events.OnLogout, States.Deinitializing);
-            stateControl.AddTransition(States.Initializing, Events.StopRequested, States.Deinitializing);
-            stateControl.AddTransition(States.Online, Events.OnLogout, States.Deinitializing);
-            stateControl.AddTransition(States.Online, Events.StopRequested, States.Deinitializing);
-            stateControl.AddTransition(States.Deinitializing, Events.DoneDeinit, States.Disconnecting);
-            stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
+            _stateControl = new StateMachine<States>(stateSync);
+            _stateSync = _stateControl.SyncContext;
+            _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
+            _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
+            _stateControl.AddTransition(States.Connecting, Events.Connected,
+                () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
+            _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
+            _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
+            _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
+            _stateControl.AddTransition(States.Online, Events.LostConnection, States.Disconnecting);
+            _stateControl.AddTransition(States.Online, Events.OnRequest, States.Disconnecting);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, () => connectRequest != null, States.Connecting);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
 
-            stateControl.OnEnter(States.Connecting, () => startTask = StartConnecting());
-            stateControl.OnEnter(States.Initializing, () => initTask = Init());
-            stateControl.OnEnter(States.Deinitializing, () => Deinit());
-            stateControl.OnEnter(States.Disconnecting, () => StartDisconnecting());
-            stateControl.OnEnter(States.Online, () => Connected());
-            stateControl.OnEnter(States.Offline, () => Disconnected());
+            _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
 
-            stateControl.StateChanged += (from, to) => logger.Debug("STATE {0} ({1}:{2})", to, CurrentLogin, CurrentServer);
-            stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
+            _stateControl.OnEnter(States.Connecting, DoConnect);
+            _stateControl.OnEnter(States.Disconnecting, DoDisconnect);
+            _stateControl.OnEnter(States.Online, () =>
+            {
+                wasConnected = true;
+                Connected?.Invoke();
+            });
+
+            _stateControl.StateChanged += (f, t) =>
+            {
+                StateChanged?.Invoke(f, t);
+                logger.Debug("STATE {0} ({1}:{2})", t, CurrentLogin, CurrentServer);
+            };
+
+            _stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
-        public DataFeed FeedProxy { get { return feedProxy; } }
-        public DataTrade TradeProxy { get { return tradeProxy; } }
-        public ConnectionErrorCodes LastError { get; private set; }
-        public bool HasError { get { return LastError != ConnectionErrorCodes.None; } }
+        public IFeedServerApi FeedProxy => _interop.FeedApi;
+        public ITradeServerApi TradeProxy => _interop.TradeApi;
+        public ConnectionErrorInfo LastError { get; private set; }
+        public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
+        public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }
         public string CurrentLogin { get; private set; }
         public string CurrentServer { get; private set; }
-        private string CurrentPassword { get; set; }
-
-        public IStateProvider<States> State { get { return stateControl; } }
-
-        public bool IsConnecting
-        {
-            get
-            {
-                var state = State.Current;
-                return state == ConnectionModel.States.Connecting
-                    || state == ConnectionModel.States.WaitingLogon
-                    || state == ConnectionModel.States.Initializing;
-            }
-        }
-
+        public string CurrentProtocol { get; private set; }
+        public bool IsConnecting => State == States.Connecting;
+        public bool IsOnline => State == States.Online;
+        public bool IsOffline => State == States.Offline || State == States.OfflineRetry;
         public event Action Connecting = delegate { };
         public event Action Connected = delegate { };
         public event Action Disconnecting = delegate { };
         public event Action Disconnected = delegate { };
-        //public event AsyncEventHandler SysInitalizing; // main thread event (called after before Initalizing)
         public event AsyncEventHandler Initalizing; // main thread event
         public event AsyncEventHandler Deinitalizing; // background thread event
-        //public event AsyncEventHandler SysDeinitalizing; // background thread event (called after Deinitalizing)
+        public event Action<States, States> StateChanged;
 
-        public async Task<ConnectionErrorCodes> Connect(string username, string password, string address, CancellationToken cToken)
+        public States State => _stateControl.Current;
+        public bool IsReconnecting { get; private set; }
+
+        public Task<ConnectionErrorInfo> Connect(string username, string password, string address, bool useSfxProtocol, CancellationToken cToken)
         {
-            await stateControl.ModifyConditionsAndWait(() =>
+            var request = new ConnectRequest(username, password, address, useSfxProtocol, cToken);
+
+            _stateControl.ModifyConditions(() =>
             {
-                if (stateControl.Current != States.Offline)
-                    throw new InvalidOperationException("Connect() canot be called when connection in state '" + stateControl.Current + "'!");
+                if (connectRequest != null)
+                    connectRequest.Cancel();
 
-                this.address = address;
-                this.username = username;
-                this.password = password;
+                connectRequest = request;
 
-                var cancelSrcCopy = new CancellationTokenSource();
-                connectCancelSrc = cancelSrcCopy;
-                cToken.Register(() => cancelSrcCopy.Cancel());
+                if (State == States.Connecting)
+                    connectCancelSrc.Cancel();
 
-                stateControl.PushEvent(Events.Started);
-            },
-            (s) => s == States.Offline || s == States.Online);
+                wasConnected = false;
 
-            return LastError;
+                _stateControl.PushEvent(Events.OnRequest);
+            });
+
+            return request.Completion;
         }
 
-        public Task DisconnectAsync()
+        public Task Disconnect()
         {
-            return stateControl.PushEventAndWait(Events.StopRequested, States.Offline);
+            Task completion = null;
+
+            _stateControl.ModifyConditions(() =>
+            {
+                if (State == States.Offline)
+                    completion = Task.FromResult(ConnectionErrorCodes.None);
+                else
+                {
+                    if (connectRequest != null)
+                    {
+                        connectRequest.Cancel();
+                        connectRequest = null;
+                    }
+
+                    if (State == States.Connecting)
+                        connectCancelSrc.Cancel();
+
+                    if (disconnectRequest == null)
+                    {
+                        disconnectRequest = new Request();
+                        _stateControl.PushEvent(Events.OnRequest);
+                    }
+
+                    completion = disconnectRequest.Completion;
+                }
+            });
+
+            return completion;
         }
 
-        private Task StartConnecting()
+        private void _interop_Disconnected(IServerInterop sender, ConnectionErrorInfo errInfo)
         {
-            LastError = ConnectionErrorCodes.None;
-            connectCancelSrc = new CancellationTokenSource();
-
-            CurrentLogin = username;
-            CurrentPassword = password;
-            CurrentServer = address;
-
-            return Task.Factory.StartNew(() =>
-               {
-                   try
-                   {
-                       bool logsEnabled = options.EnableFixLogs;
-
-                       if (logsEnabled)
-                       {
-                           if (!Directory.Exists(LogPath))
-                               Directory.CreateDirectory(LogPath);
-                       }
-
-                       isFeedLoggedIn = false;
-                       isTradeLoggedIn = false;
-                       isFeedCacheLoaded = false;
-                       isTradeCacheLoaded = false;
-                       isSymbolsLoaded = false;
-
-                       FixConnectionStringBuilder feedCs = new FixConnectionStringBuilder()
-                       {
-                           TargetCompId = "EXECUTOR",
-                           ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
-                           SecureConnection = true,
-                           Port = 5003,
-                           DecodeLogFixMessages = true
-                       };
-
-                       feedCs.Address = CurrentServer;
-                       feedCs.Username = CurrentLogin;
-                       feedCs.Password = CurrentPassword;
-
-                       if (logsEnabled)
-                       {
-                           feedCs.FixEventsFileName = "feed.events.log";
-                           feedCs.FixMessagesFileName = "feed.messages.log";
-                           feedCs.FixLogDirectory = LogPath;
-                       }
-                       //feedCs.ExcludeMessagesFromLogs = "y|0";
-
-                       feedProxy = new DataFeed(feedCs.ToString());
-                       feedProxy.Logout += feedProxy_Logout;
-                       feedProxy.Logon += feedProxy_Logon;
-                       feedProxy.CacheInitialized += FeedProxy_CacheInitialized;
-                       feedProxy.SymbolInfo += FeedProxy_SymbolInfo;
-
-                       FixConnectionStringBuilder tradeCs = new FixConnectionStringBuilder()
-                       {
-                           TargetCompId = "EXECUTOR",
-                           ProtocolVersion = FixProtocolVersion.TheLatestVersion.ToString(),
-                           SecureConnection = true,
-                           Port = 5004,
-                           DecodeLogFixMessages = true
-                       };
-
-                       tradeCs.Address = address;
-                       tradeCs.Username = username;
-                       tradeCs.Password = password;
-                       if (logsEnabled)
-                       {
-                           tradeCs.FixEventsFileName = "trade.events.log";
-                           tradeCs.FixMessagesFileName = "trade.messages.log";
-                           tradeCs.FixLogDirectory = LogPath;
-                       }
-
-                       tradeProxy = new DataTrade(tradeCs.ToString());
-                       tradeProxy.Logout += tradeProxy_Logout;
-                       tradeProxy.Logon += tradeProxy_Logon;
-                       tradeProxy.CacheInitialized += TradeProxy_CacheInitialized;
-
-                       TradeProxy.SynchOperationTimeout = 5 * 60 * 1000;
-
-                       Connecting();
-
-                       feedProxy.Start();
-                       tradeProxy.Start();
-
-                       stateControl.PushEvent(Events.DoneConnecting);
-                   }
-                   catch (Exception ex)
-                   {
-                       logger.Error("ConnectionModel.Init() failed!", ex);
-                       LastError = ConnectionErrorCodes.Unknown;
-                       stateControl.PushEvent(Events.FailedConnecting);
-                   }
-               });
+            _stateControl.ModifyConditions(() =>
+            {
+                if (sender == _interop && (State == States.Online || State == States.Connecting))
+                {
+                    LastError = errInfo;
+                    _stateControl.PushEvent(Events.LostConnection);
+                }
+            });
         }
 
-        private async Task Init()
+        private async void DoConnect()
         {
+            var request = connectRequest;
+            if (request == null)
+            {
+                // using old request
+                IsReconnecting = true;
+                request = lastConnectRequest;
+            }
+            else
+            {
+                // new request
+                wasConnected = false;
+                IsReconnecting = false;
+                lastConnectRequest = connectRequest;
+                connectRequest = null;
+            }
+
             try
             {
-                var cToken = connectCancelSrc.Token;
-                //await SysInitalizing.InvokeAsync(this, cToken);
-                await Initalizing.InvokeAsync(this, cToken);
+                connectCancelSrc = new CancellationTokenSource();
+                LastError = null;
+
+                CurrentLogin = request.Usermame;
+                CurrentServer = request.Address;
+                CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
+
+                request.CancelToken.Register(() =>
+                {
+                     // TO DO
+                });
+
+                if (request.UseSfx)
+                    _interop = new SfxInterop(_options);
+                else
+                    _interop = new FdkInterop(_options);
+
+                _interop.Disconnected += _interop_Disconnected;
+
+                Connecting?.Invoke();
+
+                var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token).ConfigureAwait(false);
+                if (result.Code != ConnectionErrorCodes.None)
+                {
+                    OnFailedConnect(request, result);
+                    return;
+                }
+                else
+                {
+                    try
+                    {
+                        await _stateSync.Synchronized(() => Initalizing.InvokeAsync(this, connectCancelSrc.Token)).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                        await Deinitialize();
+                        await DisconnectProxy();
+                        OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
+                        return;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
+                OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
+                return;
             }
-            stateControl.PushEvent(Events.DoneInit);
+
+            _stateControl.PushEvent(Events.Connected);
+            request.Complete(ConnectionErrorInfo.Ok);
         }
 
-        private void FeedProxy_SymbolInfo(object sender, SoftFX.Extended.Events.SymbolInfoEventArgs e)
+        private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
         {
-            logger.Debug("EVENT Feed.SymbolInfo");
-            stateControl.ModifyConditions(() => isSymbolsLoaded = true);
-        }
-
-        void feedProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
-        {
-            logger.Debug("EVENT Feed.Logon");
-            stateControl.ModifyConditions(() => isFeedLoggedIn = true);
-        }
-
-        void tradeProxy_Logon(object sender, SoftFX.Extended.Events.LogonEventArgs e)
-        {
-            logger.Debug("EVENT Trade.Logon");
-            stateControl.ModifyConditions(() => isTradeLoggedIn = true);
-        }
-
-        private void FeedProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
-        {
-            logger.Debug("EVENT Feed.CacheInitialized");
-            stateControl.ModifyConditions(() => isFeedCacheLoaded = true);
-        }
-
-        private void TradeProxy_CacheInitialized(object sender, SoftFX.Extended.Events.CacheEventArgs e)
-        {
-            logger.Debug("EVENT Trade.CacheInitialized");
-            stateControl.ModifyConditions(() => isTradeCacheLoaded = true);
-        }
-
-        void feedProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
-        {
-            stateControl.SyncContext.Synchronized(() =>
+            _stateControl.ModifyConditions(() =>
             {
-                if (LastError == ConnectionErrorCodes.None)
-                    LastError = Convert(e.Reason);
-                stateControl.PushEvent(Events.OnLogout);
+                LastError = erroInfo;
+                _stateControl.PushEvent(Events.ConnectFailed);
             });
+
+            requets.Complete(erroInfo);
         }
 
-        void tradeProxy_Logout(object sender, SoftFX.Extended.Events.LogoutEventArgs e)
-        {
-            stateControl.SyncContext.Synchronized(() =>
-            {
-                if (LastError == ConnectionErrorCodes.None)
-                    LastError = Convert(e.Reason);
-                stateControl.PushEvent(Events.OnLogout);
-            });
-        }
-
-        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
-        {
-            switch (fdkCode)
-            {
-                case LogoutReason.BlockedAccount: return ConnectionErrorCodes.BlockedAccount;
-                case LogoutReason.InvalidCredentials: return ConnectionErrorCodes.InvalidCredentials;
-                case LogoutReason.NetworkError: return ConnectionErrorCodes.NetworkError;
-                case LogoutReason.ServerError: return ConnectionErrorCodes.ServerError;
-                case LogoutReason.ServerLogout: return ConnectionErrorCodes.ServerLogout;
-                case LogoutReason.SlowConnection: return ConnectionErrorCodes.SlowConnection;
-                case LogoutReason.LoginDeleted: return ConnectionErrorCodes.LoginDeleted;
-                default: return ConnectionErrorCodes.Unknown;
-            }
-        }
-
-        private async void Deinit()
+        private async Task DisconnectProxy()
         {
             try
             {
-                connectCancelSrc.Cancel();
+                _interop.Disconnected -= _interop_Disconnected;
 
-                // wait init task to stop
-                var toWait = initTask;
-                if (toWait != null)
-                    await toWait;
+                // wait proxy to stop
+                await _interop.Disconnect();
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Disconnection error: " + ex.Message);
+            }
+        }
 
-                // fire events and wait all handlers
-                logger.Debug("Deinit. Invoking Deinitalizing event...");
-                await Deinitalizing.InvokeAsync(this, CancellationToken.None);
+        private async Task Deinitialize()
+        {
+            try
+            {
+                await _stateSync.Synchronized(() => Deinitalizing.InvokeAsync(this));
             }
             catch (Exception ex) { logger.Error(ex); }
-            stateControl.PushEvent(Events.DoneDeinit);
         }
 
-        private async void StartDisconnecting()
+        private async void DoDisconnect()
         {
+            await Deinitialize();
+
             try
             {
-                connectCancelSrc.Cancel();
+                // fire disconnecting event
+                _stateSync.Synchronized(() => Disconnecting());
+            }
+            catch (Exception ex) { logger.Error(ex); }
 
-                // wait start task to stop
-                await startTask;
+            await DisconnectProxy();
 
-                try
+            _stateControl.ModifyConditions(() =>
+            {
+                if (disconnectRequest != null)
                 {
-                    // fire disconnecting event
-                    Disconnecting();
-                }
-                catch (Exception ex) { logger.Error(ex); }
-
-                // start stoping feed
-                Task stopFeed = Task.Factory.StartNew(
-                    () =>
-                    {
-                        try
-                        {
-                            feedProxy.Logout -= feedProxy_Logout;
-                            feedProxy.Logon -= feedProxy_Logon;
-                            feedProxy.CacheInitialized -= FeedProxy_CacheInitialized;
-                            feedProxy.SymbolInfo -= FeedProxy_SymbolInfo;
-                            feedProxy.Stop();
-                            feedProxy.Dispose();
-                        }
-                        catch (Exception ex) { logger.Error(ex); }
-                    });
-
-                // start stopping trade
-                Task stopTrade = Task.Factory.StartNew(
-                    () =>
-                    {
-                        try
-                        {
-                            tradeProxy.Logout -= tradeProxy_Logout;
-                            tradeProxy.Logon -= tradeProxy_Logon;
-                            tradeProxy.CacheInitialized -= TradeProxy_CacheInitialized;
-                            tradeProxy.Stop();
-                            tradeProxy.Dispose();
-                        }
-                        catch (Exception ex) { logger.Error(ex); }
-
-                    });
-
-                // wait Feed & Tarde stop
-                await Task.WhenAll(stopFeed, stopTrade);
-
-                feedProxy = null;
-                tradeProxy = null;
-            }
-            catch (Exception ex) { logger.Error(ex); }
-            stateControl.PushEvent(Events.DoneDisconnecting);
+                    disconnectRequest.Complete(ConnectionErrorInfo.Ok);
+                    disconnectRequest = null;
+                    wasConnected = false;
+                    IsReconnecting = false;
+                };
+                _stateControl.PushEvent(Events.DoneDisconnecting);
+            });
         }
 
-        static string LogPath
+        private class Request
         {
-            get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs"); }
-        }
-    }
+            private TaskCompletionSource<ConnectionErrorInfo> _src = new TaskCompletionSource<ConnectionErrorInfo>();
 
-    public enum ConnectionErrorCodes
-    {
-        None,
-        Unknown,
-        NetworkError,
-        Timeout,
-        BlockedAccount,
-        ClientInitiated,
-        InvalidCredentials,
-        SlowConnection,
-        ServerError,
-        LoginDeleted,
-        ServerLogout,
-        Canceled
+            public Task<ConnectionErrorInfo> Completion => _src.Task;
+
+            public void Complete(ConnectionErrorInfo errInfo)
+            {
+                _src.TrySetResult(errInfo);
+            }
+
+            public void Cancel()
+            {
+                _src.SetCanceled();
+            }
+        }
+
+        private class ConnectRequest : Request
+        {
+            public ConnectRequest(string username, string password, string address, bool useSfxProtocol, CancellationToken cToken)
+            {
+                Usermame = username;
+                Password = password;
+                Address = address;
+                UseSfx = useSfxProtocol;
+                CancelToken = cToken;
+            }
+
+            public string Usermame { get; }
+            public string Password { get; }
+            public string Address { get; }
+            public bool UseSfx { get; }
+            public CancellationToken CancelToken { get; }
+        }
     }
 
     public class ConnectionOptions
     {
-        public bool EnableFixLogs { get; set; }
+        public bool EnableLogs { get; set; }
+        public string LogsFolder { get; set; }
     }
 }

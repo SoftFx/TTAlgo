@@ -14,6 +14,7 @@ using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.BA.Info;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -28,7 +29,7 @@ namespace TickTrader.BotAgent.BA.Models
         private ILogger<ServerModel> _logger;
         private ILoggerFactory _loggerFactory;
         private Dictionary<string, TradeBotModel> _allBots;
-        private BotIdHelper botIdHelper;
+        private BotIdHelper _botIdHelper;
 
         private ServerModel(ILoggerFactory loggerFactory)
         {
@@ -47,7 +48,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void Init(ILoggerFactory loggerFactory)
         {
             SyncObj = new object();
-            botIdHelper = new BotIdHelper();
+            _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _logger = loggerFactory.CreateLogger<ServerModel>();
             _loggerFactory = loggerFactory;
@@ -65,9 +66,9 @@ namespace TickTrader.BotAgent.BA.Models
 
         public event Action<IAccount, ChangeAction> AccountChanged;
 
-        public ConnectionErrorCodes TestAccount(AccountKey accountId)
+        public ConnectionErrorInfo TestAccount(AccountKey accountId)
         {
-            Task<ConnectionErrorCodes> testTask;
+            Task<ConnectionErrorInfo> testTask;
 
             lock (SyncObj)
                 testTask = GetAccountOrThrow(accountId).TestConnection();
@@ -75,11 +76,11 @@ namespace TickTrader.BotAgent.BA.Models
             return testTask.Result;
         }
 
-        public ConnectionErrorCodes TestCreds(string login, string password, string server)
+        public ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol)
         {
-            Task<ConnectionErrorCodes> testTask;
+            Task<ConnectionErrorInfo> testTask;
 
-            var acc = new ClientModel(server, login, password);
+            var acc = new ClientModel(server, login, password, useNewProtocol);
             acc.Init(SyncObj, _loggerFactory, _packageStorage);
             lock (SyncObj)
             {
@@ -87,7 +88,14 @@ namespace TickTrader.BotAgent.BA.Models
                 testTask = acc.TestConnection();
             }
 
-            return testTask.Result;
+            var testResult = testTask.Result;
+
+            if (!acc.ShutdownAsync().Wait(5000))
+            {
+                _logger.LogError($"Can't stop test connection to {server} - {login} via {(useNewProtocol ? "SFX" : "FIX")}");
+            }
+
+            return testResult;
         }
 
         public ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info)
@@ -109,7 +117,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         }
 
-        public void AddAccount(AccountKey accountId, string password)
+        public void AddAccount(AccountKey accountId, string password, bool useNewProtocol)
         {
             lock (SyncObj)
             {
@@ -120,7 +128,7 @@ namespace TickTrader.BotAgent.BA.Models
                     throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
                 else
                 {
-                    var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
+                    var newAcc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
                     InitAccount(newAcc);
                     _accounts.Add(newAcc);
                     AccountChanged?.Invoke(newAcc, ChangeAction.Added);
@@ -139,15 +147,28 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void RemoveAccount(AccountKey accountId)
         {
+            ClientModel acc;
             lock (SyncObj)
             {
-                var acc = FindAccount(accountId);
+                acc = FindAccount(accountId);
                 if (acc != null)
                 {
                     if (acc.HasRunningBots)
                         throw new AccountLockedException("Account cannot be removed! Stop all bots and try again.");
 
                     acc.RemoveAllBots();
+                }
+            }
+
+            if (!acc.ShutdownAsync().Wait(5000))
+            {
+                throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username} via {(acc.UseNewProtocol ? "SFX" : "FIX")}");
+            }
+
+            lock (SyncObj)
+            {
+                if (acc != null)
+                {
                     _accounts.Remove(acc);
                     DisposeAccount(acc);
 
@@ -166,6 +187,15 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var acc = GetAccountOrThrow(key);
                 acc.ChangePassword(password);
+            }
+        }
+
+        public void ChangeAccountProtocol(AccountKey key)
+        {
+            lock (SyncObj)
+            {
+                var acc = GetAccountOrThrow(key);
+                acc.ChangeProtocol();
             }
         }
 
@@ -231,8 +261,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void OnBotValidation(TradeBotModel bot)
         {
-            if (!botIdHelper.Validate(bot.Id))
-                throw new InvalidBotException($"The instance Id must be no more than {botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
+            if (!_botIdHelper.Validate(bot.Id))
+                throw new InvalidBotException($"The instance Id must be no more than {_botIdHelper.MaxLength} characters and consist of characters: a-z A-Z 0-9 and space");
             if (_allBots.ContainsKey(bot.Id))
                 throw new DuplicateBotIdException("Bot with id '" + bot.Id + "' already exist!");
         }
@@ -271,7 +301,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 while (true)
                 {
-                    var botId = botIdHelper.BuildId(botDescriptorName, seed.ToString());
+                    var botId = _botIdHelper.BuildId(botDescriptorName, seed.ToString());
                     if (!_allBots.ContainsKey(botId))
                         return botId;
 
