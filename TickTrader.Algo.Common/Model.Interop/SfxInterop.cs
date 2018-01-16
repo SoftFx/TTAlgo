@@ -809,6 +809,8 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.TradeNotAllowed;
                         else if (message != null && message.StartsWith("Not Enough Money"))
                             return Api.OrderCmdResultCodes.NotEnoughMoney;
+                        else if (message != null && message.StartsWith("Rejected By Dealer"))
+                            return Api.OrderCmdResultCodes.DealerReject;
                         break;
                     }
                 case RejectReason.None:
