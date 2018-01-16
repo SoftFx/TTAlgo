@@ -213,7 +213,9 @@ namespace ApiCheckerBot
 
         private async Task HttpRequestTest(OperationType operation, string requestUrl)
         {
-            var response = await _httpClient.GetAsync(requestUrl);
+            var formattedRequestUrl = requestUrl.Replace("#", "%23");
+
+            var response = await _httpClient.GetAsync(formattedRequestUrl);
 
             var result = $"{requestUrl}. {GetDescription(response.StatusCode)}";
 
