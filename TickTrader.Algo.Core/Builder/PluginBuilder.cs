@@ -367,11 +367,18 @@ namespace TickTrader.Algo.Core
             InvokePluginMethod(asyncAction);
         }
 
-        internal Task InvokeAsyncStop()
+        internal async Task InvokeAsyncStop()
         {
             Task result = null;
             InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop());
-            return result;
+            try
+            {
+                await result;
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
         }
 
         #endregion
