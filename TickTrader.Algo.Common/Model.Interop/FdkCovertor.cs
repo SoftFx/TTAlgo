@@ -397,7 +397,7 @@ namespace TickTrader.Algo.Common.Model
                 OpenPrice = report.Price,
                 Comment = report.Comment,
                 Commission = report.Commission,
-                CommissionCurrency = report.TransactionCurrency,
+                CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
                 CloseQuantity = report.PositionLastQuantity,
                 NetProfitLoss = report.TransactionAmount,
