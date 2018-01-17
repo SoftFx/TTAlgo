@@ -347,14 +347,12 @@ namespace TickTrader.Algo.Core
         {
             InvokePluginMethod(PluginProxy.InvokeOnStop);
             Logger.OnStop();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeInit()
         {
             InvokePluginMethod(PluginProxy.InvokeInit);
             Logger.OnInitialized();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeOnQuote(Quote quote)

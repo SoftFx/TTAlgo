@@ -54,7 +54,6 @@ namespace TickTrader.BotTerminal
             if (!token.IsCancellationRequested && bot.State == BotModelStates.Stopping)
             {
                 bot.Abort();
-                _logger.Info($"Bot '{bot.InstanceId}' was aborted");
             }
         }
     }

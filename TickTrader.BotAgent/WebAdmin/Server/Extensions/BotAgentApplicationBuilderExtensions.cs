@@ -47,7 +47,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (bot.State == BotStates.Stopping)
             {
                 bot.Abort();
-                _logger.LogDebug($"Bot '{bot.Id}' was aborted");
             }
         }
 

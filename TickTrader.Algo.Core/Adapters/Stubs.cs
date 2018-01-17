@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         void OnStart();
         void OnStop();
         void OnExit();
+        void OnAbort();
     }
 
     public static class Null
@@ -145,6 +146,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnStop()
+        {
+        }
+
+        public void OnAbort()
         {
         }
 

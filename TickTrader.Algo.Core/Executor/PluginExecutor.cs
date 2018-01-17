@@ -324,6 +324,8 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
+                System.Diagnostics.Debug.WriteLine("EXECUTOR ABORT!");
+
                 if (state == States.Stopping)
                 {
                     iStrategy.Abort();

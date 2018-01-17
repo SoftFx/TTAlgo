@@ -48,8 +48,9 @@ namespace TickTrader.Algo.Api
         IncorrectSl         = 109,
         NotEnoughMoney      = 110,
         TradeNotAllowed     = 111,
-        IncorrectStopPrice = 112,
+        IncorrectStopPrice  = 112,
         IncorrectMaxVisibleVolume = 113,
         IncorrectExpiration = 114,
+        DealingTimeout      = 115,
     }
 }

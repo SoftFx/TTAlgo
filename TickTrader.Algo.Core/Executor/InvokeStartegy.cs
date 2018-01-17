@@ -266,9 +266,10 @@ namespace TickTrader.Algo.Core
                 if (execStopFlag || asyncStopDoneEvent != null)
                 {
                     execStopFlag = true;
-                    asyncStopDoneEvent?.TrySetResult(this);
+                    Task.Factory.StartNew(() => asyncStopDoneEvent?.TrySetResult(this)); // without this async stop will continue execution on current thread. Which makes DoStop(bool) finish before continue this method
                     currentThread?.Abort();
                     currentThread = null;
+                    Builder.Logger.OnAbort();
                 }
             }
         }
@@ -289,39 +290,47 @@ namespace TickTrader.Algo.Core
                 await asyncStopDoneEvent.Task.ConfigureAwait(false); // wait async stop to end
             }
 
-            Task toWait = null;
-            var stopInvokedEvent = new TaskCompletionSource<bool>();
-            EnqueueCustomInvoke(b =>
+            bool aborted;
+            lock (syncObj)
             {
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
-                    b.InvokeOnStop();
-                }
-                finally
-                {
-                    lock (syncObj)
-                    {
-                        ClearQueues();
-                        execStopFlag = true; //  stop queue
-                        toWait = currentTask;
-                    }
-                    stopInvokedEvent.TrySetResult(true);
-                }
-            });
-
-            await stopInvokedEvent.Task.ConfigureAwait(false);
-
-            System.Diagnostics.Debug.WriteLine("STRATEGY JOIN!");
-            if (toWait != null)
-            {
-                try
-                {
-                    await toWait.ConfigureAwait(false); // wait current invoke to end
-                }
-                catch { } //we logging this case on ProcessLoop
+                aborted = execStopFlag;
             }
-            System.Diagnostics.Debug.WriteLine("STRATEGY DONE JOIN!");
+            if (!aborted)
+            {
+                Task toWait = null;
+                var stopInvokedEvent = new TaskCompletionSource<bool>();
+                EnqueueCustomInvoke(b =>
+                {
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
+                        b.InvokeOnStop();
+                    }
+                    finally
+                    {
+                        lock (syncObj)
+                        {
+                            ClearQueues();
+                            execStopFlag = true; //  stop queue
+                            toWait = currentTask;
+                        }
+                        stopInvokedEvent.TrySetResult(true);
+                    }
+                });
+
+                await stopInvokedEvent.Task.ConfigureAwait(false);
+
+                System.Diagnostics.Debug.WriteLine("STRATEGY JOIN!");
+                if (toWait != null)
+                {
+                    try
+                    {
+                        await toWait.ConfigureAwait(false); // wait current invoke to end
+                    }
+                    catch { } //we logging this case on ProcessLoop
+                }
+                System.Diagnostics.Debug.WriteLine("STRATEGY DONE JOIN!");
+            }
 
             lock (syncObj)
             {

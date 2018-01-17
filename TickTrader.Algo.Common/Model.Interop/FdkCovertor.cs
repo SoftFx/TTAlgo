@@ -362,6 +362,8 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (message == "Trade Not Allowed")
                             return Api.OrderCmdResultCodes.TradeNotAllowed;
+                        else if (message != null && message.StartsWith("Dealer") && message.EndsWith("did not respond."))
+                            return Api.OrderCmdResultCodes.DealingTimeout;
                         break;
                     }
                 case RejectReason.None:
