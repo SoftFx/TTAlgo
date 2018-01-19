@@ -321,6 +321,7 @@ namespace TickTrader.Algo.Core
             {
                 invokeAction();
             }
+            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 pluginException = ex;

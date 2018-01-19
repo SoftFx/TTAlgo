@@ -464,6 +464,8 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
+                if (ex.Message.StartsWith("Session is not active"))
+                    return OrderCmdResultCodes.ConnectionError;
                 logger.Error(ex);
                 return OrderCmdResultCodes.UnknownError;
             }

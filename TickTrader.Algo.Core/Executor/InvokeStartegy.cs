@@ -221,6 +221,7 @@ namespace TickTrader.Algo.Core
                 else if (item is Action<PluginBuilder>)
                     ((Action<PluginBuilder>)item)(Builder);
             }
+            catch (ThreadAbortException) { }
             catch (ExecutorException ex)
             {
                 OnError(ex);
