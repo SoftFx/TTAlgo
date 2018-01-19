@@ -1,5 +1,4 @@
-﻿using Machinarium.ActorModel;
-using Machinarium.State;
+﻿using Machinarium.State;
 //using SoftFX.Extended;
 using System;
 using System.Collections.Generic;

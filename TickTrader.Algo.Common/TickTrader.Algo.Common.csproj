@@ -167,6 +167,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj">
+      <Project>{7d6b7bba-586c-4a69-a368-6bf9b87026b2}</Project>
+      <Name>ActorSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>
