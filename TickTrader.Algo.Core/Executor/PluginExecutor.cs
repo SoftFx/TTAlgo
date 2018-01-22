@@ -273,7 +273,7 @@ namespace TickTrader.Algo.Core
                     fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
-                    iStrategy.EnqueueTradeUpdate(b => b.InvokeInit()); // enqueue init
+                    iStrategy.EnqueueCustomInvoke(b => b.InvokeInit()); // enqueue init
 
                     // Start
 
@@ -283,7 +283,7 @@ namespace TickTrader.Algo.Core
                     calcFixture.Start();
                     fStrategy.Start(); // enqueue build action
 
-                    iStrategy.EnqueueTradeUpdate(b => b.InvokeOnStart());
+                    iStrategy.EnqueueCustomInvoke(b => b.InvokeOnStart());
 
                     iStrategy.Start(); // Must be last action! It starts queue processing.
 
@@ -339,7 +339,7 @@ namespace TickTrader.Algo.Core
             {
                 if (state == States.Running)
                 {
-                    iStrategy.EnqueueTradeUpdate(b =>
+                    iStrategy.EnqueueCustomInvoke(b =>
                     {
                         calcFixture.Stop();
                         accFixture.Restart();
@@ -621,9 +621,14 @@ namespace TickTrader.Algo.Core
             iStrategy.EnqueueQuote(update);
         }
 
-        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        public void EnqueueEvent(Action<PluginBuilder> action)
         {
-            iStrategy.EnqueueTradeEvent(action);
+            iStrategy.EnqueueEvent(action);
+        }
+
+        public void EnqueueCustomInvoke(Action<PluginBuilder> action)
+        {
+            iStrategy.EnqueueCustomInvoke(action);
         }
 
         public void ProcessNextOrderUpdate()

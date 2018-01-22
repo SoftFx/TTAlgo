@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] All Methods Trade Bot", Version = "1.0", Category = "Test Bot Routine",
+    [TradeBot(DisplayName = "[T] Lifecycle Trade Bot", Version = "1.0", Category = "Test Bot Routine",
         Description = "Calls sync/async open order in Init, OnStart, AsyncStop, OnStop")]
     public class LifecycleTradeBot : TradeBot
     {
@@ -15,11 +15,11 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             if (UseAsyncCalls)
             {
-                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "Init async");
+                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "Init async");
             }
             else
             {
-                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "Init sync");
+                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "Init sync");
             }
         }
 
@@ -27,11 +27,11 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             if (UseAsyncCalls)
             {
-                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "OnStart async");
+                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "OnStart async");
             }
             else
             {
-                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "OnStart sync");
+                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "OnStart sync");
             }
         }
 
@@ -39,11 +39,11 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             if (UseAsyncCalls)
             {
-                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "AsyncStop async");
+                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "AsyncStop async");
             }
             else
             {
-                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "AsyncStop sync");
+                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "AsyncStop sync");
             }
         }
 
@@ -51,11 +51,11 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             if (UseAsyncCalls)
             {
-                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "OnStop async");
+                await OpenOrderAsync(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "OnStop async");
             }
             else
             {
-                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, null, null, null, null, "OnStop sync");
+                OpenOrder(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, null, 1.0, null, null, null, "OnStop sync");
             }
         }
     }

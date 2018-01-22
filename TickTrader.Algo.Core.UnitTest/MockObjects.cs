@@ -81,7 +81,11 @@ namespace TickTrader.Algo.Core.UnitTest
         {
         }
 
-        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        public void EnqueueEvent(Action<PluginBuilder> action)
+        {
+        }
+
+        public void EnqueueCustomInvoke(Action<PluginBuilder> action)
         {
         }
 
