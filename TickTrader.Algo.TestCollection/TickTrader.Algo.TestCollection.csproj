@@ -76,6 +76,7 @@
     <Compile Include="Bots\SymbolInfoBot.cs" />
     <Compile Include="Bots\TradeCommandsTest.cs" />
     <Compile Include="Bots\TradeHistoryBot.cs" />
+    <Compile Include="Bots\TradeLoadBot.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
     <Compile Include="Indicators\MultipleInputIndicator.cs" />
