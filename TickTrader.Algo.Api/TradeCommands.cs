@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Api
         Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration);
         Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
         Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration);
+        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume);
         Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
         Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
     }
