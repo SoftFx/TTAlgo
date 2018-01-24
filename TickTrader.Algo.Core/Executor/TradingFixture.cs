@@ -227,10 +227,13 @@ namespace TickTrader.Algo.Core
             {
                 if (eReport.OrderCopy.Type == OrderType.Market)
                 {
-                    // market orders
-                    CallListener(eReport);
-                    var order = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(order, order)));
+                    // market orders are never added to orders collection. Cash account has actually limit IoC
+                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                    if (clone != null)
+                    {
+                        CallListener(eReport);
+                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                    }
                 }
                 else
                 {
