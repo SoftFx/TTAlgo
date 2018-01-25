@@ -168,8 +168,6 @@ namespace TickTrader.Algo.Common.Model
                 await requestProcessor.Completion;
             }
 
-            _executor?.Dispose();
-
             var stopTradeTask = Task.Factory.StartNew(() =>
             {
                 try
@@ -302,6 +300,16 @@ namespace TickTrader.Algo.Common.Model
         public Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
         {
             return Task.FromResult(new QuoteEntity[0]);
+        }
+
+        public void AllowTradeRequests()
+        {
+            _executor?.Start();
+        }
+
+        public void DenyTradeRequests()
+        {
+            _executor?.Stop();
         }
 
         public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)

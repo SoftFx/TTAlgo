@@ -220,6 +220,7 @@ namespace TickTrader.Algo.Common.Model
                         OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
                         return;
                     }
+                    _interop.TradeApi.AllowTradeRequests();
                 }
             }
             catch (Exception ex)
@@ -270,6 +271,8 @@ namespace TickTrader.Algo.Common.Model
 
         private async void DoDisconnect()
         {
+            _interop.TradeApi.DenyTradeRequests();
+
             await Deinitialize();
 
             try

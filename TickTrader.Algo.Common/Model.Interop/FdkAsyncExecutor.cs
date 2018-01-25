@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Common.Model.Interop
         private ActionBlock<Task> orderSender;
         private DataTrade _tradeProxy;
         private List<TaskCompletionSource<OrderCmdResultCodes>> _pendingRequests;
-        private bool _disposed;
+        private bool _stopped;
 
         public FdkAsyncExecutor(DataTrade client)
         {
@@ -33,14 +33,19 @@ namespace TickTrader.Algo.Common.Model.Interop
             orderQueue.LinkTo(orderSender);
 
             _pendingRequests = new List<TaskCompletionSource<OrderCmdResultCodes>>();
-            _disposed = false;
+            _stopped = true;
         }
 
-        public void Dispose()
+        public void Start()
+        {
+            _stopped = false;
+        }
+
+        public void Stop()
         {
             try
             {
-                _disposed = true;
+                _stopped = true;
                 TaskCompletionSource<OrderCmdResultCodes>[] snapshot;
                 lock (_pendingRequests)
                 {
@@ -164,7 +169,7 @@ namespace TickTrader.Algo.Common.Model.Interop
 
         private Task<OrderCmdResultCodes> EnqueueTradeOp(string opName, Action tradeOpDef)
         {
-            if (_disposed)
+            if (_stopped)
                 return Task.FromResult(OrderCmdResultCodes.ConnectionError);
 
             var request = new TaskCompletionSource<OrderCmdResultCodes>();
