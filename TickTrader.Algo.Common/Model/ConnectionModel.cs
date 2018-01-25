@@ -203,6 +203,8 @@ namespace TickTrader.Algo.Common.Model
                 var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token).ConfigureAwait(false);
                 if (result.Code != ConnectionErrorCodes.None)
                 {
+                    Disconnecting?.Invoke();
+                    await DisconnectProxy();
                     OnFailedConnect(request, result);
                     return;
                 }

@@ -79,8 +79,6 @@ namespace TickTrader.Algo.Common.Model
                 requestProcessor = TaskMahcine.Create();
                 _executor = new FdkAsyncExecutor(_tradeProxy);
             }
-            else
-                await Disconnect();
 
             return result;
         }
