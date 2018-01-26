@@ -62,7 +62,7 @@ namespace Machinarium.Qnil
 
         private void Add(TSource srcItem)
         {
-            System.Diagnostics.Debug.WriteLine(prefix + " ADD");
+            //System.Diagnostics.Debug.WriteLine(prefix + " ADD");
 
             var newItem = selectFunc(srcItem);
             innerList.Add(newItem);
@@ -75,7 +75,7 @@ namespace Machinarium.Qnil
                 Dispose();
             else if (args.Action == DLinqAction.Insert)
             {
-                System.Diagnostics.Debug.WriteLine(prefix + " INSERT");
+                //System.Diagnostics.Debug.WriteLine(prefix + " INSERT");
 
                 var newItem = selectFunc(args.NewItem);
                 innerList.Insert(args.Index, newItem);
@@ -83,7 +83,7 @@ namespace Machinarium.Qnil
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                System.Diagnostics.Debug.WriteLine(prefix + " REMOVE");
+                //System.Diagnostics.Debug.WriteLine(prefix + " REMOVE");
 
                 var removedItem = innerList[args.Index];
                 innerList.RemoveAt(args.Index);
@@ -91,7 +91,7 @@ namespace Machinarium.Qnil
             }
             else if (args.Action == DLinqAction.Replace)
             {
-                System.Diagnostics.Debug.WriteLine(prefix + " REPLACE");
+                //System.Diagnostics.Debug.WriteLine(prefix + " REPLACE");
 
                 var oldItem = innerList[args.Index];
                 var newItem = selectFunc(args.NewItem);

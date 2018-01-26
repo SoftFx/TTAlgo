@@ -300,12 +300,15 @@ namespace TickTrader.Algo.Common.Model
             OrderUpdate?.Invoke(report, order, algoAction);
         }
 
+        // Makes position to exist in order list when open market method returns
         private void MockMarkedFilled(ExecutionReport report)
         {
             var order = new OrderModel(report, orderResolver);
             order.OrderType = OrderType.Position;
             order.RemainingAmount = order.Amount;
-            ExecReportToAlgo(OrderExecAction.Opened, OrderEntityAction.Added, report, order);
+            var action = orders.ContainsKey(order.Id) ? OrderEntityAction.Updated : OrderEntityAction.Added; // fix for SFX sync problems
+            orders[order.Id] = order;
+            ExecReportToAlgo(OrderExecAction.Opened, action, report, order);
             OrderUpdate?.Invoke(report, order, OrderExecAction.Opened);
         }
 
