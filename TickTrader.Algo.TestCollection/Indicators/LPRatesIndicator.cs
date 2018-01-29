@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using TickTrader.Algo.Api;
@@ -16,6 +17,12 @@ namespace TickTrader.Algo.TestCollection.Indicators
         Description = "Shows rates from different servers.")]
     class LPRatesIndicator : Indicator
     {
+        [Parameter(DisplayName = "Save to DB", DefaultValue = false)]
+        public bool EnableSaving { get; set; }
+
+        [Parameter(DisplayName = "Restore from DB", DefaultValue = false)]
+        public bool EnableRestoring { get; set; }
+
         #region Symbols
         [Parameter(DisplayName = "SoftFX server", DefaultValue = "cryptottlivewebapi.xbtce.net:8443")]
         public string SoftFxServer { get; set; }
@@ -34,6 +41,21 @@ namespace TickTrader.Algo.TestCollection.Indicators
 
         [Parameter(DisplayName = "Binance Symbol", DefaultValue = "BTCUSDT")]
         public string BinanceSymbol { get; set; }
+
+        [Parameter(DisplayName = "Bitfinex Symbol", DefaultValue = "tBTCUSD")]
+        public string BitfinexSymbol { get; set; }
+
+        [Parameter(DisplayName = "HitBTC Symbol", DefaultValue = "BTCUSD")]
+        public string HitBtcSymbol { get; set; }
+
+        [Parameter(DisplayName = "Kraken Symbol", DefaultValue = "XBTUSD")]
+        public string KrakenSymbol { get; set; }
+
+        [Parameter(DisplayName = "Kucoin Symbol", DefaultValue = "BTC-USDT")]
+        public string KucoinSymbol { get; set; }
+
+        [Parameter(DisplayName = "Huobi Symbol", DefaultValue = "btcusdt")]
+        public string HuobiSymbol { get; set; }
         #endregion
 
         #region BidOutpus
@@ -51,6 +73,21 @@ namespace TickTrader.Algo.TestCollection.Indicators
 
         [Output(DisplayName = "Binance Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.Gold, PlotType = PlotType.DiscontinuousLine)]
         public DataSeries BinanceBid { get; set; }
+
+        [Output(DisplayName = "Bitfinex Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.Aqua, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries BitfinexBid { get; set; }
+
+        [Output(DisplayName = "HitBTC Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.DarkOliveGreen, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries HitBtcBid { get; set; }
+
+        [Output(DisplayName = "Kraken Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.Coral, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries KrakenBid { get; set; }
+
+        [Output(DisplayName = "Kucoin Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.DeepPink, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries KucoinBid { get; set; }
+
+        [Output(DisplayName = "Huobi Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.DeepSkyBlue, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries HuobiBid { get; set; }
         #endregion
 
         #region AskOutputs
@@ -68,6 +105,21 @@ namespace TickTrader.Algo.TestCollection.Indicators
 
         [Output(DisplayName = "Binance Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.Gold, DefaultLineStyle = LineStyles.LinesDots, PlotType = PlotType.DiscontinuousLine)]
         public DataSeries BinanceAsk { get; set; }
+
+        [Output(DisplayName = "Bitfinex Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.Aqua, DefaultLineStyle = LineStyles.LinesDots, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries BitfinexAsk { get; set; }
+
+        [Output(DisplayName = "HitBTC Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.DarkOliveGreen, DefaultLineStyle = LineStyles.LinesDots, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries HitBtcAsk { get; set; }
+
+        [Output(DisplayName = "Kraken Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.Coral, DefaultLineStyle = LineStyles.LinesDots, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries KrakenAsk { get; set; }
+
+        [Output(DisplayName = "Kucoin Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.DeepPink, DefaultLineStyle = LineStyles.LinesDots, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries KucoinAsk { get; set; }
+
+        [Output(DisplayName = "Huobi Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.DeepSkyBlue, DefaultLineStyle = LineStyles.LinesDots, PlotType = PlotType.DiscontinuousLine)]
+        public DataSeries HuobiAsk { get; set; }
         #endregion
 
         private Dictionary<LiquidityProvider, string> _tickerUrl;
@@ -81,6 +133,21 @@ namespace TickTrader.Algo.TestCollection.Indicators
         private string _dbPath;
         private bool _isPreviousBarsProccessed = false;
 
+        protected override async void Calculate()
+        {
+            var isPreviousBar = _startTime > Bars[0].CloseTime;
+            if ( isPreviousBar || IsUpdate )
+                return;
+
+            if (!_isPreviousBarsProccessed && EnableRestoring)
+                ProcessPreviousBars();
+            else
+                await ProcessCurrentBar();
+            
+            
+        }
+
+        #region Initialization methods
         protected override void Init()
         {
             var pathInfo = System.IO.Directory.CreateDirectory("LevelDB");
@@ -92,37 +159,6 @@ namespace TickTrader.Algo.TestCollection.Indicators
             base.Init();
         }
 
-        protected override void Calculate()
-        {
-            if (_startTime > Bars[0].CloseTime || IsUpdate)
-                return;
-
-            if (!_isPreviousBarsProccessed)
-            {
-                ProcessPreviousBars();
-                _isPreviousBarsProccessed = true;
-                return;
-            }
-
-            Dictionary<string, double> lps_tick = new Dictionary<string, double>();
-
-            foreach (var lp in _requiredLP)
-            {
-                var tick = GetTick(lp);
-                if (tick.StatusCode == HttpStatusCode.OK)
-                {
-                    var bid = GetBid(lp, tick);
-                    var ask = GetAsk(lp, tick);
-
-                    AddToIndicatorOutput(lp, bid, ask);
-                    AddToLpTickDictionary(lp, bid, ask, ref lps_tick);
-                }
-
-            }
-            SaveToDB(lps_tick);
-        }
-
-        #region Initialization methods
         private void InitClients()
         {
             InitSoftFxClient();
@@ -138,6 +174,11 @@ namespace TickTrader.Algo.TestCollection.Indicators
             _tickerUrl.Add(LiquidityProvider.Livecoin, $"https://api.livecoin.net//exchange/ticker?currencyPair={LivecoinSymbol}");
             _tickerUrl.Add(LiquidityProvider.Okex, $"https://www.okex.com/api/v1/ticker.do?symbol={OkexSymbol}");
             _tickerUrl.Add(LiquidityProvider.Binance, $"https://api.binance.com/api/v3/ticker/bookTicker?symbol={BinanceSymbol}");
+            _tickerUrl.Add(LiquidityProvider.Bitfinex, $"https://api.bitfinex.com/v2/ticker/{BitfinexSymbol}");
+            _tickerUrl.Add(LiquidityProvider.HitBtc, $"https://api.hitbtc.com/api/2/public/ticker/{HitBtcSymbol}");
+            _tickerUrl.Add(LiquidityProvider.Kraken, $"https://api.kraken.com/0/public/Ticker?pair={KrakenSymbol}");
+            _tickerUrl.Add(LiquidityProvider.Kucoin, $"https://api.kucoin.com/v1/{KucoinSymbol}/open/tick");
+            _tickerUrl.Add(LiquidityProvider.Huobi, $"https://api.huobi.pro/market/detail/merged?symbol={HuobiSymbol}");
         }
 
         private void InitRequiredLP()
@@ -159,6 +200,21 @@ namespace TickTrader.Algo.TestCollection.Indicators
             if (!BinanceSymbol.Equals(""))
                 _requiredLP.Add(LiquidityProvider.Binance);
 
+            if (!BitfinexSymbol.Equals(""))
+                _requiredLP.Add(LiquidityProvider.Bitfinex);
+
+            if (!HitBtcSymbol.Equals(""))
+                _requiredLP.Add(LiquidityProvider.HitBtc);
+
+            if (!KrakenSymbol.Equals(""))
+                _requiredLP.Add(LiquidityProvider.Kraken);
+
+            if (!KucoinSymbol.Equals(""))
+                _requiredLP.Add(LiquidityProvider.Kucoin);
+
+            if (!HuobiSymbol.Equals(""))
+                _requiredLP.Add(LiquidityProvider.Huobi);
+
         }
 
         private void InitSoftFxClient()
@@ -178,17 +234,91 @@ namespace TickTrader.Algo.TestCollection.Indicators
         {
             _defaultClient = new HttpClient();
             _defaultClient.DefaultRequestHeaders.Add("Accept", "application/json");
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
         #endregion
 
-        private HttpResponseMessage GetTick(LiquidityProvider lp)
+        private async Task<double[]> ProcessLps(LiquidityProvider lp, int initBarsCount)
         {
-            _tickerUrl.TryGetValue(lp, out var url);
+            var tick = await GetTick(lp);
 
-            if (lp == LiquidityProvider.SoftFx)
-                return _softFxClient.GetAsync(url).Result;
-            else
-                return _defaultClient.GetAsync(url).Result;
+            var bid = GetBid(lp, tick);
+            var ask = GetAsk(lp, tick);
+
+            OnMainThread(() => { AddToIndicatorOutput(lp, bid, ask, Bars.Count - initBarsCount); });
+
+            return new double[] { bid, ask };
+        }
+
+        private void ProcessPreviousBars()
+        {
+            using (var storage = new LevelDbStorage(_dbPath))
+            {
+                var savedLps = new List<LiquidityProvider>();
+                var bidCollections = new Dictionary<LiquidityProvider, IBinaryStorageCollection<DateTime>>();
+                var askCollections = new Dictionary<LiquidityProvider, IBinaryStorageCollection<DateTime>>();
+
+                try
+                {
+
+                    foreach (var lp in _requiredLP)
+                    {
+                        if (storage.Collections.Contains(lp.ToString() + "Bid") && storage.Collections.Contains(lp.ToString() + "Ask"))
+                        {
+                            savedLps.Add(lp);
+                            bidCollections[lp] = storage.GetBinaryCollection(lp.ToString() + "Bid", _keySerializer);
+                            askCollections[lp] = storage.GetBinaryCollection(lp.ToString() + "Ask", _keySerializer);
+                        }
+                    }
+
+
+                    for (int pos = Bars.Count - 1; pos > 0; pos--)
+                        foreach (var lp in savedLps)
+                        {
+                            if (bidCollections[lp].Read(Bars[pos].OpenTime, out var x))
+                                Math.Abs(-1);
+                            var bid = bidCollections[lp].Read(Bars[pos].OpenTime, out var bidSeg) ? BitConverter.ToDouble(bidSeg.Array, 0) : double.NaN;
+                            var ask = askCollections[lp].Read(Bars[pos].OpenTime, out var askSeg) ? BitConverter.ToDouble(askSeg.Array, 0) : double.NaN;
+                            var localLp = lp;
+                            var localPos = pos;
+                            OnMainThreadAsync(() => AddToIndicatorOutput(localLp, bid, ask, localPos));
+                        }
+                }
+                finally
+                {
+                    foreach (var lp in savedLps)
+                    {
+                        bidCollections[lp].Dispose();
+                        askCollections[lp].Dispose();
+                    }
+
+                }
+            }
+
+            _isPreviousBarsProccessed = true;
+        }
+
+        private async Task ProcessCurrentBar()
+        {
+            int initBarsCount = Bars.Count;
+
+            var lpsSnapshot = new Dictionary<string, double>();
+            var lpsProcesses = new Dictionary<LiquidityProvider, Task<double[]>>();
+
+            foreach (var lp in _requiredLP)
+                lpsProcesses[lp] = ProcessLps(lp, initBarsCount);
+
+            await Task.WhenAll(lpsProcesses.Values);
+
+            foreach (var lp in lpsProcesses)
+            {
+                lpsSnapshot[lp.Key.ToString() + "Bid"] = lp.Value.Result[0];
+                lpsSnapshot[lp.Key.ToString() + "Ask"] = lp.Value.Result[1];
+            }
+
+            if(EnableSaving)
+                SaveToDB(lpsSnapshot, initBarsCount);
         }
 
         private void AddToIndicatorOutput(LiquidityProvider lp, double bid, double ask, int position = 0)
@@ -215,108 +345,181 @@ namespace TickTrader.Algo.TestCollection.Indicators
                     BinanceBid[position] = bid;
                     BinanceAsk[position] = ask;
                     break;
+                case LiquidityProvider.Bitfinex:
+                    BitfinexBid[position] = bid;
+                    BitfinexAsk[position] = ask;
+                    break;
+                case LiquidityProvider.HitBtc:
+                    HitBtcBid[position] = bid;
+                    HitBtcAsk[position] = ask;
+                    break;
+                case LiquidityProvider.Kraken:
+                    KrakenBid[position] = bid;
+                    KrakenAsk[position] = ask;
+                    break;
+                case LiquidityProvider.Kucoin:
+                    KucoinBid[position] = bid;
+                    KucoinAsk[position] = ask;
+                    break;
+                case LiquidityProvider.Huobi:
+                    HuobiBid[position] = bid;
+                    HuobiAsk[position] = ask;
+                    break;
+
             }
         }
 
-        private void AddToLpTickDictionary(LiquidityProvider lp, double bid, double ask, ref Dictionary<string, double> dict)
+        private async Task<HttpResponseMessage> GetTick(LiquidityProvider lp)
         {
-            dict.Add(lp.ToString() + "Bid", bid);
-            dict.Add(lp.ToString() + "Ask", ask);
+            _tickerUrl.TryGetValue(lp, out var url);
+
+            try
+            {
+                if (lp == LiquidityProvider.SoftFx)
+                    return await _softFxClient.GetAsync(url);
+                else
+                    return await _defaultClient.GetAsync(url);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         private double GetBid(LiquidityProvider lp, HttpResponseMessage response)
         {
-            dynamic quote = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
-
-            switch (lp)
+            try
             {
-                case LiquidityProvider.SoftFx:
-                    return quote[0]["BestBid"]["Price"];
+                dynamic quote = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
 
-                case LiquidityProvider.Livecoin:
-                    return quote["best_bid"];
-
-                case LiquidityProvider.Tidex:
-                    return quote[TidexSymbol]["buy"];
-
-                case LiquidityProvider.Okex:
-                    string okexStr = quote["ticker"]["buy"];
-                    return (double.TryParse(okexStr, out double okexBid)) ? okexBid : double.NaN;
-
-                case LiquidityProvider.Binance:
-                    string binanceStr = quote["bidPrice"];
-                    return (double.TryParse(binanceStr, out double binanceBid)) ? binanceBid : double.NaN;
-
-                default:
+                if (response.StatusCode != HttpStatusCode.OK)
                     return double.NaN;
+            
+                switch (lp)
+                {
+                    case LiquidityProvider.SoftFx:
+                        return quote[0]["BestBid"]["Price"];
+
+                    case LiquidityProvider.Livecoin:
+                        return quote["best_bid"];
+
+                    case LiquidityProvider.Tidex:
+                        return quote[TidexSymbol]["buy"];
+
+                    case LiquidityProvider.Okex:
+                        string okexStr = quote["ticker"]["buy"];
+                        return (double.TryParse(okexStr, out double okexBid)) ? okexBid : double.NaN;
+
+                    case LiquidityProvider.Binance:
+                        string binanceStr = quote["bidPrice"];
+                        return (double.TryParse(binanceStr, out double binanceBid)) ? binanceBid : double.NaN;
+
+                    case LiquidityProvider.Bitfinex:
+                        return quote[0];
+
+                    case LiquidityProvider.HitBtc:
+                        string hitBtcStr = quote["bid"];
+                        return (double.TryParse(hitBtcStr, out double hitBtcBid)) ? hitBtcBid : double.NaN;
+
+                    case LiquidityProvider.Kraken:
+                        if (((JArray)quote["error"]).Count != 0)
+                            return double.NaN;
+                        else
+                        {
+                            var result = new JObject(quote["result"]);
+                            var enumerator = result.Properties().GetEnumerator();
+                            enumerator.MoveNext();
+                            var krakenSymbol = enumerator.Current.Name;
+                            return double.Parse((string)result.GetValue(krakenSymbol).Value<JArray>("b")[0]);
+                        }
+
+                    case LiquidityProvider.Kucoin:
+                        return quote["data"]["buy"];
+
+                    case LiquidityProvider.Huobi:
+                        return quote["tick"]["bid"][0];
+
+                    default:
+                        return double.NaN;
+                }
+            }
+            catch(Exception e)
+            {
+                return double.NaN;
             }
         }
 
         private double GetAsk(LiquidityProvider lp, HttpResponseMessage response)
         {
-            dynamic quote = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
-
-            switch (lp)
+            try
             {
-                case LiquidityProvider.SoftFx:
-                    return quote[0]["BestAsk"]["Price"];
+                dynamic quote = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
 
-                case LiquidityProvider.Livecoin:
-                    return quote["best_ask"];
-
-                case LiquidityProvider.Tidex:
-                    return quote[TidexSymbol]["sell"];
-
-                case LiquidityProvider.Okex:
-                    string okexStr = quote["ticker"]["sell"];
-                    return (double.TryParse(okexStr, out double okexAsk)) ? okexAsk : double.NaN;
-
-                case LiquidityProvider.Binance:
-                    string binanceStr = quote["askPrice"];
-                    return (double.TryParse(binanceStr, out double binanceAsk)) ? binanceAsk : double.NaN;
-
-                default:
+                if (response.StatusCode != HttpStatusCode.OK)
                     return double.NaN;
-            }
-        }
 
-        private void ProcessPreviousBars()
-        {
-            using (var storage = new LevelDbStorage(_dbPath))
+                switch (lp)
+                {
+                    case LiquidityProvider.SoftFx:
+                        return quote[0]["BestAsk"]["Price"];
+
+                    case LiquidityProvider.Livecoin:
+                        return quote["best_ask"];
+
+                    case LiquidityProvider.Tidex:
+                        return quote[TidexSymbol]["sell"];
+
+                    case LiquidityProvider.Okex:
+                        string okexStr = quote["ticker"]["sell"];
+                        return (double.TryParse(okexStr, out double okexAsk)) ? okexAsk : double.NaN;
+
+                    case LiquidityProvider.Binance:
+                        string binanceStr = quote["askPrice"];
+                        return (double.TryParse(binanceStr, out double binanceAsk)) ? binanceAsk : double.NaN;
+
+                    case LiquidityProvider.Bitfinex:
+                        return quote[2];
+
+                    case LiquidityProvider.HitBtc:
+                        string hitBtcStr = quote["ask"];
+                        return (double.TryParse(hitBtcStr, out double hitBtcAsk)) ? hitBtcAsk : double.NaN;
+
+                    case LiquidityProvider.Kraken:
+                        if (((JArray)quote["error"]).Count != 0)
+                            return double.NaN;
+                        else
+                        {
+                            var result = new JObject(quote["result"]);
+                            var enumerator = result.Properties().GetEnumerator();
+                            enumerator.MoveNext();
+                            var krakenSymbol = enumerator.Current.Name;
+                            return double.Parse((string)result.GetValue(krakenSymbol).Value<JArray>("a")[0]);
+                        }
+
+                    case LiquidityProvider.Kucoin:
+                        return quote["data"]["sell"];
+
+                    case LiquidityProvider.Huobi:
+                        return quote["tick"]["ask"][0];
+
+                    default:
+                        return double.NaN;
+                }
+            }
+            catch(Exception e)
             {
-                for (int pos = Bars.Count - 1; pos > 0; pos--)
-                    foreach (var lp in _requiredLP)
-                    {
-                        var bid = double.NaN;
-                        var ask = double.NaN;
-
-                        if (storage.Collections.Contains(lp.ToString() + "Bid"))
-                            using (var bidCollection = storage.GetBinaryCollection(lp.ToString() + "Bid", _keySerializer))
-                            {
-                                if (bidCollection.Read(Bars[pos].OpenTime, out var seg))
-                                    bid = BitConverter.ToDouble(seg.Array, 0);
-                            }
-
-                        if (storage.Collections.Contains(lp.ToString() + "Ask"))
-                            using (var askCollection = storage.GetBinaryCollection(lp.ToString() + "Ask", _keySerializer))
-                            {
-                                if (askCollection.Read(Bars[pos].OpenTime, out var seg))
-                                    ask = BitConverter.ToDouble(seg.Array, 0);
-                            }
-
-                        AddToIndicatorOutput(lp, bid, ask, pos);
-                    }
+                return double.NaN;
             }
         }
 
-        private void SaveToDB(Dictionary<string, double> dict)
+        private void SaveToDB(Dictionary<string, double> dict, int initBarsCount)
         {
             using (var storage = new LevelDbStorage(_dbPath))
             {
                 foreach (var lp in dict)
                     using (var collection = storage.GetBinaryCollection(lp.Key, _keySerializer))
                     {
-                        collection.Write(Bars[0].OpenTime, GetSegment(lp.Value));
+                        collection.Write(Bars[Bars.Count - initBarsCount].OpenTime, GetSegment(lp.Value));
                     }
             }
         }
@@ -327,7 +530,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         }
     }
 
-    public enum LiquidityProvider { SoftFx, Livecoin, Tidex, Okex, Binance };
+    public enum LiquidityProvider { SoftFx, Livecoin, Tidex, Okex, Binance, Bitfinex, HitBtc, Kraken, Kucoin, Huobi };
 
     public class DateTimeKeySerializer : IKeySerializer<DateTime>
     {
