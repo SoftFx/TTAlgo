@@ -189,11 +189,11 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
-        {
-            UseNewProtocol = true;
-        }
+        //[OnDeserializing]
+        //private void OnDeserializing(StreamingContext context)
+        //{
+        //    UseNewProtocol = true;
+        //}
 
         #region Connection Management
 
