@@ -242,7 +242,8 @@ namespace TickTrader.Algo.Core
                 //if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
                 //    ValidateStopPrice(stopPrice);
 
-                double orderVolume = volume.HasValue ? ConvertVolume(volume.Value, smbMetadata) : orderToModify.RequestedVolume;
+                double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
+                double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
                 double? orderMaxVisibleVolume = maxVisibleVolume.HasValue ? ConvertVolume(maxVisibleVolume.Value, smbMetadata) : maxVisibleVolume;
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
                 stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
@@ -261,6 +262,7 @@ namespace TickTrader.Algo.Core
                     Type = orderToModify.Type,
                     Side = orderToModify.Side,
                     CurrentVolume = orderVolume,
+                    NewVolume = newOrderVolume,
                     Price = price,
                     StopPrice = stopPrice,
                     StopLoss = sl,

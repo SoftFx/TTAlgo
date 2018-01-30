@@ -116,10 +116,10 @@
       <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
     <Reference Include="SoftFX.Extended.Net, Version=1.32.0.1, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.32.1074\lib\net40\SoftFX.Extended.Net.dll</HintPath>
+      <HintPath>..\packages\SoftFX.FDK.1.32.1095\lib\net40\SoftFX.Extended.Net.dll</HintPath>
     </Reference>
     <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.32.1074\lib\net40\SoftFX.Lrp.dll</HintPath>
+      <HintPath>..\packages\SoftFX.FDK.1.32.1095\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

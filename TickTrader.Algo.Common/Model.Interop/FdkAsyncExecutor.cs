@@ -131,8 +131,8 @@ namespace TickTrader.Algo.Common.Model.Interop
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
                 _tradeProxy.Server.ModifyTradeRecordEx(request.OperationId, orderId, request.Symbol,
-                    ToRecordType(orderType), Convert(request.Side), request.CurrentVolume, maxVisVolume, px, stopPx,
-                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null, null, null);
+                    ToRecordType(orderType), Convert(request.Side), request.NewVolume, maxVisVolume, px, stopPx,
+                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null, request.CurrentVolume, null, null);
             });
         }
 
