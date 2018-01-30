@@ -85,7 +85,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\HistoryFilesPackage.cs" />
-    <Compile Include="Entitites\Slice.cs" />
+    <Compile Include="Entities\EntityUpdate.cs" />
+    <Compile Include="Entities\Slice.cs" />
     <Compile Include="Fdk.Serializers\BarFormatter.cs" />
     <Compile Include="Fdk.Serializers\ByteArrayBuilder.cs" />
     <Compile Include="Fdk.Serializers\Crc32HashExtension.cs" />
@@ -158,11 +159,13 @@
     <Compile Include="Model\AggregatedOrderType.cs" />
     <Compile Include="Model\PluginFeedProvider.cs" />
     <Compile Include="Model\PluginTradeApiProvider.cs" />
+    <Compile Include="Model\PluginTradeInfoProvider.cs" />
     <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
+    <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\SymbolCollection.cs" />
     <Compile Include="Model\SymbolModel.cs" />
-    <Compile Include="Model\ClientCore.cs" />
+    <Compile Include="Model\ClientModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

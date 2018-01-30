@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using ActorSharp;
+using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
 using NLog;
@@ -31,7 +32,7 @@ namespace TickTrader.BotTerminal
         private SymbolManagerViewModel _smbManager;
         private CustomFeedStorage _userSymbols = new CustomFeedStorage();
 
-        public ShellViewModel()
+        public ShellViewModel(ClientModel.ControlHandler commonClient)
         {
             DisplayName = EnvService.Instance.ApplicationName;
 
@@ -45,8 +46,8 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             algoEnv = new AlgoEnvironment();
-            cManager = new ConnectionManager(storage, eventJournal, algoEnv);
-            clientModel = new TraderClientModel(cManager.Connection, eventJournal);
+            cManager = new ConnectionManager(commonClient, storage, eventJournal, algoEnv);
+            clientModel = new TraderClientModel(commonClient, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
 
             ProfileManager = new ProfileManagerViewModel(this, storage);

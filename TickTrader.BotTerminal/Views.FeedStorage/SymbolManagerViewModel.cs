@@ -24,9 +24,9 @@ namespace TickTrader.BotTerminal
         private WindowManager _wndManager;
         private CustomFeedStorage _customStorage;
         private VarContext _varContext = new VarContext();
-        private DynamicDictionary<string, SymbolModel> _onlineSymbols = new DynamicDictionary<string, SymbolModel>();
-        private IDynamicDictionarySource<string, ManagedCustomSymbol> _customManagedSymbols;
-        private IDynamicDictionarySource<string, ManagedOnlineSymbol> _onlineManagedSymbols;
+        private VarDictionary<string, SymbolModel> _onlineSymbols = new VarDictionary<string, SymbolModel>();
+        private IVarSet<string, ManagedCustomSymbol> _customManagedSymbols;
+        private IVarSet<string, ManagedOnlineSymbol> _onlineManagedSymbols;
 
         public SymbolManagerViewModel(TraderClientModel clientModel, CustomFeedStorage customStorage, WindowManager wndManager)
         {
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
             RootGroups = new ManageSymbolGrouping[] { customGroup, onlineGroup };
             SelectedGroup = _varContext.AddProperty<ManageSymbolGrouping>(customGroup);
-            Symbols = _varContext.AddProperty<IObservableListSource<ManagedSymbol>>();
+            Symbols = _varContext.AddProperty<IObservableList<ManagedSymbol>>();
             SymbolFilter = _varContext.AddProperty<string>();
             SelectedSymbol = _varContext.AddProperty<ManagedSymbol>();
             CacheSeries = SelectedSymbol.Var.Ref(s => s.Series);
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
         public Property<ManageSymbolGrouping> SelectedGroup { get; }
         public ManageSymbolGrouping[] RootGroups { get; }
 
-        public Property<IObservableListSource<ManagedSymbol>> Symbols { get; }
+        public Property<IObservableList<ManagedSymbol>> Symbols { get; }
         public Var<IEnumerable<CacheSeriesInfoViewModel>> CacheSeries { get; }
         public Property<ManagedSymbol> SelectedSymbol { get; }
         public Property<string> SymbolFilter { get; }
@@ -251,9 +251,9 @@ namespace TickTrader.BotTerminal
 
     internal abstract class ManagedSymbol : ObservableObject, IDisposable
     {
-        private IDynamicSetSource<CacheSeriesInfoViewModel> _series;
+        private IVarSet<CacheSeriesInfoViewModel> _series;
 
-        protected void Init(SymbolManagerViewModel parent, IDynamicSetSource<CacheSeriesInfoViewModel> storageCollection)
+        protected void Init(SymbolManagerViewModel parent, IVarSet<CacheSeriesInfoViewModel> storageCollection)
         {
             Parent = parent;
             _series = storageCollection.Where(i => i.Key.Symbol == Name);
@@ -305,7 +305,7 @@ namespace TickTrader.BotTerminal
     {
         private SymbolModel _model;
 
-        public ManagedOnlineSymbol(SymbolModel symbolModel, SymbolManagerViewModel parent, IDynamicSetSource<CacheSeriesInfoViewModel> storageCollection)
+        public ManagedOnlineSymbol(SymbolModel symbolModel, SymbolManagerViewModel parent, IVarSet<CacheSeriesInfoViewModel> storageCollection)
         {
             _model = symbolModel;
             Init(parent, storageCollection);
@@ -331,7 +331,7 @@ namespace TickTrader.BotTerminal
         private CustomFeedStorage _storage;
 
         public ManagedCustomSymbol(CustomSymbol symbolModel, SymbolManagerViewModel parent, CustomFeedStorage storage,
-            IDynamicSetSource<CacheSeriesInfoViewModel> storageCollection)
+            IVarSet<CacheSeriesInfoViewModel> storageCollection)
         {
             _model = symbolModel;
             _storage = storage;
@@ -374,8 +374,8 @@ namespace TickTrader.BotTerminal
 
     internal class ManageSymbolGrouping
     {
-        public ManageSymbolGrouping(string name, IDynamicListSource<ManagedSymbol> symbols,
-            IDynamicListSource<ManageSymbolGrouping> childGroups = null)
+        public ManageSymbolGrouping(string name, IVarList<ManagedSymbol> symbols,
+            IVarList<ManageSymbolGrouping> childGroups = null)
         {
             GroupName = name;
             SymbolList = symbols;
@@ -385,9 +385,9 @@ namespace TickTrader.BotTerminal
         }
 
         public string GroupName { get; }
-        public IDynamicListSource<ManagedSymbol> SymbolList { get; }
-        public IDynamicListSource<ManageSymbolGrouping> GroupList { get; }
-        public IObservableListSource<ManageSymbolGrouping> Childs { get; }
-        public IObservableListSource<ManagedSymbol> Symbols { get; }
+        public IVarList<ManagedSymbol> SymbolList { get; }
+        public IVarList<ManageSymbolGrouping> GroupList { get; }
+        public IObservableList<ManageSymbolGrouping> Childs { get; }
+        public IObservableList<ManagedSymbol> Symbols { get; }
     }
 }

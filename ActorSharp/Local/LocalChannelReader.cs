@@ -5,9 +5,9 @@ using System.Text;
 
 namespace ActorSharp
 {
-    internal class LocalRxChannel<T> : ActorPart, IRxChannel<T>, INotifyCompletion, IAwaiter<bool>
+    internal class LocalChannelReader<T> : ActorPart, IChannelReader<T>, INotifyCompletion, IAwaiter<bool>
     {
-        public static readonly object RxAcknowledge = new object();
+        //public static readonly object RxAcknowledge = new object();
 
         private ActorPart _target;
         private LocalPage<T> _rxPage;
@@ -24,22 +24,45 @@ namespace ActorSharp
 
         protected override void ProcessMessage(object message)
         {
+            #region DEBUG
             if (_rxPage != null)
                 throw new Exception("Channel synchronization failure!");
+            #endregion
 
             _rxPage = (LocalPage<T>)message;
-            if (_rxPage.Count == 0 && _rxPage.Last)
+
+            //System.Diagnostics.Debug.WriteLine("Rx " + _rxPage.Count);
+
+            if (_rxPage.Count == 0)
             {
-                _rxPage = null;
-                _isClosed = true;
+                if (_rxPage.Last)
+                {
+                    // confirm channel close
+                    _rxPage = null;
+                    _isClosed = true;
+                }
+                else
+                {
+                    // confirm read immediately
+                    ReturnPage();
+                    return; // no callback call
+                }
             }
 
             if (_callback != null)
             {
                 var toCall = _callback;
-                _callback = null; // callback may throw exception
+                _callback = null; // callback may throw exception or include further channel reads
                 toCall();
             }
+        }
+
+        private void ReturnPage()
+        {
+            _rxPage.Clear();
+            _target.PostMessage(_rxPage);
+            _rxPage = null;
+            _pageIndex = 0;
         }
 
         #region IAwaitable<T>
@@ -66,11 +89,7 @@ namespace ActorSharp
                     _pageIndex = 0;
                 }
                 else
-                {
-                    _rxPage = null;
-                    _pageIndex = 0;
-                    _target.PostMessage(RxAcknowledge);
-                }
+                    ReturnPage();
             }
             return true;
         }

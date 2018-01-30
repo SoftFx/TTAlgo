@@ -10,6 +10,7 @@ using TickTrader.Algo.Api;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Lib;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,8 +25,8 @@ namespace TickTrader.BotTerminal
         {
             _tradeClient = connectionModel;
 
-            _tradeClient.Connection.Connecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport += TradeTransactionReport; };
-            _tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
+            //_tradeClient.Connection.Connecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport += TradeTransactionReport; };
+            //_tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
         }
 
         public async Task<int> DownloadingHistoryAsync(DateTime from, DateTime to, bool skipCancel, CancellationToken token, Action<TransactionReport> reportHandler)
@@ -34,21 +35,23 @@ namespace TickTrader.BotTerminal
 
             //var historyStream = _tradeClient.Connection.TradeProxy.GetTradeTransactionReports(TimeDirection.Forward, true, from, to, 1000, skipCancel);\
 
-            var historyStream = _tradeClient.Connection.TradeProxy.GetTradeHistory(from, to, skipCancel);
+            //var historyStream = _tradeClient.Connection.TradeProxy.GetTradeHistory(from, to, skipCancel);
 
-            while (await historyStream.Next().ConfigureAwait(false))
-            {
-                token.ThrowIfCancellationRequested();
+            throw new NotImplementedException();
 
-                foreach (var report in historyStream.Current)
-                {
-                    var historyItem = TransactionReportFactory.Create(_tradeClient.Account.Type.Value, report, GetSymbolFor(report));
-                    reportHandler(historyItem);
-                }
+            //while (await historyStream.Next().ConfigureAwait(false))
+            //{
+            //    token.ThrowIfCancellationRequested();
 
-            }
+            //    foreach (var report in historyStream.Current)
+            //    {
+            //        var historyItem = TransactionReportFactory.Create(_tradeClient.Account.Type.Value, report, GetSymbolFor(report));
+            //        reportHandler(historyItem);
+            //    }
 
-            return 0;
+            //}
+
+            //return 0;
         }
 
         private SymbolModel GetSymbolFor(TradeReportEntity transaction)

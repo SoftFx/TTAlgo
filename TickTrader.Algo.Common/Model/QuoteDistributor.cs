@@ -14,16 +14,16 @@ namespace TickTrader.Algo.Common.Model
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("QuoteDistributor");
 
-        private ClientCore _client;
+        private ClientModel _client;
         private List<Subscription> allSymbolSubscriptions = new List<Subscription>();
         private Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
         private ActionBlock<SubscriptionTask> requestQueue;
         private CancellationTokenSource cancelAllrequests;
 
-        public QuoteDistributor(ClientCore client)
+        public QuoteDistributor(ClientModel client)
         {
             _client = client;
-            _client.TickReceived += FeedProxy_Tick;
+            //_client.TickReceived += FeedProxy_Tick;
         }
 
         public IFeedSubscription SubscribeAll()
@@ -73,8 +73,8 @@ namespace TickTrader.Algo.Common.Model
                     var symbols = group.Select(s => s.Symbol).ToArray();
                     EnqueueSubscriptionRequest(depth, symbols);
 
-                    var quotes = await _client.FeedProxy.GetQuoteSnapshot(symbols, depth);
-                    quotes.Foreach(UpdateRate);
+                    //var quotes = await _client.FeedProxy.GetQuoteSnapshot(symbols, depth);
+                    //quotes.Foreach(UpdateRate);
                 }
             }
             catch (Exception ex)
@@ -168,7 +168,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
+                //await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
                 logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
             }
             catch (Exception ex)

@@ -16,16 +16,16 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SymbolCollectionModel : Algo.Common.Model.SymbolCollectionBase
-    {
-        public SymbolCollectionModel(ClientCore client)
-            : base(client, new DispatcherSync()) 
-        {
-        }
+    //internal class SymbolCollectionModel : Algo.Common.Model.SymbolCollectionBase
+    //{
+    //    public SymbolCollectionModel(ClientModel client)
+    //        : base(client, new DispatcherSync()) 
+    //    {
+    //    }
 
-        protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info)
-        {
-            return new SymbolModel((QuoteDistributor)distributor, info, Currencies);
-        }
-    }
+    //    protected override Algo.Common.Model.SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info)
+    //    {
+    //        return new SymbolModel((QuoteDistributor)distributor, info, Currencies);
+    //    }
+    //}
 }

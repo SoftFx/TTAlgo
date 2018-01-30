@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class DictionaryComposition<TKey, TValue> : OperatorBase, IDynamicDictionarySource<TKey, TValue>
+    internal class DictionaryComposition<TKey, TValue> : OperatorBase, IVarSet<TKey, TValue>
     {
         private Dictionary<TKey, TValue> snapshot = new Dictionary<TKey, TValue>();
         private CompositionSource src;
@@ -23,7 +23,7 @@ namespace Machinarium.Qnil
             src.OnStart();
         }
 
-        private void Add(IDynamicDictionarySource<TKey, TValue> src)
+        private void Add(IVarSet<TKey, TValue> src)
         {
             foreach (var keyValue in src.Snapshot)
             {
@@ -34,7 +34,7 @@ namespace Machinarium.Qnil
             src.Updated += Src_Updated;
         }
 
-        private void Remove(IDynamicDictionarySource<TKey, TValue> src)
+        private void Remove(IVarSet<TKey, TValue> src)
         {
             foreach (var keyValue in src.Snapshot)
             {
@@ -113,10 +113,10 @@ namespace Machinarium.Qnil
         public class StaticCompositionSource<TSource> : CompositionSource
         {
             private IEnumerable<TSource> src;
-            private Func<TSource, IDynamicDictionarySource<TKey, TValue>> selector;
+            private Func<TSource, IVarSet<TKey, TValue>> selector;
 
             public StaticCompositionSource(IEnumerable<TSource> src,
-                Func<TSource, IDynamicDictionarySource<TKey, TValue>> selector)
+                Func<TSource, IVarSet<TKey, TValue>> selector)
             {
                 this.src = src;
                 this.selector = selector;
@@ -139,11 +139,11 @@ namespace Machinarium.Qnil
 
         public class DictionaryCompositionSource<TSourceKey, TSourceValue> : CompositionSource
         {
-            private IDynamicDictionarySource<TSourceKey, TSourceValue> src;
-            private Func<TSourceKey, TSourceValue, IDynamicDictionarySource<TKey, TValue>> selector;
+            private IVarSet<TSourceKey, TSourceValue> src;
+            private Func<TSourceKey, TSourceValue, IVarSet<TKey, TValue>> selector;
 
-            public DictionaryCompositionSource(IDynamicDictionarySource<TSourceKey, TSourceValue> src,
-                Func<TSourceKey, TSourceValue, IDynamicDictionarySource<TKey, TValue>> selector)
+            public DictionaryCompositionSource(IVarSet<TSourceKey, TSourceValue> src,
+                Func<TSourceKey, TSourceValue, IVarSet<TKey, TValue>> selector)
             {
                 this.src = src;
                 this.selector = selector;
@@ -173,12 +173,12 @@ namespace Machinarium.Qnil
 
         public class ListCompositionSource<TSource> : CompositionSource
         {
-            private IDynamicListSource<TSource> src;
-            private List<IDynamicDictionarySource<TKey, TValue>> cache = new List<IDynamicDictionarySource<TKey, TValue>>();
-            private Func<TSource, IDynamicDictionarySource<TKey, TValue>> selector;
+            private IVarList<TSource> src;
+            private List<IVarSet<TKey, TValue>> cache = new List<IVarSet<TKey, TValue>>();
+            private Func<TSource, IVarSet<TKey, TValue>> selector;
 
-            public ListCompositionSource(IDynamicListSource<TSource> src,
-                Func<TSource, IDynamicDictionarySource<TKey, TValue>> selector)
+            public ListCompositionSource(IVarList<TSource> src,
+                Func<TSource, IVarSet<TKey, TValue>> selector)
             {
                 this.src = src;
                 this.selector = selector;

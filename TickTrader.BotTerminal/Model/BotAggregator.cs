@@ -24,11 +24,11 @@ namespace TickTrader.BotTerminal
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                ((IObservableListSource<BotControlViewModel>)((ChartViewModel)e.NewItems[0]).Bots).CollectionChanged += BotsCollectionChanged;
+                ((IObservableList<BotControlViewModel>)((ChartViewModel)e.NewItems[0]).Bots).CollectionChanged += BotsCollectionChanged;
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                ((IObservableListSource<BotControlViewModel>)((ChartViewModel)e.OldItems[0]).Bots).CollectionChanged -= BotsCollectionChanged;
+                ((IObservableList<BotControlViewModel>)((ChartViewModel)e.OldItems[0]).Bots).CollectionChanged -= BotsCollectionChanged;
             }
         }
 

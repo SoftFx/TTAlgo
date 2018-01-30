@@ -18,33 +18,31 @@ namespace TickTrader.BotTerminal
     internal class TraderClientModel : EntityBase
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private ClientCore _core;
+        private ClientModel.Data _core;
 
         private AccountModel _accountInfo;
         private EventJournal _journal;
         private BoolProperty _isConnected;
-        private bool _wasConnectedEventFired;
 
-        public TraderClientModel(ConnectionModel connection, EventJournal journal)
+        public TraderClientModel(ClientModel.Data client, EventJournal journal)
         {
-            this.Connection = connection;
+            _core = client;
+            Connection = client.Connection;
 
             _isConnected = AddBoolProperty();
 
-            connection.Initalizing += Connection_Initalizing;
-            connection.StateChanged += State_StateChanged;
-            connection.Deinitalizing += Connection_Deinitalizing;
+            //Connection.Initalizing += Connection_Initalizing;
+            Connection.StateChanged += State_StateChanged;
+            //Connection.Deinitalizing += Connection_Deinitalizing;
 
-            var sync = new DispatcherSync();
-            _core = new ClientCore(connection, c => new SymbolCollectionModel(c), sync, sync);
-
-            this.Symbols = (SymbolCollectionModel)_core.Symbols;
+            this.Account = _core.Cache.Account;
+            this.Symbols = _core.Symbols;
             this.TradeHistory = new TradeHistoryProviderModel(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
-            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            //this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
             //this.TradeApi = new TradeExecutor(_core);
-            this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
-            TradeApi = new PluginTradeApiProvider(Connection);
+
+            //TradeApi = new PluginTradeApiProvider(Connection, a => a());
 
             _accountInfo = Account;
             _journal = journal;
@@ -93,47 +91,47 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
-        {
-            _wasConnectedEventFired = false;
+        //private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
+        //{
+        //    _wasConnectedEventFired = false;
 
-            //try
-            //{
-                await History.Init();
-                await _core.Init();
-                Account.Init();
-                ((IAccountInfoProvider)_accountInfo).BalanceUpdated += Account_BalanceUpdated;
-                _accountInfo.OrderUpdate += Account_OrderUpdated;
-                if (Initializing != null)
-                    await Initializing.InvokeAsync(this, cancelToken);
-            //}
-            //catch (Exception ex)
-            //{
-            //    logger.Error(ex, "Connection_Initalizing() failed.");
-            //}
+        //    //try
+        //    //{
+        //        await History.Init();
+        //        await _core.Init();
+        //        Account.Init();
+        //        ((IAccountInfoProvider)_accountInfo).BalanceUpdated += Account_BalanceUpdated;
+        //        _accountInfo.OrderUpdate += Account_OrderUpdated;
+        //        if (Initializing != null)
+        //            await Initializing.InvokeAsync(this, cancelToken);
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    logger.Error(ex, "Connection_Initalizing() failed.");
+        //    //}
 
-            _wasConnectedEventFired = true;
-            OnConnected();
-        }
+        //    _wasConnectedEventFired = true;
+        //    OnConnected();
+        //}
 
-        private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
-        {
-            if (_wasConnectedEventFired)
-                OnDisconnected();
+        //private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
+        //{
+        //    if (_wasConnectedEventFired)
+        //        OnDisconnected();
 
-            try
-            {
-                await _core.Deinit();
-                Account.Deinit();
-                await History.Deinit();
-                if (Deinitializing != null)
-                    await Deinitializing.InvokeAsync(this, cancelToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Connection_Deinitalizing() failed.");
-            }
-        }
+        //    try
+        //    {
+        //        await _core.Deinit();
+        //        Account.Deinit();
+        //        await History.Deinit();
+        //        if (Deinitializing != null)
+        //            await Deinitializing.InvokeAsync(this, cancelToken);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error(ex, "Connection_Deinitalizing() failed.");
+        //    }
+        //}
 
         private void Account_BalanceUpdated(BalanceOperationReport report)
         {
@@ -196,14 +194,14 @@ namespace TickTrader.BotTerminal
         public event AsyncEventHandler Deinitializing;
         public event Action Disconnected;
 
-        public ConnectionModel Connection { get; private set; }
+        public ConnectionModel.Handler Connection { get; private set; }
         public ITradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
         public TradeHistoryProviderModel TradeHistory { get; }
-        public SymbolCollectionModel Symbols { get; private set; }
+        public IVarSet<string, SymbolModel> Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
-        public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }
+        public QuoteDistributor Distributor { get { return null; } }// (QuoteDistributor)Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
-        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _core.Currencies;
+        public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
     }
 }

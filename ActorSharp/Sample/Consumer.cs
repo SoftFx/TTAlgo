@@ -9,24 +9,28 @@ namespace ActorSharp.Sample
     {
         private int _sum;
 
-        private async void AggregateLoop(IRxChannel<int> stream)
+        private async void AggregateLoop(Channel<int> stream)
         {
-            while (await stream)
+            while (await stream.ReadNext())
                 _sum += 1;
         }
 
-        public class Handler : ControlHandler<Consumer>
+        public class Handler : Handler<Consumer>
         {
-            public async Task<ITxChannel<int>> BeginAggregate(int pageSize)
+            public Handler() : base(SpawnLocal<Consumer>())
             {
-                var channel = NewTxChannel<int>();
-                await CallActor(a => a.AggregateLoop(Marshal(channel, pageSize)));
-                return channel;
+            }
+
+            public async Task<Channel<int>> BeginAggregate(int pageSize)
+            {
+                var ch = Channel.NewInput<int>(pageSize);
+                await Actor.OpenChannel(ch, (a, c) => a.AggregateLoop(c));
+                return ch;
             }
 
             public Task<int> GetResult()
             {
-                return CallActor(a => a._sum);
+                return Actor.Call(a => a._sum);
             }
         }
     }

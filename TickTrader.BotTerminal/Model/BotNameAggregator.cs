@@ -9,9 +9,9 @@ namespace TickTrader.BotTerminal
 {
     internal class BotNameAggregator
     {
-        private DynamicDictionary<string, BotMsgCounter> botStats = new DynamicDictionary<string, BotMsgCounter>();
+        private VarDictionary<string, BotMsgCounter> botStats = new VarDictionary<string, BotMsgCounter>();
 
-        public IDynamicDictionarySource<string, BotMsgCounter> Items { get { return botStats; } }
+        public IVarSet<string, BotMsgCounter> Items { get { return botStats; } }
 
         public void Register(BotMessage msg)
         {

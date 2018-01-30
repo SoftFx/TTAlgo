@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    class SetSelectOperator<TIn, TOut> : OperatorBase, IDynamicSetSource<TOut>
+    class SetSelectOperator<TIn, TOut> : OperatorBase, IVarSet<TOut>
     {
-        private IDynamicSetSource<TIn> _srcSet;
+        private IVarSet<TIn> _srcSet;
         private Func<TIn, TOut> _selector;
 
-        public SetSelectOperator(IDynamicSetSource<TIn> srcSet, Func<TIn, TOut> selector)
+        public SetSelectOperator(IVarSet<TIn> srcSet, Func<TIn, TOut> selector)
         {
             _srcSet = srcSet;
             _selector = selector;

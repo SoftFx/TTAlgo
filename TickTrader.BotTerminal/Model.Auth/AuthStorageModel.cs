@@ -11,7 +11,7 @@ namespace TickTrader.BotTerminal
     internal class AuthStorageModel : StorageModelBase<AuthStorageModel>
     {
         [DataMember(Name = "Accounts")]
-        private DynamicList<AccountStorageEntry> _accounts;
+        private VarList<AccountStorageEntry> _accounts;
 
         [DataMember]
         public string LastLogin { get; set; }
@@ -19,11 +19,11 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public string LastServer { get; set; }
 
-        public DynamicList<AccountStorageEntry> Accounts => _accounts;
+        public VarList<AccountStorageEntry> Accounts => _accounts;
 
         public AuthStorageModel()
         {
-            _accounts = new DynamicList<AccountStorageEntry>();
+            _accounts = new VarList<AccountStorageEntry>();
         }
 
         public override AuthStorageModel Clone()
@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
             {
                 LastLogin = LastLogin,
                 LastServer = LastServer,
-                _accounts = new DynamicList<AccountStorageEntry>(_accounts.Values.Select(a => a.Clone())),
+                _accounts = new VarList<AccountStorageEntry>(_accounts.Values.Select(a => a.Clone())),
             };
         }
 

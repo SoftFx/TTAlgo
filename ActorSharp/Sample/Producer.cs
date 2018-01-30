@@ -20,11 +20,15 @@ namespace ActorSharp.Sample
             return await consumer.GetResult();
         }
 
-        public class Handler : ControlHandler<Producer>
+        public class Handler : Handler<Producer>
         {
+            public Handler() : base(SpawnLocal<Producer>())
+            {
+            }
+
             public Task<int> InvokeSum(int from, int to, int pageSize)
             {
-                return CallActor(a => a.InvokeSum(from, to, pageSize));
+                return Actor.Call(a => a.InvokeSum(from, to, pageSize));
             }
         }
     }

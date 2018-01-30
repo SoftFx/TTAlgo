@@ -13,16 +13,12 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
-        private SymbolCollectionModel _symbols;
-
-        public NetPositionListViewModel(AccountModel model, SymbolCollectionModel symbols, ConnectionModel connection)
+        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, ConnectionModel.Handler connection)
             : base(model, connection)
         {
-            _symbols = symbols;
-
             Positions = model.Positions
                 .OrderBy((id, p) => id)
-                .Select(p => new PositionViewModel(p, (SymbolModel)_symbols[p.Symbol]))
+                .Select(p => new PositionViewModel(p, symbols.GetOrDefault(p.Symbol)))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
@@ -33,7 +29,7 @@ namespace TickTrader.BotTerminal
             return accType == AccountTypes.Net;
         }
 
-        public IObservableListSource<PositionViewModel> Positions { get; private set; }
+        public IObservableList<PositionViewModel> Positions { get; private set; }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

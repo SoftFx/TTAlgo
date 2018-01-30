@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class SetUnionOperator<T> : OperatorBase, IDynamicSetSource<T>
+    internal class SetUnionOperator<T> : OperatorBase, IVarSet<T>
     {
         private Dictionary<T, Counter> _countByItem = new Dictionary<T, Counter>();
-        private IDynamicSetSource<T>[] _sources;
+        private IVarSet<T>[] _sources;
 
-        public SetUnionOperator(IDynamicSetSource<T>[] sources)
+        public SetUnionOperator(IVarSet<T>[] sources)
         {
             _sources = sources;
 

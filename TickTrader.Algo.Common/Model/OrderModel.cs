@@ -437,7 +437,7 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        public OrderEntity ToAlgoOrder()
+        public OrderEntity GetEntity()
         {
             return new OrderEntity(Id)
             {

@@ -36,8 +36,8 @@ namespace TickTrader.BotTerminal
         private enum Events { Loaded, LoadFailed, Stopped }
 
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
-        private DynamicList<IRenderableSeriesViewModel> seriesCollection = new DynamicList<IRenderableSeriesViewModel>();
-        private DynamicList<IndicatorModel> indicators = new DynamicList<IndicatorModel>();
+        private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
+        private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
         private readonly AlgoEnvironment algoEnv;
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
@@ -73,8 +73,8 @@ namespace TickTrader.BotTerminal
             //client.Disconnected += Connection_Disconnected;
             client.Deinitializing += Client_Deinitializing;
 
-            subscription = symbol.Subscribe();
-            subscription.NewQuote += OnRateUpdate;
+            //subscription = symbol.Subscribe();
+            //subscription.NewQuote += OnRateUpdate;
 
             CurrentAsk = symbol.CurrentAsk;
             CurrentBid = symbol.CurrentBid;
@@ -98,16 +98,16 @@ namespace TickTrader.BotTerminal
         protected SymbolModel Model { get; private set; }
         protected TraderClientModel ClientModel { get; private set; }
         protected AlgoEnvironment AlgoEnv => algoEnv;
-        protected ConnectionModel Connection { get { return ClientModel.Connection; } }
-        protected DynamicList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
+        protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
+        protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
-        public IDynamicListSource<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
-        public IObservableListSource<PluginCatalogItem> AvailableIndicators { get; private set; }
+        public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
+        public IObservableList<PluginCatalogItem> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
-        public IObservableListSource<PluginCatalogItem> AvailableBotTraders { get; private set; }
+        public IObservableList<PluginCatalogItem> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
-        public IDynamicListSource<IndicatorModel> Indicators { get { return indicators; } }
+        public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
         public BotJournal Journal { get; private set; }
@@ -392,7 +392,7 @@ namespace TickTrader.BotTerminal
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
-            plugin.AccInfoProvider = ClientModel.Account;
+            //plugin.AccInfoProvider = ClientModel.Account;
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)

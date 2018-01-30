@@ -13,7 +13,7 @@ namespace TickTrader.BotAgent.BA.Models
         private object _sycn;
         private QuoteDistributor _distributor;
 
-        public SymbolManager(ClientCore client, object sync) : base(client, new SyncAdapter(sync))
+        public SymbolManager(Algo.Common.Model.ClientModel client, object sync) : base(client, new SyncAdapter(sync))
         {
             _sycn = sync;
         }

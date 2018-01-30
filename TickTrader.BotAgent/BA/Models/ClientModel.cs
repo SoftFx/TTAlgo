@@ -32,7 +32,7 @@ namespace TickTrader.BotAgent.BA.Models
         private List<Task> _requests;
         private ConnectionErrorInfo _lastError;
         private ConnectionErrorInfo _currentError;
-        private ClientCore _core;
+        private Algo.Common.Model.ClientModel _core;
         private TaskCompletionSource<object> _disconnectCompletionSource;
 
         [DataMember(Name = "bots")]
@@ -102,7 +102,7 @@ namespace TickTrader.BotAgent.BA.Models
             Connection.Connected += () => _connectionDelay.Reset();
 
             var eventSyncAdapter = new SyncAdapter(syncObj);
-            _core = new ClientCore(Connection, c => new SymbolManager(c, _sync), eventSyncAdapter, eventSyncAdapter);
+            _core = new Algo.Common.Model.ClientModel(Connection, (object c) => new SymbolManager(c, _sync), eventSyncAdapter, eventSyncAdapter);
 
             Account = new AccountModel(_core, AccountModelOptions.None);
             Symbols = (SymbolManager)_core.Symbols;
@@ -118,7 +118,7 @@ namespace TickTrader.BotAgent.BA.Models
         public IEnumerable<ITradeBot> TradeBots => _bots;
         public AccountModel Account { get; private set; }
         public SymbolManager Symbols { get; private set; }
-        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _core.Currencies;
+        public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
         public FeedHistoryProviderModel FeedHistory { get; private set; }
         public ITradeExecutor TradeApi { get; private set; }
         public bool IsReconnecting

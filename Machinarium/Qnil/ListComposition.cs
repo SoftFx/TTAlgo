@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ListComposition<TSource, TResult> : IDynamicListSource<TResult>, IReadOnlyList<TResult>
+    internal class ListComposition<TSource, TResult> : IVarList<TResult>, IReadOnlyList<TResult>
     {
-        private IDynamicListSource<TSource> src;
+        private IVarList<TSource> src;
         private List<Observer> observers = new List<Observer>();
-        private Func<TSource, IDynamicListSource<TResult>> selector;
+        private Func<TSource, IVarList<TResult>> selector;
         private bool propogateDispose;
 
         public ListComposition(
-            IDynamicListSource<TSource> src,
-            Func<TSource, IDynamicListSource<TResult>> selector,
+            IVarList<TSource> src,
+            Func<TSource, IVarList<TResult>> selector,
             bool propogateDispose)
         {
             this.src = src;
@@ -153,14 +153,14 @@ namespace Machinarium.Qnil
         {
             private ListComposition<TSource, TResult> parent;
 
-            public Observer(IDynamicListSource<TResult> collection, ListComposition<TSource, TResult> parent)
+            public Observer(IVarList<TResult> collection, ListComposition<TSource, TResult> parent)
             {
                 this.Collection = collection;
                 this.parent = parent;
                 collection.Updated += Collection_Updated;
             }
 
-            public IDynamicListSource<TResult> Collection { get; private set; }
+            public IVarList<TResult> Collection { get; private set; }
 
             public void FireAllRemoved(int position)
             {

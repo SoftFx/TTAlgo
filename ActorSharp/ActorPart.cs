@@ -12,5 +12,11 @@ namespace ActorSharp
             Context = SynchronizationContext.Current ?? throw new Exception("Synchronization context is required!");
             ActorInit();
         }
+
+        //internal ActorPart(SynchronizationContext context)
+        //{
+        //    Context = context ?? throw new Exception("Synchronization context is required!");
+        //    ActorInit();
+        //}
     }
 }

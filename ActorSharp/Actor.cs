@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace ActorSharp
 {
-    public class Actor : IActorRef
+    public class Actor
     {
-        public static IActorRef SpawnLocal<T>(SynchronizationContext context = null)
+        public static Ref<T> SpawnLocal<T>(IContextFactory factory = null)
             where T : Actor, new()
         {
             var actor = new T();
-            actor.Start(context ?? new PoolContext());
-            return actor;
+            actor.Start(factory?.CreateContext() ?? new PoolContext());
+            return new LocalRef<T>(actor);
         }
 
         internal SynchronizationContext Context { get; set; }
@@ -50,97 +50,51 @@ namespace ActorSharp
             #endif
         }
 
-        #region IActorRef   
-
-        ITxChannel<T> IActorRef.NewTxChannel<T>()
+        private void InvokeContextCheck()
         {
-            throw new NotImplementedException();
+            #if DEBUG
+            if (SynchronizationContext.Current != null)
+                throw new InvalidOperationException("It's forbidden to call ContextInvoke() under an actor context. ContextInvoke() can only be called from non-actor thread!");
+            #endif
         }
 
-        IRxChannel<T> IActorRef.NewRxChannel<T>()
+        /// <summary>
+        /// Invokes a delegate under actor's synchronization context.
+        /// Warning! This is a potentially blocking operation! Do not call it under an actor context!
+        /// </summary>
+        protected void ContextInvoke(Action action)
         {
-            throw new NotImplementedException();
+            ContextInvokeAsync(action).Wait();
         }
 
-        Task IActorRef.CallActor<TActor>(Action<TActor> method)
+        /// <summary>
+        /// Invokes a delegate under actor's synchronization context.
+        /// Warning! This is a potentially blocking operation! Do not call it under an actor context!
+        /// </summary>
+        protected void ContextInvoke(Action<object> action, object state)
         {
-            var task = new Task(o => method((TActor)o), this);
+            ContextInvokeAsync(action, state).Wait();
+        }
+
+        private Task ContextInvokeAsync(Action action)
+        {
+            InvokeContextCheck();
+            var task = new Task(action);
             Context.Post(ExecTaskSync, task);
             return task;
         }
 
-        Task<TResult> IActorRef.CallActor<TActor, TResult>(Func<TActor, TResult> method)
+        private Task ContextInvokeAsync(Action<object> action, object state)
         {
-            var task = new Task<TResult>(o => method((TActor)o), this);
+            InvokeContextCheck();
+            var task = new Task(action, state);
             Context.Post(ExecTaskSync, task);
             return task;
         }
-
-        Task IActorRef.CallActor<TActor>(Func<TActor, Task> method)
-        {
-            var src = new TaskCompletionSource<object>();
-            var invokeTask = new Task(o => BindCompletion(method((TActor)o), src), this);
-            Context.Post(ExecTaskSync, invokeTask);
-            return src.Task;
-        }
-
-        Task<TResult> IActorRef.CallActor<TActor, TResult>(Func<TActor, Task<TResult>> method)
-        {
-            var src = new TaskCompletionSource<TResult>();
-            var invokeTask = new Task(o => BindCompletion(method((TActor)o), src), this);
-            Context.Post(ExecTaskSync, invokeTask);
-            return src.Task;
-        }
-
-        IRxChannel<T> IActorRef.Marshal<T>(ITxChannel<T> channel, int pageSize)
-        {
-            var thisSide = new LocalRxChannel<T>();
-            var oppositeSide = (LocalTxChannel<T>)channel;
-            oppositeSide.Init(thisSide, pageSize);
-            thisSide.Init(oppositeSide);
-            return thisSide;
-        }
-
-        ITxChannel<T> IActorRef.Marshal<T>(IRxChannel<T> channel, int pageSize)
-        {
-            var thisSide = new LocalTxChannel<T>();
-            var oppositeSide = (LocalRxChannel<T>)channel;
-            oppositeSide.Init(thisSide);
-            thisSide.Init(oppositeSide, pageSize);
-            return thisSide;
-        }
-
-        #endregion
 
         private void ExecTaskSync(object task)
         {
             ((Task)task).RunSynchronously();
-        }
-
-        private static void BindCompletion(Task task, TaskCompletionSource<object> src)
-        {
-            task.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                    src.SetException(t.Exception);
-                else if (t.IsCanceled)
-                    src.SetCanceled();
-                else //if(t.IsCompleted)
-                    src.SetResult(null);
-            });
-        }
-
-        private static void BindCompletion<T>(Task<T> task, TaskCompletionSource<T> src)
-        {
-            task.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                    src.SetException(t.Exception);
-                else if (t.IsCanceled)
-                    src.SetCanceled();
-                else //if(t.IsCompleted)
-                    src.SetResult(t.Result);
-            });
         }
     }
 }

@@ -11,9 +11,9 @@ namespace TickTrader.Algo.Common.Model
 {
     public class TradeHistoryProvider : CrossDomainObject, ITradeHistoryProvider
     {
-        private ConnectionModel _connection;
+        private ConnectionModel.Handler _connection;
 
-        public TradeHistoryProvider(ConnectionModel connection)
+        public TradeHistoryProvider(ConnectionModel.Handler connection)
         {
             _connection = connection;
         }
@@ -50,7 +50,8 @@ namespace TickTrader.Algo.Common.Model
 
         private IAsyncEnumerator<TradeReportEntity[]> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            return _connection.TradeProxy.GetTradeHistory(from, to, skipCancelOrders);
+            throw new NotImplementedException();
+            //return _connection.TradeProxy.GetTradeHistory(from, to, skipCancelOrders);
         }
     }
 }

@@ -12,9 +12,9 @@ using FDK = SoftFX.Extended;
 
 namespace TickTrader.BotTerminal
 {
-    public class BarVector : IDynamicListSource<BarEntity>
+    public class BarVector : IVarList<BarEntity>
     {
-        private readonly DynamicList<BarEntity> bars = new DynamicList<BarEntity>();
+        private readonly VarList<BarEntity> bars = new VarList<BarEntity>();
         private BarSampler sampler;
 
         public BarVector()

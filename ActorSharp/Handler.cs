@@ -5,57 +5,52 @@ using System.Threading.Tasks;
 
 namespace ActorSharp
 {
-    public class Handler
+    public class Handler<TActor> : ActorPart
+        where TActor : Actor
     {
-        internal IActorRef ActorRef { get; private set; }
+        protected Ref<TActor> Actor { get; }
 
-        internal void Init(IActorRef actorRef)
+        public Handler(Ref<TActor> actorRef)
         {
-            ActorRef = actorRef;
+            Actor = actorRef ?? throw new ArgumentNullException("actorRef");
         }
     }
 
-    public class Handler<TActor> : Handler
-        where TActor : Actor
+    public class BlockingHandler<TActor>
     {
-        protected void PostMessage(object message)
+        private Ref<TActor> Ref { get; }
+
+        public BlockingHandler(Ref<TActor> actorRef)
         {
-            ActorRef.PostMessage(message);
+            Ref = actorRef ?? throw new ArgumentNullException("actorRef");
         }
 
-        protected Task CallActor(Action<TActor> method)
+        protected void CallActor(Action<TActor> actorMethod)
         {
-            return ActorRef.CallActor(method);
+            Ref.Call(actorMethod).Wait();
         }
 
-        protected Task<TResult> CallActor<TResult>(Func<TActor, TResult> method)
+        protected TResult CallActor<TResult>(Func<TActor, TResult> actorMethod)
         {
-            return ActorRef.CallActor(method);
+            return Ref.Call(actorMethod).Result;
         }
 
-        protected Task CallActor(Func<TActor, Task> method)
+        protected TResult CallActor<TResult>(Func<TActor, Task<TResult>> actorMethod)
         {
-            return ActorRef.CallActor(method);
+            return Ref.Call(actorMethod).Result;
         }
 
-        protected Task<TResult> CallActor<TResult>(Func<TActor, Task<TResult>> method)
+        protected BlockingChannel<T> OpenInputChannel<T>(int pageSize, Action<TActor, Channel<T>> actorMethod)
         {
-            return ActorRef.CallActor(method);
-        }
+            var callTask = Ref.Call(a =>
+            {
+                var actorSide = new Channel<T>(ChannelDirections.In, pageSize);
+                var handlerSide = new BlockingChannel<T>(actorSide);
+                actorMethod(a, actorSide);
+                return handlerSide;
+            });
 
-        protected IRxChannel<T> Marshal<T>(ITxChannel<T> channel, int pageSize = 10)
-        {
-            return ActorRef.Marshal(channel, pageSize);
-        }
-
-        protected IRxChannel<T> NewRxChannel<T>()
-        {
-            return ActorRef.NewRxChannel<T>();
-        }
-
-        protected ITxChannel<T> NewTxChannel<T>()
-        {
-            return ActorRef.NewTxChannel<T>();
+            return callTask.Result;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
         private EventJournal journal;
         private Task initTask;
 
-        public ConnectionManager(PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
+        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             InitAuthData();
 
             var connectionOptions = new ConnectionOptions() { EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs, LogsFolder = EnvService.Instance.LogFolder };
-            Connection = new ConnectionModel(connectionOptions, new DispatcherStateMachineSync());
+            Connection = client.Connection;
 
             Connection.StateChanged += (from, to) =>
             {
@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
         }
 
         public ConnectionModel.States State => Connection.State;
-        public ConnectionModel Connection { get; private set; }
+        public ConnectionModel.Handler Connection { get; private set; }
 
         public AccountAuthEntry Creds { get; private set; }
         public ObservableCollection<AccountAuthEntry> Accounts { get; private set; }

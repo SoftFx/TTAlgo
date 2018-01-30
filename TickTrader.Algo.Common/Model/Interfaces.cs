@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model
         void Send(object data);
     }
 
-    public interface ISymbolManager : IDynamicDictionarySource<string, SymbolModel>
+    public interface ISymbolManager : IVarSet<string, SymbolModel>
     {
         IFeedSubscription SubscribeAll();
     }

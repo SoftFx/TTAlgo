@@ -25,6 +25,7 @@ using Machinarium.Qnil;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using System.Windows.Input;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -38,8 +39,8 @@ namespace TickTrader.BotTerminal
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
         private readonly IShell shell;
-        private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
-        private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
+        private readonly VarList<BotControlViewModel> bots = new VarList<BotControlViewModel>();
+        private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
         private PreferencesStorageModel _preferences;
 
@@ -54,7 +55,7 @@ namespace TickTrader.BotTerminal
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            smb = (SymbolModel)clientModel.Symbols[symbol];
+            smb = clientModel.Symbols.GetOrDefault(symbol);
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();

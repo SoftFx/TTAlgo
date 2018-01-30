@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
-        public IObservableListSource<SymbolModel> Symbols { get; }
+        public IObservableList<SymbolModel> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ActionViewModel DownloadObserver { get; }
 

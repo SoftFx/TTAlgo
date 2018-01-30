@@ -11,75 +11,58 @@ namespace TickTrader.Algo.Common.Model
 {
     public class EntityCache : EntityBase
     {
-        private IFeedServerApi _feedApi;
-        private ITradeServerApi _tradeApi;
-        private Property<AccountEntity> _accProperty;
-        private DynamicDictionary<string, SymbolEntity> _symbols;
-        private DynamicDictionary<string, CurrencyEntity> _currencies;
-        private DynamicDictionary<string, OrderEntity> _orders;
-        private DynamicDictionary<string, PositionEntity> _positions;
+        private AccountModel _acc;
+        private VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
+        private VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
 
-        public EntityCache()
+        public EntityCache(AccountModelOptions accOptions)
         {
-            _accProperty = AddProperty<AccountEntity>();
-            _currencies = new DynamicDictionary<string, CurrencyEntity>();
-            _symbols = new DynamicDictionary<string, SymbolEntity>();
-            _orders = new DynamicDictionary<string, OrderEntity>();
-            _positions = new DynamicDictionary<string, PositionEntity>();
+            _acc = new AccountModel(_currencies, _symbols, accOptions);
+            _symbols = new VarDictionary<string, SymbolModel>();
+            _currencies = new VarDictionary<string, CurrencyEntity>();
         }
 
-        public Var<AccountEntity> AccountInfo => _accProperty.Var;
-        public IDynamicDictionarySource<string, SymbolEntity> Symbols => _symbols;
-        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _currencies;
-        public IDynamicDictionarySource<string, OrderEntity> TradeRecords => _orders;
-        public IDynamicDictionarySource<string, PositionEntity> Positions => _positions;
+        public IVarSet<string, SymbolModel> Symbols => _symbols;
+        public IVarSet<string, CurrencyEntity> Currencies => _currencies;
+        public AccountModel Account => _acc;
 
-        internal async Task Load(ITradeServerApi tradeApi, IFeedServerApi feedApi)
+        internal EntityCacheUpdate GetSnapshotUpdate()
         {
-            _tradeApi = tradeApi;
-            _feedApi = feedApi;
+            var smbSnapshot = _symbols.Snapshot.Values.Select(s => s.Descriptor).ToList();
+            var currSnapshot = _currencies.Snapshot.Values.ToList();
+            return new LoadSnapshot(smbSnapshot, currSnapshot, _acc.GetSnapshotUpdate());
+        }
 
-            var getInfoTask = tradeApi.GetAccountInfo();
-            var getSymbolsTask = feedApi.GetSymbols();
-            var getCurrenciesTask = feedApi.GetCurrencies();
-            var getOrdersTask = tradeApi.GetTradeRecords();
+        [Serializable]
+        private class LoadSnapshot : EntityCacheUpdate
+        {
+            private List<SymbolEntity> _symbols;
+            private List<CurrencyEntity> _currencies;
+            private EntityCacheUpdate _accountSnaphsotUpdate;
 
-            await Task.WhenAll(getInfoTask, getSymbolsTask, getCurrenciesTask, getOrdersTask);
-
-            _accProperty.Value = getInfoTask.Result;
-
-            _currencies.Clear();
-            foreach (var c in getCurrenciesTask.Result)
-                _currencies.Add(c.Name, c);
-
-            _symbols.Clear();
-            foreach (var s in getSymbolsTask.Result)
-                _symbols.Add(s.Name, s);
-
-            _orders.Clear();
-            foreach (var o in getOrdersTask.Result)
-                _orders.Add(o.OrderId, o);
-
-            _positions.Clear();
-            if (_accProperty.Value.Type == Api.AccountTypes.Net)
+            public LoadSnapshot(List<SymbolEntity> symbols, List<CurrencyEntity> currencies, EntityCacheUpdate accUpdate)
             {
-                var fkdPositions = await tradeApi.GetPositions();
-                foreach (var p in fkdPositions)
-                    _positions.Add(p.Symbol, p);
+                _symbols = symbols;
+                _currencies = currencies;
+                _accountSnaphsotUpdate = accUpdate;
+            }
+
+            public void Apply(EntityCache cache)
+            {
+                cache._currencies.Clear();
+                cache._symbols.Clear();
+
+                foreach (var curr in _currencies)
+                    cache._currencies.Add(curr.Name, curr);
+
+                foreach (var smb in _symbols)
+                    cache._symbols.Add(smb.Name, new SymbolModel(smb, cache.Currencies));
             }
         }
+    }
 
-        internal void Close()
-        {
-            if (_tradeApi != null)
-            {
-                _accProperty.Value = null;
-                _currencies.Clear();
-                _symbols.Clear();
-
-                _tradeApi = null;
-                _feedApi = null;
-            }
-        }
+    public interface EntityCacheUpdate
+    {
+        void Apply(EntityCache cache);
     }
 }

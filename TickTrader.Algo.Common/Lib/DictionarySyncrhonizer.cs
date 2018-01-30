@@ -8,14 +8,14 @@ using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.Algo.Common.Lib
 {
-    public class DictionarySyncrhonizer<TKey, TValue> : IDynamicDictionarySource<TKey, TValue>
+    public class DictionarySyncrhonizer<TKey, TValue> : IVarSet<TKey, TValue>
     {
         private ISyncContext _sync;
-        private IDynamicDictionarySource<TKey, TValue> _srcCollection;
+        private IVarSet<TKey, TValue> _srcCollection;
         private Dictionary<TKey, TValue> _collectionCopy;
         private bool _isDiposed;
 
-        public DictionarySyncrhonizer(IDynamicDictionarySource<TKey, TValue> srcCollection, ISyncContext sync)
+        public DictionarySyncrhonizer(IVarSet<TKey, TValue> srcCollection, ISyncContext sync)
         {
             _srcCollection = srcCollection;
             _collectionCopy = srcCollection.Snapshot.ToDictionary(e => e.Key, e => e.Value);

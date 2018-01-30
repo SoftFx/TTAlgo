@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ListSelector<TSource, TResult> : IDynamicListSource<TResult>, IReadOnlyList<TResult>
+    internal class ListSelector<TSource, TResult> : IVarList<TResult>, IReadOnlyList<TResult>
     {
-        private IDynamicListSource<TSource> src;
+        private IVarList<TSource> src;
         private List<TResult> innerList = new List<TResult>();
         private Func<TSource, TResult> selectFunc;
         private bool propogateDispose;
 
         private static string prefix = "ListSelector<" + typeof(TResult).Name + "> ";
 
-        public ListSelector(IDynamicListSource<TSource> src, Func<TSource, TResult> selectFunc, bool propogateDispose)
+        public ListSelector(IVarList<TSource> src, Func<TSource, TResult> selectFunc, bool propogateDispose)
         {
             this.src = src;
             this.selectFunc = selectFunc;

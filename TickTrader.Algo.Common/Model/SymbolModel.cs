@@ -8,32 +8,41 @@ using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
 using BO = TickTrader.BusinessObjects;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
+using Machinarium.Qnil;
 
 namespace TickTrader.Algo.Common.Model
 {
     public class SymbolModel : BO.ISymbolInfo, Setup.ISymbolInfo
     {
-        private IFeedSubscription subscription;
+        //private IFeedSubscription subscription;
 
-        public SymbolModel(QuoteDistributor distributor, SymbolEntity info, IReadOnlyDictionary<string, CurrencyEntity> currencies)
+        public SymbolModel(SymbolEntity info, IVarSet<string, CurrencyEntity> currencies)
         {
             Descriptor = info;
-            Distributor = distributor;
+            //Distributor = distributor;
 
-            subscription = distributor.Subscribe(info.Name);
-            subscription.NewQuote += OnNewTick;
+            //subscription = distributor.Subscribe(info.Name);
+            //subscription.NewQuote += OnNewTick;
 
-            BaseCurrency = currencies.Read(info.Currency);
-            QuoteCurrency = currencies.Read(info.SettlementCurrency);
+            BaseCurrency = currencies.Snapshot.Read(info.Currency);
+            QuoteCurrency = currencies.Snapshot.Read(info.SettlementCurrency);
 
             BaseCurrencyDigits = BaseCurrency?.Precision ?? 2;
             QuoteCurrencyDigits = QuoteCurrency?.Precision ?? 2;
+
+            BidTracker = new RateDirectionTracker();
+            AskTracker = new RateDirectionTracker();
+
+            BidTracker.Precision = info.Precision;
+            AskTracker.Precision = info.Precision;
         }
 
         public string Name { get { return Descriptor.Name; } }
         public string Description => Descriptor.Description;
         public bool IsUserCreated => false;
         public SymbolEntity Descriptor { get; private set; }
+        public RateDirectionTracker BidTracker { get; private set; }
+        public RateDirectionTracker AskTracker { get; private set; }
         public int PriceDigits { get { return Descriptor.Precision; } }
         public int BaseCurrencyDigits { get; private set; }
         public int QuoteCurrencyDigits { get; private set; }
@@ -46,8 +55,9 @@ namespace TickTrader.Algo.Common.Model
         public double? CurrentBid { get; private set; }
         public double LotSize { get { return Descriptor.RoundLot; } }
         public double StopOrderMarginReduction => Descriptor.StopOrderMarginReduction;
+        
 
-        protected QuoteDistributor Distributor { get; private set; }
+        //protected QuoteDistributor Distributor { get; private set; }
 
         #region BO ISymbolInfo
 
@@ -75,7 +85,7 @@ namespace TickTrader.Algo.Common.Model
 
         public virtual void Close()
         {
-            subscription.Dispose();
+            //subscription.Dispose();
         }
 
         public virtual void Update(SymbolEntity newInfo)
@@ -90,6 +100,9 @@ namespace TickTrader.Algo.Common.Model
 
             CurrentBid = tick.GetNullableBid();
             CurrentAsk = tick.GetNullableAsk();
+
+            BidTracker.Rate = CurrentBid;
+            AskTracker.Rate = CurrentAsk;
 
             RateUpdated(this);
         }

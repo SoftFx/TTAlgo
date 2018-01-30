@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
 {
     class AssetsViewModel : AccountBasedViewModel
     {
-        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyEntity> currencies, ConnectionModel connection)
+        public AssetsViewModel(AccountModel model, IReadOnlyDictionary<string, CurrencyEntity> currencies, ConnectionModel.Handler connection)
             : base(model, connection)
         {
             Assets = model.Assets
@@ -29,6 +29,6 @@ namespace TickTrader.BotTerminal
             return accType == AccountTypes.Cash;
         }
 
-        public IObservableListSource<AssetViewModel> Assets { get; private set; }
+        public IObservableList<AssetViewModel> Assets { get; private set; }
     }
 }

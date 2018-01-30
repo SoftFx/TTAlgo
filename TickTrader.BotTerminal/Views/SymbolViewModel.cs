@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 
@@ -25,8 +26,8 @@ namespace TickTrader.BotTerminal
         {
             _model = model;
             _shell = shell;
-            subscription = model.Subscribe();
-            subscription.NewQuote += OnRateUpdate;
+            //subscription = model.Subscribe();
+            //subscription.NewQuote += OnRateUpdate;
 
             Bid = model.BidTracker;
             Ask = model.AskTracker;
@@ -116,8 +117,6 @@ namespace TickTrader.BotTerminal
 
         private void OnRateUpdate(QuoteEntity tick)
         {
-            Bid.Rate = tick.HasBid ? (double?)tick.Bid : null;
-            Ask.Rate = tick.HasAsk ? (double?)tick.Ask : null;
             QuoteTime = tick.CreatingTime;
         }
 
