@@ -20,20 +20,6 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = 0.1D)]
         public double Volume { get; set; }
 
-        [Parameter(DefaultValue = null, IsRequired = false)]
-        public double? VolumeChangeMultiplier {
-            get { return VolumeChangeMultiplier; }
-            set {
-                if (value < 0)
-                {
-                    PrintError("Invalid negative volume.");
-                    Exit();
-                }
-                else
-                    VolumeChangeMultiplier = value;
-            }
-        }
-
         [Parameter(DefaultValue = 1000)]
         public double PriceDelta { get; set; }
 

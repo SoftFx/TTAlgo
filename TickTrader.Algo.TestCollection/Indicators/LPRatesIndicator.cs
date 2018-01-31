@@ -30,7 +30,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         [Parameter(DisplayName = "SoftFX Symbol", DefaultValue = "BTCUSD")]
         public string SoftFxSymbol { get; set; }
 
-        [Parameter(DisplayName = "Tidex Symbol", DefaultValue = "btc_wusd")]
+        [Parameter(DisplayName = "Tidex Symbol", DefaultValue = "btc_usdt")]
         public string TidexSymbol { get; set; }
 
         [Parameter(DisplayName = "Livecoin Symbol", DefaultValue = "BTC/USD")]
