@@ -111,6 +111,16 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Trade, entry);
         }
 
+        public void OnPrintTradeSuccess(string entry)
+        {
+            AddLogRecord(LogSeverities.TradeSuccess, entry);
+        }
+
+        public void OnPrintTradeFail(string entry)
+        {
+            AddLogRecord(LogSeverities.TradeFail, entry);
+        }
+
         public void OnInitialized()
         {
             AddLogRecord(LogSeverities.Info, "Bot initialized");
@@ -179,6 +189,8 @@ namespace TickTrader.Algo.Core
         Info,
         Error,
         Trade,
+        TradeSuccess,
+        TradeFail,
         Custom,
         CustomStatus
     }

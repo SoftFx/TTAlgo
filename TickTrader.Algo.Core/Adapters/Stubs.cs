@@ -14,6 +14,8 @@ namespace TickTrader.Algo.Core
         void OnPrintError(string entry);
         void OnPrintError(string entry, params object[] parameters);
         void OnPrintTrade(string entry);
+        void OnPrintTradeSuccess(string entry);
+        void OnPrintTradeFail(string entry);
         void OnError(Exception ex);
         void OnInitialized();
         void OnStart();
@@ -101,6 +103,16 @@ namespace TickTrader.Algo.Core
         {
             logger.OnPrintTrade(entry);
         }
+
+        public void PrintTradeSuccess(string entry)
+        {
+            logger.OnPrintTradeSuccess(entry);
+        }
+
+        public void PrintTradeFail(string entry)
+        {
+            logger.OnPrintTradeFail(entry);
+        }
     }
 
     public class NullLogger : IPluginLogger
@@ -138,6 +150,14 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnPrintTrade(string entry)
+        {
+        }
+
+        public void OnPrintTradeSuccess(string entry)
+        {
+        }
+
+        public void OnPrintTradeFail(string entry)
         {
         }
 
@@ -184,7 +204,7 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, bool? ioc)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
         {
             return rejectResult;
         }
