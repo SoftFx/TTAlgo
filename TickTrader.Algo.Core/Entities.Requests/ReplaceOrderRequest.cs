@@ -24,5 +24,6 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public string Tag { get; set; }
         public DateTime? Expiration { get; set; }
+        public bool? IOC { get; set; }
     }
 }

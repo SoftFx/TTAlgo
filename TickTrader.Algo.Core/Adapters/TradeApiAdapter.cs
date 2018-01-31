@@ -219,10 +219,10 @@ namespace TickTrader.Algo.Core
 
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null);
+            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null, null);
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, bool? ioc)
         {
             Order orderToModify = null;
 
@@ -234,6 +234,7 @@ namespace TickTrader.Algo.Core
                 var smbMetadata = GetSymbolOrThrow(orderToModify.Symbol);
                 var orderType = orderToModify.Type;
 
+                ValidateIoc(ioc, orderType);
                 ValidateTradeEnabled(smbMetadata);
 
                 //if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
@@ -269,7 +270,8 @@ namespace TickTrader.Algo.Core
                     TrakeProfit = tp,
                     Comment = comment,
                     Expiration = expiration,
-                    MaxVisibleVolume = orderMaxVisibleVolume
+                    MaxVisibleVolume = orderMaxVisibleVolume,
+                    IOC = ioc
                 };
 
                 var result = await api.ModifyOrder(isAysnc, request);
@@ -416,6 +418,13 @@ namespace TickTrader.Algo.Core
         {
             if (!_permissions.TradeAllowed)
                 throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
+        }
+
+        private void ValidateIoc(bool? ioc, OrderType order)
+        {
+            bool notSupportedIocOrderType = order == OrderType.Market || order == OrderType.Position || order == OrderType.Stop;
+            if (notSupportedIocOrderType && ioc == true)
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectIoc);
         }
 
         #endregion
