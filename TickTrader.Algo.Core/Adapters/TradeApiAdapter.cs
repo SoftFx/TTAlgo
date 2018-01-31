@@ -425,7 +425,7 @@ namespace TickTrader.Algo.Core
             if (options == null)
                 return;
 
-            if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) && (orderType == OrderType.Market || orderType == OrderType.Position || orderType == OrderType.Stop))
+            if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) && (orderType != OrderType.StopLimit))
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
         }
 

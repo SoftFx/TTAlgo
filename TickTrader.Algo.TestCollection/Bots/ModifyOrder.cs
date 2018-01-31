@@ -35,12 +35,21 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
         public int? ExpirationTimeout { get; set; }
 
+        [Parameter(DisplayName = "IoC Flag", DefaultValue = IocTypes.NoneFlag, IsRequired = false)]
+        public IocTypes IoC { get; set; }
+
         protected override void OnStart()
         {
+            OrderExecOptions? options = null;
+            if (IoC == IocTypes.SetFlag)
+                options = OrderExecOptions.ImmediateOrCancel;
+            if (IoC == IocTypes.DropFlag)
+                options = OrderExecOptions.None;
+
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
             var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume);
+                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options);
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(typeof(Order), result.ResultingOrder));
@@ -48,4 +57,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             Exit();
         }
     }
+
+    public enum IocTypes { NoneFlag, DropFlag, SetFlag}
 }
