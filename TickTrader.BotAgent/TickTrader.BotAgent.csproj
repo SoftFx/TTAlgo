@@ -79,6 +79,13 @@
     <Exec Command="npm run build_dev" />
   </Target>
 
+  <Target Name="IncludeWebpackGeneratedContent" BeforeTargets="GetCopyToPublishDirectoryItems">
+    <ItemGroup>
+      <WebpackGeneratedContent Include="WebAdmin\wwwroot\**" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(_ContentIncludedByDefault)" />
+      <ContentWithTargetPath Include="@(WebpackGeneratedContent)" TargetPath="%(Identity)" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
   </ItemGroup>
