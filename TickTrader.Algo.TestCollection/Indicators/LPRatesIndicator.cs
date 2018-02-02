@@ -235,7 +235,8 @@ namespace TickTrader.Algo.TestCollection.Indicators
             _defaultClient = new HttpClient();
             _defaultClient.DefaultRequestHeaders.Add("Accept", "application/json");
             ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.DefaultConnectionLimit = 9999;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
         }
         #endregion
 
