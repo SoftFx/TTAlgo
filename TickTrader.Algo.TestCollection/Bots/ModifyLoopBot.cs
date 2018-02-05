@@ -33,11 +33,15 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = 1000)]
         public double PriceDelta { get; set; }
 
+        [Parameter(DefaultValue = OrderExecOptions.None)]
+        public OrderExecOptions Options { get; set; }
+
         private bool _runningBot = true;
 
         protected override void OnStart()
         {
             ValidateVolumeChangeMultiplier();
+            ValidateOrderExecOptions();
 
             for (int i = 0; i < ParallelOrders; i++)
             {
@@ -70,10 +74,12 @@ namespace TickTrader.Algo.TestCollection.Bots
                 {
                     var existing = Account.Orders.FirstOrDefault(o => o.Comment == strTag && o.Type == GetOrderType());
 
-                    if (existing != null)
-                        await ModifyOrderAsync(existing.Id, GetNewPrice(), stopPrice: GetNewStopPrice(), volume: GetNewVolume(existing.RequestedVolume), comment: strTag);
+                    var limitWithIoc = Options == OrderExecOptions.ImmediateOrCancel && GetOrderType() == OrderType.Limit;
+
+                    if (existing != null && !limitWithIoc)
+                        await ModifyOrderAsync(existing.Id, GetNewPrice(), stopPrice: GetNewStopPrice(), volume: GetNewVolume(existing.RequestedVolume), comment: strTag, options: Options);
                     else
-                        await OpenOrderAsync(Symbol.Name, GetOrderType(), GetOrderSide(), Volume, null, GetNewPrice(), stopPrice: GetNewStopPrice(), comment: strTag);
+                        await OpenOrderAsync(Symbol.Name, GetOrderType(), GetOrderSide(), Volume, null, GetNewPrice(), stopPrice: GetNewStopPrice(), comment: strTag, options: Options);
 
                     modifyCounter++;
                 }
@@ -95,7 +101,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 if (existing != null)
                     await CancelOrderAsync(existing.Id);
                 else
-                    await OpenOrderAsync(Symbol.Name, GetOrderType(), GetOrderSide(), Volume, null, GetNewPrice(), stopPrice: GetNewStopPrice(), comment: strTag);
+                    await OpenOrderAsync(Symbol.Name, GetOrderType(), GetOrderSide(), Volume, null, GetNewPrice(), stopPrice: GetNewStopPrice(), comment: strTag, options: Options);
 
                 modifyCounter++;
             }
@@ -174,8 +180,19 @@ namespace TickTrader.Algo.TestCollection.Bots
             if( VolumeChangeMultiplier.HasValue &&  VolumeChangeMultiplier <= 0)
             {
                 _runningBot = false;
-                PrintError("Ivalid value. VolumeChangeMultiplier is negative.");
-                Status.WriteLine("Ivalid value. VolumeChangeMultiplier is negative.");
+                PrintError("Ivalid parameter. VolumeChangeMultiplier cannot be negative.");
+                Status.WriteLine("Ivalid parameter. VolumeChangeMultiplier cannot be negative.");
+                Exit();
+            }
+        }
+
+        private void ValidateOrderExecOptions()
+        {
+            if( Options == OrderExecOptions.ImmediateOrCancel && GetOrderType() == OrderType.Stop)
+            {
+                _runningBot = false;
+                PrintError("Ivalid parameter. Stop order cannot be ioc.");
+                Status.WriteLine("Ivalid parameter. Stop order cannot be ioc.");
                 Exit();
             }
         }
