@@ -31,17 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="TickTrader.Algo.Api">
       <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
@@ -82,22 +77,11 @@
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
-    <Compile Include="Indicators\LPRatesIndicator.cs" />
     <Compile Include="Indicators\MultipleInputIndicator.cs" />
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
     <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Indicators\MultiplePrecisionIndicator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
-      <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
-      <Name>TickTrader.SeriesStorage.LevelDb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TickTrader.SeriesStorage\TickTrader.SeriesStorage.csproj">
-      <Project>{6664e69f-2180-4d7e-b51e-c81c9f5cc47d}</Project>
-      <Name>TickTrader.SeriesStorage</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
