@@ -302,7 +302,6 @@ namespace TickTrader.BotAgent.BA.Models
             }
             catch (Exception ex)
             {
-                // TO DO: log
                 lock (_syncObj)
                 {
                     Fault = ex;
