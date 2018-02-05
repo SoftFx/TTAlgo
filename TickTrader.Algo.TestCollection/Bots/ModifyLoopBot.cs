@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
@@ -130,7 +129,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private double GetNewVolume(double oldVolume)
         {
-            if (!VolumeChangeMultiplier.HasValue || VolumeChangeMultiplier.Value == 1 || Volume * VolumeChangeMultiplier.Value == oldVolume)
+            if (!VolumeChangeMultiplier.HasValue || VolumeChangeMultiplier.Value == 1 || oldVolume.E(Volume * VolumeChangeMultiplier.Value))
                 return Volume;
             else
                 return Volume * VolumeChangeMultiplier.Value;
@@ -187,14 +186,16 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             for (int i = 0; i < ParallelOrders; i++)
             {
-                foreach (var order in Account.Orders.Where(o => o.Comment == "ModifyLoopBot" + i))
-                    if (order.Type == OrderType.Position)
+                var ordersForDel = Account.Orders.Where(o => o.Comment == "ModifyLoopBot" + i).Select(o => o.Id).ToList();
+
+                foreach (var orderId in ordersForDel)
+                    if (Account.Orders[orderId].Type == OrderType.Position)
                     {
                         if(Account.Type == AccountTypes.Gross)
-                            await CloseOrderAsync(order.Id);
+                            await CloseOrderAsync(orderId);
                     }
                     else
-                        await CancelOrderAsync(order.Id);
+                        await CancelOrderAsync(orderId);
             }
         }
 
