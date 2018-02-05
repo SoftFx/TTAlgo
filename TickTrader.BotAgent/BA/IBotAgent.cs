@@ -98,7 +98,7 @@ namespace TickTrader.BotAgent.BA
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
-    public enum LogEntryType { Info, Trading, Error, Custom }
+    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
 
     public interface ILogEntry
     {
