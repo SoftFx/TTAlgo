@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Common.Model
             System.Diagnostics.Debug.WriteLine(string.Format("Init() symbols:{0} orders:{1} positions:{2}",
                 _symbols.Count, tradeRecords.Count, positions.Count));
 
-            return new SnapshotLoadAction(accInfo, tradeRecords, positions, assets);
+            return new Snapshot(accInfo, tradeRecords, positions, assets);
 
             //UpdateData(accInfo, tradeRecords, positions, accInfo.Assets);
 
@@ -97,40 +97,40 @@ namespace TickTrader.Algo.Common.Model
                 Balance = Balance,
                 BalanceCurrency = BalanceCurrency,
                 Leverage = Leverage,
-                Type = Type.Value,
+                Type = Type ?? AccountTypes.Gross,
                 Assets = Assets.Snapshot.Values.Select(a => a.GetEntity()).ToArray()
             };
         }
 
-        private void UpdateData(AccountEntity accInfo,
-            IEnumerable<OrderEntity> orders,
-            IEnumerable<PositionEntity> positions,
-            IEnumerable<AssetEntity> assets)
-        {
-            Id = accInfo.Id;
+        //internal void UpdateData(AccountEntity accInfo,
+        //    IEnumerable<OrderEntity> orders,
+        //    IEnumerable<PositionEntity> positions,
+        //    IEnumerable<AssetEntity> assets)
+        //{
+        //    Id = accInfo.Id;
 
-            this.positions.Clear();
-            this.orders.Clear();
-            this.assets.Clear();
+        //    this.positions.Clear();
+        //    this.orders.Clear();
+        //    this.assets.Clear();
 
-            var balanceCurrencyInfo = _currencies.Read(accInfo.BalanceCurrency);
+        //    var balanceCurrencyInfo = _currencies.Read(accInfo.BalanceCurrency);
 
-            Account = accInfo.Id;
-            Type = accInfo.Type;
-            Balance = accInfo.Balance;
-            BalanceCurrency = accInfo.BalanceCurrency;
-            Leverage = accInfo.Leverage;
-            BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
+        //    Account = accInfo.Id;
+        //    Type = accInfo.Type;
+        //    Balance = accInfo.Balance;
+        //    BalanceCurrency = accInfo.BalanceCurrency;
+        //    Leverage = accInfo.Leverage;
+        //    BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
 
-            foreach (var fdkPosition in positions)
-                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
+        //    foreach (var fdkPosition in positions)
+        //        this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
 
-            foreach (var fdkOrder in orders)
-                this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, this));
+        //    foreach (var fdkOrder in orders)
+        //        this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, this));
 
-            foreach (var fdkAsset in assets)
-                this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
-        }
+        //    foreach (var fdkAsset in assets)
+        //        this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
+        //}
 
         #region Balance and assets management
 
@@ -342,7 +342,7 @@ namespace TickTrader.Algo.Common.Model
 
         SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
         {
-            throw new NotImplementedException();
+            return _symbols.GetOrDefault(name);
         }
 
         public EntityCacheUpdate GetSnapshotUpdate()
@@ -352,17 +352,18 @@ namespace TickTrader.Algo.Common.Model
             var positions = Positions.Snapshot.Values.Select(p => p.GetEntity()).ToList();
             var assets = Assets.Snapshot.Values.Select(a => a.GetEntity()).ToList();
 
-            return new SnapshotLoadAction(info, orders, positions, assets);
+            return new Snapshot(info, orders, positions, assets);
         }
 
-        private class SnapshotLoadAction : EntityCacheUpdate
+        [Serializable]
+        public class Snapshot : EntityCacheUpdate
         {
             private AccountEntity _accInfo;
             private IEnumerable<OrderEntity> _orders;
             private IEnumerable<PositionEntity> _positions;
             private IEnumerable<AssetEntity> _assets;
 
-            public SnapshotLoadAction(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
+            public Snapshot(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
                 IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
             {
                 _accInfo = accInfo;
@@ -399,6 +400,24 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        [Serializable]
+        public class LoadOrderUpdate : EntityCacheUpdate
+        {
+            public LoadOrderUpdate(OrderEntity order)
+            {
+                Order = order ?? throw new ArgumentNullException("symbol");
+            }
+
+            private OrderEntity Order { get; }
+
+            public void Apply(EntityCache cache)
+            {
+                var acc = cache.Account;
+                acc.orders.Add(Order.OrderId, new OrderModel(Order, acc));
+            }
+        }
+
+        [Serializable]
         private class ClearDataAction : EntityCacheUpdate
         {
             public void Apply(EntityCache cache)
@@ -406,6 +425,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        [Serializable]
         private class OrderUpdateAction: EntityCacheUpdate
         {
             private ExecutionReport _report;
@@ -434,6 +454,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        [Serializable]
         private class BalanceUpdateAction : EntityCacheUpdate
         {
             private BalanceOperationReport _report;
@@ -467,6 +488,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        [Serializable]
         private class PositionUpdateAction : EntityCacheUpdate
         {
             private PositionEntity _report;
@@ -503,7 +525,7 @@ namespace TickTrader.Algo.Common.Model
         public ExecutionReport Report { get; }
         public OrderExecAction ExecAction { get; }
         public OrderEntityAction EntityAction { get; }
-        //public OrderModel Order { get; }
+        public OrderModel Order { get; }
     }
 
     [Flags]

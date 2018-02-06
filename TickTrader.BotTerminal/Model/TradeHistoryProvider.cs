@@ -14,16 +14,16 @@ using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    class TradeHistoryProviderModel : TradeHistoryProvider
+    class TradeHistoryProviderModel
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-        private TraderClientModel _tradeClient;
+        private ClientModel.Data _client;
 
         public event Action<TransactionReport> OnTradeReport = delegate { };
 
-        public TradeHistoryProviderModel(TraderClientModel connectionModel) : base(connectionModel.Connection)
+        public TradeHistoryProviderModel(ClientModel.Data client)
         {
-            _tradeClient = connectionModel;
+            _client = client;
 
             //_tradeClient.Connection.Connecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport += TradeTransactionReport; };
             //_tradeClient.Connection.Disconnecting += () => { _tradeClient.Connection.TradeProxy.TradeTransactionReport -= TradeTransactionReport; };
@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             {
                 try
                 {
-                    symbolModel = (SymbolModel)_tradeClient.Symbols.GetOrDefault(transaction.Symbol);
+                    symbolModel = _client.Symbols.GetOrDefault(transaction.Symbol);
                 }
                 catch
                 {
@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
 
         private void TradeTransactionReport(TradeReportEntity report)
         {
-            OnTradeReport(TransactionReportFactory.Create(_tradeClient.Account.Type.Value, report, GetSymbolFor(report)));
+            OnTradeReport(TransactionReportFactory.Create(_client.Cache.Account.Type.Value, report, GetSymbolFor(report)));
         }
     }
 

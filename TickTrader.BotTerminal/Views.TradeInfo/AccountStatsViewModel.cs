@@ -22,11 +22,11 @@ namespace TickTrader.BotTerminal
 
             client.Connected += () =>
             {
-                account.Calc.Updated += Calc_Updated;
+                //account.Calc.Updated += Calc_Updated;
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
                 IsStatsVisible = account.Type != AccountTypes.Cash;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
-                Calc_Updated(account.Calc);
+                //Calc_Updated(account.Calc);
             };
             client.Disconnected += () => account.Calc.Updated -= Calc_Updated;
         }

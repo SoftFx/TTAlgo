@@ -13,6 +13,7 @@ using TickTrader.Algo.Core.Lib;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Lib;
 using SoftFX.Extended.Reports;
+using ActorSharp;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -39,6 +40,9 @@ namespace TickTrader.Algo.Common.Model
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
 
+        public bool AutoAccountInfo => true;
+        public bool AutoSymbols => true;
+
         public FdkInterop(ConnectionOptions options)
         {
             _options = options;
@@ -64,6 +68,8 @@ namespace TickTrader.Algo.Common.Model
             _connectEvent = new TaskCompletionSource<ConnectionErrorInfo>();
 
             _feedProxy.Tick += (s, e) => Tick?.Invoke(FdkConvertor.Convert(e.Tick));
+            _feedProxy.SymbolInfo += (s, e) => SymbolInfo?.Invoke(FdkConvertor.Convert(e.Information));
+            _feedProxy.CurrencyInfo += (s, e) => CurrencyInfo?.Invoke(FdkConvertor.Convert(e.Information));
             _tradeProxy.PositionReport += (s, a) => PositionReport?.Invoke(FdkConvertor.Convert(a.Report));
             _tradeProxy.ExecutionReport += (s, a) => ExecutionReport?.Invoke(FdkConvertor.Convert(a.Report));
             _tradeProxy.BalanceOperation += (s, a) => BalanceOperation?.Invoke(FdkConvertor.Convert(a.Data));
@@ -274,10 +280,8 @@ namespace TickTrader.Algo.Common.Model
         #region IFeedServerApi
 
         public event Action<QuoteEntity> Tick;
-        public event Action<PositionEntity> PositionReport;
-        public event Action<ExecutionReport> ExecutionReport;
-        public event Action<TradeReportEntity> TradeTransactionReport;
-        public event Action<BalanceOperationReport> BalanceOperation;
+        public event Action<SymbolEntity[]> SymbolInfo;
+        public event Action<CurrencyEntity[]> CurrencyInfo;
 
         public CurrencyEntity[] Currencies => _feedProxy.Cache.Currencies.Select(FdkConvertor.Convert).ToArray();
         public SymbolEntity[] Symbols => _feedProxy.Cache.Symbols.Select(FdkConvertor.Convert).ToArray();
@@ -370,27 +374,55 @@ namespace TickTrader.Algo.Common.Model
         #region ITradeServerApi
 
         public AccountEntity AccountInfo => FdkConvertor.Convert(_tradeProxy.Cache.AccountInfo);
-        public OrderEntity[] TradeRecords =>  _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
+        //public OrderEntity[] TradeRecords =>  _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
         public PositionEntity[] Positions => _tradeProxy.Cache.Positions.Select(FdkConvertor.Convert).ToArray();
+
+        public event Action<PositionEntity> PositionReport;
+        public event Action<ExecutionReport> ExecutionReport;
+        public event Action<TradeReportEntity> TradeTransactionReport;
+        public event Action<BalanceOperationReport> BalanceOperation;
 
         public Task<AccountEntity> GetAccountInfo()
         {
             return Task.FromResult(AccountInfo);
         }
 
-        public Task<OrderEntity[]> GetTradeRecords()
-        {
-            return Task.FromResult(TradeRecords);
-        }
+        //public Task<OrderEntity[]> GetTradeRecords()
+        //{
+        //    return Task.FromResult(TradeRecords);
+        //}
 
         public Task<PositionEntity[]> GetPositions()
         {
             return Task.FromResult(Positions);
         }
 
-        public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeRecords(BlockingChannel<OrderEntity> rxStream)
         {
-            return new StreamDownloader(_tradeProxy.Server, from, to, skipCancelOrders);
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    foreach (var order in _tradeProxy.Cache.TradeRecords)
+                        rxStream.Write(FdkConvertor.Convert(order));
+
+                    rxStream.Close();
+                }
+                catch(Exception ex)
+                {
+                    rxStream.Close(ex);
+                }
+            });
+        }
+
+        //public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+        //{
+        //    return new StreamDownloader(_tradeProxy.Server, from, to, skipCancelOrders);
+        //}
+
+        public Task GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)

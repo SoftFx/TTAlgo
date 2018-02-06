@@ -17,11 +17,13 @@ namespace ActorSharp
         }
 
         internal SynchronizationContext Context { get; set; }
+        internal virtual bool PostInit => true;
 
         private void Start(SynchronizationContext context)
         {
             Context = context ?? throw new Exception("Synchronization context is required!");
-            Context.Post(InvokeInit, null);
+            if (PostInit)
+                Context.Post(InvokeInit, null);
         }
 
         private void InvokeInit(object state)
@@ -50,12 +52,19 @@ namespace ActorSharp
             #endif
         }
 
+        #region Non-Actor API
+
         private void InvokeContextCheck()
         {
             #if DEBUG
             if (SynchronizationContext.Current != null)
                 throw new InvalidOperationException("It's forbidden to call ContextInvoke() under an actor context. ContextInvoke() can only be called from non-actor thread!");
             #endif
+        }
+
+        protected void ContextSend(Action action)
+        {
+            Context.Post(ExecAction, action);
         }
 
         /// <summary>
@@ -90,6 +99,19 @@ namespace ActorSharp
             var task = new Task(action, state);
             Context.Post(ExecTaskSync, task);
             return task;
+        }
+
+        protected BlockingChannel<T> CreateBlocingChannel<T>(Channel<T> channel)
+        {
+            ContextCheck();
+            return new BlockingChannel<T>(channel);
+        }
+
+        #endregion
+
+        private void ExecAction(object state)
+        {
+            ((Action)state).Invoke();
         }
 
         private void ExecTaskSync(object task)

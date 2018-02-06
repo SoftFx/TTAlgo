@@ -26,21 +26,62 @@ namespace TickTrader.Algo.Common.Model
         public IVarSet<string, CurrencyEntity> Currencies => _currencies;
         public AccountModel Account => _acc;
 
-        internal EntityCacheUpdate GetSnapshotUpdate()
+        internal EntityCacheUpdate GetSnapshot()
         {
             var smbSnapshot = _symbols.Snapshot.Values.Select(s => s.Descriptor).ToList();
             var currSnapshot = _currencies.Snapshot.Values.ToList();
-            return new LoadSnapshot(smbSnapshot, currSnapshot, _acc.GetSnapshotUpdate());
+            return new Snapshot(smbSnapshot, currSnapshot, _acc.GetSnapshotUpdate());
+        }
+
+        internal void ApplyQuote(QuoteEntity quote)
+        {
+            var smb = _symbols.GetOrDefault(quote.Symbol);
+            smb?.OnNewTick(quote);
         }
 
         [Serializable]
-        private class LoadSnapshot : EntityCacheUpdate
+        public class SymbolUpdate : EntityCacheUpdate
         {
-            private List<SymbolEntity> _symbols;
-            private List<CurrencyEntity> _currencies;
+            public SymbolUpdate(SymbolEntity symbol)
+            {
+                Symbol = symbol ?? throw new ArgumentNullException("symbol");
+            }
+
+            private SymbolEntity Symbol { get; }
+
+            public void Apply(EntityCache cache)
+            {
+                if (cache._symbols.ContainsKey(Symbol.Name))
+                    cache._symbols[Symbol.Name].Update(Symbol);
+                else
+                    cache._symbols.Add(Symbol.Name, new SymbolModel(Symbol, cache._currencies));
+            }
+        }
+
+        [Serializable]
+        public class CurrencyUpdate : EntityCacheUpdate
+        {
+            public CurrencyUpdate(CurrencyEntity currency)
+            {
+                Currency = currency ?? throw new ArgumentNullException("symbol");
+            }
+
+            private CurrencyEntity Currency { get; }
+
+            public void Apply(EntityCache cache)
+            {
+                cache._currencies.Add(Currency.Name, Currency);
+            }
+        }
+
+        [Serializable]
+        public class Snapshot : EntityCacheUpdate
+        {
+            private IEnumerable<SymbolEntity> _symbols;
+            private IEnumerable<CurrencyEntity> _currencies;
             private EntityCacheUpdate _accountSnaphsotUpdate;
 
-            public LoadSnapshot(List<SymbolEntity> symbols, List<CurrencyEntity> currencies, EntityCacheUpdate accUpdate)
+            public Snapshot(IEnumerable<SymbolEntity> symbols, IEnumerable<CurrencyEntity> currencies, EntityCacheUpdate accUpdate)
             {
                 _symbols = symbols;
                 _currencies = currencies;
@@ -57,6 +98,8 @@ namespace TickTrader.Algo.Common.Model
 
                 foreach (var smb in _symbols)
                     cache._symbols.Add(smb.Name, new SymbolModel(smb, cache.Currencies));
+
+                _accountSnaphsotUpdate.Apply(cache);
             }
         }
     }

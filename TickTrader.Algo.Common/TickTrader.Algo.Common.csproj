@@ -121,6 +121,7 @@
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
     <Compile Include="Model.Interop\FdkInterop.cs" />
+    <Compile Include="Model.Interop\SfxTaskAdapter.cs" />
     <Compile Include="Model.Interop\SliceBuffer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
     <Compile Include="Model.Interop\SfxInterop.cs" />

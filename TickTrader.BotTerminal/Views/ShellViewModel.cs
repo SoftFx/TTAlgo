@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
-            SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             Trade = new TradeInfoViewModel(clientModel);
 

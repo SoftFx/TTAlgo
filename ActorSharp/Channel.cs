@@ -13,7 +13,7 @@ namespace ActorSharp
 
         public static Channel<T> NewOutput<T>(int pageSize = 10)
         {
-            return new Channel<T>(ChannelDirections.In, pageSize);
+            return new Channel<T>(ChannelDirections.Out, pageSize);
         }
 
         public static Channel<T> NewDuplex<T>(int pageSize = 10)
@@ -78,7 +78,7 @@ namespace ActorSharp
             _writer.Clear();
         }
 
-        public T Current { get; private set; }
+        public T Current => _reader.Current;
     }
 
     public enum ChannelDirections { In, Out, Duplex }

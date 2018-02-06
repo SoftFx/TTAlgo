@@ -13,6 +13,8 @@ namespace ActorSharp
             ActorInit();
         }
 
+        internal override bool PostInit => false;
+
         //internal ActorPart(SynchronizationContext context)
         //{
         //    Context = context ?? throw new Exception("Synchronization context is required!");

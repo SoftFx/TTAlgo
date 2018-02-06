@@ -186,8 +186,8 @@ namespace TickTrader.BotTerminal
                 Application.Current.Shutdown();
             else
             {
-                var commonClient = new ClientModel.ControlHandler(new ConnectionOptions());
-                await commonClient.Start();
+                var commonClient = new ClientModel.ControlHandler(new ConnectionOptions(), EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+                await commonClient.Init();
 
                 _container.RegisterInstance(typeof(ClientModel.ControlHandler), null, commonClient);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();

@@ -1,28 +1,27 @@
-﻿using System;
+﻿using ActorSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class QuoteDistributor
+    public class QuoteDistributor : ActorPart
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("QuoteDistributor");
 
-        private ClientModel _client;
+        //private ClientModel _client;
         private List<Subscription> allSymbolSubscriptions = new List<Subscription>();
         private Dictionary<string, SubscriptionGroup> groups = new Dictionary<string, SubscriptionGroup>();
-        private ActionBlock<SubscriptionTask> requestQueue;
-        private CancellationTokenSource cancelAllrequests;
+        //private ActionBlock<SubscriptionTask> requestQueue;
+        //private CancellationTokenSource cancelAllrequests;
+        private IQuoteDistributorSource _src;
 
-        public QuoteDistributor(ClientModel client)
+        internal QuoteDistributor(IQuoteDistributorSource src)
         {
-            _client = client;
+            _src = src;
+            //_client = client;
             //_client.TickReceived += FeedProxy_Tick;
         }
 
@@ -38,98 +37,96 @@ namespace TickTrader.Algo.Common.Model
             return subscription;
         }
 
-        public void AddSymbol(string symbol)
+        public IEnumerable<Tuple<int, string>> GetAllSubscriptions(IEnumerable<string> allSymbols)
         {
-            groups.Add(symbol, new SubscriptionGroup(symbol));
-        }
-
-        public void RemoveSymbol(string symbol)
-        {
-            groups.Remove(symbol);
-        }
-
-        public async Task Init()
-        {
-            foreach (var group in groups.Values)
-                group.CurrentDepth = group.MaxDepth;
-
-            StartQueue();
-            await DoBatchSubscription();
-            await GetQuoteSnapshot();
-        }
-
-        public async Task Stop()
-        {
-            await StopQueue();
-        }
-
-        private async Task GetQuoteSnapshot()
-        {
-            try
+            foreach (var smb in allSymbols)
             {
-                foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
-                {
-                    var depth = group.Key;
-                    var symbols = group.Select(s => s.Symbol).ToArray();
-                    EnqueueSubscriptionRequest(depth, symbols);
-
-                    //var quotes = await _client.FeedProxy.GetQuoteSnapshot(symbols, depth);
-                    //quotes.Foreach(UpdateRate);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Failed to get snapshot! " + ex.Message);
+                var group = groups.GetOrDefault(smb);
+                if (group == null)
+                    yield return new Tuple<int, string>(1, smb);
+                else
+                    yield return new Tuple<int, string>(group.Depth, smb);
             }
         }
 
-        private void StartQueue()
-        {
-            cancelAllrequests = new CancellationTokenSource();
-            var queueOptions = new ExecutionDataflowBlockOptions { CancellationToken = cancelAllrequests.Token };
+        //public async Task Init()
+        //{
+        //    foreach (var group in groups.Values)
+        //        group.CurrentDepth = group.MaxDepth;
 
-            requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
-        }
+        //    StartQueue();
+        //    await DoBatchSubscription();
+        //    await GetQuoteSnapshot();
+        //}
 
-        private async Task StopQueue()
-        {
-            if (requestQueue != null)
-            {
-                cancelAllrequests.Cancel();
-                requestQueue.Complete();
-                await requestQueue.Completion;
-                cancelAllrequests = null;
-                requestQueue = null;
-            }
-        }
+        //public async Task Stop()
+        //{
+        //    await StopQueue();
+        //}
 
-        private async Task DoBatchSubscription()
-        {
-            foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
-            {
-                var depth = group.Key;
-                var symbols = group.Select(s => s.Symbol).ToArray();
-                EnqueueSubscriptionRequest(depth, symbols);
+        //private async Task GetQuoteSnapshot()
+        //{
+        //    try
+        //    {
+        //        foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
+        //        {
+        //            var depth = group.Key;
+        //            var symbols = group.Select(s => s.Symbol).ToArray();
+        //            EnqueueSubscriptionRequest(depth, symbols);
 
-                await InvokeSubscribeAsync(new SubscriptionTask(symbols, depth));
-            }
-        }
+        //            //var quotes = await _client.FeedProxy.GetQuoteSnapshot(symbols, depth);
+        //            //quotes.Foreach(UpdateRate);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error("Failed to get snapshot! " + ex.Message);
+        //    }
+        //}
 
-        void FeedProxy_Tick(QuoteEntity e)
-        {
-            UpdateRate(e);
-        }
+        //private void StartQueue()
+        //{
+        //    cancelAllrequests = new CancellationTokenSource();
+        //    var queueOptions = new ExecutionDataflowBlockOptions { CancellationToken = cancelAllrequests.Token };
 
-        private void UpdateRate(QuoteEntity tick)
+        //    requestQueue = new ActionBlock<SubscriptionTask>(InvokeSubscribeAsync);
+        //}
+
+        //private async Task StopQueue()
+        //{
+        //    if (requestQueue != null)
+        //    {
+        //        cancelAllrequests.Cancel();
+        //        requestQueue.Complete();
+        //        await requestQueue.Completion;
+        //        cancelAllrequests = null;
+        //        requestQueue = null;
+        //    }
+        //}
+
+        //private async Task DoBatchSubscription()
+        //{
+        //    foreach (var group in groups.Values.GroupBy(s => s.MaxDepth))
+        //    {
+        //        var depth = group.Key;
+        //        var symbols = group.Select(s => s.Symbol).ToArray();
+        //        EnqueueSubscriptionRequest(depth, symbols);
+
+        //        await InvokeSubscribeAsync(new SubscriptionNotification(symbols, depth));
+        //    }
+        //}
+
+
+        internal void UpdateRate(QuoteEntity tick)
         {
             foreach (var subscription in allSymbolSubscriptions)
                 subscription.OnNewQuote(tick);
 
-            SubscriptionGroup modifier = groups.GetOrDefault(tick.Symbol);
+            SubscriptionGroup group = groups.GetOrDefault(tick.Symbol);
 
-            if (modifier != null)
+            if (group != null)
             {
-                foreach (var subscription in modifier.Subscriptions.Keys)
+                foreach (var subscription in group.Subscriptions.Keys)
                 {
                     if (!(subscription is AllSymbolSubscription))
                         subscription.OnNewQuote(tick);
@@ -139,14 +136,16 @@ namespace TickTrader.Algo.Common.Model
 
         private void AdjustSubscription(string symbol)
         {
-            var modifier = groups.GetOrDefault(symbol);
-            if (modifier != null)
+            var group = groups.GetOrDefault(symbol);
+            if (group != null)
             {
-                var newDepth = modifier.MaxDepth;
-                if (newDepth != modifier.CurrentDepth)
+                var oldDepth = group.Depth;
+                var newDepth = group.GetMaxDepth();
+                if (newDepth != oldDepth)
                 {
-                    modifier.CurrentDepth = newDepth;
-                    EnqueueSubscriptionRequest(newDepth, symbol);
+                    group.Depth = newDepth;
+                    _src.ModifySubscription(symbol, newDepth);
+                    //EnqueueSubscriptionRequest(newDepth, symbol);
                 }
             }
         }
@@ -154,32 +153,42 @@ namespace TickTrader.Algo.Common.Model
         private SubscriptionGroup GetGroup(string symbol)
         {
             SubscriptionGroup group;
-            groups.TryGetValue(symbol, out group);
+            if (!groups.TryGetValue(symbol, out group))
+            {
+                group = new SubscriptionGroup(symbol);
+                groups.Add(symbol, group);
+            }
             return group;
         }
 
-        private void EnqueueSubscriptionRequest(int depth, params string[] symbols)
+        private void RemoveIfEmpty(SubscriptionGroup group)
         {
-            if (requestQueue != null) // online
-                requestQueue.Post(new SubscriptionTask(symbols, depth));
+            if (group.Subscriptions.Count == 0)
+                groups.Remove(group.Symbol);
         }
 
-        private async Task InvokeSubscribeAsync(SubscriptionTask task)
-        {
-            try
-            {
-                //await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
-                logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Failed to subscribe! " + ex.Message);
-            }
-        }
+        //private void EnqueueSubscriptionRequest(int depth, params string[] symbols)
+        //{
+        //    if (requestQueue != null) // online
+        //        requestQueue.Post(new SubscriptionNotification(symbols, depth));
+        //}
 
-        private struct SubscriptionTask
+        //private async Task InvokeSubscribeAsync(SubscriptionTask task)
+        //{
+        //    try
+        //    {
+        //        //await _client.FeedProxy.SubscribeToQuotes(task.Symbols, task.Depth);
+        //        logger.Debug("Subscribed to " + string.Join(",", task.Symbols));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error("Failed to subscribe! " + ex.Message);
+        //    }
+        //}
+
+        private struct SubscriptionNotification
         {
-            public SubscriptionTask(string[] symbols, int depth)
+            public SubscriptionNotification(string[] symbols, int depth)
             {
                 Symbols = symbols;
                 Depth = depth;
@@ -216,7 +225,11 @@ namespace TickTrader.Algo.Common.Model
             public virtual void Dispose()
             {
                 foreach (var symbol in bySymbol.Keys)
-                    parent.GetGroup(symbol).Subscriptions.Remove(this);
+                {
+                    var group = parent.GetGroup(symbol);
+                    group.Subscriptions.Remove(this);
+                    parent.RemoveIfEmpty(group);
+                }
             }
 
             public virtual void Add(string symbol, int depth = 1)
@@ -231,10 +244,10 @@ namespace TickTrader.Algo.Common.Model
 
             protected void AddModifier(string symbol, int depth)
             {
-                var modifier = parent.GetGroup(symbol);
-                if (modifier != null)
+                var group = parent.GetGroup(symbol);
+                if (group != null)
                 {
-                    modifier.Add(this, depth);
+                    group.Add(this, depth);
                     parent.AdjustSubscription(symbol);
                 }
                 bySymbol[symbol] = depth;
@@ -244,10 +257,11 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (bySymbol.Remove(symbol))
                 {
-                    var modifier = parent.GetGroup(symbol);
-                    if (modifier != null)
+                    var group = parent.GetGroup(symbol);
+                    if (group != null)
                     {
-                        modifier.Subscriptions.Remove(this);
+                        group.Subscriptions.Remove(this);
+                        parent.RemoveIfEmpty(group);
                         parent.AdjustSubscription(symbol);
                     }
                 }
@@ -281,13 +295,14 @@ namespace TickTrader.Algo.Common.Model
 
             public override void Dispose()
             {
+                base.Dispose();
                 parent.allSymbolSubscriptions.Remove(this);
             }
         }
 
         private class SubscriptionGroup
         {
-            public int CurrentDepth { get; set; }
+            public int Depth { get; set; }
             public Dictionary<Subscription, int> Subscriptions { get; private set; }
             public string Symbol { get; private set; }
 
@@ -297,22 +312,19 @@ namespace TickTrader.Algo.Common.Model
                 Subscriptions = new Dictionary<Subscription, int>();
             }
 
-            public int MaxDepth
+            public int GetMaxDepth()
             {
-                get
+                int max = 1;
+
+                foreach (var value in Subscriptions.Values)
                 {
-                    int max = 1;
-
-                    foreach (var value in Subscriptions.Values)
-                    {
-                        if (value == 0)
-                            return 0;
-                        if (value > max)
-                            max = value;
-                    }
-
-                    return max;
+                    if (value == 0)
+                        return 0;
+                    if (value > max)
+                        max = value;
                 }
+
+                return max;
             }
 
             public void Add(Subscription subscription, int depth)
@@ -325,6 +337,11 @@ namespace TickTrader.Algo.Common.Model
                 Subscriptions.Remove(subscription);
             }
         }
+    }
+
+    internal interface IQuoteDistributorSource
+    {
+        void ModifySubscription(string symbol, int depth);
     }
 
     public interface IFeedSubscription : IDisposable

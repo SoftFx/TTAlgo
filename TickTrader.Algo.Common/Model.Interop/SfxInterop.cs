@@ -15,6 +15,7 @@ using API = TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using TickTrader.FDK.QuoteStore;
 using TickTrader.FDK.TradeCapture;
+using ActorSharp;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -28,6 +29,9 @@ namespace TickTrader.Algo.Common.Model
 
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
+
+        public bool AutoAccountInfo => false;
+        public bool AutoSymbols => false;
 
         private FDK.QuoteFeed.Client _feedProxy;
         private FDK.QuoteStore.Client _feedHistoryProxy;
@@ -51,6 +55,11 @@ namespace TickTrader.Algo.Common.Model
             _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", options.EnableLogs, 5050, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
             _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", options.EnableLogs, 5040, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
             _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", options.EnableLogs, 5060, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
+
+            _feedProxy.InitTaskAdapter();
+            _tradeProxy.InitTaskAdapter();
+            _feedHistoryProxy.InitTaskAdapter();
+            _tradeHistoryProxy.InitTaskAdapter();
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
             _feedProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
@@ -244,41 +253,43 @@ namespace TickTrader.Algo.Common.Model
 
         public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
-            var buffer = new BarSliceBuffer(from, to);
-            var eTask = _feedHistoryProxy.DownloadBarsAsync(Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to);
-            DownloadBarsToBuffer(buffer, eTask);
-            return buffer;
+            throw new NotImplementedException();
+
+            //var buffer = new BarSliceBuffer(from, to);
+            //var eTask = _feedHistoryProxy.DownloadBarsAsync(Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to);
+            //DownloadBarsToBuffer(buffer, eTask);
+            //return buffer;
         }
 
-        private async void DownloadBarsToBuffer(SliceBuffer<BarEntity> buffer, Task<BarEnumerator> enumTask)
-        {
-            const int pageSize = 2000;
+        //private async void DownloadBarsToBuffer(SliceBuffer<BarEntity> buffer, Task<BarEnumerator> enumTask)
+        //{
+        //    const int pageSize = 2000;
 
-            try
-            {
-                using (var e = await enumTask)
-                {
-                    var page = new SFX.Bar[pageSize];
+        //    try
+        //    {
+        //        using (var e = await enumTask)
+        //        {
+        //            var page = new SFX.Bar[pageSize];
 
-                    while (true)
-                    {
-                        var count = await e.NextAsync(page).ConfigureAwait(false);
-                        if (count <= 0)
-                            break;
+        //            while (true)
+        //            {
+        //                var count = await e.NextAsync(page).ConfigureAwait(false);
+        //                if (count <= 0)
+        //                    break;
 
-                        var barArray = page.Take(count).Select(Convert).ToArray();
-                        await buffer.WriteAsync(barArray).ConfigureAwait(false);
-                    }
-                }
+        //                var barArray = page.Take(count).Select(Convert).ToArray();
+        //                await buffer.WriteAsync(barArray).ConfigureAwait(false);
+        //            }
+        //        }
 
-                await buffer.CompleteWriteAsync();
-                buffer.Dispose();
-            }
-            catch (Exception ex)
-            {
-                buffer.SetFailed(ex);
-            }
-        }
+        //        await buffer.CompleteWriteAsync();
+        //        buffer.Dispose();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        buffer.SetFailed(ex);
+        //    }
+        //}
 
         public async Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod)
         {
@@ -290,44 +301,46 @@ namespace TickTrader.Algo.Common.Model
 
         public IAsyncEnumerator<Slice<QuoteEntity>> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            var buffer = new QuoteSliceBuffer(from, to);
-            var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
-            var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
-            DownloadQuotesToBuffer(buffer, eTask);
-            return buffer;
+            throw new NotImplementedException();
+
+            //var buffer = new QuoteSliceBuffer(from, to);
+            //var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
+            //var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
+            //DownloadQuotesToBuffer(buffer, eTask);
+            //return buffer;
         }
 
-        private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
-        {
-            const int pageSize = 2000;
+        //private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
+        //{
+        //    const int pageSize = 2000;
 
-            DateTime lastTickTime = DateTime.MinValue;
+        //    DateTime lastTickTime = DateTime.MinValue;
 
-            try
-            {
-                using (var e = await enumTask)
-                {
-                    var page = new SFX.Quote[pageSize];
+        //    try
+        //    {
+        //        using (var e = await enumTask)
+        //        {
+        //            var page = new SFX.Quote[pageSize];
 
-                    while (true)
-                    {
-                        var count = await e.NextAsync(page).ConfigureAwait(false);
-                        if (count <= 0)
-                            break;
+        //            while (true)
+        //            {
+        //                var count = await e.NextAsync(page).ConfigureAwait(false);
+        //                if (count <= 0)
+        //                    break;
 
-                        var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
-                        await buffer.WriteAsync(tickArray).ConfigureAwait(false);
-                    }
-                }
+        //                var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
+        //                await buffer.WriteAsync(tickArray).ConfigureAwait(false);
+        //            }
+        //        }
 
-                await buffer.CompleteWriteAsync();
-                buffer.Dispose();
-            }
-            catch (Exception ex)
-            {
-                buffer.SetFailed(ex);
-            }
-        }
+        //        await buffer.CompleteWriteAsync();
+        //        buffer.Dispose();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        buffer.SetFailed(ex);
+        //    }
+        //}
 
         public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
@@ -336,11 +349,13 @@ namespace TickTrader.Algo.Common.Model
 
         public async Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            using (var e = await _feedHistoryProxy.DownloadBarsAsync(
-                Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue, DateTime.MinValue))
-            {
-                return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
-            }
+            throw new NotImplementedException();
+
+            //using (var e = await _feedHistoryProxy.DownloadBarsAsync(
+            //    Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue, DateTime.MinValue))
+            //{
+            //    return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+            //}
         }
 
         #endregion
@@ -351,6 +366,8 @@ namespace TickTrader.Algo.Common.Model
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<TradeReportEntity> TradeTransactionReport;
         public event Action<BalanceOperationReport> BalanceOperation;
+        public event Action<SymbolEntity[]> SymbolInfo;
+        public event Action<CurrencyEntity[]> CurrencyInfo;
 
         public Task<AccountEntity> GetAccountInfo()
         {
@@ -358,10 +375,9 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => Convert(t.Result));
         }
 
-        public Task<OrderEntity[]> GetTradeRecords()
+        public void GetTradeRecords(BlockingChannel<OrderEntity> rxStream)
         {
-            return _tradeProxy.GetOrdersAsync()
-                .ContinueWith(t => t.Result.Select(Convert).ToArray());
+            _tradeProxy.GetOrdersAsync(rxStream);
         }
 
         public Task<PositionEntity[]> GetPositions()
@@ -370,41 +386,46 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+        //public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+        //{
+        //    var buffer = new AsyncBuffer<TradeReportEntity[]>();
+        //    var eTask = _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders);
+        //    DownloadTradeHistoryToBuffer(buffer, eTask);
+        //    return buffer;
+        //}
+
+        public Task GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            var buffer = new AsyncBuffer<TradeReportEntity[]>();
-            var eTask = _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders);
-            DownloadTradeHistoryToBuffer(buffer, eTask);
-            return buffer;
+            throw new NotImplementedException();
         }
 
-        private async void DownloadTradeHistoryToBuffer(AsyncBuffer<TradeReportEntity[]> buffer, Task<TradeTransactionReportEnumerator> enumTask)
-        {
-            const int pageSize = 500;
+        //private async void DownloadTradeHistoryToBuffer(AsyncBuffer<TradeReportEntity[]> buffer, Task<TradeTransactionReportEnumerator> enumTask)
+        //{
+        //    const int pageSize = 500;
 
-            try
-            {
-                var e = await enumTask;
-                {
-                    var page = new TradeTransactionReport[pageSize];
+        //    try
+        //    {
+        //        var e = await enumTask;
+        //        {
+        //            var page = new TradeTransactionReport[pageSize];
 
-                    while (true)
-                    {
-                        var pageCount = await e.NextAsync(page);
-                        if (pageCount == 0)
-                            break;
-                        var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
-                        await buffer.WriteAsync(convertedPage);
-                    }
-                }
+        //            while (true)
+        //            {
+        //                var pageCount = await e.NextAsync(page);
+        //                if (pageCount == 0)
+        //                    break;
+        //                var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
+        //                await buffer.WriteAsync(convertedPage);
+        //            }
+        //        }
 
-                buffer.Dispose();
-            }
-            catch (Exception ex)
-            {
-                buffer.SetFailed(ex);
-            }
-        }
+        //        buffer.Dispose();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        buffer.SetFailed(ex);
+        //    }
+        //}
 
         public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
         {
@@ -457,9 +478,8 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (ExecutionException eex)
             {
-                var reason = Convert(eex.Reports.Last().RejectReason, eex.Message);
-                foreach (var er in eex.Reports)
-                    ExecutionReport?.Invoke(ConvertToEr(er, operationId));
+                var reason = Convert(eex.Report.RejectReason, eex.Message);
+                ExecutionReport?.Invoke(ConvertToEr(eex.Report, operationId));
                 return reason;
             }
             catch (Exception ex)
@@ -699,7 +719,7 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static OrderEntity Convert(SFX.ExecutionReport record)
+        public static OrderEntity Convert(SFX.ExecutionReport record)
         {
             return new OrderEntity(record.OrderId)
             {

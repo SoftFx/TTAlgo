@@ -52,14 +52,16 @@ namespace ActorSharp
             throw new NotImplementedException();
         }
 
-        public void Close(bool clearQueue = false)
+        public void ClearQueue()
+        {
+            lock (_writeLock) _writePage1.Clear();
+        }
+
+        public void Close(Exception ex = null)
         {
             lock (_writeLock)
             {
                 _isClosed = true;
-
-                if (clearQueue)
-                    _writePage1.Clear();
 
                 if (_writePage1.Count == 0 && _writePage2.Count == 0)
                     SendNextPage(); // send empty page 

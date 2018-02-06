@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ActorSharp;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,7 +19,7 @@ using TT = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class FeedHistoryProviderModel
+    public class FeedHistoryProviderModel : ActorPart
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>();
 
@@ -36,21 +37,45 @@ namespace TickTrader.Algo.Common.Model
             _folderOptions = folderOptions;
         }
 
-        private Task Connection_Initalizing(object sender, CancellationToken cancelToken)
+        public class Handler : Handler<FeedHistoryProviderModel>
         {
-            return Init();
-        }
+            public Handler(Ref<FeedHistoryProviderModel> aRef) : base(aRef) { }
 
-        private Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
-        {
-            return Deinit();
-        }
+            public FeedCache Cache { get; private set; }
 
-        #region Public Interface
+            public async Task Init()
+            {
+                Cache = await Actor.Call(a => a.Cache);
+            }
+
+            public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+            {
+                return Actor.Call(a => a.GetBarPage(symbol, priceType, timeFrame, startTime, count));
+            }
+
+            public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+            {
+                return Actor.Call(a => a.GetAvailableRange(symbol, priceType, timeFrame));
+            }
+
+            public IAsyncEnumerator<SliceInfo> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+            {
+                throw new Exception();
+                //return Actor.Call(a => a.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to));
+            }
+
+            public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+            {
+                throw new Exception();
+                //var buffer = new AsyncBuffer<SliceInfo>();
+                //GetSeriesData(buffer, symbol, timeFrame, null, from, to, GetCacheInfo, DownloadTicksInternal);
+                //return buffer;
+            }
+        }
 
         public FeedCache Cache => _diskCache;
 
-        public async Task Init()
+        private async Task Init()
         {
             var onlineFolder = _dataFolder;
             if (_folderOptions == FeedHistoryFolderOptions.ServerHierarchy || _folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
@@ -61,7 +86,7 @@ namespace TickTrader.Algo.Common.Model
             await Task.Factory.StartNew(() => _diskCache.Start(onlineFolder));
         }
 
-        public async Task Deinit()
+        private async Task Deinit()
         {
             try
             {
@@ -73,12 +98,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        private Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
             return connection.FeedProxy.GetAvailableRange(symbol, priceType, timeFrame);
         }
 
-        public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        private Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
         {
             return connection.FeedProxy.DownloadBarPage(symbol, startTime, count, priceType, timeFrame);
         }
@@ -90,21 +115,19 @@ namespace TickTrader.Algo.Common.Model
         //    return buffer;
         //}
 
-        public IAsyncEnumerator<SliceInfo> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        private IAsyncEnumerator<SliceInfo> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
             var buffer = new AsyncBuffer<SliceInfo>();
             GetSeriesData(buffer, symbol, timeFrame, priceType, from, to, GetCacheInfo, DownloadBarsInternal);
             return buffer;
         }
 
-        public IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        private IAsyncEnumerator<SliceInfo> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
         {
             var buffer = new AsyncBuffer<SliceInfo>();
             GetSeriesData(buffer, symbol, timeFrame, null, from, to, GetCacheInfo, DownloadTicksInternal);
             return buffer;
         }
-
-        #endregion
 
         private IEnumerable<SliceInfo> GetCacheInfo(FeedCacheKey key, DateTime from, DateTime to)
         {

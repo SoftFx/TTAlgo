@@ -28,7 +28,7 @@ namespace ActorSharp
 
         private void Enqueue(CallbackItem item)
         {
-            lock (_queue)
+            lock (_queue)   
             {
                 _queue.Enqueue(item);
                 if (!_isExecuting)

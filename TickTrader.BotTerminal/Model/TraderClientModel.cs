@@ -31,13 +31,13 @@ namespace TickTrader.BotTerminal
 
             _isConnected = AddBoolProperty();
 
-            //Connection.Initalizing += Connection_Initalizing;
+            Connection.Initalizing += Connection_Initalizing;
             Connection.StateChanged += State_StateChanged;
-            //Connection.Deinitalizing += Connection_Deinitalizing;
+            Connection.Deinitalizing += Connection_Deinitalizing;
 
             this.Account = _core.Cache.Account;
             this.Symbols = _core.Symbols;
-            this.TradeHistory = new TradeHistoryProviderModel(this);
+            this.TradeHistory = new TradeHistoryProviderModel(client);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
             //this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
             //this.TradeApi = new TradeExecutor(_core);
@@ -91,47 +91,39 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        //private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
-        //{
-        //    _wasConnectedEventFired = false;
+        private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
+        {
+            //try
+            //{
+            //await History.Init();
+            //((IAccountInfoProvider)_accountInfo).BalanceUpdated += Account_BalanceUpdated;
+            //_accountInfo.OrderUpdate += Account_OrderUpdated;
+            await Initializing.InvokeAsync(this, cancelToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    logger.Error(ex, "Connection_Initalizing() failed.");
+            //}
 
-        //    //try
-        //    //{
-        //        await History.Init();
-        //        await _core.Init();
-        //        Account.Init();
-        //        ((IAccountInfoProvider)_accountInfo).BalanceUpdated += Account_BalanceUpdated;
-        //        _accountInfo.OrderUpdate += Account_OrderUpdated;
-        //        if (Initializing != null)
-        //            await Initializing.InvokeAsync(this, cancelToken);
-        //    //}
-        //    //catch (Exception ex)
-        //    //{
-        //    //    logger.Error(ex, "Connection_Initalizing() failed.");
-        //    //}
+            OnConnected();
+        }
 
-        //    _wasConnectedEventFired = true;
-        //    OnConnected();
-        //}
+        private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
+        {
+            //if (_wasConnectedEventFired)
+            OnDisconnected();
 
-        //private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
-        //{
-        //    if (_wasConnectedEventFired)
-        //        OnDisconnected();
-
-        //    try
-        //    {
-        //        await _core.Deinit();
-        //        Account.Deinit();
-        //        await History.Deinit();
-        //        if (Deinitializing != null)
-        //            await Deinitializing.InvokeAsync(this, cancelToken);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.Error(ex, "Connection_Deinitalizing() failed.");
-        //    }
-        //}
+            try
+            {
+                Account.Deinit();
+                //await History.Deinit();
+                await Deinitializing.InvokeAsync(this, cancelToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Connection_Deinitalizing() failed.");
+            }
+        }
 
         private void Account_BalanceUpdated(BalanceOperationReport report)
         {
@@ -139,9 +131,11 @@ namespace TickTrader.BotTerminal
             _journal.Trading($"{action} {report.Amount} {report.CurrencyCode}. Balance: {report.Balance} {report.CurrencyCode}");
         }
 
-        private void Account_OrderUpdated(ExecutionReport report, OrderModel order, OrderExecAction action)
+        private void Account_OrderUpdated(OrderUpdateInfo updateInfo)
         {
-            switch(action)
+            var order = updateInfo.Order;
+
+            switch(updateInfo.ExecAction)
             {
                 case OrderExecAction.Opened:
                     switch (order.OrderType)
@@ -197,11 +191,13 @@ namespace TickTrader.BotTerminal
         public ConnectionModel.Handler Connection { get; private set; }
         public ITradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
+        public ITradeHistoryProvider TradeHistoryProvider => _core.TradeHistory;
         public TradeHistoryProviderModel TradeHistory { get; }
         public IVarSet<string, SymbolModel> Symbols { get; private set; }
+        public EntityCache Cache => _core.Cache;
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
-        public QuoteDistributor Distributor { get { return null; } }// (QuoteDistributor)Symbols.Distributor; } }
-        public FeedHistoryProviderModel History { get; private set; }
+        public QuoteDistributor Distributor => _core.Distributor;
+        public FeedHistoryProviderModel.Handler History => _core.FeedHistory;
         public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
     }
 }

@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Common.Model
             MarketModel.Set(client.Symbols.Snapshot.Values);
             MarketModel.Set(client.Currencies.Snapshot.Values.Select(c => new CurrencyInfoAdapter(c)));
 
-            //_subscription = client.Distributor.SubscribeAll();
+            _subscription = client.Distributor.SubscribeAll();
 
             foreach (var smb in client.Symbols.Snapshot.Values)
             {

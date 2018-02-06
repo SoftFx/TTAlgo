@@ -18,8 +18,10 @@ namespace TickTrader.Algo.Common.Model
 {
     public class ConnectionModel : ActorPart
     {
+        private StateMachine<States> _stateControl;
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
+        public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
         //public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
 
         //private StateMachine<States> _stateControl;
@@ -30,7 +32,6 @@ namespace TickTrader.Algo.Common.Model
         private ConnectRequest lastConnectRequest;
         private Request disconnectRequest;
         private bool wasConnected;
-        private bool lostConnection;
         private bool wasInitFired;
         private ActorEvent _initListeners = new ActorEvent();
         private ActorEvent _deinitListeners = new ActorEvent();
@@ -42,37 +43,41 @@ namespace TickTrader.Algo.Common.Model
 
             Func<bool> canRecconect = () => wasConnected && LastErrorCode != ConnectionErrorCodes.BlockedAccount && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
 
-            //_stateControl = new StateMachine<States>(new NullSync());
-            //_stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
-            //_stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
-            //_stateControl.AddTransition(States.Connecting, Events.Connected,
-            //    () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
-            //_stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
-            //_stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
-            //_stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
-            //_stateControl.AddTransition(States.Online, Events.LostConnection, States.Disconnecting);
-            //_stateControl.AddTransition(States.Online, Events.OnRequest, States.Disconnecting);
-            //_stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, () => connectRequest != null, States.Connecting);
-            //_stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
-            //_stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
+            _stateControl = new StateMachine<States>(new NullSync());
+            _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
+            _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
+            _stateControl.AddTransition(States.Connecting, Events.Connected,
+                () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
+            _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
+            _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
+            _stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
+            _stateControl.AddTransition(States.Online, Events.LostConnection, States.Disconnecting);
+            _stateControl.AddTransition(States.Online, Events.OnRequest, States.Disconnecting);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, () => connectRequest != null, States.Connecting);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
+            _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
 
-            //_stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
+            _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
 
-            //_stateControl.OnEnter(States.Connecting, DoConnect);
-            //_stateControl.OnEnter(States.Disconnecting, DoDisconnect);
-            //_stateControl.OnEnter(States.Online, () =>
-            //{
-            //    wasConnected = true;
-            //    Connected?.Invoke();
-            //});
+            _stateControl.OnEnter(States.Connecting, DoConnect);
+            _stateControl.OnEnter(States.Disconnecting, DoDisconnect);
 
-            //_stateControl.StateChanged += (f, t) =>
-            //{
-            //    StateChanged?.Invoke(f, t);
-            //    logger.Debug("STATE {0} ({1}:{2})", t, CurrentLogin, CurrentServer);
-            //};
+            _stateControl.StateChanged += (f, t) =>
+            {
+                StateChanged?.Invoke(f, t);
+                logger.Debug("STATE {0} ({1}:{2})", t, CurrentLogin, CurrentServer);
 
-            //_stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
+                var stateInfo = new StateInfo();
+                stateInfo.State = t;
+                stateInfo.Login = CurrentLogin;
+                stateInfo.Server = CurrentServer;
+                stateInfo.Protocol = CurrentProtocol;
+                stateInfo.LastError = LastError;
+
+                _stateListeners.FireAndForget(stateInfo);
+            };
+
+            _stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
         protected override void ActorInit()
@@ -95,69 +100,86 @@ namespace TickTrader.Algo.Common.Model
         //public event Action Connected = delegate { };
         //public event Action Disconnecting = delegate { };
         //public event Action Disconnected = delegate { };
-        public event AsyncEventHandler Initalizing;
-        public event AsyncEventHandler Deinitalizing;
+        public event AsyncEventHandler AsyncInitalizing; // part of connection process, called after proxies are connected
+        public event AsyncEventHandler AsyncDeinitalizing; // part of disconnection process, called before proxies are disconnected
+        public event AsyncEventHandler AsyncDisconnected; // part of disconnection process, called after proxies are disconnected
         public event Action<States, States> StateChanged;
 
-        public States State { get; private set; }
+        public States State => _stateControl.Current;
         public bool IsReconnecting { get; private set; }
 
         public Task<ConnectionErrorInfo> Connect(string username, string password, string address, bool useSfxProtocol)
         {
+            ContextCheck();
+
             var request = new ConnectRequest(username, password, address, useSfxProtocol);
 
-            if (connectRequest != null)
-                connectRequest.Cancel();
+            _stateControl.ModifyConditions(() =>
+            {
+                if (connectRequest != null)
+                    connectRequest.Cancel();
 
-            connectRequest = request;
+                connectRequest = request;
 
-            if (State == States.Offline || State == States.OfflineRetry)
-                DoConnect();
-            else if (State == States.Connecting)
-                connectCancelSrc.Cancel();
+                if (State == States.Connecting)
+                    connectCancelSrc.Cancel();
 
-            wasConnected = false;
+                wasConnected = false;
+
+                _stateControl.PushEvent(Events.OnRequest);
+            });
 
             return request.Completion;
         }
 
         public Task Disconnect()
         {
+            ContextCheck();
+
             Task completion = null;
 
-            if (State == States.Offline)
-                completion = Task.FromResult(ConnectionErrorCodes.None);
-            else
+            _stateControl.ModifyConditions(() =>
             {
-                if (connectRequest != null)
+                if (State == States.Offline)
+                    completion = Task.FromResult(ConnectionErrorCodes.None);
+                else
                 {
-                    connectRequest.Cancel();
-                    connectRequest = null;
+                    if (connectRequest != null)
+                    {
+                        connectRequest.Cancel();
+                        connectRequest = null;
+                    }
+
+                    if (State == States.Connecting)
+                        connectCancelSrc.Cancel();
+
+                    if (disconnectRequest == null)
+                    {
+                        disconnectRequest = new Request();
+                        _stateControl.PushEvent(Events.OnRequest);
+                    }
+
+                    completion = disconnectRequest.Completion;
                 }
-
-                if (State == States.Connecting)
-                    connectCancelSrc.Cancel();
-
-                if (disconnectRequest == null)
-                {
-                    disconnectRequest = new Request();
-                }
-
-                completion = disconnectRequest.Completion;
-            }
+            });
 
             return completion;
         }
 
         private void _interop_Disconnected(IServerInterop sender, ConnectionErrorInfo errInfo)
         {
-            ContextInvoke(() => OnDisconnected(errInfo));
+            ContextInvoke(()=>
+            {
+                if (sender == _interop && (State == States.Online || State == States.Connecting))
+                {
+                    LastError = errInfo;
+                    _stateControl.PushEvent(Events.LostConnection);
+                }
+            });
         }
 
         private async void DoConnect()
         {
-            lostConnection = false;
-
             var request = connectRequest;
             if (request == null)
             {
@@ -181,7 +203,7 @@ namespace TickTrader.Algo.Common.Model
             CurrentServer = request.Address;
             CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
 
-            await ChangeState(States.Connecting);
+            //await ChangeState(States.Connecting);
 
             try
             {
@@ -194,18 +216,18 @@ namespace TickTrader.Algo.Common.Model
 
                 InitProxies?.Invoke();
 
-                var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token).ConfigureAwait(false);
+                var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token);
                 if (result.Code != ConnectionErrorCodes.None)
                 {
                     await Deinitialize();
-                    await OnConnectFailed(request, result);
+                    OnFailedConnect(request, result);
                     return;
                 }
                 else
                 {
                     wasInitFired = true;
-                    await Initalizing.InvokeAsync(this, connectCancelSrc.Token);
-                    await _initListeners.Fire();
+                    await AsyncInitalizing.InvokeAsync(this, connectCancelSrc.Token);
+                    await _initListeners.Invoke();
 
                     //try
                     //{
@@ -225,41 +247,36 @@ namespace TickTrader.Algo.Common.Model
             {
                 logger.Error(ex);
                 await Deinitialize();
-                await OnConnectFailed(request, ConnectionErrorInfo.UnknownNoText);
+                OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
                 return;
             }
 
+            wasConnected = true;
+            _stateControl.PushEvent(Events.Connected);
             request.Complete(ConnectionErrorInfo.Ok);
-
-            await OnConnectComplete();
         }
 
+        private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
+        {
+            LastError = erroInfo;
+            _stateControl.PushEvent(Events.ConnectFailed);
 
-        //private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
-        //{
-        //    _stateControl.ModifyConditions(() =>
-        //    {
-        //        LastError = erroInfo;
-        //        _stateControl.PushEvent(Events.ConnectFailed);
-        //    });
-
-        //    requets.Complete(erroInfo);
-        //}
+            requets.Complete(erroInfo);
+        }
 
         private async Task Deinitialize()
         {
             _interop.Disconnected -= _interop_Disconnected;
 
-            if (wasInitFired)
+            try
             {
-                try
+                if (wasInitFired)
                 {
-                    await Deinitalizing.InvokeAsync(this);
-                    await _deinitListeners.Fire();
+                    await AsyncDeinitalizing.InvokeAsync(this);
+                    await _deinitListeners.Invoke();
                 }
-                catch (Exception ex) { logger.Error(ex); }
-                wasInitFired = false;
             }
+            catch (Exception ex) { logger.Error(ex); }
 
             try
             {
@@ -276,128 +293,114 @@ namespace TickTrader.Algo.Common.Model
             {
                 logger.Error("Disconnection error: " + ex.Message);
             }
+
+            try
+            {
+                if (wasInitFired)
+                    await AsyncDisconnected.InvokeAsync(this);
+            }
+            catch (Exception ex) { logger.Error(ex); }
+
+            wasInitFired = false;
         }
 
         private async void DoDisconnect()
         {
-            await ChangeState(States.Disconnecting);
             await Deinitialize();
-            await OnDisconnectComplete();
 
-            try
-            {
-                // fire disconnecting event
-                //_stateSync.Synchronized(() => Disconnecting());
-            }
-            catch (Exception ex) { logger.Error(ex); }
-
-            //_stateControl.ModifyConditions(() =>
+            //try
             //{
-            //    if (disconnectRequest != null)
-            //    {
-            //        disconnectRequest.Complete(ConnectionErrorInfo.Ok);
-            //        disconnectRequest = null;
-            //        wasConnected = false;
-            //        IsReconnecting = false;
-            //    };
-            //    _stateControl.PushEvent(Events.DoneDisconnecting);
-            //});
+            //    // fire disconnecting event
+            //    //_stateSync.Synchronized(() => Disconnecting());
+            //}
+            //catch (Exception ex) { logger.Error(ex); }
+
+            if (disconnectRequest != null)
+            {
+                disconnectRequest.Complete(ConnectionErrorInfo.Ok);
+                disconnectRequest = null;
+                wasConnected = false;
+                IsReconnecting = false;
+            };
+
+            _stateControl.PushEvent(Events.DoneDisconnecting);
         }
 
         #region State management
 
-        private async Task OnDisconnectComplete()
-        {
-            if (connectRequest != null)
-                DoConnect();
-            else
-                await ChangeState(States.Online);
-        }
+        //private async Task OnDisconnectComplete()
+        //{
+        //    if (connectRequest != null)
+        //        DoConnect();
+        //    else
+        //        await ChangeState(States.Online);
+        //}
 
-        private async Task OnConnectComplete()
-        {
-            if (connectRequest != null || disconnectRequest != null || lostConnection)
-                DoDisconnect();
-            else
-                await ChangeState(States.Online);
-        }
+        //private async Task OnConnectComplete()
+        //{
+        //    if (connectRequest != null || disconnectRequest != null || lostConnection)
+        //        DoDisconnect();
+        //    else
+        //        await ChangeState(States.Online);
+        //}
 
-        private async Task OnConnectFailed(ConnectRequest requets, ConnectionErrorInfo error)
-        {
-            if (connectRequest != null)
-                DoDisconnect();
-            else
-            {
-                await ChangeState(States.Offline);
+        //private async Task OnConnectFailed(ConnectRequest requets, ConnectionErrorInfo error)
+        //{
+        //    if (connectRequest != null)
+        //        DoDisconnect();
+        //    else
+        //    {
+        //        await ChangeState(States.Offline);
 
-                if (disconnectRequest != null)
-                {
-                    disconnectRequest.Complete(new ConnectionErrorInfo(ConnectionErrorCodes.None));
-                    disconnectRequest = null;
-                }
-            }
+        //        if (disconnectRequest != null)
+        //        {
+        //            disconnectRequest.Complete(new ConnectionErrorInfo(ConnectionErrorCodes.None));
+        //            disconnectRequest = null;
+        //        }
+        //    }
 
-            requets.Complete(error);
-        }
+        //    requets.Complete(error);
+        //}
 
-        private void OnDisconnected(ConnectionErrorInfo info)
-        {
-            if (State == States.Connecting)
-                lostConnection = true;
-            else if (State == States.Online)
-                DoDisconnect();
-        }
+        //private void OnDisconnected(ConnectionErrorInfo info)
+        //{
+        //    if (State == States.Connecting)
+        //        lostConnection = true;
+        //    else if (State == States.Online)
+        //        DoDisconnect();
+        //}
 
-        private async Task ChangeState(States newState)
-        {
-            var oldState = State;
-            State = newState;
+        //private async Task ChangeState(States newState)
+        //{
+        //    var oldState = State;
+        //    State = newState;
 
-            try
-            {
-                StateChanged?.Invoke(oldState, newState);
-            }
-            catch (Exception ex) { logger.Error(ex); }
+        //    try
+        //    {
+        //        StateChanged?.Invoke(oldState, newState);
+        //    }
+        //    catch (Exception ex) { logger.Error(ex); }
             
-            var stateInfo = new StateInfo();
-            stateInfo.State = newState;
-            stateInfo.Login = CurrentLogin;
-            stateInfo.Server = CurrentServer;
-            stateInfo.Protocol = CurrentProtocol;
-            stateInfo.LastError = LastError;
+        //    var stateInfo = new StateInfo();
+        //    stateInfo.State = newState;
+        //    stateInfo.Login = CurrentLogin;
+        //    stateInfo.Server = CurrentServer;
+        //    stateInfo.Protocol = CurrentProtocol;
+        //    stateInfo.LastError = LastError;
 
-            try
-            {
-                await _stateListeners.Fire(stateInfo);
-            }
-            catch (Exception ex) { logger.Error(ex); }
-        }
+        //    try
+        //    {
+        //        await _stateListeners.Fire(stateInfo);
+        //    }
+        //    catch (Exception ex) { logger.Error(ex); }
+        //}
 
         #endregion
 
-        private void ManageConnection()
-        {
-            //_stateControl = new StateMachine<States>(new NullSync());
-            //_stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
-            //_stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
-            //_stateControl.AddTransition(States.Connecting, Events.Connected,
-            //    () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
-            //_stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
-            //_stateControl.AddTransition(States.Connecting, Events.ConnectFailed, canRecconect, States.OfflineRetry);
-            //_stateControl.AddTransition(States.Connecting, Events.ConnectFailed, States.Offline);
-            //_stateControl.AddTransition(States.Online, Events.LostConnection, States.Disconnecting);
-            //_stateControl.AddTransition(States.Online, Events.OnRequest, States.Disconnecting);
-            //_stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, () => connectRequest != null, States.Connecting);
-            //_stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
-            //_stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
-
-            //_stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
-        }
-
         public class Handler : Handler<ConnectionModel>
         {
-            private ActorListener _initListener;
-            private ActorListener _deinitListener;
+            private ActorCallback _initListener;
+            private ActorCallback _deinitListener;
             private ActorListener<StateInfo> _stateListener;
 
             public Handler(Ref<ConnectionModel> actorRef) : base(actorRef) { }
@@ -426,8 +429,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 var handlerRef = this.GetRef();
 
-                _initListener = new ActorListener(() => { });
-                _deinitListener = new ActorListener(() => { });
+                _initListener = ActorCallback.Create(FireInitEvent);
+                _deinitListener = ActorCallback.Create(FireDeinitEvent);
                 _stateListener = new ActorListener<StateInfo>(a =>
                 {
                     var oldState = State;
@@ -442,8 +445,8 @@ namespace TickTrader.Algo.Common.Model
                 State = await Actor.Call(a =>
                 {
                     a._stateListeners.Add(_stateListener.Ref);
-                    a._initListeners.Add(_initListener.Ref);
-                    a._deinitListeners.Add(_deinitListener.Ref);
+                    a._initListeners.Add(_initListener);
+                    a._deinitListeners.Add(_deinitListener);
                     return a.State;
                 });
             }
@@ -463,8 +466,8 @@ namespace TickTrader.Algo.Common.Model
                 return Actor.Call(a =>
                 {
                     a._stateListeners.Remove(_stateListener.Ref);
-                    a._initListeners.Remove(_initListener.Ref);
-                    a._deinitListeners.Remove(_deinitListener.Ref);
+                    a._initListeners.Remove(_initListener);
+                    a._deinitListeners.Remove(_deinitListener);
                 });
             }
 

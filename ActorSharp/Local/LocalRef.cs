@@ -77,13 +77,67 @@ namespace ActorSharp
                 Context.Post(ExecTaskSync, task);
                 return task;
             }
-            else
-                throw new NotImplementedException();
+            else if (channel.Dicrection == ChannelDirections.Out)
+            {
+                var reader = new LocalChannelReader<T>();
+                channel.Init(reader);
+
+                var task = new Task(() =>
+                {
+                    var actorChannel = Channel.NewInput<T>();
+                    var writer = new LocalChannelWriter<T>();
+                    writer.Init(reader, channel.MaxPageSize);
+                    reader.Init(writer);
+                    actorChannel.Init(writer);
+                    actorMethod(_actor, actorChannel);
+                });
+
+                Context.Post(ExecTaskSync, task);
+                return task;
+            }
+            throw new NotImplementedException();
         }
 
         public override Task<TResult> OpenChannel<T, TResult>(Channel<T> channel, Func<TActor, Channel<T>, TResult> actorMethod)
         {
-            throw new NotImplementedException();
+            if (channel.Dicrection == ChannelDirections.In)
+            {
+                var writer = new LocalChannelWriter<T>();
+                channel.Init(writer);
+
+                var task = new Task<TResult>(() =>
+                {
+                    var actorChannel = Channel.NewInput<T>();
+                    var reader = new LocalChannelReader<T>();
+                    reader.Init(writer);
+                    writer.Init(reader, channel.MaxPageSize);
+                    actorChannel.Init(reader);
+                    return actorMethod(_actor, actorChannel);
+                });
+
+                Context.Post(ExecTaskSync, task);
+                return task;
+            }
+            else if (channel.Dicrection == ChannelDirections.Out)
+            {
+                var reader = new LocalChannelReader<T>();
+                channel.Init(reader);
+
+                var task = new Task<TResult>(() =>
+                {
+                    var actorChannel = Channel.NewInput<T>();
+                    var writer = new LocalChannelWriter<T>();
+                    writer.Init(reader, channel.MaxPageSize);
+                    reader.Init(writer);
+                    actorChannel.Init(writer);
+                    return actorMethod(_actor, actorChannel);
+                });
+
+                Context.Post(ExecTaskSync, task);
+                return task;
+            }
+            else
+                throw new NotImplementedException();
         }
 
         public override bool Equals(object obj)

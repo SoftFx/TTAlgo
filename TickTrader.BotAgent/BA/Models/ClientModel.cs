@@ -91,7 +91,7 @@ namespace TickTrader.BotAgent.BA.Models
                 _bots.Remove(bot);
 
             Connection = new ConnectionModel(new ConnectionOptions() { EnableLogs = false });
-            Connection.Disconnected += () =>
+            Connection.AsyncDisconnected += () =>
             {
                 lock (_sync)
                 {

@@ -92,5 +92,10 @@ namespace TickTrader.Algo.Core.UnitTest
         public void OnInternalException(Exception ex)
         {
         }
+
+        public void EnqueueUserCallback(Action<PluginBuilder> action)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

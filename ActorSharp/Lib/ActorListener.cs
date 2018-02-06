@@ -4,37 +4,42 @@ using System.Text;
 
 namespace ActorSharp.Lib
 {
-    public class ActorListener : ActorPart
-    {
-        private Action _handler;
+    //public class ActorListener : ActorPart
+    //{
+    //    private Action _handler;
 
-        public ActorListener(Action handler)
-        {
-            _handler = handler ?? throw new ArgumentNullException("handler");
-        }
+    //    public ActorListener(Action handler)
+    //    {
+    //        _handler = handler ?? throw new ArgumentNullException("handler");
+    //    }
 
-        protected override void ActorInit()
-        {
-            Ref = this.GetRef();
-        }
+    //    protected override void ActorInit()
+    //    {
+    //        Ref = this.GetRef();
+    //    }
 
-        public Ref<ActorListener> Ref { get; private set; }
+    //    public Ref<ActorListener> Ref { get; private set; }
 
-        protected override void ProcessMessage(object message)
-        {
-            var fireData = (FireEventMessage)message;
+    //    protected override void ProcessMessage(object message)
+    //    {
+    //        var fireData = (FireEventMessage)message;
 
-            try
-            {
-                _handler();
-                fireData.Sender.PostMessage(new EventResp());
-            }
-            catch (Exception ex)
-            {
-                fireData.Sender.PostMessage(new EventResp(ex));
-            }
-        }
-    }
+    //        if (fireData.SendConfirm)
+    //        {
+    //            try
+    //            {
+    //                _handler();
+    //                fireData.Sender.PostMessage(new EventResp());
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                fireData.Sender.PostMessage(new EventResp(ex));
+    //            }
+    //        }
+    //        else
+    //            _handler();
+    //    }
+    //}
 
     public class ActorListener<TArgs> : ActorPart
     {
@@ -56,15 +61,20 @@ namespace ActorSharp.Lib
         {
             var fireData = (FireEventMessage<TArgs>)message;
 
-            try
+            if (fireData.SendConfirm)
             {
+                try
+                {
+                    _handler(fireData.Args);
+                    fireData.Sender.PostMessage(new EventResp());
+                }
+                catch (Exception ex)
+                {
+                    fireData.Sender.PostMessage(new EventResp(ex));
+                }
+            }
+            else
                 _handler(fireData.Args);
-                fireData.Sender.PostMessage(new EventResp());
-            }
-            catch (Exception ex)
-            {
-                fireData.Sender.PostMessage(new EventResp(ex));
-            }
         }
     }
 }

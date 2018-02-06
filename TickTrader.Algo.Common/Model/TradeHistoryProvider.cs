@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ActorSharp;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,49 +10,59 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class TradeHistoryProvider : CrossDomainObject, ITradeHistoryProvider
+    public class TradeHistoryProvider : ActorPart
     {
-        private ConnectionModel.Handler _connection;
+        private ConnectionModel _connection;
 
-        public TradeHistoryProvider(ConnectionModel.Handler connection)
+        public TradeHistoryProvider(ConnectionModel connection)
         {
             _connection = connection;
         }
 
-        public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(bool skipCancelOrders)
+        public class Handler : CrossDomainObject, ITradeHistoryProvider
         {
-            return GetTradeHistoryInternal(null, null, skipCancelOrders);
-        }
+            private Ref<TradeHistoryProvider> _ref;
 
-        public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
-        {
-            return GetTradeHistoryInternal(from, to, skipCancelOrders);
-        }
+            public Handler(Ref<TradeHistoryProvider> actorRef)
+            {
+                _ref = actorRef;
+            }
 
-        public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime to, bool skipCancelOrders)
-        {
-            return GetTradeHistoryInternal(null, to, skipCancelOrders);
-        }
+            public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(bool skipCancelOrders)
+            {
+                return GetTradeHistoryInternal(null, null, skipCancelOrders);
+            }
 
-        IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(bool skipCancelOrders)
-        {
-            return GetTradeHistory(skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
-        }
+            public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
+            {
+                return GetTradeHistoryInternal(from, to, skipCancelOrders);
+            }
 
-        IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
-        {
-            return GetTradeHistory(from, to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
-        }
+            public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime to, bool skipCancelOrders)
+            {
+                return GetTradeHistoryInternal(null, to, skipCancelOrders);
+            }
 
-        IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime to, bool skipCancelOrders)
-        {
-            return GetTradeHistory(to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
-        }
+            IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(bool skipCancelOrders)
+            {
+                return GetTradeHistory(skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
+            }
 
-        private IAsyncEnumerator<TradeReportEntity[]> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
-        {
-            throw new NotImplementedException();
-            //return _connection.TradeProxy.GetTradeHistory(from, to, skipCancelOrders);
+            IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
+            {
+                return GetTradeHistory(from, to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
+            }
+
+            IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime to, bool skipCancelOrders)
+            {
+                return GetTradeHistory(to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
+            }
+
+            private IAsyncEnumerator<TradeReportEntity[]> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            {
+                throw new NotImplementedException();
+                //return _ref.Call(a => a._connection.TradeProxy.GetTradeHistory(from, to, skipCancelOrders));
+            }
         }
     }
 }

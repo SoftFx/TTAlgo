@@ -54,7 +54,13 @@ namespace ActorSharp
         {
             CheckCallback();
 
+            #if DEBUG
+            if (_confirmationCounter > 0)
+                throw new Exception("Channel is already confirming read!");
+            #endif
+
             _confirmationCounter = 2;
+            TrySendPage();
             return this;
         }
 

@@ -6,24 +6,25 @@ namespace ActorSharp.Lib
 {
     internal class FireEventMessage
     {
-        public FireEventMessage(ActorRef sender)
+        public FireEventMessage(ActorRef sender, bool sendConfirm)
         {
             Sender = sender;
+            SendConfirm = sendConfirm;
         }
 
         public ActorRef Sender { get; }
+        public bool SendConfirm { get; }
     }
 
-    internal class FireEventMessage<TArgs>
+    internal class FireEventMessage<TArgs> : FireEventMessage
     {
-        public FireEventMessage(TArgs args, ActorRef sender)
+        public FireEventMessage(TArgs args, ActorRef sender, bool sendConfirm)
+            : base(sender, sendConfirm)
         {
             Args = args;
-            Sender = sender;
         }
 
         public TArgs Args { get; }
-        public ActorRef Sender { get; }
     }
 
     internal class EventResp

@@ -13,12 +13,12 @@ namespace TickTrader.Algo.Common.Model
         private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
         private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
         private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
-        private Action<Action> _sync;
+        private ISyncContext _sync;
 
-        public PluginTradeInfoProvider(EntityCache cache, Action<Action> syncInvokeAction)
+        public PluginTradeInfoProvider(EntityCache cache, ISyncContext sync)
         {
             _cache = cache;
-            _sync = syncInvokeAction;
+            _sync = sync;
         }
 
         private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
@@ -53,10 +53,10 @@ namespace TickTrader.Algo.Common.Model
 
         void IAccountInfoProvider.SyncInvoke(Action syncAction)
         {
-            _sync(syncAction);
+            _sync.Invoke(syncAction);
         }
 
-        AccountEntity IAccountInfoProvider.AccountInfo => throw new NotImplementedException();
+        AccountEntity IAccountInfoProvider.AccountInfo => _cache.Account.GetAccountInfo();
 
         List<OrderEntity> IAccountInfoProvider.GetOrders()
         {

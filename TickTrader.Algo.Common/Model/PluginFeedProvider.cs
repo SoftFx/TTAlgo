@@ -7,6 +7,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
 using System.Threading.Tasks.Dataflow;
+using Machinarium.Qnil;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -14,8 +15,9 @@ namespace TickTrader.Algo.Common.Model
     {
         private ISyncContext _sync;
         private IFeedSubscription subscription;
-        private ISymbolManager symbols;
-        private FeedHistoryProviderModel history;
+        private IVarSet<string, SymbolModel> symbols;
+        private QuoteDistributor _distributor;
+        private FeedHistoryProviderModel.Handler history;
         private Action<QuoteEntity[]> feedUpdateHandler;
         private Dictionary<string, int> _subscriptionCache;
         private IReadOnlyDictionary<string, CurrencyEntity> currencies;
@@ -25,11 +27,12 @@ namespace TickTrader.Algo.Common.Model
 
         public ISynchronizationContext Sync { get { return this; } }
 
-        public PluginFeedProvider(ISymbolManager symbols, FeedHistoryProviderModel history,
+        public PluginFeedProvider(IVarSet<string, SymbolModel> symbols, QuoteDistributor quoteDistributor, FeedHistoryProviderModel.Handler history,
             IReadOnlyDictionary<string, CurrencyEntity> currencies, ISyncContext sync)
         {
             _sync = sync;
             this.symbols = symbols;
+            _distributor = quoteDistributor;
             this.history = history;
             this.currencies = currencies;
             _subscriptionCache = new Dictionary<string, int>();
@@ -81,7 +84,7 @@ namespace TickTrader.Algo.Common.Model
 
             feedUpdateHandler = handler;
 
-            subscription = symbols.SubscribeAll();
+            subscription = _distributor.SubscribeAll();
             subscription.NewQuote += q => rxBuffer.Post(q);
         }
 

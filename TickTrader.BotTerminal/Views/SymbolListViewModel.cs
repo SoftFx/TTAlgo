@@ -15,9 +15,9 @@ namespace TickTrader.BotTerminal
     {
         private IVarList<SymbolViewModel> viewModelCollection;
 
-        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, IShell shell)
+        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell)
         {
-            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, shell)).OrderBy((k, v) => k);
+            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, distributor, shell)).OrderBy((k, v) => k);
 
             Symbols = viewModelCollection.AsObservable();
             SelectedSymbol = AddProperty<SymbolViewModel>();

@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
     {
         private bool _canUpdateSizes = true;
         private TraderClientModel _clientModel;
-        private FeedHistoryProviderModel _historyProvider;
+        private FeedHistoryProviderModel.Handler _historyProvider;
         private WindowManager _wndManager;
         private CustomFeedStorage _customStorage;
         private VarContext _varContext = new VarContext();

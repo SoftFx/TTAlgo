@@ -12,6 +12,8 @@ namespace ActorSharp
 
     public abstract class Ref<TActor> : ActorRef
     {
+        //public abstract Link<TActor> OpenLink();
+
         public abstract void Send(Action<TActor> method);
         public abstract Task Call(Action<TActor> method);
         public abstract Task Call(Func<TActor, Task> method);
@@ -36,6 +38,25 @@ namespace ActorSharp
 
         //public abstract IRxChannel<T> Marshal<T>(ITxChannel<T> channel, int pageSize = 10);
         //public abstract ITxChannel<T> Marshal<T>(IRxChannel<T> channel, int pageSize = 10);
+    }
+
+    public abstract class Link<TActor>
+    {
+        public abstract IAwaitable SendSlim(Action<TActor> method);
+        public abstract Task Send(Action<TActor> method);
+        public abstract Task Call(Action<TActor> method);
+        public abstract Task Call(Func<TActor, Task> method);
+        public abstract Task<TResult> Call<TResult>(Func<TActor, TResult> method);
+        public abstract Task<TResult> Call<TResult>(Func<TActor, Task<TResult>> method);
+    }
+
+    public abstract class BlockingLink<TActor>
+    {
+        public abstract void Send(Action<TActor> method);
+        public abstract void Call(Action<TActor> method);
+        public abstract void Call(Func<TActor, Task> method);
+        public abstract TResult Call<TResult>(Func<TActor, TResult> method);
+        public abstract TResult Call<TResult>(Func<TActor, Task<TResult>> method);
     }
 
     //public struct OpenRxChannelResult<TChannel, TResult>

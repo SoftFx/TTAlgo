@@ -22,12 +22,12 @@ namespace TickTrader.BotTerminal
         private DateTime _quoteTime;
         private IFeedSubscription subscription;
 
-        public SymbolViewModel(SymbolModel model, IShell shell)
+        public SymbolViewModel(SymbolModel model, QuoteDistributor distributor, IShell shell)
         {
             _model = model;
             _shell = shell;
-            //subscription = model.Subscribe();
-            //subscription.NewQuote += OnRateUpdate;
+            subscription = distributor.Subscribe(model.Name);
+            subscription.NewQuote += OnRateUpdate;
 
             Bid = model.BidTracker;
             Ask = model.AskTracker;

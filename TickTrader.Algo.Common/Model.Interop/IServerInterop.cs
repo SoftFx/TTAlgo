@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
+using ActorSharp;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -23,11 +24,16 @@ namespace TickTrader.Algo.Common.Model
 
     public interface ITradeServerApi
     {
+        bool AutoAccountInfo { get; }
+
         Task<AccountEntity> GetAccountInfo();
-        Task<OrderEntity[]> GetTradeRecords();
+        //Task<OrderEntity[]> GetTradeRecords();
         Task<PositionEntity[]> GetPositions();
 
-        IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders);
+        void GetTradeRecords(BlockingChannel<OrderEntity> rxStream);
+
+        //IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders);
+        Task GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders);
 
         event Action<PositionEntity> PositionReport;
         event Action<ExecutionReport> ExecutionReport;
@@ -43,7 +49,11 @@ namespace TickTrader.Algo.Common.Model
 
     public interface IFeedServerApi
     {
+        bool AutoSymbols { get; }
+
         event Action<QuoteEntity> Tick;
+        event Action<SymbolEntity[]> SymbolInfo;
+        event Action<CurrencyEntity[]> CurrencyInfo;
 
         Task<CurrencyEntity[]> GetCurrencies();
         Task<SymbolEntity[]> GetSymbols();

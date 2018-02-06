@@ -89,7 +89,7 @@ namespace ActorSharp.Lib
 
     public class ActorEvent : ActorEventBase
     {
-        private HashSet<Ref<ActorListener>> _handlers = new HashSet<Ref<ActorListener>>();
+        private HashSet<Ref<ActorCallback>> _handlers = new HashSet<Ref<ActorCallback>>();
 
         protected override int HandlersCount => _handlers.Count;
 
@@ -100,23 +100,31 @@ namespace ActorSharp.Lib
 
         public Ref<ActorEvent> Ref { get; private set; }
 
-        public void Add(Ref<ActorListener> listenerRef)
+        public void Add(ActorCallback listener)
         {
-            _handlers.Add(listenerRef);
+            _handlers.Add(listener.Ref);
         }
 
-        public void Remove(Ref<ActorListener> listenerRef)
+        public void Remove(ActorCallback listener)
         {
-            _handlers.Remove(listenerRef);
+            _handlers.Remove(listener.Ref);
         }
 
-        public IAwaitable Fire()
+        public void FireAndForget()
+        {
+            var msg = new FireEventMessage(Ref, false);
+
+            foreach (var handler in _handlers)
+                handler.PostMessage(msg);
+        }
+
+        public IAwaitable Invoke()
         {
             BeginFire();
 
             if (HandlersCount > 0)
             {
-                var msg = new FireEventMessage(Ref);
+                var msg = new FireEventMessage(Ref, true);
 
                 foreach (var handler in _handlers)
                     handler.PostMessage(msg);
@@ -155,13 +163,21 @@ namespace ActorSharp.Lib
             _handlers.Remove(listenerRef);
         }
 
-        public IAwaitable Fire(TArgs args)
+        public void FireAndForget(TArgs args)
+        {
+            var msg = new FireEventMessage<TArgs>(args, Ref, false);
+
+            foreach (var handler in _handlers)
+                handler.PostMessage(msg);
+        }
+
+        public IAwaitable Invoke(TArgs args)
         {
             BeginFire();
 
             if (HandlersCount > 0)
             {
-                var msg = new FireEventMessage<TArgs>(args, Ref);
+                var msg = new FireEventMessage<TArgs>(args, Ref, true);
 
                 foreach (var handler in _handlers)
                     handler.PostMessage(msg);

@@ -386,13 +386,13 @@ namespace TickTrader.BotTerminal
 
         ITradeHistoryProvider IAlgoPluginHost.GetTradeHistoryApi()
         {
-            return ClientModel.TradeHistory;
+            return ClientModel.TradeHistoryProvider;
         }
 
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
-            //plugin.AccInfoProvider = ClientModel.Account;
+            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)

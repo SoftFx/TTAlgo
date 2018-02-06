@@ -55,7 +55,6 @@ namespace TickTrader.Algo.Common.Model
         public double? CurrentBid { get; private set; }
         public double LotSize { get { return Descriptor.RoundLot; } }
         public double StopOrderMarginReduction => Descriptor.StopOrderMarginReduction;
-        
 
         //protected QuoteDistributor Distributor { get; private set; }
 
@@ -94,7 +93,7 @@ namespace TickTrader.Algo.Common.Model
             InfoUpdated(this);
         }
 
-        protected virtual void OnNewTick(QuoteEntity tick)
+        internal virtual void OnNewTick(QuoteEntity tick)
         {
             LastQuote = tick;
 
