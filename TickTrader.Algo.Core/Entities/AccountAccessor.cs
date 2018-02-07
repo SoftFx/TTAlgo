@@ -28,12 +28,11 @@ namespace TickTrader.Algo.Core
 
             _historyAdapter = new TradeHistoryAdapter();
 
-            NetPositions.PositionUpdated += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.AddedModified);
-            NetPositions.PositionRemoved += p => PositionChanged?.Invoke(p, BL.PositionChageTypes.Removed);
-
-            Assets.AssetChanged += (a, c) => AssetsChanged?.Invoke(a, TickTraderToAlgo.Convert(c));
-
-            EnableBlEvents();
+            Equity = double.NaN;
+            Profit = double.NaN;
+            Commision = double.NaN;
+            MarginLevel = double.NaN;
+            Margin = double.NaN;
         }
 
         public OrdersCollection Orders { get; private set; }
@@ -70,37 +69,6 @@ namespace TickTrader.Algo.Core
         internal void FireResetEvent()
         {
             builder.InvokePluginMethod(() => Reset());
-        }
-
-        private void EnableBlEvents()
-        {
-            Orders.Added += OnOrderAdded;
-            Orders.Replaced += OnOrderReplaced;
-            Orders.Removed += OnOrderRemoved;
-
-            NetPositions.PositionUpdated += OnPositionUpdated;
-            NetPositions.PositionRemoved += OnPositionRemoved;
-
-            Assets.AssetChanged += OnAssetsChanged;
-
-            _blEventsEnabled = true;
-        }
-
-        private void DisableBlEvents()
-        {
-            if (_blEventsEnabled)
-            {
-                Orders.Added -= OnOrderAdded;
-                Orders.Replaced -= OnOrderReplaced;
-                Orders.Removed -= OnOrderRemoved;
-
-                NetPositions.PositionUpdated -= OnPositionUpdated;
-                NetPositions.PositionRemoved -= OnPositionRemoved;
-
-                Assets.AssetChanged -= OnAssetsChanged;
-
-                _blEventsEnabled = false;
-            }
         }
 
         public OrderList OrdersByTag(string orderTag)
@@ -210,39 +178,68 @@ namespace TickTrader.Algo.Core
         public event Action<BL.IPositionModel, BL.PositionChageTypes> PositionChanged;
         public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
 
-        #endregion
+        internal void EnableBlEvents()
+        {
+            Orders.Added += OnOrderAdded;
+            Orders.Replaced += OnOrderReplaced;
+            Orders.Removed += OnOrderRemoved;
+
+            NetPositions.PositionUpdated += OnPositionUpdated;
+            NetPositions.PositionRemoved += OnPositionRemoved;
+
+            Assets.AssetChanged += OnAssetsChanged;
+
+            _blEventsEnabled = true;
+        }
+
+        internal void DisableBlEvents()
+        {
+            if (_blEventsEnabled)
+            {
+                Orders.Added -= OnOrderAdded;
+                Orders.Replaced -= OnOrderReplaced;
+                Orders.Removed -= OnOrderRemoved;
+
+                NetPositions.PositionUpdated -= OnPositionUpdated;
+                NetPositions.PositionRemoved -= OnPositionRemoved;
+
+                Assets.AssetChanged -= OnAssetsChanged;
+
+                _blEventsEnabled = false;
+            }
+        }
 
         private void OnOrderAdded(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => OrderAdded?.Invoke(order));
+            UpdateAccountInfo("Add order", () => OrderAdded?.Invoke(order));
         }
 
         private void OnOrderReplaced(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => OrderReplaced?.Invoke(order));
+            UpdateAccountInfo("Replace order", () => OrderReplaced?.Invoke(order));
         }
 
         private void OnOrderRemoved(BL.IOrderModel order)
         {
-            UpdateAccountInfo(() => OrderRemoved?.Invoke(order));
+            UpdateAccountInfo("Remove order", () => OrderRemoved?.Invoke(order));
         }
 
         private void OnPositionUpdated(BL.IPositionModel position)
         {
-            UpdateAccountInfo(() => PositionChanged?.Invoke(position, BL.PositionChageTypes.AddedModified));
+            UpdateAccountInfo("Update position", () => PositionChanged?.Invoke(position, BL.PositionChageTypes.AddedModified));
         }
 
         private void OnPositionRemoved(BL.IPositionModel position)
         {
-            UpdateAccountInfo(() => PositionChanged?.Invoke(position, BL.PositionChageTypes.Removed));
+            UpdateAccountInfo("Remove position", () => PositionChanged?.Invoke(position, BL.PositionChageTypes.Removed));
         }
 
         private void OnAssetsChanged(BL.IAssetModel asset, AssetChangeType type)
         {
-            UpdateAccountInfo(() => AssetsChanged?.Invoke(asset, TickTraderToAlgo.Convert(type)));
+            UpdateAccountInfo($"Change asset({type})", () => AssetsChanged?.Invoke(asset, TickTraderToAlgo.Convert(type)));
         }
 
-        private void UpdateAccountInfo(Action action)
+        private void UpdateAccountInfo(string actionName, Action action)
         {
             try
             {
@@ -250,8 +247,10 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
-                builder.Logger.OnError(ex);
+                builder.Logger.OnError($"Account calculator: {actionName} failed", ex);
             }
         }
+
+        #endregion
     }
 }

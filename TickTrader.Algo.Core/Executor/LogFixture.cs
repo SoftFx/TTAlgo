@@ -84,6 +84,11 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Error, ex.Message, ex.ToString());
         }
 
+        public void OnError(string message, Exception ex)
+        {
+            AddLogRecord(LogSeverities.Error, message, ex.ToString());
+        }
+
         public void OnPrintError(string entry)
         {
             AddLogRecord(LogSeverities.Error, entry);
