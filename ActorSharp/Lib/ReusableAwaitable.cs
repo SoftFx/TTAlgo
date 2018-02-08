@@ -7,8 +7,12 @@ namespace ActorSharp.Lib
 {
     internal class ReusableAwaitable : IAwaitable, IAwaiter
     {
+        private static readonly IAwaitable completedSingleton = new ReusableAwaitable() { _isCompleted = true };
+
         private bool _isCompleted;
         private Action _callback;
+
+        public static IAwaitable Completed => completedSingleton;
 
         public void Reset()
         {

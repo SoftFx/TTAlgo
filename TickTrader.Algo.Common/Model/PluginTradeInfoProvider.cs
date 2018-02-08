@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class PluginTradeInfoProvider : IAccountInfoProvider
+    public class PluginTradeInfoProvider : CrossDomainObject, IAccountInfoProvider
     {
         private EntityCache _cache;
         private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
@@ -19,6 +20,13 @@ namespace TickTrader.Algo.Common.Model
         {
             _cache = cache;
             _sync = sync;
+
+            _cache.Account.OrderUpdate += Account_OrderUpdate;
+        }
+
+        private void Account_OrderUpdate(OrderUpdateInfo update)
+        {
+            ExecReportToAlgo(update.ExecAction, update.EntityAction, update.Report, update.Order);
         }
 
         private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
@@ -48,6 +56,12 @@ namespace TickTrader.Algo.Common.Model
             return report.ClientOrderId;
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            _cache.Account.OrderUpdate -= Account_OrderUpdate;
+        }
 
         #region IAccountInfoProvider
 

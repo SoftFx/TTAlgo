@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Common.Model
             Update(report);
         }
 
-        event Action<BL.IOrderModel> BL.IOrderModel.EssentialParametersChanged { add { } remove { } }
+        public event Action<BL.IOrderModel> EssentialParametersChanged;
 
         private double LotSize => symbolModel.LotSize;
 
@@ -494,9 +494,11 @@ namespace TickTrader.Algo.Common.Model
             //    this.LastFillPrice = record.Price;
             //    this.LastFillAmount = record.Volume;
             //}
+
+            EssentialParametersChanged?.Invoke(this);
         }
 
-        private void Update(ExecutionReport report)
+        internal void Update(ExecutionReport report)
         {
             this.Amount = (decimal?)report.InitialVolume ?? 0M;
             this.RemainingAmount = (decimal)report.LeavesVolume;
@@ -519,6 +521,8 @@ namespace TickTrader.Algo.Common.Model
             this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
+
+            
         }
 
         private decimal? AmountToLots(decimal? volume)

@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         public SymbolManagerViewModel(TraderClientModel clientModel, CustomFeedStorage customStorage, WindowManager wndManager)
         {
             _clientModel = clientModel;
-            _historyProvider = clientModel.History;
+            _historyProvider = clientModel.FeedHistory;
             _wndManager = wndManager;
             _customStorage = customStorage;
 

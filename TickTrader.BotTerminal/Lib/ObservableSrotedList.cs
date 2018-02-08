@@ -67,6 +67,21 @@ namespace TickTrader.BotTerminal
             return innerList.ContainsKey(key);
         }
 
+        public TValue GetFirstValue()
+        {
+            return innerList.Values[0];
+        }
+
+        public KeyValuePair<TKey, TValue> GetFirstKeyValue()
+        {
+            return new KeyValuePair<TKey, TValue>(innerList.Keys[0], innerList.Values[0]);
+        }
+
+        public TValue GetLastValue()
+        {
+            return innerList.Values[innerList.Count - 1];
+        }
+
         public bool TryGetValue(TKey key, out TValue val)
         {
             return innerList.TryGetValue(key, out val);

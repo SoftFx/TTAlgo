@@ -386,7 +386,7 @@ namespace TickTrader.BotTerminal
 
         ITradeHistoryProvider IAlgoPluginHost.GetTradeHistoryApi()
         {
-            return ClientModel.TradeHistoryProvider;
+            return ClientModel.TradeHistory.AlgoAdapter;
         }
 
         public virtual void InitializePlugin(PluginExecutor plugin)

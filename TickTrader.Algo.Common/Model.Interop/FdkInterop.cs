@@ -374,7 +374,6 @@ namespace TickTrader.Algo.Common.Model
         #region ITradeServerApi
 
         public AccountEntity AccountInfo => FdkConvertor.Convert(_tradeProxy.Cache.AccountInfo);
-        //public OrderEntity[] TradeRecords =>  _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
         public PositionEntity[] Positions => _tradeProxy.Cache.Positions.Select(FdkConvertor.Convert).ToArray();
 
         public event Action<PositionEntity> PositionReport;
@@ -420,29 +419,55 @@ namespace TickTrader.Algo.Common.Model
         //    return new StreamDownloader(_tradeProxy.Server, from, to, skipCancelOrders);
         //}
 
-        public Task GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeHistory(BlockingChannel<TradeReportEntity> txStream,  DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            throw new NotImplementedException();
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var fdkStream = _tradeProxy.Server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, skipCancelOrders);
+
+                    while (!fdkStream.EndOfStream)
+                    {
+                        var report = FdkConvertor.Convert(fdkStream.Item);
+                        if (!txStream.Write(report))
+                            break;
+                        fdkStream.Next();
+                    }
+
+                    txStream.Close();
+                }
+                catch (Exception ex)
+                {
+                    var aggeEx = ex as AggregateException;
+                    if (aggeEx == null || !(aggeEx.InnerException is TaskCanceledException))
+                        txStream.Close(ex);
+                }
+            });
         }
 
-        public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
+        public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
         {
-            return _executor.SendOpenOrder(request);
+            return _executor.SendOpenOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
+        public Task<OrderInteropResult> SendCancelOrder(CancelOrderRequest request)
         {
-            return _executor.SendCancelOrder(request);
+            return _executor.SendCancelOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
+        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
         {
-            return _executor.SendModifyOrder(request);
+            return _executor.SendModifyOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
+        public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
         {
-            return _executor.SendCloseOrder(request);
+            return _executor.SendCloseOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
         #endregion

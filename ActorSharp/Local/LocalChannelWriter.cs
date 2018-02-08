@@ -23,14 +23,16 @@ namespace ActorSharp
             _maxPageSize = pageSize;
         }
 
-        public IAwaitable Close()
+        public IAwaitable Close(Exception error = null)
         {
-            CheckCallback();
+            CheckSync();
 
             if (!_isClosed)
             {
                 _isClosed = true;
                 _queuePage.Last = true;
+                _queuePage.Error = error;
+                _confirmationCounter = 1;
                 TrySendPage();
             }
 
@@ -39,7 +41,7 @@ namespace ActorSharp
 
         public IAwaitable<bool> Write(T item)
         {
-            CheckCallback();
+            CheckSync();
 
             if (!_isClosed)
             {
@@ -52,7 +54,7 @@ namespace ActorSharp
 
         public IAwaitable<bool> ConfirmRead()
         {
-            CheckCallback();
+            CheckSync();
 
             #if DEBUG
             if (_confirmationCounter > 0)
@@ -75,10 +77,10 @@ namespace ActorSharp
                 SendPage();
         }
 
-        private void CheckCallback()
+        private void CheckSync()
         {
             #region DEBUG
-            if (_callback != null)
+            if (_callback != null || _confirmationCounter > 0)
                 throw new InvalidOperationException("Channel is busy with another async operation!");
             #endregion
         }
@@ -118,6 +120,15 @@ namespace ActorSharp
 
                 if (_queuePage.Count > 0 || _confirmationCounter > 0)
                     SendPage();
+            }
+            else if (message is CloseWriterRequest)
+            {
+                _isClosed = true;
+                _queuePage.Clear();
+
+                var toInvoke = _callback;
+                _callback = null;
+                toInvoke?.Invoke();
             }
             else
                 throw new Exception("Unsupported message!");

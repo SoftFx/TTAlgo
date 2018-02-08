@@ -121,6 +121,7 @@
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
     <Compile Include="Model.Interop\FdkInterop.cs" />
+    <Compile Include="Model.Interop\OrderInteropResult.cs" />
     <Compile Include="Model.Interop\SfxTaskAdapter.cs" />
     <Compile Include="Model.Interop\SliceBuffer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
@@ -164,7 +165,6 @@
     <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
     <Compile Include="Model\RateDirectionTracker.cs" />
-    <Compile Include="Model\SymbolCollection.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />

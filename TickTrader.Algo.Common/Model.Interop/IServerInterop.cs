@@ -11,7 +11,7 @@ using ActorSharp;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public interface IServerInterop
+    internal interface IServerInterop
     {
         Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken);
         Task Disconnect();
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
         event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
     }
 
-    public interface ITradeServerApi
+    internal interface ITradeServerApi
     {
         bool AutoAccountInfo { get; }
 
@@ -31,9 +31,7 @@ namespace TickTrader.Algo.Common.Model
         Task<PositionEntity[]> GetPositions();
 
         void GetTradeRecords(BlockingChannel<OrderEntity> rxStream);
-
-        //IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders);
-        Task GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders);
+        void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders);
 
         event Action<PositionEntity> PositionReport;
         event Action<ExecutionReport> ExecutionReport;
@@ -41,13 +39,13 @@ namespace TickTrader.Algo.Common.Model
         event Action<TradeReportEntity> TradeTransactionReport;
         event Action<BalanceOperationReport> BalanceOperation;
 
-        Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request);
-        Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request);
-        Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request);
-        Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request);
+        Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request);
+        Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request);
+        Task<OrderInteropResult> SendCancelOrder(CancelOrderRequest request);
+        Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request);
     }
 
-    public interface IFeedServerApi
+    internal interface IFeedServerApi
     {
         bool AutoSymbols { get; }
 

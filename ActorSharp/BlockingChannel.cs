@@ -121,6 +121,10 @@ namespace ActorSharp
 
             public bool IsCompleted => _rxPage != null || _isClosed;
 
+            public void Close(Exception ex)
+            {
+            }
+
             public IAwaiter<bool> GetAwaiter()
             {
                 return this;

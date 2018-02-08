@@ -102,36 +102,6 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        //internal void UpdateData(AccountEntity accInfo,
-        //    IEnumerable<OrderEntity> orders,
-        //    IEnumerable<PositionEntity> positions,
-        //    IEnumerable<AssetEntity> assets)
-        //{
-        //    Id = accInfo.Id;
-
-        //    this.positions.Clear();
-        //    this.orders.Clear();
-        //    this.assets.Clear();
-
-        //    var balanceCurrencyInfo = _currencies.Read(accInfo.BalanceCurrency);
-
-        //    Account = accInfo.Id;
-        //    Type = accInfo.Type;
-        //    Balance = accInfo.Balance;
-        //    BalanceCurrency = accInfo.BalanceCurrency;
-        //    Leverage = accInfo.Leverage;
-        //    BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
-
-        //    foreach (var fdkPosition in positions)
-        //        this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
-
-        //    foreach (var fdkOrder in orders)
-        //        this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, this));
-
-        //    foreach (var fdkAsset in assets)
-        //        this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
-        //}
-
         #region Balance and assets management
 
         private void OnBalanceChanged()
@@ -228,6 +198,8 @@ namespace TickTrader.Algo.Common.Model
 
         internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
         {
+            System.Diagnostics.Debug.WriteLine("ER  #" + report.OrderId + " " + report.OrderType + " " + report.ExecutionType + " opId=" + report.TradeRequestId);
+
             switch (report.ExecutionType)
             {
                 case ExecutionType.Calculated:
@@ -288,47 +260,27 @@ namespace TickTrader.Algo.Common.Model
         private OrderUpdateAction OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.Added);
-
-            //var order = UpsertOrder(report);
-            //ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
-            //OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private OrderUpdateAction MockMarkedFilled(ExecutionReport report)
         {
             report.OrderType = OrderType.Position;
-            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.Updated);
-
-            //var order = new OrderModel(report, this);
-            //order.OrderType = OrderType.Position;
-            //order.RemainingAmount = order.Amount;
-            //ExecReportToAlgo(OrderExecAction.Opened, OrderEntityAction.Added, report, order);
-            //OrderUpdate?.Invoke(report, order, OrderExecAction.Opened);
+            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.Added);
         }
 
         private OrderUpdateAction OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
         {
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.None);
-            //var order = new OrderModel(report, this);
-            //ExecReportToAlgo(algoAction, OrderEntityAction.None, report, order);
-            //OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private OrderUpdateAction OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
         {
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.Removed);
-            //orders.Remove(report.OrderId);
-            //var order = new OrderModel(report, this);
-            //ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, order);
-            //OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private OrderUpdateAction OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated);
-            //var order = UpsertOrder(report);
-            //ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
-            //OrderUpdate?.Invoke(report, order, algoAction);
         }
 
         private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
@@ -441,15 +393,25 @@ namespace TickTrader.Algo.Common.Model
 
             public void Apply(EntityCache cache)
             {
+                OrderModel order = null;
+
                 if (_entityAction == OrderEntityAction.Added)
                 {
-                    var order = new OrderModel(_report, cache.Account);
+                    order = new OrderModel(_report, cache.Account);
                     cache.Account.orders[order.Id] = order;
                 }
                 else if (_entityAction == OrderEntityAction.Removed)
+                {
+                    order = cache.Account.Orders.GetOrDefault(_report.OrderId);
                     cache.Account.orders.Remove(_report.OrderId);
+                }
+                else if (_entityAction == OrderEntityAction.Updated)
+                {
+                    order = cache.Account.Orders.GetOrDefault(_report.OrderId);
+                    order.Update(_report);
+                }
 
-                cache.Account.OrderUpdate?.Invoke(new OrderUpdateInfo(_report, _execAction, _entityAction));
+                cache.Account.OrderUpdate?.Invoke(new OrderUpdateInfo(_report, _execAction, _entityAction, order));
                 cache.Account.UpdateBalance(_report);
             }
         }
@@ -514,12 +476,12 @@ namespace TickTrader.Algo.Common.Model
 
     public class OrderUpdateInfo
     {
-        public OrderUpdateInfo(ExecutionReport report, OrderExecAction execAction, OrderEntityAction entityAction)
+        public OrderUpdateInfo(ExecutionReport report, OrderExecAction execAction, OrderEntityAction entityAction, OrderModel order)
         {
             Report = report;
             ExecAction = execAction;
             EntityAction = entityAction;
-            //Order = order;
+            Order = order;
         }
 
         public ExecutionReport Report { get; }

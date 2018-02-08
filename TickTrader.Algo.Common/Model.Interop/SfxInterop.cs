@@ -394,9 +394,9 @@ namespace TickTrader.Algo.Common.Model
         //    return buffer;
         //}
 
-        public Task GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            throw new NotImplementedException();
+            _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders, rxStream);
         }
 
         //private async void DownloadTradeHistoryToBuffer(AsyncBuffer<TradeReportEntity[]> buffer, Task<TradeTransactionReportEnumerator> enumTask)
@@ -427,12 +427,11 @@ namespace TickTrader.Algo.Common.Model
         //    }
         //}
 
-        public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
+        public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
                 var timeInForce = GetTimeInForce(r.Options, r.Expiration);
-                var operationId = r.OperationId;
                 var clientOrderId = Guid.NewGuid().ToString();
 
                 return _tradeProxy.NewOrderAsync(clientOrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
@@ -440,12 +439,12 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
+        public Task<OrderInteropResult> SendCancelOrder(CancelOrderRequest request)
         {
             return ExecuteOrderOperation(request, r => _tradeProxy.CancelOrderAsync(r.OperationId, "", r.OrderId));
         }
 
-        public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
+        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
         {
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side),
@@ -453,7 +452,7 @@ namespace TickTrader.Algo.Common.Model
                 r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
         }
 
-        public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
+        public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
@@ -464,7 +463,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        private async Task<OrderCmdResultCodes> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<SFX.ExecutionReport[]>> operationDef)
+        private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<SFX.ExecutionReport>> operationDef)
             where TReq : OrderRequest
         {
             var operationId = request.OperationId;
@@ -472,20 +471,17 @@ namespace TickTrader.Algo.Common.Model
             try
             {
                 var result = await operationDef(request);
-                foreach (var er in result)
-                    ExecutionReport?.Invoke(ConvertToEr(er, operationId));
-                return OrderCmdResultCodes.Ok;
+                return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
             }
             catch (ExecutionException eex)
             {
                 var reason = Convert(eex.Report.RejectReason, eex.Message);
-                ExecutionReport?.Invoke(ConvertToEr(eex.Report, operationId));
-                return reason;
+                return new OrderInteropResult(reason, ConvertToEr(eex.Report, operationId));
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
-                return OrderCmdResultCodes.UnknownError;
+                return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
             }
         }
 
@@ -755,6 +751,14 @@ namespace TickTrader.Algo.Common.Model
             if (isLimit && record.OrderTimeInForce == OrderTimeInForce.ImmediateOrCancel)
                 return OrderExecOptions.ImmediateOrCancel;
             return OrderExecOptions.None;
+        }
+
+        private static ExecutionReport[] ConvertToEr(SFX.ExecutionReport[] reports, string operationId = null)
+        {
+            var result = new ExecutionReport[reports.Length];
+            for (int i = 0; i < reports.Length; i++)
+                result[i] = ConvertToEr(reports[i], operationId);
+            return result;
         }
 
         private static ExecutionReport ConvertToEr(SFX.ExecutionReport report, string operationId = null)

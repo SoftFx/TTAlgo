@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Common.Model.Interop
 
             orderQueue = new BufferBlock<Task>();
 
-            var senderOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 10 };
+            var senderOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 30 };
             orderSender = new ActionBlock<Task>(t => t.RunSynchronously(), senderOptions);
 
             orderQueue.LinkTo(orderSender);

@@ -33,6 +33,9 @@ namespace ActorSharp
 
             //System.Diagnostics.Debug.WriteLine("Rx " + _rxPage.Count);
 
+            if (_isClosed)
+                return; // just ignore all 
+
             if (_rxPage.Count == 0)
             {
                 if (_rxPage.Last)
@@ -65,6 +68,25 @@ namespace ActorSharp
             _pageIndex = 0;
         }
 
+        public void Close(Exception ex)
+        {
+            CheckSync();
+
+            if (!_isClosed)
+            {
+                _isClosed = true;
+                _target.PostMessage(new CloseWriterRequest(ex));
+            }
+        }
+
+        private void CheckSync()
+        {
+            #region DEBUG
+            if (_callback != null)
+                throw new InvalidOperationException("Channel is busy with another async operation!");
+            #endregion
+        }
+
         #region IAwaitable<T>
 
         bool IAwaiter<bool>.IsCompleted => _rxPage != null || _isClosed;
@@ -84,9 +106,12 @@ namespace ActorSharp
             {
                 if (_rxPage.Last)
                 {
+                    var toThrow = _rxPage.Error;
                     _isClosed = true;
                     _rxPage = null;
                     _pageIndex = 0;
+                    if (toThrow != null)
+                        throw new Exception(_rxPage.Error.Message, _rxPage.Error);
                 }
                 else
                     ReturnPage();

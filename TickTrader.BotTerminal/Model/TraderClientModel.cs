@@ -37,12 +37,8 @@ namespace TickTrader.BotTerminal
 
             this.Account = _core.Cache.Account;
             this.Symbols = _core.Symbols;
-            this.TradeHistory = new TradeHistoryProviderModel(client);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
             //this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
-            //this.TradeApi = new TradeExecutor(_core);
-
-            //TradeApi = new PluginTradeApiProvider(Connection, a => a());
 
             _accountInfo = Account;
             _journal = journal;
@@ -189,15 +185,14 @@ namespace TickTrader.BotTerminal
         public event Action Disconnected;
 
         public ConnectionModel.Handler Connection { get; private set; }
-        public ITradeExecutor TradeApi { get; private set; }
+        public ITradeExecutor TradeApi => _core.TradeApi;
         public AccountModel Account { get; private set; }
-        public ITradeHistoryProvider TradeHistoryProvider => _core.TradeHistory;
-        public TradeHistoryProviderModel TradeHistory { get; }
+        public TradeHistoryProvider.Handler TradeHistory => _core.TradeHistory;
         public IVarSet<string, SymbolModel> Symbols { get; private set; }
         public EntityCache Cache => _core.Cache;
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor => _core.Distributor;
-        public FeedHistoryProviderModel.Handler History => _core.FeedHistory;
+        public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
         public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
     }
 }

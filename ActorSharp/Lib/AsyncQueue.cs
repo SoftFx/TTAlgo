@@ -38,8 +38,9 @@ namespace ActorSharp.Lib
                 _isClosed = true;
                 if (clearQueue)
                     _innerQueue.Clear();
+                if (_callback != null)
+                    _context.Post(s => SignalAwaitable(), null);
                 //SignalAwaitable();
-                _context.Post(s => SignalAwaitable(), null);
             }
         }
 

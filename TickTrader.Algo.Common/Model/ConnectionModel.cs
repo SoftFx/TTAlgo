@@ -86,8 +86,8 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public Ref<ConnectionModel> Ref { get; private set; }
-        public IFeedServerApi FeedProxy => _interop.FeedApi;
-        public ITradeServerApi TradeProxy => _interop.TradeApi;
+        internal IFeedServerApi FeedProxy => _interop.FeedApi;
+        internal ITradeServerApi TradeProxy => _interop.TradeApi;
         public ConnectionErrorInfo LastError { get; private set; }
         public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
         public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }

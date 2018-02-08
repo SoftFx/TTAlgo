@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ActorSharp.Lib;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -63,9 +64,10 @@ namespace ActorSharp
             return _reader;
         }
 
-        public IAwaitable Close()
+        public IAwaitable Close(Exception ex = null)
         {
-            return _writer.Close();
+            _reader.Close(ex);
+            return _writer.Close(ex);
         }
 
         public IAwaitable<bool> ConfirmRead()
@@ -93,13 +95,14 @@ namespace ActorSharp
     {
         IAwaitable<bool> Write(T item); // throws exceptions
         IAwaitable<bool> ConfirmRead();
-        IAwaitable Close();
+        IAwaitable Close(Exception error);
         void Clear();
     }
 
     internal interface IChannelReader<T> : IAwaitable<bool>
     {
         T Current { get; }
+        void Close(Exception ex);
     }
 
     internal class NullReader<T> : IChannelReader<T>
@@ -115,13 +118,18 @@ namespace ActorSharp
         {
             return new InvalidOperationException("Reader is not initialized!");
         }
+
+        public void Close(Exception ex)
+        {
+            // do nothing
+        }
     }
 
     internal class NullWriter<T> : IChannelWriter<T>
     {
-        public IAwaitable Close()
+        public IAwaitable Close(Exception error)
         {
-            throw CreateException();
+            return ReusableAwaitable.Completed;
         }
 
         public IAwaitable<bool> Write(T item)

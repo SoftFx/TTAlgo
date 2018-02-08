@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{20363DD1-DC16-41EE-AA8A-77306EB75479}"
 EndProject
@@ -74,7 +74,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.SeriesStorage.Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machinarium.UnitTest", "Machinarium.UnitTest\Machinarium.UnitTest.csproj", "{FE846DE3-F22F-4CB0-89F2-21413FDEE45C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActorSharp", "ActorSharp\ActorSharp.csproj", "{7D6B7BBA-586C-4A69-A368-6BF9B87026B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ActorSharp", "ActorSharp\ActorSharp.csproj", "{7D6B7BBA-586C-4A69-A368-6BF9B87026B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

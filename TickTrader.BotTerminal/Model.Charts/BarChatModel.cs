@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.History.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
             //var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
@@ -99,7 +99,7 @@ namespace TickTrader.BotTerminal
         public override void InitializePlugin(PluginExecutor plugin)
         {
             base.InitializePlugin(plugin);
-            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.Distributor, ClientModel.History, ClientModel.Currencies.Snapshot, new DispatcherSync());
+            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.Distributor, ClientModel.FeedHistory, ClientModel.Currencies.Snapshot, new DispatcherSync());
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
         }

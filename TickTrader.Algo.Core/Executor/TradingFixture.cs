@@ -310,11 +310,12 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private async Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+        private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
             where TRequest : OrderRequest
         {
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
+            var callbackTask = new TaskCompletionSource<TradeResultEntity>();
 
             string operationId = Guid.NewGuid().ToString();
 
@@ -324,26 +325,27 @@ namespace TickTrader.Algo.Core
                 resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
             });
 
-            Action<OrderCmdResultCodes> callbackAction = code =>
+            orderRequest.OperationId = operationId;
+
+            var callback = new CrossDomainCallback<OrderCmdResultCodes>();
+
+            callback.Action = code =>
             {
                 if (code != OrderCmdResultCodes.Ok)
                     context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
+
+                callback.Dispose();
             };
 
-            orderRequest.OperationId = operationId;
+            executorInvoke(orderRequest, _executor, callback);
 
-            using (var callback = new CrossDomainCallback<OrderCmdResultCodes>(callbackAction))
+            if (!isAsync)
             {
-                executorInvoke(orderRequest, _executor, callback);
-
-                if (!isAsync)
-                {
-                    while (!resultTask.Task.IsCompleted)
-                        context.ProcessNextOrderUpdate();
-                }
-
-                return await resultTask.Task;
+                while (!resultTask.Task.IsCompleted)
+                    context.ProcessNextOrderUpdate();
             }
+
+            return resultTask.Task;
         }
 
         private async Task<TradeResultEntity> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,

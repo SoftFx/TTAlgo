@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
 
             if (smb != null)
             {
-                var range = await _client.History.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
+                var range = await _client.FeedHistory.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
 
                 if (SelectedSymbol.Value == smb)
                 {
@@ -134,7 +134,7 @@ namespace TickTrader.BotTerminal
             {
                 observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
-                using (var barEnumerator = _client.History.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to))
+                using (var barEnumerator = _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to))
                 {
                     while (await barEnumerator.Next())
                     {
@@ -167,7 +167,7 @@ namespace TickTrader.BotTerminal
 
                 observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
-                using (var tickEnumerator = _client.History.DownloadTickSeriesToStorage(symbol, timeFrame, from, to))
+                using (var tickEnumerator = _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, from, to))
                 {
                     while (await tickEnumerator.Next())
                     {

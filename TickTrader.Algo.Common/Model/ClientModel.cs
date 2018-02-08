@@ -19,30 +19,21 @@ namespace TickTrader.Algo.Common.Model
         private ConnectionModel _connection;
         private FeedHistoryProviderModel _feedHistory;
         private TradeHistoryProvider _tradeHistory;
-        //private DatatSnapshot _snapshot = new DatatSnapshot();
+        private PluginTradeApiProvider _tradeApi;
         private EntityCache _cache = new EntityCache(AccountModelOptions.None);
         private Dictionary<ActorRef, Channel<EntityCacheUpdate>> _tradeListeners = new Dictionary<ActorRef, Channel<EntityCacheUpdate>>();
         private Dictionary<ActorRef, Channel<QuoteEntity>> _feedListeners = new Dictionary<ActorRef, Channel<QuoteEntity>>();
         private AsyncQueue<object> _updateQueue;
         private AsyncQueue<QuoteEntity> _feedQueue;
-        //private InvokeHandler _syncUpdater;
         private Ref<ClientModel> _ref;
         private QuoteDistributor _rootDistributor;
         private ActorSharp.Lib.AsyncLock _updateLock = new ActorSharp.Lib.AsyncLock();
         private ActorSharp.Lib.AsyncLock _feedLock = new ActorSharp.Lib.AsyncLock();
-        //private ActorEvent<TradeDataHandler> _tradeListeners = new ActorEvent<TradeDataHandler>();
-
-        //protected QuoteDistributor Distributor { get; }
-
-        //protected ITradeServerApi TradeProxy => Connection.TradeProxy;
-        //protected IFeedServerApi FeedProxy => Connection.FeedProxy;
 
         protected override void ActorInit()
         {
             _ref = this.GetRef();
             _rootDistributor = new QuoteDistributor(this);
-
-            MulticastQuotes(); // multicast non-stop
         }
 
         private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions)
@@ -50,14 +41,16 @@ namespace TickTrader.Algo.Common.Model
             _connection = new ConnectionModel(new ConnectionOptions());
             _feedHistory = new FeedHistoryProviderModel(_connection, historyFolder, historyOptions);
             _tradeHistory = new TradeHistoryProvider(_connection);
+            _tradeApi = new PluginTradeApiProvider(_connection);
+
+            _tradeApi.OnExclusiveReport += er => _updateQueue.Enqueue(er);
 
             _connection.InitProxies += () =>
             {
-                //var reader = new Channel<object>(ChannelDirections.In, 100);
-                //_syncUpdater = new InvokeHandler(reader);
-
                 _updateQueue = new AsyncQueue<object>();
                 _feedQueue = new AsyncQueue<QuoteEntity>();
+
+                MulticastQuotes(); // start multicasting
 
                 _connection.FeedProxy.Tick += FeedProxy_Tick;
                 _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
@@ -114,13 +107,6 @@ namespace TickTrader.Algo.Common.Model
         {
         }
 
-        //public event Action<PositionEntity> PositionReportReceived;
-        //public event Action<ExecutionReport> ExecutionReportReceived;
-        ////public event Action<AccountInfoEventArgs> AccountInfoReceived;
-        //public event Action<TradeReportEntity> TradeTransactionReceived;
-        //public event Action<BalanceOperationReport> BalanceReceived;
-        //public event Action<QuoteEntity> TickReceived;
-
         public class ControlHandler : Data
         {
             public ControlHandler(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions) : base(SpawnLocal<ClientModel>())
@@ -142,6 +128,7 @@ namespace TickTrader.Algo.Common.Model
             public EntityCache Cache { get; private set; }
             public FeedHistoryProviderModel.Handler FeedHistory { get; private set; }
             public TradeHistoryProvider.Handler TradeHistory { get; private set; }
+            public PluginTradeApiProvider.Handler TradeApi { get; private set; }
             public QuoteDistributor Distributor { get; set; }
             public IVarSet<string, SymbolModel> Symbols => Cache.Symbols;
             public IVarSet<string, CurrencyEntity> Currencies => Cache.Currencies;
@@ -160,15 +147,17 @@ namespace TickTrader.Algo.Common.Model
                 await FeedHistory.Init();
 
                 TradeHistory = new TradeHistoryProvider.Handler(await Actor.Call(a => a._tradeHistory.GetRef()));
+                await TradeHistory.Init();
 
-                var updateStream = Channel.NewOutput<EntityCacheUpdate>();
+                TradeApi = new PluginTradeApiProvider.Handler(await Actor.Call(a => a._tradeApi.GetRef()));
+
+                var updateStream = Channel.NewOutput<EntityCacheUpdate>(1000);
                 var snapshot = await Actor.OpenChannel(updateStream, (a, c) => a.AddListener(Ref, c));
                 ApplyUpdates(updateStream);
 
-                var quoteStream = Channel.NewOutput<QuoteEntity>();
+                var quoteStream = Channel.NewOutput<QuoteEntity>(1000);
                 await Actor.OpenChannel(quoteStream, (a, c) => a._feedListeners.Add(Ref, c));
                 ApplyQuotes(quoteStream);
-
             }
 
             public async Task Deinit()
@@ -199,60 +188,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        //private class InvokeHandler : ActorPart
-        //{
-        //    //private ClientModel _client;
-        //    private BlockingChannel<object> _infoChannel;
-        //    //private BlockingChannel<QuoteEntity> _feedChannel;
-
-        //    public InvokeHandler(Channel<object> reader)
-        //    {
-        //        _infoChannel = CreateBlocingChannel(reader);
-        //        //_feedChannel = OpenInputChannel<QuoteEntity>(100, (a, c) => a.UpdateQuoteLoop(c));
-        //    }
-
-        //    public void OnUpdate(PositionEntity position)
-        //    {
-        //        _infoChannel.Write(position);
-        //    }
-
-        //    public void OnUpdate(ExecutionReport position)
-        //    {
-        //        _infoChannel.Write(position);
-        //    }
-
-        //    public void OnUpdate(TradeReportEntity position)
-        //    {
-        //        _infoChannel.Write(position);
-        //    }
-
-        //    public void OnUpdate(BalanceOperationReport position)
-        //    {
-        //        _infoChannel.Write(position);
-        //    }
-
-        //    public void OnUpdate(QuoteEntity tick)
-        //    {
-        //        _infoChannel.Write(tick);
-        //    }
-
-        //    public void OnUpdate(SymbolEntity[] snapshot)
-        //    {
-        //        _infoChannel.Write(snapshot);
-        //    }
-
-        //    public void OnUpdate(CurrencyEntity[] snapshot)
-        //    {
-        //        _infoChannel.Write(snapshot);
-        //    }
-
-        //    public Task Close()
-        //    {
-        //        return Task.Factory.StartNew(() => _infoChannel.Close(true));
-        //        //_feedChannel.Close(true);
-        //    }
-        //}
-
         private async Task Start()
         {
             logger.Debug("Start loading.");
@@ -263,15 +198,6 @@ namespace TickTrader.Algo.Common.Model
             var getCurrenciesTask = feedApi.GetCurrencies();
             var getSymbolsTask = feedApi.GetSymbols();
             var getInfoTask = tradeApi.GetAccountInfo();
-            //var getOrdersTask = tradeApi.GetTradeRecords();
-
-            //await Task.WhenAll(getInfoTask, getSymbolsTask, getCurrenciesTask, getOrdersTask);
-
-            //foreach (var c in currecnies)
-            //    await ApplyUpdate(new EntityCache.CurrencyUpdate(c));
-
-            //foreach (var s in symbols)
-            //    await ApplyUpdate(new EntityCache.SymbolUpdate(s));
 
             var currencies = await getCurrenciesTask;
 
@@ -309,49 +235,36 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Done loading.");
 
             MulticastUpdates();
-
-            //var symbolSnaphost = new EntityCache.SymbolSnapshotUpdate(getSymbolsTask.Result);
-
-
-            //_currencies.Clear();
-            //foreach (var c in getCurrenciesTask.Result)
-            //    _currencies.Add(c.Name, c);
-
-            //_symbols.Clear();
-            //foreach (var s in getSymbolsTask.Result)
-            //    _symbols.Add(s.Name, s);
-
-            //_orders.Clear();
-            //foreach (var o in getOrdersTask.Result)
-            //    _orders.Add(o.OrderId, o);
-
-            //_positions.Clear();
-            //if (_accProperty.Value.Type == Api.AccountTypes.Net)
-            //{
-            //    var fkdPositions = await tradeApi.GetPositions();
-            //    foreach (var p in fkdPositions)
-            //        _positions.Add(p.Symbol, p);
-            //}
         }
 
         private async Task Stop()
         {
-            logger.Debug("Stopping...");
+            try
+            {
+                logger.Debug("Stopping...");
 
-            _updateQueue.Close();
-            _feedQueue.Close(true);
+                _updateQueue.Close();
+                _feedQueue.Close(true);
 
-            using (await _updateLock.GetLock()) { }
+                using (await _updateLock.GetLock()) { }
 
-            logger.Debug("Stopped update stream.");
+                logger.Debug("Stopped update stream.");
 
-            using (await _feedLock.GetLock()) { }
+                using (await _feedLock.GetLock()) { }
 
-            logger.Debug("Stopped quote stream.");
+                logger.Debug("Stopped quote stream.");
 
-            await FlushListeners();
+                await FlushListeners();
 
-            logger.Debug("Done stopping.");
+                logger.Debug("Done stopping.");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+            _updateQueue = null;
+            _feedQueue = null;
         }
 
         #region Entity cache
@@ -431,9 +344,6 @@ namespace TickTrader.Algo.Common.Model
                 var quotes = await _connection.FeedProxy.GetQuoteSnapshot(groupSymbols, depth);
                 foreach (var q in quotes)
                     await ApplyQuote(q);
-
-                //foreach (var listener in _feedListeners.Values)
-                //    await listener.ConfirmRead();
             }
         }
 
@@ -460,45 +370,5 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #endregion
-
-        //private async void UpdateQuoteLoop(Channel<QuoteEntity> updateChannel)
-        //{
-        //    while (await updateChannel.ReadNext())
-        //    {
-        //        var quote = updateChannel.Current;
-
-        //        foreach (var listener in _feedListeners.Values)
-        //            await listener.Write(quote);
-        //    }
-        //}
-
-        //private class DatatSnapshot
-        //{
-        //    public DatatSnapshot()
-        //    {
-        //        Symbols = new Dictionary<string, SymbolModel>();
-        //        Currencies = new Dictionary<string, CurrencyEntity>();
-        //        Orders = new Dictionary<string, OrderEntity>();
-        //        Positions = new Dictionary<string, PositionEntity>();
-        //    }
-
-        //    public DatatSnapshot(DatatSnapshot original)
-        //    {
-        //        Symbols = new Dictionary<string, SymbolModel>(original.Symbols);
-        //        Currencies = new Dictionary<string, CurrencyEntity>(original.Currencies);
-        //        Orders = new Dictionary<string, OrderEntity>(original.Orders);
-        //        Positions = new Dictionary<string, PositionEntity>(original.Positions);
-        //    }
-
-        //    public Dictionary<string, SymbolModel> Symbols { get; }
-        //    public Dictionary<string, CurrencyEntity> Currencies { get; }
-        //    public Dictionary<string, OrderEntity> Orders { get; }
-        //    public Dictionary<string, PositionEntity> Positions { get; }
-
-        //    public DatatSnapshot Clone()
-        //    {
-        //        return new DatatSnapshot(this);
-        //    }
-        //}
     }
 }
