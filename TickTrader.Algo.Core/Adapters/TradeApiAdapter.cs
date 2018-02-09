@@ -73,6 +73,7 @@ namespace TickTrader.Algo.Core
                 ValidateTradeEnabled(smbMetadata);
 
                 volumeLots = RoundVolume(volumeLots, smbMetadata);
+                maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
                 double volume = ConvertVolume(volumeLots, smbMetadata);
                 double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
                 price = RoundPrice(price, smbMetadata, side);
@@ -87,6 +88,7 @@ namespace TickTrader.Algo.Core
                     ValidateStopPrice(stopPrice);
 
                 ValidateVolume(volume);
+                ValidateMaxVisibleVolume(maxVisibleVolume);
                 ValidateTp(tp);
                 ValidateSl(sl);
 
@@ -278,21 +280,32 @@ namespace TickTrader.Algo.Core
                 //    ValidateStopPrice(stopPrice);
 
                 double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
+                volume = RoundVolume(volume, smbMetadata);
+                maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
                 double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
-                double? orderMaxVisibleVolume = maxVisibleVolume.HasValue ? ConvertVolume(maxVisibleVolume.Value, smbMetadata) : maxVisibleVolume;
+                double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
                 stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
                 sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
                 tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
 
-                ValidateSl(sl);
+                if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
+                    ValidatePrice(price);
+
+                if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                    ValidateStopPrice(stopPrice);
+
+                ValidateVolume(newOrderVolume);
+                ValidateMaxVisibleVolume(orderMaxVisibleVolume);
                 ValidateTp(tp);
+                ValidateSl(sl);
 
                 // update mock request values
                 logRequest.Symbol = orderToModify.Symbol;
                 logRequest.Type = orderToModify.Type;
                 logRequest.Side = orderToModify.Side;
                 logRequest.CurrentVolume = orderToModify.RemainingVolume;
+                logRequest.NewVolume = volume;
                 logRequest.Price = price;
                 logRequest.StopPrice = stopPrice;
                 logRequest.StopLoss = sl;
@@ -402,6 +415,15 @@ namespace TickTrader.Algo.Core
         private void ValidateVolume(double volume)
         {
             if (volume <= 0 || double.IsNaN(volume) || double.IsInfinity(volume))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private void ValidateVolume(double? volume)
+        {
+            if (!volume.HasValue)
+                return;
+
+            if (volume <= 0 || double.IsNaN(volume.Value) || double.IsInfinity(volume.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
         }
 
