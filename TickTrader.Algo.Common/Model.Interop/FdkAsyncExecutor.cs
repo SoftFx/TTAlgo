@@ -212,6 +212,13 @@ namespace TickTrader.Algo.Common.Model.Interop
             {
                 return OrderCmdResultCodes.Timeout;
             }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                var result = FdkConvertor.Convert(ex);
+                if (result == OrderCmdResultCodes.InternalError)
+                    logger.Error(ex, opName + "() failed!");
+                return result;
+            }
             catch (Exception ex)
             {
                 logger.Error(ex, opName + "() failed!");
