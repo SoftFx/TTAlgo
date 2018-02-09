@@ -412,9 +412,20 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
+        private bool IsInvalidValue(double val)
+        {
+            // Because TTS uses decimal for financial calculation
+            // We need to validate that out value is inside of decimal range otherwise exception will be thrown
+            // Values like 1E-30 which go below decimal precision will be converted to zero normally
+            if (val > (double)decimal.MaxValue || val < (double)decimal.MinValue)
+                return true;
+
+            return double.IsNaN(val) || double.IsInfinity(val);
+        }
+
         private void ValidateVolume(double volume)
         {
-            if (volume <= 0 || double.IsNaN(volume) || double.IsInfinity(volume))
+            if (volume <= 0 || IsInvalidValue(volume))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
         }
 
@@ -423,7 +434,7 @@ namespace TickTrader.Algo.Core
             if (!volume.HasValue)
                 return;
 
-            if (volume <= 0 || double.IsNaN(volume.Value) || double.IsInfinity(volume.Value))
+            if (volume <= 0 || IsInvalidValue(volume.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
         }
 
@@ -432,19 +443,19 @@ namespace TickTrader.Algo.Core
             if (!volume.HasValue)
                 return;
 
-            if (volume < 0 || double.IsNaN(volume.Value) || double.IsInfinity(volume.Value))
+            if (volume < 0 || IsInvalidValue(volume.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
         }
 
         private void ValidatePrice(double? price)
         {
-            if (price == null || price <= 0 || double.IsNaN(price.Value) || double.IsInfinity(price.Value))
+            if (price == null || price <= 0 || IsInvalidValue(price.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
         }
 
         private void ValidateStopPrice(double? price)
         {
-            if (price == null || price <= 0 || double.IsNaN(price.Value) || double.IsInfinity(price.Value))
+            if (price == null || price <= 0 || IsInvalidValue(price.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectStopPrice);
         }
 
@@ -453,7 +464,7 @@ namespace TickTrader.Algo.Core
             if (tp == null)
                 return;
 
-            if (tp.Value <= 0 || double.IsNaN(tp.Value) || double.IsInfinity(tp.Value))
+            if (tp.Value <= 0 || IsInvalidValue(tp.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectTp);
         }
 
@@ -462,7 +473,7 @@ namespace TickTrader.Algo.Core
             if (sl == null)
                 return;
 
-            if (sl.Value <= 0 || double.IsNaN(sl.Value) || double.IsInfinity(sl.Value))
+            if (sl.Value <= 0 || IsInvalidValue(sl.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectSl);
         }
 
