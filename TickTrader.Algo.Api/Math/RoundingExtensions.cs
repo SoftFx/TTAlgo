@@ -53,12 +53,22 @@
         }
 
         /// <summary>
+        /// Calculates base 10 exponent of value
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static int Exponent(this double val)
+        {
+            return (int)System.Math.Floor(System.Math.Log10(val));
+        }
+
+        /// <summary>
         /// Rounds value to a certain amount of fractional digits
         /// </summary>
         /// <returns>Rounded value</returns>
         public static double Round(this double val, int digits)
         {
-            if (double.IsNaN(val))
+            if (IsInvalid(val))
             {
                 return double.NaN;
             }
@@ -77,10 +87,11 @@
         /// <returns>Floored value</returns>
         public static double Floor(this double val, int digits)
         {
-            if (double.IsNaN(val))
-            {
+            if (IsInvalid(val))
                 return double.NaN;
-            }
+
+            if (SkipRounding(val, digits))
+                return val;
 
             var fracPart = ToFraction(val, digits, out var numerator, out var denominator, out var negative);
             if (!negative && fracPart.E(1))
@@ -96,10 +107,11 @@
         /// <returns>Ceiled value</returns>
         public static double Ceil(this double val, int digits)
         {
-            if (double.IsNaN(val))
-            {
+            if (IsInvalid(val))
                 return double.NaN;
-            }
+
+            if (SkipRounding(val, digits))
+                return val;
 
             var fracPart = ToFraction(val, digits, out var numerator, out var denominator, out var negative);
             if (!negative && !fracPart.E(0))
@@ -115,10 +127,11 @@
         /// <returns>Rounded value</returns>
         public static double Round(this double val, double step)
         {
-            if (double.IsNaN(val))
-            {
+            if (IsInvalid(val) || IsInvalid(step))
                 return double.NaN;
-            }
+
+            if (SkipRounding(val, step))
+                return val;
 
             var fracPart = ToFraction(val, step, out var numerator, out var denominator, out var negative, out var intStep);
             if (fracPart.Gte(intStep / 2.0))
@@ -134,10 +147,11 @@
         /// <returns>Floored value</returns>
         public static double Floor(this double val, double step)
         {
-            if (double.IsNaN(val))
-            {
+            if (IsInvalid(val) || IsInvalid(step))
                 return double.NaN;
-            }
+
+            if (SkipRounding(val, step))
+                return val;
 
             var fracPart = ToFraction(val, step, out var numerator, out var denominator, out var negative, out var intStep);
             if (!negative && fracPart.E(intStep))
@@ -153,10 +167,11 @@
         /// <returns>Ceiled value</returns>
         public static double Ceil(this double val, double step)
         {
-            if (double.IsNaN(val))
-            {
+            if (IsInvalid(val) || IsInvalid(step))
                 return double.NaN;
-            }
+
+            if (SkipRounding(val, step))
+                return val;
 
             var fracPart = ToFraction(val, step, out var numerator, out var denominator, out var negative, out var intStep);
             if (!negative && !fracPart.E(0))
@@ -246,6 +261,27 @@
             intStep = (long)step;
             numerator = intStep * (((long)val) / intStep);
             return val - numerator;
+        }
+
+        private static bool SkipRounding(double val, int digits)
+        {
+            if (digits < 0 || digits > MaxDigits)
+                throw new System.ArgumentOutOfRangeException(nameof(digits), digits, $"'{nameof(digits)}' is expected to be in range [0, {MaxDigits}]");
+
+            return val.Exponent() + digits > MaxDigits;
+        }
+
+        private static bool SkipRounding(double val, double step)
+        {
+            if (step.Gt(1) || step.Lte(0))
+                throw new System.ArgumentOutOfRangeException(nameof(step), step, $"'{nameof(step)}' is expected to be in range (0; 1]");
+
+            return SkipRounding(val, -step.Exponent());
+        }
+
+        private static bool IsInvalid(double val)
+        {
+            return double.IsNaN(val) || double.IsInfinity(val);
         }
     }
 }
