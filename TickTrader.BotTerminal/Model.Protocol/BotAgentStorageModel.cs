@@ -1,7 +1,7 @@
 ﻿using Machinarium.Qnil;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {

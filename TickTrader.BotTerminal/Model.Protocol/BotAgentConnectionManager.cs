@@ -9,19 +9,17 @@ namespace TickTrader.BotTerminal
 {
     internal class BotAgentConnectionManager
     {
-        private enum States { Offline, Connecting, Online, Disconnecting }
+        private enum States { Offline, Connecting, Online, Disconnecting, WaitReconnect }
 
 
-        private enum Events { ConnectionStarted, Connected, ConnectionLost, Disconnected }
+        private enum Events { ConnectionStarted, Connected, ConnectionLost, Disconnected, Reconnect }
 
 
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
 
         private ProtocolClient _protocolClient;
-        private IDelayCounter _connectionDelay;
         private StateMachine<States> _stateControl;
-        private CancellationTokenSource _reconnectTokenSrc;
         private bool _needReconnect;
         private bool _hasRequest;
 
@@ -48,7 +46,6 @@ namespace TickTrader.BotTerminal
 
             BotAgent = new BotAgentModel();
             _protocolClient = new ProtocolClient(BotAgent);
-            _connectionDelay = new ConnectionDelayCounter(TimeSpan.FromSeconds(2), TimeSpan.FromMinutes(1));
 
             _protocolClient.StateMachine.StateChanged += ClientOnStateChanged;
             _protocolClient.Connecting += ClientOnConnecting;
@@ -64,6 +61,10 @@ namespace TickTrader.BotTerminal
             _stateControl.AddTransition(States.Online, Events.ConnectionLost, States.Disconnecting);
             _stateControl.AddTransition(States.Online, Events.Disconnected, States.Offline);
             _stateControl.AddTransition(States.Disconnecting, Events.Disconnected, States.Offline);
+
+            _stateControl.AddTransition(States.WaitReconnect, Events.Reconnect, States.Connecting);
+            _stateControl.AddTransition(States.Offline, () => _needReconnect, States.WaitReconnect);
+            _stateControl.AddScheduledEvent(States.WaitReconnect, Events.Reconnect, 10000);
         }
 
 
@@ -102,14 +103,11 @@ namespace TickTrader.BotTerminal
 
         private void ClientOnConnecting()
         {
-            _reconnectTokenSrc?.Cancel();
-            _reconnectTokenSrc = null;
             _stateControl.PushEvent(Events.ConnectionStarted);
         }
 
         private void ClientOnConnected()
         {
-            _connectionDelay.Reset();
             _stateControl.PushEvent(Events.Connected);
         }
 
@@ -122,26 +120,6 @@ namespace TickTrader.BotTerminal
         {
             BotAgent.ClearCache();
             _stateControl.PushEvent(Events.Disconnected);
-            if (_needReconnect)
-            {
-                _reconnectTokenSrc = new CancellationTokenSource();
-                RecconectAfter(_reconnectTokenSrc.Token, _connectionDelay.Next());
-            }
-        }
-
-        private async void RecconectAfter(CancellationToken token, TimeSpan delay)
-        {
-            try
-            {
-                await Task.Delay(delay, token);
-                token.ThrowIfCancellationRequested();
-                if (!_hasRequest)
-                {
-                    StartConnecting();
-                }
-            }
-            catch (TaskCanceledException) { }
-            catch (OperationCanceledException) { }
         }
 
         private async void StartConnecting()
