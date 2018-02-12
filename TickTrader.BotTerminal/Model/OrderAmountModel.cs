@@ -1,9 +1,9 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -11,7 +11,7 @@ namespace TickTrader.BotTerminal
     {
         private static decimal[] predefinedLotsCollection = new decimal[] { 0.01M, 0.02M, 0.05M, 0.1M, 0.2M, 0.5M, 1, 2, 5, 10, 20, 50, 100, 200, 500 };
 
-        public OrderAmountModel(SymbolInfo symbolDescriptor)
+        public OrderAmountModel(SymbolEntity symbolDescriptor)
         {
             LotSize = (decimal)symbolDescriptor.RoundLot;
             if (LotSize != 0)

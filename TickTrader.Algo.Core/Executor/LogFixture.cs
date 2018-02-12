@@ -84,6 +84,11 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Error, ex.Message, ex.ToString());
         }
 
+        public void OnError(string message, Exception ex)
+        {
+            AddLogRecord(LogSeverities.Error, message, ex.ToString());
+        }
+
         public void OnPrintError(string entry)
         {
             AddLogRecord(LogSeverities.Error, entry);
@@ -111,9 +116,20 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Trade, entry);
         }
 
+        public void OnPrintTradeSuccess(string entry)
+        {
+            AddLogRecord(LogSeverities.TradeSuccess, entry);
+        }
+
+        public void OnPrintTradeFail(string entry)
+        {
+            AddLogRecord(LogSeverities.TradeFail, entry);
+        }
+
         public void OnInitialized()
         {
             AddLogRecord(LogSeverities.Info, "Bot initialized");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
         }
 
         public void OnStart()
@@ -124,11 +140,18 @@ namespace TickTrader.Algo.Core
         public void OnStop()
         {
             AddLogRecord(LogSeverities.Info, "Bot stopped");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
         }
 
         public void OnExit()
         {
             AddLogRecord(LogSeverities.Info, "Bot exited");
+        }
+
+        public void OnAbort()
+        {
+            AddLogRecord(LogSeverities.Info, "Bot aborted");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
         }
 
         public void UpdateStatus(string status)
@@ -171,6 +194,8 @@ namespace TickTrader.Algo.Core
         Info,
         Error,
         Trade,
+        TradeSuccess,
+        TradeFail,
         Custom,
         CustomStatus
     }

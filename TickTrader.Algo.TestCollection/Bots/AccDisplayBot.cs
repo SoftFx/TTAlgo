@@ -36,14 +36,16 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 PrintStat();
 
-                Account.Orders.Opened += args => PrintStat();
-                Account.Orders.Closed += args => PrintStat();
-                Account.Orders.Canceled += args => PrintStat();
-                Account.Orders.Modified += args => PrintStat();
-                Account.Orders.Filled += args => PrintStat();
-                Account.Orders.Expired += args => PrintStat();
-                Account.Assets.Modified += args => PrintStat();
-                Account.BalanceUpdated += () => PrintStat();
+                Account.Orders.Opened += args => PrintStat("Account.Orders.Opened");
+                Account.Orders.Closed += args => PrintStat("Account.Orders.Closed");
+                Account.Orders.Canceled += args => PrintStat("Account.Orders.Canceled");
+                Account.Orders.Modified += args => PrintStat("Account.Orders.Modified");
+                Account.Orders.Filled += args => PrintStat("Account.Orders.Filled");
+                Account.Orders.Expired += args => PrintStat("Account.Orders.Expired");
+                Account.Orders.Activated += args => PrintStat("Account.Orders.Activated");
+                Account.Assets.Modified += args => PrintStat("Account.Assets.Modified");
+                Account.BalanceUpdated += () => PrintStat("Account.BalanceUpdated");
+                Account.Reset += () => PrintStat("Account.Reset");
             }
             else
             {
@@ -61,8 +63,11 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
         }
 
-        private void PrintStat()
+        private void PrintStat(string eventName = null)
         {
+            if (!string.IsNullOrEmpty(eventName))
+                Print($"{eventName} was called");
+
             PrintAccountInfo();
 
             if (Account.Type == AccountTypes.Gross || Account.Type == AccountTypes.Net)

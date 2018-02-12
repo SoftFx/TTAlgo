@@ -15,14 +15,6 @@ namespace TickTrader.BotTerminal
         void OpenMarkerOrder(string symbol, decimal volume, OrderSide side);
     }
 
-    internal interface ToolWindowsManager
-    {
-        IScreen GetWindow(object key);
-        void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false);
-        void CloseWindow(object wndKey);
-        bool? ShowDialog(IScreen dlgModel);
-    }
-
     internal interface IProfileLoader
     {
         void ReloadProfile(CancellationToken token);
@@ -30,9 +22,11 @@ namespace TickTrader.BotTerminal
 
     internal interface IShell : IWindowModel
     {
+        void OpenChart(string smb);
+
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
-        ToolWindowsManager ToolWndManager { get; }
+        WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }
     }
 }

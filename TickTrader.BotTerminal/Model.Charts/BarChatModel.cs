@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,8 +21,7 @@ namespace TickTrader.BotTerminal
     internal class BarChartModel : ChartModelBase
     {
         private readonly OhlcDataSeries<DateTime, double> chartData = new OhlcDataSeries<DateTime, double>();
-        private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
-        private BarPeriod period;
+        //private readonly List<Algo.Core.BarEntity> indicatorData = new List<Algo.Core.BarEntity>();
         private Api.TimeFrames timeframe;
         private readonly BarVector barCollection = new BarVector();
 
@@ -59,7 +57,6 @@ namespace TickTrader.BotTerminal
         public void Activate(Api.TimeFrames timeframe)
         {
             this.timeframe = timeframe;
-            this.period = FdkToAlgo.ToBarPeriod(timeframe);
             base.Activate();
         }
 
@@ -72,19 +69,21 @@ namespace TickTrader.BotTerminal
 
         protected async override Task LoadData(CancellationToken cToken)
         {
-            var barArray = await ClientModel.History.GetBars(SymbolCode, PriceType.Bid, period, DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15), -4000);
-            var loadedData = barArray.Reverse().ToArray();
+            var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
+            var barArray = await ClientModel.History.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
+            //var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
 
-            indicatorData.Clear();
-            FdkToAlgo.Convert(loadedData, indicatorData);
+            //indicatorData.Clear();
+            //FdkToAlgo.Convert(loadedData, indicatorData);
 
+            barCollection.Clear();
             barCollection.ChangeTimeframe(TimeFrame);
-            barCollection.Append(indicatorData);
+            barCollection.Append(barArray);
 
-            if (loadedData.Length > 0)
-                InitBoundaries(loadedData.Length, loadedData.First().From, loadedData.Last().From);
+            if (barArray.Length > 0)
+                InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
         }
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
@@ -100,7 +99,7 @@ namespace TickTrader.BotTerminal
         public override void InitializePlugin(PluginExecutor plugin)
         {
             base.InitializePlugin(plugin);
-            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies, new DispatcherSync());
+            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies.Snapshot, new DispatcherSync());
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
         }
@@ -111,7 +110,7 @@ namespace TickTrader.BotTerminal
             plugin.GetFeedStrategy<BarStrategy>().SetMainSeries(barCollection.Snapshot.ToList());
         }
 
-        protected override void ApplyUpdate(Quote quote)
+        protected override void ApplyUpdate(QuoteEntity quote)
         {
             if (quote.HasBid)
             {

@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -9,11 +10,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, ToolWindowsManager, IProfileLoader
+    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -26,7 +28,9 @@ namespace TickTrader.BotTerminal
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
         private BotsWarden botsWarden;
-        private BotAgentManager botAgentManager;
+        private SymbolManagerViewModel _smbManager;
+        private CustomFeedStorage _userSymbols = new CustomFeedStorage();
+        private BotAgentManager _botAgentManager;
 
         public ShellViewModel()
         {
@@ -39,7 +43,7 @@ namespace TickTrader.BotTerminal
             storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(storage);
 
-            wndManager = new MdiWindowManager(this);
+            wndManager = new WindowManager(this);
 
             algoEnv = new AlgoEnvironment();
             cManager = new ConnectionManager(storage, eventJournal, algoEnv);
@@ -48,8 +52,8 @@ namespace TickTrader.BotTerminal
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
-            botAgentManager = new BotAgentManager(storage);
-            BotList = new BotListViewModel(this, botAgentManager);
+            _botAgentManager = new BotAgentManager(storage);
+            BotList = new BotListViewModel(this, _botAgentManager);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
@@ -73,7 +77,6 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
             cManager.StateChanged += (o, n) => UpdateCommandStates();
-            SymbolList.NewChartRequested += s => Charts.Open(s);
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             clientModel.Initializing += LoadConnectionProfile;
@@ -81,7 +84,17 @@ namespace TickTrader.BotTerminal
 
             storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
 
+            cManager.StateChanged += (f, t) =>
+            {
+                NotifyOfPropertyChange(nameof(ConnectionState));
+                NotifyOfPropertyChange(nameof(CurrentServerName));
+                NotifyOfPropertyChange(nameof(ProtocolName));
+            };
+            //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
+
             LogStateLoop();
+
+            _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
         }
 
         private void OpenDefaultChart()
@@ -91,11 +104,11 @@ namespace TickTrader.BotTerminal
                 var defaultSymbol = string.Empty;
                 switch (clientModel.Account.Type)
                 {
-                    case SoftFX.Extended.AccountType.Gross:
-                    case SoftFX.Extended.AccountType.Cash:
+                    case AccountTypes.Gross:
+                    case AccountTypes.Cash:
                         defaultSymbol = "EURUSD";
                         break;
-                    case SoftFX.Extended.AccountType.Net:
+                    case AccountTypes.Net:
                         defaultSymbol = "EUR/USD";
                         break;
                 }
@@ -107,7 +120,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateDisplayName()
         {
-            if (cManager.State == ConnectionManager.States.Online)
+            if (cManager.State == ConnectionModel.States.Online)
                 DisplayName = $"{cManager.Creds.Login} {cManager.Creds.Server.Address} - {EnvService.Instance.ApplicationName}";
         }
 
@@ -115,7 +128,7 @@ namespace TickTrader.BotTerminal
         {
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
-            CanDisconnect = state == ConnectionManager.States.Online && !ConnectionLock.IsLocked;
+            CanDisconnect = state == ConnectionModel.States.Online && !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
@@ -154,14 +167,14 @@ namespace TickTrader.BotTerminal
         public override void CanClose(Action<bool> callback)
         {
             var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
-            wndManager.ShowDialog(exit);
+            wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
                 storage.ProfileManager.Stop();
                 if (exit.HasStartedBots)
                 {
                     var shutdown = new ShutdownDialogViewModel(Charts);
-                    wndManager.ShowDialog(shutdown);
+                    wndManager.ShowDialog(shutdown, this);
                 }
             }
             callback(exit.IsConfirmed);
@@ -178,7 +191,7 @@ namespace TickTrader.BotTerminal
                 if (creds == null || !creds.HasPassword)
                 {
                     LoginDialogViewModel model = new LoginDialogViewModel(cManager, creds);
-                    wndManager.ShowDialog(model);
+                    wndManager.ShowDialog(model, this);
                 }
                 else
                     cManager.TriggerConnect(creds);
@@ -192,12 +205,17 @@ namespace TickTrader.BotTerminal
         public void About()
         {
             AboutDialogViewModel model = new AboutDialogViewModel();
-            wndManager.ShowDialog(model);
+            wndManager.ShowDialog(model, this);
         }
 
         public void Exit()
         {
             TryClose();
+        }
+
+        public void OpenChart(string smb)
+        {
+            Charts.Open(smb);
         }
 
         public TradeInfoViewModel Trade { get; }
@@ -210,11 +228,15 @@ namespace TickTrader.BotTerminal
         public BotJournalViewModel BotJournal { get; set; }
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
-        public ToolWindowsManager ToolWndManager { get { return this; } }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public BotListViewModel BotList { get; }
+        public WindowManager ToolWndManager => wndManager;
+
+        public ConnectionModel.States ConnectionState => cManager.Connection.State;
+        public string CurrentServerName => cManager.Connection.CurrentServer;
+        public string ProtocolName => cManager.Connection.CurrentProtocol;
 
         public NotificationsViewModel Notifications { get; private set; }
 
@@ -225,7 +247,8 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await botAgentManager.ShutdownDisconnect();
+                await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await _botAgentManager.ShutdownDisconnect();
             }
             catch (Exception) { }
 
@@ -239,7 +262,7 @@ namespace TickTrader.BotTerminal
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
             ConnectLast();
-            botAgentManager.RestoreConnections();
+            _botAgentManager.RestoreConnections();
         }
 
         private async void PrintSystemInfo()
@@ -283,7 +306,7 @@ namespace TickTrader.BotTerminal
                 builder.Append("STATE SNAPSHOT ");
 
                 LogState(builder, "ConnectionManager", cManager.State.ToString());
-                LogState(builder, "Connection", cManager.Connection.State.Current.ToString());
+                LogState(builder, "Connection", cManager.Connection.State.ToString());
 
                 logger.Debug(builder.ToString());
 
@@ -308,6 +331,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void OpenStorageManager()
+        {
+            if (_smbManager == null)
+                _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
+
+            wndManager.ShowDialog(_smbManager, this);
+        }
+
         public void CloseChart(object chart)
         {
         }
@@ -319,7 +350,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 using (var openOrderModel = new OpenOrderDialogViewModel(clientModel, symbol))
-                    wndManager.ShowWindow(openOrderModel);
+                    wndManager.OpenMdiWindow(openOrderModel);
             }
             catch (Exception ex)
             {
@@ -334,61 +365,12 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        #region ToolWindowsManager implementation
-
-        private Dictionary<object, IScreen> wndModels = new Dictionary<object, IScreen>();
-
-        public IScreen GetWindow(object key)
-        {
-            return wndModels.GetValueOrDefault(key);
-        }
-
-        public void OpenWindow(object wndKey, IScreen wndModel, bool closeExisting = false)
-        {
-            IScreen existing = GetWindow(wndKey);
-            if (existing != null)
-            {
-                if (closeExisting)
-                    existing.TryClose();
-                else
-                    throw new Exception("Window already opened!");
-            }
-            wndModel.Deactivated += WndModel_Deactivated;
-            wndModels[wndKey] = wndModel;
-            wndManager.ShowWindow(wndModel);
-        }
-
-        private void WndModel_Deactivated(object sender, DeactivationEventArgs e)
-        {
-            if (e.WasClosed)
-            {
-                var wndModel = sender as IScreen;
-                wndModel.Deactivated -= WndModel_Deactivated;
-
-                var keyValue = wndModels.FirstOrDefault(m => m.Value == wndModel);
-                if (keyValue.Key != null)
-                    wndModels.Remove(keyValue.Key);
-            }
-        }
-
-        public void CloseWindow(object wndKey)
-        {
-            GetWindow(wndKey)?.TryClose();
-        }
-
-        public bool? ShowDialog(IScreen dlgModel)
-        {
-            return wndManager.ShowDialog(dlgModel);
-        }
-
-        #endregion
-
         #region IProfileLoader implementation
 
         public void ReloadProfile(CancellationToken token)
         {
             var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
-            wndManager.ShowDialog(loading);
+            wndManager.ShowDialog(loading, this);
         }
 
         #endregion

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
+using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -21,5 +22,12 @@ namespace TickTrader.Algo.Common.Model
     public interface ISymbolManager : IDynamicDictionarySource<string, SymbolModel>
     {
         IFeedSubscription SubscribeAll();
+    }
+
+    public interface IActionObserver
+    {
+        void StartProgress(double min, double max);
+        void SetProgress(double val);
+        void SetMessage(string message);
     }
 }

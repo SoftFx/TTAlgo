@@ -46,9 +46,9 @@ namespace TickTrader.Algo.Core.Lib
             _disposed = true;
         }
 
-        ~CrossDomainObject()
-        {
-            Dispose(false);
-        }
+        //~CrossDomainObject()
+        //{
+        //    Dispose(false);
+        //}
     }
 }

@@ -2,7 +2,7 @@ import { Route } from '@angular/router';
 import { AdminComponent } from './admin.component';
 import { DashboardComponent, BotSetupComponent, BotAddComponent, BotDeleteComponent, BotParametersComponent, BotDetailsComponent, BotConfigurationComponent, BotCardComponent } from './dashboard/index';
 import { RepositoryComponent, PackageCardComponent, PacakgeDeleteComponent } from './repository/index';
-import { AccountsComponent, AccountCardComponent, AccountChangePasswordComponent, AccountTestComponent, AccountDeleteComponent, AccountAddComponent } from './accounts/index';
+import { AccountsComponent, AccountCardComponent, AccountChangePasswordComponent, AccountTestComponent, AccountDeleteComponent, AccountAddComponent, AccountChangeProtocolComponent } from './accounts/index';
 import { AuthGuard } from '../services/index';
 
 export const MODULE_ROUTES: Route[] = [
@@ -29,6 +29,7 @@ export const MODULE_COMPONENTS = [
     AccountTestComponent,
     AccountDeleteComponent,
     AccountAddComponent,
+    AccountChangeProtocolComponent,
     RepositoryComponent,
     PackageCardComponent,
     PacakgeDeleteComponent,

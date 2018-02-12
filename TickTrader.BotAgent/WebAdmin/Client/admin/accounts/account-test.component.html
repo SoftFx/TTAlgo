@@ -5,7 +5,7 @@
     </div>
     <div *ngIf="TestRequest && TestRequest.IsCompleted">
         <div *ngIf="!TestRequest.IsFaulted">
-            <p [ngClass]="{'text-success': TestRequest.Result.ConnectionErrorCode === ConnectionErrorCode.None, 'text-error': TestRequest.Result.ConnectionErrorCode !== ConnectionErrorCode.None}">
+            <p [ngClass]="{'text-success': TestRequest.Result.ErrorInfo.Code === ConnectionErrorCode.None, 'text-error': TestRequest.Result.ErrorInfo.Code !== ConnectionErrorCode.None}">
                 {{TestRequest.Result.Message}}
             </p>
         </div>

@@ -1,6 +1,6 @@
 ﻿using Machinarium.Qnil;
 using Machinarium.State;
-using SoftFX.Extended;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,29 +21,30 @@ namespace TickTrader.Algo.Common.Model
 
         private ISyncContext _sync;
         private DynamicDictionary<string, SymbolModel> symbols = new DynamicDictionary<string, SymbolModel>();
-        private IDictionary<string, CurrencyInfo> currencies;
+        private ClientCore _core;
 
         public event DictionaryUpdateHandler<string, SymbolModel> Updated { add { symbols.Updated += value; } remove { symbols.Updated -= value; } }
 
         public SymbolCollectionBase(ClientCore client, ISyncContext sync)
         {
+            _core = client;
             _sync = sync;
             Distributor = new QuoteDistributor(client);
         }
 
-        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        protected virtual SymbolModel CreateSymbolsEntity(QuoteDistributor distributor, SymbolEntity info)
         {
-            return new SymbolModel(Distributor, info, currencies);
+            return new SymbolModel(Distributor, info, Currencies);
         }
 
         public IReadOnlyDictionary<string, SymbolModel> Snapshot { get { return symbols.Snapshot; } }
         public QuoteDistributor Distributor { get; }
+        public IReadOnlyDictionary<string, CurrencyEntity> Currencies => _core.Currencies.Snapshot;
 
-        public void Initialize(SymbolInfo[] symbolSnapshot, IDictionary<string, CurrencyInfo> currencySnapshot)
+        public async Task Initialize()
         {
-            this.currencies = currencySnapshot;
-            Merge(symbolSnapshot);
-            Distributor.Init();
+            Merge(await _core.FeedProxy.GetSymbols());
+            await Distributor.Init();
         }
 
         public IFeedSubscription SubscribeAll()
@@ -51,7 +52,7 @@ namespace TickTrader.Algo.Common.Model
             return Distributor.SubscribeAll();
         }
 
-        private void Merge(IEnumerable<SymbolInfo> freshSnashot)
+        private void Merge(IEnumerable<SymbolEntity> freshSnashot)
         {
             var freshSnapshotDic = freshSnashot.ToDictionary(i => i.Name);
 
@@ -66,7 +67,7 @@ namespace TickTrader.Algo.Common.Model
                     else
                     {
                         Distributor.AddSymbol(info.Name);
-                        model = CreateSymbolsEntity(Distributor, info, currencies);
+                        model = CreateSymbolsEntity(Distributor, info);
                         symbols.Add(info.Name, model);
                     }
                 });

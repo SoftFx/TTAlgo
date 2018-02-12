@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,36 +14,36 @@ namespace TickTrader.BotTerminal
     {
         public enum States { Collapsed, Expanded, ExpandedWithLevel2 }
 
-        private SymbolModel model;
+        private SymbolModel _model;
         private bool isSelected;
         private States currentState;
-        private iOrderUi _orderUi;
+        private IShell _shell;
         private DateTime _quoteTime;
         private IFeedSubscription subscription;
 
-        public SymbolViewModel(SymbolModel model, iOrderUi orderUi)
+        public SymbolViewModel(SymbolModel model, IShell shell)
         {
-            this.model = model;
+            _model = model;
+            _shell = shell;
             subscription = model.Subscribe();
             subscription.NewQuote += OnRateUpdate;
-            this._orderUi = orderUi;
 
-            this.Bid = model.BidTracker;
-            this.Ask = model.AskTracker;
+            Bid = model.BidTracker;
+            Ask = model.AskTracker;
 
             Bid.Precision = model.Descriptor.Precision;
             Ask.Precision = model.Descriptor.Precision;
 
-            this.DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
-            this.Level2Panel = new SymbolLevel2ViewModel();
-            if (model.Descriptor.Features.IsColorSupported)
-                Color = model.Descriptor.Color;
+            DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
+            Level2Panel = new SymbolLevel2ViewModel();
 
-            this.DetailsPanel.OnBuyClick = () => _orderUi.OpenMarkerOrder(model.Name);
-            this.DetailsPanel.OnSellClick = () => _orderUi.OpenMarkerOrder(model.Name);
+            Color = model.Descriptor.Color;
+
+            this.DetailsPanel.OnBuyClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
+            this.DetailsPanel.OnSellClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
         }
 
-        public string SymbolName { get { return model.Name; } }
+        public string SymbolName { get { return _model.Name; } }
         public string Group { get { return "Forex"; } }
         public int Color { get; private set; }
 
@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
 
         #endregion
 
-        private void OnRateUpdate(Quote tick)
+        private void OnRateUpdate(QuoteEntity tick)
         {
             Bid.Rate = tick.HasBid ? (double?)tick.Bid : null;
             Ask.Rate = tick.HasAsk ? (double?)tick.Ask : null;
@@ -123,15 +123,13 @@ namespace TickTrader.BotTerminal
 
         public void OpenOrder()
         {
-            _orderUi.OpenMarkerOrder(model.Name);
+            _shell.OrderCommands.OpenMarkerOrder(_model.Name);
         }
 
         public void OpenChart()
         {
-            NewChartRequested(this.model.Descriptor.Name);
+            _shell.OpenChart(SymbolName);
         }
-
-        public event Action<string> NewChartRequested = delegate { };
 
         public void Close()
         {

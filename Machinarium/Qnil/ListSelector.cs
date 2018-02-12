@@ -14,11 +14,15 @@ namespace Machinarium.Qnil
         private Func<TSource, TResult> selectFunc;
         private bool propogateDispose;
 
+        private static string prefix = "ListSelector<" + typeof(TResult).Name + "> ";
+
         public ListSelector(IDynamicListSource<TSource> src, Func<TSource, TResult> selectFunc, bool propogateDispose)
         {
             this.src = src;
             this.selectFunc = selectFunc;
             this.propogateDispose = propogateDispose;
+
+            System.Diagnostics.Debug.WriteLine(prefix + " .CTOR");
 
             foreach (var srcItem in src.Snapshot)
                 Add(srcItem);
@@ -53,12 +57,13 @@ namespace Machinarium.Qnil
 
         private void OnUpdated(ListUpdateArgs<TResult> args)
         {
-            if (Updated != null)
-                Updated(args);
+            Updated?.Invoke(args);
         }
 
         private void Add(TSource srcItem)
         {
+            //System.Diagnostics.Debug.WriteLine(prefix + " ADD");
+
             var newItem = selectFunc(srcItem);
             innerList.Add(newItem);
             OnUpdated(new ListUpdateArgs<TResult>(this, DLinqAction.Insert, innerList.Count - 1, newItem));
@@ -70,18 +75,24 @@ namespace Machinarium.Qnil
                 Dispose();
             else if (args.Action == DLinqAction.Insert)
             {
+                //System.Diagnostics.Debug.WriteLine(prefix + " INSERT");
+
                 var newItem = selectFunc(args.NewItem);
                 innerList.Insert(args.Index, newItem);
                 OnUpdated(new ListUpdateArgs<TResult>(this, args.Action, args.Index, newItem));
             }
             else if (args.Action == DLinqAction.Remove)
             {
+                //System.Diagnostics.Debug.WriteLine(prefix + " REMOVE");
+
                 var removedItem = innerList[args.Index];
                 innerList.RemoveAt(args.Index);
                 OnUpdated(new ListUpdateArgs<TResult>(this, args.Action, args.Index, default(TResult), removedItem));
             }
             else if (args.Action == DLinqAction.Replace)
             {
+                //System.Diagnostics.Debug.WriteLine(prefix + " REPLACE");
+
                 var oldItem = innerList[args.Index];
                 var newItem = selectFunc(args.NewItem);
                 innerList[args.Index] = newItem;

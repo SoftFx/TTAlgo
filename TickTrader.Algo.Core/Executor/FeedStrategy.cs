@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
         private void StartStrategy()
         {
             Feed.Subscribe(Feed_FeedUpdated);
-            ExecContext.EnqueueTradeUpdate(b => BatchBuild(BufferSize));
+            ExecContext.EnqueueCustomInvoke(b => BatchBuild(BufferSize));
 
             // apply snapshot
             foreach (var quote in Feed.GetSnapshot())

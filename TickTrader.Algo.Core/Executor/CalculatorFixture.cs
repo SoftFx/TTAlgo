@@ -12,7 +12,8 @@ namespace TickTrader.Algo.Core
         private BL.MarketState _state;
         private IFixtureContext _context;
         private MarginCalcAdapter marginCalc;
-        private CashCalcAdapter cashCalc;
+        private BL.CashAccountCalculator cashCalc;
+        private AccountAccessor acc;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -25,12 +26,22 @@ namespace TickTrader.Algo.Core
             _state.Set(_context.Builder.Symbols);
             _state.Set(_context.Builder.Currencies);
 
-            var acc = _context.Builder.Account;
-            if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
-                marginCalc = new MarginCalcAdapter(acc, _state, _context);
-            else
-                cashCalc = new CashCalcAdapter(acc, _state, _context);
-            acc.EnableBlEvents();
+            try
+            {
+                acc = _context.Builder.Account;
+                if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
+                    marginCalc = new MarginCalcAdapter(acc, _state);
+                else
+                    cashCalc = new BL.CashAccountCalculator(acc, _state);
+                acc.EnableBlEvents();
+            }
+            catch (Exception ex)
+            {
+                marginCalc = null;
+                cashCalc = null;
+                acc = null;
+                _context.Builder.Logger.OnError("Failed to start account calculator", ex);
+            }
         }
 
         internal void UpdateRate(QuoteEntity entity)
@@ -40,8 +51,12 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
-            _context.Builder.Account.DisableBlEvents();
             _state = null;
+            if (acc != null)
+            {
+                acc.DisableBlEvents();
+                acc = null;
+            }
             if (cashCalc != null)
             {
                 cashCalc.Dispose();
@@ -56,60 +71,19 @@ namespace TickTrader.Algo.Core
 
         private class MarginCalcAdapter : BL.AccountCalculator
         {
-            public MarginCalcAdapter(AccountEntity accEntity, BL.MarketState market, IFixtureContext context) : base(accEntity, market)
+            public MarginCalcAdapter(AccountAccessor accEntity, BL.MarketState market) : base(accEntity, market)
             {
-                foreach (var group in ((IEnumerable<OrderAccessor>)accEntity.Orders.OrderListImpl).GroupBy(o => o.Symbol))
-                {
-                    try
-                    {
-                        AddOrdersBunch(group);
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Logger.OnError(ex);
-                    }
-                }
-
-                foreach (var pos in accEntity.NetPositions)
-                {
-                    try
-                    {
-                        Update(pos, BL.PositionChageTypes.AddedModified);
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Logger.OnError(ex);
-                    }
-                }
             }
 
             protected override void OnUpdated()
             {
-                var accEntity = (AccountEntity)Info;
+                var accEntity = (AccountAccessor)Info;
 
                 accEntity.Equity = (double)Equity;
                 accEntity.Profit = (double)Profit;
                 accEntity.Commision = (double)Commission;
                 accEntity.MarginLevel = (double)MarginLevel;
                 accEntity.Margin = (double)Margin;
-            }
-        }
-
-        private class CashCalcAdapter : BL.CashAccountCalculator
-        {
-            public CashCalcAdapter(AccountEntity accEntity, BL.MarketState market, IFixtureContext context) : base(accEntity, market)
-            {
-                foreach (var group in ((IEnumerable<OrderAccessor>)accEntity.Orders.OrderListImpl).GroupBy(o => o.Symbol))
-                {
-                    try
-                    {
-                        AddOrdersBunch(group);
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Logger.OnError(ex);
-                    }
-                }
             }
         }
     }

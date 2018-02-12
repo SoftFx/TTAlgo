@@ -37,13 +37,7 @@ namespace TickTrader.Algo.Core.UnitTest
 
         internal static Api.Quote CreateQuote(string symbol, DateTime timestamp, double bid, double? ask = null)
         {
-            return new QuoteEntity()
-            {
-                Symbol = symbol,
-                Bid = bid,
-                Ask = ask ?? bid,
-                Time = timestamp
-            };
+            return new QuoteEntity(symbol, timestamp, bid, ask ?? bid);
         }
 
         internal static void UpdateRate(this BarSeriesFixture fixture, string timestamp, double bid, double? ask = null)
@@ -87,7 +81,11 @@ namespace TickTrader.Algo.Core.UnitTest
         {
         }
 
-        public void EnqueueTradeEvent(Action<PluginBuilder> action)
+        public void EnqueueEvent(Action<PluginBuilder> action)
+        {
+        }
+
+        public void EnqueueCustomInvoke(Action<PluginBuilder> action)
         {
         }
 

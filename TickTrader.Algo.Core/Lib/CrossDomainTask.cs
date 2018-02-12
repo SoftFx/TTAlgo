@@ -27,5 +27,6 @@ namespace TickTrader.Algo.Core.Lib
         {
             _taskSrc.SetException(ex);
         }
+
     }
 }

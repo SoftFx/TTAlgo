@@ -101,8 +101,8 @@ namespace TickTrader.BotTerminal
                         return;
                     }
                     var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _storage);
-                    item.RestoreFromSnapshot(chart);
                     ActivateItem(item);
+                    item.RestoreFromSnapshot(chart);
                 }
 
                 var selectedItem = Items.FirstOrDefault(c => c.Symbol == profileStorage.SelectedChart);

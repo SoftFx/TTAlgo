@@ -8,6 +8,7 @@
                 <ul class="dropdown-menu pull-right">
                     <li><a (click)="InitTestAccount()" href="javascript:;">Test</a></li>
                     <li><a (click)="InitChangePassword()" href="javascript:;">Change Password</a></li>
+                    <li><a (click)="InitChangeProtocol()" href="javascript:;">Change Protocol</a></li>
                     <li class="divider"></li>
                     <li><a (click)="InitDeletion()" href="javascript:;">Delete</a></li>
                 </ul>
@@ -22,6 +23,7 @@
         <ul class="list-unstyled">
             <li>Login: {{Account.Login}}</li>
             <li>Server: {{Account.Server}}</li>
+            <li>Protocol: {{Account.UseNewProtocol ? 'SFX' : 'FIX'}}</li>
         </ul>
     </div>
 
@@ -34,7 +36,11 @@
     </overlay-cmp>
 
     <overlay-cmp *ngIf="ConfirmDeletionEnabled">
-       <account-delete-cmp [Account]="Account" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></account-delete-cmp>
+        <account-delete-cmp [Account]="Account" (OnCanceled)="DeletionCanceled()" (OnDeleted)="DeletionCompleted($event)"></account-delete-cmp>
+    </overlay-cmp>
+
+    <overlay-cmp *ngIf="ChangeProtocolEnabled">
+        <account-change-protocol-cmp [Account]="Account" (OnChanged)="ProtocolChangedOrCnaceled()" (OnCanceled)="ProtocolChangedOrCnaceled()"></account-change-protocol-cmp>
     </overlay-cmp>
 </div>
 

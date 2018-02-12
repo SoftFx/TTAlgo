@@ -19,6 +19,12 @@ namespace TickTrader.Algo.Core
         int BO.ICurrencyInfo.Precision => Digits;
         int BO.ICurrencyInfo.SortOrder => SortOrder;
 
+        #region FDK compatibility
+
+        public int Precision => Digits;
+
+        #endregion
+
         public override string ToString() { return $"{Name} (Digits = {Digits})"; }
     }
 }

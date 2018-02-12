@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SoftFX.Extended;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -15,26 +15,26 @@ namespace TickTrader.Algo.Common.Model
         private decimal amount;
         private double tradeAmount;
         private decimal margin;
-        private Algo.Api.Currency currencyInfo;
+        private Currency currencyInfo;
 
-        public AssetModel(double balance, string currency, IDictionary<string, CurrencyInfo> currencies)
+        public AssetModel(double balance, string currency, IReadOnlyDictionary<string, CurrencyEntity> currencies)
         {
             this.currency = currency;
             this.amount = (decimal)balance;
-            currencyInfo = currencies.ContainsKey(currency) ? (Currency)FdkToAlgo.Convert(currencies[currency]) : new Algo.Core.NullCurrency(currency);
+            currencyInfo = currencies.GetOrDefault(currency) ?? Null.Currency;
         }
 
-        public AssetModel(AssetInfo asset, IDictionary<string, CurrencyInfo> currencies)
+        public AssetModel(AssetEntity asset, IReadOnlyDictionary<string, CurrencyEntity> currencies)
         {
             Currency = asset.Currency;
-            currencyInfo = currencies.ContainsKey(currency) ? (Currency)FdkToAlgo.Convert(currencies[currency]) : new Algo.Core.NullCurrency(currency);
+            currencyInfo = currencies.GetOrDefault(currency) ?? Null.Currency;
             Update(asset);
         }
 
-        private void Update(AssetInfo asset)
+        private void Update(AssetEntity asset)
         {
-            Amount = (decimal)asset.Balance;
-            TradeAmount = asset.TradeAmount;
+            Amount = (decimal)asset.Volume;
+            TradeAmount = asset.TradeVolume;
         }
 
         public string Currency

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotAgent.BA.Info;
 using System.Net;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -63,7 +64,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                _botAgent.AddAccount(new AccountKey(account.Login, account.Server), account.Password);
+                _botAgent.AddAccount(new AccountKey(account.Login, account.Server), account.Password, account.UseNewProtocol);
             }
             catch (BAException dsex)
             {
@@ -90,7 +91,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             return Ok();
         }
 
-        [HttpPatch]
+        [HttpPatch("[action]")]
         public IActionResult UpdatePassword([FromBody] AccountDto account)
         {
             try
@@ -106,14 +107,30 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             return Ok();
         }
 
+        [HttpPatch("[action]")]
+        public IActionResult ChangeProtocol([FromBody] AccountDto account)
+        {
+            try
+            {
+                _botAgent.ChangeAccountProtocol(new AccountKey(account.Login, account.Server));
+            }
+            catch (BAException dsex)
+            {
+                _logger.LogError(dsex.Message);
+                return BadRequest(dsex.ToBadResult());
+            }
+
+            return Ok();
+        }
+
         [HttpGet("[action]")]
-        public IActionResult Test(string login, string server, string password)
+        public IActionResult Test(string login, string server, string password, bool useNewProtocol)
         {
             try
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
                     _botAgent.TestAccount(new AccountKey(login, server)) :
-                    _botAgent.TestCreds(login, password, server);
+                    _botAgent.TestCreds(login, password, server, useNewProtocol);
 
                 return Ok(testResult);
             }

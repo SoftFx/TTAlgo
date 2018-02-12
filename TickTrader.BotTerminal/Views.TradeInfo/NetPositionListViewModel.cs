@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using SoftFX.Extended;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -28,9 +28,9 @@ namespace TickTrader.BotTerminal
             Positions.CollectionChanged += PositionsCollectionChanged;
         }
 
-        protected override bool SupportsAccount(AccountType accType)
+        protected override bool SupportsAccount(AccountTypes accType)
         {
-            return accType == AccountType.Net;
+            return accType == AccountTypes.Net;
         }
 
         public IObservableListSource<PositionViewModel> Positions { get; private set; }

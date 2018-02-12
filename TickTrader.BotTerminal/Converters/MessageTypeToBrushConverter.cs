@@ -20,6 +20,8 @@ namespace TickTrader.BotTerminal
             {
                 case JournalMessageType.Info: return new SolidColorBrush(Colors.Gray);
                 case JournalMessageType.Trading: return new SolidColorBrush(Colors.SkyBlue);
+                case JournalMessageType.TradingSuccess: return new SolidColorBrush(Colors.Green);
+                case JournalMessageType.TradingFail: return new SolidColorBrush(Colors.DarkOrange);
                 case JournalMessageType.Error: return new SolidColorBrush(Colors.Red);
                 case JournalMessageType.Custom: return new SolidColorBrush(Colors.Violet);
                 default: return null;

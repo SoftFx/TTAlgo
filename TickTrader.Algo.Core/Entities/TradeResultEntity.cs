@@ -8,9 +8,21 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class TradeResultEntity : OrderCmdResult
+    public class TradeResultEntity
     {
-        public TradeResultEntity(OrderCmdResultCodes code, Order entity = null)
+        public TradeResultEntity(OrderCmdResultCodes code, OrderEntity entity = null)
+        {
+            ResultCode = code;
+            ResultingOrder = entity;
+        }
+
+        public OrderCmdResultCodes ResultCode { get; private set; }
+        public OrderEntity ResultingOrder { get; private set; }
+    }
+
+    public class OrderResultEntity : OrderCmdResult
+    {
+        public OrderResultEntity(OrderCmdResultCodes code, Order entity = null)
         {
             this.ResultCode = code;
             if (entity != null)

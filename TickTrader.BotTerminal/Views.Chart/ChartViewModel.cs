@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
             if (dialogResult == null && HasStartedBots)
             {
                 var closeDlg = new CloseChartDialogViewModel(this);
-                shell.ToolWndManager.ShowDialog(closeDlg);
+                shell.ToolWndManager.ShowDialog(closeDlg, this);
                 dialogResult = closeDlg.IsConfirmed;
             }
 
@@ -168,7 +168,10 @@ namespace TickTrader.BotTerminal
             Indicators.Foreach(i => algoEnv.IdProvider.RemovePlugin(i.Model.InstanceId));
             Bots.Foreach(b => algoEnv.IdProvider.RemovePlugin(b.Model.InstanceId));
 
-            shell.ToolWndManager.CloseWindow(this);
+            shell.ToolWndManager.CloseWindowByKey(this);
+
+            barChart.Dispose();
+            tickChart.Dispose();
         }
 
         public void OpenOrder()
@@ -300,7 +303,7 @@ namespace TickTrader.BotTerminal
                 {
                     bot.StartStop();
                 }
-                shell.ToolWndManager.CloseWindow(bot.Model);
+                shell.ToolWndManager.CloseWindowByKey(bot.Model);
             }
         }
 
@@ -310,7 +313,7 @@ namespace TickTrader.BotTerminal
             {
                 var model = new PluginSetupViewModel(algoEnv, item, Chart);
                 if (!model.SetupCanBeSkipped)
-                    shell.ToolWndManager.OpenWindow("AlgoSetupWindow", model, true);
+                    shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
                     AttachPlugin(model);
 
@@ -420,7 +423,6 @@ namespace TickTrader.BotTerminal
         {
             charts.Clear();
             charts.Add(Chart);
-
 
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;

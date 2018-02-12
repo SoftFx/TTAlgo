@@ -1,7 +1,5 @@
 ﻿using Caliburn.Micro;
 using NLog;
-using SoftFX.Extended;
-using SoftFX.Extended.Reports;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +13,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
+using TickTrader.Algo.Api;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -241,7 +240,7 @@ namespace TickTrader.BotTerminal
                 {
                     var key = GetTransactionKey(tradeTransaction);
                     if (!_tradesList.ContainsKey(key) &&
-                        !(SkipCancel && tradeTransaction.ActionType == TradeTransactionReportType.OrderCanceled) &&
+                        !(SkipCancel && tradeTransaction.ActionType == TradeExecActions.OrderCanceled) &&
                         (Period == TimePeriod.LastHour
                             ? tradeTransaction.CloseTime.ToLocalTime() > From
                             : tradeTransaction.CloseTime.ToLocalTime().Between(From, To)))
@@ -343,9 +342,9 @@ namespace TickTrader.BotTerminal
 
         private void AccountTypeChanged()
         {
-            IsCachAccount = _tradeClient.Account.Type == AccountType.Cash;
-            IsGrossAccount = _tradeClient.Account.Type == AccountType.Gross;
-            IsNetAccount = _tradeClient.Account.Type == AccountType.Net;
+            IsCachAccount = _tradeClient.Account.Type == AccountTypes.Cash;
+            IsGrossAccount = _tradeClient.Account.Type == AccountTypes.Gross;
+            IsNetAccount = _tradeClient.Account.Type == AccountTypes.Net;
 
             NotifyOfPropertyChange(nameof(IsCachAccount));
             NotifyOfPropertyChange(nameof(IsGrossAccount));

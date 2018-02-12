@@ -58,6 +58,10 @@
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" >
+                                        <TextBlock Text="Expiration: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.Expiration}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
                         </Setter>
@@ -91,7 +95,7 @@
                     <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="Order.Price"/>
+                                <Binding Path="Price"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>

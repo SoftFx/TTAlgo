@@ -13,6 +13,7 @@ namespace TickTrader.Algo.TestCollection.Bots
     {
         [Parameter(DefaultValue = 0.1)]
         public double Volume { get; set; }
+        private double _defaultVolume;
 
         private int _testCount;
         private int _errorCount;
@@ -78,13 +79,13 @@ namespace TickTrader.Algo.TestCollection.Bots
                 }
 
             }
-            double[] result = {price, secondPrice, newPrice};
+            double[] result = { price, secondPrice, newPrice };
             return result;
         }
 
         private async Task PerfomOrder(OrderType orderType, OrderSide orderSide, bool isAsync, OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
-            
+
             var prices = GetPrices(orderType, orderSide);
             var title = (isAsync) ? "Async test: " : "Test: ";
             var postTitle = (tag == null) ? "" : " with tag";
@@ -99,7 +100,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (orderType != OrderType.Limit && orderType != OrderType.Market)
                 secondPrice = prices[1];
             if (options == OrderExecOptions.ImmediateOrCancel)
-                    price = (orderSide == OrderSide.Sell) ? Symbol.Bid - _diff : Symbol.Ask + _diff;
+                price = (orderSide == OrderSide.Sell) ? Symbol.Bid - _diff : Symbol.Ask + _diff;
 
             try
             {
@@ -124,7 +125,16 @@ namespace TickTrader.Algo.TestCollection.Bots
                     return;
                 }
 
-                await TestAddModifyComment(someOrder.Id, isAsync);
+
+
+                if (orderType != OrderType.Market && orderType != OrderType.Position)
+                {
+                    Volume *= 2;
+                    await TestModifyVolume(someOrder.Id, isAsync, Volume, postTitle);
+                }
+                    
+
+                await TestAddModifyComment(someOrder.Id, isAsync, postTitle);
                 if (Account.Type == AccountTypes.Gross)
                 {
                     await TestAddModifyStopLoss(someOrder.Id, isAsync, postTitle);
@@ -152,23 +162,24 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
             finally
             {
-                if(someOrder != null)
+                Volume = _defaultVolume;
+                if (someOrder != null)
                     await TestCancelOrder(someOrder.Id, orderSide, orderType, tag, false, isAsync);
             }
         }
 
         private async Task Test()
         {
-
+            _defaultVolume = Volume;
             const string tag = "TAG";
             var sides = new List<OrderSide>();
             var types = new List<OrderType>();
             InitSidesAndTypes(sides, types);
-            bool[] asyncModes = {false, true};
-            string[] tags = {null, tag};
+            bool[] asyncModes = { false, true };
+            string[] tags = { null, tag };
             _errorTextList = new List<string>();
-            _diff = Math.Ceiling((Symbol.Ask / Symbol.Point) / 100 ) * Symbol.Point * 2;
-            
+            _diff = Math.Ceiling((Symbol.Ask / Symbol.Point) / 100) * Symbol.Point * 2;
+
 
             foreach (var orderSide in sides)
                 foreach (var orderType in types)
@@ -177,10 +188,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                         {
                             await PerfomOrder(orderType, orderSide, asyncMode, OrderExecOptions.None, someTag);
                             if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                await PerfomOrder(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);   
+                                await PerfomOrder(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
                         }
 
-            await TestMarketOrder(Account.Type);
+            //await TestMarketOrder(Account.Type);
 
             PrintStatus();
         }
@@ -264,7 +275,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             {
                 _errorCount++;
                 _errorTextList.Add(e.Message + " in test market order");
-                
+
             }
         }
 
@@ -319,7 +330,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             var day = DateTime.Today.Day;
             var expiration = new DateTime(year + 1, month, day);
             var newExpiration = new DateTime(year + 2, month, day);
-            
+
             var title = (isAsync) ? "Async test: " : "Test: ";
             var order = Account.Orders[orderId];
 
@@ -396,8 +407,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         private async Task TestAddModifyStopLoss(string orderId, bool isAsync, string postTitle = "")
         {
             var order = Account.Orders[orderId];
-            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - _diff) : (Symbol.Bid + _diff);
-            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - _diff) : (Symbol.Bid + _diff);
+            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - _diff * 4) : (Symbol.Ask + _diff * 4);
+            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - _diff * 5) : (Symbol.Ask + _diff * 5);
             var title = (isAsync) ? "Async test: " : "Test: ";
 
             _testCount++;
@@ -416,6 +427,20 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, newStopLoss, null, null));
             VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, null, newStopLoss);
 
+        }
+
+        private async Task TestModifyVolume(string orderId, bool isAsync, double newVolume, string postTitle = "")
+        {
+            var title = (isAsync) ? "Async test: " : "Test: ";
+            var order = Account.Orders[orderId];
+
+            _testCount++;
+            Print(title + "modify volume " + order.Side + " " + order.Type + " order" + postTitle);
+            if (isAsync)
+                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, null, newVolume));
+            else
+                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, null, newVolume));
+            VerifyOrder(order.Id, order.Type, order.Side, newVolume, null, null);
         }
 
         private async Task TestModifyLimitPrice(string orderId, double newPrice, double? stopPrice, bool isAsync, string postTitle = "")
@@ -446,7 +471,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             VerifyOrder(order.Id, order.Type, order.Side, Volume, price, newStopPrice);
         }
 
-        private async Task TestCancelOrder(string orderId, OrderSide orderSide, OrderType orderType, string tag,  bool isIoc, bool isAsync)
+        private async Task TestCancelOrder(string orderId, OrderSide orderSide, OrderType orderType, string tag, bool isIoc, bool isAsync)
         {
             if (Account.Orders[orderId] == null)
                 return;
@@ -454,11 +479,11 @@ namespace TickTrader.Algo.TestCollection.Bots
             _testCount++;
 
             Print((isAsync ? "Async test: " : "Test: ")
-                + "cancel " + orderSide + " " + orderType + " order"                      
-                + (tag != null ? " with tag" : "")      
+                + "cancel " + orderSide + " " + orderType + " order"
+                + (tag != null ? " with tag" : "")
                 + (isIoc ? " with IoC" : ""));
 
-            if (Account.Orders[orderId].Type == OrderType.Position)
+            if (Account.Orders[orderId].Type == OrderType.Position || Account.Orders[orderId].Type == OrderType.Market)
             {
                 if (isAsync)
                     ThrowOnError(await CloseOrderAsync(orderId));
@@ -489,7 +514,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             string orderId,
             OrderType type,
             OrderSide side,
-            double orderVolume,
+            double? orderVolume = null,
             double? price = null,
             double? stopPrice = null,
             string comment = null,
@@ -510,7 +535,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (order.Side != side)
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong side: " + side);
 
-            if (!order.RemainingVolume.E(orderVolume))
+            if (orderVolume != null && !order.RemainingVolume.E(orderVolume.Value))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong volume");
 
             if (price != null && !EqualPrices(order.Price, price.Value))
@@ -534,7 +559,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (tag != null && !tag.Equals(order.Tag))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong tag: " + tag);
 
-            if(expiration != null && !order.Expiration.Equals(expiration))
+            if (expiration != null && !order.Expiration.Equals(expiration))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong expiration: " + expiration);
         }
 

@@ -1,0 +1,15 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="ActionDialogView.Template.Common" TargetType="UserControl">
+        <ContentControl cal:View.Model="{Binding Progress}" Background="{TemplateBinding Background}" Visibility="{TemplateBinding Visibility}" />
+    </ControlTemplate>
+
+    <Style x:Key="ActionViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource ActionDialogView.Template.Common}"/>
+        <!--<Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>-->
+    </Style>
+
+</ResourceDictionary>

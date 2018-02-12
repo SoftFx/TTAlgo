@@ -27,9 +27,9 @@ namespace TickTrader.Algo.Core
         {
             Descriptor = descriptor;
             marketData = new MarketDataImpl(this);
-            Account = new AccountEntity(this);
             Symbols = new SymbolsCollection(marketData);
             Currencies = new CurrenciesCollection();
+            Account = new AccountAccessor(this);
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
 
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
         public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
         public AlgoPluginDescriptor Descriptor { get; private set; }
-        public AccountEntity Account { get; private set; }
+        public AccountAccessor Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
         public Action CurrencyDataRequested { get; set; }
@@ -321,6 +321,7 @@ namespace TickTrader.Algo.Core
             {
                 invokeAction();
             }
+            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 pluginException = ex;
@@ -347,14 +348,12 @@ namespace TickTrader.Algo.Core
         {
             InvokePluginMethod(PluginProxy.InvokeOnStop);
             Logger.OnStop();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeInit()
         {
             InvokePluginMethod(PluginProxy.InvokeInit);
             Logger.OnInitialized();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeOnQuote(Quote quote)
@@ -367,11 +366,18 @@ namespace TickTrader.Algo.Core
             InvokePluginMethod(asyncAction);
         }
 
-        internal Task InvokeAsyncStop()
+        internal async Task InvokeAsyncStop()
         {
             Task result = null;
             InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop());
-            return result;
+            try
+            {
+                await result;
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
         }
 
         #endregion
@@ -410,33 +416,7 @@ namespace TickTrader.Algo.Core
 
         Quote IHelperApi.CreateQuote(string symbol, DateTime time, IEnumerable<BookEntry> bids, IEnumerable<BookEntry> asks)
         {
-            QuoteEntity entity = new QuoteEntity();
-            entity.Symbol = symbol;
-            entity.Time = time;
-
-            if (bids != null)
-            {
-                entity.BidList = bids.ToArray();
-                entity.Bid = bids.Max(e => e.Price);
-            }
-            else
-            {
-                entity.BidList = new BookEntry[0];
-                entity.Bid = double.NaN;
-            }
-
-            if (asks != null)
-            {
-                entity.AskList = asks.ToArray();
-                entity.Ask = asks.Min(e => e.Price);
-            }
-            else
-            {
-                entity.AskList = new BookEntry[0];
-                entity.Bid = double.NaN;
-            }
-
-            return entity;
+            return new QuoteEntity(symbol, time, bids?.ToArray(), asks?.ToArray());
         }
 
         BookEntry IHelperApi.CreateBookEntry(double price, double volume)
