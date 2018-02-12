@@ -5,6 +5,79 @@
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
 
+    <Style x:Key="StatusEllipseStyle" TargetType="Ellipse">
+        <Style.Setters>
+            <Setter Property="Fill" Value="Black"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="StrokeThickness" Value="0"/>
+        </Style.Setters>
+    </Style>
+
+    <Style x:Key="BotAgentStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
+        <Style.Setters>
+            <Setter Property="Fill" Value="Red"/>
+        </Style.Setters>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Offline">
+                <Setter Property="Fill" Value="Gray"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Connecting">
+                <Setter Property="Fill" Value="Yellow"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="LoggingIn">
+                <Setter Property="Fill" Value="Yellow"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Initializing">
+                <Setter Property="Fill" Value="Yellow"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Online">
+                <Setter Property="Fill" Value="Green"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Disconnecting">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="LoggingOut">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Deinitializing">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="AccountStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
+
+    </Style>
+
+    <Style x:Key="BotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding State}" Value="Offline">
+                <Setter Property="Fill" Value="Gray"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Starting">
+                <Setter Property="Fill" Value="Yellow"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Online">
+                <Setter Property="Fill" Value="Green"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Stopping">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Reconnecting">
+                <Setter Property="Fill" Value="Yellow"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Broken">
+                <Setter Property="Fill" Value="Red"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Faulted">
+                <Setter Property="Fill" Value="Red"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
             <TreeView BorderThickness="0">
@@ -44,78 +117,26 @@
                         </Style>
                     </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type l:BotAgentViewModel}" ItemsSource="{Binding Bots}">
+                        <HierarchicalDataTemplate DataType="{x:Type l:BotAgentViewModel}" ItemsSource="{Binding Accounts}">
                             <StackPanel Orientation="Horizontal">
-                                <StackPanel.Resources>
-                                    <Style TargetType="Ellipse">
-                                        <Style.Setters>
-                                            <Setter Property="Fill" Value="Red"/>
-                                        </Style.Setters>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Status}" Value="Offline">
-                                                <Setter Property="Fill" Value="Gray"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Connecting">
-                                                <Setter Property="Fill" Value="Yellow"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="LoggingIn">
-                                                <Setter Property="Fill" Value="Yellow"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Initializing">
-                                                <Setter Property="Fill" Value="Yellow"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Online">
-                                                <Setter Property="Fill" Value="Green"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Disconnecting">
-                                                <Setter Property="Fill" Value="Orange"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="LoggingOut">
-                                                <Setter Property="Fill" Value="Orange"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Deinitializing">
-                                                <Setter Property="Fill" Value="Orange"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Resources>
-                                <Ellipse Width="10" Height="10" StrokeThickness="0" Margin="5,0" />
+                                <Ellipse Style="{StaticResource BotAgentStatusEllipseStyle}" />
                                 <TextBlock Text="{Binding Server}" ToolTip="{Binding Status}"/>
                             </StackPanel>
                             <HierarchicalDataTemplate.ItemTemplate>
-                                <DataTemplate>
+                                <HierarchicalDataTemplate DataType="{x:Type l:BAAccountViewModel}" ItemsSource="{Binding Bots}">
                                     <StackPanel Orientation="Horizontal">
-                                        <StackPanel.Resources>
-                                            <Style TargetType="Ellipse">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding State}" Value="Offline">
-                                                        <Setter Property="Fill" Value="Gray"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding State}" Value="Starting">
-                                                        <Setter Property="Fill" Value="Yellow"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding State}" Value="Online">
-                                                        <Setter Property="Fill" Value="Green"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding State}" Value="Stopping">
-                                                        <Setter Property="Fill" Value="Orange"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding State}" Value="Reconnecting">
-                                                        <Setter Property="Fill" Value="Yellow"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding State}" Value="Broken">
-                                                        <Setter Property="Fill" Value="Red"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding State}" Value="Faulted">
-                                                        <Setter Property="Fill" Value="Red"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </StackPanel.Resources>
-                                        <Ellipse Width="10" Height="10" StrokeThickness="0" Margin="5,0" />
-                                        <TextBlock Text="{Binding Path=InstanceId}" ToolTip="{Binding State}"/>
+                                        <Ellipse Style="{StaticResource AccountStatusEllipseStyle}" />
+                                        <TextBlock Text="{Binding AccountKey}" />
                                     </StackPanel>
-                                </DataTemplate>
+                                    <HierarchicalDataTemplate.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type l:BABotViewModel}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Style="{StaticResource BotStateEllipseStyle}" />
+                                                <TextBlock Text="{Binding Path=InstanceId}" ToolTip="{Binding State}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </HierarchicalDataTemplate.ItemTemplate>
+                                </HierarchicalDataTemplate>
                             </HierarchicalDataTemplate.ItemTemplate>
                         </HierarchicalDataTemplate>
                     </TreeViewItem.ItemTemplate>

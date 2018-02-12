@@ -286,6 +286,7 @@
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
+    <Compile Include="Model.Protocol\BotAgentModel.cs" />
     <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageModel.cs" />
@@ -411,6 +412,8 @@
     </Compile>
     <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
     <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
+    <Compile Include="Views.Protocol\BAAccountViewModel.cs" />
+    <Compile Include="Views.Protocol\BABotViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentLoginDialogView.xaml.cs">
       <DependentUpon>BotAgentLoginDialogView.xaml</DependentUpon>
     </Compile>
