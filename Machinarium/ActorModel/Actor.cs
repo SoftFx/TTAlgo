@@ -4,162 +4,250 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace Machinarium.ActorModel
 {
-    public abstract class Actor
+    public class ExecRequest : TaskCompletionSource<IDisposable>, IDisposable
     {
-        private ActorScope scope;
+        private Actor _actor;
 
-        public Actor()
+        internal ExecRequest(Actor actor)
         {
-            scope = ActorScope.GetScope();
+            _actor = actor;
         }
 
-        public Actor(ActorScope scope)
+        internal bool TryStart()
         {
-            if (scope == null)
-                this.scope = ActorScope.GetScope();
-            else
-                this.scope = scope;
+            return TrySetResult(this);
         }
 
-        protected void Enqueue(Action actorAction)
+        public void Dispose()
         {
-            if (scope == SynchronizationContext.Current)
+            _actor.Release(this);
+        }
+    }
+
+    public class Actor
+    {
+        private int _requestCount;
+        private bool _isRunning;
+        private ExecRequest _currentRequest;
+        private List<ActorBlock> _inputs = new List<ActorBlock>();
+
+        internal object LockObj => _inputs;
+
+        internal void AddInput(ActorBlock block)
+        {
+            lock (LockObj)
+            {
+                _inputs.Add(block);
+                _requestCount += block.RequestCount;
+                if (!_isRunning && _requestCount > 0)
+                    StartNext();
+            }
+        }
+
+        internal void OnNewRequest()
+        {
+            _requestCount++;
+            if (!_isRunning)
+                StartNext();
+        }
+
+        internal void Release(ExecRequest request)
+        {
+            lock (LockObj)
+            {
+                if (_currentRequest == request)
+                {
+                    _currentRequest = null;
+                    if (_requestCount > 0)
+                        StartNext();
+                    else
+                        _isRunning = false;
+                }
+            }
+        }
+
+        private ExecRequest Dequeue()
+        {
+            foreach (var i in _inputs)
+            {
+                ExecRequest request = i.Take();
+                if (request != null)
+                {
+                    _requestCount--;
+                    return request;
+                }
+            }
+
+            return null;
+        }
+
+        private void StartNext()
+        {
+            _isRunning = true;
+
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    lock (LockObj)
+                    {
+                        _currentRequest = Dequeue();
+                        if (_currentRequest == null)
+                        {
+                            _isRunning = false;
+                            return;
+                        }
+                    }
+
+                    if (_currentRequest.TryStart())
+                        return;
+                }
+            });
+        }
+
+        internal ExecRequest CreateRequest()
+        {
+            return new ExecRequest(this);
+        }
+    }
+
+    public abstract class ActorBlock
+    {
+        public ActorBlock(Actor actor)
+        {
+            Actor = actor ?? new Actor();
+            Actor.AddInput(this);
+        }
+
+        internal abstract int RequestCount { get; }
+        public Actor Actor { get; }
+
+        public Task<IDisposable> GetLock()
+        {
+            return GetLock(CancellationToken.None);
+        }
+
+        public Task<IDisposable> GetLock(CancellationToken cancelToken)
+        {
+            var request = Actor.CreateRequest();
+
+            if (cancelToken.CanBeCanceled)
+                cancelToken.Register(() => request.TrySetCanceled());
+
+            lock (Actor.LockObj) Enqueue(request);
+
+            return request.Task;
+        }
+
+        public Task InvokeExlusive(Action action)
+        {
+            return InvokeExlusive(action, CancellationToken.None);
+        }
+
+        public Task InvokeExlusive(Action action, CancellationToken cancelToken)
+        {
+            Action<Task<IDisposable>> invoker = t =>
             {
                 try
                 {
-                    actorAction();
+                    action();
                 }
-                catch (Exception ex)
+                finally
                 {
-                    Environment.FailFast("Unhandled exception in Actor!", ex);
+                    t.Result.Dispose();
                 }
+            };
+
+            return GetLock(cancelToken).ContinueWith(invoker, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public Task<T> InvokeExlusive<T>(Func<T> action)
+        {
+            return InvokeExlusive<T>(action, CancellationToken.None);
+        }
+
+        public Task<T> InvokeExlusive<T>(Func<T> action, CancellationToken cancelToken)
+        {
+            Func<Task<IDisposable>, T> invoker = t =>
+            {
+                try
+                {
+                    return action();
+                }
+                finally
+                {
+                    t.Result.Dispose();
+                }
+            };
+
+            return GetLock(cancelToken).ContinueWith(invoker, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        internal ExecRequest Take()
+        {
+            return Dequeue();
+        }
+
+        protected abstract void Enqueue(ExecRequest request);
+        protected abstract ExecRequest Dequeue();
+    }
+
+    public class QueueBlock : ActorBlock
+    {
+        private Queue<ExecRequest> _waiters = new Queue<ExecRequest>();
+
+        public QueueBlock(Actor actor = null) : base(actor)
+        {
+        }
+
+        internal override int RequestCount => _waiters.Count;
+
+        protected override ExecRequest Dequeue()
+        {
+            if (_waiters.Count > 0)
+                return _waiters.Dequeue();
+            return null;
+        }
+
+        protected override void Enqueue(ExecRequest request)
+        {
+            _waiters.Enqueue(request);
+            Actor.OnNewRequest();
+        }
+    }
+
+    public class PushOutBlock : ActorBlock
+    {
+        private ExecRequest _current;
+
+        internal override int RequestCount => _current == null ? 0 : 1;
+
+        public PushOutBlock(Actor actor = null) : base(actor)
+        {
+        }
+
+        protected override ExecRequest Dequeue()
+        {
+            var copy = _current;
+            _current = null;
+            return copy;
+        }
+
+        protected override void Enqueue(ExecRequest request)
+        {
+            if (_current != null)
+            {
+                _current.TrySetCanceled();
+                _current = request;
             }
             else
-                scope.Enqueue(actorAction);
-        }
-
-        protected Task<TResult> AsyncCall<TResult>(Func<Task<TResult>> asyncFunction)
-        {
-            TaskCompletionSource<TResult> src = new TaskCompletionSource<TResult>();
-            Enqueue(() => asyncFunction().ContinueWith(t =>
             {
-                if (t.IsFaulted)
-                    src.SetException(t.Exception);
-                else if (t.IsCanceled)
-                    src.SetCanceled();
-                else
-                    src.SetResult(t.Result);
-            }));
-            return src.Task;
-        }
-
-        protected Task AsyncCall(Func<Task> asyncFunction)
-        {
-            TaskCompletionSource<object> src = new TaskCompletionSource<object>();
-            Enqueue(() => asyncFunction().ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                    src.SetException(t.Exception);
-                else if (t.IsCanceled)
-                    src.SetCanceled();
-                else
-                    src.SetResult(this);
-            }));
-            return src.Task;
-        }
-
-        protected TxChannel<T> InChannel<T>(Action<TxChannel<T>> channelFunc)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected RxChannel<T> OutChannel<T>(Action<TxChannel<T>> channelFunc)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public abstract class ActorScope : SynchronizationContext
-    {
-        public static ActorScope GetScope()
-        {
-            var currentActorScope = Current as ActorScope;
-
-            if (currentActorScope != null)
-                return currentActorScope;
-
-            return new DataflowScope(ActorContextOptions.OwnContext);
-        }
-
-        public ActorScope()
-        {
-        }
-
-        public abstract void Enqueue(Action actorAction);
-
-        protected void InvokeAction(Action actorAction)
-        {
-            var oldContext = Current;
-            SetSynchronizationContext(this);
-            try
-            {
-                actorAction();
-            }
-            catch (Exception ex)
-            {
-                Environment.FailFast("Unhandled exception in Actor!", ex);
-            }
-            finally
-            {
-                SetSynchronizationContext(oldContext);
+                _current = request;
+                Actor.OnNewRequest();
             }
         }
-
-        public override void Post(SendOrPostCallback d, object state)
-        {
-            Enqueue(() => d(state));
-        }
-
-        public override void Send(SendOrPostCallback d, object state)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class DataflowScope : ActorScope
-    {   
-        private ActionBlock<Action> block;
-
-        public DataflowScope(ActorContextOptions contextOption = ActorContextOptions.OwnContext)
-        {
-            var options = new ExecutionDataflowBlockOptions();
-
-            if (contextOption == ActorContextOptions.InheritContext)
-                options.TaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            block = new ActionBlock<Action>(a => InvokeAction(a));
-        }
-
-        internal ActionBlock<Action> QueueBlock => block;
-
-        protected SynchronizationContext Context { get; private set; }
-
-        public override void Enqueue(Action actorAction)
-        {
-            block.Post(actorAction);
-        }
-    }
-
-
-    public enum ActorMessageType { Action, AsyncAction, AsyncFunc, ChannelData }
-
-    public enum ActorContextOptions
-    {
-        OwnContext,
-        InheritContext
     }
 }

@@ -9,6 +9,7 @@ namespace Machinarium.State
     public interface IStateMachineSync
     {
         void Synchronized(Action syncAction);
+        T Synchronized<T>(Func<T> syncAction);
     }
 
     public class MonitorStateMachineSync : IStateMachineSync
@@ -20,6 +21,13 @@ namespace Machinarium.State
         {
             lock (lockObj) syncAction();
         }
+
+        [System.Diagnostics.DebuggerHidden]
+        public T Synchronized<T>(Func<T> syncAction)
+        {
+            lock (lockObj)
+                return syncAction();
+        }
     }
 
     public class NullSync : IStateMachineSync
@@ -28,6 +36,12 @@ namespace Machinarium.State
         public void Synchronized(Action syncAction)
         {
             syncAction();
+        }
+
+        [System.Diagnostics.DebuggerHidden]
+        public T Synchronized<T>(Func<T> syncAction)
+        {
+            return syncAction();
         }
     }
 }

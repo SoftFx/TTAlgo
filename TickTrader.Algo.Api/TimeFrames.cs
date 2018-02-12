@@ -20,5 +20,6 @@ namespace TickTrader.Algo.Api
         S10,
         S1,
         Ticks,
+        TicksLevel2
     }
 }

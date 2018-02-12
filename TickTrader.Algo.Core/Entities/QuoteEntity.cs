@@ -13,6 +13,37 @@ namespace TickTrader.Algo.Core
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
+        public QuoteEntity(string symbol, DateTime time, double bid, double ask)
+            : this(symbol, time, new BookEntryEntity(bid), new BookEntryEntity(ask))
+        {
+        }
+
+        public QuoteEntity(string symbol, DateTime time, BookEntry bid, BookEntry ask)
+            : this(symbol, time, new BookEntry[] { bid }, new BookEntry[] { ask })
+        {
+        }
+
+        public QuoteEntity(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks)
+        {
+            Symbol = symbol;
+            Time = time;
+            BidList = bids;
+            AskList = asks;
+
+            bids = bids ?? new BookEntry[0];
+            asks = asks ?? new BookEntry[0];
+
+            if (bids.Length > 0)
+                Bid = bids.Max(b => b.Price);
+            else
+                Bid = double.NaN;
+
+            if (asks.Length > 0)
+                Ask = asks.Min(a => a.Price);
+            else
+                Ask = double.NaN;
+        }
+
         public string Symbol { get; set; }
         public DateTime Time { get; set; }
         public double Ask { get; set; }
@@ -40,6 +71,24 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
+        #region FDK compatibility
+
+        public DateTime CreatingTime => Time;
+        public bool HasBid => !double.IsNaN(Bid);
+        public bool HasAsk => !double.IsNaN(Ask);
+
+        public double? GetNullableBid()
+        {
+            return double.IsNaN(Bid) ? null : (double?)Bid;
+        }
+
+        public double? GetNullableAsk()
+        {
+            return double.IsNaN(Ask) ? null : (double?)Ask;
+        }
+
+        #endregion
+
         public override string ToString()
         {
             var bookDepth = System.Math.Max(BidList?.Length ?? 0, AskList?.Length ?? 0);
@@ -50,6 +99,17 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class BookEntryEntity : Api.BookEntry
     {
+        public BookEntryEntity()
+        {
+        }
+
+        public BookEntryEntity(double price, double volume = 0)
+        {
+            Price = price;
+            Volume = volume;
+        }
+
+
         public double Price { get; set; }
         public double Volume { get; set; }
     }

@@ -53,7 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActorModel\Actor.cs" />
-    <Compile Include="ActorModel\Channel.cs" />
     <Compile Include="Collections\SortedList.cs" />
     <Compile Include="EntityModel\Field.cs" />
     <Compile Include="EntityModel\FieldExt.cs" />
@@ -67,8 +66,10 @@
     <Compile Include="Qnil\DictionaryGrouping.cs" />
     <Compile Include="Qnil\DictionarySelector.cs" />
     <Compile Include="Qnil\DictionaryFilter.cs" />
-    <Compile Include="Qnil\DictionarySorter.cs" />
+    <Compile Include="Qnil\DictionarySortOperator.cs" />
+    <Compile Include="Qnil\DictionaryToListOperator.cs" />
     <Compile Include="Qnil\DynamicDictionary.cs" />
+    <Compile Include="Qnil\DynamicDictionary.Keys.cs" />
     <Compile Include="Qnil\DynamicList.cs" />
     <Compile Include="Qnil\ListChainToken.cs" />
     <Compile Include="Qnil\Dynamic.cs" />
@@ -82,11 +83,39 @@
     <Compile Include="Qnil\ObservableWrapper2.cs" />
     <Compile Include="Qnil\OperatorBase.cs" />
     <Compile Include="Qnil\ListAdapter.cs" />
+    <Compile Include="Qnil\SetFilter.cs" />
+    <Compile Include="Qnil\SetObservableCollection.cs" />
+    <Compile Include="Qnil\SetSelectOperator.cs" />
+    <Compile Include="Qnil\SetToDicionaryOperator.cs" />
+    <Compile Include="Qnil\SetToListOperator.cs" />
+    <Compile Include="Qnil\SetTransformOperator.cs" />
+    <Compile Include="Qnil\SetUnionOperator.cs" />
     <Compile Include="State\StateDescriptor.cs" />
     <Compile Include="State\StateMachine.cs" />
     <Compile Include="State\StateMachineSync.cs" />
     <Compile Include="State\StateTransition.cs" />
     <Compile Include="State\TimeEvent.cs" />
+    <Compile Include="Var.Entity\BoolEvent.cs" />
+    <Compile Include="Var.Entity\ChangeEvent.cs" />
+    <Compile Include="Var.Entity\DisposableEntity.cs" />
+    <Compile Include="Var.Entity\EntityBase.cs" />
+    <Compile Include="Var.Entity\PropConverter.cs" />
+    <Compile Include="Var.Entity\Property.cs" />
+    <Compile Include="Var.Entity\Validable.cs" />
+    <Compile Include="Var\BoolVar.cs" />
+    <Compile Include="Var\DoubleVar.cs" />
+    <Compile Include="Var\Interfaces.cs" />
+    <Compile Include="Var\IntVar.cs" />
+    <Compile Include="Var\Operator.cs" />
+    <Compile Include="Var\SelectOperator.cs" />
+    <Compile Include="Var\StateMachine.cs" />
+    <Compile Include="Var\StateMachineBase.cs" />
+    <Compile Include="Var\Var.cs" />
+    <Compile Include="Var.Entity\VarContext.cs" />
+    <Compile Include="Var\VarConverter.cs" />
+    <Compile Include="Var.Entity\VarPropertyMap.cs" />
+    <Compile Include="Var\VarExtentions.cs" />
+    <Compile Include="Var\VarOperator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

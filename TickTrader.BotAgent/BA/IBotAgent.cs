@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.BotAgent.BA.Info;
@@ -30,11 +31,12 @@ namespace TickTrader.BotAgent.BA
 
         string AutogenerateBotId(string botDisplayName);
 
-        void AddAccount(AccountKey key, string password);
+        void AddAccount(AccountKey key, string password, bool useNewProtocol);
         void RemoveAccount(AccountKey key);
         void ChangeAccountPassword(AccountKey key, string password);
-        ConnectionErrorCodes TestAccount(AccountKey accountId);
-        ConnectionErrorCodes TestCreds(string login, string password, string server);
+        void ChangeAccountProtocol(AccountKey key);
+        ConnectionErrorInfo TestAccount(AccountKey accountId);
+        ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol);
 
         ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
 
@@ -49,8 +51,9 @@ namespace TickTrader.BotAgent.BA
         string Username { get; }
         ConnectionStates ConnectionState { get; }
         IEnumerable<ITradeBot> TradeBots { get; }
+        bool UseNewProtocol { get; }
 
-        Task<ConnectionErrorCodes> TestConnection();
+        Task<ConnectionErrorInfo> TestConnection();
         void ChangePassword(string password);
 
         ITradeBot AddBot(TradeBotModelConfig config);
@@ -95,7 +98,7 @@ namespace TickTrader.BotAgent.BA
         IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
     }
 
-    public enum LogEntryType { Info, Trading, Error, Custom }
+    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
 
     public interface ILogEntry
     {

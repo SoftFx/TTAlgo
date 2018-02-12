@@ -71,6 +71,8 @@ namespace TickTrader.BotAgent.WebAdmin
 
             CoreLoggerFactory.Init(cn => new LoggerAdapter(loggerFactory.CreateLogger(cn)));
 
+            LogUnhandledExceptions(loggerFactory);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -128,6 +130,15 @@ namespace TickTrader.BotAgent.WebAdmin
             var server = services.GetRequiredService<IBotAgent>();
 
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
+        }
+
+        private void LogUnhandledExceptions(ILoggerFactory loggerFactory)
+        {
+            var logger = loggerFactory.CreateLogger("AppDomain.UnhandledException");
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                logger.LogCritical($"(This is definitely a bug!) {e.ExceptionObject}");
+            };
         }
     }
 }

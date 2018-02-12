@@ -10,52 +10,11 @@ namespace TickTrader.BotTerminal
 {
     internal class EnvService
     {
-        private Logger _logger;
-
-
-        public static EnvService Instance { get; } = new EnvService();
-
-
-        public string AppFolder { get; }
-
-        public string RedistFolder => Path.Combine(AppFolder, "Redist");
-
-        public string FeedHistoryCacheFolder { get; }
-
-        public string ApplicationName { get; }
-
-        public string BotLogFolder { get; }
-
-        public string LogFolder { get; }
-
-        public string JournalFolder { get; }
-
-        public string AlgoRepositoryFolder { get; }
-
-        public string AlgoExtFolder { get; }
-
-        public string AlgoCommonRepositoryFolder { get; }
-
-        public string AlgoWorkingFolder { get; }
-
-        public string AppDataFolder { get; }
-
-        public string AppLockFilePath { get; }
-
-        public IObjectStorage UserDataStorage { get; }
-
-        public IObjectStorage ProtectedUserDataStorage { get; }
-
-        public string UserProfilesFolder { get; }
-
-        public string ProfilesCacheFolder { get; }
-
-        public IObjectStorage ProfilesCacheStorage { get; }
-
+        private static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private EnvService()
         {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
+            
             ApplicationName = "BotTrader";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
@@ -74,6 +33,7 @@ namespace TickTrader.BotTerminal
                 AlgoCommonRepositoryFolder = null;
                 AlgoWorkingFolder = Path.Combine(appDocumentsFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(appDocumentsFolder, "QuoteCache");
+                CustomFeedCacheFolder = Path.Combine(appDocumentsFolder, "CustomQuoteCache");
                 AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 AppLockFilePath = Path.Combine(AppDataFolder, "applock");
                 UserProfilesFolder = Path.Combine(appDocumentsFolder, "Profiles");
@@ -91,6 +51,7 @@ namespace TickTrader.BotTerminal
                 AlgoCommonRepositoryFolder = Path.Combine(appDocumentsFolder, "AlgoRepository");
                 AlgoWorkingFolder = Path.Combine(AppFolder, "AlgoData");
                 FeedHistoryCacheFolder = Path.Combine(AppFolder, "FeedCache");
+                CustomFeedCacheFolder = Path.Combine(AppFolder, "CustomQuoteCache");
                 AppDataFolder = Path.Combine(AppFolder, "Settings");
                 AppLockFilePath = Path.Combine(AppFolder, "applock");
                 UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
@@ -117,6 +78,28 @@ namespace TickTrader.BotTerminal
             ProfilesCacheStorage = new XmlObjectStorage(new FolderBinStorage(ProfilesCacheFolder));
         }
 
+        private static EnvService instance = new EnvService();
+        public static EnvService Instance { get { return instance; } }
+
+        public string AppFolder { get; private set; }
+        public string RedistFolder { get { return Path.Combine(AppFolder, "Redist"); } }
+        public string FeedHistoryCacheFolder { get; private set; }
+        public string CustomFeedCacheFolder { get; private set; }
+        public string ApplicationName { get; private set; }
+        public string BotLogFolder { get; private set; }
+        public string LogFolder { get; private set; }
+        public string JournalFolder { get; private set; }
+        public string AlgoRepositoryFolder { get; private set; }
+        public string AlgoExtFolder { get; private set; }
+        public string AlgoCommonRepositoryFolder { get; private set; }
+        public string AlgoWorkingFolder { get; private set; }
+        public string AppDataFolder { get; private set; }
+        public string AppLockFilePath { get; private set; }
+        public IObjectStorage UserDataStorage { get; private set; }
+        public IObjectStorage ProtectedUserDataStorage { get; private set; }
+        public IObjectStorage ProfilesCacheStorage { get; private set; }
+        public string UserProfilesFolder { get; }
+        public string ProfilesCacheFolder { get; }
 
         public void EnsureFolder(string folderPath)
         {

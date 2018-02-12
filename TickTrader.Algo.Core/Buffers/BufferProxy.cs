@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Core
 
         protected override QuoteEntity Convert(BarEntity bar)
         {
-            return new QuoteEntity() { Ask = bar.Open, Bid = bar.Open };
+            return new QuoteEntity("", bar.OpenTime, bar.Open, bar.Open);
         }
     }
 

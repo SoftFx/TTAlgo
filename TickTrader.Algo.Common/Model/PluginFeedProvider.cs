@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SoftFX.Extended;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
@@ -18,8 +17,8 @@ namespace TickTrader.Algo.Common.Model
         private ISymbolManager symbols;
         private FeedHistoryProviderModel history;
         private Action<QuoteEntity[]> feedUpdateHandler;
-        private Dictionary<string, CurrencyInfo> currencies;
         private Dictionary<string, int> _subscriptionCache;
+        private IReadOnlyDictionary<string, CurrencyEntity> currencies;
 
         private BufferBlock<QuoteEntity> rxBuffer;
         private ActionBlock<QuoteEntity[]> txBlock;
@@ -27,7 +26,7 @@ namespace TickTrader.Algo.Common.Model
         public ISynchronizationContext Sync { get { return this; } }
 
         public PluginFeedProvider(ISymbolManager symbols, FeedHistoryProviderModel history,
-            Dictionary<string, CurrencyInfo> currencies, ISyncContext sync)
+            IReadOnlyDictionary<string, CurrencyEntity> currencies, ISyncContext sync)
         {
             _sync = sync;
             this.symbols = symbols;
@@ -53,22 +52,19 @@ namespace TickTrader.Algo.Common.Model
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
-            BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
-            var result = history.GetBars(symbolCode, FdkToAlgo.Convert(priceType), period, from, to).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            //return history.GetBars(symbolCode, priceType, timeFrame, from, to).Result;
+            throw new NotImplementedException();
         }
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
         {
-            BarPeriod period = FdkToAlgo.ToBarPeriod(timeFrame);
-            var result = history.GetBars(symbolCode, FdkToAlgo.Convert(priceType), period, from, size).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            return history.GetBarPage(symbolCode, priceType, timeFrame, from, size).Result.ToList();
         }
 
         public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
-            var result = history.GetTicks(symbolCode, from, to, depth).Result;
-            return FdkToAlgo.Convert(result).ToList();
+            //return history.IterateTicks(symbolCode, from, to, depth).Result;
+            throw new NotImplementedException();
         }
 
         public List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth)
@@ -86,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
             feedUpdateHandler = handler;
 
             subscription = symbols.SubscribeAll();
-            subscription.NewQuote += q => rxBuffer.Post(FdkToAlgo.Convert(q));
+            subscription.NewQuote += q => rxBuffer.Post(q);
         }
 
         public void Unsubscribe()
@@ -117,12 +113,12 @@ namespace TickTrader.Algo.Common.Model
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
         {
-            return symbols.Snapshot.Select(m => FdkToAlgo.Convert(m.Value.Descriptor)).ToList();
+            return symbols.Snapshot.Select(m => m.Value.Descriptor).ToList();
         }
 
         public IEnumerable<CurrencyEntity> GetCurrencyMetadata()
         {
-            return currencies.Values.Select(FdkToAlgo.Convert).ToList();
+            return currencies.Values.ToList();
         }
 
         public IEnumerable<BarEntity> QueryBars(string symbolCode)
@@ -144,7 +140,7 @@ namespace TickTrader.Algo.Common.Model
         {
             return symbols.Snapshot
                 .Where(s => s.Value.LastQuote != null)
-                .Select(s => FdkToAlgo.Convert(s.Value.LastQuote))
+                .Select(s => s.Value.LastQuote)
                 .ToList();
         }
     }

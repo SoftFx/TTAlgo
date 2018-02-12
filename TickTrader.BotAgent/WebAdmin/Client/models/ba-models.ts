@@ -23,12 +23,14 @@ export class AccountModel implements Serializable<AccountModel> {
     public Login: string = "";
     public Server: string = "";
     public Password: string = "";
+    public UseNewProtocol: boolean = false;
 
     constructor() { }
 
     public Deserialize(input: any): AccountModel {
         this.Login = input.Login;
         this.Server = input.Server;
+        this.UseNewProtocol = input.UseNewProtocol;
 
         return this;
     }
@@ -98,7 +100,7 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 }
 
-export enum LogEntryTypes { Info, Trading, Error, Custom }
+export enum LogEntryTypes { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
 
 export class LogEntry implements Serializable<LogEntry> {
     public Time: Date;

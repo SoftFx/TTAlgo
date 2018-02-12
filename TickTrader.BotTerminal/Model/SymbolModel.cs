@@ -1,10 +1,10 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 using TickTrader.BotTerminal.Lib;
 using ISymbolInfo = TickTrader.BusinessObjects.ISymbolInfo;
 
@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolModel : Algo.Common.Model.SymbolModel, TickTrader.Algo.Common.Model.Setup.ISymbolInfo
     {
-        public SymbolModel(QuoteDistributor distributor, SymbolInfo info, IDictionary<string, CurrencyInfo> currencies)
+        public SymbolModel(QuoteDistributor distributor, SymbolEntity info, IReadOnlyDictionary<string, CurrencyEntity> currencies)
             : base(distributor, info, currencies)
         {
             this.Amounts = new OrderAmountModel(info);
@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
             return Distributor.Subscribe(Name, depth);
         }
 
-        public override void Update(SymbolInfo newInfo)
+        public override void Update(SymbolEntity newInfo)
         {
             base.Update(newInfo);
 
@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
             AskTracker.Precision = newInfo.Precision;
         }
 
-        protected override void OnNewTick(Quote tick)
+        protected override void OnNewTick(QuoteEntity tick)
         {
             if (tick.HasBid)
                 BidTracker.Rate = tick.Bid;

@@ -19,6 +19,51 @@ namespace Machinarium.Qnil
             return new ListSelector<TSource, TResult>(src, selector, false);
         }
 
+        public static IDynamicDictionarySource<TKey, TValue> TransformToDicionary<TKey, TValue>(this IDynamicSetSource<TKey> src, Func<TKey, TValue> selector)
+        {
+            return new SetToDicionaryOperator<TKey, TValue>(src, selector);
+        }
+
+        public static IDynamicListSource<TResult> TransformToList<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> transformFunc)
+        {
+            return new SetToListOperator<TSource, TResult>(src, transformFunc);
+        }
+
+        public static IDynamicListSource<T> TransformToList<T>(this IDynamicSetSource<T> src)
+        {
+            return new SetToListOperator<T, T>(src, v => v);
+        }
+
+        /// <summary>
+        /// Transforms dynamic collection into new one by applying selector function for each element.
+        /// Note: Transform function is called once and only once for each element in source collection!
+        /// Note: This operator contains inner dictionary to keep transformed values. This may affect performance. Use 'Select' operator for more lightweight operation.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="src">Source dynamic collection.</param>
+        /// <param name="transformFunc">Transform function applied tp each source element. </param>
+        /// <returns></returns>
+        public static IDynamicSetSource<TResult> Transform<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> transformFunc)
+        {
+            return new SetTransformOperator<TSource, TResult>(src, transformFunc);
+        }
+
+        /// <summary>
+        /// Transforms dynamic collection into new one by applying selector function for each element.
+        /// Note: Selector function can be called multiple times (or not called at all) for each element in source collection.
+        /// Note: This operator does not contain inner collection. Use 'Transform' operator for more persistant behavior.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        public static IDynamicSetSource<TResult> Select<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> selector)
+        {
+            return new SetTransformOperator<TSource, TResult>(src, selector);
+        }
+
         public static IDynamicListSource<T> Where<T>(this IDynamicListSource<T> src, Predicate<T> condition)
         {
             var chain = src as ListChainToken<T>;
@@ -27,6 +72,11 @@ namespace Machinarium.Qnil
                 return new ListFilter<T>(chain.Src, condition, true);
 
             return new ListFilter<T>(src, condition, false);
+        }
+
+        public static IDynamicSetSource<T> Where<T>(this IDynamicSetSource<T> src, Predicate<T> condition)
+        {
+            return new SetFilter<T>(src, condition);
         }
 
         public static IDynamicListSource<T> ToList<T>(this IDynamicListSource<T> src)
@@ -39,6 +89,16 @@ namespace Machinarium.Qnil
             return new ListCopy<T>(src, false);
         }
 
+        public static IDynamicListSource<TResult> TransformToList<TKey, TValue, TResult>(this IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TResult> transformFunc)
+        {
+            return new DictionaryToListOperator<TKey, TValue, TResult>(src, transformFunc);
+        }
+
+        public static IDynamicListSource<TValue> TransformToList<TKey, TValue>(this IDynamicDictionarySource<TKey, TValue> src)
+        {
+            return new DictionaryToListOperator<TKey, TValue, TValue>(src, (k, v) => v);
+        }
+
         public static IObservableListSource<T> AsObservable<T>(this IDynamicListSource<T> src)
         {
             var chain = src as ListChainToken<T>;
@@ -47,6 +107,11 @@ namespace Machinarium.Qnil
                 return new ObservableWrapper2<T>(chain.Src, true);
 
             return new ObservableWrapper2<T>(src, false);
+        }
+
+        public static IObservableListSource<T> AsObservable<T>(this IDynamicSetSource<T> src)
+        {
+            return new SetObservableCollection<T>(src, false);
         }
 
         public static IDynamicListSource<T> Chain<T>(this IDynamicListSource<T> src)
@@ -71,6 +136,11 @@ namespace Machinarium.Qnil
         {
             var srcAdapter = new ListAdapter<IDynamicListSource<T>>(collections);
             return new ListComposition<IDynamicListSource<T>, T>(srcAdapter, c => c, true);
+        }
+
+        public static IDynamicSetSource<T> Union<T>(params IDynamicSetSource<T>[] sets)
+        {
+            return new SetUnionOperator<T>(sets);
         }
 
         public static IDynamicListSource<TResult> SelectMany<TSource, TResult>(this IDynamicListSource<TSource> src,
@@ -126,7 +196,7 @@ namespace Machinarium.Qnil
             this IDynamicDictionarySource<TKey, TValue> src,
             Func<TKey, TValue, TBy> orderPropSelector, IComparer<TBy> comparer)
         {
-            return new DictionarySorter<TKey, TValue, TBy>(src, orderPropSelector, comparer);
+            return new DictionarySortOperator<TKey, TValue, TBy>(src, orderPropSelector, comparer);
         }
 
         public static IDynamicDictionarySource<TKey, TValue> SelectMany<TKey, TValue, TSource>(
@@ -161,18 +231,35 @@ namespace Machinarium.Qnil
             return new DictionaryGrouping<TKey, TValue, TGrouping>(src, groupingKeySelector);
         }
 
+        public static void EnableAutodispose<TKey, TVal>(this IDynamicDictionarySource<TKey, TVal> src)
+            where TVal : IDisposable
+        {
+            src.Updated += a =>
+            {
+                if (a.Action == DLinqAction.Remove)
+                    a.OldItem.Dispose();
+                else if (a.Action == DLinqAction.Replace)
+                    a.OldItem.Dispose();
+                else if (a.Action == DLinqAction.Dispose)
+                {
+                    foreach (var i in a.Sender.Snapshot.Values)
+                        i.Dispose();
+                }
+            };
+        }
+
         // <summary>
         /// Note: Supplied collection must be empty!
         /// Note: You should not update supplied collection in any other way or from any other source!
         /// </summary>
-        public static IDisposable ConnectTo<T>(this IDynamicListSource<T> src, IList target)
-        {
-            var chain = src as ListChainToken<T>;
+        //public static IDisposable ConnectTo<T>(this IDynamicListSource<T> src, IList target)
+        //{
+        //    var chain = src as ListChainToken<T>;
 
-            if (chain != null)
-                return new ListConnector<T>(chain.Src, target) { PropogateDispose = true };
+        //    if (chain != null)
+        //        return new ListConnector<T>(chain.Src, target) { PropogateDispose = true };
 
-            return new ListConnector<T>(src, target);
-        }
+        //    return new ListConnector<T>(src, target);
+        //}
     }
 }

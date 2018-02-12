@@ -1,4 +1,4 @@
-﻿using SoftFX.Extended;
+﻿using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -6,24 +6,24 @@ namespace TickTrader.Algo.Common.Model
 
     public static class OrderCommonExtensions
     {
-        public static AggregatedOrderType Aggregate(this TradeRecordSide side, TradeRecordType type)
+        public static AggregatedOrderType Aggregate(this OrderSide side, OrderType type)
         {
             switch (type)
             {
-                case TradeRecordType.Market:
-                case TradeRecordType.Position:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.Buy : AggregatedOrderType.Sell;
-                case TradeRecordType.Limit:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit;
-                case TradeRecordType.Stop:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop;
-                case TradeRecordType.StopLimit:
-                    return side == TradeRecordSide.Buy ? AggregatedOrderType.BuyStopLimit : AggregatedOrderType.SellStopLimit;
+                case OrderType.Market:
+                case OrderType.Position:
+                    return side == OrderSide.Buy ? AggregatedOrderType.Buy : AggregatedOrderType.Sell;
+                case OrderType.Limit:
+                    return side == OrderSide.Buy ? AggregatedOrderType.BuyLimit : AggregatedOrderType.SellLimit;
+                case OrderType.Stop:
+                    return side == OrderSide.Buy ? AggregatedOrderType.BuyStop : AggregatedOrderType.SellStop;
+                case OrderType.StopLimit:
+                    return side == OrderSide.Buy ? AggregatedOrderType.BuyStopLimit : AggregatedOrderType.SellStopLimit;
                 default: return AggregatedOrderType.Unknown;
             }
         }
 
-        public static AggregatedOrderType Aggregate(this TradeRecordType type, TradeRecordSide side)
+        public static AggregatedOrderType Aggregate(this OrderSide type, OrderSide side)
         {
             return Aggregate(side, type);
         }

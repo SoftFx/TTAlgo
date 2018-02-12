@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
             if (typeof(IWindowModel).IsAssignableFrom(modelType))
             {
                 var view = new AutoWindowView();
+                view.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 BindViewToStyle(modelType, view, context);
                 return view;
             }

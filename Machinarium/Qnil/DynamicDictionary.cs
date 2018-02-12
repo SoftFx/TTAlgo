@@ -7,18 +7,20 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    public class DynamicDictionary<TKey, TValue> : IDynamicDictionarySource<TKey, TValue>
+    public partial class DynamicDictionary<TKey, TValue> : IDynamicDictionarySource<TKey, TValue>
     {
         private Dictionary<TKey, TValue> snapshot = new Dictionary<TKey, TValue>();
+        private KeyCollection _keySetProxy;
 
         public DynamicDictionary()
         {
             Snapshot = new SnapshpotAccessor(this);
+            _keySetProxy = new KeyCollection(snapshot.Keys);
         }
 
         public IReadOnlyDictionary<TKey, TValue> Snapshot { get; private set; }
         public int Count { get { return snapshot.Count; } }
-        public IDynamicSetSource<TKey> Keys { get { throw new NotImplementedException(); } }
+        public IDynamicSetSource<TKey> Keys => _keySetProxy;
         public IEnumerable<TValue> Values { get { return snapshot.Values; } }
 
         public event DictionaryUpdateHandler<TKey, TValue> Updated;
@@ -43,6 +45,7 @@ namespace Machinarium.Qnil
         {
             snapshot.Add(key, value);
             OnUpdate(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Insert, key, value));
+            _keySetProxy.FireKeyAdded(key);
         }
 
         public bool TryGetValue(TKey key, out TValue value)
@@ -56,10 +59,10 @@ namespace Machinarium.Qnil
             if (!snapshot.TryGetValue(key, out oldItem))
                 return false;
 
-            if (!snapshot.Remove(key))
-                return false;
+            snapshot.Remove(key);
 
             OnUpdate(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Remove, key, default(TValue), oldItem));
+            _keySetProxy.FireKeyRemoved(key);
             return true;
         }
 
@@ -80,8 +83,7 @@ namespace Machinarium.Qnil
 
         private void OnUpdate(DictionaryUpdateArgs<TKey, TValue> args)
         {
-            if (Updated != null)
-                Updated(args);
+            Updated?.Invoke(args);
         }
 
         private class SnapshpotAccessor : IReadOnlyDictionary<TKey, TValue>

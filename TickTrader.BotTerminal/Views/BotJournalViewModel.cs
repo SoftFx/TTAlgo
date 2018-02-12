@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
 
             _botNameFilterEntries.Add(new BotNameFilterEntry("Nothing", BotNameFilterType.Nothing));
-            _botNameFilterEntries.Add(new BotNameFilterEntry("All",  BotNameFilterType.All));
+            _botNameFilterEntries.Add(new BotNameFilterEntry("All", BotNameFilterType.All));
 
             _botJournal.Statistics.Items.Updated += args =>
             {
@@ -150,7 +150,7 @@ namespace TickTrader.BotTerminal
             if (bMessage != null)
             {
                 return (BotCondition == null || BotCondition.Matches(bMessage.Bot))
-                     && (JournalType == null || bMessage.Type == JournalType)
+                     && MatchesTypeFilter(bMessage.Type)
                      && (string.IsNullOrEmpty(TextFilter)
                      || (bMessage.Time.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
@@ -159,18 +159,16 @@ namespace TickTrader.BotTerminal
             return false;
         }
 
-        private JournalMessageType? JournalType
+        private bool MatchesTypeFilter(JournalMessageType journalType)
         {
-            get
+            switch (MessageTypeCondition)
             {
-                switch (MessageTypeCondition)
-                {
-                    case MessageTypeFilter.Info: return JournalMessageType.Info;
-                    case MessageTypeFilter.Trading: return JournalMessageType.Trading;
-                    case MessageTypeFilter.Error: return JournalMessageType.Error;
-                    case MessageTypeFilter.Custom: return JournalMessageType.Custom;
-                    default: return null;
-                }
+                case MessageTypeFilter.All: return true;
+                case MessageTypeFilter.Info: return journalType == JournalMessageType.Info;
+                case MessageTypeFilter.Trading: return journalType == JournalMessageType.Trading || journalType == JournalMessageType.TradingSuccess || journalType == JournalMessageType.TradingFail;
+                case MessageTypeFilter.Error: return journalType == JournalMessageType.Error;
+                case MessageTypeFilter.Custom: return journalType == JournalMessageType.Custom;
+                default: return true;
             }
         }
     }

@@ -19,6 +19,8 @@ namespace TickTrader.Algo.Common.Model
         private ClientCore _client;
         private IFeedSubscription _subscription;
 
+        private AccountCalculatorModel() { }
+
         private AccountCalculatorModel(AccountModel acc, ClientCore client)
         {
             _client = client;
@@ -26,14 +28,14 @@ namespace TickTrader.Algo.Common.Model
             MarketModel = new MarketState(NettingCalculationTypes.OneByOne);
 
             MarketModel.Set(client.Symbols.Snapshot.Values);
-            MarketModel.Set(client.Currencies.Values.Select(c => new CurrencyInfoAdapter(c)));
+            MarketModel.Set(client.Currencies.Snapshot.Values.Select(c => new CurrencyInfoAdapter(c)));
 
             _subscription = client.Distributor.SubscribeAll();
 
             foreach (var smb in client.Symbols.Snapshot.Values)
             {
                 if (smb.LastQuote != null)
-                    MarketModel.Update(new RateAdapter(smb.LastQuote));
+                    MarketModel.Update(smb.LastQuote);
             }
 
             _subscription.NewQuote += Symbols_RateUpdated;
@@ -59,10 +61,18 @@ namespace TickTrader.Algo.Common.Model
 
         public static AccountCalculatorModel Create(AccountModel acc, ClientCore client)
         {
-            if (acc.Type == SoftFX.Extended.AccountType.Cash)
-                return new CashCalc(acc, client);
-            else
-                return new MarginCalc(acc, client);
+            try
+            {
+                if (acc.Type == Api.AccountTypes.Cash)
+                    return new CashCalc(acc, client);
+                else
+                    return new MarginCalc(acc, client);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to init Account Calculator", ex);
+            }
+            return new NullCalc();
         }
 
         public virtual void Dispose()
@@ -71,45 +81,45 @@ namespace TickTrader.Algo.Common.Model
             _subscription.Dispose();
         }
 
-        private void Symbols_RateUpdated(SoftFX.Extended.Quote quote)
+        private void Symbols_RateUpdated(QuoteEntity quote)
         {
-            MarketModel.Update(new RateAdapter(quote));
+            MarketModel.Update(quote);
         }
 
-        private class RateAdapter : ISymbolRate
-        {
-            public RateAdapter(SoftFX.Extended.Quote quote)
-            {
-                //if (quote.Symbol == "ETHRUB")
-                //{
-                //    System.Diagnostics.Debug.WriteLine("ETHRUB!111111 ololo!");
-                //}
+        //private class RateAdapter : ISymbolRate
+        //{
+        //    public RateAdapter(SoftFX.Extended.Quote quote)
+        //    {
+        //        //if (quote.Symbol == "ETHRUB")
+        //        //{
+        //        //    System.Diagnostics.Debug.WriteLine("ETHRUB!111111 ololo!");
+        //        //}
 
-                if (quote.HasAsk)
-                {
-                    Ask = (decimal)quote.Ask;
-                    NullableAsk = (decimal)quote.Ask;
-                }
+        //        if (quote.HasAsk)
+        //        {
+        //            Ask = (decimal)quote.Ask;
+        //            NullableAsk = (decimal)quote.Ask;
+        //        }
 
-                if (quote.HasBid)
-                {
-                    Bid = (decimal)quote.Bid;
-                    NullableBid = (decimal)quote.Bid;
-                }
+        //        if (quote.HasBid)
+        //        {
+        //            Bid = (decimal)quote.Bid;
+        //            NullableBid = (decimal)quote.Bid;
+        //        }
 
-                Symbol = quote.Symbol;
-            }
+        //        Symbol = quote.Symbol;
+        //    }
 
-            public decimal Ask { get; private set; }
-            public decimal Bid { get; private set; }
-            public decimal? NullableAsk { get; private set; }
-            public decimal? NullableBid { get; private set; }
-            public string Symbol { get; private set; }
-        }
+        //    public decimal Ask { get; private set; }
+        //    public decimal Bid { get; private set; }
+        //    public decimal? NullableAsk { get; private set; }
+        //    public decimal? NullableBid { get; private set; }
+        //    public string Symbol { get; private set; }
+        //}
 
         private class CurrencyInfoAdapter : ICurrencyInfo
         {
-            public CurrencyInfoAdapter(SoftFX.Extended.CurrencyInfo info)
+            public CurrencyInfoAdapter(CurrencyEntity info)
             {
                 Name = info.Name;
                 Precision = info.Precision;
@@ -148,9 +158,9 @@ namespace TickTrader.Algo.Common.Model
                 {
                     switch (acc.Type)
                     {
-                        case SoftFX.Extended.AccountType.Cash: return AccountingTypes.Cash;
-                        case SoftFX.Extended.AccountType.Gross: return AccountingTypes.Gross;
-                        case SoftFX.Extended.AccountType.Net: return AccountingTypes.Net;
+                        case Api.AccountTypes.Cash: return AccountingTypes.Cash;
+                        case Api.AccountTypes.Gross: return AccountingTypes.Gross;
+                        case Api.AccountTypes.Net: return AccountingTypes.Net;
                         default: throw new NotImplementedException("Account type is not supported: " + acc.Type);
                     }
                 }
@@ -161,8 +171,8 @@ namespace TickTrader.Algo.Common.Model
             public long Id { get { return 0; } }
             public int Leverage { get { return acc.Leverage; } }
 
-            public IEnumerable<IOrderModel> Orders { get { return Enumerable.Empty<IOrderModel>(); } }
-            public IEnumerable<IPositionModel> Positions { get { return Enumerable.Empty<IPositionModel>(); } }
+            public IEnumerable<IOrderModel> Orders { get { return acc.Orders.Snapshot.Values; } }
+            public IEnumerable<IPositionModel> Positions { get { return acc.Positions.Snapshot.Values; } }
             public IEnumerable<IAssetModel> Assets { get { return acc.Assets.Snapshot.Values; } }
 
             private void Orders_Updated(DictionaryUpdateArgs<string, OrderModel> args)
@@ -251,30 +261,6 @@ namespace TickTrader.Algo.Common.Model
                     MarginLevel = calc.MarginLevel;
                     OnUpdate();
                 };
-
-                foreach (var group in acc.Orders.Snapshot.Values.GroupBy(o => o.Symbol))
-                {
-                    try
-                    {
-                        calc.AddOrdersBunch(group);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, $"Adding orders by {group.Key} failed.");
-                    }
-                }
-
-                foreach (var pos in acc.Positions.Snapshot.Values)
-                {
-                    try
-                    {
-                        calc.Update(pos, PositionChageTypes.AddedModified);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, $"Adding position by {pos.Symbol} failed.");
-                    }
-                }
             }
 
             public override void Recalculate()
@@ -291,19 +277,21 @@ namespace TickTrader.Algo.Common.Model
                 : base(acc, client)
             {
                 this.calc = new CashAccountCalculator(Account, MarketModel);
-
-                foreach (var group in acc.Orders.Snapshot.Values.GroupBy(o => o.Symbol))
-                {
-                    try
-                    {
-                        calc.AddOrdersBunch(group);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, $"Adding orders by {group.Key} failed.");
-                    }
-                }
             }
+        }
+
+        private class NullCalc : AccountCalculatorModel
+        {
+            public NullCalc()
+            {
+                Equity = -1;
+                Margin = -1;
+                Profit = -1;
+                Floating = -1;
+                MarginLevel = -1;
+            }
+
+            public override void Dispose() { }
         }
 
         private class AccCalcAdapter : AccountCalculator

@@ -18,5 +18,8 @@ namespace TickTrader.Algo.Core
 
         public string Currency { get; set; }
         public double Volume { get; set; }
+        public double TradeVolume { get; set; }
+
+        public bool IsEmpty => Volume == 0;
     }
 }

@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
 
         public static IAlgoCoreLogger GetLogger<T>()
         {
-            return _factoryFunc(nameof(T));
+            return _factoryFunc(typeof(T).Name);
         }
 
         public static void Init(Func<string, IAlgoCoreLogger> factoryFunc)

@@ -23,24 +23,38 @@
                     <l:Theme ThemeName="Classic" StylePrefix="Classic">
                         <ResourceDictionary Source="Resx/Themes/Classic.xaml"/>
                     </l:Theme>
-                    <l:Theme ThemeName="Dark">
+                    <!--<l:Theme ThemeName="Dark">
                         <ResourceDictionary Source="Resx/Themes/Dark.xaml"/>
-                    </l:Theme>
+                    </l:Theme>-->
                     <!--<l:Theme ThemeName="Light">
                         <ResourceDictionary Source="Resx/Themes/Light.xaml"/>
                     </l:Theme>-->
                 </l:ThemeSelector>
 
                 <!-- Views (temp!) -->
+                <ResourceDictionary Source="Views.Aux/ProgressView.xaml" />
+                <ResourceDictionary Source="Views.Aux/DateRangeSelectionView.xaml" />
+                <ResourceDictionary Source="Views.Aux/ActionDialogView.xaml" />
+                <ResourceDictionary Source="Views.Aux/ActionView.xaml" />
+
                 <ResourceDictionary Source="Views/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
                 <ResourceDictionary Source="Views/JournalView.xaml" />
+                
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotControlView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
                 <ResourceDictionary Source="Views.Chart/PluginSetupView.xaml" />
+                
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
+                
+                <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/FeedImportView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/FeedExportView.xaml" />
+                <ResourceDictionary Source="Views.FeedStorage/SymbolCfgEditorView.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

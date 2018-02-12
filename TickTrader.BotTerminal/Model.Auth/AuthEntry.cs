@@ -55,6 +55,7 @@ namespace TickTrader.BotTerminal
         public ServerAuthEntry Server { get; private set; }
         public string Login { get { return storageRecord.Login; } }
         public bool HasPassword { get { return storageRecord.HasPassword; } }
+        public bool UseSfxProtocol { get { return storageRecord.UseSfxProtocol; } }
 
         public bool Matches(AccountStorageEntry acc)
         {

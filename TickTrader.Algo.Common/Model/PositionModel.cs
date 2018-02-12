@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.BusinessLogic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -16,48 +16,40 @@ namespace TickTrader.Algo.Common.Model
         private decimal agentCommission;
         private string symbol;
         private decimal swap;
-        private double buyAmount;
-        private double? buyPrice;
-        private double? sellPrice;
-        private double sellAmount;
         private double settlementPrice;
-        private TradeRecordSide side;
+        private OrderSide side;
         private double price;
         private double amount;
         private DateTime? modified;
         private SymbolModel _symbolModel;
 
-        public PositionModel(Position position, IOrderDependenciesResolver resolver)
+        public PositionModel(PositionEntity position, IOrderDependenciesResolver resolver)
         {
             Symbol = position.Symbol;
             _symbolModel = resolver.GetSymbolOrNull(position.Symbol);
             Update(position);
         }
 
-        private void Update(Position position)
+        private void Update(PositionEntity position)
         {
             if (position.Symbol != Symbol)
                 return;
 
-            SellPrice = position.SellPrice;
-            SellAmount = position.SellAmount;
-            BuyPrice = position.BuyPrice;
-            BuyAmount = position.BuyAmount;
             AgentCommission = (decimal)position.AgentCommission;
             Commission = (decimal)position.Commission;
             SettlementPrice = position.SettlementPrice;
-            Side = position.BuyAmount > 0 ? TradeRecordSide.Buy : TradeRecordSide.Sell;
-            Amount = Math.Max(position.BuyAmount, position.SellAmount);
+            Side = position.Side;
+            Amount = position.Volume;// Math.Max(position.BuyAmount, position.SellAmount);
             Swap = (decimal)position.Swap;
-            Price = Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
+            Price = position.Price; //  Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
 
             Long = new PositionSide();
             Short = new PositionSide();
 
-            Long.Amount = (decimal)position.BuyAmount;
-            Long.Price = (decimal)(position.BuyPrice ?? 0);
-            Short.Amount = (decimal)position.SellAmount;
-            Short.Price = (decimal)(position.SellPrice ?? 0);
+            Long.Amount = position.Side == OrderSide.Buy ? (decimal)Amount : 0;
+            Long.Price = position.Side == OrderSide.Buy ? (decimal)Price : 0;
+            Short.Amount = position.Side == OrderSide.Sell ? (decimal)Amount : 0;
+            Short.Price = position.Side == OrderSide.Sell ? (decimal)Price : 0;
 
             Long.ProfitUpdated = OnProfitUpdated;
             Short.ProfitUpdated = OnProfitUpdated;
@@ -131,6 +123,7 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
+
         public double AmountLots { get; private set; } = 0;
 
         public double Price
@@ -146,7 +139,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public TradeRecordSide Side
+        public OrderSide Side
         {
             get { return side;  }
             private set
@@ -155,58 +148,6 @@ namespace TickTrader.Algo.Common.Model
                 {
                     side = value;
                     NotifyOfPropertyChange(nameof(Side));
-                }
-            }
-        }
-
-        public double BuyAmount
-        {
-            get { return buyAmount; }
-            private set
-            {
-                if (buyAmount != value)
-                {
-                    buyAmount = value;
-                    NotifyOfPropertyChange(nameof(BuyAmount));
-                }
-            }
-        }
-
-        public double? BuyPrice
-        {
-            get { return buyPrice; }
-            private set
-            {
-                if (buyPrice != value)
-                {
-                    buyPrice = value;
-                    NotifyOfPropertyChange(nameof(BuyPrice));
-                }
-            }
-        }
-
-        public double SellAmount
-        {
-            get { return sellAmount; }
-            private set
-            {
-                if (sellAmount != value)
-                {
-                    sellAmount = value;
-                    NotifyOfPropertyChange(nameof(SellAmount));
-                }
-            }
-        }
-
-        public double? SellPrice
-        {
-            get { return sellPrice; }
-            private set
-            {
-                if (sellPrice != value)
-                {
-                    sellPrice = value;
-                    NotifyOfPropertyChange(nameof(SellPrice));
                 }
             }
         }
@@ -313,12 +254,20 @@ namespace TickTrader.Algo.Common.Model
             return new PositionExecReport()
             {
                 ExecAction = action,
+                PositionInfo = ToAlgoPosition()
+            };
+        }
+
+        internal PositionEntity ToAlgoPosition()
+        {
+            return new PositionEntity
+            {
                 Symbol = this.Symbol,
                 AgentCommission = (double)this.AgentCommission,
                 Commission = (double)this.Commission,
                 SettlementPrice = this.SettlementPrice,
-                Side = FdkToAlgo.Convert(this.Side),
-                Volume = new TradeVolume(this.Amount, AmountLots),
+                Side = this.Side,
+                Volume = Amount,
                 Swap = (double)this.Swap,
                 Price = (double)this.Price
             };

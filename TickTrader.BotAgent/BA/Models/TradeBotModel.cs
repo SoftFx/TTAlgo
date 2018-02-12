@@ -129,9 +129,9 @@ namespace TickTrader.BotAgent.BA.Models
                 else if (client.ConnectionState == ConnectionStates.Disconnecting || client.ConnectionState == ConnectionStates.Offline)
                 {
                     if (State == BotStates.Online && client.IsReconnecting)
-                        ChangeState(BotStates.Reconnecting, client.Connection.HasError ? client.Connection.LastError.ToString() : null);
+                        ChangeState(BotStates.Reconnecting, client.Connection.HasError ? client.Connection.LastErrorCode.ToString() : null);
                     if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
-                        StopInternal(client.Connection.LastError.ToString());
+                        StopInternal(client.Connection.LastErrorCode.ToString());
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace TickTrader.BotAgent.BA.Models
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
-                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies, new SyncAdapter(_syncObj));
+                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies.Snapshot, new SyncAdapter(_syncObj));
                 executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
                 executor.MainSymbolCode = setupModel.MainSymbol;
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
@@ -302,7 +302,6 @@ namespace TickTrader.BotAgent.BA.Models
             }
             catch (Exception ex)
             {
-                // TO DO: log
                 lock (_syncObj)
                 {
                     Fault = ex;

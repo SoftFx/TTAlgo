@@ -6,14 +6,12 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class PositionExecReport
     {
-        public double AgentCommission { get; set; }
-        public TradeVolume Volume { get; set; }
-        public double Commission { get; set; }
-        public double Price { get; set; }
-        public double SettlementPrice { get; set; }
-        public OrderSide Side { get; set; }
-        public double Swap { get; set; }
-        public string Symbol { get; set; }
         public OrderExecAction ExecAction { get; set; }
+        public PositionEntity PositionInfo { get; set; }
+
+        public double Volume => PositionInfo.Volume;
+        public OrderSide Side => PositionInfo.Side;
+        public string Symbol => PositionInfo.Symbol;
+        public double Price => PositionInfo.Price;
     }
 }

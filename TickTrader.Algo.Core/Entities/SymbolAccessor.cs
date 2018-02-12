@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Core
         public int GroupSortOrder => entity.GroupSortOrder;
         public BO.SwapType SwapType => entity.SwapType;
         public int TripleSwapDay => entity.TripleSwapDay;
-        public double HiddenLimitOrderMarginReduction => entity.HiddenLimitOrderMarginReduction;
+        public double HiddenLimitOrderMarginReduction => entity.HiddenLimitOrderMarginReduction ?? double.NaN;
 
         #region BO.ISymbolInfo
 

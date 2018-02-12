@@ -41,17 +41,14 @@ namespace Machinarium.State
         [System.Diagnostics.DebuggerHidden]
         public void AddTransition(StateConditionalTransition<T> transition)
         {
-            //if (cdTransition != null)
-            //    throw new InvalidOperationException("Conditional transition has been already assigned for state " + state
-            //        + ". Only one conditional transition per state is allowed.");
             cdTransitions.Add(transition);
         }
 
         [System.Diagnostics.DebuggerHidden]
         public void AddTransition(StateEventTransition<T> transition)
         {
-            if (eventTransitions.Any(t => t.EventId.Equals(transition.EventId)))
-                throw new InvalidOperationException("Duplicate transition for event " + transition.EventId);
+            if (!transition.IsConditional && eventTransitions.Any(t => t.EventId.Equals(transition.EventId) && !t.IsConditional))
+                throw new InvalidOperationException("Duplicate non-conditional transition for event " + transition.EventId);
 
             eventTransitions.Add(transition);
         }
@@ -74,7 +71,7 @@ namespace Machinarium.State
         [System.Diagnostics.DebuggerHidden]
         public StateTransition<T> OnEvent(object eventId)
         {
-            return eventTransitions.FirstOrDefault(t => t.EventId.Equals(eventId));
+            return eventTransitions.FirstOrDefault(t => t.EventId.Equals(eventId) && t.CheckCondition());
         }
 
         [System.Diagnostics.DebuggerHidden]

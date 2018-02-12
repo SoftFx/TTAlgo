@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
         public abstract void EnqueueQuote(QuoteEntity update);
         public abstract void EnqueueCustomInvoke(Action<PluginBuilder> a);
         public abstract void EnqueueTradeUpdate(Action<PluginBuilder> a);
-        public abstract void EnqueueTradeEvent(Action<PluginBuilder> a);
+        public abstract void EnqueueEvent(Action<PluginBuilder> a);
         public abstract void ProcessNextTrade();
 
         protected virtual void OnInit() { }
@@ -74,6 +74,7 @@ namespace TickTrader.Algo.Core
         private bool execStopFlag;
         private Thread currentThread;
         private TaskCompletionSource<object> asyncStopDoneEvent;
+        private TaskCompletionSource<bool> stopDoneEvent;
 
         protected override void OnInit()
         {
@@ -111,7 +112,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public override void EnqueueCustomInvoke(Action<PluginBuilder> a)
+        public override void EnqueueCustomInvoke(Action<PluginBuilder> a) // use to execute some actions on plugin thread with high priority
         {
             lock (syncObj)
             {
@@ -123,7 +124,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public override void EnqueueTradeEvent(Action<PluginBuilder> a)
+        public override void EnqueueEvent(Action<PluginBuilder> a) // use only to fire events on plugin thread
         {
             lock (syncObj)
             {
@@ -221,6 +222,7 @@ namespace TickTrader.Algo.Core
                 else if (item is Action<PluginBuilder>)
                     ((Action<PluginBuilder>)item)(Builder);
             }
+            catch (ThreadAbortException) { }
             catch (ExecutorException ex)
             {
                 OnError(ex);
@@ -263,12 +265,16 @@ namespace TickTrader.Algo.Core
         {
             lock (syncObj)
             {
-                if (execStopFlag || asyncStopDoneEvent != null)
+                if (execStopFlag || asyncStopDoneEvent != null || stopDoneEvent != null)
                 {
                     execStopFlag = true;
-                    asyncStopDoneEvent?.TrySetResult(this);
+                    if (asyncStopDoneEvent != null)
+                        Task.Factory.StartNew(() => asyncStopDoneEvent?.TrySetResult(this)); // without this async stop will continue execution on current thread. Which makes DoStop(bool) finish before continue this method
+                    if (stopDoneEvent != null)
+                        Task.Factory.StartNew(() => stopDoneEvent?.TrySetResult(false));
                     currentThread?.Abort();
                     currentThread = null;
+                    Builder.Logger.OnAbort();
                 }
             }
         }
@@ -278,40 +284,65 @@ namespace TickTrader.Algo.Core
             if (!quick)
             {
                 asyncStopDoneEvent = new TaskCompletionSource<object>();
-                EnqueueTradeUpdate(async b =>
+                EnqueueCustomInvoke(async b =>
                 {
                     System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP!");
-                    await b.InvokeAsyncStop();
-                    asyncStopDoneEvent.TrySetResult(this);
+                    try
+                    {
+                        await b.InvokeAsyncStop();
+                    }
+                    finally
+                    {
+                        asyncStopDoneEvent?.TrySetResult(this);
+                    }
                     System.Diagnostics.Debug.WriteLine("STRATEGY ASYNC STOP DONE!");
                 });
 
                 await asyncStopDoneEvent.Task.ConfigureAwait(false); // wait async stop to end
+                asyncStopDoneEvent = null;
             }
 
-            Task toWait = null;
+            bool aborted;
             lock (syncObj)
             {
-                ClearQueues();
-                EnqueueTradeUpdate(b =>
-                {
-                    System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
-                    b.InvokeOnStop();
-                });
-                execStopFlag = true; //  stop queue
-                toWait = currentTask;
+                aborted = execStopFlag;
             }
-
-
-            if (toWait != null)
+            if (!aborted)
             {
-                System.Diagnostics.Debug.WriteLine("STRATEGY WAIT!");
-                try
+                Task toWait = null;
+                stopDoneEvent = new TaskCompletionSource<bool>();
+                EnqueueCustomInvoke(b =>
                 {
-                    await toWait.ConfigureAwait(false); // wait current invoke to end
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine("STRATEGY CALL OnStop()!");
+                        b.InvokeOnStop();
+                    }
+                    finally
+                    {
+                        lock (syncObj)
+                        {
+                            ClearQueues();
+                            execStopFlag = true; //  stop queue
+                            toWait = currentTask;
+                        }
+                        stopDoneEvent?.TrySetResult(true);
+                    }
+                });
+
+                await stopDoneEvent.Task.ConfigureAwait(false);
+                stopDoneEvent = null;
+
+                System.Diagnostics.Debug.WriteLine("STRATEGY JOIN!");
+                if (toWait != null)
+                {
+                    try
+                    {
+                        await toWait.ConfigureAwait(false); // wait current invoke to end
+                    }
+                    catch { } //we logging this case on ProcessLoop
                 }
-                catch { } //we logging this case on ProcessLoop
-                System.Diagnostics.Debug.WriteLine("STRATEGY DONE WAIT!");
+                System.Diagnostics.Debug.WriteLine("STRATEGY DONE JOIN!");
             }
 
             lock (syncObj)

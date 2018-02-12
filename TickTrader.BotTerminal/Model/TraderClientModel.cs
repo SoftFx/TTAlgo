@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,23 +11,28 @@ using Machinarium.Qnil;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
+using Machinarium.Var;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TraderClientModel
+    internal class TraderClientModel : EntityBase
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientCore _core;
 
-        private IAccountInfoProvider _accountInfo;
+        private AccountModel _accountInfo;
         private EventJournal _journal;
+        private BoolProperty _isConnected;
+        private bool _wasConnectedEventFired;
 
         public TraderClientModel(ConnectionModel connection, EventJournal journal)
         {
             this.Connection = connection;
 
+            _isConnected = AddBoolProperty();
+
             connection.Initalizing += Connection_Initalizing;
-            connection.State.StateChanged += State_StateChanged;
+            connection.StateChanged += State_StateChanged;
             connection.Deinitalizing += Connection_Deinitalizing;
 
             var sync = new DispatcherSync();
@@ -37,12 +41,10 @@ namespace TickTrader.BotTerminal
             this.Symbols = (SymbolCollectionModel)_core.Symbols;
             this.TradeHistory = new TradeHistoryProviderModel(this);
             this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
-            if(Properties.Settings.Default.UseQuoteStorage)
-                this.History = FeedHistoryProviderModel.CreateDiskStorage(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
-            else
-                this.History = FeedHistoryProviderModel.CreateLightProxy(connection);
-            this.TradeApi = new TradeExecutor(_core);
+            this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+            //this.TradeApi = new TradeExecutor(_core);
             this.Account = new AccountModel(_core, AccountModelOptions.EnableCalculator);
+            TradeApi = new PluginTradeApiProvider(Connection);
 
             _accountInfo = Account;
             _journal = journal;
@@ -69,7 +71,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected = true;
+                IsConnected.Set();
                 Connected?.Invoke();
             }
             catch (Exception ex)
@@ -82,7 +84,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected = false;
+                IsConnected.Unset();
                 Disconnected?.Invoke();
             }
             catch (Exception ex)
@@ -93,28 +95,31 @@ namespace TickTrader.BotTerminal
 
         private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
         {
-            try
-            {
-                var cache = Connection.FeedProxy.Cache;
+            _wasConnectedEventFired = false;
+
+            //try
+            //{
                 await History.Init();
-                _core.Init();
+                await _core.Init();
                 Account.Init();
-                _accountInfo.BalanceUpdated += Account_BalanceUpdated;
-                _accountInfo.OrderUpdated += Account_OrderUpdated;
+                ((IAccountInfoProvider)_accountInfo).BalanceUpdated += Account_BalanceUpdated;
+                _accountInfo.OrderUpdate += Account_OrderUpdated;
                 if (Initializing != null)
                     await Initializing.InvokeAsync(this, cancelToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Connection_Initalizing() failed.");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    logger.Error(ex, "Connection_Initalizing() failed.");
+            //}
 
+            _wasConnectedEventFired = true;
             OnConnected();
         }
 
         private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
-            OnDisconnected();
+            if (_wasConnectedEventFired)
+                OnDisconnected();
 
             try
             {
@@ -136,55 +141,54 @@ namespace TickTrader.BotTerminal
             _journal.Trading($"{action} {report.Amount} {report.CurrencyCode}. Balance: {report.Balance} {report.CurrencyCode}");
         }
 
-        private void Account_OrderUpdated(OrderExecReport report)
+        private void Account_OrderUpdated(ExecutionReport report, OrderModel order, OrderExecAction action)
         {
-            var order = report.OrderCopy;
-            switch(report.ExecAction)
+            switch(action)
             {
                 case OrderExecAction.Opened:
-                    switch (order.Type)
+                    switch (order.OrderType)
                     {
                         case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was opened: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
-                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was placed: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
                     }
                     break;
                 case OrderExecAction.Modified:
-                    switch (order.Type)
+                    switch (order.OrderType)
                     {
                         case OrderType.Position:
-                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
                         case OrderType.Limit:
                         case OrderType.Stop:
-                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
+                            _journal.Trading($"Order #{order.Id} was modified: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                             break;
                     }
                     break;
                 case OrderExecAction.Closed:
-                    if (order.Type == Algo.Api.OrderType.Position)
+                    if (order.OrderType == Algo.Api.OrderType.Position)
                     {
-                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillVolume.Lots} lots at {order.LastFillPrice}");
+                        _journal.Trading($"Order #{order.Id} was closed: {order.Side} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
                     }
                     break;
                 case OrderExecAction.Canceled:
-                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
+                    _journal.Trading($"Order #{order.Id} was canceled: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                     break;
                 case OrderExecAction.Expired:
-                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.Type} {order.Symbol} {order.RemainingVolume.Lots} lots at {order.Price}");
+                    _journal.Trading($"Order #{order.Id} has expired: {order.Side} {order.OrderType} {order.Symbol} {order.RemainingAmountLots} lots at {order.Price}");
                     break;
                 case OrderExecAction.Filled:
-                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.Type} {order.Symbol} {order.LastFillVolume.Lots} lots at {order.LastFillPrice}");
+                    _journal.Trading($"Order #{order.Id} was filled: {order.Side} {order.OrderType} {order.Symbol} {order.LastFillAmountLots} lots at {order.LastFillPrice}");
                     break;
             }
         }
 
         public bool IsConnecting { get; private set; }
-        public bool IsConnected { get; private set; }
+        public BoolVar IsConnected => _isConnected.Var;
 
         public event AsyncEventHandler Initializing;
         public event Action IsConnectingChanged;
@@ -193,13 +197,13 @@ namespace TickTrader.BotTerminal
         public event Action Disconnected;
 
         public ConnectionModel Connection { get; private set; }
-        public TradeExecutor TradeApi { get; private set; }
+        public ITradeExecutor TradeApi { get; private set; }
         public AccountModel Account { get; private set; }
         public TradeHistoryProviderModel TradeHistory { get; }
         public SymbolCollectionModel Symbols { get; private set; }
         public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor { get { return (QuoteDistributor)Symbols.Distributor; } }
         public FeedHistoryProviderModel History { get; private set; }
-        public Dictionary<string, CurrencyInfo> Currencies => _core.Currencies;
+        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _core.Currencies;
     }
 }

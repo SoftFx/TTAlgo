@@ -16,8 +16,9 @@ namespace TickTrader.Algo.Api
         IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders = false);
     }
 
-    public interface IAsyncEnumerator<T> : IDisposable where T : class
+    public interface IAsyncEnumerator<T> : IDisposable
     {
-        Task<T[]> GetNextPage();
+        Task<bool> Next();
+        T Current { get; }
     }
 }

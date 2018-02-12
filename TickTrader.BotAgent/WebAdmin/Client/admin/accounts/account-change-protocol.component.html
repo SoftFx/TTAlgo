@@ -1,0 +1,21 @@
+﻿<div class="text-center">
+    <div *ngIf="!ChangeProtocolRequest">
+        <p>
+            Switch account protocol to {{NewProtocol}}?
+            <br />
+            <small>Reconnect will be forced.</small>
+        </p>
+        <button (click)="ChangeProtocol()" class="btn btn-primary">Change</button>
+        <button (click)="Cancel()" class="btn btn-danger">Cancel</button>
+    </div>
+    <div *ngIf="ChangeProtocolRequest && ChangeProtocolRequest.IsRunning">
+        <span class="fa fa-circle-o-notch fa-spin black"></span>
+        Changing protocol ...
+    </div>
+    <div *ngIf="ChangeProtocolRequest && ChangeProtocolRequest.IsFaulted && ChangeProtocolRequest.Error.Handled">
+        <p class="text-error">
+            {{TestRequest.Error.Message}}
+        </p>
+        <button (click)="Cancel()" class="btn btn-danger">Ok</button>
+    </div>
+</div>

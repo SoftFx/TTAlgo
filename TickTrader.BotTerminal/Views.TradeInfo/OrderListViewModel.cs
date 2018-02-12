@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,6 +9,7 @@ using System.Windows.Data;
 using Machinarium.Qnil;
 using Caliburn.Micro;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             _symbols = symbols;
 
             Orders = model.Orders
-                .Where((id, order) => order.OrderType != TradeRecordType.Position)
+                .Where((id, order) => order.OrderType != OrderType.Position)
                 .OrderBy((id, order) => id)
                 .Select(o => new OrderViewModel(o, (SymbolModel)symbols.GetOrDefault(o.Symbol)))
                 .AsObservable();
@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
         }
 
         public IObservableListSource<OrderViewModel> Orders { get; private set; }
-        public bool IsGrossAccount => Account.Type == AccountType.Gross;
+        public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
 
         private void OrdersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
