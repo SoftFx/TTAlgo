@@ -26,23 +26,14 @@
             <DataTrigger Binding="{Binding Status}" Value="Connecting">
                 <Setter Property="Fill" Value="Yellow"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Status}" Value="LoggingIn">
-                <Setter Property="Fill" Value="Yellow"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Status}" Value="Initializing">
-                <Setter Property="Fill" Value="Yellow"/>
-            </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Online">
                 <Setter Property="Fill" Value="Green"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Disconnecting">
                 <Setter Property="Fill" Value="Orange"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Status}" Value="LoggingOut">
-                <Setter Property="Fill" Value="Orange"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Status}" Value="Deinitializing">
-                <Setter Property="Fill" Value="Orange"/>
+            <DataTrigger Binding="{Binding Status}" Value="WaitReconnect">
+                <Setter Property="Fill" Value="SkyBlue"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

@@ -4,15 +4,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Protocol;
+using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
     internal class BotAgentConnectionManager
     {
-        private enum States { Offline, Connecting, Online, Disconnecting, WaitReconnect }
+        public enum States { Offline, Connecting, Online, Disconnecting, WaitReconnect }
 
 
-        private enum Events { ConnectionStarted, Connected, ConnectionLost, Disconnected, Reconnect }
+        public enum Events { ConnectRequest, Connected, DisconnectRequest, Disconnected, Reconnect }
 
 
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -21,16 +22,17 @@ namespace TickTrader.BotTerminal
         private ProtocolClient _protocolClient;
         private StateMachine<States> _stateControl;
         private bool _needReconnect;
-        private bool _hasRequest;
 
 
         public string Server => _protocolClient.SessionSettings.ServerAddress;
 
-        public ClientStates State => _protocolClient.State;
+        public States State => _stateControl.Current;
+
+        public ClientStates ClientState => _protocolClient.State;
 
         public string LastError => _protocolClient.LastError;
 
-        public string Status => string.IsNullOrEmpty(_protocolClient.LastError) ? $"{_protocolClient.State}" : $"{_protocolClient.State} - {_protocolClient.LastError}";
+        public string Status => string.IsNullOrEmpty(_protocolClient.LastError) ? $"{_stateControl.Current}" : $"{_stateControl.Current} - {_protocolClient.LastError}";
 
         public BotAgentStorageEntry Creds { get; private set; }
 
@@ -47,34 +49,41 @@ namespace TickTrader.BotTerminal
             BotAgent = new BotAgentModel();
             _protocolClient = new ProtocolClient(BotAgent);
 
-            _protocolClient.StateMachine.StateChanged += ClientOnStateChanged;
-            _protocolClient.Connecting += ClientOnConnecting;
             _protocolClient.Connected += ClientOnConnected;
-            _protocolClient.Disconnecting += ClientOnDisconnecting;
             _protocolClient.Disconnected += ClientOnDisconnected;
 
-            _stateControl = new StateMachine<States>(new NullSync());
-            _stateControl.AddTransition(States.Offline, Events.ConnectionStarted, States.Connecting);
+            _stateControl = new StateMachine<States>(new DispatcherStateMachineSync());
+            _stateControl.AddTransition(States.Offline, Events.ConnectRequest, States.Connecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
-            _stateControl.AddTransition(States.Connecting, Events.ConnectionLost, States.Disconnecting);
+            _stateControl.AddTransition(States.Connecting, Events.Disconnected, () => _needReconnect, States.WaitReconnect);
             _stateControl.AddTransition(States.Connecting, Events.Disconnected, States.Offline);
-            _stateControl.AddTransition(States.Online, Events.ConnectionLost, States.Disconnecting);
+            _stateControl.AddTransition(States.Online, Events.Disconnected, () => _needReconnect, States.WaitReconnect);
             _stateControl.AddTransition(States.Online, Events.Disconnected, States.Offline);
+            _stateControl.AddTransition(States.Online, Events.ConnectRequest, States.Disconnecting);
+            _stateControl.AddTransition(States.Online, Events.DisconnectRequest, States.Disconnecting);
             _stateControl.AddTransition(States.Disconnecting, Events.Disconnected, States.Offline);
-
+            _stateControl.AddTransition(States.Disconnecting, Events.Disconnected, () => _needReconnect, States.Connecting);
+            _stateControl.AddTransition(States.WaitReconnect, Events.ConnectRequest, States.Connecting);
+            _stateControl.AddTransition(States.WaitReconnect, Events.DisconnectRequest, States.Offline);
             _stateControl.AddTransition(States.WaitReconnect, Events.Reconnect, States.Connecting);
-            _stateControl.AddTransition(States.Offline, () => _needReconnect, States.WaitReconnect);
+
             _stateControl.AddScheduledEvent(States.WaitReconnect, Events.Reconnect, 10000);
+
+            _stateControl.OnEnter(States.Connecting, StartConnecting);
+            _stateControl.OnEnter(States.Disconnecting, StartDisconnecting);
+            _stateControl.OnEnter(States.Offline, () => BotAgent.ClearCache());
+
+            _stateControl.StateChanged += OnStateChanged;
         }
 
 
         public void Connect()
         {
-            _needReconnect = true;
-            if (!_hasRequest)
+            _stateControl.ModifyConditions(() =>
             {
-                StartConnecting();
-            }
+                _needReconnect = true;
+                _stateControl.PushEvent(Events.ConnectRequest);
+            });
         }
 
         public Task WaitConnect()
@@ -85,8 +94,11 @@ namespace TickTrader.BotTerminal
 
         public void Disconnect()
         {
-            _needReconnect = false;
-            StartDisconnecting();
+            _stateControl.ModifyConditions(() =>
+            {
+                _needReconnect = false;
+                _stateControl.PushEvent(Events.DisconnectRequest);
+            });
         }
 
         public Task WaitDisconnect()
@@ -96,14 +108,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void ClientOnStateChanged(ClientStates from, ClientStates to)
+        private void OnStateChanged(States from, States to)
         {
             StateChanged();
-        }
-
-        private void ClientOnConnecting()
-        {
-            _stateControl.PushEvent(Events.ConnectionStarted);
         }
 
         private void ClientOnConnected()
@@ -111,37 +118,19 @@ namespace TickTrader.BotTerminal
             _stateControl.PushEvent(Events.Connected);
         }
 
-        private void ClientOnDisconnecting()
-        {
-            _stateControl.PushEvent(Events.ConnectionLost);
-        }
-
         private void ClientOnDisconnected()
         {
-            BotAgent.ClearCache();
             _stateControl.PushEvent(Events.Disconnected);
         }
 
-        private async void StartConnecting()
+        private void StartConnecting()
         {
-            _hasRequest = true;
-            await _stateControl.AsyncWait(s => s == States.Offline || s == States.Online);
-            if (_stateControl.Current == States.Online)
-            {
-                _protocolClient.TriggerDisconnect();
-                await _stateControl.AsyncWait(States.Offline);
-            }
-            _hasRequest = false;
             _protocolClient.TriggerConnect(Creds.ToClientSettings());
         }
 
-        private async void StartDisconnecting()
+        private void StartDisconnecting()
         {
-            await _stateControl.AsyncWait(s => s == States.Offline || s == States.Online);
-            if (_stateControl.Current == States.Online)
-            {
-                _protocolClient.TriggerDisconnect();
-            }
+            _protocolClient.TriggerDisconnect();
         }
     }
 }
