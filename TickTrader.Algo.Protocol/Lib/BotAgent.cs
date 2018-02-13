@@ -1304,7 +1304,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -1371,7 +1371,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -1563,7 +1563,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -1623,7 +1623,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -1815,7 +1815,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -1907,7 +1907,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -2130,7 +2130,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -2322,7 +2322,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -4667,7 +4667,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -4808,7 +4808,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -4905,7 +4905,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5046,7 +5046,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5143,7 +5143,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5284,7 +5284,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5381,7 +5381,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5517,7 +5517,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5626,7 +5626,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5735,7 +5735,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5844,7 +5844,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5987,7 +5987,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Reset()
         {
-            data_.Reset(info_.minSize);
+            data_.Reset(info_.MinSize);
         }
         
         public override string ToString()
@@ -5998,12 +5998,6 @@ namespace SoftFX.Net.BotAgent
         MessageInfo info_;
         MessageData data_;
     }
-    
-    
-    
-    
-    
-    
     
     class Is
     {
@@ -6535,1028 +6529,1022 @@ namespace SoftFX.Net.BotAgent
         static void ConstructLoginRequest()
         {
             FieldInfo Username = new FieldInfo();
-            Username.name = "Username";
-            Username.offset = 8;
-            Username.type = FieldType.UString;
-            Username.optional = false;
-            Username.repeatable = false;
+            Username.Name = "Username";
+            Username.Offset = 8;
+            Username.Type = FieldType.UString;
+            Username.Optional = false;
+            Username.Repeatable = false;
             
             FieldInfo Password = new FieldInfo();
-            Password.name = "Password";
-            Password.offset = 16;
-            Password.type = FieldType.UString;
-            Password.optional = false;
-            Password.repeatable = false;
+            Password.Name = "Password";
+            Password.Offset = 16;
+            Password.Type = FieldType.UString;
+            Password.Optional = false;
+            Password.Repeatable = false;
             
             LoginRequest = new MessageInfo();
-            LoginRequest.name = "LoginRequest";
-            LoginRequest.id = 0;
-            LoginRequest.minSize = 24;
-            LoginRequest.fields = new FieldInfo[2];
-            LoginRequest.fields[0] = Username;
-            LoginRequest.fields[1] = Password;
+            LoginRequest.Name = "LoginRequest";
+            LoginRequest.Id = 0;
+            LoginRequest.MinSize = 24;
+            LoginRequest.Fields = new FieldInfo[2];
+            LoginRequest.Fields[0] = Username;
+            LoginRequest.Fields[1] = Password;
         }
         
         static void ConstructLoginReport()
         {
             FieldInfo CurrentVersion = new FieldInfo();
-            CurrentVersion.name = "CurrentVersion";
-            CurrentVersion.offset = 8;
-            CurrentVersion.type = FieldType.Int;
-            CurrentVersion.optional = false;
-            CurrentVersion.repeatable = false;
+            CurrentVersion.Name = "CurrentVersion";
+            CurrentVersion.Offset = 8;
+            CurrentVersion.Type = FieldType.Int;
+            CurrentVersion.Optional = false;
+            CurrentVersion.Repeatable = false;
             
             LoginReport = new MessageInfo();
-            LoginReport.name = "LoginReport";
-            LoginReport.id = 1;
-            LoginReport.minSize = 12;
-            LoginReport.fields = new FieldInfo[1];
-            LoginReport.fields[0] = CurrentVersion;
+            LoginReport.Name = "LoginReport";
+            LoginReport.Id = 1;
+            LoginReport.MinSize = 12;
+            LoginReport.Fields = new FieldInfo[1];
+            LoginReport.Fields[0] = CurrentVersion;
         }
         
         static void ConstructLoginRejectReason()
         {
             EnumMemberInfo InvalidCredentials = new EnumMemberInfo();
-            InvalidCredentials.name = "InvalidCredentials";
-            InvalidCredentials.value = 0;
+            InvalidCredentials.Name = "InvalidCredentials";
+            InvalidCredentials.Value = 0;
             
             EnumMemberInfo VersionMismatch = new EnumMemberInfo();
-            VersionMismatch.name = "VersionMismatch";
-            VersionMismatch.value = 1;
+            VersionMismatch.Name = "VersionMismatch";
+            VersionMismatch.Value = 1;
             
             EnumMemberInfo InternalServerError = new EnumMemberInfo();
-            InternalServerError.name = "InternalServerError";
-            InternalServerError.value = 2;
+            InternalServerError.Name = "InternalServerError";
+            InternalServerError.Value = 2;
             
             LoginRejectReason = new EnumInfo();
-            LoginRejectReason.name = "LoginRejectReason";
-            LoginRejectReason.minSize = 4;
-            LoginRejectReason.members = new EnumMemberInfo[3];
-            LoginRejectReason.members[0] = InvalidCredentials;
-            LoginRejectReason.members[1] = VersionMismatch;
-            LoginRejectReason.members[2] = InternalServerError;
+            LoginRejectReason.Name = "LoginRejectReason";
+            LoginRejectReason.MinSize = 4;
+            LoginRejectReason.Members = new EnumMemberInfo[3];
+            LoginRejectReason.Members[0] = InvalidCredentials;
+            LoginRejectReason.Members[1] = VersionMismatch;
+            LoginRejectReason.Members[2] = InternalServerError;
         }
         
         static void ConstructLoginReject()
         {
             FieldInfo Reason = new FieldInfo();
-            Reason.name = "Reason";
-            Reason.offset = 8;
-            Reason.type = FieldType.Enum;
-            Reason.enumInfo = Info.LoginRejectReason;
-            Reason.optional = false;
-            Reason.repeatable = false;
+            Reason.Name = "Reason";
+            Reason.Offset = 8;
+            Reason.Type = FieldType.Enum;
+            Reason.EnumInfo = Info.LoginRejectReason;
+            Reason.Optional = false;
+            Reason.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 12;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 12;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             LoginReject = new MessageInfo();
-            LoginReject.name = "LoginReject";
-            LoginReject.id = 2;
-            LoginReject.minSize = 20;
-            LoginReject.fields = new FieldInfo[2];
-            LoginReject.fields[0] = Reason;
-            LoginReject.fields[1] = Text;
+            LoginReject.Name = "LoginReject";
+            LoginReject.Id = 2;
+            LoginReject.MinSize = 20;
+            LoginReject.Fields = new FieldInfo[2];
+            LoginReject.Fields[0] = Reason;
+            LoginReject.Fields[1] = Text;
         }
         
         static void ConstructLogoutRequest()
         {
             
             LogoutRequest = new MessageInfo();
-            LogoutRequest.name = "LogoutRequest";
-            LogoutRequest.id = 3;
-            LogoutRequest.minSize = 8;
-            LogoutRequest.fields = new FieldInfo[0];
+            LogoutRequest.Name = "LogoutRequest";
+            LogoutRequest.Id = 3;
+            LogoutRequest.MinSize = 8;
+            LogoutRequest.Fields = new FieldInfo[0];
         }
         
         static void ConstructLogoutReason()
         {
             EnumMemberInfo ClientRequest = new EnumMemberInfo();
-            ClientRequest.name = "ClientRequest";
-            ClientRequest.value = 0;
+            ClientRequest.Name = "ClientRequest";
+            ClientRequest.Value = 0;
             
             EnumMemberInfo ServerLogout = new EnumMemberInfo();
-            ServerLogout.name = "ServerLogout";
-            ServerLogout.value = 1;
+            ServerLogout.Name = "ServerLogout";
+            ServerLogout.Value = 1;
             
             EnumMemberInfo InternalServerError = new EnumMemberInfo();
-            InternalServerError.name = "InternalServerError";
-            InternalServerError.value = 2;
+            InternalServerError.Name = "InternalServerError";
+            InternalServerError.Value = 2;
             
             LogoutReason = new EnumInfo();
-            LogoutReason.name = "LogoutReason";
-            LogoutReason.minSize = 4;
-            LogoutReason.members = new EnumMemberInfo[3];
-            LogoutReason.members[0] = ClientRequest;
-            LogoutReason.members[1] = ServerLogout;
-            LogoutReason.members[2] = InternalServerError;
+            LogoutReason.Name = "LogoutReason";
+            LogoutReason.MinSize = 4;
+            LogoutReason.Members = new EnumMemberInfo[3];
+            LogoutReason.Members[0] = ClientRequest;
+            LogoutReason.Members[1] = ServerLogout;
+            LogoutReason.Members[2] = InternalServerError;
         }
         
         static void ConstructLogoutReport()
         {
             FieldInfo Reason = new FieldInfo();
-            Reason.name = "Reason";
-            Reason.offset = 8;
-            Reason.type = FieldType.Enum;
-            Reason.enumInfo = Info.LogoutReason;
-            Reason.optional = false;
-            Reason.repeatable = false;
+            Reason.Name = "Reason";
+            Reason.Offset = 8;
+            Reason.Type = FieldType.Enum;
+            Reason.EnumInfo = Info.LogoutReason;
+            Reason.Optional = false;
+            Reason.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 12;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 12;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             LogoutReport = new MessageInfo();
-            LogoutReport.name = "LogoutReport";
-            LogoutReport.id = 4;
-            LogoutReport.minSize = 20;
-            LogoutReport.fields = new FieldInfo[2];
-            LogoutReport.fields[0] = Reason;
-            LogoutReport.fields[1] = Text;
+            LogoutReport.Name = "LogoutReport";
+            LogoutReport.Id = 4;
+            LogoutReport.MinSize = 20;
+            LogoutReport.Fields = new FieldInfo[2];
+            LogoutReport.Fields[0] = Reason;
+            LogoutReport.Fields[1] = Text;
         }
         
         static void ConstructRequest()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             Request = new MessageInfo();
-            Request.name = "Request";
-            Request.id = 5;
-            Request.minSize = 16;
-            Request.fields = new FieldInfo[1];
-            Request.fields[0] = Id;
+            Request.Name = "Request";
+            Request.Id = 5;
+            Request.MinSize = 16;
+            Request.Fields = new FieldInfo[1];
+            Request.Fields[0] = Id;
         }
         
         static void ConstructRequestExecState()
         {
             EnumMemberInfo Completed = new EnumMemberInfo();
-            Completed.name = "Completed";
-            Completed.value = 0;
+            Completed.Name = "Completed";
+            Completed.Value = 0;
             
             EnumMemberInfo InternalServerError = new EnumMemberInfo();
-            InternalServerError.name = "InternalServerError";
-            InternalServerError.value = 1;
+            InternalServerError.Name = "InternalServerError";
+            InternalServerError.Value = 1;
             
             RequestExecState = new EnumInfo();
-            RequestExecState.name = "RequestExecState";
-            RequestExecState.minSize = 4;
-            RequestExecState.members = new EnumMemberInfo[2];
-            RequestExecState.members[0] = Completed;
-            RequestExecState.members[1] = InternalServerError;
+            RequestExecState.Name = "RequestExecState";
+            RequestExecState.MinSize = 4;
+            RequestExecState.Members = new EnumMemberInfo[2];
+            RequestExecState.Members[0] = Completed;
+            RequestExecState.Members[1] = InternalServerError;
         }
         
         static void ConstructReport()
         {
             FieldInfo RequestId = new FieldInfo();
-            RequestId.name = "RequestId";
-            RequestId.offset = 8;
-            RequestId.type = FieldType.String;
-            RequestId.optional = false;
-            RequestId.repeatable = false;
+            RequestId.Name = "RequestId";
+            RequestId.Offset = 8;
+            RequestId.Type = FieldType.String;
+            RequestId.Optional = false;
+            RequestId.Repeatable = false;
             
             FieldInfo RequestState = new FieldInfo();
-            RequestState.name = "RequestState";
-            RequestState.offset = 16;
-            RequestState.type = FieldType.Enum;
-            RequestState.enumInfo = Info.RequestExecState;
-            RequestState.optional = false;
-            RequestState.repeatable = false;
+            RequestState.Name = "RequestState";
+            RequestState.Offset = 16;
+            RequestState.Type = FieldType.Enum;
+            RequestState.EnumInfo = Info.RequestExecState;
+            RequestState.Optional = false;
+            RequestState.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 20;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 20;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             Report = new MessageInfo();
-            Report.name = "Report";
-            Report.id = 6;
-            Report.minSize = 28;
-            Report.fields = new FieldInfo[3];
-            Report.fields[0] = RequestId;
-            Report.fields[1] = RequestState;
-            Report.fields[2] = Text;
+            Report.Name = "Report";
+            Report.Id = 6;
+            Report.MinSize = 28;
+            Report.Fields = new FieldInfo[3];
+            Report.Fields[0] = RequestId;
+            Report.Fields[1] = RequestState;
+            Report.Fields[2] = Text;
         }
         
         static void ConstructUpdateType()
         {
             EnumMemberInfo Added = new EnumMemberInfo();
-            Added.name = "Added";
-            Added.value = 0;
+            Added.Name = "Added";
+            Added.Value = 0;
             
             EnumMemberInfo Updated = new EnumMemberInfo();
-            Updated.name = "Updated";
-            Updated.value = 1;
+            Updated.Name = "Updated";
+            Updated.Value = 1;
             
             EnumMemberInfo Removed = new EnumMemberInfo();
-            Removed.name = "Removed";
-            Removed.value = 2;
+            Removed.Name = "Removed";
+            Removed.Value = 2;
             
             UpdateType = new EnumInfo();
-            UpdateType.name = "UpdateType";
-            UpdateType.minSize = 4;
-            UpdateType.members = new EnumMemberInfo[3];
-            UpdateType.members[0] = Added;
-            UpdateType.members[1] = Updated;
-            UpdateType.members[2] = Removed;
+            UpdateType.Name = "UpdateType";
+            UpdateType.MinSize = 4;
+            UpdateType.Members = new EnumMemberInfo[3];
+            UpdateType.Members[0] = Added;
+            UpdateType.Members[1] = Updated;
+            UpdateType.Members[2] = Removed;
         }
         
         static void ConstructUpdate()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             FieldInfo Type = new FieldInfo();
-            Type.name = "Type";
-            Type.offset = 16;
-            Type.type = FieldType.Enum;
-            Type.enumInfo = Info.UpdateType;
-            Type.optional = false;
-            Type.repeatable = false;
+            Type.Name = "Type";
+            Type.Offset = 16;
+            Type.Type = FieldType.Enum;
+            Type.EnumInfo = Info.UpdateType;
+            Type.Optional = false;
+            Type.Repeatable = false;
             
             Update = new MessageInfo();
-            Update.name = "Update";
-            Update.id = 7;
-            Update.minSize = 20;
-            Update.fields = new FieldInfo[2];
-            Update.fields[0] = Id;
-            Update.fields[1] = Type;
+            Update.Name = "Update";
+            Update.Id = 7;
+            Update.MinSize = 20;
+            Update.Fields = new FieldInfo[2];
+            Update.Fields[0] = Id;
+            Update.Fields[1] = Type;
         }
         
         static void ConstructPluginKey()
         {
             FieldInfo PackageName = new FieldInfo();
-            PackageName.name = "PackageName";
-            PackageName.offset = 0;
-            PackageName.type = FieldType.UString;
-            PackageName.optional = false;
-            PackageName.repeatable = false;
+            PackageName.Name = "PackageName";
+            PackageName.Offset = 0;
+            PackageName.Type = FieldType.UString;
+            PackageName.Optional = false;
+            PackageName.Repeatable = false;
             
             FieldInfo DescriptorId = new FieldInfo();
-            DescriptorId.name = "DescriptorId";
-            DescriptorId.offset = 8;
-            DescriptorId.type = FieldType.UString;
-            DescriptorId.optional = false;
-            DescriptorId.repeatable = false;
+            DescriptorId.Name = "DescriptorId";
+            DescriptorId.Offset = 8;
+            DescriptorId.Type = FieldType.UString;
+            DescriptorId.Optional = false;
+            DescriptorId.Repeatable = false;
             
             PluginKey = new GroupInfo();
-            PluginKey.name = "PluginKey";
-            PluginKey.minSize = 16;
-            PluginKey.fields = new FieldInfo[2];
-            PluginKey.fields[0] = PackageName;
-            PluginKey.fields[1] = DescriptorId;
+            PluginKey.Name = "PluginKey";
+            PluginKey.MinSize = 16;
+            PluginKey.Fields = new FieldInfo[2];
+            PluginKey.Fields[0] = PackageName;
+            PluginKey.Fields[1] = DescriptorId;
         }
         
         static void ConstructPluginType()
         {
             EnumMemberInfo Indicator = new EnumMemberInfo();
-            Indicator.name = "Indicator";
-            Indicator.value = 0;
+            Indicator.Name = "Indicator";
+            Indicator.Value = 0;
             
             EnumMemberInfo Robot = new EnumMemberInfo();
-            Robot.name = "Robot";
-            Robot.value = 1;
+            Robot.Name = "Robot";
+            Robot.Value = 1;
             
             EnumMemberInfo Unknown = new EnumMemberInfo();
-            Unknown.name = "Unknown";
-            Unknown.value = 2;
+            Unknown.Name = "Unknown";
+            Unknown.Value = 2;
             
             PluginType = new EnumInfo();
-            PluginType.name = "PluginType";
-            PluginType.minSize = 4;
-            PluginType.members = new EnumMemberInfo[3];
-            PluginType.members[0] = Indicator;
-            PluginType.members[1] = Robot;
-            PluginType.members[2] = Unknown;
+            PluginType.Name = "PluginType";
+            PluginType.MinSize = 4;
+            PluginType.Members = new EnumMemberInfo[3];
+            PluginType.Members[0] = Indicator;
+            PluginType.Members[1] = Robot;
+            PluginType.Members[2] = Unknown;
         }
         
         static void ConstructPluginDescriptor()
         {
             FieldInfo ApiVersion = new FieldInfo();
-            ApiVersion.name = "ApiVersion";
-            ApiVersion.offset = 0;
-            ApiVersion.type = FieldType.UString;
-            ApiVersion.optional = true;
-            ApiVersion.repeatable = false;
+            ApiVersion.Name = "ApiVersion";
+            ApiVersion.Offset = 0;
+            ApiVersion.Type = FieldType.UString;
+            ApiVersion.Optional = true;
+            ApiVersion.Repeatable = false;
             
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.UString;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.UString;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             FieldInfo DisplayName = new FieldInfo();
-            DisplayName.name = "DisplayName";
-            DisplayName.offset = 16;
-            DisplayName.type = FieldType.UString;
-            DisplayName.optional = false;
-            DisplayName.repeatable = false;
+            DisplayName.Name = "DisplayName";
+            DisplayName.Offset = 16;
+            DisplayName.Type = FieldType.UString;
+            DisplayName.Optional = false;
+            DisplayName.Repeatable = false;
             
             FieldInfo UserDisplayName = new FieldInfo();
-            UserDisplayName.name = "UserDisplayName";
-            UserDisplayName.offset = 24;
-            UserDisplayName.type = FieldType.UString;
-            UserDisplayName.optional = false;
-            UserDisplayName.repeatable = false;
+            UserDisplayName.Name = "UserDisplayName";
+            UserDisplayName.Offset = 24;
+            UserDisplayName.Type = FieldType.UString;
+            UserDisplayName.Optional = false;
+            UserDisplayName.Repeatable = false;
             
             FieldInfo Category = new FieldInfo();
-            Category.name = "Category";
-            Category.offset = 32;
-            Category.type = FieldType.UString;
-            Category.optional = true;
-            Category.repeatable = false;
+            Category.Name = "Category";
+            Category.Offset = 32;
+            Category.Type = FieldType.UString;
+            Category.Optional = true;
+            Category.Repeatable = false;
             
             FieldInfo Version = new FieldInfo();
-            Version.name = "Version";
-            Version.offset = 40;
-            Version.type = FieldType.UString;
-            Version.optional = true;
-            Version.repeatable = false;
+            Version.Name = "Version";
+            Version.Offset = 40;
+            Version.Type = FieldType.UString;
+            Version.Optional = true;
+            Version.Repeatable = false;
             
             FieldInfo Description = new FieldInfo();
-            Description.name = "Description";
-            Description.offset = 48;
-            Description.type = FieldType.UString;
-            Description.optional = true;
-            Description.repeatable = false;
+            Description.Name = "Description";
+            Description.Offset = 48;
+            Description.Type = FieldType.UString;
+            Description.Optional = true;
+            Description.Repeatable = false;
             
             FieldInfo Copyright = new FieldInfo();
-            Copyright.name = "Copyright";
-            Copyright.offset = 56;
-            Copyright.type = FieldType.UString;
-            Copyright.optional = true;
-            Copyright.repeatable = false;
+            Copyright.Name = "Copyright";
+            Copyright.Offset = 56;
+            Copyright.Type = FieldType.UString;
+            Copyright.Optional = true;
+            Copyright.Repeatable = false;
             
             FieldInfo Type = new FieldInfo();
-            Type.name = "Type";
-            Type.offset = 64;
-            Type.type = FieldType.Enum;
-            Type.enumInfo = Info.PluginType;
-            Type.optional = false;
-            Type.repeatable = false;
+            Type.Name = "Type";
+            Type.Offset = 64;
+            Type.Type = FieldType.Enum;
+            Type.EnumInfo = Info.PluginType;
+            Type.Optional = false;
+            Type.Repeatable = false;
             
             PluginDescriptor = new GroupInfo();
-            PluginDescriptor.name = "PluginDescriptor";
-            PluginDescriptor.minSize = 68;
-            PluginDescriptor.fields = new FieldInfo[9];
-            PluginDescriptor.fields[0] = ApiVersion;
-            PluginDescriptor.fields[1] = Id;
-            PluginDescriptor.fields[2] = DisplayName;
-            PluginDescriptor.fields[3] = UserDisplayName;
-            PluginDescriptor.fields[4] = Category;
-            PluginDescriptor.fields[5] = Version;
-            PluginDescriptor.fields[6] = Description;
-            PluginDescriptor.fields[7] = Copyright;
-            PluginDescriptor.fields[8] = Type;
+            PluginDescriptor.Name = "PluginDescriptor";
+            PluginDescriptor.MinSize = 68;
+            PluginDescriptor.Fields = new FieldInfo[9];
+            PluginDescriptor.Fields[0] = ApiVersion;
+            PluginDescriptor.Fields[1] = Id;
+            PluginDescriptor.Fields[2] = DisplayName;
+            PluginDescriptor.Fields[3] = UserDisplayName;
+            PluginDescriptor.Fields[4] = Category;
+            PluginDescriptor.Fields[5] = Version;
+            PluginDescriptor.Fields[6] = Description;
+            PluginDescriptor.Fields[7] = Copyright;
+            PluginDescriptor.Fields[8] = Type;
         }
         
         static void ConstructPluginInfo()
         {
             FieldInfo Key = new FieldInfo();
-            Key.name = "Key";
-            Key.offset = 0;
-            Key.type = FieldType.Group;
-            Key.groupInfo = Info.PluginKey;
-            Key.optional = false;
-            Key.repeatable = false;
+            Key.Name = "Key";
+            Key.Offset = 0;
+            Key.Type = FieldType.Group;
+            Key.GroupInfo = Info.PluginKey;
+            Key.Optional = false;
+            Key.Repeatable = false;
             
             FieldInfo Descriptor = new FieldInfo();
-            Descriptor.name = "Descriptor";
-            Descriptor.offset = 16;
-            Descriptor.type = FieldType.Group;
-            Descriptor.groupInfo = Info.PluginDescriptor;
-            Descriptor.optional = false;
-            Descriptor.repeatable = false;
+            Descriptor.Name = "Descriptor";
+            Descriptor.Offset = 16;
+            Descriptor.Type = FieldType.Group;
+            Descriptor.GroupInfo = Info.PluginDescriptor;
+            Descriptor.Optional = false;
+            Descriptor.Repeatable = false;
             
             PluginInfo = new GroupInfo();
-            PluginInfo.name = "PluginInfo";
-            PluginInfo.minSize = 84;
-            PluginInfo.fields = new FieldInfo[2];
-            PluginInfo.fields[0] = Key;
-            PluginInfo.fields[1] = Descriptor;
+            PluginInfo.Name = "PluginInfo";
+            PluginInfo.MinSize = 84;
+            PluginInfo.Fields = new FieldInfo[2];
+            PluginInfo.Fields[0] = Key;
+            PluginInfo.Fields[1] = Descriptor;
         }
         
         static void ConstructPackageModel()
         {
             FieldInfo Name = new FieldInfo();
-            Name.name = "Name";
-            Name.offset = 0;
-            Name.type = FieldType.UString;
-            Name.optional = false;
-            Name.repeatable = false;
+            Name.Name = "Name";
+            Name.Offset = 0;
+            Name.Type = FieldType.UString;
+            Name.Optional = false;
+            Name.Repeatable = false;
             
             FieldInfo Created = new FieldInfo();
-            Created.name = "Created";
-            Created.offset = 8;
-            Created.type = FieldType.DateTime;
-            Created.optional = false;
-            Created.repeatable = false;
+            Created.Name = "Created";
+            Created.Offset = 8;
+            Created.Type = FieldType.DateTime;
+            Created.Optional = false;
+            Created.Repeatable = false;
             
             FieldInfo Plugins = new FieldInfo();
-            Plugins.name = "Plugins";
-            Plugins.offset = 16;
-            Plugins.type = FieldType.Group;
-            Plugins.groupInfo = Info.PluginInfo;
-            Plugins.optional = false;
-            Plugins.repeatable = true;
+            Plugins.Name = "Plugins";
+            Plugins.Offset = 16;
+            Plugins.Type = FieldType.Group;
+            Plugins.GroupInfo = Info.PluginInfo;
+            Plugins.Optional = false;
+            Plugins.Repeatable = true;
             
             PackageModel = new GroupInfo();
-            PackageModel.name = "PackageModel";
-            PackageModel.minSize = 24;
-            PackageModel.fields = new FieldInfo[3];
-            PackageModel.fields[0] = Name;
-            PackageModel.fields[1] = Created;
-            PackageModel.fields[2] = Plugins;
+            PackageModel.Name = "PackageModel";
+            PackageModel.MinSize = 24;
+            PackageModel.Fields = new FieldInfo[3];
+            PackageModel.Fields[0] = Name;
+            PackageModel.Fields[1] = Created;
+            PackageModel.Fields[2] = Plugins;
         }
         
         static void ConstructAccountKey()
         {
             FieldInfo Login = new FieldInfo();
-            Login.name = "Login";
-            Login.offset = 0;
-            Login.type = FieldType.UString;
-            Login.optional = false;
-            Login.repeatable = false;
+            Login.Name = "Login";
+            Login.Offset = 0;
+            Login.Type = FieldType.UString;
+            Login.Optional = false;
+            Login.Repeatable = false;
             
             FieldInfo Server = new FieldInfo();
-            Server.name = "Server";
-            Server.offset = 8;
-            Server.type = FieldType.UString;
-            Server.optional = false;
-            Server.repeatable = false;
+            Server.Name = "Server";
+            Server.Offset = 8;
+            Server.Type = FieldType.UString;
+            Server.Optional = false;
+            Server.Repeatable = false;
             
             AccountKey = new GroupInfo();
-            AccountKey.name = "AccountKey";
-            AccountKey.minSize = 16;
-            AccountKey.fields = new FieldInfo[2];
-            AccountKey.fields[0] = Login;
-            AccountKey.fields[1] = Server;
+            AccountKey.Name = "AccountKey";
+            AccountKey.MinSize = 16;
+            AccountKey.Fields = new FieldInfo[2];
+            AccountKey.Fields[0] = Login;
+            AccountKey.Fields[1] = Server;
         }
         
         static void ConstructPluginPermissions()
         {
             FieldInfo TradeAllowed = new FieldInfo();
-            TradeAllowed.name = "TradeAllowed";
-            TradeAllowed.offset = 0;
-            TradeAllowed.type = FieldType.Bool;
-            TradeAllowed.optional = false;
-            TradeAllowed.repeatable = false;
+            TradeAllowed.Name = "TradeAllowed";
+            TradeAllowed.Offset = 0;
+            TradeAllowed.Type = FieldType.Bool;
+            TradeAllowed.Optional = false;
+            TradeAllowed.Repeatable = false;
             
             PluginPermissions = new GroupInfo();
-            PluginPermissions.name = "PluginPermissions";
-            PluginPermissions.minSize = 1;
-            PluginPermissions.fields = new FieldInfo[1];
-            PluginPermissions.fields[0] = TradeAllowed;
+            PluginPermissions.Name = "PluginPermissions";
+            PluginPermissions.MinSize = 1;
+            PluginPermissions.Fields = new FieldInfo[1];
+            PluginPermissions.Fields[0] = TradeAllowed;
         }
         
         static void ConstructBotState()
         {
             EnumMemberInfo Offline = new EnumMemberInfo();
-            Offline.name = "Offline";
-            Offline.value = 0;
+            Offline.Name = "Offline";
+            Offline.Value = 0;
             
             EnumMemberInfo Starting = new EnumMemberInfo();
-            Starting.name = "Starting";
-            Starting.value = 1;
+            Starting.Name = "Starting";
+            Starting.Value = 1;
             
             EnumMemberInfo Faulted = new EnumMemberInfo();
-            Faulted.name = "Faulted";
-            Faulted.value = 2;
+            Faulted.Name = "Faulted";
+            Faulted.Value = 2;
             
             EnumMemberInfo Online = new EnumMemberInfo();
-            Online.name = "Online";
-            Online.value = 3;
+            Online.Name = "Online";
+            Online.Value = 3;
             
             EnumMemberInfo Stopping = new EnumMemberInfo();
-            Stopping.name = "Stopping";
-            Stopping.value = 4;
+            Stopping.Name = "Stopping";
+            Stopping.Value = 4;
             
             EnumMemberInfo Broken = new EnumMemberInfo();
-            Broken.name = "Broken";
-            Broken.value = 5;
+            Broken.Name = "Broken";
+            Broken.Value = 5;
             
             EnumMemberInfo Reconnecting = new EnumMemberInfo();
-            Reconnecting.name = "Reconnecting";
-            Reconnecting.value = 6;
+            Reconnecting.Name = "Reconnecting";
+            Reconnecting.Value = 6;
             
             BotState = new EnumInfo();
-            BotState.name = "BotState";
-            BotState.minSize = 4;
-            BotState.members = new EnumMemberInfo[7];
-            BotState.members[0] = Offline;
-            BotState.members[1] = Starting;
-            BotState.members[2] = Faulted;
-            BotState.members[3] = Online;
-            BotState.members[4] = Stopping;
-            BotState.members[5] = Broken;
-            BotState.members[6] = Reconnecting;
+            BotState.Name = "BotState";
+            BotState.MinSize = 4;
+            BotState.Members = new EnumMemberInfo[7];
+            BotState.Members[0] = Offline;
+            BotState.Members[1] = Starting;
+            BotState.Members[2] = Faulted;
+            BotState.Members[3] = Online;
+            BotState.Members[4] = Stopping;
+            BotState.Members[5] = Broken;
+            BotState.Members[6] = Reconnecting;
         }
         
         static void ConstructBotModel()
         {
             FieldInfo InstanceId = new FieldInfo();
-            InstanceId.name = "InstanceId";
-            InstanceId.offset = 0;
-            InstanceId.type = FieldType.UString;
-            InstanceId.optional = false;
-            InstanceId.repeatable = false;
+            InstanceId.Name = "InstanceId";
+            InstanceId.Offset = 0;
+            InstanceId.Type = FieldType.UString;
+            InstanceId.Optional = false;
+            InstanceId.Repeatable = false;
             
             FieldInfo Isolated = new FieldInfo();
-            Isolated.name = "Isolated";
-            Isolated.offset = 8;
-            Isolated.type = FieldType.Bool;
-            Isolated.optional = false;
-            Isolated.repeatable = false;
+            Isolated.Name = "Isolated";
+            Isolated.Offset = 8;
+            Isolated.Type = FieldType.Bool;
+            Isolated.Optional = false;
+            Isolated.Repeatable = false;
             
             FieldInfo State = new FieldInfo();
-            State.name = "State";
-            State.offset = 9;
-            State.type = FieldType.Enum;
-            State.enumInfo = Info.BotState;
-            State.optional = false;
-            State.repeatable = false;
+            State.Name = "State";
+            State.Offset = 9;
+            State.Type = FieldType.Enum;
+            State.EnumInfo = Info.BotState;
+            State.Optional = false;
+            State.Repeatable = false;
             
             FieldInfo Permissions = new FieldInfo();
-            Permissions.name = "Permissions";
-            Permissions.offset = 13;
-            Permissions.type = FieldType.Group;
-            Permissions.groupInfo = Info.PluginPermissions;
-            Permissions.optional = false;
-            Permissions.repeatable = false;
+            Permissions.Name = "Permissions";
+            Permissions.Offset = 13;
+            Permissions.Type = FieldType.Group;
+            Permissions.GroupInfo = Info.PluginPermissions;
+            Permissions.Optional = false;
+            Permissions.Repeatable = false;
             
             FieldInfo Account = new FieldInfo();
-            Account.name = "Account";
-            Account.offset = 14;
-            Account.type = FieldType.Group;
-            Account.groupInfo = Info.AccountKey;
-            Account.optional = false;
-            Account.repeatable = false;
+            Account.Name = "Account";
+            Account.Offset = 14;
+            Account.Type = FieldType.Group;
+            Account.GroupInfo = Info.AccountKey;
+            Account.Optional = false;
+            Account.Repeatable = false;
             
             FieldInfo Plugin = new FieldInfo();
-            Plugin.name = "Plugin";
-            Plugin.offset = 30;
-            Plugin.type = FieldType.Group;
-            Plugin.groupInfo = Info.PluginKey;
-            Plugin.optional = false;
-            Plugin.repeatable = false;
+            Plugin.Name = "Plugin";
+            Plugin.Offset = 30;
+            Plugin.Type = FieldType.Group;
+            Plugin.GroupInfo = Info.PluginKey;
+            Plugin.Optional = false;
+            Plugin.Repeatable = false;
             
             BotModel = new GroupInfo();
-            BotModel.name = "BotModel";
-            BotModel.minSize = 46;
-            BotModel.fields = new FieldInfo[6];
-            BotModel.fields[0] = InstanceId;
-            BotModel.fields[1] = Isolated;
-            BotModel.fields[2] = State;
-            BotModel.fields[3] = Permissions;
-            BotModel.fields[4] = Account;
-            BotModel.fields[5] = Plugin;
+            BotModel.Name = "BotModel";
+            BotModel.MinSize = 46;
+            BotModel.Fields = new FieldInfo[6];
+            BotModel.Fields[0] = InstanceId;
+            BotModel.Fields[1] = Isolated;
+            BotModel.Fields[2] = State;
+            BotModel.Fields[3] = Permissions;
+            BotModel.Fields[4] = Account;
+            BotModel.Fields[5] = Plugin;
         }
         
         static void ConstructAccountModel()
         {
             FieldInfo Login = new FieldInfo();
-            Login.name = "Login";
-            Login.offset = 0;
-            Login.type = FieldType.UString;
-            Login.optional = false;
-            Login.repeatable = false;
+            Login.Name = "Login";
+            Login.Offset = 0;
+            Login.Type = FieldType.UString;
+            Login.Optional = false;
+            Login.Repeatable = false;
             
             FieldInfo Server = new FieldInfo();
-            Server.name = "Server";
-            Server.offset = 8;
-            Server.type = FieldType.UString;
-            Server.optional = false;
-            Server.repeatable = false;
+            Server.Name = "Server";
+            Server.Offset = 8;
+            Server.Type = FieldType.UString;
+            Server.Optional = false;
+            Server.Repeatable = false;
             
             AccountModel = new GroupInfo();
-            AccountModel.name = "AccountModel";
-            AccountModel.minSize = 16;
-            AccountModel.fields = new FieldInfo[2];
-            AccountModel.fields[0] = Login;
-            AccountModel.fields[1] = Server;
+            AccountModel.Name = "AccountModel";
+            AccountModel.MinSize = 16;
+            AccountModel.Fields = new FieldInfo[2];
+            AccountModel.Fields[0] = Login;
+            AccountModel.Fields[1] = Server;
         }
         
         static void ConstructAccountListRequest()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             AccountListRequest = new MessageInfo();
-            AccountListRequest.parentInfo = Request;
-            AccountListRequest.name = "AccountListRequest";
-            AccountListRequest.id = 8;
-            AccountListRequest.minSize = 16;
-            AccountListRequest.fields = new FieldInfo[1];
-            AccountListRequest.fields[0] = Id;
+            AccountListRequest.ParentInfo = Request;
+            AccountListRequest.Name = "AccountListRequest";
+            AccountListRequest.Id = 8;
+            AccountListRequest.MinSize = 16;
+            AccountListRequest.Fields = new FieldInfo[1];
+            AccountListRequest.Fields[0] = Id;
         }
         
         static void ConstructAccountListReport()
         {
             FieldInfo RequestId = new FieldInfo();
-            RequestId.name = "RequestId";
-            RequestId.offset = 8;
-            RequestId.type = FieldType.String;
-            RequestId.optional = false;
-            RequestId.repeatable = false;
+            RequestId.Name = "RequestId";
+            RequestId.Offset = 8;
+            RequestId.Type = FieldType.String;
+            RequestId.Optional = false;
+            RequestId.Repeatable = false;
             
             FieldInfo RequestState = new FieldInfo();
-            RequestState.name = "RequestState";
-            RequestState.offset = 16;
-            RequestState.type = FieldType.Enum;
-            RequestState.enumInfo = Info.RequestExecState;
-            RequestState.optional = false;
-            RequestState.repeatable = false;
+            RequestState.Name = "RequestState";
+            RequestState.Offset = 16;
+            RequestState.Type = FieldType.Enum;
+            RequestState.EnumInfo = Info.RequestExecState;
+            RequestState.Optional = false;
+            RequestState.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 20;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 20;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             FieldInfo Accounts = new FieldInfo();
-            Accounts.name = "Accounts";
-            Accounts.offset = 28;
-            Accounts.type = FieldType.Group;
-            Accounts.groupInfo = Info.AccountModel;
-            Accounts.optional = false;
-            Accounts.repeatable = true;
+            Accounts.Name = "Accounts";
+            Accounts.Offset = 28;
+            Accounts.Type = FieldType.Group;
+            Accounts.GroupInfo = Info.AccountModel;
+            Accounts.Optional = false;
+            Accounts.Repeatable = true;
             
             AccountListReport = new MessageInfo();
-            AccountListReport.parentInfo = Report;
-            AccountListReport.name = "AccountListReport";
-            AccountListReport.id = 9;
-            AccountListReport.minSize = 36;
-            AccountListReport.fields = new FieldInfo[4];
-            AccountListReport.fields[0] = RequestId;
-            AccountListReport.fields[1] = RequestState;
-            AccountListReport.fields[2] = Text;
-            AccountListReport.fields[3] = Accounts;
+            AccountListReport.ParentInfo = Report;
+            AccountListReport.Name = "AccountListReport";
+            AccountListReport.Id = 9;
+            AccountListReport.MinSize = 36;
+            AccountListReport.Fields = new FieldInfo[4];
+            AccountListReport.Fields[0] = RequestId;
+            AccountListReport.Fields[1] = RequestState;
+            AccountListReport.Fields[2] = Text;
+            AccountListReport.Fields[3] = Accounts;
         }
         
         static void ConstructBotListRequest()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             BotListRequest = new MessageInfo();
-            BotListRequest.parentInfo = Request;
-            BotListRequest.name = "BotListRequest";
-            BotListRequest.id = 10;
-            BotListRequest.minSize = 16;
-            BotListRequest.fields = new FieldInfo[1];
-            BotListRequest.fields[0] = Id;
+            BotListRequest.ParentInfo = Request;
+            BotListRequest.Name = "BotListRequest";
+            BotListRequest.Id = 10;
+            BotListRequest.MinSize = 16;
+            BotListRequest.Fields = new FieldInfo[1];
+            BotListRequest.Fields[0] = Id;
         }
         
         static void ConstructBotListReport()
         {
             FieldInfo RequestId = new FieldInfo();
-            RequestId.name = "RequestId";
-            RequestId.offset = 8;
-            RequestId.type = FieldType.String;
-            RequestId.optional = false;
-            RequestId.repeatable = false;
+            RequestId.Name = "RequestId";
+            RequestId.Offset = 8;
+            RequestId.Type = FieldType.String;
+            RequestId.Optional = false;
+            RequestId.Repeatable = false;
             
             FieldInfo RequestState = new FieldInfo();
-            RequestState.name = "RequestState";
-            RequestState.offset = 16;
-            RequestState.type = FieldType.Enum;
-            RequestState.enumInfo = Info.RequestExecState;
-            RequestState.optional = false;
-            RequestState.repeatable = false;
+            RequestState.Name = "RequestState";
+            RequestState.Offset = 16;
+            RequestState.Type = FieldType.Enum;
+            RequestState.EnumInfo = Info.RequestExecState;
+            RequestState.Optional = false;
+            RequestState.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 20;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 20;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             FieldInfo Bots = new FieldInfo();
-            Bots.name = "Bots";
-            Bots.offset = 28;
-            Bots.type = FieldType.Group;
-            Bots.groupInfo = Info.BotModel;
-            Bots.optional = false;
-            Bots.repeatable = true;
+            Bots.Name = "Bots";
+            Bots.Offset = 28;
+            Bots.Type = FieldType.Group;
+            Bots.GroupInfo = Info.BotModel;
+            Bots.Optional = false;
+            Bots.Repeatable = true;
             
             BotListReport = new MessageInfo();
-            BotListReport.parentInfo = Report;
-            BotListReport.name = "BotListReport";
-            BotListReport.id = 11;
-            BotListReport.minSize = 36;
-            BotListReport.fields = new FieldInfo[4];
-            BotListReport.fields[0] = RequestId;
-            BotListReport.fields[1] = RequestState;
-            BotListReport.fields[2] = Text;
-            BotListReport.fields[3] = Bots;
+            BotListReport.ParentInfo = Report;
+            BotListReport.Name = "BotListReport";
+            BotListReport.Id = 11;
+            BotListReport.MinSize = 36;
+            BotListReport.Fields = new FieldInfo[4];
+            BotListReport.Fields[0] = RequestId;
+            BotListReport.Fields[1] = RequestState;
+            BotListReport.Fields[2] = Text;
+            BotListReport.Fields[3] = Bots;
         }
         
         static void ConstructPackageListRequest()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             PackageListRequest = new MessageInfo();
-            PackageListRequest.parentInfo = Request;
-            PackageListRequest.name = "PackageListRequest";
-            PackageListRequest.id = 12;
-            PackageListRequest.minSize = 16;
-            PackageListRequest.fields = new FieldInfo[1];
-            PackageListRequest.fields[0] = Id;
+            PackageListRequest.ParentInfo = Request;
+            PackageListRequest.Name = "PackageListRequest";
+            PackageListRequest.Id = 12;
+            PackageListRequest.MinSize = 16;
+            PackageListRequest.Fields = new FieldInfo[1];
+            PackageListRequest.Fields[0] = Id;
         }
         
         static void ConstructPackageListReport()
         {
             FieldInfo RequestId = new FieldInfo();
-            RequestId.name = "RequestId";
-            RequestId.offset = 8;
-            RequestId.type = FieldType.String;
-            RequestId.optional = false;
-            RequestId.repeatable = false;
+            RequestId.Name = "RequestId";
+            RequestId.Offset = 8;
+            RequestId.Type = FieldType.String;
+            RequestId.Optional = false;
+            RequestId.Repeatable = false;
             
             FieldInfo RequestState = new FieldInfo();
-            RequestState.name = "RequestState";
-            RequestState.offset = 16;
-            RequestState.type = FieldType.Enum;
-            RequestState.enumInfo = Info.RequestExecState;
-            RequestState.optional = false;
-            RequestState.repeatable = false;
+            RequestState.Name = "RequestState";
+            RequestState.Offset = 16;
+            RequestState.Type = FieldType.Enum;
+            RequestState.EnumInfo = Info.RequestExecState;
+            RequestState.Optional = false;
+            RequestState.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 20;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 20;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             FieldInfo Packages = new FieldInfo();
-            Packages.name = "Packages";
-            Packages.offset = 28;
-            Packages.type = FieldType.Group;
-            Packages.groupInfo = Info.PackageModel;
-            Packages.optional = false;
-            Packages.repeatable = true;
+            Packages.Name = "Packages";
+            Packages.Offset = 28;
+            Packages.Type = FieldType.Group;
+            Packages.GroupInfo = Info.PackageModel;
+            Packages.Optional = false;
+            Packages.Repeatable = true;
             
             PackageListReport = new MessageInfo();
-            PackageListReport.parentInfo = Report;
-            PackageListReport.name = "PackageListReport";
-            PackageListReport.id = 13;
-            PackageListReport.minSize = 36;
-            PackageListReport.fields = new FieldInfo[4];
-            PackageListReport.fields[0] = RequestId;
-            PackageListReport.fields[1] = RequestState;
-            PackageListReport.fields[2] = Text;
-            PackageListReport.fields[3] = Packages;
+            PackageListReport.ParentInfo = Report;
+            PackageListReport.Name = "PackageListReport";
+            PackageListReport.Id = 13;
+            PackageListReport.MinSize = 36;
+            PackageListReport.Fields = new FieldInfo[4];
+            PackageListReport.Fields[0] = RequestId;
+            PackageListReport.Fields[1] = RequestState;
+            PackageListReport.Fields[2] = Text;
+            PackageListReport.Fields[3] = Packages;
         }
         
         static void ConstructSubscribeRequest()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             SubscribeRequest = new MessageInfo();
-            SubscribeRequest.parentInfo = Request;
-            SubscribeRequest.name = "SubscribeRequest";
-            SubscribeRequest.id = 14;
-            SubscribeRequest.minSize = 16;
-            SubscribeRequest.fields = new FieldInfo[1];
-            SubscribeRequest.fields[0] = Id;
+            SubscribeRequest.ParentInfo = Request;
+            SubscribeRequest.Name = "SubscribeRequest";
+            SubscribeRequest.Id = 14;
+            SubscribeRequest.MinSize = 16;
+            SubscribeRequest.Fields = new FieldInfo[1];
+            SubscribeRequest.Fields[0] = Id;
         }
         
         static void ConstructSubscribeReport()
         {
             FieldInfo RequestId = new FieldInfo();
-            RequestId.name = "RequestId";
-            RequestId.offset = 8;
-            RequestId.type = FieldType.String;
-            RequestId.optional = false;
-            RequestId.repeatable = false;
+            RequestId.Name = "RequestId";
+            RequestId.Offset = 8;
+            RequestId.Type = FieldType.String;
+            RequestId.Optional = false;
+            RequestId.Repeatable = false;
             
             FieldInfo RequestState = new FieldInfo();
-            RequestState.name = "RequestState";
-            RequestState.offset = 16;
-            RequestState.type = FieldType.Enum;
-            RequestState.enumInfo = Info.RequestExecState;
-            RequestState.optional = false;
-            RequestState.repeatable = false;
+            RequestState.Name = "RequestState";
+            RequestState.Offset = 16;
+            RequestState.Type = FieldType.Enum;
+            RequestState.EnumInfo = Info.RequestExecState;
+            RequestState.Optional = false;
+            RequestState.Repeatable = false;
             
             FieldInfo Text = new FieldInfo();
-            Text.name = "Text";
-            Text.offset = 20;
-            Text.type = FieldType.UString;
-            Text.optional = true;
-            Text.repeatable = false;
+            Text.Name = "Text";
+            Text.Offset = 20;
+            Text.Type = FieldType.UString;
+            Text.Optional = true;
+            Text.Repeatable = false;
             
             SubscribeReport = new MessageInfo();
-            SubscribeReport.parentInfo = Report;
-            SubscribeReport.name = "SubscribeReport";
-            SubscribeReport.id = 15;
-            SubscribeReport.minSize = 28;
-            SubscribeReport.fields = new FieldInfo[3];
-            SubscribeReport.fields[0] = RequestId;
-            SubscribeReport.fields[1] = RequestState;
-            SubscribeReport.fields[2] = Text;
+            SubscribeReport.ParentInfo = Report;
+            SubscribeReport.Name = "SubscribeReport";
+            SubscribeReport.Id = 15;
+            SubscribeReport.MinSize = 28;
+            SubscribeReport.Fields = new FieldInfo[3];
+            SubscribeReport.Fields[0] = RequestId;
+            SubscribeReport.Fields[1] = RequestState;
+            SubscribeReport.Fields[2] = Text;
         }
         
         static void ConstructAccountModelUpdate()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             FieldInfo Type = new FieldInfo();
-            Type.name = "Type";
-            Type.offset = 16;
-            Type.type = FieldType.Enum;
-            Type.enumInfo = Info.UpdateType;
-            Type.optional = false;
-            Type.repeatable = false;
+            Type.Name = "Type";
+            Type.Offset = 16;
+            Type.Type = FieldType.Enum;
+            Type.EnumInfo = Info.UpdateType;
+            Type.Optional = false;
+            Type.Repeatable = false;
             
             FieldInfo Item = new FieldInfo();
-            Item.name = "Item";
-            Item.offset = 20;
-            Item.type = FieldType.Group;
-            Item.groupInfo = Info.AccountModel;
-            Item.optional = false;
-            Item.repeatable = false;
+            Item.Name = "Item";
+            Item.Offset = 20;
+            Item.Type = FieldType.Group;
+            Item.GroupInfo = Info.AccountModel;
+            Item.Optional = false;
+            Item.Repeatable = false;
             
             AccountModelUpdate = new MessageInfo();
-            AccountModelUpdate.parentInfo = Update;
-            AccountModelUpdate.name = "AccountModelUpdate";
-            AccountModelUpdate.id = 16;
-            AccountModelUpdate.minSize = 36;
-            AccountModelUpdate.fields = new FieldInfo[3];
-            AccountModelUpdate.fields[0] = Id;
-            AccountModelUpdate.fields[1] = Type;
-            AccountModelUpdate.fields[2] = Item;
+            AccountModelUpdate.ParentInfo = Update;
+            AccountModelUpdate.Name = "AccountModelUpdate";
+            AccountModelUpdate.Id = 16;
+            AccountModelUpdate.MinSize = 36;
+            AccountModelUpdate.Fields = new FieldInfo[3];
+            AccountModelUpdate.Fields[0] = Id;
+            AccountModelUpdate.Fields[1] = Type;
+            AccountModelUpdate.Fields[2] = Item;
         }
         
         static void ConstructBotModelUpdate()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             FieldInfo Type = new FieldInfo();
-            Type.name = "Type";
-            Type.offset = 16;
-            Type.type = FieldType.Enum;
-            Type.enumInfo = Info.UpdateType;
-            Type.optional = false;
-            Type.repeatable = false;
+            Type.Name = "Type";
+            Type.Offset = 16;
+            Type.Type = FieldType.Enum;
+            Type.EnumInfo = Info.UpdateType;
+            Type.Optional = false;
+            Type.Repeatable = false;
             
             FieldInfo Item = new FieldInfo();
-            Item.name = "Item";
-            Item.offset = 20;
-            Item.type = FieldType.Group;
-            Item.groupInfo = Info.BotModel;
-            Item.optional = false;
-            Item.repeatable = false;
+            Item.Name = "Item";
+            Item.Offset = 20;
+            Item.Type = FieldType.Group;
+            Item.GroupInfo = Info.BotModel;
+            Item.Optional = false;
+            Item.Repeatable = false;
             
             BotModelUpdate = new MessageInfo();
-            BotModelUpdate.parentInfo = Update;
-            BotModelUpdate.name = "BotModelUpdate";
-            BotModelUpdate.id = 17;
-            BotModelUpdate.minSize = 66;
-            BotModelUpdate.fields = new FieldInfo[3];
-            BotModelUpdate.fields[0] = Id;
-            BotModelUpdate.fields[1] = Type;
-            BotModelUpdate.fields[2] = Item;
+            BotModelUpdate.ParentInfo = Update;
+            BotModelUpdate.Name = "BotModelUpdate";
+            BotModelUpdate.Id = 17;
+            BotModelUpdate.MinSize = 66;
+            BotModelUpdate.Fields = new FieldInfo[3];
+            BotModelUpdate.Fields[0] = Id;
+            BotModelUpdate.Fields[1] = Type;
+            BotModelUpdate.Fields[2] = Item;
         }
         
         static void ConstructPackageModelUpdate()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             FieldInfo Type = new FieldInfo();
-            Type.name = "Type";
-            Type.offset = 16;
-            Type.type = FieldType.Enum;
-            Type.enumInfo = Info.UpdateType;
-            Type.optional = false;
-            Type.repeatable = false;
+            Type.Name = "Type";
+            Type.Offset = 16;
+            Type.Type = FieldType.Enum;
+            Type.EnumInfo = Info.UpdateType;
+            Type.Optional = false;
+            Type.Repeatable = false;
             
             FieldInfo Item = new FieldInfo();
-            Item.name = "Item";
-            Item.offset = 20;
-            Item.type = FieldType.Group;
-            Item.groupInfo = Info.PackageModel;
-            Item.optional = false;
-            Item.repeatable = false;
+            Item.Name = "Item";
+            Item.Offset = 20;
+            Item.Type = FieldType.Group;
+            Item.GroupInfo = Info.PackageModel;
+            Item.Optional = false;
+            Item.Repeatable = false;
             
             PackageModelUpdate = new MessageInfo();
-            PackageModelUpdate.parentInfo = Update;
-            PackageModelUpdate.name = "PackageModelUpdate";
-            PackageModelUpdate.id = 18;
-            PackageModelUpdate.minSize = 44;
-            PackageModelUpdate.fields = new FieldInfo[3];
-            PackageModelUpdate.fields[0] = Id;
-            PackageModelUpdate.fields[1] = Type;
-            PackageModelUpdate.fields[2] = Item;
+            PackageModelUpdate.ParentInfo = Update;
+            PackageModelUpdate.Name = "PackageModelUpdate";
+            PackageModelUpdate.Id = 18;
+            PackageModelUpdate.MinSize = 44;
+            PackageModelUpdate.Fields = new FieldInfo[3];
+            PackageModelUpdate.Fields[0] = Id;
+            PackageModelUpdate.Fields[1] = Type;
+            PackageModelUpdate.Fields[2] = Item;
         }
         
         static void ConstructBotStateUpdate()
         {
             FieldInfo Id = new FieldInfo();
-            Id.name = "Id";
-            Id.offset = 8;
-            Id.type = FieldType.String;
-            Id.optional = false;
-            Id.repeatable = false;
+            Id.Name = "Id";
+            Id.Offset = 8;
+            Id.Type = FieldType.String;
+            Id.Optional = false;
+            Id.Repeatable = false;
             
             FieldInfo Type = new FieldInfo();
-            Type.name = "Type";
-            Type.offset = 16;
-            Type.type = FieldType.Enum;
-            Type.enumInfo = Info.UpdateType;
-            Type.optional = false;
-            Type.repeatable = false;
+            Type.Name = "Type";
+            Type.Offset = 16;
+            Type.Type = FieldType.Enum;
+            Type.EnumInfo = Info.UpdateType;
+            Type.Optional = false;
+            Type.Repeatable = false;
             
             FieldInfo BotId = new FieldInfo();
-            BotId.name = "BotId";
-            BotId.offset = 20;
-            BotId.type = FieldType.UString;
-            BotId.optional = false;
-            BotId.repeatable = false;
+            BotId.Name = "BotId";
+            BotId.Offset = 20;
+            BotId.Type = FieldType.UString;
+            BotId.Optional = false;
+            BotId.Repeatable = false;
             
             FieldInfo State = new FieldInfo();
-            State.name = "State";
-            State.offset = 28;
-            State.type = FieldType.Enum;
-            State.enumInfo = Info.BotState;
-            State.optional = false;
-            State.repeatable = false;
+            State.Name = "State";
+            State.Offset = 28;
+            State.Type = FieldType.Enum;
+            State.EnumInfo = Info.BotState;
+            State.Optional = false;
+            State.Repeatable = false;
             
             BotStateUpdate = new MessageInfo();
-            BotStateUpdate.parentInfo = Update;
-            BotStateUpdate.name = "BotStateUpdate";
-            BotStateUpdate.id = 19;
-            BotStateUpdate.minSize = 32;
-            BotStateUpdate.fields = new FieldInfo[4];
-            BotStateUpdate.fields[0] = Id;
-            BotStateUpdate.fields[1] = Type;
-            BotStateUpdate.fields[2] = BotId;
-            BotStateUpdate.fields[3] = State;
+            BotStateUpdate.ParentInfo = Update;
+            BotStateUpdate.Name = "BotStateUpdate";
+            BotStateUpdate.Id = 19;
+            BotStateUpdate.MinSize = 32;
+            BotStateUpdate.Fields = new FieldInfo[4];
+            BotStateUpdate.Fields[0] = Id;
+            BotStateUpdate.Fields[1] = Type;
+            BotStateUpdate.Fields[2] = BotId;
+            BotStateUpdate.Fields[3] = State;
         }
-        
-        
-        
-        
-        
-        
         
         static void ConstructBotAgent()
         {
             BotAgent = new ProtocolInfo();
-            BotAgent.name = "BotAgent";
-            BotAgent.majorVersion = 1;
-            BotAgent.minorVersion = 1;
+            BotAgent.Name = "BotAgent";
+            BotAgent.MajorVersion = 1;
+            BotAgent.MinorVersion = 1;
             BotAgent.AddMessageInfo(LoginRequest);
             BotAgent.AddMessageInfo(LoginReport);
             BotAgent.AddMessageInfo(LoginReject);
@@ -7845,23 +7833,39 @@ namespace SoftFX.Net.BotAgent
         {
             lock (stateMutex_)
             {
+                if (connected_)
+                    throw new Exception(string.Format("Session is not inactive : {0}({1})", coreSession_.Name, coreSession_.Guid));
+                
                 connectContext_ = context;
                 coreSession_.Connect(address);
+                
                 connected_ = true;
             }
         }
         
-        public void Disconnect(DisconnectClientContext context, string text)
+        public bool Disconnect(DisconnectClientContext context, string text)
         {
+            bool result;
+            
             lock (stateMutex_)
             {
                 if (connected_)
                 {
                     connected_ = false;
-                    disconnectContext_ = context;
-                    coreSession_.Disconnect(text);
+                    
+                    if (coreSession_.Disconnect(text))
+                    {
+                        disconnectContext_ = context;
+                        result = true;
+                    }
+                    else
+                        result = false;
                 }
+                else
+                    result = false;
             }
+            
+            return result;
         }
         
         public void Join()
@@ -7902,9 +7906,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSendLoginRequest(context, message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -7928,9 +7929,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSendLogoutRequest(context, message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -7972,9 +7970,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSend(message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -8016,9 +8011,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSend(message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -8060,9 +8052,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSend(message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -8104,9 +8093,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSend(message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -8208,9 +8194,6 @@ namespace SoftFX.Net.BotAgent
                 Client:
                 
                 ClientProcessor_.PostprocessSend(message);
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
             }
         }
         
@@ -8376,7 +8359,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 199_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 199_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -8388,7 +8371,7 @@ namespace SoftFX.Net.BotAgent
                     if (Is.LoginRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 199_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 199_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8406,7 +8389,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 199_9 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 199_9 : {0}", message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8422,7 +8405,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 201_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 201_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -8431,7 +8414,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 201_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 201_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -8440,7 +8423,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 201_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 201_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8493,7 +8476,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 201_13 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 201_13 : {0}", message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8513,7 +8496,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 210_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 210_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -8542,7 +8525,7 @@ namespace SoftFX.Net.BotAgent
                     if (Is.LogoutRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 210_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 210_9 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8613,7 +8596,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 210_9 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 210_9 : {0}", message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8629,7 +8612,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 228_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 228_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -8638,7 +8621,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 228_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 228_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -8647,7 +8630,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 228_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 228_13 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8702,7 +8685,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 228_13 : {0}", message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 228_13 : {0}", message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8722,6 +8705,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 0 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLoginRequest(LoginRequestClientContext context, LoginRequest message)
@@ -8730,6 +8714,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 0 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSendLogoutRequest(LogoutRequestClientContext context, LogoutRequest message)
@@ -8738,6 +8723,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Client() : 0 : {2}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8746,6 +8732,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Client() : 0 : {0}", message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8831,7 +8818,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientUpdate({2}) : 294_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientUpdate({2}) : 294_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8916,7 +8903,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientUpdate({0}) : 294_9 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientUpdate({0}) : 294_9 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -8932,6 +8919,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientUpdate({2}) : 0 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -8940,6 +8928,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientUpdate({0}) : 0 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -9151,7 +9140,7 @@ namespace SoftFX.Net.BotAgent
                     if (Is.SubscribeRequest(message))
                         return;
                     
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 333_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 333_9 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -9199,7 +9188,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 333_9 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 333_9 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -9215,7 +9204,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
@@ -9224,7 +9213,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
@@ -9233,7 +9222,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -9242,7 +9231,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -9251,7 +9240,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 335_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -9282,7 +9271,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 335_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 335_13 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -9302,7 +9291,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
@@ -9311,7 +9300,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
@@ -9320,7 +9309,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -9329,7 +9318,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -9338,7 +9327,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 341_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -9369,7 +9358,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 341_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 341_13 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -9389,7 +9378,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
@@ -9398,7 +9387,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
@@ -9407,7 +9396,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -9416,7 +9405,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -9425,7 +9414,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 347_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -9456,7 +9445,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 347_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 347_13 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -9476,7 +9465,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
@@ -9485,7 +9474,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
@@ -9494,7 +9483,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -9503,7 +9492,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -9512,7 +9501,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
-                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 353_13 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -9543,7 +9532,7 @@ namespace SoftFX.Net.BotAgent
                         return;
                     }
                     
-                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 353_13 : {1}", processor_.id_, message.Info.name));
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 353_13 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -9563,6 +9552,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 0 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendAccountListRequest(AccountListRequestClientContext context, AccountListRequest message)
@@ -9571,6 +9561,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 0 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendBotListRequest(BotListRequestClientContext context, BotListRequest message)
@@ -9579,6 +9570,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 0 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendPackageListRequest(PackageListRequestClientContext context, PackageListRequest message)
@@ -9587,6 +9579,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 0 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSendSubscribeRequest(SubscribeRequestClientContext context, SubscribeRequest message)
@@ -9595,6 +9588,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void PreprocessSend(Message message)
                 {
+                    throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ClientRequest({2}) : 0 : {3}", processor_.session_.coreSession_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                 }
                 
                 public override void PostprocessSend(Message message)
@@ -9603,6 +9597,7 @@ namespace SoftFX.Net.BotAgent
                 
                 public override void ProcessReceive(Message message)
                 {
+                    processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ClientRequest({0}) : 0 : {1}", processor_.id_, message.Info.Name));
                 }
                 
                 public override void ProcessDisconnect(List<ClientContext> contextList)
@@ -10057,220 +10052,298 @@ namespace SoftFX.Net.BotAgent
         
         void OnCoreConnect()
         {
-            ConnectClientContext connectContext;
-            
-            lock (stateMutex_)
+            try
             {
-                ClientProcessor_ = new ClientProcessor(this);
+                ConnectClientContext connectContext;
                 
-                ClientUpdateProcessorDictionary_ = new SortedDictionary<string, ClientUpdateProcessor>();
+                lock (stateMutex_)
+                {
+                    ClientProcessor_ = new ClientProcessor(this);
+                    
+                    ClientUpdateProcessorDictionary_ = new SortedDictionary<string, ClientUpdateProcessor>();
+                    
+                    ClientRequestProcessorDictionary_ = new SortedDictionary<string, ClientRequestProcessor>();
+                    
+                    connectContext = connectContext_;
+                    connectContext_ = null;
+                }
                 
-                ClientRequestProcessorDictionary_ = new SortedDictionary<string, ClientRequestProcessor>();
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
-                
-                connectContext = connectContext_;
-                connectContext_ = null;
+                if (connectContext != null)
+                {
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnConnect(this, connectContext);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    connectContext.SetCompleted();
+                }
+                else
+                {
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnConnect(this);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
             }
-            
-            if (listener_ != null)
+            catch (Exception exception)
             {
-                try
-                {
-                    listener_.OnConnect(this, connectContext);
-                }
-                catch
-                {
-                }
+                coreSession_.LogError(exception.Message);
             }
-            
-            if (connectContext != null)
-                connectContext.SetCompleted();
         }
         
         void OnCoreConnectError(string text)
         {
-            ConnectClientContext connectContext;
-            
-            lock (stateMutex_)
+            try
             {
-                connectContext = connectContext_;
-                connectContext_ = null;
+                ConnectClientContext connectContext;
+                
+                lock (stateMutex_)
+                {
+                    connectContext = connectContext_;
+                    connectContext_ = null;
+                }
+                
+                if (connectContext != null)
+                {
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnConnectError(this, connectContext, text);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    connectContext.SetCompleted();
+                }
+                else
+                {
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnConnectError(this, text);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
             }
-            
-            if (listener_ != null)
+            catch (Exception exception)
             {
-                try
-                {
-                    listener_.OnConnectError(this, connectContext, text);
-                }
-                catch
-                {
-                }
+                coreSession_.LogError(exception.Message);
             }
-            
-            if (connectContext != null)
-                connectContext.SetCompleted();
         }
         
         void OnCoreDisconnect(string text)
         {
-            DisconnectClientContext disconnectContext;
-            List<ClientContext> contexList = new List<ClientContext>();
-            
-            lock (stateMutex_)
+            try
             {
-                disconnectContext = disconnectContext_;
-                disconnectContext_ = null;
+                DisconnectClientContext disconnectContext;
+                List<ClientContext> contexList = new List<ClientContext>();
                 
-                foreach(var processor in ClientUpdateProcessorDictionary_)
-                    processor.Value.ProcessDisconnect(contexList);
+                lock (stateMutex_)
+                {
+                    disconnectContext = disconnectContext_;
+                    disconnectContext_ = null;
+                    
+                    foreach(var processor in ClientUpdateProcessorDictionary_)
+                        processor.Value.ProcessDisconnect(contexList);
+                    
+                    ClientUpdateProcessorDictionary_ = null;
+                    
+                    foreach(var processor in ClientRequestProcessorDictionary_)
+                        processor.Value.ProcessDisconnect(contexList);
+                    
+                    ClientRequestProcessorDictionary_ = null;
+                    
+                    ClientProcessor_.ProcessDisconnect(contexList);
+                    ClientProcessor_ = null;
+                }
                 
-                ClientUpdateProcessorDictionary_ = null;
-                
-                foreach(var processor in ClientRequestProcessorDictionary_)
-                    processor.Value.ProcessDisconnect(contexList);
-                
-                ClientRequestProcessorDictionary_ = null;
-                
-                ClientProcessor_.ProcessDisconnect(contexList);
-                ClientProcessor_ = null;
+                if (disconnectContext != null)
+                {
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnDisconnect(this, disconnectContext, contexList.ToArray(), text);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    foreach (ClientContext context in contexList)
+                        context.SetCompleted();
+                    
+                    disconnectContext.SetCompleted();
+                }
+                else
+                {
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnDisconnect(this, contexList.ToArray(), text);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    foreach (ClientContext context in contexList)
+                        context.SetCompleted();
+                }
             }
-            
-            if (listener_ != null)
+            catch (Exception exception)
             {
-                try
-                {
-                    listener_.OnDisconnect(this, disconnectContext, contexList.ToArray(), text);
-                }
-                catch
-                {
-                }
+                coreSession_.LogError(exception.Message);
             }
-            
-            foreach (ClientContext context in contexList)
-                context.SetDisconnected(text);
-            
-            if (disconnectContext != null)
-                disconnectContext.SetCompleted();
         }
         
         void OnCoreReceive(Message message)
         {
-            lock (stateMutex_)
+            try
             {
-                ClientProcessor_.ProcessReceive(message);
-                
-                if (Is.Update(message))
+                lock (stateMutex_)
                 {
-                    Update Update = Cast.Update(message);
+                    ClientProcessor_.ProcessReceive(message);
                     
-                    string key = Update.Id;
-                    ClientUpdateProcessor ClientUpdateProcessor;
-                    
-                    if (! ClientUpdateProcessorDictionary_.TryGetValue(key, out ClientUpdateProcessor))
+                    if (Is.Update(message))
                     {
-                        ClientUpdateProcessor = new ClientUpdateProcessor(this, key);
-                        ClientUpdateProcessorDictionary_.Add(key, ClientUpdateProcessor);
+                        Update Update = Cast.Update(message);
+                        
+                        string key = Update.Id;
+                        ClientUpdateProcessor ClientUpdateProcessor;
+                        
+                        if (! ClientUpdateProcessorDictionary_.TryGetValue(key, out ClientUpdateProcessor))
+                        {
+                            ClientUpdateProcessor = new ClientUpdateProcessor(this, key);
+                            ClientUpdateProcessorDictionary_.Add(key, ClientUpdateProcessor);
+                        }
+                        
+                        ClientUpdateProcessor.ProcessReceive(message);
+                        
+                        ClientUpdate:
+                        
+                        if (ClientUpdateProcessor.Completed)
+                            ClientUpdateProcessorDictionary_.Remove(key);
+                        
+                        goto Client;
                     }
                     
-                    ClientUpdateProcessor.ProcessReceive(message);
-                    
-                    ClientUpdate:
-                    
-                    if (ClientUpdateProcessor.Completed)
-                        ClientUpdateProcessorDictionary_.Remove(key);
-                    
-                    goto Client;
-                }
-                
-                if (Is.Request(message))
-                {
-                    Request Request = Cast.Request(message);
-                    
-                    string key = Request.Id;
-                    ClientRequestProcessor ClientRequestProcessor;
-                    
-                    if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                    if (Is.Request(message))
                     {
-                        ClientRequestProcessor = new ClientRequestProcessor(this, key);
-                        ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                        Request Request = Cast.Request(message);
+                        
+                        string key = Request.Id;
+                        ClientRequestProcessor ClientRequestProcessor;
+                        
+                        if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                        {
+                            ClientRequestProcessor = new ClientRequestProcessor(this, key);
+                            ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                        }
+                        
+                        ClientRequestProcessor.ProcessReceive(message);
+                        
+                        ClientRequest:
+                        
+                        if (ClientRequestProcessor.Completed)
+                            ClientRequestProcessorDictionary_.Remove(key);
+                        
+                        goto Client;
                     }
                     
-                    ClientRequestProcessor.ProcessReceive(message);
-                    
-                    ClientRequest:
-                    
-                    if (ClientRequestProcessor.Completed)
-                        ClientRequestProcessorDictionary_.Remove(key);
-                    
-                    goto Client;
-                }
-                
-                if (Is.Report(message))
-                {
-                    Report Report = Cast.Report(message);
-                    
-                    string key = Report.RequestId;
-                    ClientRequestProcessor ClientRequestProcessor;
-                    
-                    if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                    if (Is.Report(message))
                     {
-                        ClientRequestProcessor = new ClientRequestProcessor(this, key);
-                        ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                        Report Report = Cast.Report(message);
+                        
+                        string key = Report.RequestId;
+                        ClientRequestProcessor ClientRequestProcessor;
+                        
+                        if (! ClientRequestProcessorDictionary_.TryGetValue(key, out ClientRequestProcessor))
+                        {
+                            ClientRequestProcessor = new ClientRequestProcessor(this, key);
+                            ClientRequestProcessorDictionary_.Add(key, ClientRequestProcessor);
+                        }
+                        
+                        ClientRequestProcessor.ProcessReceive(message);
+                        
+                        ClientRequest:
+                        
+                        if (ClientRequestProcessor.Completed)
+                            ClientRequestProcessorDictionary_.Remove(key);
+                        
+                        goto Client;
                     }
                     
-                    ClientRequestProcessor.ProcessReceive(message);
-                    
-                    ClientRequest:
-                    
-                    if (ClientRequestProcessor.Completed)
-                        ClientRequestProcessorDictionary_.Remove(key);
-                    
-                    goto Client;
+                    Client:
+                    ;
                 }
                 
-                Client:
-                
-                if (ClientProcessor_.Completed)
-                    coreSession_.Disconnect("Client disconnect");
+                if (event_ != null)
+                {
+                    event_.Dispatch();
+                    event_ = null;
+                }
+                else
+                {
+                    if (coreSession_.LogEvents)
+                        coreSession_.LogEvent("OnReceive({0})", message.ToString());
+                    
+                    if (listener_ != null)
+                    {
+                        try
+                        {
+                            listener_.OnReceive(this, message);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
             }
-            
-            if (event_ != null)
+            catch (Exception exception)
             {
-                event_.Dispatch();
-                event_ = null;
+                coreSession_.LogError(exception.Message);
             }
-            else
+        }
+        
+        void OnCoreSend()
+        {
+            try
             {
-                if (coreSession_.LogEvents)
-                    coreSession_.LogEvent("OnReceive({0})", message.ToString());
-                
                 if (listener_ != null)
                 {
                     try
                     {
-                        listener_.OnReceive(this, message);
+                        listener_.OnSend(this);
                     }
                     catch
                     {
                     }
                 }
             }
-        }
-        
-        void OnCoreSend()
-        {
-            if (listener_ != null)
+            catch (Exception exception)
             {
-                try
-                {
-                    listener_.OnSend(this);
-                }
-                catch
-                {
-                }
+                coreSession_.LogError(exception.Message);
             }
         }
         
@@ -10310,11 +10383,23 @@ namespace SoftFX.Net.BotAgent
         {
         }
         
+        public virtual void OnConnect(ClientSession clientSession)
+        {
+        }
+        
         public virtual void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext, string text)
         {
         }
         
+        public virtual void OnConnectError(ClientSession clientSession, string text)
+        {
+        }
+        
         public virtual void OnDisconnect(ClientSession clientSession, DisconnectClientContext disconnectContext, ClientContext[] contexts, string text)
+        {
+        }
+        
+        public virtual void OnDisconnect(ClientSession clientSession, ClientContext[] contexts, string text)
         {
         }
         
@@ -10781,9 +10866,6 @@ namespace SoftFX.Net.BotAgent
                     Server:
                     
                     ServerProcessor_.PostprocessSend(message);
-                    
-                    if (ServerProcessor_.Completed)
-                        coreSession_.Disconnect("Server disconnect");
                 }
             }
             
@@ -10881,7 +10963,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void PreprocessSend(Message message)
                     {
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 245_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 245_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -10909,7 +10991,7 @@ namespace SoftFX.Net.BotAgent
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 245_9 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 245_9 : {0}", message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -10931,7 +11013,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LoginReject(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 247_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 247_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -10959,7 +11041,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 247_13 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 247_13 : {0}", message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -10984,7 +11066,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LogoutReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 256_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 256_9 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11053,7 +11135,7 @@ namespace SoftFX.Net.BotAgent
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 256_9 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 256_9 : {0}", message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11078,7 +11160,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.LogoutReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 274_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 274_13 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11116,7 +11198,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 274_13 : {0}", message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 274_13 : {0}", message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11132,6 +11214,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void PreprocessSend(Message message)
                     {
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : Server() : 0 : {2}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11140,6 +11223,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : Server() : 0 : {0}", message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11237,7 +11321,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.BotStateUpdate(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerUpdate({2}) : 313_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerUpdate({2}) : 313_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11285,7 +11369,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerUpdate({0}) : 313_9 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerUpdate({0}) : 313_9 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11301,6 +11385,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void PreprocessSend(Message message)
                     {
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerUpdate({2}) : 0 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11309,6 +11394,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerUpdate({0}) : 0 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11396,7 +11482,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void PreprocessSend(Message message)
                     {
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 365_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 365_9 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11481,7 +11567,7 @@ namespace SoftFX.Net.BotAgent
                             return;
                         }
                         
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 365_9 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 365_9 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11500,7 +11586,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.AccountListReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 367_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 367_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11518,7 +11604,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 367_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 367_13 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11537,7 +11623,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.BotListReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 373_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 373_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11555,7 +11641,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 373_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 373_13 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11574,7 +11660,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.PackageListReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 379_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 379_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11592,7 +11678,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 379_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 379_13 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11611,7 +11697,7 @@ namespace SoftFX.Net.BotAgent
                         if (Is.SubscribeReport(message))
                             return;
                         
-                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 385_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.name));
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 385_13 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11629,7 +11715,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
-                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 385_13 : {1}", processor_.id_, message.Info.name));
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 385_13 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11645,6 +11731,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void PreprocessSend(Message message)
                     {
+                        throw new UnexpectedMessageException(string.Format("Session unexpected message : {0}({1}) : ServerRequest({2}) : 0 : {3}", processor_.session_.server_.coreServer_.Name, processor_.session_.coreSession_.Guid, processor_.id_, message.Info.Name));
                     }
                     
                     public override void PostprocessSend(Message message)
@@ -11653,6 +11740,7 @@ namespace SoftFX.Net.BotAgent
                     
                     public override void ProcessReceive(Message message)
                     {
+                        processor_.session_.coreSession_.Disconnect(string.Format("Unexpected message : ServerRequest({0}) : 0 : {1}", processor_.id_, message.Info.Name));
                     }
                     
                     public override void ProcessDisconnect(List<ServerContext> contextList)
@@ -11855,180 +11943,202 @@ namespace SoftFX.Net.BotAgent
             
             internal void OnCoreConnect()
             {
-                lock (stateMutex_)
+                try
                 {
-                    ServerProcessor_ = new ServerProcessor(this);
-                    
-                    ServerUpdateProcessorDictionary_ = new SortedDictionary<string, ServerUpdateProcessor>();
-                    
-                    ServerRequestProcessorDictionary_ = new SortedDictionary<string, ServerRequestProcessor>();
-                    
-                    if (ServerProcessor_.Completed)
-                        coreSession_.Disconnect("Server disconnect");
-                }
-                
-                if (server_.listener_ != null)
-                {
-                    try
+                    lock (stateMutex_)
                     {
-                        server_.listener_.OnConnect(server_, this);
+                        ServerProcessor_ = new ServerProcessor(this);
+                        
+                        ServerUpdateProcessorDictionary_ = new SortedDictionary<string, ServerUpdateProcessor>();
+                        
+                        ServerRequestProcessorDictionary_ = new SortedDictionary<string, ServerRequestProcessor>();
                     }
-                    catch
-                    {
-                    }
-                }
-            }
-            
-            internal void OnCoreDisconnect(string text)
-            {
-                List<ServerContext> contexList = new List<ServerContext>();
-                
-                lock (stateMutex_)
-                {
-                    foreach(var processor in ServerUpdateProcessorDictionary_)
-                        processor.Value.ProcessDisconnect(contexList);
-                    
-                    ServerUpdateProcessorDictionary_ = null;
-                    
-                    foreach(var processor in ServerRequestProcessorDictionary_)
-                        processor.Value.ProcessDisconnect(contexList);
-                    
-                    ServerRequestProcessorDictionary_ = null;
-                    
-                    ServerProcessor_.ProcessDisconnect(contexList);
-                    ServerProcessor_ = null;
-                }
-                
-                if (server_.listener_ != null)
-                {
-                    try
-                    {
-                        server_.listener_.OnDisconnect(server_, this, contexList.ToArray(), text);
-                    }
-                    catch
-                    {
-                    }
-                }
-                
-                foreach (ServerContext context in contexList)
-                    context.SetDisconnected(text);
-            }
-            
-            internal void OnCoreReceive(Message message)
-            {
-                lock (stateMutex_)
-                {
-                    ServerProcessor_.ProcessReceive(message);
-                    
-                    if (Is.Update(message))
-                    {
-                        Update Update = Cast.Update(message);
-                        
-                        string key = Update.Id;
-                        ServerUpdateProcessor ServerUpdateProcessor;
-                        
-                        if (! ServerUpdateProcessorDictionary_.TryGetValue(key, out ServerUpdateProcessor))
-                        {
-                            ServerUpdateProcessor = new ServerUpdateProcessor(this, key);
-                            ServerUpdateProcessorDictionary_.Add(key, ServerUpdateProcessor);
-                        }
-                        
-                        ServerUpdateProcessor.ProcessReceive(message);
-                        
-                        ServerUpdate:
-                        
-                        if (ServerUpdateProcessor.Completed)
-                            ServerUpdateProcessorDictionary_.Remove(key);
-                        
-                        goto Server;
-                    }
-                    
-                    if (Is.Request(message))
-                    {
-                        Request Request = Cast.Request(message);
-                        
-                        string key = Request.Id;
-                        ServerRequestProcessor ServerRequestProcessor;
-                        
-                        if (! ServerRequestProcessorDictionary_.TryGetValue(key, out ServerRequestProcessor))
-                        {
-                            ServerRequestProcessor = new ServerRequestProcessor(this, key);
-                            ServerRequestProcessorDictionary_.Add(key, ServerRequestProcessor);
-                        }
-                        
-                        ServerRequestProcessor.ProcessReceive(message);
-                        
-                        ServerRequest:
-                        
-                        if (ServerRequestProcessor.Completed)
-                            ServerRequestProcessorDictionary_.Remove(key);
-                        
-                        goto Server;
-                    }
-                    
-                    if (Is.Report(message))
-                    {
-                        Report Report = Cast.Report(message);
-                        
-                        string key = Report.RequestId;
-                        ServerRequestProcessor ServerRequestProcessor;
-                        
-                        if (! ServerRequestProcessorDictionary_.TryGetValue(key, out ServerRequestProcessor))
-                        {
-                            ServerRequestProcessor = new ServerRequestProcessor(this, key);
-                            ServerRequestProcessorDictionary_.Add(key, ServerRequestProcessor);
-                        }
-                        
-                        ServerRequestProcessor.ProcessReceive(message);
-                        
-                        ServerRequest:
-                        
-                        if (ServerRequestProcessor.Completed)
-                            ServerRequestProcessorDictionary_.Remove(key);
-                        
-                        goto Server;
-                    }
-                    
-                    Server:
-                    
-                    if (ServerProcessor_.Completed)
-                        coreSession_.Disconnect("Server disconnect");
-                }
-                
-                if (event_ != null)
-                {
-                    event_.Dispatch();
-                    event_ = null;
-                }
-                else
-                {
-                    if (coreSession_.LogEvents)
-                        coreSession_.LogEvent("OnReceive({0})", message.ToString());
                     
                     if (server_.listener_ != null)
                     {
                         try
                         {
-                            server_.listener_.OnReceive(server_, this, message);
+                            server_.listener_.OnConnect(server_, this);
                         }
                         catch
                         {
                         }
                     }
                 }
+                catch
+                {
+                }
+            }
+            
+            internal void OnCoreDisconnect(string text)
+            {
+                try
+                {
+                    List<ServerContext> contexList = new List<ServerContext>();
+                    
+                    lock (stateMutex_)
+                    {
+                        foreach(var processor in ServerUpdateProcessorDictionary_)
+                            processor.Value.ProcessDisconnect(contexList);
+                        
+                        ServerUpdateProcessorDictionary_ = null;
+                        
+                        foreach(var processor in ServerRequestProcessorDictionary_)
+                            processor.Value.ProcessDisconnect(contexList);
+                        
+                        ServerRequestProcessorDictionary_ = null;
+                        
+                        ServerProcessor_.ProcessDisconnect(contexList);
+                        ServerProcessor_ = null;
+                    }
+                    
+                    if (server_.listener_ != null)
+                    {
+                        try
+                        {
+                            server_.listener_.OnDisconnect(server_, this, contexList.ToArray(), text);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    
+                    foreach (ServerContext context in contexList)
+                        context.SetCompleted();
+                }
+                catch (Exception exception)
+                {
+                    coreSession_.LogError(exception.Message);
+                }
+            }
+            
+            internal void OnCoreReceive(Message message)
+            {
+                try
+                {
+                    lock (stateMutex_)
+                    {
+                        ServerProcessor_.ProcessReceive(message);
+                        
+                        if (Is.Update(message))
+                        {
+                            Update Update = Cast.Update(message);
+                            
+                            string key = Update.Id;
+                            ServerUpdateProcessor ServerUpdateProcessor;
+                            
+                            if (! ServerUpdateProcessorDictionary_.TryGetValue(key, out ServerUpdateProcessor))
+                            {
+                                ServerUpdateProcessor = new ServerUpdateProcessor(this, key);
+                                ServerUpdateProcessorDictionary_.Add(key, ServerUpdateProcessor);
+                            }
+                            
+                            ServerUpdateProcessor.ProcessReceive(message);
+                            
+                            ServerUpdate:
+                            
+                            if (ServerUpdateProcessor.Completed)
+                                ServerUpdateProcessorDictionary_.Remove(key);
+                            
+                            goto Server;
+                        }
+                        
+                        if (Is.Request(message))
+                        {
+                            Request Request = Cast.Request(message);
+                            
+                            string key = Request.Id;
+                            ServerRequestProcessor ServerRequestProcessor;
+                            
+                            if (! ServerRequestProcessorDictionary_.TryGetValue(key, out ServerRequestProcessor))
+                            {
+                                ServerRequestProcessor = new ServerRequestProcessor(this, key);
+                                ServerRequestProcessorDictionary_.Add(key, ServerRequestProcessor);
+                            }
+                            
+                            ServerRequestProcessor.ProcessReceive(message);
+                            
+                            ServerRequest:
+                            
+                            if (ServerRequestProcessor.Completed)
+                                ServerRequestProcessorDictionary_.Remove(key);
+                            
+                            goto Server;
+                        }
+                        
+                        if (Is.Report(message))
+                        {
+                            Report Report = Cast.Report(message);
+                            
+                            string key = Report.RequestId;
+                            ServerRequestProcessor ServerRequestProcessor;
+                            
+                            if (! ServerRequestProcessorDictionary_.TryGetValue(key, out ServerRequestProcessor))
+                            {
+                                ServerRequestProcessor = new ServerRequestProcessor(this, key);
+                                ServerRequestProcessorDictionary_.Add(key, ServerRequestProcessor);
+                            }
+                            
+                            ServerRequestProcessor.ProcessReceive(message);
+                            
+                            ServerRequest:
+                            
+                            if (ServerRequestProcessor.Completed)
+                                ServerRequestProcessorDictionary_.Remove(key);
+                            
+                            goto Server;
+                        }
+                        
+                        Server:
+                        ;
+                    }
+                    
+                    if (event_ != null)
+                    {
+                        event_.Dispatch();
+                        event_ = null;
+                    }
+                    else
+                    {
+                        if (coreSession_.LogEvents)
+                            coreSession_.LogEvent("OnReceive({0})", message.ToString());
+                        
+                        if (server_.listener_ != null)
+                        {
+                            try
+                            {
+                                server_.listener_.OnReceive(server_, this, message);
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    coreSession_.LogError(exception.Message);
+                }
             }
             
             internal void OnCoreSend()
             {
-                if (server_.listener_ != null)
+                try
                 {
-                    try
+                    if (server_.listener_ != null)
                     {
-                        server_.listener_.OnSend(server_, this);
+                        try
+                        {
+                            server_.listener_.OnSend(server_, this);
+                        }
+                        catch
+                        {
+                        }
                     }
-                    catch
-                    {
-                    }
+                }
+                catch (Exception exception)
+                {
+                    coreSession_.LogError(exception.Message);
                 }
             }
             

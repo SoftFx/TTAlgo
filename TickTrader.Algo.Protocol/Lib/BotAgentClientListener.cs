@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Protocol.Lib
         }
 
 
-        public override void OnConnect(ClientSession clientSession, ConnectClientContext connectContext)
+        public override void OnConnect(ClientSession clientSession)
         {
             try
             {
@@ -41,7 +41,12 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
-        public override void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext, string text)
+        public override void OnConnect(ClientSession clientSession, ConnectClientContext connectContext)
+        {
+            OnConnect(clientSession);
+        }
+
+        public override void OnConnectError(ClientSession clientSession, string text)
         {
             try
             {
@@ -54,7 +59,12 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
-        public override void OnDisconnect(ClientSession clientSession, DisconnectClientContext disconnectContext, ClientContext[] contexts, string text)
+        public override void OnConnectError(ClientSession clientSession, ConnectClientContext connectContext, string text)
+        {
+            OnConnectError(clientSession, text);
+        }
+
+        public override void OnDisconnect(ClientSession clientSession, ClientContext[] contexts, string text)
         {
             try
             {
@@ -65,6 +75,11 @@ namespace TickTrader.Algo.Protocol.Lib
             {
                 _logger.Error(ex, $"Listener failure {clientSession.Guid}: {ex.Message}");
             }
+        }
+
+        public override void OnDisconnect(ClientSession clientSession, DisconnectClientContext disconnectContext, ClientContext[] contexts, string text)
+        {
+            OnDisconnect(clientSession, contexts, text);
         }
 
         public override void OnLoginReport(ClientSession session, LoginRequestClientContext LoginRequestClientContext, LoginReport message)
