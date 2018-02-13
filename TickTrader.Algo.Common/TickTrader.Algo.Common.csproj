@@ -123,7 +123,7 @@
     <Compile Include="Model.Interop\FdkInterop.cs" />
     <Compile Include="Model.Interop\OrderInteropResult.cs" />
     <Compile Include="Model.Interop\SfxTaskAdapter.cs" />
-    <Compile Include="Model.Interop\SliceBuffer.cs" />
+    <Compile Include="Model.Interop\TimeSlicer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
     <Compile Include="Model.Interop\SfxInterop.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />

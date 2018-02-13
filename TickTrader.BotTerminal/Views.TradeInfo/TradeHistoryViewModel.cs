@@ -309,6 +309,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private bool MatchesCurrentFilter(TradeReportEntity tradeTransaction)
+        {
+            if (tradeTransaction.ActionType == TradeExecActions.OrderCanceled && _skipCancel)
+                return false;
+            return MatchesCurrentBoundaries(tradeTransaction.CloseTime);
+        }
+
         private bool MatchesCurrentBoundaries(DateTime reportTime)
         {
             var localTime = reportTime.ToLocalTime();
@@ -395,7 +402,7 @@ namespace TickTrader.BotTerminal
 
         private void OnReport(TradeReportEntity tradeTransaction)
         {
-            if (MatchesCurrentBoundaries(tradeTransaction.CloseTime))
+            if (MatchesCurrentFilter(tradeTransaction))
                 AddToList(CreateReportModel(tradeTransaction));
         }
 

@@ -32,18 +32,41 @@ namespace ActorSharp
         {
             lock (_writeLock)
             {
-                while (_writePage1.Count >= maxPageSize && !_isClosed)
-                    Monitor.Wait(_writeLock);
+                WaitWrite();
 
                 if (_isClosed)
                     return false;
 
                 _writePage1.Add(item);
 
-                if (_writePage2.Count == 0) // reader is empty
-                    SendNextPage();
+                TrySend();
 
                 return true;
+            }
+        }
+
+        public bool WriteAll(IEnumerable<T> items)
+        {
+            var e = items.GetEnumerator();
+
+            while (true)
+            {
+                lock (_writeLock)
+                {
+                    WaitWrite();
+
+                    if (_isClosed)
+                        return false;
+
+                    while (_writePage1.Count < maxPageSize)
+                    {
+                        if (!e.MoveNext())
+                            return true;
+                        _writePage1.Add(e.Current);
+                    }
+
+                    TrySend();
+                }
             }
         }
 
@@ -61,6 +84,13 @@ namespace ActorSharp
         {
             lock (_writeLock)
             {
+                if (_isClosed)
+                {
+                    while (!_isCloseCompleted)
+                        Monitor.Wait(_writeLock);
+                    return;
+                }
+
                 _isClosed = true;
 
                 if (_writePage1.Count == 0 && _writePage2.Count == 0)
@@ -71,10 +101,24 @@ namespace ActorSharp
             }
         }
 
+        private void WaitWrite()
+        {
+            while (_writePage1.Count >= maxPageSize && !_isClosed)
+                Monitor.Wait(_writeLock);
+        }
+
+        private void TrySend()
+        {
+            if (_writePage2.Count == 0) // reader is empty
+                SendNextPage();
+        }
+
         private void OnReaderClosed()
         {
             lock (_writeLock)
             {
+                _isClosed = true;
+
                 _writePage2.Clear();
                 _isCloseCompleted = true;
                 Monitor.PulseAll(_writeLock);
@@ -123,6 +167,7 @@ namespace ActorSharp
 
             public void Close(Exception ex)
             {
+                _src.OnReaderClosed();
             }
 
             public IAwaiter<bool> GetAwaiter()

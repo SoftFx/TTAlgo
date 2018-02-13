@@ -485,6 +485,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 State = newState;
             }
+
+            internal Task<IFeedServerApi> GetApi() => Actor.Call(a => a.FeedProxy); // for internal use only!
         }
 
         private class Request

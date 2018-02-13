@@ -55,11 +55,11 @@ namespace TickTrader.Algo.Common.Model
 
         Task<CurrencyEntity[]> GetCurrencies();
         Task<SymbolEntity[]> GetSymbols();
-        Task SubscribeToQuotes(string[] symbols, int depth);
+        Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth);
         Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth);
-        IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod);
+        void DownloadBars(BlockingChannel<BarEntity> stream, string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod);
         Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod);
-        IAsyncEnumerator<Slice<QuoteEntity>> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2);
+        void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2);
         Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2);
         Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame);
     }

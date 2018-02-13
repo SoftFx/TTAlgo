@@ -111,7 +111,7 @@ namespace ActorSharp
         {
             var page = message as LocalPage<T>;
 
-            if (message != null)
+            if (page != null)
             {
                 if (_cachedPage != null || page.Count > 0)
                     throw new Exception("Channel synchronization failure!");

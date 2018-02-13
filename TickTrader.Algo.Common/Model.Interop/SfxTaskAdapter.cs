@@ -22,8 +22,8 @@ namespace TickTrader.Algo.Common.Model
             client.LoginResultEvent += (c, d) => SetCompleted(d);
             client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
 
-            client.QuotesResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.QuotesErrorEvent += (c, d, ex) => SetFailed<Quote[]>(d, ex);
+            client.QuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
+            client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
 
             client.CurrencyListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.CurrencyListErrorEvent += (c, d, ex) => SetFailed<CurrencyInfo[]>(d, ex);
@@ -31,11 +31,11 @@ namespace TickTrader.Algo.Common.Model
             client.SymbolListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.SymbolListErrorEvent += (c, d, ex) => SetFailed<SymbolInfo[]>(d, ex);
 
-            client.SubscribeQuotesResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.SubscribeQuotesErrorEvent += (c, d, ex) => SetFailed<Quote[]>(d, ex);
+            client.SubscribeQuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
+            client.SubscribeQuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
 
-            client.QuotesResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.QuotesErrorEvent += (c, d, ex) => SetFailed<Quote[]>(d, ex);
+            client.QuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
+            client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
         }
 
         public static Task ConnectAsync(this FDK.QuoteFeed.Client client, string address)
@@ -66,9 +66,9 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<Quote[]> SubscribeQuotesAsync(this FDK.QuoteFeed.Client client, string[] symbolIds, int marketDepth)
+        public static Task<QuoteEntity[]> SubscribeQuotesAsync(this FDK.QuoteFeed.Client client, string[] symbolIds, int marketDepth)
         {
-            var taskSrc = new TaskCompletionSource<Quote[]>();
+            var taskSrc = new TaskCompletionSource<QuoteEntity[]>();
             client.SubscribeQuotesAsync(taskSrc, symbolIds, marketDepth);
             return taskSrc.Task;
         }
@@ -94,6 +94,10 @@ namespace TickTrader.Algo.Common.Model
             
             client.BarListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.BarListErrorEvent += (c, d, ex) => SetFailed<Bar[]>(d, ex);
+
+            //client.BarDownloadResultEvent += (c, d, r) => ((BlockingChannel<BarEntity>)d)?.Write(SfxInterop.Convert(r));
+            //client.BarDownloadResultEndEvent += (c, d) => ((BlockingChannel<BarEntity>)d)?.Close();
+            //client.BarDownloadErrorEvent += (c, d, ex) => ((BlockingChannel<BarEntity>)d)?.Close(ex);
         }
 
         public static Task ConnectAsync(this FDK.QuoteStore.Client client, string address)
@@ -116,6 +120,11 @@ namespace TickTrader.Algo.Common.Model
             client.GetBarListAsync(taskSrc, symbol, priceType, barPeriod, from, count);
             return taskSrc.Task;
         }
+
+        //public static void DownloadBarsAsync(this FDK.QuoteStore.Client client, BlockingChannel<BarEntity> stream, string symbol, PriceType priceType, BarPeriod barPeriod, DateTime from, DateTime to)
+        //{
+        //    client.DownloadBarsAsync(stream, symbol, priceType, barPeriod, from, to);
+        //}
 
         #endregion
 
@@ -294,14 +303,8 @@ namespace TickTrader.Algo.Common.Model
         {
             if (state != null)
             {
-                try
-                {
-                    var src = (TaskCompletionSource<T>)state;
-                    src.SetResult(result);
-                }
-                catch (Exception ex)
-                {
-                }
+                var src = (TaskCompletionSource<T>)state;
+                src.SetResult(result);
             }
         }
 

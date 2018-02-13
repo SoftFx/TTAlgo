@@ -12,12 +12,12 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class ClientModel : ActorPart, IQuoteDistributorSource
+    public class ClientModel : Actor, IQuoteDistributorSource
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("ClientModel");
 
         private ConnectionModel _connection;
-        private FeedHistoryProviderModel _feedHistory;
+        private FeedHistoryProviderModel.ControlHandler _feedHistory;
         private TradeHistoryProvider _tradeHistory;
         private PluginTradeApiProvider _tradeApi;
         private EntityCache _cache = new EntityCache(AccountModelOptions.None);
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model
         private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions)
         {
             _connection = new ConnectionModel(new ConnectionOptions());
-            _feedHistory = new FeedHistoryProviderModel(_connection, historyFolder, historyOptions);
+            _feedHistory = new FeedHistoryProviderModel.ControlHandler(_connection, historyFolder, historyOptions);
             _tradeHistory = new TradeHistoryProvider(_connection);
             _tradeApi = new PluginTradeApiProvider(_connection);
 
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.Common.Model
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
                 await Connection.Start();
 
-                FeedHistory = new FeedHistoryProviderModel.Handler(await Actor.Call(a => a._feedHistory.GetRef()));
+                FeedHistory = new FeedHistoryProviderModel.Handler(await Actor.Call(a => a._feedHistory.Ref));
                 await FeedHistory.Init();
 
                 TradeHistory = new TradeHistoryProvider.Handler(await Actor.Call(a => a._tradeHistory.GetRef()));
@@ -191,6 +191,10 @@ namespace TickTrader.Algo.Common.Model
         private async Task Start()
         {
             logger.Debug("Start loading.");
+
+            await _feedHistory.Start(_connection.FeedProxy, _connection.CurrentServer, _connection.CurrentLogin);
+
+            logger.Debug("Feed history started.");
 
             var tradeApi = _connection.TradeProxy;
             var feedApi = _connection.FeedProxy;
@@ -253,6 +257,10 @@ namespace TickTrader.Algo.Common.Model
                 using (await _feedLock.GetLock()) { }
 
                 logger.Debug("Stopped quote stream.");
+
+                await _feedHistory.Stop();
+
+                logger.Debug("Stopped feed history.");
 
                 await FlushListeners();
 
@@ -338,10 +346,10 @@ namespace TickTrader.Algo.Common.Model
                 var groupSymbols = group.Select(g => g.Item2).ToArray();
                 var depth = group.Key;
 
-                await _connection.FeedProxy.SubscribeToQuotes(groupSymbols, depth);
+                var quotes = await _connection.FeedProxy.SubscribeToQuotes(groupSymbols, depth);
                 logger.Debug("Subscribed to " + string.Join(",", groupSymbols));
 
-                var quotes = await _connection.FeedProxy.GetQuoteSnapshot(groupSymbols, depth);
+                //var quotes = await _connection.FeedProxy.GetQuoteSnapshot(groupSymbols, depth);
                 foreach (var q in quotes)
                     await ApplyQuote(q);
             }

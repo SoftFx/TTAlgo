@@ -37,7 +37,7 @@ namespace ActorSharp
         public override Task Call(Func<TActor, Task> method)
         {
             var src = new TaskCompletionSource<object>();
-            var invokeTask = new Task(o => BindCompletion(method((TActor)o), src), _actor);
+            var invokeTask = new Task(o => BindCompletion((Func<TActor, Task>)o, src), method);
             Context.Post(ExecTaskSync, invokeTask);
             return src.Task;
         }
@@ -52,7 +52,7 @@ namespace ActorSharp
         public override Task<TResult> Call<TResult>(Func<TActor, Task<TResult>> method)
         {
             var src = new TaskCompletionSource<TResult>();
-            var invokeTask = new Task(o => BindCompletion(method((TActor)o), src), _actor);
+            var invokeTask = new Task(o =>BindCompletion((Func<TActor, Task<TResult>>)o, src), method);
             Context.Post(ExecTaskSync, invokeTask);
             return src.Task;
         }
@@ -200,30 +200,44 @@ namespace ActorSharp
             ((Action<TActor>)action).Invoke(_actor);
         }
 
-        private static void BindCompletion(Task task, TaskCompletionSource<object> src)
+        private void BindCompletion(Func<TActor, Task> call, TaskCompletionSource<object> src)
         {
-            task.ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                    src.SetException(t.Exception);
-                else if (t.IsCanceled)
-                    src.SetCanceled();
-                else //if(t.IsCompleted)
-                    src.SetResult(null);
-            });
+                call(_actor).ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                        src.SetException(t.Exception);
+                    else if (t.IsCanceled)
+                        src.SetCanceled();
+                    else //if(t.IsCompleted)
+                        src.SetResult(null);
+                });
+            }
+            catch (Exception ex)
+            {
+                src.SetException(ex);
+            }
         }
 
-        private static void BindCompletion<T>(Task<T> task, TaskCompletionSource<T> src)
+        private void BindCompletion<T>(Func<TActor, Task<T>> call, TaskCompletionSource<T> src)
         {
-            task.ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                    src.SetException(t.Exception);
-                else if (t.IsCanceled)
-                    src.SetCanceled();
-                else //if(t.IsCompleted)
-                    src.SetResult(t.Result);
-            });
+                call(_actor).ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                        src.SetException(t.Exception);
+                    else if (t.IsCanceled)
+                        src.SetCanceled();
+                    else //if(t.IsCompleted)
+                        src.SetResult(t.Result);
+                });
+            }
+            catch (Exception ex)
+            {
+                src.SetException(ex);
+            }
         }
     }
 }

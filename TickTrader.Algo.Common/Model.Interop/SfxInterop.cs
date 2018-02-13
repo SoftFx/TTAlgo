@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Common.Model
         private const int ConnectTimeoutMs = 60 * 1000;
         private const int LogoutTimeoutMs = 60 * 1000;
         private const int DisconnectTimeoutMs = 60 * 1000;
+        private const int DownloadTimeoutMs = 120 * 1000;
 
         private static IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<SfxInterop>();
 
@@ -240,7 +241,7 @@ namespace TickTrader.Algo.Common.Model
             return symbols.Select(Convert).ToArray();
         }
 
-        public Task SubscribeToQuotes(string[] symbols, int depth)
+        public Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth)
         {
             return _feedProxy.SubscribeQuotesAsync(symbols, depth);
         }
@@ -251,14 +252,30 @@ namespace TickTrader.Algo.Common.Model
             return array.Select(Convert).ToArray();
         }
 
-        public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
+        public void DownloadBars(BlockingChannel<BarEntity> stream, string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
-            throw new NotImplementedException();
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
 
-            //var buffer = new BarSliceBuffer(from, to);
-            //var eTask = _feedHistoryProxy.DownloadBarsAsync(Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to);
-            //DownloadBarsToBuffer(buffer, eTask);
-            //return buffer;
+                    while (true)
+                    {
+                        var bar = e.Next(DownloadTimeoutMs);
+                        if (bar == null || !stream.Write(Convert(bar)))
+                        {
+                            e.Close();
+                            break;
+                        }
+                    }
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
+                    stream.Close(ex);
+                }
+            });
         }
 
         //private async void DownloadBarsToBuffer(SliceBuffer<BarEntity> buffer, Task<BarEnumerator> enumTask)
@@ -299,7 +316,7 @@ namespace TickTrader.Algo.Common.Model
             return bars.Select(Convert).ToArray();
         }
 
-        public IAsyncEnumerator<Slice<QuoteEntity>> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
             throw new NotImplementedException();
 
@@ -347,15 +364,14 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException();
         }
 
-        public async Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            throw new NotImplementedException();
-
-            //using (var e = await _feedHistoryProxy.DownloadBarsAsync(
-            //    Guid.NewGuid().ToString(), symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue, DateTime.MinValue))
-            //{
-            //    return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
-            //}
+            return Task.Factory.StartNew(() =>
+            {
+                var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue, DateTime.MaxValue, DownloadTimeoutMs);
+                e.Close();
+                return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+            });
         }
 
         #endregion
@@ -875,7 +891,7 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static BarEntity Convert(SFX.Bar fdkBar)
+        internal static BarEntity Convert(SFX.Bar fdkBar)
         {
             return new BarEntity()
             {
@@ -903,6 +919,15 @@ namespace TickTrader.Algo.Common.Model
             }
 
             return list.ToArray();
+        }
+
+        internal static QuoteEntity[] Convert(SFX.Quote[] fdkQuoteSnapshot)
+        {
+            var result = new QuoteEntity[fdkQuoteSnapshot.Length];
+
+            for (int i = 0; i < result.Length; i++)
+                result[i] = Convert(fdkQuoteSnapshot[i]);
+            return result;
         }
 
         private static QuoteEntity Convert(SFX.Quote fdkTick)

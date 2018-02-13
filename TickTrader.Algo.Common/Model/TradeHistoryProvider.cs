@@ -56,7 +56,13 @@ namespace TickTrader.Algo.Common.Model
                 _connection.TradeProxy.GetTradeHistory(CreateBlocingChannel(rxChannel), from, to, skipCanceledOrders);
 
                 while (await rxChannel.ReadNext())
-                    await txChannel.Write(rxChannel.Current);
+                {
+                    if (!await txChannel.Write(rxChannel.Current))
+                    {
+                        await rxChannel.Close();
+                        return;
+                    }
+                }
 
                 await txChannel.Close();
             }
@@ -168,25 +174,5 @@ namespace TickTrader.Algo.Common.Model
                 //return GetTradeHistory(to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
             }
         }
-
-        //private class SyncUpView
-        //{
-        //    public SyncUpView(Channel<TradeReportEntity> channel, DateTime? from, DateTime? to, bool skipCanceled)
-        //    {
-        //    }
-
-        //    public Channel<TradeReportEntity> Channel { get; }
-        //    public DateTime? From { get; }
-        //    public DateTime? To { get; }
-        //    public bool SkipCanceledOrders { get; }
-
-        //    public bool MatchesFileter(DateTime reportTime)
-        //    {
-        //    }
-
-        //    public IAwaitable OnUpdate()
-        //    {
-        //    }
-        //}
     }
 }
