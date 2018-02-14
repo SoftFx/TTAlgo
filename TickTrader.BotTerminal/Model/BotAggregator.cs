@@ -8,60 +8,71 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
+    internal interface IBotAggregator
+    {
+        IDynamicListSource<TradeBotModel> Bots { get; }
+
+        IDynamicListSource<BotControlViewModel> BotControls { get; }
+
+
+        event Action<TradeBotModel> StateChanged;
+    }
+
+
     internal class BotAggregator : IBotAggregator
     {
-        private ChartCollectionViewModel _charts;
+        private DynamicList<ChartViewModel> _charts;
+
+
+        public IDynamicListSource<TradeBotModel> Bots { get; }
+
+        public IDynamicListSource<BotControlViewModel> BotControls { get; }
+
+
+        public event Action<TradeBotModel> StateChanged;
+
 
         public BotAggregator(ChartCollectionViewModel charts)
         {
-            _charts = charts;
-            _charts.Items.CollectionChanged += ChartsCollectionChanged;
+            _charts = new DynamicList<ChartViewModel>(charts.Items);
+            Bots = _charts.SelectMany(c => c.BotsList).Select(bc => bc.Model);
+            BotControls = _charts.SelectMany(c => c.BotsList);
+
+            charts.Items.CollectionChanged += ChartsCollectionChanged;
+            Bots.Updated += BotsCollectionUpdated;
         }
 
-        public IEnumerable<TradeBotModel> Items => _charts.Items.SelectMany(chart => chart.Bots.Select(b => b.Model));
 
         private void ChartsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                ((IObservableListSource<BotControlViewModel>)((ChartViewModel)e.NewItems[0]).Bots).CollectionChanged += BotsCollectionChanged;
+                foreach (ChartViewModel item in e.NewItems)
+                {
+                    _charts.Add(item);
+                }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                ((IObservableListSource<BotControlViewModel>)((ChartViewModel)e.OldItems[0]).Bots).CollectionChanged -= BotsCollectionChanged;
+                foreach (ChartViewModel item in e.OldItems)
+                {
+                    _charts.Remove(item);
+                }
             }
         }
 
-        private void BotsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void BotsCollectionUpdated(ListUpdateArgs<TradeBotModel> args)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add)
+            if (args.Action == DLinqAction.Insert)
             {
-                var tradeBot = ((BotControlViewModel)e.NewItems[0]).Model;
+                var tradeBot = args.NewItem;
                 tradeBot.StateChanged += StateChanged;
-                Added?.Invoke(tradeBot);
             }
-            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            else if (args.Action == DLinqAction.Remove)
             {
-                var tradeBot = ((BotControlViewModel)e.OldItems[0]).Model;
+                var tradeBot = args.OldItem;
                 tradeBot.StateChanged -= StateChanged;
-                Removed?.Invoke(tradeBot);
             }
         }
-
-        public event Action<TradeBotModel> Added = delegate { };
-        public event Action<TradeBotModel> Removed = delegate { };
-        public event Action<TradeBotModel> StateChanged = delegate { };
-    }
-
-    internal interface IBotAggregator : IAggregator<TradeBotModel>
-    {
-        event Action<TradeBotModel> StateChanged;
-    }
-
-    internal interface IAggregator<T>
-    {
-        IEnumerable<T> Items { get; }
-        event Action<T> Added;
-        event Action<T> Removed;
     }
 }

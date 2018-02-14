@@ -52,6 +52,9 @@ namespace TickTrader.BotTerminal
         public bool IsStarted { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopping; } }
         public bool CanBeClosed { get { return Model.State == BotModelStates.Stopped; } }
         public bool CanStartStop { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped; } }
+        public bool CanStart => Model.State == BotModelStates.Stopped;
+        public bool CanStop => Model.State == BotModelStates.Running;
+        public BotModelStates State => Model.State;
 
         public bool CanOpenSettings { get { return Model.State == BotModelStates.Stopped; } }
 
@@ -86,6 +89,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanBeClosed));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(IsStarted));
+            NotifyOfPropertyChange(nameof(State));
         }
 
         public void Dispose()

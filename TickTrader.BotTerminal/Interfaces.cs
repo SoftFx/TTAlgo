@@ -28,5 +28,6 @@ namespace TickTrader.BotTerminal
         UiLock ConnectionLock { get; }
         WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }
+        IBotAggregator BotAggregator { get; }
     }
 }

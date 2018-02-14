@@ -135,6 +135,7 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
         public IReadOnlyList<BotControlViewModel> Bots { get; private set; }
         public GenericCommand CloseCommand { get; private set; }
+        public IDynamicListSource<BotControlViewModel> BotsList => bots;
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
         public bool HasStartedBots => Bots.Any(b => b.IsStarted);

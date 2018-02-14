@@ -2,6 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cal="http://www.caliburnproject.org"
+    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
 
@@ -13,6 +14,20 @@
             <Setter Property="Margin" Value="5,0"/>
             <Setter Property="StrokeThickness" Value="0"/>
         </Style.Setters>
+    </Style>
+
+    <Style x:Key="LocalBotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding State}" Value="Stopped">
+                <Setter Property="Fill" Value="Gray"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Running">
+                <Setter Property="Fill" Value="Green"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Stopping">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="BotAgentStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
@@ -73,13 +88,45 @@
         <Border BorderThickness="0">
             <TreeView BorderThickness="0">
 
+                <TreeView.Resources>
+                    <CollectionViewSource x:Key="LocalBotsViewSrc" Source="{Binding LocalBots}">
+                        <CollectionViewSource.SortDescriptions>
+                            <scm:SortDescription PropertyName="Model.InstanceId" />
+                        </CollectionViewSource.SortDescriptions>
+                    </CollectionViewSource>
+                </TreeView.Resources>
+
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="{x:Type TreeViewItem}">
                         <Setter Property="IsExpanded" Value="True"/>
                     </Style>
                 </TreeView.ItemContainerStyle>
 
-                <TreeViewItem Header="Local"/>
+                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}">
+                    <TreeViewItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu>
+                                        <MenuItem Header="Start" cal:Message.Attach="StartStop" IsEnabled="{Binding CanStart}"/>
+                                        <MenuItem Header="Stop" cal:Message.Attach="StartStop" IsEnabled="{Binding CanStop}"/>
+                                        <MenuItem Header="Status" cal:Message.Attach="OpenState"/>
+                                        <MenuItem Header="Settings" cal:Message.Attach="OpenSettings" IsEnabled="{Binding CanOpenSettings}"/>
+                                        <MenuItem Header="Delete" cal:Message.Attach="Close" IsEnabled="{Binding CanBeClosed}"/>
+                                    </ContextMenu>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TreeViewItem.ItemContainerStyle>
+                    <TreeViewItem.ItemTemplate>
+                        <DataTemplate DataType="{x:Type l:BotControlViewModel}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{StaticResource LocalBotStateEllipseStyle}" />
+                                <TextBlock Text="{Binding Path=Model.InstanceId}" ToolTip="{Binding State}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </TreeViewItem.ItemTemplate>
+                </TreeViewItem>
 
                 <TreeViewItem Header="Bot Agents" ItemsSource="{Binding BotAgents}">
                     <TreeViewItem.ContextMenu>

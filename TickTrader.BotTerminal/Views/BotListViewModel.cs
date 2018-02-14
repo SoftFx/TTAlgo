@@ -7,15 +7,21 @@ namespace TickTrader.BotTerminal
     {
         private BotAgentManager _botAgentManager;
         private IShell _shell;
+        private TraderClientModel _clientModel;
 
+
+        public IObservableListSource<BotControlViewModel> LocalBots { get; }
 
         public IObservableListSource<BotAgentViewModel> BotAgents { get; }
 
 
-        public BotListViewModel(IShell shell, BotAgentManager botAgentManager)
+        public BotListViewModel(IShell shell, BotAgentManager botAgentManager, TraderClientModel clientModel)
         {
             _shell = shell;
             _botAgentManager = botAgentManager;
+            _clientModel = clientModel;
+
+            LocalBots = _shell.BotAggregator.BotControls.AsObservable();
 
             BotAgents = _botAgentManager.BotAgents
                 .OrderBy((s, b) => s)

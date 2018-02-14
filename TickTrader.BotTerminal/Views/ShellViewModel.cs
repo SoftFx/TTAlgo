@@ -31,6 +31,7 @@ namespace TickTrader.BotTerminal
         private SymbolManagerViewModel _smbManager;
         private CustomFeedStorage _userSymbols = new CustomFeedStorage();
         private BotAgentManager _botAgentManager;
+        private BotAggregator _botAggregator;
 
         public ShellViewModel()
         {
@@ -52,9 +53,6 @@ namespace TickTrader.BotTerminal
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
-            _botAgentManager = new BotAgentManager(storage);
-            BotList = new BotListViewModel(this, _botAgentManager);
-
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
@@ -67,7 +65,11 @@ namespace TickTrader.BotTerminal
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
 
-            botsWarden = new BotsWarden(new BotAggregator(Charts));
+            _botAggregator = new BotAggregator(Charts);
+            botsWarden = new BotsWarden(_botAggregator);
+
+            _botAgentManager = new BotAgentManager(storage);
+            BotList = new BotListViewModel(this, _botAgentManager, clientModel);
 
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
@@ -233,6 +235,7 @@ namespace TickTrader.BotTerminal
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public BotListViewModel BotList { get; }
         public WindowManager ToolWndManager => wndManager;
+        public IBotAggregator BotAggregator => _botAggregator;
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
