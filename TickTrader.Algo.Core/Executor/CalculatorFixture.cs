@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Core
         private IFixtureContext _context;
         private MarginCalcAdapter marginCalc;
         private BL.CashAccountCalculator cashCalc;
+        private AccountAccessor acc;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -25,11 +26,22 @@ namespace TickTrader.Algo.Core
             _state.Set(_context.Builder.Symbols);
             _state.Set(_context.Builder.Currencies);
 
-            var acc = _context.Builder.Account;
-            if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
-                marginCalc = new MarginCalcAdapter(acc, _state);
-            else
-                cashCalc = new BL.CashAccountCalculator(acc, _state);
+            try
+            {
+                acc = _context.Builder.Account;
+                if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
+                    marginCalc = new MarginCalcAdapter(acc, _state);
+                else
+                    cashCalc = new BL.CashAccountCalculator(acc, _state);
+                acc.EnableBlEvents();
+            }
+            catch (Exception ex)
+            {
+                marginCalc = null;
+                cashCalc = null;
+                acc = null;
+                _context.Builder.Logger.OnError("Failed to start account calculator", ex);
+            }
         }
 
         internal void UpdateRate(QuoteEntity entity)
@@ -40,6 +52,11 @@ namespace TickTrader.Algo.Core
         public void Stop()
         {
             _state = null;
+            if (acc != null)
+            {
+                acc.DisableBlEvents();
+                acc = null;
+            }
             if (cashCalc != null)
             {
                 cashCalc.Dispose();

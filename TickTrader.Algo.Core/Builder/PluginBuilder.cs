@@ -321,6 +321,7 @@ namespace TickTrader.Algo.Core
             {
                 invokeAction();
             }
+            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 pluginException = ex;
@@ -347,14 +348,12 @@ namespace TickTrader.Algo.Core
         {
             InvokePluginMethod(PluginProxy.InvokeOnStop);
             Logger.OnStop();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeInit()
         {
             InvokePluginMethod(PluginProxy.InvokeInit);
             Logger.OnInitialized();
-            Logger.OnPrint($"Plugin version = {Descriptor.Version}");
         }
 
         internal void InvokeOnQuote(Quote quote)
@@ -367,11 +366,18 @@ namespace TickTrader.Algo.Core
             InvokePluginMethod(asyncAction);
         }
 
-        internal Task InvokeAsyncStop()
+        internal async Task InvokeAsyncStop()
         {
             Task result = null;
             InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop());
-            return result;
+            try
+            {
+                await result;
+            }
+            catch (Exception ex)
+            {
+                OnPluginException(ex);
+            }
         }
 
         #endregion

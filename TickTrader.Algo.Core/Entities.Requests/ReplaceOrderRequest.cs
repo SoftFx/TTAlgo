@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Core
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
         public double CurrentVolume { get; set; }
+        public double? NewVolume { get; set; }
         public double? Price { get; set; }
         public double? StopPrice { get; set; }
         public double? MaxVisibleVolume { get; set; }
@@ -23,5 +24,7 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public string Tag { get; set; }
         public DateTime? Expiration { get; set; }
+        public OrderExecOptions? Options { get; set; }
+        public bool? OverrideIoC => Options.HasValue ? Options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) : (bool?)null;
     }
 }

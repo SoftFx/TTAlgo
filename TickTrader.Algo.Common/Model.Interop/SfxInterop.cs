@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Common.Model
         private FDK.QuoteStore.Client _feedHistoryProxy;
         private FDK.OrderEntry.Client _tradeProxy;
         private FDK.TradeCapture.Client _tradeHistoryProxy;
+        private bool _allowTrade;
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
         
@@ -370,6 +371,16 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
+        public void AllowTradeRequests()
+        {
+            _allowTrade = true;
+        }
+
+        public void DenyTradeRequests()
+        {
+            _allowTrade = false;
+        }
+
         public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
         {
             var buffer = new AsyncBuffer<TradeReportEntity[]>();
@@ -427,8 +438,8 @@ namespace TickTrader.Algo.Common.Model
         public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
         {
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
-                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side),
-                r.CurrentVolume, r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
+                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume,
+                r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
                 r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
         }
 
@@ -450,6 +461,9 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
+                if (!_allowTrade)
+                    return OrderCmdResultCodes.ConnectionError;
+
                 var result = await operationDef(request);
                 foreach (var er in result)
                     ExecutionReport?.Invoke(ConvertToEr(er, operationId));
@@ -464,6 +478,8 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
+                if (ex.Message.StartsWith("Session is not active"))
+                    return OrderCmdResultCodes.ConnectionError;
                 logger.Error(ex);
                 return OrderCmdResultCodes.UnknownError;
             }
@@ -809,6 +825,10 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.TradeNotAllowed;
                         else if (message != null && message.StartsWith("Not Enough Money"))
                             return Api.OrderCmdResultCodes.NotEnoughMoney;
+                        else if (message != null && message.StartsWith("Rejected By Dealer"))
+                            return Api.OrderCmdResultCodes.DealerReject;
+                        else if (message != null && message.StartsWith("Dealer") && message.EndsWith("did not respond."))
+                            return Api.OrderCmdResultCodes.DealingTimeout;
                         break;
                     }
                 case RejectReason.None:
@@ -907,7 +927,7 @@ namespace TickTrader.Algo.Common.Model
                 OpenPrice = report.Price,
                 Comment = report.Comment,
                 Commission = report.Commission,
-                CommissionCurrency = report.TransactionCurrency,
+                CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
                 CloseQuantity = report.PositionLastQuantity,
                 NetProfitLoss = report.TransactionAmount,

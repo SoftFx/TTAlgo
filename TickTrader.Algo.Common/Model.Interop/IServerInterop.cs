@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Common.Model
         Task<AccountEntity> GetAccountInfo();
         Task<OrderEntity[]> GetTradeRecords();
         Task<PositionEntity[]> GetPositions();
+        void AllowTradeRequests();
+        void DenyTradeRequests();
 
         IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders);
 

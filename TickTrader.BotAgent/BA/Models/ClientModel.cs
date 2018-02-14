@@ -100,6 +100,8 @@ namespace TickTrader.BotAgent.BA.Models
                 }
             };
             Connection.Connected += () => _connectionDelay.Reset();
+            Connection.Initalizing += Connection_Initalizing;
+            Connection.Deinitalizing += Connection_Deinitalizing;
 
             var eventSyncAdapter = new SyncAdapter(syncObj);
             _core = new ClientCore(Connection, c => new SymbolManager(c, _sync), eventSyncAdapter, eventSyncAdapter);
@@ -187,11 +189,11 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
-        {
-            UseNewProtocol = true;
-        }
+        //[OnDeserializing]
+        //private void OnDeserializing(StreamingContext context)
+        //{
+        //    UseNewProtocol = true;
+        //}
 
         #region Connection Management
 
@@ -308,8 +310,6 @@ namespace TickTrader.BotAgent.BA.Models
 
             ChangeState(ConnectionStates.Disconnecting);
 
-            await Symbols.Deinit();
-            await FeedHistory.Deinit();
             await Connection.Disconnect();
 
             lock (_sync)
@@ -375,17 +375,6 @@ namespace TickTrader.BotAgent.BA.Models
             _lastError = await Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
             _currentError = _lastError;
 
-            if (_lastError.Code == ConnectionErrorCodes.None)
-            {
-                await FeedHistory.Init();
-
-                var fCache = Connection.FeedProxy;
-                var tCache = Connection.TradeProxy;
-                await _core.Init();
-                await Task.Delay(1500); // ugly fix! Need to wait till quotes snapshot is loaded. Normal solution will be possible after some updates in FDK
-                Account.Init();
-            }
-
             lock (_sync)
             {
                 if (_lastError.Code == ConnectionErrorCodes.None)
@@ -405,6 +394,21 @@ namespace TickTrader.BotAgent.BA.Models
                 if (IsReconnectionPossible)
                     ManageConnection();
             }
+        }
+
+        private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
+        {
+            await FeedHistory.Init();
+            await _core.Init();
+            await Task.Delay(1500); // ugly fix! Need to wait till quotes snapshot is loaded. Normal solution will be possible after some updates in FDK
+            Account.Init();
+        }
+
+        private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
+        {
+            Account.Deinit();
+            await _core.Deinit();
+            await FeedHistory.Deinit();
         }
 
         //public void Change(string address, string username, string password)

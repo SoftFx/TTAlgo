@@ -3,7 +3,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.2", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.3", Category = "Test Orders",
         Description = "Modify Order by OrderId" +
                       "Prints order execution result to bot status window. ")]
     public class ModifyOrder : TradeBotCommon
@@ -16,6 +16,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         [Parameter(DefaultValue = null)]
         public double? StopPrice { get; set; }
+
+        [Parameter(DefaultValue = null)]
+        public double? Volume { get; set; }
 
         [Parameter(DefaultValue = null)]
         public double? MaxVisibleVolume { get; set; }
@@ -32,17 +35,46 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
         public int? ExpirationTimeout { get; set; }
 
+        [Parameter(DisplayName = "IoC Flag", DefaultValue = IocTypes.NoneFlag, IsRequired = false)]
+        public IocTypes IoC { get; set; }
+
         protected override void OnStart()
         {
+            OrderExecOptions? options = null;
+            if (IoC == IocTypes.SetFlag)
+                options = OrderExecOptions.ImmediateOrCancel;
+            if (IoC == IocTypes.DropFlag)
+                options = OrderExecOptions.None;
+
+            ValidateVolume();
+
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
             var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null);
+                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options);
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(typeof(Order), result.ResultingOrder));
 
             Exit();
         }
+
+        private void ValidateVolume()
+        {
+            if (Volume.HasValue && Volume <= 0)
+            {
+                Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
+                Exit();
+                throw new Exception("Ivalid parameter. Volume cannot be negative.");
+            }
+            else if (Volume.HasValue && Volume < Symbol.MinTradeVolume)
+            {
+                Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                Exit();
+                throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+            }
+        }
     }
+
+    public enum IocTypes { NoneFlag, DropFlag, SetFlag}
 }

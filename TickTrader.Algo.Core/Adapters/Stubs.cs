@@ -14,11 +14,15 @@ namespace TickTrader.Algo.Core
         void OnPrintError(string entry);
         void OnPrintError(string entry, params object[] parameters);
         void OnPrintTrade(string entry);
+        void OnPrintTradeSuccess(string entry);
+        void OnPrintTradeFail(string entry);
         void OnError(Exception ex);
+        void OnError(string message, Exception ex);
         void OnInitialized();
         void OnStart();
         void OnStop();
         void OnExit();
+        void OnAbort();
     }
 
     public static class Null
@@ -100,11 +104,25 @@ namespace TickTrader.Algo.Core
         {
             logger.OnPrintTrade(entry);
         }
+
+        public void PrintTradeSuccess(string entry)
+        {
+            logger.OnPrintTradeSuccess(entry);
+        }
+
+        public void PrintTradeFail(string entry)
+        {
+            logger.OnPrintTradeFail(entry);
+        }
     }
 
     public class NullLogger : IPluginLogger
     {
         public void OnError(Exception ex)
+        {
+        }
+
+        public void OnError(string message, Exception ex)
         {
         }
 
@@ -140,11 +158,23 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        public void OnPrintTradeSuccess(string entry)
+        {
+        }
+
+        public void OnPrintTradeFail(string entry)
+        {
+        }
+
         public void OnStart()
         {
         }
 
         public void OnStop()
+        {
+        }
+
+        public void OnAbort()
         {
         }
 
@@ -179,7 +209,7 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
         {
             return rejectResult;
         }

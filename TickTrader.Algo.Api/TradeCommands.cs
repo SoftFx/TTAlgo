@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Api
         Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration);
         Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
         Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration);
+        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options);
         Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
         Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
     }
@@ -48,8 +48,9 @@ namespace TickTrader.Algo.Api
         IncorrectSl         = 109,
         NotEnoughMoney      = 110,
         TradeNotAllowed     = 111,
-        IncorrectStopPrice = 112,
+        IncorrectStopPrice  = 112,
         IncorrectMaxVisibleVolume = 113,
         IncorrectExpiration = 114,
+        DealingTimeout      = 115,
     }
 }

@@ -19,6 +19,8 @@ namespace TickTrader.Algo.Common.Model
         private ClientCore _client;
         private IFeedSubscription _subscription;
 
+        private AccountCalculatorModel() { }
+
         private AccountCalculatorModel(AccountModel acc, ClientCore client)
         {
             _client = client;
@@ -59,10 +61,18 @@ namespace TickTrader.Algo.Common.Model
 
         public static AccountCalculatorModel Create(AccountModel acc, ClientCore client)
         {
-            if (acc.Type == Api.AccountTypes.Cash)
-                return new CashCalc(acc, client);
-            else
-                return new MarginCalc(acc, client);
+            try
+            {
+                if (acc.Type == Api.AccountTypes.Cash)
+                    return new CashCalc(acc, client);
+                else
+                    return new MarginCalc(acc, client);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to init Account Calculator", ex);
+            }
+            return new NullCalc();
         }
 
         public virtual void Dispose()
@@ -161,8 +171,8 @@ namespace TickTrader.Algo.Common.Model
             public long Id { get { return 0; } }
             public int Leverage { get { return acc.Leverage; } }
 
-            public IEnumerable<IOrderModel> Orders { get { return Enumerable.Empty<IOrderModel>(); } }
-            public IEnumerable<IPositionModel> Positions { get { return Enumerable.Empty<IPositionModel>(); } }
+            public IEnumerable<IOrderModel> Orders { get { return acc.Orders.Snapshot.Values; } }
+            public IEnumerable<IPositionModel> Positions { get { return acc.Positions.Snapshot.Values; } }
             public IEnumerable<IAssetModel> Assets { get { return acc.Assets.Snapshot.Values; } }
 
             private void Orders_Updated(DictionaryUpdateArgs<string, OrderModel> args)
@@ -251,30 +261,6 @@ namespace TickTrader.Algo.Common.Model
                     MarginLevel = calc.MarginLevel;
                     OnUpdate();
                 };
-
-                foreach (var group in acc.Orders.Snapshot.Values.GroupBy(o => o.Symbol))
-                {
-                    try
-                    {
-                        calc.AddOrdersBunch(group);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, $"Adding orders by {group.Key} failed.");
-                    }
-                }
-
-                foreach (var pos in acc.Positions.Snapshot.Values)
-                {
-                    try
-                    {
-                        calc.Update(pos, PositionChageTypes.AddedModified);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, $"Adding position by {pos.Symbol} failed.");
-                    }
-                }
             }
 
             public override void Recalculate()
@@ -291,19 +277,21 @@ namespace TickTrader.Algo.Common.Model
                 : base(acc, client)
             {
                 this.calc = new CashAccountCalculator(Account, MarketModel);
-
-                foreach (var group in acc.Orders.Snapshot.Values.GroupBy(o => o.Symbol))
-                {
-                    try
-                    {
-                        calc.AddOrdersBunch(group);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, $"Adding orders by {group.Key} failed.");
-                    }
-                }
             }
+        }
+
+        private class NullCalc : AccountCalculatorModel
+        {
+            public NullCalc()
+            {
+                Equity = -1;
+                Margin = -1;
+                Profit = -1;
+                Floating = -1;
+                MarginLevel = -1;
+            }
+
+            public override void Dispose() { }
         }
 
         private class AccCalcAdapter : AccountCalculator

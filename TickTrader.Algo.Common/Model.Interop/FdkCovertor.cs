@@ -362,6 +362,8 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (message == "Trade Not Allowed")
                             return Api.OrderCmdResultCodes.TradeNotAllowed;
+                        else if (message != null && message.StartsWith("Dealer") && message.EndsWith("did not respond."))
+                            return Api.OrderCmdResultCodes.DealingTimeout;
                         break;
                     }
                 case RejectReason.None:
@@ -372,6 +374,36 @@ namespace TickTrader.Algo.Common.Model
                     }
             }
             return Api.OrderCmdResultCodes.UnknownError;
+        }
+
+        public static Api.OrderCmdResultCodes Convert(ArgumentOutOfRangeException ex)
+        {
+            var paramName = ex.ParamName.ToLowerInvariant();
+            if (paramName.Contains("maxvisiblevolume"))
+            {
+                return Api.OrderCmdResultCodes.IncorrectMaxVisibleVolume;
+            }
+            else if (paramName.Contains("volume"))
+            {
+                return Api.OrderCmdResultCodes.IncorrectVolume;
+            }
+            else if (paramName.Contains("stopprice"))
+            {
+                return Api.OrderCmdResultCodes.IncorrectStopPrice;
+            }
+            else if (paramName.Contains("price"))
+            {
+                return Api.OrderCmdResultCodes.IncorrectPrice;
+            }
+            else if (paramName.Contains("stoploss"))
+            {
+                return Api.OrderCmdResultCodes.IncorrectSl;
+            }
+            else if (paramName.Contains("takeprofit"))
+            {
+                return Api.OrderCmdResultCodes.IncorrectTp;
+            }
+            return Api.OrderCmdResultCodes.InternalError;
         }
 
         public static TradeReportEntity Convert(TradeTransactionReport report)
@@ -395,7 +427,7 @@ namespace TickTrader.Algo.Common.Model
                 OpenPrice = report.Price,
                 Comment = report.Comment,
                 Commission = report.Commission,
-                CommissionCurrency = report.TransactionCurrency,
+                CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
                 CloseQuantity = report.PositionLastQuantity,
                 NetProfitLoss = report.TransactionAmount,

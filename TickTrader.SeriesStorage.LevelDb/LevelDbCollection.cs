@@ -92,8 +92,9 @@ namespace TickTrader.SeriesStorage.LevelDb
         public bool Read(TKey key, out ArraySegment<byte> value)
         {
             var binKey = GetBinKey(key);
-            value = new ArraySegment<byte>(_storage.Database.Get(binKey));
-            return value != null;
+            byte[] binValue = _storage.Database.Get(binKey);
+            value = (binValue == null) ? new ArraySegment<byte>() : new ArraySegment<byte>(binValue);
+            return binValue != null;
         }
 
         public void Write(TKey key, ArraySegment<byte> value)

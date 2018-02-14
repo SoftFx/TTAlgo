@@ -72,15 +72,13 @@ namespace TickTrader.Algo.Common.Model
             _feedProxy.Start();
             _tradeProxy.Start();
 
-            var result =  await _connectEvent.Task;
+            var result = await _connectEvent.Task;
 
             if (result.Code == ConnectionErrorCodes.None)
             {
                 requestProcessor = TaskMahcine.Create();
                 _executor = new FdkAsyncExecutor(_tradeProxy);
             }
-            else
-                await Disconnect();
 
             return result;
         }
@@ -302,6 +300,16 @@ namespace TickTrader.Algo.Common.Model
             return Task.FromResult(new QuoteEntity[0]);
         }
 
+        public void AllowTradeRequests()
+        {
+            _executor?.Start();
+        }
+
+        public void DenyTradeRequests()
+        {
+            _executor?.Stop();
+        }
+
         public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
             var buffer = new BarSliceBuffer(from, to);
@@ -370,7 +378,7 @@ namespace TickTrader.Algo.Common.Model
         #region ITradeServerApi
 
         public AccountEntity AccountInfo => FdkConvertor.Convert(_tradeProxy.Cache.AccountInfo);
-        public OrderEntity[] TradeRecords =>  _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
+        public OrderEntity[] TradeRecords => _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
         public PositionEntity[] Positions => _tradeProxy.Cache.Positions.Select(FdkConvertor.Convert).ToArray();
 
         public Task<AccountEntity> GetAccountInfo()
@@ -395,22 +403,22 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
         {
-            return _executor.SendOpenOrder(request);
+            return _executor?.SendOpenOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
         }
 
         public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
         {
-            return _executor.SendCancelOrder(request);
+            return _executor?.SendCancelOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
         }
 
         public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
         {
-            return _executor.SendModifyOrder(request);
+            return _executor?.SendModifyOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
         }
 
         public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
         {
-            return _executor.SendCloseOrder(request);
+            return _executor?.SendCloseOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
         }
 
         #endregion

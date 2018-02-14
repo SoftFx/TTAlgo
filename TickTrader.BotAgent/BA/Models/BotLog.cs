@@ -74,6 +74,8 @@ namespace TickTrader.BotAgent.BA.Models
                     case LogEntryType.Custom:
                     case LogEntryType.Info:
                     case LogEntryType.Trading:
+                    case LogEntryType.TradingSuccess:
+                    case LogEntryType.TradingFail:
                         _logger.Info(msg.ToString());
                         break;
                     case LogEntryType.Error:
@@ -169,6 +171,8 @@ namespace TickTrader.BotAgent.BA.Models
                 case LogSeverities.Error: return LogEntryType.Error;
                 case LogSeverities.Info: return LogEntryType.Info;
                 case LogSeverities.Trade: return LogEntryType.Trading;
+                case LogSeverities.TradeSuccess: return LogEntryType.TradingSuccess;
+                case LogSeverities.TradeFail: return LogEntryType.TradingFail;
                 default: return LogEntryType.Info;
             }
         }

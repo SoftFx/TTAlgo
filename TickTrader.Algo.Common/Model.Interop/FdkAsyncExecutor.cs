@@ -18,6 +18,8 @@ namespace TickTrader.Algo.Common.Model.Interop
         private BufferBlock<Task> orderQueue;
         private ActionBlock<Task> orderSender;
         private DataTrade _tradeProxy;
+        private List<TaskCompletionSource<OrderCmdResultCodes>> _pendingRequests;
+        private bool _stopped;
 
         public FdkAsyncExecutor(DataTrade client)
         {
@@ -25,10 +27,40 @@ namespace TickTrader.Algo.Common.Model.Interop
 
             orderQueue = new BufferBlock<Task>();
 
-            var senderOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 10 };
+            var senderOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 25 };
             orderSender = new ActionBlock<Task>(t => t.RunSynchronously(), senderOptions);
 
             orderQueue.LinkTo(orderSender);
+
+            _pendingRequests = new List<TaskCompletionSource<OrderCmdResultCodes>>();
+            _stopped = true;
+        }
+
+        public void Start()
+        {
+            _stopped = false;
+        }
+
+        public void Stop()
+        {
+            try
+            {
+                _stopped = true;
+                TaskCompletionSource<OrderCmdResultCodes>[] snapshot;
+                lock (_pendingRequests)
+                {
+                    snapshot = _pendingRequests.ToArray();
+                    _pendingRequests.Clear();
+                }
+                foreach (var request in snapshot)
+                {
+                    request.TrySetResult(OrderCmdResultCodes.ConnectionError);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to dispose FDK async executor", ex);
+            }
         }
 
         public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
@@ -99,8 +131,8 @@ namespace TickTrader.Algo.Common.Model.Interop
                 var maxVisVolume = orderType == OrderType.Limit || orderType == OrderType.StopLimit ? maxVisibleVolume : default(double?);
 
                 _tradeProxy.Server.ModifyTradeRecordEx(request.OperationId, orderId, request.Symbol,
-                    ToRecordType(orderType), Convert(request.Side), request.CurrentVolume, maxVisVolume, px, stopPx,
-                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null);
+                    ToRecordType(orderType), Convert(request.Side), request.NewVolume, maxVisVolume, px, stopPx,
+                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null, request.CurrentVolume, request.OverrideIoC, null);
             });
         }
 
@@ -137,11 +169,24 @@ namespace TickTrader.Algo.Common.Model.Interop
 
         private Task<OrderCmdResultCodes> EnqueueTradeOp(string opName, Action tradeOpDef)
         {
-            return EnqueueTask(() =>
+            if (_stopped)
+                return Task.FromResult(OrderCmdResultCodes.ConnectionError);
+
+            var request = new TaskCompletionSource<OrderCmdResultCodes>();
+            lock (_pendingRequests)
+            {
+                _pendingRequests.Add(request);
+            }
+            EnqueueTask(() =>
             {
                 var result = HandleErrors(opName, tradeOpDef);
-                return result;
+                request.TrySetResult(result);
+                lock (_pendingRequests)
+                {
+                    _pendingRequests.Remove(request);
+                }
             });
+            return request.Task;
         }
 
         private OrderCmdResultCodes HandleErrors(string opName, Action tradeAction)
@@ -166,6 +211,13 @@ namespace TickTrader.Algo.Common.Model.Interop
             catch (SoftFX.Extended.Errors.TimeoutException)
             {
                 return OrderCmdResultCodes.Timeout;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                var result = FdkConvertor.Convert(ex);
+                if (result == OrderCmdResultCodes.InternalError)
+                    logger.Error(ex, opName + "() failed!");
+                return result;
             }
             catch (Exception ex)
             {

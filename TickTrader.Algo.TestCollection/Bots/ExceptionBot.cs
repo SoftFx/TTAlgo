@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -18,6 +19,12 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void OnStart()
         {
+            throw new Exception("Test exception!");
+        }
+
+        protected override async Task AsyncStop()
+        {
+            await Task.Delay(100);
             throw new Exception("Test exception!");
         }
 

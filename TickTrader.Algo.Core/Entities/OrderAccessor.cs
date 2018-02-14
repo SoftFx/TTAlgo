@@ -98,8 +98,8 @@ namespace TickTrader.Algo.Core
         decimal? BL.ICommonOrder.Price { get => GetDecPrice(); set => throw new NotImplementedException(); }
         bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
         bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
-        string BL.ICommonOrder.MarginCurrency { get => _symbol.BaseCurrency; set => throw new NotImplementedException(); }
-        string BL.ICommonOrder.ProfitCurrency { get => _symbol.CounterCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
+        string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 

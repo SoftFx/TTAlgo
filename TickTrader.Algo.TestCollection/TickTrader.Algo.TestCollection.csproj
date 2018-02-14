@@ -41,7 +41,6 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="TickTrader.Algo.Api">
       <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
@@ -51,8 +50,9 @@
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
+    <Compile Include="Bots\LifecycleTradeBot.cs" />
     <Compile Include="Bots\FeedQueryBot.cs" />
-    <Compile Include="Bots\LimitModifyLoop.cs" />
+    <Compile Include="Bots\ModifyLoopBot.cs" />
     <Compile Include="Bots\LogBot.cs" />
     <Compile Include="Bots\DelayBot.cs" />
     <Compile Include="Bots\EnvironmentInfoBot.cs" />
