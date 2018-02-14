@@ -61,8 +61,8 @@ namespace TickTrader.BotTerminal
             _stateControl.AddTransition(States.Online, Events.Disconnected, States.Offline);
             _stateControl.AddTransition(States.Online, Events.ConnectRequest, States.Disconnecting);
             _stateControl.AddTransition(States.Online, Events.DisconnectRequest, States.Disconnecting);
-            _stateControl.AddTransition(States.Disconnecting, Events.Disconnected, States.Offline);
             _stateControl.AddTransition(States.Disconnecting, Events.Disconnected, () => _needReconnect, States.Connecting);
+            _stateControl.AddTransition(States.Disconnecting, Events.Disconnected, States.Offline);
             _stateControl.AddTransition(States.WaitReconnect, Events.ConnectRequest, States.Connecting);
             _stateControl.AddTransition(States.WaitReconnect, Events.DisconnectRequest, States.Offline);
             _stateControl.AddTransition(States.WaitReconnect, Events.Reconnect, States.Connecting);

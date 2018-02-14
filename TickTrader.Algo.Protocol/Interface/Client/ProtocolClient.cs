@@ -81,6 +81,7 @@ namespace TickTrader.Algo.Protocol
             _stateMachine.OnEnter(ClientStates.LoggingIn, SendLogin);
             _stateMachine.OnEnter(ClientStates.Initializing, Init);
             _stateMachine.OnEnter(ClientStates.LoggingOut, SendLogout);
+            _stateMachine.OnEnter(ClientStates.Disconnecting, SendDisconnect);
             _stateMachine.OnEnter(ClientStates.Deinitializing, DeInit);
         }
 
@@ -219,6 +220,11 @@ namespace TickTrader.Algo.Protocol
         private void SendLogout()
         {
             ClientSession.SendLogoutRequest(null, new LogoutRequest(0));
+        }
+
+        private void SendDisconnect()
+        {
+            ClientSession.Disconnect(null, "Client disconnect");
         }
 
         private void Init()

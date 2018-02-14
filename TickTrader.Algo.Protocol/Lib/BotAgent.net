@@ -196,93 +196,99 @@ protocol BotAgent(1,1)
 
     processor Client()
     {
-        send LoginRequest(LoginRequest)
-        {
-            recv LoginReport(LoginReport)
-            {
-            }
-            or recv LoginReject(LoginReject)
-            {
-                return;
-            }
-        }
+    	loop
+    	{
+	        send LoginRequest(LoginRequest)
+	        {
+	            recv LoginReport(LoginReport)
+	            {
+	            }
+	            or recv LoginReject(LoginReject)
+	            {
+	                return;
+	            }
+	        }
 
-        send (Request)
-        {
-            repeat;
-        }
-        or recv (Report)
-        {
-            repeat;
-        }
-        or recv (Update)
-        {
-            repeat;
-        }
-        or recv LogoutReport(LogoutReport)
-        {
-            return;
-        }
-        or send LogoutRequest(LogoutRequest)
-        {
-            recv (Report)
-            {
-                repeat;
-            }
-            or recv (Update)
-            {
-                repeat;
-            }
-            or recv LogoutReport(LogoutReport)
-            {
-                return;
-            }
+	        send (Request)
+	        {
+	            repeat;
+	        }
+	        or recv (Report)
+	        {
+	            repeat;
+	        }
+	        or recv (Update)
+	        {
+	            repeat;
+	        }
+	        or recv LogoutReport(LogoutReport)
+	        {
+	            return;
+	        }
+	        or send LogoutRequest(LogoutRequest)
+	        {
+	            recv (Report)
+	            {
+	                repeat;
+	            }
+	            or recv (Update)
+	            {
+	                repeat;
+	            }
+	            or recv LogoutReport(LogoutReport)
+	            {
+	                return;
+	            }
+	        }
         }
     }
 
     processor Server()
     {
-        recv LoginRequest(LoginRequest)
-        {
-            send (LoginReport)
-            {
-            }
-            or send (LoginReject)
-            {
-                return;
-            }
-        }
+    	loop
+    	{
+	        recv LoginRequest(LoginRequest)
+	        {
+	            send (LoginReport)
+	            {
+	            }
+	            or send (LoginReject)
+	            {
+	                return;
+	            }
+	        }
 
-        recv (Request)
-        {
-            repeat;
-        }
-        or send (Report)
-        {
-            repeat;
-        }
-        or send (Update)
-        {
-            repeat;
-        }
-        or send (LogoutReport)
-        {
-            return;
-        }
-        or recv LogoutRequest(LogoutRequest)
-        {
-            send (Report)
-            {
-                repeat;
-            }
-            or send (Update)
-            {
-                repeat;
-            }
-            or send (LogoutReport)
-            {
-                return;
-            }
+	        recv (Request)
+	        {
+	            repeat;
+	        }
+	        or send (Report)
+	        {
+	            repeat;
+	        }
+	        or send (Update)
+	        {
+	            repeat;
+	        }
+	        or send (LogoutReport)
+	        {
+	            return;
+	        }
+	        or recv LogoutRequest(LogoutRequest)
+	        {
+	            send (Report)
+	            {
+	                repeat;
+	            }
+	            or send (Update)
+	            {
+	                repeat;
+	            }
+	            or send (LogoutReport)
+	            {
+	                return;
+	            }
+	        }
         }
     }
 
