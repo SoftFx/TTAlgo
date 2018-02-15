@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Protocol
 
         public IServerSettings Settings { get; }
 
+        public VersionSpec VersionSpec { get; private set; }
+
 
         public ProtocolServer(IBotAgentServer agentServer, IServerSettings settings)
         {
@@ -46,6 +48,9 @@ namespace TickTrader.Algo.Protocol
                 if (State != ServerStates.Stopped)
                     throw new Exception($"Server is already {State}");
 
+                VersionSpec = new VersionSpec();
+                _logger.Info($"Server current version: {VersionSpec.CurrentVersionStr}");
+
                 Listener = new BotAgentServerListener(AgentServer, _logger);
 
                 Server = new Server(Settings.ServerName, Settings.CreateServerOptions())
@@ -64,6 +69,7 @@ namespace TickTrader.Algo.Protocol
                 AgentServer.BotUpdated += OnBotUpdated;
                 AgentServer.PackageUpdated += OnPackageUpdated;
                 AgentServer.BotStateUpdated += OnBotStateUpdated;
+                AgentServer.AccountStateUpdated += OnAccountStateUpdated;
             }
             catch (Exception ex)
             {
@@ -85,6 +91,7 @@ namespace TickTrader.Algo.Protocol
                     AgentServer.BotUpdated -= OnBotUpdated;
                     AgentServer.PackageUpdated -= OnPackageUpdated;
                     AgentServer.BotStateUpdated -= OnBotStateUpdated;
+                    AgentServer.AccountStateUpdated -= OnAccountStateUpdated;
 
                     State = ServerStates.Stopped;
 
@@ -142,6 +149,11 @@ namespace TickTrader.Algo.Protocol
         }
 
         private void OnBotStateUpdated(BotStateUpdateEntity update)
+        {
+            SendUpdate(update.ToMessage());
+        }
+
+        private void OnAccountStateUpdated(AccountStateUpdateEntity update)
         {
             SendUpdate(update.ToMessage());
         }

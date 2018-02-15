@@ -1,5 +1,4 @@
-// Protocol version should be syncronized with VersionSpec.cs
-protocol BotAgent(1,1)
+protocol BotAgent(1,2)
 {
     message LoginRequest
     {
@@ -7,10 +6,7 @@ protocol BotAgent(1,1)
         ustring Password;
     }
 
-    message LoginReport
-    {
-        int32 CurrentVersion;
-    }
+    message LoginReport;
 
     enum LoginRejectReason
     {
@@ -142,10 +138,43 @@ protocol BotAgent(1,1)
         PluginKey Plugin;
     }
 
+    enum ConnectionState
+    {
+    	Offline,
+    	Connecting,
+    	Online,
+    	Disconnecting,
+    }
+
+    enum ConnectionErrorCode
+    {
+    	None,
+        Unknown,
+        NetworkError,
+        Timeout,
+        BlockedAccount,
+        ClientInitiated,
+        InvalidCredentials,
+        SlowConnection,
+        ServerError,
+        LoginDeleted,
+        ServerLogout,
+        Canceled,
+    }
+
+    group ConnectionErrorModel
+    {
+    	ConnectionErrorCode Code;
+    	ustring? Text;
+    }
+
     group AccountModel
     {
         ustring Login;
         ustring Server;
+        bool UseNewProtocol;
+        ConnectionState ConnectionState;
+        ConnectionErrorModel LastError;
     }
 
     message AccountListRequest : Request;
@@ -192,6 +221,13 @@ protocol BotAgent(1,1)
     {
         ustring BotId;
         BotState State;
+    }
+
+    message AccountStateUpdate : Update
+    {
+    	AccountKey Account;
+    	ConnectionState ConnectionState;
+    	ConnectionErrorModel LastError;
     }
 
     processor Client()
@@ -309,6 +345,9 @@ protocol BotAgent(1,1)
         or recv BotStateUpdate(BotStateUpdate)
         {
         }
+        or recv AccountStateUpdate(AccountStateUpdate)
+        {
+        }
     }
 
     processor ServerUpdate(string) : Server
@@ -326,6 +365,9 @@ protocol BotAgent(1,1)
         {
         }
         or send (BotStateUpdate)
+        {
+        }
+        or send (AccountStateUpdate)
         {
         }
     }

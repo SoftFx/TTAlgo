@@ -1,11 +1,12 @@
-﻿namespace TickTrader.Algo.Protocol
+﻿using SoftFX.Net.BotAgent;
+
+namespace TickTrader.Algo.Protocol
 {
     public class VersionSpec
     {
-        // Should be syncronized with BotAgent.net version
-        public const int MajorVersion = 1;
-        public const int MinorVersion = 1;
+        public static int MajorVersion => Info.BotAgent.MajorVersion;
 
+        public static int MinorVersion => Info.BotAgent.MinorVersion;
 
         public static string LatestVersion => $"{MajorVersion}.{MinorVersion}";
 
@@ -26,23 +27,24 @@
         }
 
 
-        internal static int ResolveVersion(int clientMajorVersion, int clientMinorVersion, out string reason)
+        internal static string CheckClientCompatibility(int clientMajorVersion, int clientMinorVersion)
         {
-            reason = "";
             if (MajorVersion != clientMajorVersion)
             {
-                reason = $"Major version mismatch: server - {MajorVersion}, client - {clientMajorVersion}";
-                return -1;
+                return $"Major version mismatch: server - {MajorVersion}, client - {clientMajorVersion}";
             }
             if (MinorVersion > clientMinorVersion)
             {
-                reason = "Server doesn't support older clients";
-                return -1;
+                return "Server doesn't support older clients";
             }
-            return MinorVersion;
+            return null;
         }
 
 
         public bool SupportsBlackjack => CurrentVersion == MinorVersion;
+
+        public bool SupportsNewProtocol => CurrentVersion >= 2;
+
+        public bool SupportsConnectionState => CurrentVersion >= 2;
     }
 }

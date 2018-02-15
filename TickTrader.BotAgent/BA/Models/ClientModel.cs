@@ -115,6 +115,7 @@ namespace TickTrader.BotAgent.BA.Models
         }
 
         public ConnectionStates ConnectionState { get; private set; }
+        public ConnectionErrorInfo LastError => _lastError;
         public object SyncObj => _sync;
         public ConnectionModel Connection { get; private set; }
         public IEnumerable<ITradeBot> TradeBots => _bots;

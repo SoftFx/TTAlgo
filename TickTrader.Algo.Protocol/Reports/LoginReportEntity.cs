@@ -4,9 +4,6 @@ namespace TickTrader.Algo.Protocol
 {
     public class LoginReportEntity
     {
-        public int CurrentVersion { get; set; }
-
-
         public LoginReportEntity() { }
     }
 
@@ -15,12 +12,12 @@ namespace TickTrader.Algo.Protocol
     {
         internal static LoginReportEntity ToEntity(this LoginReport report)
         {
-            return new LoginReportEntity { CurrentVersion = report.CurrentVersion };
+            return new LoginReportEntity();
         }
 
         internal static LoginReport ToMessage(this LoginReportEntity report)
         {
-            return new LoginReport(0) { CurrentVersion = report.CurrentVersion };
+            return new LoginReport(0);
         }
     }
 }

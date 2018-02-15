@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 _logger.Info($"Successfull login, sessionId = {session.Guid}");
-                Login(message.CurrentVersion);
+                Login(session.ServerMinorVersion);
             }
             catch (Exception ex)
             {
@@ -275,6 +275,18 @@ namespace TickTrader.Algo.Protocol.Lib
             try
             {
                 _client.UpdateBotState(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnAccountStateUpdate(ClientSession session, AccountStateUpdate message)
+        {
+            try
+            {
+                _client.UpdateAccountState(message.ToEntity());
             }
             catch (Exception ex)
             {

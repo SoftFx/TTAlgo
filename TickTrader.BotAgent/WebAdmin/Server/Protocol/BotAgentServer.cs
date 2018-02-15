@@ -24,6 +24,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<BotModelUpdateEntity> BotUpdated = delegate { };
         public event Action<PackageModelUpdateEntity> PackageUpdated = delegate { };
         public event Action<BotStateUpdateEntity> BotStateUpdated = delegate { };
+        public event Action<AccountStateUpdateEntity> AccountStateUpdated = delegate { };
 
 
         public BotAgentServer(IServiceProvider services, IConfiguration serverConfig)
@@ -38,6 +39,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.BotChanged += OnBotChanged;
             _botAgent.PackageChanged += OnPackageChanged;
             _botAgent.BotStateChanged += OnBotStateChanged;
+            _botAgent.AccountStateChanged += OnAccountStateChanged;
         }
 
 
@@ -55,6 +57,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     {
                         Login = acc.Username,
                         Server = acc.Address,
+                        UseNewProtocol = acc.UseNewProtocol,
+                        ConnectionState = ToProtocol.Convert(acc.ConnectionState),
+                        LastError = new ConnectionErrorEntity
+                        {
+                            Code = ToProtocol.Convert(acc.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
+                            Text = acc.LastError?.TextMessage,
+                        },
                     }).ToArray(),
             };
         }
@@ -118,6 +127,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     {
                         Login = account.Username,
                         Server = account.Address,
+                        UseNewProtocol = account.UseNewProtocol,
+                        ConnectionState = ToProtocol.Convert(account.ConnectionState),
+                        LastError = new ConnectionErrorEntity
+                        {
+                            Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
+                            Text = account.LastError?.TextMessage,
+                        },
                     },
                 });
             }
@@ -196,6 +212,27 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 {
                     BotId = bot.Id,
                     State = ToProtocol.Convert(bot.State),
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to send update: {ex.Message}", ex);
+            }
+        }
+
+        private void OnAccountStateChanged(IAccount account)
+        {
+            try
+            {
+                AccountStateUpdated(new AccountStateUpdateEntity
+                {
+                    Account = new AccountKeyEntity { Login = account.Username, Server = account.Address },
+                    ConnectionState = ToProtocol.Convert(account.ConnectionState),
+                    LastError = new ConnectionErrorEntity
+                    {
+                        Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
+                        Text = account.LastError?.TextMessage,
+                    },
                 });
             }
             catch (Exception ex)
