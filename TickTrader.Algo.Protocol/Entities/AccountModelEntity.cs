@@ -30,6 +30,18 @@ namespace TickTrader.Algo.Protocol
         }
 
 
+        internal void UpdateModel(AccountModel_1 model)
+        {
+            model.Login = Login;
+            model.Server = Server;
+        }
+
+        internal void UpdateSelf(AccountModel_1 model)
+        {
+            Login = model.Login;
+            Server = model.Server;
+        }
+
         internal void UpdateModel(AccountModel model)
         {
             model.Login = Login;

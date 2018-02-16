@@ -95,6 +95,19 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
+        public override void OnLoginReport_1(ClientSession session, LoginRequestClientContext LoginRequestClientContext, LoginReport_1 message)
+        {
+            try
+            {
+                _logger.Info($"Successfull login, sessionId = {session.Guid}");
+                Login(session.ServerMinorVersion);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
         public override void OnLoginReject(ClientSession session, LoginRequestClientContext LoginRequestClientContext, LoginReject message)
         {
             try
@@ -202,6 +215,22 @@ namespace TickTrader.Algo.Protocol.Lib
             }
         }
 
+        public override void OnAccountListReport_1(ClientSession session, AccountListRequestClientContext AccountListRequestClientContext, AccountListReport_1 message)
+        {
+            try
+            {
+                var reportEntity = message.ToEntity();
+                if (!ProcessReport(AccountListRequestClientContext, reportEntity))
+                {
+                    _client.InitAccountList(reportEntity);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
         public override void OnBotListReport(ClientSession session, BotListRequestClientContext BotListRequestClientContext, BotListReport message)
         {
             try
@@ -235,6 +264,18 @@ namespace TickTrader.Algo.Protocol.Lib
         }
 
         public override void OnAccountModelUpdate(ClientSession session, AccountModelUpdate message)
+        {
+            try
+            {
+                _client.UpdateAccount(message.ToEntity());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Listener failure {session.Guid}: {ex.Message}");
+            }
+        }
+
+        public override void OnAccountModelUpdate_1(ClientSession session, AccountModelUpdate_1 message)
         {
             try
             {
