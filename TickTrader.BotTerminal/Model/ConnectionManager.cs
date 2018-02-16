@@ -22,16 +22,13 @@ namespace TickTrader.BotTerminal
 
         private AuthStorageModel authStorage;
         private EventJournal journal;
-        private Task initTask;
 
-        public ConnectionManager(PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
+        public ConnectionManager(PersistModel appStorage, EventJournal journal)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
             this.journal = journal;
-
-            initTask = InitCatalog(algoEnv.Repo);
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -56,11 +53,6 @@ namespace TickTrader.BotTerminal
 
                 StateChanged?.Invoke(from, to);
             };
-        }
-
-        private async Task InitCatalog(PluginCatalog catalog)
-        {
-            await catalog.Init();
         }
 
         private bool IsConnected(ConnectionModel.States from, ConnectionModel.States to)
@@ -126,8 +118,6 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                await initTask;
-
                 var result = await Connection.Connect(login, password, server, useSfx, cToken);
 
                 if (result.Code == ConnectionErrorCodes.None)

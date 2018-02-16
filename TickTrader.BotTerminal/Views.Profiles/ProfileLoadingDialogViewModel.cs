@@ -14,13 +14,15 @@ namespace TickTrader.BotTerminal
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
         private CancellationToken _token;
+        private PluginCatalog _repo;
 
-        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token)
+        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token, PluginCatalog repo)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
             _profileManager = profileManager;
             _token = token;
+            _repo = repo;
         }
 
         protected override void OnInitialize()
@@ -34,9 +36,13 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await Task.Delay(Delay, _token);
+                await Task.Delay(Delay, _token); //give UI some time to display this window
 
                 _charts.CloseAllItems(_token);
+
+                _token.ThrowIfCancellationRequested();
+
+                await _repo.WaitInit();
 
                 _token.ThrowIfCancellationRequested();
 
