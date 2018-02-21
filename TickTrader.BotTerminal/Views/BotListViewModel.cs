@@ -14,6 +14,7 @@ namespace TickTrader.BotTerminal
 
         private ChartCollectionViewModel _charts;
         private ChartViewModel _botDefaultChart;
+        private string _defaultSymbolName;
 
 
         public IObservableListSource<BotControlViewModel> LocalBots { get; }
@@ -27,6 +28,7 @@ namespace TickTrader.BotTerminal
             _botAgentManager = botAgentManager;
             _clientModel = clientModel;
             _charts = charts;
+            _clientModel.Disconnected += ()=>_botDefaultChart = null; 
 
             LocalBots = _shell.BotAggregator.BotControls.AsObservable();
 
@@ -81,7 +83,11 @@ namespace TickTrader.BotTerminal
         {
             if (_botDefaultChart == null)
             {
-                _charts.Open("EURUSD");
+                if (InitDefaultSymbolName())
+                    _charts.Open(_defaultSymbolName);
+                else
+                    return;
+
                 _botDefaultChart = _charts.ActiveItem;
             }
             else
@@ -99,6 +105,17 @@ namespace TickTrader.BotTerminal
         public bool CanDrop(object o)
         {
             return o is AlgoItemViewModel;
+        }
+
+        private bool InitDefaultSymbolName()
+        {
+            var symbolsNames = _clientModel.Symbols.Snapshot.Values.Select((k) => k.Name).ToList();
+
+            if (symbolsNames.Count == 0)
+                return false;
+
+            _defaultSymbolName = (symbolsNames.Contains("EURUSD")) ? "EURUSD" : symbolsNames[(new Random()).Next() % symbolsNames.Count];
+            return true;
         }
     }
 }
