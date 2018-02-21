@@ -89,6 +89,8 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanBeClosed));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(IsStarted));
+            NotifyOfPropertyChange(nameof(CanStart));
+            NotifyOfPropertyChange(nameof(CanStop));
             NotifyOfPropertyChange(nameof(State));
         }
 
