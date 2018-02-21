@@ -342,6 +342,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="80"/>
@@ -356,6 +357,12 @@
             <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
             <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Content="Symbol:" Grid.Row="4" Grid.Column="0"/>
+            <ComboBox IsEditable="False" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="100" Margin="0,0,5,0"
+                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol}"/>
+            <Label Content="TimeFrame:" Grid.Row="4" Grid.Column="2"/>
+            <ComboBox IsEditable="False" Grid.Row="5" Grid.Column="2" Margin="0,0,5,0"
+                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame.Value}"/>
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">

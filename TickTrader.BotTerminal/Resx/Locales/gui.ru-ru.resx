@@ -331,6 +331,6 @@
     <value>Stop Price</value>
   </data>
   <data name="Tab_Bots" xml:space="preserve">
-    <value>Боты</value>
+    <value>Бот-экземпляры</value>
   </data>
 </root>

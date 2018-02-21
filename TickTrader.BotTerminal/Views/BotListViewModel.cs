@@ -1,13 +1,19 @@
-﻿using Caliburn.Micro;
+﻿using System;
+using System.Linq;
+using Caliburn.Micro;
+using TickTrader.Algo.Core.Metadata;
 using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotListViewModel : PropertyChangedBase
+    internal class BotListViewModel : PropertyChangedBase, IDropHandler
     {
         private BotAgentManager _botAgentManager;
         private IShell _shell;
         private TraderClientModel _clientModel;
+
+        private ChartCollectionViewModel _charts;
+        private ChartViewModel _botDefaultChart;
 
 
         public IObservableListSource<BotControlViewModel> LocalBots { get; }
@@ -15,13 +21,15 @@ namespace TickTrader.BotTerminal
         public IObservableListSource<BotAgentViewModel> BotAgents { get; }
 
 
-        public BotListViewModel(IShell shell, BotAgentManager botAgentManager, TraderClientModel clientModel)
+        public BotListViewModel(IShell shell, BotAgentManager botAgentManager, TraderClientModel clientModel, ChartCollectionViewModel charts)
         {
             _shell = shell;
             _botAgentManager = botAgentManager;
             _clientModel = clientModel;
+            _charts = charts;
 
             LocalBots = _shell.BotAggregator.BotControls.AsObservable();
+
 
             BotAgents = _botAgentManager.BotAgents
                 .OrderBy((s, b) => s)
@@ -67,6 +75,30 @@ namespace TickTrader.BotTerminal
             {
                 _botAgentManager.Disconnect(connectionModel.Server);
             }
+        }
+
+        public void Drop(object o)
+        {
+            if (_botDefaultChart == null)
+            {
+                _charts.Open("EURUSD");
+                _botDefaultChart = _charts.ActiveItem;
+            }
+            else
+                _charts.ActivateItem(_botDefaultChart);
+                
+            var algoBot = o as AlgoItemViewModel;
+            if (algoBot != null)
+            {
+                var pluginType = algoBot.PluginItem.Descriptor.AlgoLogicType;
+                if (pluginType == AlgoTypes.Robot)
+                    _botDefaultChart.OpenPlugin(algoBot.PluginItem);                    
+            }
+        }
+
+        public bool CanDrop(object o)
+        {
+            return o is AlgoItemViewModel;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol, BarPriceType priceType, IAlgoGuiMetadata metadata)
             : base(pRef)
         {
-            _mainSymbol = mainSymbol;
+            _mainSymbol =  mainSymbol;
             _priceType = priceType;
             _metadata = metadata;
 

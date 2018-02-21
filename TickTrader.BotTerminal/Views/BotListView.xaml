@@ -3,7 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
 
 
     <Style x:Key="StatusEllipseStyle" TargetType="Ellipse">
@@ -108,11 +109,21 @@
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
                                     <ContextMenu>
-                                        <MenuItem Header="Start" cal:Message.Attach="StartStop" IsEnabled="{Binding CanStart}"/>
-                                        <MenuItem Header="Stop" cal:Message.Attach="StartStop" IsEnabled="{Binding CanStop}"/>
-                                        <MenuItem Header="Status" cal:Message.Attach="OpenState"/>
-                                        <MenuItem Header="Settings" cal:Message.Attach="OpenSettings" IsEnabled="{Binding CanOpenSettings}"/>
-                                        <MenuItem Header="Delete" cal:Message.Attach="Close" IsEnabled="{Binding CanBeClosed}"/>
+                                        <MenuItem Header="Start" IsEnabled="{Binding CanStart}"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
+                                                  cal:Message.Attach="StartStop"/>
+                                        <MenuItem Header="Stop" IsEnabled="{Binding CanStop}"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
+                                                  cal:Message.Attach="StartStop"/>
+                                        <MenuItem Header="Status"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
+                                                  cal:Message.Attach="OpenState"/>
+                                        <MenuItem Header="Settings" IsEnabled="{Binding CanOpenSettings}"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
+                                                  cal:Message.Attach="OpenSettings"/>
+                                        <MenuItem Header="Delete" IsEnabled="{Binding CanBeClosed}"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
+                                                  cal:Message.Attach="Close"/>
                                     </ContextMenu>
                                 </Setter.Value>
                             </Setter>
@@ -126,6 +137,11 @@
                             </StackPanel>
                         </DataTemplate>
                     </TreeViewItem.ItemTemplate>
+
+                    <i:Interaction.Behaviors>
+                        <l:DropBehavior/>
+                    </i:Interaction.Behaviors>
+
                 </TreeViewItem>
 
                 <TreeViewItem Header="Bot Agents" ItemsSource="{Binding BotAgents}">
