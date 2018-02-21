@@ -23,6 +23,8 @@
 
         void UpdateBotState(BotStateUpdateEntity update);
 
+        void UpdateAccountState(AccountStateUpdateEntity update);
+
         #endregion Updates
     }
 }

@@ -66,6 +66,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         public event Action<IAccount, ChangeAction> AccountChanged;
 
+        public event Action<IAccount> AccountStateChanged;
+
         public ConnectionErrorInfo TestAccount(AccountKey accountId)
         {
             Task<ConnectionErrorInfo> testTask;
@@ -196,6 +198,8 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 var acc = GetAccountOrThrow(key);
                 acc.ChangeProtocol();
+
+                AccountChanged?.Invoke(acc, ChangeAction.Modified);
             }
         }
 
@@ -223,16 +227,9 @@ namespace TickTrader.BotAgent.BA.Models
             acc.BotInitialized += OnBotInitialized;
             acc.Init(SyncObj, _loggerFactory, _packageStorage);
             acc.Changed += OnAccountChanged;
+            acc.StateChanged += OnAccountStateChanged;
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
-        }
-
-        private void DeinitAccount(ClientModel acc)
-        {
-            acc.BotValidation -= OnBotValidation;
-            acc.Changed -= OnAccountChanged;
-            acc.BotChanged -= OnBotChanged;
-            acc.BotStateChanged -= OnBotStateChanged;
         }
 
         private void OnBotStateChanged(TradeBotModel bot)
@@ -242,12 +239,22 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void DisposeAccount(ClientModel acc)
         {
+            acc.BotValidation -= OnBotValidation;
+            acc.BotInitialized -= OnBotInitialized;
             acc.Changed -= OnAccountChanged;
+            acc.StateChanged -= OnAccountStateChanged;
+            acc.BotChanged -= OnBotChanged;
+            acc.BotStateChanged -= OnBotStateChanged;
         }
 
         private void OnAccountChanged(ClientModel acc)
         {
             Save();
+        }
+
+        private void OnAccountStateChanged(ClientModel acc)
+        {
+            AccountStateChanged?.Invoke(acc);
         }
 
         private void OnBotChanged(TradeBotModel bot, ChangeAction changeAction)

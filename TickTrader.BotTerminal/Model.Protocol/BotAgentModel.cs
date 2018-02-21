@@ -22,6 +22,8 @@ namespace TickTrader.BotTerminal
 
         public Action<string> BotStateChanged = delegate { };
 
+        public Action<string> AccountStateChanged = delegate { };
+
 
         public BotAgentModel()
         {
@@ -164,6 +166,20 @@ namespace TickTrader.BotTerminal
                 {
                     _bots[update.BotId].State = update.State;
                     BotStateChanged(update.BotId);
+                }
+            });
+        }
+
+        public void UpdateAccountState(AccountStateUpdateEntity update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                var key = GetAccountKey(update.Account);
+                if (_accounts.ContainsKey(key))
+                {
+                    _accounts[key].ConnectionState = update.ConnectionState;
+                    _accounts[key].LastError = update.LastError;
+                    AccountStateChanged(key);
                 }
             });
         }

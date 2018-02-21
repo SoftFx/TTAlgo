@@ -1,16 +1,19 @@
-// Protocol version should be syncronized with VersionSpec.cs
-protocol BotAgent(1,1)
+// Set message id explicitly to improve readability.
+// Last message id = 23. Update when adding new messages.
+protocol BotAgent(1,2)
 {
-    message LoginRequest
+    message LoginRequest(0)
     {
         ustring Username;
         ustring Password;
     }
 
-    message LoginReport
+    message LoginReport_1(1)
     {
         int32 CurrentVersion;
     }
+
+    message LoginReport(20);
 
     enum LoginRejectReason
     {
@@ -19,13 +22,13 @@ protocol BotAgent(1,1)
         InternalServerError,
     }
 
-    message LoginReject
+    message LoginReject(2)
     {
         LoginRejectReason Reason;
         ustring? Text;
     }
 
-    message LogoutRequest;
+    message LogoutRequest(3);
 
     enum LogoutReason
     {
@@ -34,13 +37,13 @@ protocol BotAgent(1,1)
         InternalServerError,
     }
 
-    message LogoutReport
+    message LogoutReport(4)
     {
         LogoutReason Reason;
         ustring? Text;
     }
 
-    message Request
+    message Request(5)
     {
         string Id;
     }
@@ -51,7 +54,7 @@ protocol BotAgent(1,1)
         InternalServerError,
     }
 
-    message Report
+    message Report(6)
     {
         string RequestId;
         RequestExecState RequestState;
@@ -65,7 +68,7 @@ protocol BotAgent(1,1)
         Removed,
     }
 
-    message Update
+    message Update(7)
     {
         string Id;
         UpdateType Type;
@@ -142,56 +145,112 @@ protocol BotAgent(1,1)
         PluginKey Plugin;
     }
 
-    group AccountModel
+    enum ConnectionState
+    {
+    	Offline,
+    	Connecting,
+    	Online,
+    	Disconnecting,
+    }
+
+    enum ConnectionErrorCode
+    {
+    	None,
+        Unknown,
+        NetworkError,
+        Timeout,
+        BlockedAccount,
+        ClientInitiated,
+        InvalidCredentials,
+        SlowConnection,
+        ServerError,
+        LoginDeleted,
+        ServerLogout,
+        Canceled,
+    }
+
+    group ConnectionErrorModel
+    {
+    	ConnectionErrorCode Code;
+    	ustring? Text;
+    }
+
+    group AccountModel_1
     {
         ustring Login;
         ustring Server;
     }
 
-    message AccountListRequest : Request;
+    group AccountModel
+    {
+        ustring Login;
+        ustring Server;
+        bool UseNewProtocol;
+        ConnectionState ConnectionState;
+        ConnectionErrorModel LastError;
+    }
 
-    message AccountListReport : Report
+    message AccountListRequest(8) : Request;
+
+    message AccountListReport_1(9) : Report
+    {
+        AccountModel_1[] Accounts;
+    }
+
+    message AccountListReport(21) : Report
     {
         AccountModel[] Accounts;
     }
 
-    message BotListRequest : Request;
+    message BotListRequest(10) : Request;
 
-    message BotListReport : Report
+    message BotListReport(11) : Report
     {
         BotModel[] Bots;
     }
 
-    message PackageListRequest : Request;
+    message PackageListRequest(12) : Request;
 
-    message PackageListReport : Report
+    message PackageListReport(13) : Report
     {
         PackageModel[] Packages;
     }
 
-    message SubscribeRequest : Request;
+    message SubscribeRequest(14) : Request;
 
-    message SubscribeReport : Report;
+    message SubscribeReport(15) : Report;
 
-    message AccountModelUpdate : Update
+    message AccountModelUpdate_1(16) : Update
+    {
+        AccountModel_1 Item;
+    }
+
+    message AccountModelUpdate(22) : Update
     {
         AccountModel Item;
     }
 
-    message BotModelUpdate : Update
+    message BotModelUpdate(17) : Update
     {
         BotModel Item;
     }
 
-    message PackageModelUpdate : Update
+    message PackageModelUpdate(18) : Update
     {
         PackageModel Item;
     }
 
-    message BotStateUpdate : Update
+    message BotStateUpdate(19) : Update
     {
         ustring BotId;
         BotState State;
+    }
+
+    message AccountStateUpdate(23) : Update
+    {
+    	AccountKey Account;
+    	ConnectionState ConnectionState;
+    	ConnectionErrorModel LastError;
     }
 
     processor Client()
@@ -201,6 +260,9 @@ protocol BotAgent(1,1)
 	        send LoginRequest(LoginRequest)
 	        {
 	            recv LoginReport(LoginReport)
+	            {
+	            }
+	            or recv LoginReport_1(LoginReport_1)
 	            {
 	            }
 	            or recv LoginReject(LoginReject)
@@ -252,6 +314,9 @@ protocol BotAgent(1,1)
 	            send (LoginReport)
 	            {
 	            }
+	            or send (LoginReport_1)
+	            {
+	            }
 	            or send (LoginReject)
 	            {
 	                return;
@@ -300,6 +365,9 @@ protocol BotAgent(1,1)
         recv AccountModelUpdate(AccountModelUpdate)
         {
         }
+        or recv AccountModelUpdate_1(AccountModelUpdate_1)
+        {
+        }
         or recv BotModelUpdate(BotModelUpdate)
         {
         }
@@ -307,6 +375,9 @@ protocol BotAgent(1,1)
         {
         }
         or recv BotStateUpdate(BotStateUpdate)
+        {
+        }
+        or recv AccountStateUpdate(AccountStateUpdate)
         {
         }
     }
@@ -319,6 +390,9 @@ protocol BotAgent(1,1)
         send (AccountModelUpdate)
         {
         }
+        or send (AccountModelUpdate_1)
+        {
+        }
         or send (BotModelUpdate)
         {
         }
@@ -326,6 +400,9 @@ protocol BotAgent(1,1)
         {
         }
         or send (BotStateUpdate)
+        {
+        }
+        or send (AccountStateUpdate)
         {
         }
     }
@@ -339,6 +416,9 @@ protocol BotAgent(1,1)
         send AccountListRequest(AccountListRequest)
         {
             recv AccountListReport(AccountListReport)
+            {
+            }
+            or recv AccountListReport_1(AccountListReport_1)
             {
             }
         }
@@ -371,6 +451,9 @@ protocol BotAgent(1,1)
         recv AccountListRequest(AccountListRequest)
         {
             send (AccountListReport)
+            {
+            }
+            or send (AccountListReport_1)
             {
             }
         }

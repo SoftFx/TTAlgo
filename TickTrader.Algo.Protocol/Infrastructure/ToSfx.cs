@@ -98,5 +98,55 @@ namespace TickTrader.Algo.Protocol
                     throw new ArgumentException();
             }
         }
+
+        internal static Sfx.ConnectionState Convert(ConnectionState state)
+        {
+            switch (state)
+            {
+                case ConnectionState.Offline:
+                    return Sfx.ConnectionState.Offline;
+                case ConnectionState.Connecting:
+                    return Sfx.ConnectionState.Connecting;
+                case ConnectionState.Online:
+                    return Sfx.ConnectionState.Online;
+                case ConnectionState.Disconnecting:
+                    return Sfx.ConnectionState.Disconnecting;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        internal static Sfx.ConnectionErrorCode Convert(ConnectionErrorCode code)
+        {
+            switch (code)
+            {
+                case ConnectionErrorCode.None:
+                    return Sfx.ConnectionErrorCode.None;
+                case ConnectionErrorCode.Unknown:
+                    return Sfx.ConnectionErrorCode.Unknown;
+                case ConnectionErrorCode.NetworkError:
+                    return Sfx.ConnectionErrorCode.NetworkError;
+                case ConnectionErrorCode.Timeout:
+                    return Sfx.ConnectionErrorCode.Timeout;
+                case ConnectionErrorCode.BlockedAccount:
+                    return Sfx.ConnectionErrorCode.BlockedAccount;
+                case ConnectionErrorCode.ClientInitiated:
+                    return Sfx.ConnectionErrorCode.ClientInitiated;
+                case ConnectionErrorCode.InvalidCredentials:
+                    return Sfx.ConnectionErrorCode.InvalidCredentials;
+                case ConnectionErrorCode.SlowConnection:
+                    return Sfx.ConnectionErrorCode.SlowConnection;
+                case ConnectionErrorCode.ServerError:
+                    return Sfx.ConnectionErrorCode.ServerError;
+                case ConnectionErrorCode.LoginDeleted:
+                    return Sfx.ConnectionErrorCode.LoginDeleted;
+                case ConnectionErrorCode.ServerLogout:
+                    return Sfx.ConnectionErrorCode.ServerLogout;
+                case ConnectionErrorCode.Canceled:
+                    return Sfx.ConnectionErrorCode.Canceled;
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

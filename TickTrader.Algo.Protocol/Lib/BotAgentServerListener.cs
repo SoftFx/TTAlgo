@@ -54,16 +54,16 @@ namespace TickTrader.Algo.Protocol.Lib
                 var res = _server.ValidateCreds(message.Username, message.Password);
                 if (res)
                 {
-                    var currentVersion = VersionSpec.ResolveVersion(session.ClientMajorVersion, session.ClientMinorVersion, out var reason);
-                    _logger.Info($"Client {session.Guid} version = {session.ClientMajorVersion}.{session.ClientMinorVersion}. Server version = {VersionSpec.LatestVersion}. Resolved minor version = {currentVersion}");
-                    if (currentVersion == -1)
+                    var reason = VersionSpec.CheckClientCompatibility(session.ClientMajorVersion, session.ClientMinorVersion);
+                    _logger.Info($"Client {session.Guid} version = {session.ClientMajorVersion}.{session.ClientMinorVersion}. Server version = {VersionSpec.LatestVersion}. {reason}");
+                    if (reason != null)
                     {
                         session.Send(new LoginReject(0) { Reason = Sfx.LoginRejectReason.VersionMismatch, Text = reason });
                     }
                     else
                     {
                         _logger.Info($"Client {session.Guid} logged in");
-                        session.Send(new LoginReport(0) { CurrentVersion = currentVersion });
+                        session.Send(new LoginReport(0));
                     }
                 }
                 else

@@ -22,6 +22,7 @@ namespace TickTrader.BotAgent.BA
         IEnumerable<IAccount> Accounts { get; }
         IEnumerable<ITradeBot> TradeBots { get; }
         event Action<IAccount, ChangeAction> AccountChanged;
+        event Action<IAccount> AccountStateChanged;
 
         Task ShutdownAsync();
 
@@ -50,6 +51,7 @@ namespace TickTrader.BotAgent.BA
         string Address { get; }
         string Username { get; }
         ConnectionStates ConnectionState { get; }
+        ConnectionErrorInfo LastError { get; }
         IEnumerable<ITradeBot> TradeBots { get; }
         bool UseNewProtocol { get; }
 

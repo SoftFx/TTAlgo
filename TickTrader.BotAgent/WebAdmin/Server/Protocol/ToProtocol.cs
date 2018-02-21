@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
@@ -55,6 +56,56 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     return UpdateType.Removed;
                 case ChangeAction.Modified:
                     return UpdateType.Updated;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        internal static ConnectionState Convert(ConnectionStates state)
+        {
+            switch (state)
+            {
+                case ConnectionStates.Offline:
+                    return ConnectionState.Offline;
+                case ConnectionStates.Connecting:
+                    return ConnectionState.Connecting;
+                case ConnectionStates.Online:
+                    return ConnectionState.Online;
+                case ConnectionStates.Disconnecting:
+                    return ConnectionState.Disconnecting;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        internal static ConnectionErrorCode Convert(ConnectionErrorCodes code)
+        {
+            switch (code)
+            {
+                case ConnectionErrorCodes.None:
+                    return ConnectionErrorCode.None;
+                case ConnectionErrorCodes.Unknown:
+                    return ConnectionErrorCode.Unknown;
+                case ConnectionErrorCodes.NetworkError:
+                    return ConnectionErrorCode.NetworkError;
+                case ConnectionErrorCodes.Timeout:
+                    return ConnectionErrorCode.Timeout;
+                case ConnectionErrorCodes.BlockedAccount:
+                    return ConnectionErrorCode.BlockedAccount;
+                case ConnectionErrorCodes.ClientInitiated:
+                    return ConnectionErrorCode.ClientInitiated;
+                case ConnectionErrorCodes.InvalidCredentials:
+                    return ConnectionErrorCode.InvalidCredentials;
+                case ConnectionErrorCodes.SlowConnection:
+                    return ConnectionErrorCode.SlowConnection;
+                case ConnectionErrorCodes.ServerError:
+                    return ConnectionErrorCode.ServerError;
+                case ConnectionErrorCodes.LoginDeleted:
+                    return ConnectionErrorCode.LoginDeleted;
+                case ConnectionErrorCodes.ServerLogout:
+                    return ConnectionErrorCode.ServerLogout;
+                case ConnectionErrorCodes.Canceled:
+                    return ConnectionErrorCode.Canceled;
                 default:
                     throw new ArgumentException();
             }

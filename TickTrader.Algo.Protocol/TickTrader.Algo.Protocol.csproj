@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\ConnectionErrorEntity.cs" />
     <Compile Include="Infrastructure\ToAlgo.cs" />
     <Compile Include="Infrastructure\ToSfx.cs" />
     <Compile Include="Entities\AccountKeyEntity.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="Reports\ReportEntity.cs" />
     <Compile Include="Requests\SubscribeRequestEntity.cs" />
     <Compile Include="Updates\AccountModelUpdateEntity.cs" />
+    <Compile Include="Updates\AccountStateUpdateEntity.cs" />
     <Compile Include="Updates\BotModelUpdateEntity.cs" />
     <Compile Include="Updates\BotStateUpdateEntity.cs" />
     <Compile Include="Updates\PackageModelUpdateEntity.cs" />

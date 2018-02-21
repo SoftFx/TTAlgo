@@ -55,7 +55,23 @@
     </Style>
 
     <Style x:Key="AccountStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
-
+        <Style.Setters>
+            <Setter Property="Fill" Value="Red"/>
+        </Style.Setters>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Offline">
+                <Setter Property="Fill" Value="Gray"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Connecting">
+                <Setter Property="Fill" Value="Yellow"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Online">
+                <Setter Property="Fill" Value="Green"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Disconnecting">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="BotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
@@ -180,7 +196,7 @@
                                 <HierarchicalDataTemplate DataType="{x:Type l:BAAccountViewModel}" ItemsSource="{Binding Bots}">
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Style="{StaticResource AccountStatusEllipseStyle}" />
-                                        <TextBlock Text="{Binding AccountKey}" />
+                                        <TextBlock Text="{Binding AccountKey}" ToolTip="{Binding Status}" />
                                     </StackPanel>
                                     <HierarchicalDataTemplate.ItemTemplate>
                                         <DataTemplate DataType="{x:Type l:BABotViewModel}">

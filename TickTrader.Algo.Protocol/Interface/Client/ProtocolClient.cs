@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Protocol
 
         public IClientSessionSettings SessionSettings { get; internal set; }
 
-        public VersionSpec VersionSpec { get; internal set; }
+        public VersionSpec VersionSpec { get; private set; }
 
 
         public event Action Connecting = delegate { };
@@ -160,9 +160,9 @@ namespace TickTrader.Algo.Protocol
             _stateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
-        private void ListenerOnLogin(int currentVersion)
+        private void ListenerOnLogin(int serverMinorVersion)
         {
-            VersionSpec = new VersionSpec(currentVersion);
+            VersionSpec = new VersionSpec(serverMinorVersion);
             _logger.Info($"Current version set to {VersionSpec.CurrentVersionStr}");
             _stateMachine.PushEvent(ClientEvents.LoggedIn);
         }

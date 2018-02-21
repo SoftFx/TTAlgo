@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             algoEnv = new AlgoEnvironment();
-            cManager = new ConnectionManager(storage, eventJournal, algoEnv);
+            cManager = new ConnectionManager(storage, eventJournal);
             clientModel = new TraderClientModel(cManager.Connection, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
 
@@ -372,7 +372,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo);
             wndManager.ShowDialog(loading, this);
         }
 
