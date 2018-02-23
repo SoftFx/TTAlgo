@@ -9,6 +9,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Core;
 using System.Reflection;
 using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotAgent.BA.Entities;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
@@ -159,7 +160,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Id = parameter.Id,
                 DisplayName = parameter.DisplayName,
                 DataType = GetDataType(parameter),
-                DefaultValue = parameter.DefaultValue,
+                DefaultValue = ConvertDefaultValue(parameter),
                 EnumValues = parameter.EnumValues,
                 IsEnum = parameter.IsEnum,
                 IsRequired = parameter.IsRequired,
@@ -184,6 +185,47 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     case "System.Boolean": return ParameterTypes.Boolean;
                     case "TickTrader.Algo.Api.File": return ParameterTypes.File;
                     default: return "Unknown";
+                }
+        }
+
+        private static object ConvertDefaultValue(ParameterDescriptor parameter)
+        {
+            if (parameter.IsEnum)
+            {
+                UiConverter.String.FromObject(parameter.DefaultValue, out var defEnumVal);
+                if (string.IsNullOrEmpty(defEnumVal))
+                    defEnumVal = parameter.EnumValues.FirstOrDefault();
+                return defEnumVal;
+            }
+            else if (parameter.DataType == nDoubleTypeName)
+            {
+                UiConverter.NullableDouble.FromObject(parameter.DefaultValue, out var defNullDoubleVal);
+                return defNullDoubleVal;
+            }
+            else if (parameter.DataType == nIntTypeName)
+            {
+                UiConverter.NullableInt.FromObject(parameter.DefaultValue, out var defNullIntVal);
+                return defNullIntVal;
+            }
+            else
+                switch (parameter.DataType)
+                {
+                    case "System.Int32":
+                        UiConverter.Int.FromObject(parameter.DefaultValue, out var defIntVal);
+                        return defIntVal;
+                    case "System.Double":
+                        UiConverter.Double.FromObject(parameter.DefaultValue, out var defDoubleVal);
+                        return defDoubleVal;
+                    case "System.String":
+                        UiConverter.String.FromObject(parameter.DefaultValue, out var defStringVal);
+                        return defStringVal;
+                    case "System.Boolean":
+                        UiConverter.Bool.FromObject(parameter.DefaultValue, out var defBoolVal);
+                        return defBoolVal;
+                    case "TickTrader.Algo.Api.File":
+                        UiConverter.String.FromObject(parameter.DefaultValue, out var defFileNameVal);
+                        return defFileNameVal;
+                    default: return null;
                 }
         }
     }

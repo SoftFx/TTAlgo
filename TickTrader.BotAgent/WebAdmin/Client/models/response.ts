@@ -81,7 +81,7 @@ export class ConnectionTestResult {
     public get Message(): string {
         switch (this.ErrorInfo.Code) {
             case ConnectionErrorCodes.Unknown:
-                return this.ErrorInfo.TextMessage === null || this.ErrorInfo.TextMessage === "" ? "Internal server error" : this.ErrorInfo.TextMessage;
+                return this.ErrorInfo.TextMessage === undefined || this.ErrorInfo.TextMessage === "" ? "Unknown error" : this.ErrorInfo.TextMessage;
             case ConnectionErrorCodes.NetworkError:
                 return "Network error";
             case ConnectionErrorCodes.Timeout:

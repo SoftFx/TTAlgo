@@ -307,8 +307,9 @@ namespace TickTrader.BotTerminal
         {
             switch (GetTransactionSide(transaction))
             {
-                case TransactionSide.Sell: return transaction.DstAssetCurrency;
-                case TransactionSide.Buy: return transaction.SrcAssetCurrency;
+                case TransactionSide.Sell:
+                case TransactionSide.Buy:
+                    return transaction.DstAssetCurrency;
                 case TransactionSide.None: return "";
                 default: throw new NotSupportedException(GetTransactionSide(transaction).ToString());
             }

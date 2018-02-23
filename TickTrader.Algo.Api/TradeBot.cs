@@ -139,9 +139,9 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.ModifyOrder(false, orderId, price, sl, tp, comment).Result;
         }
 
-        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null)
+        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null)
         {
-            return context.TradeApi.ModifyOrder(false, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration).Result;
+            return context.TradeApi.ModifyOrder(false, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration, volume).Result;
         }
 
         [Obsolete]
@@ -150,9 +150,9 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.ModifyOrder(true, orderId, price, sl, tp, comment);
         }
 
-        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null)
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null)
         {
-            return context.TradeApi.ModifyOrder(true, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration);
+            return context.TradeApi.ModifyOrder(true, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration, volume);
         }
 
         #endregion

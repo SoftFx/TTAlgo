@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         void OnStart();
         void OnStop();
         void OnExit();
+        void OnAbort();
     }
 
     public static class Null
@@ -149,6 +150,10 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        public void OnAbort()
+        {
+        }
+
         public void UpdateStatus(string status)
         {
         }
@@ -180,7 +185,7 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume)
         {
             return rejectResult;
         }

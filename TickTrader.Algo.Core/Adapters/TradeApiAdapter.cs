@@ -219,10 +219,10 @@ namespace TickTrader.Algo.Core
 
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null);
+            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null);
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume)
         {
             Order orderToModify = null;
 
@@ -242,7 +242,8 @@ namespace TickTrader.Algo.Core
                 //if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
                 //    ValidateStopPrice(stopPrice);
 
-                double orderVolume = ConvertVolume(orderToModify.RequestedVolume, smbMetadata);
+                double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
+                double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
                 double? orderMaxVisibleVolume = maxVisibleVolume.HasValue ? ConvertVolume(maxVisibleVolume.Value, smbMetadata) : maxVisibleVolume;
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
                 stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
@@ -261,6 +262,7 @@ namespace TickTrader.Algo.Core
                     Type = orderToModify.Type,
                     Side = orderToModify.Side,
                     CurrentVolume = orderVolume,
+                    NewVolume = newOrderVolume,
                     Price = price,
                     StopPrice = stopPrice,
                     StopLoss = sl,

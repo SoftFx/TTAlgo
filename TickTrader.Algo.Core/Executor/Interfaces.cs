@@ -93,8 +93,8 @@ namespace TickTrader.Algo.Core
         IPluginLogger Logger { get; }
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
-        void EnqueueTradeEvent(Action<PluginBuilder> action);
-        void EnqueueUserCallback(Action<PluginBuilder> action);
+        void EnqueueEvent(Action<PluginBuilder> action);
+        void EnqueueCustomInvoke(Action<PluginBuilder> action);
         void ProcessNextOrderUpdate();
         void OnInternalException(Exception ex);
 

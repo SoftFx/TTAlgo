@@ -122,14 +122,14 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
                     accProxy.Balance = report.Balance;
-                    accProxy.FireBalanceUpdateEvent();
+                    context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                 }
                 else if (accProxy.Type == Api.AccountTypes.Cash)
                 {
                     AssetChangeType assetChange;
                     var asset = accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode), currencies, out assetChange);
                     if (assetChange != AssetChangeType.NoChanges)
-                        accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset));
+                        context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                 }
             });
         }
@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Core
                 var pos = positions.UpdatePosition(report);
                 var isClosed = report.ExecAction == OrderExecAction.Closed;
 
-                positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed));
+                context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
             });
 
         }
@@ -170,14 +170,14 @@ namespace TickTrader.Algo.Core
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();
                 CallListener(eReport);
-                context.EnqueueTradeEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone)));
+                context.EnqueueEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Opened)
             {
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();
                 CallListener(eReport);
-                context.EnqueueTradeEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
+                context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
@@ -187,7 +187,7 @@ namespace TickTrader.Algo.Core
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     CallListener(eReport);
-                    context.EnqueueTradeEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(clone)));
+                    context.EnqueueEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(clone)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Canceled)
@@ -198,7 +198,7 @@ namespace TickTrader.Algo.Core
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     CallListener(eReport);
-                    context.EnqueueTradeEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone)));
+                    context.EnqueueEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Expired)
@@ -209,7 +209,7 @@ namespace TickTrader.Algo.Core
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     var args = new OrderCanceledEventArgsImpl(clone);
-                    context.EnqueueTradeEvent(b => orderCollection.FireOrderExpired(args));
+                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(args));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)
@@ -220,17 +220,20 @@ namespace TickTrader.Algo.Core
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var newOrder = order.Clone();
                     CallListener(eReport);
-                    context.EnqueueTradeEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, newOrder)));
+                    context.EnqueueEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Filled)
             {
                 if (eReport.OrderCopy.Type == OrderType.Market)
                 {
-                    // market orders
-                    CallListener(eReport);
-                    var order = orderCollection.GetOrderOrNull(eReport.OrderId);
-                    context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(order, order)));
+                    // market orders are never added to orders collection. Cash account has actually limit IoC
+                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                    if (clone != null)
+                    {
+                        CallListener(eReport);
+                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                    }
                 }
                 else
                 {
@@ -240,7 +243,7 @@ namespace TickTrader.Algo.Core
                     {
                         var order = ApplyOrderEntity(eReport, orderCollection);
                         var clone = order.Clone();
-                        context.EnqueueTradeEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, clone)));
+                        context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, clone)));
                     }
                 }
             }
@@ -262,7 +265,7 @@ namespace TickTrader.Algo.Core
                 if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
                 {
                     acc.Balance = eReport.NewBalance.Value;
-                    context.EnqueueTradeEvent(b => acc.FireBalanceUpdateEvent());
+                    context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }
             else if (acc.Type == Api.AccountTypes.Cash)
@@ -276,7 +279,7 @@ namespace TickTrader.Algo.Core
                         if (assetChange != AssetChangeType.NoChanges)
                         {
                             var args = new AssetUpdateEventArgsImpl(assetModel);
-                            context.EnqueueTradeEvent(b => acc.Assets.FireModified(args));
+                            context.EnqueueEvent(b => acc.Assets.FireModified(args));
                         }
                     }
                 }
