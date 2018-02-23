@@ -8,14 +8,14 @@ using TickTrader.BotAgent.Infrastructure;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public class SymbolManager : SymbolCollectionBase
-    {
-        private object _sycn;
-        private QuoteDistributor _distributor;
+    //public class SymbolManager : SymbolCollectionBase
+    //{
+    //    private object _sycn;
+    //    private QuoteDistributor _distributor;
 
-        public SymbolManager(Algo.Common.Model.ClientModel client, object sync) : base(client, new SyncAdapter(sync))
-        {
-            _sycn = sync;
-        }
-    }
+    //    public SymbolManager(Algo.Common.Model.ClientModel client, object sync) : base(client, new SyncAdapter(sync))
+    //    {
+    //        _sycn = sync;
+    //    }
+    //}
 }

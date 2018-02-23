@@ -27,14 +27,13 @@ namespace TickTrader.Algo.Common.Model
 
         public ISynchronizationContext Sync { get { return this; } }
 
-        public PluginFeedProvider(IVarSet<string, SymbolModel> symbols, QuoteDistributor quoteDistributor, FeedHistoryProviderModel.Handler history,
-            IReadOnlyDictionary<string, CurrencyEntity> currencies, ISyncContext sync)
+        public PluginFeedProvider(EntityCache cache, QuoteDistributor quoteDistributor, FeedHistoryProviderModel.Handler history, ISyncContext sync)
         {
             _sync = sync;
-            this.symbols = symbols;
+            this.symbols = cache.Symbols;
             _distributor = quoteDistributor;
             this.history = history;
-            this.currencies = currencies;
+            this.currencies = cache.Currencies.Snapshot;
             _subscriptionCache = new Dictionary<string, int>();
 
             rxBuffer = new BufferBlock<QuoteEntity>();

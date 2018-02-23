@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{20363DD1-DC16-41EE-AA8A-77306EB75479}"
+	ProjectSection(SolutionItems) = preProject
+		ActorSharp\Lib\ReusableAwaitable.cs = ActorSharp\Lib\ReusableAwaitable.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Algo", "Algo", "{51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}"
 EndProject

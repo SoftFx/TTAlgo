@@ -10,87 +10,105 @@ using System.IO;
 using TickTrader.BotAgent.Extensions;
 using System.Linq;
 using TickTrader.Algo.Common.Model;
+using ActorSharp;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public class BotLog : IBotLog, IBotWriter
+    public class BotLog : Actor
     {
-        private object _internalSync = new object();
-        private object _sync;
         private CircularList<ILogEntry> _logMessages;
         private ILogger _logger;
-        private int _keepInmemory;
+        private int _maxCachedRecords;
         private string _name;
         private string _logDirectory;
+        private string _status;
         private readonly string _fileExtension = ".txt";
 
-        public BotLog(string name, object sync, int keepInMemory = 100)
+        private void Init(string name, int keepInMemory = 100)
         {
-            _sync = sync;
             _name = name;
             _logDirectory = $"{ServerModel.Environment.BotLogFolder}/{_name.Escape()}/";
-            _keepInmemory = keepInMemory;
-            _logMessages = new CircularList<ILogEntry>(_keepInmemory);
+            _maxCachedRecords = keepInMemory;
+            _logMessages = new CircularList<ILogEntry>(_maxCachedRecords);
             _logger = GetLogger(name);
         }
 
-        public string Status { get; private set; }
-
-        public string Folder => _logDirectory;
-
-        public IEnumerable<ILogEntry> Messages
+        public class ControlHandler : Handler<BotLog>
         {
-            get
+            public ControlHandler(string name, int cacheSize = 100)
+                : base(SpawnLocal<BotLog>(null, "BotLog: " + name))
             {
-                lock (_sync)
-                    return _logMessages.ToArray();
+                Actor.Send(a => a.Init(name, cacheSize));
             }
+
+            public Ref<BotLog> Ref => Actor;
+            public IBotWriter GetWriter() => new LogWriter(Ref);
+            public Task Clear() => Actor.Call(a => a.Clear());
         }
 
-        public IFile[] Files
+        public class Handler : BlockingHandler<BotLog>, IBotLog
         {
-            get
-            {
-                if (Directory.Exists(_logDirectory))
-                {
-                    DirectoryInfo dInfo = new DirectoryInfo(_logDirectory);
-                    return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new ReadOnlyFileModel(fInfo.FullName)).ToArray();
-                }
-                else
-                    return new ReadOnlyFileModel[0];
-            }
+            public Handler(Ref<BotLog> logRef) : base(logRef) { }
+
+            public IEnumerable<ILogEntry> Messages => CallActor(a => a._logMessages.ToArray());
+            public string Status => CallActor(a => a._status);
+            public IFile[] Files => CallActor(a => a.GetFiles());
+
+            public void Clear() => CallActor(a => a.Clear());
+            public void DeleteFile(string file) => CallActor(a => a.DeleteFile(file));
+            public IFile GetFile(string file) => CallActor(a => a.GetFile(file));
         }
 
-        public event Action<string> StatusUpdated;
+        //public string Status { get; private set; }
+        //public string Folder => _logDirectory;
+
+        //public IEnumerable<ILogEntry> Messages
+        //{
+        //    get
+        //    {
+        //        return _logMessages.ToArray();
+        //    }
+        //}
+
+        private IFile[] GetFiles()
+        {
+            if (Directory.Exists(_logDirectory))
+            {
+                DirectoryInfo dInfo = new DirectoryInfo(_logDirectory);
+                return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new ReadOnlyFileModel(fInfo.FullName)).ToArray();
+            }
+            else
+                return new ReadOnlyFileModel[0];
+        }
+
+        //public event Action<string> StatusUpdated;
 
         private void WriteLog(LogEntryType type, string message)
         {
-            lock (_internalSync)
+            var msg = new LogEntry(type, message);
+
+            switch (type)
             {
-                var msg = new LogEntry(type, message);
-
-                switch (type)
-                {
-                    case LogEntryType.Custom:
-                    case LogEntryType.Info:
-                    case LogEntryType.Trading:
-                        _logger.Info(msg.ToString());
-                        break;
-                    case LogEntryType.Error:
-                        _logger.Error(msg.ToString());
-                        break;
-                }
-
-                if (IsLogFull)
-                    _logMessages.Dequeue();
-
-                _logMessages.Add(msg);
+                case LogEntryType.Custom:
+                case LogEntryType.Info:
+                case LogEntryType.Trading:
+                    _logger.Info(msg.ToString());
+                    break;
+                case LogEntryType.Error:
+                    _logger.Error(msg.ToString());
+                    break;
             }
+
+            if (IsLogFull)
+                _logMessages.Dequeue();
+
+            _logMessages.Add(msg);
         }
 
         private bool IsLogFull
         {
-            get { return _logMessages.Count >= _keepInmemory; }
+            get { return _logMessages.Count >= _maxCachedRecords; }
         }
 
         private ILogger GetLogger(string botId)
@@ -130,7 +148,7 @@ namespace TickTrader.BotAgent.BA.Models
             return nlogFactory.GetLogger(botId);
         }
 
-        public IFile GetFile(string file)
+        private IFile GetFile(string file)
         {
             if (file.IsFileNameValid())
             {
@@ -142,21 +160,25 @@ namespace TickTrader.BotAgent.BA.Models
             throw new ArgumentException($"Incorrect file name {file}");
         }
 
-        public void Clear()
+        private void Clear()
         {
-            lock (_sync)
-            {
-                _logMessages.Clear();
+            _logMessages.Clear();
 
-                if (Directory.Exists(_logDirectory))
+            if (Directory.Exists(_logDirectory))
+            {
+                try
                 {
                     new DirectoryInfo(_logDirectory).Clean();
                     Directory.Delete(_logDirectory);
                 }
+                catch (Exception ex)
+                {
+                    _logger.Warn(ex, "Could not clean log folder: " + _logDirectory);
+                }
             }
         }
 
-        public void DeleteFile(string file)
+        private void DeleteFile(string file)
         {
             File.Delete(Path.Combine(_logDirectory, file));
         }
@@ -173,38 +195,24 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-
-        #region IBotWriter implementation
-
-        void IBotWriter.LogMesssages(IEnumerable<BotLogRecord> records)
+        private class LogWriter : BlockingHandler<BotLog>, IBotWriter
         {
-            lock (_sync)
+            public LogWriter(Ref<BotLog> logRef) : base(logRef) { }
+
+            public void LogMesssages(IEnumerable<BotLogRecord> records)
             {
-                foreach (var rec in records)
+                CallActor(a =>
                 {
-                    if (rec.Severity != LogSeverities.CustomStatus)
-                        WriteLog(Convert(rec.Severity), rec.Message);
-                }
+                    foreach (var rec in records)
+                    {
+                        if (rec.Severity != LogSeverities.CustomStatus)
+                            a.WriteLog(Convert(rec.Severity), rec.Message);
+                    }
+                });
             }
-        }
 
-        void IBotWriter.UpdateStatus(string status)
-        {
-            lock (_sync)
-            {
-                Status = status;
-                StatusUpdated?.Invoke(status);
-            }
+            public void Trace(string status) => CallActor(a => a._logger.Trace(status));
+            public void UpdateStatus(string status) => CallActor(a => a._status = status);
         }
-
-        void IBotWriter.LogStatus(string status)
-        {
-            lock (_sync)
-            {
-                _logger.Trace(status);
-            }
-        }
-
-        #endregion IBotWriter implementation
     }
 }

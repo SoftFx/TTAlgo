@@ -97,6 +97,7 @@
     <Compile Include="Fdk.Serializers\ISerializer.cs" />
     <Compile Include="Fdk.Serializers\TextSerializer.cs" />
     <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
+    <Compile Include="Lib\ActorSync.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\AsyncLock.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />

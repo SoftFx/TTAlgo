@@ -26,6 +26,16 @@ namespace TickTrader.Algo.Common.Model
         public IVarSet<string, CurrencyEntity> Currencies => _currencies;
         public AccountModel Account => _acc;
 
+        internal List<SymbolEntity> GetSymbolsCopy()
+        {
+            return _symbols.Values.Select(s => s.Descriptor).ToList();
+        }
+
+        internal List<CurrencyEntity> GetCurrenciesCopy()
+        {
+            return _currencies.Values.ToList();
+        }
+
         internal EntityCacheUpdate GetSnapshot()
         {
             var smbSnapshot = _symbols.Snapshot.Values.Select(s => s.Descriptor).ToList();

@@ -1,28 +1,18 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.IO;
 using System.Linq;
 using TickTrader.BotAgent.Extensions;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public interface IAlgoData
-    {
-        string Folder { get; }
-        IFile[] Files { get; }
-
-        void Clear();
-        IFile GetFile(string decodedFile);
-        void DeleteFile(string name);
-    }
-
     public class AlgoData : IAlgoData
     {
-        private object _syncObj;
+        private static ILogger _log = LogManager.GetLogger(nameof(ClientModel));
 
-        public AlgoData(string path, object syncObj)
+        public AlgoData(string path)
         {
             Folder = path;
-            _syncObj = syncObj;
 
             EnsureDirectoryCreated();
         }
@@ -45,13 +35,18 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void Clear()
         {
-            lock (_syncObj)
+            if (Directory.Exists(Folder))
             {
-                if (Directory.Exists(Folder))
+                try
                 {
                     new DirectoryInfo(Folder).Clean();
                     Directory.Delete(Folder);
                 }
+                catch (Exception ex)
+                {
+                    _log.Warn(ex, "Could not clean data folder: " + Folder);
+                }
+               
             }
         }
 

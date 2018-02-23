@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 namespace ActorSharp
 {
     internal class LocalRef<TActor> : Ref<TActor>
-        where TActor : Actor
+        //where TActor : Actor
     {
         private TActor _actor;
+        private SynchronizationContext _context;
 
-        private SynchronizationContext Context => _actor.Context;
-
-        public LocalRef(TActor actor)
+        public LocalRef(TActor actor, SynchronizationContext context)
         {
             _actor = actor;
+            _context = context;
         }
 
         /// <summary>
@@ -24,13 +24,13 @@ namespace ActorSharp
         /// <param name="method">Method to invoke in actor context.</param>
         public override void Send(Action<TActor> method)
         {
-            Context.Post(ExecAction, method);
+            _context.Post(ExecAction, method);
         }
 
         public override Task Call(Action<TActor> method)
         {
             var task = new Task(o => method((TActor)o), _actor);
-            Context.Post(ExecTaskSync, task);
+            _context.Post(ExecTaskSync, task);
             return task;
         }
 
@@ -38,14 +38,14 @@ namespace ActorSharp
         {
             var src = new TaskCompletionSource<object>();
             var invokeTask = new Task(o => BindCompletion((Func<TActor, Task>)o, src), method);
-            Context.Post(ExecTaskSync, invokeTask);
+            _context.Post(ExecTaskSync, invokeTask);
             return src.Task;
         }
 
         public override Task<TResult> Call<TResult>(Func<TActor, TResult> method)
         {
             var task = new Task<TResult>(o => method((TActor)o), _actor);
-            Context.Post(ExecTaskSync, task);
+            _context.Post(ExecTaskSync, task);
             return task;
         }
 
@@ -53,7 +53,7 @@ namespace ActorSharp
         {
             var src = new TaskCompletionSource<TResult>();
             var invokeTask = new Task(o =>BindCompletion((Func<TActor, Task<TResult>>)o, src), method);
-            Context.Post(ExecTaskSync, invokeTask);
+            _context.Post(ExecTaskSync, invokeTask);
             return src.Task;
         }
 
@@ -74,7 +74,7 @@ namespace ActorSharp
                     actorMethod(_actor, actorChannel);
                 });
 
-                Context.Post(ExecTaskSync, task);
+                _context.Post(ExecTaskSync, task);
                 return task;
             }
             else if (channel.Dicrection == ChannelDirections.Out)
@@ -92,7 +92,7 @@ namespace ActorSharp
                     actorMethod(_actor, actorChannel);
                 });
 
-                Context.Post(ExecTaskSync, task);
+                _context.Post(ExecTaskSync, task);
                 return task;
             }
             throw new NotImplementedException();
@@ -115,7 +115,7 @@ namespace ActorSharp
                     return actorMethod(_actor, actorChannel);
                 });
 
-                Context.Post(ExecTaskSync, task);
+                _context.Post(ExecTaskSync, task);
                 return task;
             }
             else if (channel.Dicrection == ChannelDirections.Out)
@@ -133,7 +133,7 @@ namespace ActorSharp
                     return actorMethod(_actor, actorChannel);
                 });
 
-                Context.Post(ExecTaskSync, task);
+                _context.Post(ExecTaskSync, task);
                 return task;
             }
             else
@@ -143,7 +143,7 @@ namespace ActorSharp
         public override bool Equals(object obj)
         {
             var other = obj as LocalRef<TActor>;
-            return other != null && other._actor == _actor;
+            return other != null && ReferenceEquals(other._actor, _actor);
         }
 
         public override int GetHashCode()
@@ -187,7 +187,12 @@ namespace ActorSharp
 
         public override void PostMessage(object message)
         {
-            _actor.PostMessage(message);
+            var basicActor = _actor as Actor;
+
+            if (basicActor != null)
+                basicActor.PostMessage(message);
+            else
+                throw new InvalidOperationException("This actor does not support basic messaging pattern!");
         }
 
         private void ExecTaskSync(object task)

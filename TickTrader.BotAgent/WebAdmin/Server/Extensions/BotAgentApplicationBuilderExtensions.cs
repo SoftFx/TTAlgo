@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR.Infrastructure;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using TickTrader.BotAgent.BA.Entities;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -32,24 +33,24 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             var _botAgent = _services.GetService<IBotAgent>();
             _logger = _services.GetService<ILoggerFactory>().CreateLogger("BotsWarden");
 
-            _botAgent.BotStateChanged += WatchTheStop;
+            //_botAgent.BotStateChanged += WatchTheStop;
 
             return app;
         }
 
-        private static async void WatchTheStop(ITradeBot bot)
-        {
-            if (bot.State != BotStates.Stopping)
-                return;
+        //private static async void WatchTheStop(TradeBotInfo bot)
+        //{
+        //    if (bot.State != BotStates.Stopping)
+        //        return;
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
+        //    await Task.Delay(TimeSpan.FromSeconds(5));
 
-            if (bot.State == BotStates.Stopping)
-            {
-                bot.Abort();
-                _logger.LogDebug($"Bot '{bot.Id}' was aborted");
-            }
-        }
+        //    if (bot.State == BotStates.Stopping)
+        //    {
+        //        bot.Abort();
+        //        _logger.LogDebug($"Bot '{bot.Id}' was aborted");
+        //    }
+        //}
 
         /// <summary>
         /// Use SignalR Hubs to notify clients about server changes
@@ -69,7 +70,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return app;
         }
 
-        private static void OnBotChaged(ITradeBot bot, ChangeAction action)
+        private static void OnBotChaged(TradeBotInfo bot, ChangeAction action)
         {
             switch (action)
             {
@@ -85,12 +86,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnBotStateChanged(ITradeBot bot)
+        private static void OnBotStateChanged(TradeBotInfo bot)
         {
             Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }
 
-        private static void OnAccountChanged(IAccount account, ChangeAction action)
+        private static void OnAccountChanged(AccountInfo account, ChangeAction action)
         {
             switch (action)
             {
@@ -103,7 +104,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnPackageChanged(IPackage package, ChangeAction action)
+        private static void OnPackageChanged(PackageInfo package, ChangeAction action)
         {
             switch (action)
             {

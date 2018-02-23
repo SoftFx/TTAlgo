@@ -18,31 +18,36 @@ namespace ActorSharp
 
     public class BlockingHandler<TActor>
     {
-        private Ref<TActor> Ref { get; }
+        protected Ref<TActor> Actor { get; }
 
         public BlockingHandler(Ref<TActor> actorRef)
         {
-            Ref = actorRef ?? throw new ArgumentNullException("actorRef");
+            Actor = actorRef ?? throw new ArgumentNullException("actorRef");
+        }
+
+        protected void ActorSend(Action<TActor> actorMethod)
+        {
+            Actor.Send(actorMethod);
         }
 
         protected void CallActor(Action<TActor> actorMethod)
         {
-            Ref.Call(actorMethod).Wait();
+            Actor.Call(actorMethod).Wait();
         }
 
         protected TResult CallActor<TResult>(Func<TActor, TResult> actorMethod)
         {
-            return Ref.Call(actorMethod).Result;
+            return Actor.Call(actorMethod).Result;
         }
 
         protected TResult CallActor<TResult>(Func<TActor, Task<TResult>> actorMethod)
         {
-            return Ref.Call(actorMethod).Result;
+            return Actor.Call(actorMethod).Result;
         }
 
         protected BlockingChannel<T> OpenInputChannel<T>(int pageSize, Action<TActor, Channel<T>> actorMethod)
         {
-            var callTask = Ref.Call(a =>
+            var callTask = Actor.Call(a =>
             {
                 var actorSide = new Channel<T>(ChannelDirections.In, pageSize);
                 var handlerSide = new BlockingChannel<T>(actorSide);

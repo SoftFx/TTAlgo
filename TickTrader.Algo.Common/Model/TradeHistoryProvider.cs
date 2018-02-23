@@ -36,7 +36,6 @@ namespace TickTrader.Algo.Common.Model
             {
                 _isStarted = false;
                 _connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
-                _updateQueue = null;
             };
         }
 
@@ -81,6 +80,7 @@ namespace TickTrader.Algo.Common.Model
         {
             _updateQueue.Close();
             using (await _updateLock.GetLock()) { }; // wait till update loop is stopped
+            _updateQueue = null;
         }
 
         private async void UpdateLoop()

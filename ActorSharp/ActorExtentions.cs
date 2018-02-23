@@ -15,7 +15,7 @@ namespace ActorSharp
                 throw new InvalidOperationException("Synchronization violation! You cannot create reference from outside the actor context! Only the actor can create reference to itself!");
             #endif
 
-            return new LocalRef<TActor>(actor);
+            return new LocalRef<TActor>(actor, actor.Context);
         }
     }
 }

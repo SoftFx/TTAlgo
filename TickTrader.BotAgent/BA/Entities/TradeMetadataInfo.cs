@@ -5,15 +5,15 @@ using TickTrader.BotAgent.BA.Models;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
-namespace TickTrader.BotAgent.BA.Info
+namespace TickTrader.BotAgent.BA.Entities
 {
-    public class ConnectionInfo
+    public class TradeMetadataInfo
     {
-        public ConnectionInfo(ClientModel client)
+        public TradeMetadataInfo(AccountTypes accType, List<SymbolEntity> symbolsCopy, List<CurrencyEntity> currenciesCopy)
         {
-            AccountType = client.Account.Type.Value;
-            Symbols = client.Symbols.Snapshot.Values.Select(s => s.Descriptor).ToList();
-            Currencies = client.Currencies.Snapshot.Values.ToList();
+            AccountType = accType;
+            Symbols = symbolsCopy;
+            Currencies = currenciesCopy;
         }
 
         public AccountTypes AccountType { get; }

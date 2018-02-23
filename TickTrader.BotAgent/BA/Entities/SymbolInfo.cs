@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TickTrader.BotAgent.BA.Info
+namespace TickTrader.BotAgent.BA.Entities
 {
     //public class SymbolInfo
     //{

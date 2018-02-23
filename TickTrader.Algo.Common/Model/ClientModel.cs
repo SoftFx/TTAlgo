@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 
@@ -15,6 +16,8 @@ namespace TickTrader.Algo.Common.Model
     public class ClientModel : Actor, IQuoteDistributorSource
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("ClientModel");
+
+        private static int ActorNameIdSeed = 1;
 
         private ConnectionModel _connection;
         private FeedHistoryProviderModel.ControlHandler _feedHistory;
@@ -27,18 +30,20 @@ namespace TickTrader.Algo.Common.Model
         private AsyncQueue<QuoteEntity> _feedQueue;
         private Ref<ClientModel> _ref;
         private QuoteDistributor _rootDistributor;
-        private ActorSharp.Lib.AsyncLock _updateLock = new ActorSharp.Lib.AsyncLock();
-        private ActorSharp.Lib.AsyncLock _feedLock = new ActorSharp.Lib.AsyncLock();
+        private ActorSharp.Lib.AsyncLock _updateLock;
+        private ActorSharp.Lib.AsyncLock _feedLock;
 
         protected override void ActorInit()
         {
             _ref = this.GetRef();
+            _updateLock = new ActorSharp.Lib.AsyncLock();
+            _feedLock = new ActorSharp.Lib.AsyncLock();
             _rootDistributor = new QuoteDistributor(this);
         }
 
         private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions)
         {
-            _connection = new ConnectionModel(new ConnectionOptions());
+            _connection = new ConnectionModel(connectionOptions);
             _feedHistory = new FeedHistoryProviderModel.ControlHandler(_connection, historyFolder, historyOptions);
             _tradeHistory = new TradeHistoryProvider(_connection);
             _tradeApi = new PluginTradeApiProvider(_connection);
@@ -57,12 +62,6 @@ namespace TickTrader.Algo.Common.Model
                 _connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
                 _connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
                 _connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
-
-                //if (_connection.FeedProxy.AutoSymbols)
-                //{
-                //    _connection.FeedProxy.SymbolInfo += _syncUpdater.OnUpdate;
-                //    _connection.FeedProxy.CurrencyInfo += _syncUpdater.OnUpdate;
-                //}
             };
 
             _connection.AsyncInitalizing += (s, c) => Start();
@@ -76,11 +75,6 @@ namespace TickTrader.Algo.Common.Model
                 _connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
 
                 return Stop();
-
-                //if (_connection.FeedProxy.AutoSymbols)
-                //{
-                //    _connection.FeedProxy.SymbolInfo -= _syncUpdater.OnUpdate;
-                //    _connection.FeedProxy.CurrencyInfo -= _syncUpdater.OnUpdate;
             };
         }
 
@@ -107,11 +101,58 @@ namespace TickTrader.Algo.Common.Model
         {
         }
 
-        public class ControlHandler : Data
+        public class ControlHandler : BlockingHandler<ClientModel>
         {
-            public ControlHandler(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions) : base(SpawnLocal<ClientModel>())
+            public ControlHandler(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions)
+                : base(SpawnLocal<ClientModel>(null, "ClientModel " + Interlocked.Increment(ref ActorNameIdSeed)))
+            {
+                ActorSend(a => a.Init(options, historyFolder, hsitoryOptions));
+            }
+
+            public Data CreateDataHandler() => new Data(Actor);
+        }
+
+        public class ControlHandler2 : Handler<ClientModel>
+        {
+            public ControlHandler2(ConnectionOptions options, string historyFolder, FeedHistoryFolderOptions hsitoryOptions)
+                : base(SpawnLocal<ClientModel>(null, "ClientModel " + Interlocked.Increment(ref ActorNameIdSeed)))
             {
                 Actor.Send(a => a.Init(options, historyFolder, hsitoryOptions));
+            }
+
+            public ConnectionModel.Handler Connection { get; private set; }
+
+            public async Task OpenHandler()
+            {
+                Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
+                await Connection.OpenHandler();
+            }
+
+            public async Task CloseHandler()
+            {
+                await Connection.CloseHandler();
+            }
+
+            public Task<List<SymbolEntity>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
+            public Task<List<CurrencyEntity>> GetCurrecnies() => Actor.Call(a => a.ExecDataRequest(c => c.GetCurrenciesCopy()));
+            public Task<AccountTypes> GetAccountType() => Actor.Call(a => a.ExecDataRequest(c => c.Account.Type.Value));
+
+            public Task<PluginFeedProvider> CreateFeedProvider()
+            {
+                return Actor.Call(a =>
+                {
+                    var historyHandler = new FeedHistoryProviderModel.Handler(a._feedHistory.Ref);
+                    return new PluginFeedProvider(a._cache, a._rootDistributor, historyHandler, a.GetSyncContext());
+                });
+            }
+
+            public Task<PluginTradeInfoProvider> CreateTradeProvider()
+                => Actor.Call(a => new PluginTradeInfoProvider(a._cache, a.GetSyncContext()));
+
+            public async Task<PluginTradeApiProvider.Handler> CreateTradeApi()
+            {
+                var apiRef = await Actor.Call(a => a._tradeApi.GetRef());
+                return new PluginTradeApiProvider.Handler(apiRef);
             }
         }
 
@@ -141,7 +182,7 @@ namespace TickTrader.Algo.Common.Model
             public async Task Init()
             {
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
-                await Connection.Start();
+                await Connection.OpenHandler();
 
                 FeedHistory = new FeedHistoryProviderModel.Handler(await Actor.Call(a => a._feedHistory.Ref));
                 await FeedHistory.Init();
@@ -164,7 +205,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 await Actor.Call(a => a.UnsyncListener(Ref));
                 await Actor.Call(a => a._feedListeners.Remove(Ref));
-                await Connection.Stop();
+                await Connection.CloseHandler();
             }
 
             private async void ApplyUpdates(Channel<EntityCacheUpdate> updateStream)
@@ -275,6 +316,18 @@ namespace TickTrader.Algo.Common.Model
             _feedQueue = null;
         }
 
+        private T ExecDataRequest<T>(Func<EntityCache, T> request)
+        {
+            CheckConnection();
+            return request(_cache);
+        }
+
+        private void CheckConnection()
+        {
+            if (_connection.State != ConnectionModel.States.Online)
+                throw new InvalidOperationException("No connection!");
+        }
+
         #region Entity cache
 
         private EntityCacheUpdate AddListener(ActorRef handleRef, Channel<EntityCacheUpdate> channel)
@@ -349,7 +402,6 @@ namespace TickTrader.Algo.Common.Model
                 var quotes = await _connection.FeedProxy.SubscribeToQuotes(groupSymbols, depth);
                 logger.Debug("Subscribed to " + string.Join(",", groupSymbols));
 
-                //var quotes = await _connection.FeedProxy.GetQuoteSnapshot(groupSymbols, depth);
                 foreach (var q in quotes)
                     await ApplyQuote(q);
             }

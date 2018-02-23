@@ -13,13 +13,17 @@ namespace ActorSharp
         private int _pageMaxSize = 10;
         private bool _isExecuting;
 
-        public PoolContext(int maxMessagePerTask = 10)
+        public PoolContext(int maxMessagePerTask = 10, string poolName = null)
         {
+            Name = poolName;
+
             if (maxMessagePerTask < 1)
                 throw new ArgumentException("maxMessagePerTask");
 
             _pageMaxSize = maxMessagePerTask;
         }
+
+        public string Name { get; private set; }
 
         public override void Post(SendOrPostCallback d, object state)
         {

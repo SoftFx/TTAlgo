@@ -189,7 +189,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        void IBotWriter.LogStatus(string status)
+        void IBotWriter.Trace(string status)
         {
             Host.Journal.LogStatus(InstanceId, status);
         }

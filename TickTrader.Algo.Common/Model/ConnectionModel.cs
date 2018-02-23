@@ -22,9 +22,7 @@ namespace TickTrader.Algo.Common.Model
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
         public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
-        //public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
 
-        //private StateMachine<States> _stateControl;
         private IServerInterop _interop;
         private CancellationTokenSource connectCancelSrc;
         private ConnectionOptions _options;
@@ -41,7 +39,9 @@ namespace TickTrader.Algo.Common.Model
         {
             _options = options;
 
-            Func<bool> canRecconect = () => wasConnected && LastErrorCode != ConnectionErrorCodes.BlockedAccount && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
+            Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected
+                && LastErrorCode != ConnectionErrorCodes.BlockedAccount
+                && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
 
             _stateControl = new StateMachine<States>(new NullSync());
             _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
@@ -96,10 +96,6 @@ namespace TickTrader.Algo.Common.Model
         public string CurrentProtocol { get; private set; }
         public event Action InitProxies; // proxies are created but not yet started
         public event Action DeinitProxies; // proxies are about to be stopped
-        //public event Action Connecting = delegate { };
-        //public event Action Connected = delegate { };
-        //public event Action Disconnecting = delegate { };
-        //public event Action Disconnected = delegate { };
         public event AsyncEventHandler AsyncInitalizing; // part of connection process, called after proxies are connected
         public event AsyncEventHandler AsyncDeinitalizing; // part of disconnection process, called before proxies are disconnected
         public event AsyncEventHandler AsyncDisconnected; // part of disconnection process, called after proxies are disconnected
@@ -203,8 +199,6 @@ namespace TickTrader.Algo.Common.Model
             CurrentServer = request.Address;
             CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
 
-            //await ChangeState(States.Connecting);
-
             try
             {
                 if (request.UseSfx)
@@ -228,19 +222,6 @@ namespace TickTrader.Algo.Common.Model
                     wasInitFired = true;
                     await AsyncInitalizing.InvokeAsync(this, connectCancelSrc.Token);
                     await _initListeners.Invoke();
-
-                    //try
-                    //{
-                        
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    logger.Error(ex);
-                    //    await Deinitialize();
-                    //    await DisconnectProxy();
-                    //    await OnConnectFailed(request, ConnectionErrorInfo.UnknownNoText);
-                    //    return;
-                    //}
                 }
             }
             catch (Exception ex)
@@ -308,13 +289,6 @@ namespace TickTrader.Algo.Common.Model
         {
             await Deinitialize();
 
-            //try
-            //{
-            //    // fire disconnecting event
-            //    //_stateSync.Synchronized(() => Disconnecting());
-            //}
-            //catch (Exception ex) { logger.Error(ex); }
-
             if (disconnectRequest != null)
             {
                 disconnectRequest.Complete(ConnectionErrorInfo.Ok);
@@ -327,73 +301,6 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #region State management
-
-        //private async Task OnDisconnectComplete()
-        //{
-        //    if (connectRequest != null)
-        //        DoConnect();
-        //    else
-        //        await ChangeState(States.Online);
-        //}
-
-        //private async Task OnConnectComplete()
-        //{
-        //    if (connectRequest != null || disconnectRequest != null || lostConnection)
-        //        DoDisconnect();
-        //    else
-        //        await ChangeState(States.Online);
-        //}
-
-        //private async Task OnConnectFailed(ConnectRequest requets, ConnectionErrorInfo error)
-        //{
-        //    if (connectRequest != null)
-        //        DoDisconnect();
-        //    else
-        //    {
-        //        await ChangeState(States.Offline);
-
-        //        if (disconnectRequest != null)
-        //        {
-        //            disconnectRequest.Complete(new ConnectionErrorInfo(ConnectionErrorCodes.None));
-        //            disconnectRequest = null;
-        //        }
-        //    }
-
-        //    requets.Complete(error);
-        //}
-
-        //private void OnDisconnected(ConnectionErrorInfo info)
-        //{
-        //    if (State == States.Connecting)
-        //        lostConnection = true;
-        //    else if (State == States.Online)
-        //        DoDisconnect();
-        //}
-
-        //private async Task ChangeState(States newState)
-        //{
-        //    var oldState = State;
-        //    State = newState;
-
-        //    try
-        //    {
-        //        StateChanged?.Invoke(oldState, newState);
-        //    }
-        //    catch (Exception ex) { logger.Error(ex); }
-            
-        //    var stateInfo = new StateInfo();
-        //    stateInfo.State = newState;
-        //    stateInfo.Login = CurrentLogin;
-        //    stateInfo.Server = CurrentServer;
-        //    stateInfo.Protocol = CurrentProtocol;
-        //    stateInfo.LastError = LastError;
-
-        //    try
-        //    {
-        //        await _stateListeners.Fire(stateInfo);
-        //    }
-        //    catch (Exception ex) { logger.Error(ex); }
-        //}
 
         #endregion
 
@@ -419,28 +326,19 @@ namespace TickTrader.Algo.Common.Model
 
             public event AsyncEventHandler Initalizing;
             public event AsyncEventHandler Deinitalizing;
-            public event Action Connecting = delegate { };
+            //public event Action Connecting = delegate { };
             public event Action Connected = delegate { };
-            public event Action Disconnecting = delegate { };
+            //public event Action Disconnecting = delegate { };
             public event Action Disconnected = delegate { };
             public event Action<States, States> StateChanged;
 
-            public async virtual Task Start()
+            public async virtual Task OpenHandler()
             {
                 var handlerRef = this.GetRef();
 
                 _initListener = ActorCallback.Create(FireInitEvent);
                 _deinitListener = ActorCallback.Create(FireDeinitEvent);
-                _stateListener = new ActorListener<StateInfo>(a =>
-                {
-                    var oldState = State;
-                    State = a.State;
-                    LastError = a.LastError;
-                    CurrentLogin = a.Login;
-                    CurrentServer = a.Server;
-                    CurrentProtocol = a.Protocol;
-                    StateChanged?.Invoke(oldState, State);
-                });
+                _stateListener = new ActorListener<StateInfo>(UpdateState);
 
                 State = await Actor.Call(a =>
                 {
@@ -461,7 +359,7 @@ namespace TickTrader.Algo.Common.Model
                 return Actor.Call(a => a.Disconnect());
             }
 
-            public virtual Task Stop()
+            public virtual Task CloseHandler()
             {
                 return Actor.Call(a =>
                 {
@@ -471,22 +369,32 @@ namespace TickTrader.Algo.Common.Model
                 });
             }
 
-            internal Task FireInitEvent()
+            private Task FireInitEvent()
             {
                 return Initalizing.InvokeAsync(this, CancellationToken.None);
             }
 
-            internal Task FireDeinitEvent()
+            private Task FireDeinitEvent()
             {
                 return Deinitalizing.InvokeAsync(this, CancellationToken.None);
             }
 
-            private void UpdateState(States newState)
+            private void UpdateState(StateInfo info)
             {
-                State = newState;
-            }
+                var oldState = State;
+                State = info.State;
+                LastError = info.LastError;
+                CurrentLogin = info.Login;
+                CurrentServer = info.Server;
+                CurrentProtocol = info.Protocol;
 
-            internal Task<IFeedServerApi> GetApi() => Actor.Call(a => a.FeedProxy); // for internal use only!
+                StateChanged?.Invoke(oldState, State);
+
+                if (State == States.Online)
+                    Connected?.Invoke();
+                else if (State == States.Offline)
+                    Disconnected?.Invoke();
+            }
         }
 
         private class Request
@@ -536,6 +444,7 @@ namespace TickTrader.Algo.Common.Model
 
     public class ConnectionOptions
     {
+        public bool AutoReconnect { get; set; }
         public bool EnableLogs { get; set; }
         public string LogsFolder { get; set; }
     }

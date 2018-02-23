@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
         private SymbolManagerViewModel _smbManager;
         private CustomFeedStorage _userSymbols = new CustomFeedStorage();
 
-        public ShellViewModel(ClientModel.ControlHandler commonClient)
+        public ShellViewModel(ClientModel.Data commonClient)
         {
             DisplayName = EnvService.Instance.ApplicationName;
 

@@ -4,33 +4,34 @@ using System.Linq;
 using System.Reflection;
 using TickTrader.Algo.Core;
 using TickTrader.BotAgent.Extensions;
-using Microsoft.Extensions.Logging;
 using TickTrader.BotAgent.BA.Models;
 using System.Threading;
 using System.Collections.Generic;
 using System;
 using TickTrader.BotAgent.BA.Exceptions;
+using TickTrader.BotAgent.BA.Entities;
+using NLog;
 
 namespace TickTrader.BotAgent.BA.Repository
 {
     public class PackageStorage
     {
+        private static ILogger _logger = LogManager.GetLogger(nameof(ServerModel));
+
         private readonly string packageTemplate = "*.ttalgo";
         private readonly string _storageDir;
-        private readonly ILogger<PackageStorage> _logger;
-        private readonly object _syncObj;
         private readonly Dictionary<string, PackageModel> _packages;
 
-        public PackageStorage(ILoggerFactory loggerFactory, object syncObj)
+        public PackageStorage()
         {
-            _syncObj = syncObj;
-            _logger = loggerFactory.CreateLogger<PackageStorage>();
             _storageDir = GetFullPathToStorage("AlgoRepository/");
             _packages = new Dictionary<string, PackageModel>();
 
             EnsureStorageDirectoryCreated();
             InitStorage();
         }
+
+        public IEnumerable<PackageModel> Packages => _packages.Values;
 
         private void InitStorage()
         {
@@ -46,44 +47,35 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public PackageModel Update(byte[] packageContent, string packageName)
         {
-            lock (_syncObj)
+            //Validate(packageName);
+
+            EnsureStorageDirectoryCreated();
+
+            var key = GetPackageKey(packageName);
+            var existing = _packages.GetOrDefault(key);
+            if (existing != null)
             {
-                //Validate(packageName);
+                if (existing.IsLocked)
+                    throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
-                EnsureStorageDirectoryCreated();
-
-                var key = GetPackageKey(packageName);
-                var existing = _packages.GetOrDefault(key);
-                if (existing != null)
-                {
-                    if (existing.IsLocked)
-                        throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
-
-                    RemovePackage(existing);
-                }
-
-                var packageFileInfo = SavePackage(packageName, packageContent);
-                var package = ReadPackage(packageFileInfo);
-                _packages.Add(key, package);
-
-                if (existing == null)
-                    PackageChanged?.Invoke(package, ChangeAction.Added);
-                else
-                    PackageChanged?.Invoke(package, ChangeAction.Modified);
-
-                return package;
+                RemovePackage(existing);
             }
-        }
 
-        public PackageModel[] GetAll()
-        {
-            lock (_syncObj)
-                return _packages.Values.ToArray();
+            var packageFileInfo = SavePackage(packageName, packageContent);
+            var package = ReadPackage(packageFileInfo);
+            _packages.Add(key, package);
+
+            if (existing == null)
+                PackageChanged?.Invoke(package, ChangeAction.Added);
+            else
+                PackageChanged?.Invoke(package, ChangeAction.Modified);
+
+            return package;
         }
 
         public PackageModel Get(string name)
         {
-            lock (_syncObj) return GetByName(name);
+            return GetByName(name);
         }
 
         public void Replace()
@@ -92,18 +84,15 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public void Remove(string packageName)
         {
-            lock (_syncObj)
+            PackageModel package;
+            if (_packages.TryGetValue(GetPackageKey(packageName), out package))
             {
-                PackageModel package;
-                if (_packages.TryGetValue(GetPackageKey(packageName), out package))
-                {
-                    RemovePackage(package);
-                    PackageChanged?.Invoke(package, ChangeAction.Removed);
-                }
+                RemovePackage(package);
+                PackageChanged?.Invoke(package, ChangeAction.Removed);
             }
         }
 
-        public event Action<IPackage, ChangeAction> PackageChanged;
+        public event Action<PackageModel, ChangeAction> PackageChanged;
 
         #region Private Methods
         private bool TryDisposePackage(PackageModel package)
@@ -115,7 +104,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             catch
             {
-                _logger.LogWarning($"Error disposing package '{package.Name}'");
+                _logger.Warn($"Error disposing package '{package.Name}'");
                 return false;
             }
         }
@@ -147,7 +136,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             catch
             {
-                _logger.LogWarning($"Error deleting file package '{package.Name}'");
+                _logger.Warn($"Error deleting file package '{package.Name}'");
                 throw;
             }
 
@@ -157,7 +146,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             catch
             {
-                _logger.LogWarning($"Error disposing package '{package.Name}'");
+                _logger.Warn($"Error disposing package '{package.Name}'");
             }
         }
 
@@ -189,7 +178,7 @@ namespace TickTrader.BotAgent.BA.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to read package {fileInfo.Name}: {ex}");
+                _logger.Error($"Failed to read package {fileInfo.Name}: {ex}");
 
                 return new PackageModel(fileInfo.Name, fileInfo.LastWriteTime, null);
             }

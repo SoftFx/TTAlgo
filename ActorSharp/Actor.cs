@@ -8,12 +8,29 @@ namespace ActorSharp
 {
     public class Actor
     {
-        public static Ref<T> SpawnLocal<T>(IContextFactory factory = null)
-            where T : Actor, new()
+        public static Ref<T> SpawnLocal<T>(IContextFactory factory = null, string actorName = null)
+            where T : class, new()
         {
             var actor = new T();
-            actor.Start(factory?.CreateContext() ?? new PoolContext());
-            return new LocalRef<T>(actor);
+            var context = factory?.CreateContext() ?? new PoolContext(10, actorName);
+            (actor as Actor)?.Start(context);
+            return new LocalRef<T>(actor, context);
+        }
+
+        public static Ref<T> SpawnLocal<T>(T instance, IContextFactory factory = null, string actorName = null)
+        {
+            var basicActor = instance as Actor;
+            var context = factory?.CreateContext() ?? new PoolContext(10, actorName);
+
+            if (basicActor != null)
+            {
+                if (basicActor.Context != null)
+                    throw new InvalidOperationException("Provided actor instance is already initialized!");
+
+                basicActor.Start(context);
+            }
+
+            return new LocalRef<T>(instance, context);
         }
 
         internal SynchronizationContext Context { get; set; }

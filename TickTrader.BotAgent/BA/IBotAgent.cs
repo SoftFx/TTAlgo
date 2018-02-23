@@ -6,99 +6,75 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.BotAgent.BA.Info;
+using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.BA
 {
     public interface IBotAgent
     {
-        IPackage UpdatePackage(byte[] fileContent, string fileName);
-        IPackage[] GetPackages();
+        // -------- Repository Management --------
+
+        List<PackageInfo> GetPackages();
+        PackageInfo UpdatePackage(byte[] fileContent, string fileName);
         void RemovePackage(string package);
-        PluginInfo[] GetAllPlugins();
-        PluginInfo[] GetPluginsByType(AlgoTypes type);
+        List<PluginInfo> GetAllPlugins();
+        List<PluginInfo> GetPluginsByType(AlgoTypes type);
 
-        IEnumerable<IAccount> Accounts { get; }
-        IEnumerable<ITradeBot> TradeBots { get; }
-        event Action<IAccount, ChangeAction> AccountChanged;
+        event Action<PackageInfo, ChangeAction> PackageChanged;
+        
+        // -------- Account Management --------
 
-        Task ShutdownAsync();
-
-        event Action<ITradeBot, ChangeAction> BotChanged;
-        event Action<ITradeBot> BotStateChanged;
-        event Action<IPackage, ChangeAction> PackageChanged;
-
-        string AutogenerateBotId(string botDisplayName);
-
+        List<AccountInfo> GetAccounts();
         void AddAccount(AccountKey key, string password, bool useNewProtocol);
         void RemoveAccount(AccountKey key);
         void ChangeAccountPassword(AccountKey key, string password);
         void ChangeAccountProtocol(AccountKey key);
+        ConnectionErrorCodes GetAccountMetadata(AccountKey key, out TradeMetadataInfo info);
         ConnectionErrorInfo TestAccount(AccountKey accountId);
         ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol);
 
-        ConnectionErrorCodes GetAccountInfo(AccountKey key, out ConnectionInfo info);
+        event Action<AccountInfo, ChangeAction> AccountChanged;
+        
+        // -------- Bot Management --------
 
-        ITradeBot AddBot(TradeBotModelConfig config);
-
+        List<TradeBotInfo> GetTradeBots();
+        TradeBotInfo GetBotInfo(string botId);
+        IAlgoData GetAlgoData(string botId);
+        string GenerateBotId(string botDisplayName);
+        TradeBotInfo AddBot(AccountKey accountId, string botId, TradeBotConfig config);
         void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
-    }
+        void ChangeBotConfig(string botId, TradeBotConfig newConfig);
+        void StartBot(string botId);
+        Task StopBotAsync(string botId);
+        void AbortBot(string botId);
 
-    public interface IAccount
-    {
-        string Address { get; }
-        string Username { get; }
-        ConnectionStates ConnectionState { get; }
-        IEnumerable<ITradeBot> TradeBots { get; }
-        bool UseNewProtocol { get; }
+        IBotLog GetBotLog(string botId);
 
-        Task<ConnectionErrorInfo> TestConnection();
-        void ChangePassword(string password);
+        event Action<TradeBotInfo, ChangeAction> BotChanged;
+        event Action<TradeBotInfo> BotStateChanged;
 
-        ITradeBot AddBot(TradeBotModelConfig config);
-        void RemoveBot(string botId, bool cleanLog = true, bool cleanAlgoData = true);
+        // -------- Server Management --------
+
+        // TO DO : server start and stop should not be managed from WebAdmin
+
         Task ShutdownAsync();
-
     }
 
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
     public enum BotStates { Offline, Starting, Faulted, Online, Stopping, Broken, Reconnecting }
 
-    public interface ITradeBot
-    {
-        string Id { get; }
-        bool Isolated { get; }
-        bool IsRunning { get; }
-        string FaultMessage { get; }
-        IBotLog Log { get; }
-        IAlgoData AlgoData { get; }
-        IAccount Account { get; }
-        PluginPermissions Permissions { get; }
-        PluginConfig Config { get; }
-        PackageModel Package { get; }
-        string PackageName { get; }
-        string Descriptor { get; }
-        string BotName { get; }
-        BotStates State { get; }
-
-        void Abort();
-        void Configurate(TradeBotModelConfig config);
-        void Start();
-        Task StopAsync();
-    }
-
-    public interface IPackage
-    {
-        string Name { get; }
-        DateTime Created { get; }
-        bool IsValid { get; }
-
-        bool NameEquals(string name);
-        IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type);
-    }
-
     public enum LogEntryType { Info, Trading, Error, Custom }
+
+    public interface IAlgoData
+    {
+        string Folder { get; }
+        IFile[] Files { get; }
+
+        void Clear();
+        IFile GetFile(string decodedFile);
+        void DeleteFile(string name);
+    }
 
     public interface ILogEntry
     {
@@ -111,47 +87,9 @@ namespace TickTrader.BotAgent.BA
     {
         IEnumerable<ILogEntry> Messages { get; }
         IFile GetFile(string file);
-        string Folder { get; }
         string Status { get; }
         IFile[] Files { get; }
-        event Action<string> StatusUpdated;
         void Clear();
         void DeleteFile(string file);
-    }
-
-    public class PluginInfo
-    {
-        public PluginInfo(PluginKey key, AlgoPluginDescriptor descriptor)
-        {
-            Id = key;
-            Descriptor = descriptor;
-        }
-
-        public PluginKey Id { get; }
-        public AlgoPluginDescriptor Descriptor { get; }
-    }
-
-    public class PluginKey
-    {
-        public PluginKey(string package, string id)
-        {
-            PackageName = package;
-            DescriptorId = id;
-        }
-
-        public string PackageName { get; private set; }
-        public string DescriptorId { get; private set; }
-    }
-
-    public class AccountKey
-    {
-        public AccountKey(string login, string server)
-        {
-            Login = login;
-            Server = server;
-        }
-
-        public string Login { get; private set; }
-        public string Server { get; private set; }
     }
 }

@@ -49,11 +49,21 @@ namespace ActorSharp.Lib
         private bool _isCompleted;
         private Action _callback;
 
+        public static ReusableAwaitable<T> CreateCompleted(T result)
+        {
+            var awaitable = new ReusableAwaitable<T>();
+            awaitable.SetCompleted(result);
+            return awaitable;
+        }
+
+        public string WaiterName { get; set; }
+
         public void Reset()
         {
             _result = default(T);
             _isCompleted = false;
             _callback = null;
+            WaiterName = null;
         }
 
         public void SetCompleted(T result)

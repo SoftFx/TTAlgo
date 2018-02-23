@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Repository;
 
-namespace TickTrader.BotAgent.BA.Models
+namespace TickTrader.BotAgent.BA.Repository
 {
-    public class PackageModel : IPackage, IDisposable
+    public class PackageModel : IDisposable
     {
         private int _refCount;
 

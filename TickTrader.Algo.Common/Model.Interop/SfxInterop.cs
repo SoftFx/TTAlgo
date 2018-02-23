@@ -278,36 +278,6 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        //private async void DownloadBarsToBuffer(SliceBuffer<BarEntity> buffer, Task<BarEnumerator> enumTask)
-        //{
-        //    const int pageSize = 2000;
-
-        //    try
-        //    {
-        //        using (var e = await enumTask)
-        //        {
-        //            var page = new SFX.Bar[pageSize];
-
-        //            while (true)
-        //            {
-        //                var count = await e.NextAsync(page).ConfigureAwait(false);
-        //                if (count <= 0)
-        //                    break;
-
-        //                var barArray = page.Take(count).Select(Convert).ToArray();
-        //                await buffer.WriteAsync(barArray).ConfigureAwait(false);
-        //            }
-        //        }
-
-        //        await buffer.CompleteWriteAsync();
-        //        buffer.Dispose();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        buffer.SetFailed(ex);
-        //    }
-        //}
-
         public async Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod)
         {
             var result = new List<BarEntity>();
@@ -402,46 +372,10 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        //public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
-        //{
-        //    var buffer = new AsyncBuffer<TradeReportEntity[]>();
-        //    var eTask = _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders);
-        //    DownloadTradeHistoryToBuffer(buffer, eTask);
-        //    return buffer;
-        //}
-
         public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
         {
             _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders, rxStream);
         }
-
-        //private async void DownloadTradeHistoryToBuffer(AsyncBuffer<TradeReportEntity[]> buffer, Task<TradeTransactionReportEnumerator> enumTask)
-        //{
-        //    const int pageSize = 500;
-
-        //    try
-        //    {
-        //        var e = await enumTask;
-        //        {
-        //            var page = new TradeTransactionReport[pageSize];
-
-        //            while (true)
-        //            {
-        //                var pageCount = await e.NextAsync(page);
-        //                if (pageCount == 0)
-        //                    break;
-        //                var convertedPage = page.Take(pageCount).Select(Convert).ToArray();
-        //                await buffer.WriteAsync(convertedPage);
-        //            }
-        //        }
-
-        //        buffer.Dispose();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        buffer.SetFailed(ex);
-        //    }
-        //}
 
         public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
         {
