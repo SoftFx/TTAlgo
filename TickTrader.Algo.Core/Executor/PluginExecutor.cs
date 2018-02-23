@@ -610,7 +610,7 @@ namespace TickTrader.Algo.Core
             iStrategy.EnqueueTradeUpdate(action);
         }
 
-        void IFixtureContext.EnqueueUserCallback(Action<PluginBuilder> action)
+        void IFixtureContext.EnqueueCustomInvoke(Action<PluginBuilder> action)
         {
             iStrategy.EnqueueCustomInvoke(action);
         }

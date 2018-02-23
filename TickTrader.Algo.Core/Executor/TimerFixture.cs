@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Core
 
             private void OnTick(object state)
             {
-                _context.EnqueueUserCallback(InvokeCallback);
+                _context.EnqueueCustomInvoke(InvokeCallback);
             }
 
             public void Change(int periodMs)

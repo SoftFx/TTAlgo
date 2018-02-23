@@ -38,7 +38,6 @@ namespace TickTrader.Algo.Common.Model
         private FDK.QuoteStore.Client _feedHistoryProxy;
         private FDK.OrderEntry.Client _tradeProxy;
         private FDK.TradeCapture.Client _tradeHistoryProxy;
-        private bool _allowTrade;
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
         
@@ -374,8 +373,6 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
-
-
         {
             _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders, rxStream);
         }
@@ -423,9 +420,6 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                if (!_allowTrade)
-                    return OrderCmdResultCodes.ConnectionError;
-
                 var result = await operationDef(request);
                 return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
             }
@@ -437,7 +431,7 @@ namespace TickTrader.Algo.Common.Model
             catch (Exception ex)
             {
                 if (ex.Message.StartsWith("Session is not active"))
-                    return OrderCmdResultCodes.ConnectionError;
+                    return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
                 logger.Error(ex);
                 return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
             }
