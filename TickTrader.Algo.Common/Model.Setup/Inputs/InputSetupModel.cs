@@ -7,50 +7,58 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public abstract class InputSetup : PropertySetupBase
+    public abstract class InputSetupModel : PropertySetupModel
     {
-        private ISymbolInfo _selectedSymbol;
         private string _defaultSymbolCode;
+        private ISymbolInfo _selectedSymbol;
 
+
+        protected IAlgoSetupMetadata Metadata { get; }
+
+
+        public InputDescriptor Descriptor { get; }
+
+        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
         public ISymbolInfo SelectedSymbol
         {
             get { return _selectedSymbol; }
             set
             {
+                if (_selectedSymbol == value)
+                    return;
+
                 _selectedSymbol = value;
                 NotifyPropertyChanged(nameof(SelectedSymbol));
             }
         }
 
-        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
-
-        public InputSetup(InputDescriptor descriptor, string defaultSymbolCode, IReadOnlyList<ISymbolInfo> symbols)
+        private InputSetupModel(InputDescriptor descriptor, string defaultSymbolCode)
         {
+            Descriptor = descriptor;
             _defaultSymbolCode = defaultSymbolCode;
 
             SetMetadata(descriptor);
-            if (symbols == null)
-                AvailableSymbols = new ISymbolInfo[] { new DummySymbolInfo(defaultSymbolCode) };
-            else
-                AvailableSymbols = symbols;
+        }
+
+        public InputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode)
+            : this(descriptor, defaultSymbolCode)
+        {
+            AvailableSymbols = metadata.GetAvaliableSymbols(_defaultSymbolCode);
         }
 
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
+            SelectedSymbol = AvailableSymbols.GetSymbolOrAny(_defaultSymbolCode);
         }
 
 
         protected virtual void LoadConfig(Input input)
         {
-            _selectedSymbol = AvailableSymbols.FirstOrDefault(s => s.Name == input.SelectedSymbol);
-            if (_selectedSymbol == null)
-            {
-                _selectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
-            }
+            _selectedSymbol = AvailableSymbols.FirstOrDefault(s => s.Name == input.SelectedSymbol)
+                ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbolCode);
         }
 
         protected virtual void SaveConfig(Input input)
@@ -60,22 +68,23 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public class Invalid : InputSetup
+        public class Invalid : InputSetupModel
         {
             public Invalid(InputDescriptor descriptor, object error = null)
-                : base(descriptor, null, null)
+                : base(descriptor, null)
             {
                 if (error == null)
-                    Error = new GuiModelMsg(descriptor.Error.Value);
+                    Error = new ErrorMsgModel(descriptor.Error.Value);
                 else
-                    Error = new GuiModelMsg(error);
+                    Error = new ErrorMsgModel(error);
             }
 
-            public Invalid(InputDescriptor descriptor, string symbol, GuiModelMsg error)
-                : base(descriptor, symbol, null)
+            public Invalid(InputDescriptor descriptor, string symbol, ErrorMsgModel error)
+                : base(descriptor, symbol)
             {
                 Error = error;
             }
+
 
             public override void Apply(IPluginSetupTarget target)
             {
@@ -90,17 +99,10 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 throw new Exception("Cannot save invalid input!");
             }
+
+            public override void Reset()
+            {
+            }
         }
-    }
-
-
-    internal class DummySymbolInfo : ISymbolInfo
-    {
-        public DummySymbolInfo(string symbol)
-        {
-            Name = symbol;
-        }
-
-        public string Name { get; private set; }
     }
 }

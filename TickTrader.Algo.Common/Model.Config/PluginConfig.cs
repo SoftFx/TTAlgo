@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Name = "algoConfig", Namespace = "")]
-    [KnownType(typeof(BarBasedConfig))]
-    [KnownType(typeof(QuoteBasedConfig))]
+    [DataContract(Namespace = "")]
     public class PluginConfig
     {
         [DataMember(Name = "properties")]
@@ -15,21 +14,33 @@ namespace TickTrader.Algo.Common.Model.Config
 
         public List<Property> Properties => _properties;
 
+        [DataMember(Name = "timeframe")]
+        public TimeFrames TimeFrame { get; set; }
+
         [DataMember(Name = "symbol")]
         public string MainSymbol { get; set; }
+
+        [DataMember(Name = "mapping")]
+        public string SelectedMapping { get; set; }
     }
 
 
     [DataContract(Namespace = "")]
-    public class BarBasedConfig : PluginConfig
+    public class IndicatorConfig : PluginConfig
     {
-        [DataMember(Name = "price")]
-        public BarPriceType PriceType { get; set; }
     }
 
 
     [DataContract(Namespace = "")]
-    public class QuoteBasedConfig : PluginConfig
+    public class TradeBotConfig : PluginConfig
     {
+        [DataMember(Name = "instanceId")]
+        public string InstanceId { get; set; }
+
+        [DataMember(Name = "isolated")]
+        public bool Isolated { get; set; }
+
+        [DataMember(Name = "permissions")]
+        public PluginPermissions Permissions { get; set; }
     }
 }

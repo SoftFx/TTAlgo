@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public class TradeMetadata : IAlgoGuiMetadata
+    public class TradeMetadata : IAlgoSetupMetadata
     {
         public TradeMetadata(IEnumerable<ISymbolInfo> symbols)
         {

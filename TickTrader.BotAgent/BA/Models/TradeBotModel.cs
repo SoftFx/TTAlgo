@@ -70,7 +70,7 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata, string workingFolder)
+        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoSetupMetadata tradeMetadata, string workingFolder)
         {
             _syncObj = syncObj;
             _client = client;

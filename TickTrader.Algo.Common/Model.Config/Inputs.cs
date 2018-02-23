@@ -1,6 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
@@ -11,55 +9,40 @@ namespace TickTrader.Algo.Common.Model.Config
         public string SelectedSymbol { get; set; }
     }
 
-
-    [DataContract(Name = "QuoteToQuoteInput", Namespace = "")]
-    public class QuoteToQuoteInput : Input
+    [DataContract(Name = "QuoteInput", Namespace = "")]
+    public class QuoteInput : Input
     {
         [DataMember]
         public bool UseL2 { get; set; }
     }
 
-
-    [DataContract(Name = "QuoteToDoubleInput", Namespace = "")]
-    public class QuoteToDoubleInput : Input
+    [DataContract(Name = "MappedInput", Namespace = "")]
+    public abstract class MappedInput : Input
     {
         [DataMember]
-        public QuoteToDoubleMappings Mapping { get; set; }
-    }
-
-
-    [DataContract(Name = "BarInputBase", Namespace = "")]
-    public abstract class BarInputBase : Input
-    {
-    }
-
-
-    [DataContract(Name = "SingleBarInputBase", Namespace = "")]
-    public abstract class SingleBarInputBase : BarInputBase
-    {
-        [DataMember]
-        public BarPriceType PriceType { get; set; }
+        public string SelectedMapping { get; set; }
     }
 
 
     [DataContract(Name = "BarToBarInput", Namespace = "")]
-    public class BarToBarInput : BarInputBase
+    public class BarToBarInput : MappedInput
     {
-        [DataMember]
-        public string SelectedMapping { get; set; }
     }
 
 
     [DataContract(Name = "BarToDoubleInput", Namespace = "")]
-    public class BarToDoubleInput : BarInputBase
+    public class BarToDoubleInput : MappedInput
     {
-        [DataMember]
-        public string SelectedMapping { get; set; }
     }
 
 
     [DataContract(Name = "QuoteToBarInput", Namespace = "")]
-    public class QuoteToBarInput : SingleBarInputBase
+    public class QuoteToBarInput : MappedInput
+    {
+    }
+
+    [DataContract(Name = "QuoteToDoubleInput", Namespace = "")]
+    public class QuoteToDoubleInput : MappedInput
     {
     }
 }

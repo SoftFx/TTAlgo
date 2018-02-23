@@ -312,6 +312,7 @@
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model.Lib\FilteredListModel.cs" />
+    <Compile Include="Model\BotManager.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
@@ -457,6 +458,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
     <Compile Include="Views\BotListViewModel.cs" />
+    <Compile Include="Views\BotManagerViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -1041,6 +1043,10 @@
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj">
+      <Project>{4ec2f84d-ef40-498e-a277-4eb91becea4b}</Project>
+      <Name>TickTrader.Algo.Ext</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
@@ -1100,7 +1106,9 @@
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

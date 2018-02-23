@@ -61,6 +61,15 @@ namespace TickTrader.Algo.Api
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class TradeBotAttribute : AlgoPluginAttribute
     {
+        public TradeBotAttribute()
+        {
+            SetupMainSymbol = true;
+        }
+
+        /// <summary>
+        /// Defines whether MainSymbol setup should be shown during bot setup. True by default
+        /// </summary>
+        public bool SetupMainSymbol { get; set; }
     }
 
     [Serializable]

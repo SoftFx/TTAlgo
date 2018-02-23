@@ -1,38 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
     public class ExtCollection
     {
-        private List<ReductionDescriptor> barToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> quoteToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> fullbarToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> fullbarToBar = new List<ReductionDescriptor>();
+        private IAlgoCoreLogger _logger;
+        private List<ReductionDescriptor> _barToDouble = new List<ReductionDescriptor>();
+        private List<ReductionDescriptor> _fullbarToDouble = new List<ReductionDescriptor>();
+        private List<ReductionDescriptor> _fullbarToBar = new List<ReductionDescriptor>();
+        private List<ReductionDescriptor> _quoteToDouble = new List<ReductionDescriptor>();
+        private List<ReductionDescriptor> _quoteToBar = new List<ReductionDescriptor>();
 
-        public IEnumerable<ReductionDescriptor> BarToDoubleReductions => barToDouble;
-        public IEnumerable<ReductionDescriptor> QuoteToDoubleReductions => quoteToDouble;
-        public IEnumerable<ReductionDescriptor> FullBarToDoubleReductions => fullbarToDouble;
-        public IEnumerable<ReductionDescriptor> FullBarToBarReductions => fullbarToBar;
+
+        public IEnumerable<ReductionDescriptor> BarToDoubleReductions => _barToDouble;
+        public IEnumerable<ReductionDescriptor> FullBarToDoubleReductions => _fullbarToDouble;
+        public IEnumerable<ReductionDescriptor> FullBarToBarReductions => _fullbarToBar;
+        public IEnumerable<ReductionDescriptor> QuoteToDoubleReductions => _quoteToDouble;
+        public IEnumerable<ReductionDescriptor> QuoteToBarReductions => _quoteToBar;
+
+
+        public ExtCollection(IAlgoCoreLogger logger)
+        {
+            _logger = logger;
+        }
+
 
         public void Add(ReductionDescriptor reduction)
         {
             switch (reduction.Type)
             {
-                case ReductionType.BarToDouble: barToDouble.Add(reduction); break;
-                case ReductionType.FullBarToDouble: fullbarToDouble.Add(reduction); break;
-                case ReductionType.QuoteToDouble: quoteToDouble.Add(reduction); break;
-                case ReductionType.FullBarToBar: fullbarToBar.Add(reduction); break;
+                case ReductionType.BarToDouble: _barToDouble.Add(reduction); break;
+                case ReductionType.FullBarToDouble: _fullbarToDouble.Add(reduction); break;
+                case ReductionType.FullBarToBar: _fullbarToBar.Add(reduction); break;
+                case ReductionType.QuoteToDouble: _quoteToDouble.Add(reduction); break;
+                case ReductionType.QuoteToBar: _quoteToBar.Add(reduction); break;
             }
         }
 
-        public void LoadExtentions(string path, IAlgoCoreLogger logger)
+        public void LoadExtentions(string path)
         {
             var plugins = System.IO.Directory.GetFiles(path, "*.ttalgo");
 
@@ -56,12 +65,29 @@ namespace TickTrader.Algo.Core.Repository
                         }
                     }
 
-                    logger.Info("Loadded extensions from " + file);
+                    _logger.Info("Loadded extensions from " + file);
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("Cannot extensions from " + file + "!", ex);
+                    _logger.Error("Cannot load extensions from " + file + "!", ex);
                 }
+            }
+        }
+
+        public void AddAssembly(string extAssemblyName)
+        {
+            try
+            {
+                var extAssembly = Assembly.Load(extAssemblyName);
+                var reductions = ReductionDescriptor.InspectAssembly(extAssembly);
+                foreach (var r in reductions)
+                    Add(r);
+
+                _logger.Info($"Loaded extensions from {extAssemblyName}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Cannot load extensions from {extAssemblyName}!", ex);
             }
         }
     }

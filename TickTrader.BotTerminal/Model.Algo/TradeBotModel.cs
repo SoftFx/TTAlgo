@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
-        new internal void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        new internal void Configurate(PluginSetupModel setup, PluginPermissions permissions, bool isolated)
         {
             if (State != BotModelStates.Stopped)
                 return;

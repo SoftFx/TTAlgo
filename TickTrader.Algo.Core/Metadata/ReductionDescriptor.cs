@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Core.Metadata
         FullBarToDouble,
         FullBarToBar,
         QuoteToDouble,
+        QuoteToBar,
     }
 
     public class ReductionDescriptor
@@ -63,6 +64,8 @@ namespace TickTrader.Algo.Core.Metadata
                 Type = ReductionType.FullBarToBar;
             else if (typeof(QuoteToDoubleReduction).IsAssignableFrom(algoCustomType))
                 Type = ReductionType.QuoteToDouble;
+            else if (typeof(QuoteToBarReduction).IsAssignableFrom(algoCustomType))
+                Type = ReductionType.QuoteToBar;
             else
                 Type = ReductionType.Unknown;
         }

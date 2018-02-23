@@ -104,7 +104,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
+        protected override PluginSetupModel CreateSetup(AlgoPluginRef catalogItem)
         {
             return new TickBasedPluginSetup(catalogItem, SymbolCode);
         }

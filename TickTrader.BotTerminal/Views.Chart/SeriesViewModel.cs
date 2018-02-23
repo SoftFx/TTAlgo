@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
         //    return null;
         //}
 
-        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetup outputSetup)
+        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetupModel outputSetup)
         {
             var seriesData = model.GetOutputSeries(outputSetup.Id);
 

@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         internal class BoolConverter : UiConverter<bool>
         {
-            public override bool Parse(string str, out GuiModelMsg error)
+            public override bool Parse(string str, out ErrorMsgModel error)
             {
                 error = null;
 
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (FormatException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NotBoolean);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NotBoolean);
                 }
 
                 return false;
@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         internal class StringConverter : UiConverter<string>
         {
-            public override string Parse(string str, out GuiModelMsg error)
+            public override string Parse(string str, out ErrorMsgModel error)
             {
                 error = null;
                 return str;
@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         internal class IntConverter : UiConverter<int>
         {
-            public override int Parse(string str, out GuiModelMsg error)
+            public override int Parse(string str, out ErrorMsgModel error)
             {
                 error = null;
                 try
@@ -93,11 +93,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (FormatException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NotInteger);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NotInteger);
                 }
                 catch (OverflowException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NumberOverflow);
                 }
                 return 0;
             }
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         internal class NullableIntConverter : UiConverter<int?>
         {
-            public override int? Parse(string str, out GuiModelMsg error)
+            public override int? Parse(string str, out ErrorMsgModel error)
             {
                 error = null;
                 try
@@ -133,11 +133,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (FormatException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NotInteger);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NotInteger);
                 }
                 catch (OverflowException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NumberOverflow);
                 }
                 return default(int?);
             }
@@ -176,7 +176,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         internal class DoubleConverter : UiConverter<double>
         {
-            public override double Parse(string str, out GuiModelMsg error)
+            public override double Parse(string str, out ErrorMsgModel error)
             {
                 error = null;
                 try
@@ -185,11 +185,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (FormatException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NotDouble);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NotDouble);
                 }
                 catch (OverflowException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NumberOverflow);
                 }
                 return 0;
             }
@@ -216,7 +216,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         internal class NullableDoubleConverter : UiConverter<double?>
         {
-            public override double? Parse(string str, out GuiModelMsg error)
+            public override double? Parse(string str, out ErrorMsgModel error)
             {
                 error = null;
                 try
@@ -225,11 +225,11 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (FormatException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NotDouble);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NotDouble);
                 }
                 catch (OverflowException)
                 {
-                    error = new GuiModelMsg(MsgCodes.NumberOverflow);
+                    error = new ErrorMsgModel(ErrorMsgCodes.NumberOverflow);
                 }
                 return default(double?);
             }
@@ -269,7 +269,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
     public abstract class UiConverter<T>
     {
-        public abstract T Parse(string str, out GuiModelMsg error);
+        public abstract T Parse(string str, out ErrorMsgModel error);
         public abstract string ToString(T val);
         public abstract bool FromObject(object objVal, out T result);
     }

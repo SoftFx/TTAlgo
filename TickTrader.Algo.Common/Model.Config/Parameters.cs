@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Config
     [KnownType(typeof(FileParameter))]
     [KnownType(typeof(ColoredLineOutput))]
     [KnownType(typeof(MarkerSeriesOutput))]
-    [KnownType(typeof(QuoteToQuoteInput))]
+    [KnownType(typeof(QuoteInput))]
     [KnownType(typeof(QuoteToDoubleInput))]
     [KnownType(typeof(BarToBarInput))]
     [KnownType(typeof(BarToDoubleInput))]

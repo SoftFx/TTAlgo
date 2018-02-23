@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
                 InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
         }
 
-        protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
+        protected override PluginSetupModel CreateSetup(AlgoPluginRef catalogItem)
         {
             return new BarBasedPluginSetup(catalogItem, SymbolCode, Algo.Api.BarPriceType.Bid, AlgoEnv);
         }

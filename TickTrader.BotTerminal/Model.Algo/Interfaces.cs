@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
 
     internal interface IAlgoSetupFactory
     {
-        PluginSetup CreateSetup(AlgoPluginRef catalogItem);
+        PluginSetupModel CreateSetup(AlgoPluginRef catalogItem);
     }
 
     //internal interface IIndicatorAdapterContext

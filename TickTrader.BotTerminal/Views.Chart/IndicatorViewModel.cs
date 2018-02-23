@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
             Panes = new DynamicList<IndicatorPaneViewModel>();
             Precision = 0;
 
-            foreach (OutputSetup output in indicator.Setup.Outputs.Where(o => o.Target == OutputTargets.Overlay))
+            foreach (OutputSetupModel output in indicator.Setup.Outputs.Where(o => o.Target == OutputTargets.Overlay))
             {
                 Precision = Math.Max(Precision, output.Precision == -1 ? symbol.Descriptor.Precision : output.Precision);
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator, output);

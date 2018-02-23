@@ -231,7 +231,7 @@ namespace TickTrader.BotTerminal
             return indicatorNextId++;
         }
 
-        protected abstract PluginSetup CreateSetup(AlgoPluginRef catalogItem);
+        protected abstract PluginSetupModel CreateSetup(AlgoPluginRef catalogItem);
 
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
@@ -362,7 +362,7 @@ namespace TickTrader.BotTerminal
             stateController.PushEvent(Events.Stopped);
         }
 
-        PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
+        PluginSetupModel IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
         {
             return CreateSetup(catalogItem);
         }

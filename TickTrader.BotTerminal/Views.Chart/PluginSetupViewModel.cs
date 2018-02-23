@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
         public bool IsCreationMode { get { return Mode == PluginSetupMode.New; } }
         public PluginSetupMode Mode { get; private set; }
         public bool IsEnabled { get { return _bot == null ? true : _bot.State == BotModelStates.Stopped; } }
-        public PluginSetup Setup { get; private set; }
+        public PluginSetupModel Setup { get; private set; }
         public PluginCatalogItem PluginItem { get; private set; }
         public bool CanOk { get { return Setup.IsValid && IsInstanceIdValid && IsEnabled; } }
         public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid && Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot;

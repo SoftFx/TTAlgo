@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
 
         public string PluginFilePath { get; }
 
-        public PluginSetup Setup { get; private set; }
+        public PluginSetupModel Setup { get; private set; }
 
         public string InstanceId { get; private set; }
 
@@ -64,7 +64,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        protected void Configurate(PluginSetupModel setup, PluginPermissions permissions, bool isolated)
         {
             Setup = setup;
             Permissions = permissions;

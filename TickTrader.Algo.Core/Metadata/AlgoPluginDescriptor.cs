@@ -155,6 +155,7 @@ namespace TickTrader.Algo.Core.Metadata
             TradeBotAttribute botAttr = algoCustomType.GetCustomAttribute<TradeBotAttribute>(false);
             if (botAttr != null)
             {
+                SetupMainSymbol = botAttr.SetupMainSymbol;
                 InspectAlgoPluginAttr(algoCustomType, botAttr);
             }
         }
@@ -243,6 +244,7 @@ namespace TickTrader.Algo.Core.Metadata
         public IEnumerable<ParameterDescriptor> Parameters => parameters;
         public IEnumerable<InputDescriptor> Inputs => inputs;
         public IEnumerable<OutputDescriptor> Outputs => outputs;
+        public bool SetupMainSymbol { get; private set; }
     }
 
     public enum AlgoTypes { Indicator, Robot, Unknown }

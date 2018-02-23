@@ -8,6 +8,14 @@ namespace TickTrader.Algo.Common.Model.Config
     [DataContract(Name = "Output", Namespace = "")]
     public abstract class Output : Property
     {
+        [DataMember]
+        public bool IsEnabled { get; set; }
+
+        [DataMember]
+        public OutputColor LineColor { get; set; }
+
+        [DataMember]
+        public int LineThickness { get; set; }
     }
 
 
@@ -50,16 +58,7 @@ namespace TickTrader.Algo.Common.Model.Config
     public class ColoredLineOutput : Output
     {
         [DataMember]
-        public OutputColor LineColor { get; set; }
-
-        [DataMember]
-        public int LineThickness { get; set; }
-
-        [DataMember]
         public LineStyles LineStyle { get; set; }
-
-        [DataMember]
-        public bool IsEnabled { get; set; }
     }
 
 
@@ -67,15 +66,6 @@ namespace TickTrader.Algo.Common.Model.Config
     public class MarkerSeriesOutput : Output
     {
         [DataMember]
-        public OutputColor LineColor { get; set; }
-
-        [DataMember]
-        public int LineThickness { get; set; }
-
-        [DataMember]
         public MarkerSizes MarkerSize { get; set; }
-
-        [DataMember]
-        public bool IsEnabled { get; set; }
     }
 }

@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
             Precision = 0;
 
             var series = new DynamicList<IRenderableSeriesViewModel>();
-            foreach (OutputSetup output in indicator.Model.Setup.Outputs.Where(o => o.Target == target))
+            foreach (OutputSetupModel output in indicator.Model.Setup.Outputs.Where(o => o.Target == target))
             {
                 Precision = Math.Max(Precision, output.Precision == -1 ? symbol.Descriptor.Precision : output.Precision);
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator.Model, output);
