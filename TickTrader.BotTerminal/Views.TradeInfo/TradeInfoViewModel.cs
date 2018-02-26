@@ -9,14 +9,14 @@ namespace TickTrader.BotTerminal
 {
     class TradeInfoViewModel: PropertyChangedBase
     {
-        public TradeInfoViewModel(TraderClientModel clientModel)
+        public TradeInfoViewModel(TraderClientModel clientModel, ConnectionManager cManager)
         {
             var netPositions = new NetPositionListViewModel(clientModel.Account, clientModel.Symbols, clientModel.Connection);
             var grossPositions = new GrossPositionListViewModel(clientModel.Account, clientModel.Symbols, clientModel.Connection);
             Positions = new PositionListViewModel(netPositions, grossPositions);
             Orders = new OrderListViewModel(clientModel.Account, clientModel.Symbols, clientModel.Connection);
             Assets = new AssetsViewModel(clientModel.Account, clientModel.Currencies.Snapshot, clientModel.Connection);
-            AccountStats = new AccountStatsViewModel(clientModel);
+            AccountStats = new AccountStatsViewModel(clientModel, cManager);
         }
 
         public OrderListViewModel Orders { get; }

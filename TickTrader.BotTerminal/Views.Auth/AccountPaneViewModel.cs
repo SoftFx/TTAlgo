@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
                 }
             };
 
-            this.cManager.StateChanged += (os, ns) => NotifyOfPropertyChange(nameof(ConnectionState));
+            this.cManager.ConnectionStateChanged += (os, ns) => NotifyOfPropertyChange(nameof(ConnectionState));
             this.cManager.CredsChanged += () =>
             {
                 IsDropDownOpen = false;

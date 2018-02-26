@@ -16,12 +16,13 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class ConnectionModel : ActorPart
+    public class ConnectionModel : ActorPart, IStateMachineSync
     {
         private StateMachine<States> _stateControl;
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
-        public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
+        public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry, StopRetryRequested }
+        //public enum DiconnectReasons { ConnectSequenceFailed, ClientRequest, LostConnection }
 
         private IServerInterop _interop;
         private CancellationTokenSource connectCancelSrc;
@@ -35,7 +36,7 @@ namespace TickTrader.Algo.Common.Model
         private ActorEvent _deinitListeners = new ActorEvent();
         private ActorEvent<StateInfo> _stateListeners = new ActorEvent<StateInfo>();
 
-        public ConnectionModel(ConnectionOptions options) 
+        public ConnectionModel(ConnectionOptions options)
         {
             _options = options;
 
@@ -43,9 +44,10 @@ namespace TickTrader.Algo.Common.Model
                 && LastErrorCode != ConnectionErrorCodes.BlockedAccount
                 && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
 
-            _stateControl = new StateMachine<States>(new NullSync());
+            _stateControl = new StateMachine<States>(this);
             _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
+            _stateControl.AddTransition(States.OfflineRetry, Events.StopRetryRequested, States.Offline);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
                 () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
@@ -57,13 +59,15 @@ namespace TickTrader.Algo.Common.Model
             _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
 
-            _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
+            _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 5000);
 
             _stateControl.OnEnter(States.Connecting, DoConnect);
-            _stateControl.OnEnter(States.Disconnecting, DoDisconnect);
+            _stateControl.OnEnter(States.Disconnecting, () => DoDisconnect(canRecconect()));
 
             _stateControl.StateChanged += (f, t) =>
             {
+                ContextCheck();
+
                 StateChanged?.Invoke(f, t);
                 logger.Debug("STATE {0} ({1}:{2})", t, CurrentLogin, CurrentServer);
 
@@ -136,8 +140,15 @@ namespace TickTrader.Algo.Common.Model
 
             _stateControl.ModifyConditions(() =>
             {
+                wasConnected = false;
+
                 if (State == States.Offline)
                     completion = Task.FromResult(ConnectionErrorCodes.None);
+                else if (State == States.OfflineRetry)
+                {
+                    _stateControl.PushEvent(Events.StopRetryRequested);
+                    completion = Task.FromResult(ConnectionErrorCodes.None);
+                }
                 else
                 {
                     if (connectRequest != null)
@@ -164,7 +175,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void _interop_Disconnected(IServerInterop sender, ConnectionErrorInfo errInfo)
         {
-            ContextInvoke(()=>
+            ContextInvoke(() =>
             {
                 if (sender == _interop && (State == States.Online || State == States.Connecting))
                 {
@@ -176,6 +187,8 @@ namespace TickTrader.Algo.Common.Model
 
         private async void DoConnect()
         {
+            ContextCheck();
+
             var request = connectRequest;
             if (request == null)
             {
@@ -239,6 +252,8 @@ namespace TickTrader.Algo.Common.Model
 
         private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
         {
+            ContextCheck();
+
             LastError = erroInfo;
             _stateControl.PushEvent(Events.ConnectFailed);
 
@@ -247,6 +262,8 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task Deinitialize()
         {
+            ContextCheck();
+
             _interop.Disconnected -= _interop_Disconnected;
 
             try
@@ -278,14 +295,14 @@ namespace TickTrader.Algo.Common.Model
             try
             {
                 if (wasInitFired)
-                    await AsyncDisconnected.InvokeAsync(this);
+                    await AsyncDisconnected.InvokeAsync(this, CancellationToken.None);
             }
             catch (Exception ex) { logger.Error(ex); }
 
             wasInitFired = false;
         }
 
-        private async void DoDisconnect()
+        private async void DoDisconnect(bool canRecconect)
         {
             await Deinitialize();
 
@@ -300,7 +317,19 @@ namespace TickTrader.Algo.Common.Model
             _stateControl.PushEvent(Events.DoneDisconnecting);
         }
 
-        #region State management
+        #region IStateMachineSync
+
+        void IStateMachineSync.Synchronized(Action syncAction)
+        {
+            ContextInvoke(syncAction);
+        }
+
+        T IStateMachineSync.Synchronized<T>(Func<T> syncAction)
+        {
+            T result = default(T);
+            ContextInvoke(() => result = syncAction());
+            return result;
+        }
 
         #endregion
 
@@ -308,7 +337,7 @@ namespace TickTrader.Algo.Common.Model
         {
             private ActorCallback _initListener;
             private ActorCallback _deinitListener;
-            private ActorListener<StateInfo> _stateListener;
+            private ActorCallback<StateInfo> _stateListener;
 
             public Handler(Ref<ConnectionModel> actorRef) : base(actorRef) { }
 
@@ -336,13 +365,13 @@ namespace TickTrader.Algo.Common.Model
             {
                 var handlerRef = this.GetRef();
 
-                _initListener = ActorCallback.Create(FireInitEvent);
-                _deinitListener = ActorCallback.Create(FireDeinitEvent);
-                _stateListener = new ActorListener<StateInfo>(UpdateState);
+                _initListener = ActorCallback.CreateAsync(FireInitEvent);
+                _deinitListener = ActorCallback.CreateAsync(FireDeinitEvent);
+                _stateListener = ActorCallback.Create<StateInfo>(UpdateState);
 
                 State = await Actor.Call(a =>
                 {
-                    a._stateListeners.Add(_stateListener.Ref);
+                    a._stateListeners.Add(_stateListener);
                     a._initListeners.Add(_initListener);
                     a._deinitListeners.Add(_deinitListener);
                     return a.State;
@@ -363,7 +392,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 return Actor.Call(a =>
                 {
-                    a._stateListeners.Remove(_stateListener.Ref);
+                    a._stateListeners.Remove(_stateListener);
                     a._initListeners.Remove(_initListener);
                     a._deinitListeners.Remove(_deinitListener);
                 });

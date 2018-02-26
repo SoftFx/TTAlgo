@@ -142,7 +142,7 @@ namespace ActorSharp.Lib
 
     public class ActorEvent<TArgs> : ActorEventBase
     {
-        private HashSet<Ref<ActorListener<TArgs>>> _handlers = new HashSet<Ref<ActorListener<TArgs>>>();
+        private HashSet<Ref<ActorCallback<TArgs>>> _handlers = new HashSet<Ref<ActorCallback<TArgs>>>();
 
         protected override int HandlersCount => _handlers.Count;
 
@@ -153,14 +153,14 @@ namespace ActorSharp.Lib
 
         public Ref<ActorEvent<TArgs>> Ref { get; private set; }
 
-        public void Add(Ref<ActorListener<TArgs>> listenerRef)
+        public void Add(ActorCallback<TArgs> listener)
         {
-            _handlers.Add(listenerRef);
+            _handlers.Add(listener.Ref);
         }
 
-        public void Remove(Ref<ActorListener<TArgs>> listenerRef)
+        public void Remove(ActorCallback<TArgs> listener)
         {
-            _handlers.Remove(listenerRef);
+            _handlers.Remove(listener.Ref);
         }
 
         public void FireAndForget(TArgs args)
@@ -192,4 +192,5 @@ namespace ActorSharp.Lib
             OnRepsonce(data);
         }
     }
+
 }

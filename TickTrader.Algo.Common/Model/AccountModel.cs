@@ -17,13 +17,12 @@ namespace TickTrader.Algo.Common.Model
         private AccountTypes? accType;
         private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
         private readonly IReadOnlyDictionary<string, SymbolModel> _symbols;
-        private bool _isCalcEnabled;
+        private bool _isCalcStarted;
 
-        public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolModel> symbols, AccountModelOptions options)
+        public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolModel> symbols)
         {
             _currencies = currecnies.Snapshot;
             _symbols = symbols.Snapshot;
-            _isCalcEnabled = options.HasFlag(AccountModelOptions.EnableCalculator);
         }
 
         public event System.Action AccountTypeChanged = delegate { };
@@ -63,17 +62,20 @@ namespace TickTrader.Algo.Common.Model
 
             return new Snapshot(accInfo, tradeRecords, positions, assets);
 
-            //UpdateData(accInfo, tradeRecords, positions, accInfo.Assets);
-
-            //if (_isCalcEnabled)
-            //{
-            //    Calc = AccountCalculatorModel.Create(this, _client);
-            //    Calc.Recalculate();
-            //}
-
             //_client.BalanceReceived += OnBalanceOperation;
             //_client.ExecutionReportReceived += OnReport;
             //_client.PositionReportReceived += OnReport;
+        }
+
+        internal void StartCalculator(ClientModel.Data marketData)
+        {
+            if (!_isCalcStarted)
+            {
+                _isCalcStarted = true;
+
+                Calc = AccountCalculatorModel.Create(this, marketData);
+                Calc.Recalculate();
+            }
         }
 
         public void Deinit()
@@ -82,10 +84,11 @@ namespace TickTrader.Algo.Common.Model
             //_client.ExecutionReportReceived -= OnReport;
             //_client.PositionReportReceived -= OnReport;
 
-            if (_isCalcEnabled && Calc != null)
+            if (_isCalcStarted && Calc != null)
             {
                 Calc.Dispose();
                 Calc = null;
+                _isCalcStarted = false;
             }
         }
 
@@ -102,11 +105,25 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
+        internal void Clear()
+        {
+            positions.Clear();
+            orders.Clear();
+            assets.Clear();
+
+            Account = "";
+            Type = null;
+            Balance = 0;
+            BalanceCurrency = null;
+            Leverage = 0;
+            BalanceDigits = 2;
+        }
+
         #region Balance and assets management
 
         private void OnBalanceChanged()
         {
-            if (_isCalcEnabled)
+            if (_isCalcStarted)
                 Calc.Recalculate();
         }
 
@@ -370,14 +387,6 @@ namespace TickTrader.Algo.Common.Model
         }
 
         [Serializable]
-        private class ClearDataAction : EntityCacheUpdate
-        {
-            public void Apply(EntityCache cache)
-            {
-            }
-        }
-
-        [Serializable]
         private class OrderUpdateAction: EntityCacheUpdate
         {
             private ExecutionReport _report;
@@ -488,12 +497,5 @@ namespace TickTrader.Algo.Common.Model
         public OrderExecAction ExecAction { get; }
         public OrderEntityAction EntityAction { get; }
         public OrderModel Order { get; }
-    }
-
-    [Flags]
-    public enum AccountModelOptions
-    {
-        None = 0,
-        EnableCalculator = 1
     }
 }

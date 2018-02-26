@@ -12,9 +12,19 @@ namespace ActorSharp.Lib
             return new ActionCallback(handler);
         }
 
-        public static ActorCallback Create(Func<Task> handler)
+        public static ActorCallback CreateAsync(Func<Task> handler)
         {
             return new TaskCallback(handler);
+        }
+
+        public static ActorCallback<TArgs> Create<TArgs>(Action<TArgs> handler)
+        {
+            return ActorCallback<TArgs>.Create(handler);
+        }
+
+        public static ActorCallback<TArgs> CreateAsync<TArgs>(Func<TArgs, Task> handler)
+        {
+            return ActorCallback<TArgs>.CreateAsync(handler);
         }
 
         protected override void ActorInit()
@@ -91,6 +101,96 @@ namespace ActorSharp.Lib
                 }
                 else
                     _handler();
+            }
+        }
+    }
+
+    public abstract class ActorCallback<TArgs> : ActorPart, IDisposable
+    {
+        public static ActorCallback<TArgs> Create(Action<TArgs> handler)
+        {
+            return new ActionCallback(handler);
+        }
+
+        public static ActorCallback<TArgs> CreateAsync(Func<TArgs, Task> handler)
+        {
+            return new TaskCallback(handler);
+        }
+
+        protected override void ActorInit()
+        {
+            Ref = this.GetRef();
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public Ref<ActorCallback<TArgs>> Ref { get; private set; }
+
+        private class ActionCallback : ActorCallback<TArgs>
+        {
+            public Action<TArgs> _handler;
+
+            public ActionCallback(Action<TArgs> handler)
+            {
+                _handler = handler;
+            }
+
+            protected override void ProcessMessage(object message)
+            {
+                var fireData = (FireEventMessage<TArgs>)message;
+
+                if (fireData.SendConfirm)
+                {
+                    try
+                    {
+                        _handler(fireData.Args);
+                        fireData.Sender.PostMessage(new EventResp());
+                    }
+                    catch (Exception ex)
+                    {
+                        fireData.Sender.PostMessage(new EventResp(ex));
+                    }
+                }
+                else
+                    _handler(fireData.Args);
+            }
+        }
+
+        private class TaskCallback : ActorCallback<TArgs>
+        {
+            public Func<TArgs, Task> _handler;
+
+            public TaskCallback(Func<TArgs, Task> handler)
+            {
+                _handler = handler;
+            }
+
+            protected override void ProcessMessage(object message)
+            {
+                var fireData = (FireEventMessage<TArgs>)message;
+
+                if (fireData.SendConfirm)
+                {
+                    try
+                    {
+                        _handler(fireData.Args).ContinueWith(t =>
+                        {
+                            if (t.IsFaulted)
+                                fireData.Sender.PostMessage(new EventResp(t.Exception));
+                            else
+                                fireData.Sender.PostMessage(new EventResp());
+                        },
+                        TaskContinuationOptions.ExecuteSynchronously);
+                    }
+                    catch (Exception ex)
+                    {
+                        fireData.Sender.PostMessage(new EventResp(ex));
+                    }
+                }
+                else
+                    _handler(fireData.Args);
             }
         }
     }

@@ -186,11 +186,18 @@ namespace TickTrader.BotTerminal
                 Application.Current.Shutdown();
             else
             {
-                var clientHandler = new ClientModel.ControlHandler(new ConnectionOptions(), EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+                var connectionOptions = new ConnectionOptions()
+                {
+                    AutoReconnect = true,
+                    EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs,
+                    LogsFolder = EnvService.Instance.LogFolder
+                };
+
+                var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
-                _container.RegisterInstance(typeof(ClientModel.ControlHandler), null, clientHandler);
+                _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();

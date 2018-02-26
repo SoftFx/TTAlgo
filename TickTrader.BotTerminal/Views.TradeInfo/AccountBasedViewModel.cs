@@ -25,7 +25,10 @@ namespace TickTrader.BotTerminal
         private void AccountTypeChanged()
         {
             var oldEnabled = IsEnabled;
-            IsEnabled = SupportsAccount(Account.Type.Value);
+            if (Account.Type != null)
+                IsEnabled = SupportsAccount(Account.Type.Value);
+            else
+                IsEnabled = false;
             if (oldEnabled != IsEnabled)
                 NotifyOfPropertyChange(nameof(IsEnabled));
         }

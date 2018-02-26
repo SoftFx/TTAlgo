@@ -38,15 +38,17 @@ namespace TickTrader.BotTerminal
         private DateTime _to;
         private DateTime? _currenFrom;
         private DateTime? _currenTo;
+        private bool _isNewConnection;
         private bool _currentSkipCanceled;
         private TimePeriod _period;
         private bool _isRefreshing;
         private bool _isConditionsChanged;
         private TradeDirection _tradeDirectionFilter;
         private bool _skipCancel;
+        private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
 
-        public TradeHistoryViewModel(TraderClientModel tradeClient)
+        public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager)
         {
             _period = TimePeriod.LastHour;
             TradeDirectionFilter = TradeDirection.All;
@@ -60,7 +62,13 @@ namespace TickTrader.BotTerminal
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
             _tradeClient.TradeHistory.OnTradeReport += OnReport;
 
-            tradeClient.Connected += RefreshHistory;
+            tradeClient.Connected += ()=>
+            {
+                _isNewConnection = true;
+                RefreshHistory();
+            };
+
+            cManager.LoggedOut += ClearHistory;
 
             RefreshHistory();
             CleanupLoop();
@@ -177,6 +185,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void ClearHistory()
+        {
+            if (!_isRefreshing)
+                _tradesList.Clear();
+            else
+                _clearFlag = true;
+        }
+
         private async Task AdjustHistoryBoundaries()
         {
             if (!_tradeClient.IsConnected.Value)
@@ -185,18 +201,21 @@ namespace TickTrader.BotTerminal
             DateTime? newFrom, newTo;
             CalculateTimeBoundaries(out newFrom, out newTo);
 
-            if (newFrom == _currenFrom && newTo == _currenTo && _currentSkipCanceled == SkipCancel)
+            var globalChange = _currentSkipCanceled != SkipCancel || _isNewConnection;
+
+            if (newFrom == _currenFrom && newTo == _currenTo && !globalChange)
                 return;
 
             _cancelUpdateSrc = new CancellationTokenSource();
 
             _isRefreshing = true;
 
-            bool truncate = newFrom != null && newFrom >= _currenFrom && newTo == _currenTo && _currentSkipCanceled == SkipCancel;
+            bool truncate = newFrom != null && newFrom >= _currenFrom && newTo == _currenTo && !globalChange;
 
             _currenFrom = newFrom;
             _currenTo = newTo;
             _currentSkipCanceled = SkipCancel;
+            _isNewConnection = false;
 
             if (truncate)
                 await TruncateHistoryAsync(newFrom.Value, _cancelUpdateSrc.Token);
@@ -204,6 +223,12 @@ namespace TickTrader.BotTerminal
                 await DownloadHistory(newFrom, newTo, _cancelUpdateSrc.Token);
 
             _isRefreshing = false;
+
+            if (_clearFlag)
+            {
+                _tradesList.Clear();
+                _clearFlag = false;
+            }
         }
 
         private async Task DownloadHistory(DateTime? from, DateTime? to, CancellationToken cToken)

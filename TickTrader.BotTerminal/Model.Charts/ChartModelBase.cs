@@ -73,8 +73,8 @@ namespace TickTrader.BotTerminal
             //client.Disconnected += Connection_Disconnected;
             client.Deinitializing += Client_Deinitializing;
 
-            //subscription = symbol.Subscribe();
-            //subscription.NewQuote += OnRateUpdate;
+            subscription = client.Distributor.Subscribe(symbol.Name);
+            subscription.NewQuote += OnRateUpdate;
 
             CurrentAsk = symbol.CurrentAsk;
             CurrentBid = symbol.CurrentBid;

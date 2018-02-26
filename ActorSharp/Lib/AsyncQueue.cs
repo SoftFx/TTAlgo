@@ -20,6 +20,8 @@ namespace ActorSharp.Lib
 
         public void Enqueue(T item)
         {
+            ContextCheck();
+
             if (_isClosed)
                 throw new InvalidOperationException("Queue is closed!");
 
@@ -33,6 +35,8 @@ namespace ActorSharp.Lib
 
         public void Close(bool clearQueue = false)
         {
+            ContextCheck();
+
             if (!_isClosed)
             {
                 _isClosed = true;
@@ -46,6 +50,8 @@ namespace ActorSharp.Lib
 
         public IAwaitable<bool> Dequeue()
         {
+            ContextCheck();
+
             #region DEBUG
             if (_callback != null)
                 throw new InvalidOperationException("AsyncQueue is busy with another async operation!");
@@ -64,17 +70,36 @@ namespace ActorSharp.Lib
             }
         }
 
+        protected void ContextCheck()
+        {
+            #if DEBUG
+            if (SynchronizationContext.Current != _context)
+                throw new Exception("Synchronization violation! You cannot directly access this object from another context!");
+            #endif
+        }
+
         #region IAwaitable (read)
 
-        bool IAwaiter<bool>.IsCompleted => _innerQueue.Count > 0 || _isClosed;
+        bool IAwaiter<bool>.IsCompleted
+        {
+            get
+            {
+                ContextCheck();
+                return _innerQueue.Count > 0 || _isClosed;
+            }
+        }
 
         IAwaiter<bool> IAwaitable<bool>.GetAwaiter()
         {
+            ContextCheck();
+
             return this;
         }
 
         bool IAwaiter<bool>.GetResult()
         {
+            ContextCheck();
+
             if (IsClosed && _innerQueue.Count == 0)
                 return false;
 
@@ -84,6 +109,8 @@ namespace ActorSharp.Lib
 
         void INotifyCompletion.OnCompleted(Action continuation)
         {
+
+
             #region DEBUG
             if (_callback != null)
                 throw new InvalidOperationException("AsyncQueue is busy with another async operation!");

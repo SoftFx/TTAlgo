@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Common.Model
         private FeedHistoryProviderModel.ControlHandler _feedHistory;
         private TradeHistoryProvider _tradeHistory;
         private PluginTradeApiProvider _tradeApi;
-        private EntityCache _cache = new EntityCache(AccountModelOptions.None);
+        private EntityCache _cache = new EntityCache();
         private Dictionary<ActorRef, Channel<EntityCacheUpdate>> _tradeListeners = new Dictionary<ActorRef, Channel<EntityCacheUpdate>>();
         private Dictionary<ActorRef, Channel<QuoteEntity>> _feedListeners = new Dictionary<ActorRef, Channel<QuoteEntity>>();
         private AsyncQueue<object> _updateQueue;
@@ -54,8 +54,6 @@ namespace TickTrader.Algo.Common.Model
             {
                 _updateQueue = new AsyncQueue<object>();
                 _feedQueue = new AsyncQueue<QuoteEntity>();
-
-                MulticastQuotes(); // start multicasting
 
                 _connection.FeedProxy.Tick += FeedProxy_Tick;
                 _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
@@ -158,9 +156,9 @@ namespace TickTrader.Algo.Common.Model
 
         public class Data : Handler<ClientModel>, IQuoteDistributorSource
         {
-            public Data(Ref<ClientModel> actorRef, AccountModelOptions options = AccountModelOptions.None) : base(actorRef)
+            public Data(Ref<ClientModel> actorRef) : base(actorRef)
             {
-                Cache = new EntityCache(options);
+                Cache = new EntityCache();
                 Distributor = new QuoteDistributor(this);
             }
 
@@ -177,6 +175,16 @@ namespace TickTrader.Algo.Common.Model
             protected override void ActorInit()
             {
                 Ref = this.GetRef();
+            }
+
+            public void StartCalculator()
+            {
+                Cache.Account.StartCalculator(this);
+            }
+
+            public void ClearCache()
+            {
+                Cache.Clear();
             }
 
             public async Task Init()
@@ -279,7 +287,10 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Done loading.");
 
+            // start multicasting
+
             MulticastUpdates();
+            MulticastQuotes();
         }
 
         private async Task Stop()
@@ -291,11 +302,11 @@ namespace TickTrader.Algo.Common.Model
                 _updateQueue.Close();
                 _feedQueue.Close(true);
 
-                using (await _updateLock.GetLock()) { }
+                using (await _updateLock.GetLock("Stop")) { }
 
                 logger.Debug("Stopped update stream.");
 
-                using (await _feedLock.GetLock()) { }
+                using (await _feedLock.GetLock("Stop")) { }
 
                 logger.Debug("Stopped quote stream.");
 
@@ -350,7 +361,7 @@ namespace TickTrader.Algo.Common.Model
 
         private async void MulticastUpdates()
         {
-            using (await _updateLock.GetLock())
+            using (await _updateLock.GetLock("loop"))
             {
                 while (await _updateQueue.Dequeue())
                 {
@@ -409,7 +420,7 @@ namespace TickTrader.Algo.Common.Model
 
         private async void MulticastQuotes()
         {
-            using (await _feedLock.GetLock())
+            using (await _feedLock.GetLock("loop"))
             {
                 while (await _feedQueue.Dequeue())
                     await ApplyQuote(_feedQueue.Item);

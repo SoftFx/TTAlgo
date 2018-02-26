@@ -69,11 +69,11 @@ namespace TickTrader.BotTerminal
 
             if (enableSounds)
             {
-                _connectionModel.StateChanged += ConnectionStateChanged;
+                _connectionModel.ConnectionStateChanged += ConnectionStateChanged;
             }
             else
             {
-                _connectionModel.StateChanged -= ConnectionStateChanged;
+                _connectionModel.ConnectionStateChanged -= ConnectionStateChanged;
             }
 
             _notificationCenter.SoundNotification.Enabled = enableSounds;

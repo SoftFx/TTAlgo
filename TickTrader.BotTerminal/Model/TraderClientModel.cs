@@ -89,30 +89,19 @@ namespace TickTrader.BotTerminal
 
         private async Task Connection_Initalizing(object sender, CancellationToken cancelToken)
         {
-            //try
-            //{
-            //await History.Init();
-            //((IAccountInfoProvider)_accountInfo).BalanceUpdated += Account_BalanceUpdated;
-            //_accountInfo.OrderUpdate += Account_OrderUpdated;
+            _core.StartCalculator();
             await Initializing.InvokeAsync(this, cancelToken);
-            //}
-            //catch (Exception ex)
-            //{
-            //    logger.Error(ex, "Connection_Initalizing() failed.");
-            //}
 
             OnConnected();
         }
 
         private async Task Connection_Deinitalizing(object sender, CancellationToken cancelToken)
         {
-            //if (_wasConnectedEventFired)
             OnDisconnected();
 
             try
             {
                 Account.Deinit();
-                //await History.Deinit();
                 await Deinitializing.InvokeAsync(this, cancelToken);
             }
             catch (Exception ex)

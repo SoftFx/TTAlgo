@@ -15,9 +15,9 @@ namespace TickTrader.Algo.Common.Model
         private VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
         private VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
 
-        public EntityCache(AccountModelOptions accOptions)
+        public EntityCache()
         {
-            _acc = new AccountModel(_currencies, _symbols, accOptions);
+            _acc = new AccountModel(_currencies, _symbols);
             _symbols = new VarDictionary<string, SymbolModel>();
             _currencies = new VarDictionary<string, CurrencyEntity>();
         }
@@ -25,6 +25,13 @@ namespace TickTrader.Algo.Common.Model
         public IVarSet<string, SymbolModel> Symbols => _symbols;
         public IVarSet<string, CurrencyEntity> Currencies => _currencies;
         public AccountModel Account => _acc;
+
+        internal void Clear()
+        {
+            _currencies.Clear();
+            _symbols.Clear();
+            Account.Clear();
+        }
 
         internal List<SymbolEntity> GetSymbolsCopy()
         {
@@ -82,6 +89,12 @@ namespace TickTrader.Algo.Common.Model
             {
                 cache._currencies.Add(Currency.Name, Currency);
             }
+        }
+
+        [Serializable]
+        public class ClearAll : EntityCacheUpdate
+        {
+            public void Apply(EntityCache cache) => cache.Clear();
         }
 
         [Serializable]

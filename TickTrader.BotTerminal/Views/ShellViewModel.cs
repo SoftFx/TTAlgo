@@ -56,9 +56,9 @@ namespace TickTrader.BotTerminal
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
-            Trade = new TradeInfoViewModel(clientModel);
+            Trade = new TradeInfoViewModel(clientModel, cManager);
 
-            TradeHistory = new TradeHistoryViewModel(clientModel);
+            TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
@@ -72,8 +72,10 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
 
             UpdateCommandStates();
-            cManager.StateChanged += (o, n) => UpdateDisplayName();
-            cManager.StateChanged += (o, n) => UpdateCommandStates();
+            cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
+            cManager.ConnectionStateChanged += (o, n) => UpdateCommandStates();
+            cManager.LoggedIn += () => UpdateCommandStates();
+            cManager.LoggedOut += () => UpdateCommandStates();
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             clientModel.Initializing += LoadConnectionProfile;
@@ -81,7 +83,7 @@ namespace TickTrader.BotTerminal
 
             storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
 
-            cManager.StateChanged += (f, t) =>
+            cManager.ConnectionStateChanged += (f, t) =>
             {
                 NotifyOfPropertyChange(nameof(ConnectionState));
                 NotifyOfPropertyChange(nameof(CurrentServerName));
@@ -125,7 +127,7 @@ namespace TickTrader.BotTerminal
         {
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
-            CanDisconnect = state == ConnectionModel.States.Online && !ConnectionLock.IsLocked;
+            CanDisconnect = cManager.IsLoggedIn && !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }

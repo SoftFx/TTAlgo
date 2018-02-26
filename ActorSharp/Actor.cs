@@ -71,13 +71,13 @@ namespace ActorSharp
 
         #region Non-Actor API
 
-        private void InvokeContextCheck()
-        {
-            #if DEBUG
-            if (SynchronizationContext.Current != null)
-                throw new InvalidOperationException("It's forbidden to call ContextInvoke() under an actor context. ContextInvoke() can only be called from non-actor thread!");
-            #endif
-        }
+        //private void InvokeContextCheck()
+        //{
+        //    #if DEBUG
+        //    if (SynchronizationContext.Current != null)
+        //        throw new InvalidOperationException("It's forbidden to call ContextInvoke() under an actor context. ContextInvoke() can only be called from non-actor thread!");
+        //    #endif
+        //}
 
         protected void ContextSend(Action action)
         {
@@ -90,7 +90,10 @@ namespace ActorSharp
         /// </summary>
         protected void ContextInvoke(Action action)
         {
-            ContextInvokeAsync(action).Wait();
+            if (SynchronizationContext.Current != Context)
+                ContextInvokeAsync(action).Wait();
+            else
+                action();
         }
 
         /// <summary>
@@ -99,12 +102,14 @@ namespace ActorSharp
         /// </summary>
         protected void ContextInvoke(Action<object> action, object state)
         {
-            ContextInvokeAsync(action, state).Wait();
+            if (SynchronizationContext.Current != Context)
+                ContextInvokeAsync(action, state).Wait();
+            else
+                action(state);
         }
 
         private Task ContextInvokeAsync(Action action)
         {
-            InvokeContextCheck();
             var task = new Task(action);
             Context.Post(ExecTaskSync, task);
             return task;
@@ -112,7 +117,6 @@ namespace ActorSharp
 
         private Task ContextInvokeAsync(Action<object> action, object state)
         {
-            InvokeContextCheck();
             var task = new Task(action, state);
             Context.Post(ExecTaskSync, task);
             return task;
