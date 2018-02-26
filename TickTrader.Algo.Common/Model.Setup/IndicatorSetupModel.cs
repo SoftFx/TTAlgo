@@ -6,6 +6,13 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class IndicatorSetupModel : PluginSetupModel
     {
+        public override bool AllowChangeTimeFrame => false;
+
+        public override bool AllowChangeMainSymbol => false;
+
+        public override bool AllowChangeMapping => false;
+
+
         public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
             string defaultMapping) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping)
         {

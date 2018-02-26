@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
     {
         private OutputFixture<double> buffer;
 
-        public DoubleSeriesAdapter(OutputFixture<double> buffer, ColoredLineOutputSetup setup)
+        public DoubleSeriesAdapter(OutputFixture<double> buffer, ColoredLineOutputSetupModel setup)
         {
             this.buffer = buffer;
             this.SeriesData = new XyDataSeries<DateTime, double>();
@@ -63,7 +63,7 @@ namespace TickTrader.BotTerminal
     {
         private OutputFixture<Marker> buffer;
 
-        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetup setup)
+        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetupModel setup)
         {
             this.buffer = buffer;
 

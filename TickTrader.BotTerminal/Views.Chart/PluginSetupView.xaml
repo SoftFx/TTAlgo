@@ -48,7 +48,7 @@
 
     <!-- Double Output Template  -->
 
-    <DataTemplate DataType="{x:Type am:ColoredLineOutputSetup}">
+    <DataTemplate DataType="{x:Type am:ColoredLineOutputSetupModel}">
         <Grid Margin="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -83,7 +83,7 @@
 
     <!-- Marker Output Template  -->
 
-    <DataTemplate DataType="{x:Type am:MarkerSeriesOutputSetup}">
+    <DataTemplate DataType="{x:Type am:MarkerSeriesOutputSetupModel}">
         <Grid Margin="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -135,14 +135,14 @@
 
     <!--  AlgoInvalidParameter  -->
 
-    <DataTemplate DataType="{x:Type am:AlgoInvalidParameter}">
+    <DataTemplate DataType="{x:Type am:ParameterSetupModel+Invalid}">
         <TextBox Name="input" Text="Invalid parameter" IsEnabled="False"
                                      HorizontalAlignment="Stretch" />
     </DataTemplate>
 
     <!--  Bool Param template  -->
 
-    <DataTemplate DataType="{x:Type am:BoolParamSetup}">
+    <DataTemplate DataType="{x:Type am:BoolParamSetupModel}">
         <CheckBox Name="input" IsChecked="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -155,7 +155,7 @@
 
     <!--  Int Param template  -->
 
-    <DataTemplate DataType="{x:Type am:IntParamSetup}">
+    <DataTemplate DataType="{x:Type am:IntParamSetupModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -165,7 +165,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:NullableIntParamSetup}">
+    <DataTemplate DataType="{x:Type am:NullableIntParamSetupModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -177,7 +177,7 @@
 
     <!--  DoubleParam template -->
 
-    <DataTemplate DataType="{x:Type am:DoubleParamSetup}">
+    <DataTemplate DataType="{x:Type am:DoubleParamSetupModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -187,7 +187,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:NullableDoubleParamSetup}">
+    <DataTemplate DataType="{x:Type am:NullableDoubleParamSetupModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -199,7 +199,7 @@
 
     <!--  StringParam template  -->
 
-    <DataTemplate DataType="{x:Type am:StringParamSetup}">
+    <DataTemplate DataType="{x:Type am:StringParamSetupModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch"/>
         <DataTemplate.Triggers>
@@ -211,7 +211,7 @@
 
     <!--  Enum Param template  -->
 
-    <DataTemplate DataType="{x:Type am:EnumParamSetup}">
+    <DataTemplate DataType="{x:Type am:EnumParamSetupModel}">
         <ComboBox Name="input"
                       ItemsSource="{Binding EnumValues}" SelectedItem="{Binding SelectedValue}"
                       Margin="0">
@@ -230,7 +230,7 @@
 
     <!--  File Param template  -->
 
-    <DataTemplate DataType="{x:Type am:FileParamSetup}">
+    <DataTemplate DataType="{x:Type am:FileParamSetupModel}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -260,7 +260,7 @@
                   IsEnabled="{Binding HasChoice}"/>
     </DataTemplate>-->
 
-    <DataTemplate DataType="{x:Type am:BarToBarInputSetup}">
+    <DataTemplate DataType="{x:Type am:BarToBarInputSetupModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -273,21 +273,34 @@
                       DisplayMemberPath="Name"/>
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                       ItemsSource="{Binding AvailableMappings}"
-                      SelectedItem="{Binding SelectedMapping}"
+                      SelectedValue="{Binding SelectedMapping}"
                       DisplayMemberPath="Name"
                       Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:QuoteToBarInputSetup}">
-        <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
-                      SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
-                      IsEnabled="{Binding HasChoice}"/>
+    <DataTemplate DataType="{x:Type am:QuoteToBarInputSetupModel}">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
+            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="Name"
+                      Margin="2,0,0,0" />
+        </Grid>
     </DataTemplate>
 
     <!-- Tick Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToQuoteInputSetup}">
+    <DataTemplate DataType="{x:Type am:QuoteInputSetupModel}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
                       IsEnabled="{Binding HasChoice}"/>
@@ -295,7 +308,7 @@
 
     <!-- Double (bar based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:BarToDoubleInputSetup}">
+    <DataTemplate DataType="{x:Type am:BarToDoubleInputSetupModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -308,7 +321,7 @@
                       DisplayMemberPath="Name"/>
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                       ItemsSource="{Binding AvailableMappings}"
-                      SelectedItem="{Binding SelectedMapping}"
+                      SelectedValue="{Binding SelectedMapping}"
                       DisplayMemberPath="Name"
                       Margin="2,0,0,0" />
         </Grid>
@@ -316,57 +329,93 @@
 
     <!-- Double (tick based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToDoubleInputSetup}">
-        <Grid>
+    <DataTemplate DataType="{x:Type am:QuoteToDoubleInputSetupModel}">
+        <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="65" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
             </Grid.ColumnDefinitions>
 
             <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
-                          SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"/>
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
-                          ItemsSource="{Binding AvailableMappings}"
-                          SelectedItem="{Binding Mapping}"
-                          Margin="2,0,0,0" />
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="Name"
+                      Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
 
     <!-- Bot setting template -->
 
-    <ControlTemplate x:Key="BotSettings" TargetType="Control">
+    <ControlTemplate x:Key="GeneralSettings" TargetType="Control">
         <Grid Margin="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="5"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="80"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="80"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt" IsEnabled="{Binding IsCreationMode}"
+            <Grid Name="BotParams" Grid.Row="0" Grid.Column="0" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt" IsEnabled="{Binding IsCreationMode}"
                      Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
-            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
-            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Content="Symbol:" Grid.Row="4" Grid.Column="0"/>
-            <ComboBox IsEditable="False" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="100" Margin="0,0,5,0"
-                              ItemsSource="{Binding Symbols}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedSymbol}"/>
-            <Label Content="TimeFrame:" Grid.Row="4" Grid.Column="2"/>
-            <ComboBox IsEditable="False" Grid.Row="5" Grid.Column="2" Margin="0,0,5,0"
-                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeFrame.Value}"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
+                <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            </Grid>
+            <Grid Name="CommonParams" Grid.Row="2" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="90"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="TimeFrame" />
+                <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" IsEditable="False" Margin="0"
+                      SelectedItem="{Binding Setup.SelectedTimeFrame}"
+                      ItemsSource="{Binding Setup.AvailableTimeFrames}"
+                      IsEnabled="{Binding Setup.AllowChangeTimeFrame}"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Main Symbol" />
+                <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding Setup.MainSymbol}"
+                      ItemsSource="{Binding Setup.AvailableSymbols}"
+                      IsEnabled="{Binding Setup.AllowChangeMainSymbol}"
+                      DisplayMemberPath="Name"/>
+                <ComboBox Grid.Row="2" Grid.Column="2" IsEditable="False" Margin="2,0,0,0"
+                      ItemsSource="{Binding Setup.AvailableMappings}"
+                      SelectedValue="{Binding Setup.SelectedMapping}"
+                      IsEnabled="{Binding Setup.AllowChangeMapping}"
+                      DisplayMemberPath="Name"/>
+            </Grid>
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
                 <Setter TargetName="InstanceIdTxt" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
+                <Setter TargetName="BotParams" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -394,7 +443,7 @@
 
                     <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
 
-                    <Control Name="BotSpecificData" Visibility="Collapsed" Template="{StaticResource BotSettings}" />
+                    <Control Template="{StaticResource GeneralSettings}" />
 
                     <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
 
@@ -437,11 +486,6 @@
                           Grid.Column="0" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>-->
             </Grid>
         </Grid>
-        <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
-                <Setter TargetName="BotSpecificData" Property="Visibility" Value="Visible"/>
-            </DataTrigger>
-        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <!-- Button Style  (Classic) -->
@@ -469,8 +513,8 @@
                     <GroupBox Name="DescriptionGroup" Header="Description">
                         <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
                     </GroupBox>
-                    <GroupBox Name="GeneralGroup" Header="General" Margin="4" Visibility="Collapsed">
-                        <Control Template="{StaticResource BotSettings}" />
+                    <GroupBox Name="GeneralGroup" Header="General" Margin="4">
+                        <Control Template="{StaticResource GeneralSettings}" />
                     </GroupBox>
                     <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
                         <ItemsControl IsTabStop="False" ItemsSource="{Binding Setup.Parameters}"
@@ -532,9 +576,6 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding Setup.HasDescription}" Value="False">
                 <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
-                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>

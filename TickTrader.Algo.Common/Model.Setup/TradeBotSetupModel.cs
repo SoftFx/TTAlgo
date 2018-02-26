@@ -6,6 +6,13 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class TradeBotSetupModel : PluginSetupModel
     {
+        public override bool AllowChangeTimeFrame => true;
+
+        public override bool AllowChangeMainSymbol => true;
+
+        public override bool AllowChangeMapping => true;
+
+
         public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
             string defaultMapping) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping)
         {

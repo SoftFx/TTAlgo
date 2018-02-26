@@ -6,6 +6,8 @@ using TickTrader.Algo.Core;
 namespace TickTrader.Algo.Common.Model.Config
 {
     [DataContract(Namespace = "")]
+    [KnownType(typeof(IndicatorConfig))]
+    [KnownType(typeof(TradeBotConfig))]
     public class PluginConfig
     {
         [DataMember(Name = "properties")]

@@ -45,6 +45,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         public InputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode)
             : this(descriptor, defaultSymbolCode)
         {
+            Metadata = metadata;
+
             AvailableSymbols = metadata.GetAvaliableSymbols(_defaultSymbolCode);
         }
 

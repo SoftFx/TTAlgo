@@ -58,15 +58,15 @@ namespace TickTrader.BotTerminal
         {
             var seriesData = model.GetOutputSeries(outputSetup.Id);
 
-            if (outputSetup is ColoredLineOutputSetup)
-                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetup)outputSetup);
-            else if (outputSetup is MarkerSeriesOutputSetup)
-                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetup)outputSetup);
+            if (outputSetup is ColoredLineOutputSetupModel)
+                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupModel)outputSetup);
+            else if (outputSetup is MarkerSeriesOutputSetupModel)
+                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupModel)outputSetup);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetup outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetupModel outputSetup)
         {
             var plotType = outputSetup.Descriptor.PlotType;
 
@@ -121,7 +121,7 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException("Unsupported plot type: " + plotType);
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetup outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupModel outputSetup)
         {
             var viewModel = new LineRenderableSeriesViewModel();
             viewModel.DataSeries = seriesData;

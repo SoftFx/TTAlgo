@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
             _bot = bot;
             Mode = PluginSetupMode.Edit;
             DisplayName = $"Settings - {bot.InstanceId}";
-            Setup = bot.Setup.Clone() as BarBasedPluginSetup;
+            Setup = bot.Setup.Clone() as TradeBotSetupModel;
             InstanceId = bot.InstanceId;
             Permissions = new PluginPermissions { TradeAllowed = bot.Permissions.TradeAllowed };
             Isolated = bot.Isolated;

@@ -106,7 +106,12 @@ namespace TickTrader.BotTerminal
 
         protected override PluginSetupModel CreateSetup(AlgoPluginRef catalogItem)
         {
-            return new TickBasedPluginSetup(catalogItem, SymbolCode);
+            switch (catalogItem.Descriptor.AlgoLogicType)
+            {
+                case AlgoTypes.Robot: return new TradeBotSetupModel(catalogItem, AlgoEnv, SymbolCode, TimeFrame, "Bid");
+                case AlgoTypes.Indicator: return new IndicatorSetupModel(catalogItem, AlgoEnv, SymbolCode, TimeFrame, "Bid");
+                default: throw new ArgumentException("Unknown plugin type");
+            }
         }
 
         protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)

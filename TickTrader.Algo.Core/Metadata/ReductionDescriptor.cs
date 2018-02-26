@@ -55,6 +55,7 @@ namespace TickTrader.Algo.Core.Metadata
             DisplayName = reductionAttr.DisplayName;
             if (string.IsNullOrEmpty(DisplayName))
                 DisplayName = algoCustomType.Name;
+            DisplayName = DisplayName.Replace('.', '_');
 
             if (typeof(BarToDoubleReduction).IsAssignableFrom(algoCustomType))
                 Type = ReductionType.BarToDouble;

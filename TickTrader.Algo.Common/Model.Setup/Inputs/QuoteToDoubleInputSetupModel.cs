@@ -3,9 +3,9 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public class QuoteToDoubleInputSetup : MappedInputSetupModel
+    public class QuoteToDoubleInputSetupModel : MappedInputSetupModel
     {
-        public QuoteToDoubleInputSetup(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
+        public QuoteToDoubleInputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
             : base(descriptor, metadata, defaultSymbolCode, defaultMapping)
         {
             AvailableMappings = metadata.SymbolMappings.QuoteToDoubleMappings;

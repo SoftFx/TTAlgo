@@ -22,7 +22,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         private SymbolMapping _selectedMapping;
 
 
-        public IEnumerable<TimeFrames> AvaliableTimeFrames { get; private set; }
+        public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
+
+        public abstract bool AllowChangeTimeFrame { get; }
 
         public TimeFrames SelectedTimeFrame
         {
@@ -45,6 +47,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
+        public abstract bool AllowChangeMainSymbol { get; }
+
         public ISymbolInfo MainSymbol
         {
             get { return _mainSymbol; }
@@ -59,6 +63,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
         public IReadOnlyList<SymbolMapping> AvailableMappings { get; private set; }
+
+        public abstract bool AllowChangeMapping { get; }
 
         public SymbolMapping SelectedMapping
         {
@@ -191,7 +197,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         protected void Init()
         {
-            AvaliableTimeFrames = Enum.GetValues(typeof(TimeFrames)).Cast<TimeFrames>();
+            AvailableTimeFrames = Enum.GetValues(typeof(TimeFrames)).Cast<TimeFrames>();
             SelectedTimeFrame = DefaultTimeFrame;
 
             AvailableSymbols = Metadata.GetAvaliableSymbols(DefaultSymbolCode);
@@ -246,7 +252,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInputSetupModel(descriptor, Metadata, DefaultSymbolCode, DefaultMapping);
+                case "System.Double": return new BarToDoubleInputSetupModel(descriptor, Metadata, DefaultSymbolCode, $"{DefaultMapping}.Close");
                 case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupModel(descriptor, Metadata, DefaultSymbolCode, DefaultMapping);
                 //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
                 //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
@@ -261,7 +267,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new QuoteToDoubleInputSetup(descriptor, Metadata, DefaultSymbolCode, DefaultMapping);
+                case "System.Double": return new QuoteToDoubleInputSetupModel(descriptor, Metadata, DefaultSymbolCode, $"{DefaultMapping}.Close");
                 case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupModel(descriptor, Metadata, DefaultSymbolCode, DefaultMapping);
                 case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
                 case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
@@ -276,8 +282,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new ColoredLineOutputSetup(descriptor);
-                case "TickTrader.Algo.Api.Bar": return new MarkerSeriesOutputSetup(descriptor);
+                case "System.Double": return new ColoredLineOutputSetupModel(descriptor);
+                case "TickTrader.Algo.Api.Bar": return new MarkerSeriesOutputSetupModel(descriptor);
                 default: return new OutputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedOutputType);
             }
         }

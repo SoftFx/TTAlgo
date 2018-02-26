@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     }
 
 
-    public class MarkerSeriesOutputSetup : OutputSetupModel
+    public class MarkerSeriesOutputSetupModel : OutputSetupModel
     {
         private static MarkerSizes[] _availableSizes = (MarkerSizes[])Enum.GetValues(typeof(MarkerSizes));
 
@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public MarkerSeriesOutputSetup(OutputDescriptor descriptor)
+        public MarkerSeriesOutputSetupModel(OutputDescriptor descriptor)
             : base(descriptor)
         {
         }

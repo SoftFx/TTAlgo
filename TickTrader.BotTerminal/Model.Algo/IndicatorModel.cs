@@ -14,8 +14,8 @@ namespace TickTrader.BotTerminal
         private Dictionary<string, IXyDataSeries> _series = new Dictionary<string, IXyDataSeries>();
 
 
-        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Target == OutputTargets.Overlay); } }
-        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Target != OutputTargets.Overlay); } }
+        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Descriptor.Target == OutputTargets.Overlay); } }
+        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Descriptor.Target != OutputTargets.Overlay); } }
 
 
         private bool IsRunning { get; set; }
@@ -55,16 +55,16 @@ namespace TickTrader.BotTerminal
 
             foreach (var outputSetup in Setup.Outputs)
             {
-                if (outputSetup is ColoredLineOutputSetup)
+                if (outputSetup is ColoredLineOutputSetupModel)
                 {
                     var buffer = executor.GetOutput<double>(outputSetup.Id);
-                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetup)outputSetup);
+                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
-                else if (outputSetup is MarkerSeriesOutputSetup)
+                else if (outputSetup is MarkerSeriesOutputSetupModel)
                 {
                     var buffer = executor.GetOutput<Marker>(outputSetup.Id);
-                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetup)outputSetup);
+                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetupModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
             }
