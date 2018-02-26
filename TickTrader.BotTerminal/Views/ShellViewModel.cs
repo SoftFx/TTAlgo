@@ -69,7 +69,7 @@ namespace TickTrader.BotTerminal
             botsWarden = new BotsWarden(_botAggregator);
 
             _botAgentManager = new BotAgentManager(storage);
-            BotList = new BotListViewModel(this, _botAgentManager, clientModel);
+            BotList = new BotListViewModel(this, _botAgentManager, clientModel, Charts);
 
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);

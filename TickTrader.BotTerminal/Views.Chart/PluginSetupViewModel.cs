@@ -10,6 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -57,6 +58,9 @@ namespace TickTrader.BotTerminal
 
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
 
+        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
+        public IReadOnlyList<ISymbolInfo> Symbols { get; set; }
+
         private PluginSetupViewModel()
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
@@ -73,6 +77,7 @@ namespace TickTrader.BotTerminal
             _setupFactory = setupFactory;
             _catalog = algoEnv.Repo;
             _idProvider = algoEnv.IdProvider;
+            Symbols = algoEnv.Symbols;
 
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
