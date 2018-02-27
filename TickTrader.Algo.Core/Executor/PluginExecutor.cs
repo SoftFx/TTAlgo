@@ -283,9 +283,9 @@ namespace TickTrader.Algo.Core
                     pluginLogger?.Start();
                     statusFixture.Start();
                     accFixture.Start();
-                    calcFixture.Start();
                     _timerFixture.Start();
                     fStrategy.Start(); // enqueue build action
+                    calcFixture.Start();
 
                     iStrategy.EnqueueCustomInvoke(b => b.InvokeOnStart());
 

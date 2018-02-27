@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Common.Model.Interop
         private ActionBlock<Task> orderSender;
         private DataTrade _tradeProxy;
         private List<TaskCompletionSource<OrderCmdResultCodes>> _pendingRequests;
-        private bool _stopped;
+        //private bool _stopped;
 
         public FdkAsyncExecutor(DataTrade client)
         {
@@ -33,35 +33,35 @@ namespace TickTrader.Algo.Common.Model.Interop
             orderQueue.LinkTo(orderSender);
 
             _pendingRequests = new List<TaskCompletionSource<OrderCmdResultCodes>>();
-            _stopped = true;
+            //_stopped = true;
         }
 
-        public void Start()
-        {
-            _stopped = false;
-        }
+        //public void Start()
+        //{
+        //    _stopped = false;
+        //}
 
-        public void Stop()
-        {
-            try
-            {
-                _stopped = true;
-                TaskCompletionSource<OrderCmdResultCodes>[] snapshot;
-                lock (_pendingRequests)
-                {
-                    snapshot = _pendingRequests.ToArray();
-                    _pendingRequests.Clear();
-                }
-                foreach (var request in snapshot)
-                {
-                    request.TrySetResult(OrderCmdResultCodes.ConnectionError);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Failed to dispose FDK async executor", ex);
-            }
-        }
+        //public void Stop()
+        //{
+        //    try
+        //    {
+        //        _stopped = true;
+        //        TaskCompletionSource<OrderCmdResultCodes>[] snapshot;
+        //        lock (_pendingRequests)
+        //        {
+        //            snapshot = _pendingRequests.ToArray();
+        //            _pendingRequests.Clear();
+        //        }
+        //        foreach (var request in snapshot)
+        //        {
+        //            request.TrySetResult(OrderCmdResultCodes.ConnectionError);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error("Failed to dispose FDK async executor", ex);
+        //    }
+        //}
 
         public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
         {
@@ -169,8 +169,8 @@ namespace TickTrader.Algo.Common.Model.Interop
 
         private Task<OrderCmdResultCodes> EnqueueTradeOp(string opName, Action tradeOpDef)
         {
-            if (_stopped)
-                return Task.FromResult(OrderCmdResultCodes.ConnectionError);
+            //if (_stopped)
+            //    return Task.FromResult(OrderCmdResultCodes.ConnectionError);
 
             var request = new TaskCompletionSource<OrderCmdResultCodes>();
             lock (_pendingRequests)
