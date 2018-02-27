@@ -64,8 +64,6 @@ namespace TickTrader.BotAgent.BA
     public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
     public enum BotStates { Offline, Starting, Faulted, Online, Stopping, Broken, Reconnecting }
 
-    public enum LogEntryType { Info, Trading, Error, Custom }
-
     public interface IAlgoData
     {
         string Folder { get; }

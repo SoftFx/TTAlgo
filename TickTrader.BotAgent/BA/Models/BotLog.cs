@@ -88,19 +88,19 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var msg = new LogEntry(type, message);
 
-                switch (type)
-                {
-                    case LogEntryType.Custom:
-                    case LogEntryType.Info:
-                    case LogEntryType.Trading:
-                    case LogEntryType.TradingSuccess:
-                    case LogEntryType.TradingFail:
-                        _logger.Info(msg.ToString());
-                        break;
-                    case LogEntryType.Error:
-                        _logger.Error(msg.ToString());
-                        break;
-                }
+            switch (type)
+            {
+                case LogEntryType.Custom:
+                case LogEntryType.Info:
+                case LogEntryType.Trading:
+                case LogEntryType.TradingSuccess:
+                case LogEntryType.TradingFail:
+                    _logger.Info(msg.ToString());
+                    break;
+                case LogEntryType.Error:
+                    _logger.Error(msg.ToString());
+                    break;
+            }
 
             if (IsLogFull)
                 _logMessages.Dequeue();

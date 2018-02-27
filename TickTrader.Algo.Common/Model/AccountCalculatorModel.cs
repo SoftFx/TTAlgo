@@ -19,6 +19,8 @@ namespace TickTrader.Algo.Common.Model
         private ClientModel.Data _client;
         private IFeedSubscription _subscription;
 
+        protected AccountCalculatorModel() { }
+
         private AccountCalculatorModel(AccountModel acc, ClientModel.Data client)
         {
             _client = client;
