@@ -84,6 +84,8 @@ namespace TickTrader.BotTerminal
     {
         Info,
         Trading,
+        TradingSuccess,
+        TradingFail,
         Error,
         Custom
     }

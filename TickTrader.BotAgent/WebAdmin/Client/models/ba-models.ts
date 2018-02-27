@@ -100,7 +100,7 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 }
 
-export enum LogEntryTypes { Info, Trading, Error, Custom }
+export enum LogEntryTypes { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
 
 export class LogEntry implements Serializable<LogEntry> {
     public Time: Date;

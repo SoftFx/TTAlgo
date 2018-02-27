@@ -84,6 +84,11 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Error, ex.Message, ex.ToString());
         }
 
+        public void OnError(string message, Exception ex)
+        {
+            AddLogRecord(LogSeverities.Error, message, ex.ToString());
+        }
+
         public void OnPrintError(string entry)
         {
             AddLogRecord(LogSeverities.Error, entry);
@@ -109,6 +114,16 @@ namespace TickTrader.Algo.Core
         public void OnPrintTrade(string entry)
         {
             AddLogRecord(LogSeverities.Trade, entry);
+        }
+
+        public void OnPrintTradeSuccess(string entry)
+        {
+            AddLogRecord(LogSeverities.TradeSuccess, entry);
+        }
+
+        public void OnPrintTradeFail(string entry)
+        {
+            AddLogRecord(LogSeverities.TradeFail, entry);
         }
 
         public void OnInitialized()
@@ -179,6 +194,8 @@ namespace TickTrader.Algo.Core
         Info,
         Error,
         Trade,
+        TradeSuccess,
+        TradeFail,
         Custom,
         CustomStatus
     }

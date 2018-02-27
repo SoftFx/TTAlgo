@@ -146,7 +146,7 @@
                                     <tbody>
                                         <tr *ngFor="let logEntry of Log.Snapshot">
                                             <td width="180px">
-                                                <i class="fa fa-circle" [ngClass]="{'log-info': logEntry.Type === LogEntryType.Info, 'log-trade': logEntry.Type === LogEntryType.Trading , 'log-error': logEntry.Type === LogEntryType.Error, 'log-custom': logEntry.Type === LogEntryType.Custom }"></i>
+                                                <i class="fa fa-circle" [ngClass]="{'log-info': logEntry.Type === LogEntryType.Info, 'log-trade': logEntry.Type === LogEntryType.Trading , 'log-error': logEntry.Type === LogEntryType.Error, 'log-custom': logEntry.Type === LogEntryType.Custom, 'log-trade-success': logEntry.Type === LogEntryType.TradingSuccess , 'log-trade-fail': logEntry.Type === LogEntryType.TradingFail  }"></i>
                                                 {{logEntry.Time | date:'dd/MM/y HH:mm:ss'}}
                                             </td>
                                             <td class="text-left">

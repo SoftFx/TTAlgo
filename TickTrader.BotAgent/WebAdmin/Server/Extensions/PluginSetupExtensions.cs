@@ -57,6 +57,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     case ParameterTypes.Integer:
                         yield return new IntParameter() { Id = param.Id, Value = (int)(long)param.Value };
                         break;
+                    case ParameterTypes.NullableInteger:
+                        yield return new NullableIntParameter() { Id = param.Id, Value = param.Value == null ? (int?)null : (int)(long)param.Value };
+                        break;
                     case ParameterTypes.Double:
                         switch (param.Value)
                         {
@@ -67,6 +70,23 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                                 yield return new DoubleParameter() { Id = param.Id, Value = (double)param.Value };
                                 break;
                             default: throw new InvalidCastException($"Can't cast {param.Value} to Double");
+                        }
+                        break;
+                    case ParameterTypes.NullableDouble:
+                        if (param.Value == null)
+                        {
+                            yield return new NullableDoubleParameter() { Id = param.Id, Value = null };
+                            break;
+                        }
+                        switch (param.Value)
+                        {
+                            case Int64 l:
+                                yield return new NullableDoubleParameter() { Id = param.Id, Value = (long)param.Value };
+                                break;
+                            case Double d:
+                                yield return new NullableDoubleParameter() { Id = param.Id, Value = (double)param.Value };
+                                break;
+                            default: throw new InvalidCastException($"Can't cast {param.Value} to NullableDouble");
                         }
                         break;
                     case ParameterTypes.String:

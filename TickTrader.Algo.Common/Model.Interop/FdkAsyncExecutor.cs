@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Common.Model.Interop
 
                 _tradeProxy.Server.ModifyTradeRecordEx(request.OperationId, orderId, request.Symbol,
                     ToRecordType(orderType), Convert(request.Side), request.NewVolume, maxVisVolume, px, stopPx,
-                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null, request.CurrentVolume, null, null);
+                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null, request.CurrentVolume, request.OverrideIoC, null);
             });
         }
 
@@ -211,6 +211,13 @@ namespace TickTrader.Algo.Common.Model.Interop
             catch (SoftFX.Extended.Errors.TimeoutException)
             {
                 return OrderCmdResultCodes.Timeout;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                var result = FdkConvertor.Convert(ex);
+                if (result == OrderCmdResultCodes.InternalError)
+                    logger.Error(ex, opName + "() failed!");
+                return result;
             }
             catch (Exception ex)
             {

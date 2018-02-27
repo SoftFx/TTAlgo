@@ -147,6 +147,8 @@ namespace TickTrader.BotTerminal
                 case LogSeverities.Error: return JournalMessageType.Error;
                 case LogSeverities.Custom: return JournalMessageType.Custom;
                 case LogSeverities.Trade: return JournalMessageType.Trading;
+                case LogSeverities.TradeSuccess: return JournalMessageType.TradingSuccess;
+                case LogSeverities.TradeFail: return JournalMessageType.TradingFail;
                 default: return JournalMessageType.Info;
             }
         }

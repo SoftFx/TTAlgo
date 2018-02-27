@@ -289,6 +289,13 @@ namespace TickTrader.BotAgent.BA.Models
             }
             catch (Exception ex)
             {
+                // TO DO: log
+                lock (_syncObj)
+                {
+                    Fault = ex;
+                    StopInternal(ex.Message, true);
+                }
+
                 Fault = ex;
                 if (State != BotStates.Stopping)
                     await StopExecutor(ex.Message);

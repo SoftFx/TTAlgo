@@ -8,6 +8,14 @@
     color: skyblue;
 }
 
+.log-trade-success {
+    color: green;
+}
+
+.log-trade-fail {
+    color: darkorange;
+}
+
 .log-error {
     color: red;
 }

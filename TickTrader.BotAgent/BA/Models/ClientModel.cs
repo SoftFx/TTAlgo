@@ -168,11 +168,11 @@ namespace TickTrader.BotAgent.BA.Models
             return _core.CreateFeedProvider().Result;
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
-        {
-            UseNewProtocol = true;
-        }
+        //[OnDeserializing]
+        //private void OnDeserializing(StreamingContext context)
+        //{
+        //    UseNewProtocol = true;
+        //}
 
         private void CheckInitialized()
         {

@@ -129,7 +129,10 @@ namespace TickTrader.Algo.Core
                     AssetChangeType assetChange;
                     var asset = accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode), currencies, out assetChange);
                     if (assetChange != AssetChangeType.NoChanges)
+                    {
                         context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
+                        context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                    }
                 }
             });
         }
@@ -272,16 +275,20 @@ namespace TickTrader.Algo.Core
             {
                 if (eReport.Assets != null)
                 {
+                    bool hasChanges = false;
                     foreach (var asset in eReport.Assets)
                     {
                         AssetChangeType assetChange;
                         var assetModel = acc.Assets.Update(new AssetEntity(asset.Volume, asset.Currency), currencies, out assetChange);
                         if (assetChange != AssetChangeType.NoChanges)
                         {
+                            hasChanges = true;
                             var args = new AssetUpdateEventArgsImpl(assetModel);
                             context.EnqueueEvent(b => acc.Assets.FireModified(args));
                         }
                     }
+                    if (hasChanges)
+                        context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }
         }

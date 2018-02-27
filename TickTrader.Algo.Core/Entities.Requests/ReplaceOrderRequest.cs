@@ -24,5 +24,7 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public string Tag { get; set; }
         public DateTime? Expiration { get; set; }
+        public OrderExecOptions? Options { get; set; }
+        public bool? OverrideIoC => Options.HasValue ? Options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) : (bool?)null;
     }
 }

@@ -76,6 +76,8 @@ namespace TickTrader.BotAgent.BA
         void DeleteFile(string name);
     }
 
+    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
+
     public interface ILogEntry
     {
         DateTime TimeUtc { get; }

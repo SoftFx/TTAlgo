@@ -124,10 +124,16 @@ namespace TickTrader.Algo.TestCollection.Bots
                     someOrder = null;
                     return;
                 }
+
+
+
+                if (orderType != OrderType.Market && orderType != OrderType.Position)
+                {
+                    Volume *= 2;
+                    await TestModifyVolume(someOrder.Id, isAsync, Volume, postTitle);
+                }
                     
 
-                Volume *= 2;
-                await TestModifyVolume(someOrder.Id, isAsync, Volume, postTitle);
                 await TestAddModifyComment(someOrder.Id, isAsync, postTitle);
                 if (Account.Type == AccountTypes.Gross)
                 {
@@ -185,7 +191,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                                 await PerfomOrder(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
                         }
 
-            await TestMarketOrder(Account.Type);
+            //await TestMarketOrder(Account.Type);
 
             PrintStatus();
         }
@@ -401,8 +407,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         private async Task TestAddModifyStopLoss(string orderId, bool isAsync, string postTitle = "")
         {
             var order = Account.Orders[orderId];
-            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - _diff) : (Symbol.Bid + _diff);
-            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Ask - _diff) : (Symbol.Bid + _diff);
+            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - _diff * 4) : (Symbol.Ask + _diff * 4);
+            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - _diff * 5) : (Symbol.Ask + _diff * 5);
             var title = (isAsync) ? "Async test: " : "Test: ";
 
             _testCount++;
@@ -477,7 +483,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 + (tag != null ? " with tag" : "")
                 + (isIoc ? " with IoC" : ""));
 
-            if (Account.Orders[orderId].Type == OrderType.Position)
+            if (Account.Orders[orderId].Type == OrderType.Position || Account.Orders[orderId].Type == OrderType.Market)
             {
                 if (isAsync)
                     ThrowOnError(await CloseOrderAsync(orderId));

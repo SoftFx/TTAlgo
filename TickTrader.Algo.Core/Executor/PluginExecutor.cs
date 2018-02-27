@@ -295,6 +295,10 @@ namespace TickTrader.Algo.Core
 
                     ChangeState(States.Running);
                 }
+                catch (AlgoMetadataException ex)
+                {
+                    throw new Exception(ex.Message); // save formatted message
+                }
                 catch (Exception ex)
                 {
                     throw new Exception("Exception of type " + ex.GetType().Name + " has been thrown: " + ex.ToString());
