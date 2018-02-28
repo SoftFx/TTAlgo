@@ -381,12 +381,19 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task ApplyUpdate(EntityCacheUpdate update)
         {
-            if (update != null)
+            try
             {
-                update.Apply(_cache);
+                if (update != null)
+                {
+                    update.Apply(_cache);
 
-                foreach (var listener in _tradeListeners.Values)
-                    await listener.Write(update);
+                    foreach (var listener in _tradeListeners.Values)
+                        await listener.Write(update);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
             }
         }
 

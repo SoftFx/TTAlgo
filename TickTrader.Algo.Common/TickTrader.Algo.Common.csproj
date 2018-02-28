@@ -102,6 +102,7 @@
     <Compile Include="Lib\AsyncLock.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
+    <Compile Include="Lib\ConvertionExtentions.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\DictionarySyncrhonizer.cs" />
     <Compile Include="Lib\EnumerableExt.cs" />

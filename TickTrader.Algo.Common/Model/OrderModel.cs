@@ -500,14 +500,14 @@ namespace TickTrader.Algo.Common.Model
 
         internal void Update(ExecutionReport report)
         {
-            this.Amount = (decimal?)report.InitialVolume ?? 0M;
-            this.RemainingAmount = (decimal)report.LeavesVolume;
+            this.Amount = report.InitialVolume.ToDecimalSafe() ?? 0M;
+            this.RemainingAmount = report.LeavesVolume.ToDecimalSafe() ?? 0M;
             this.OrderType = report.OrderType;
             this.Side = report.OrderSide;
-            this.MaxVisibleVolume = (decimal?)report.MaxVisibleVolume;
-            this.Price = (decimal?)(report.OrderType == OrderType.Stop ? report.StopPrice : report.Price);
-            this.LimitPrice = (decimal?)(report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null);
-            this.StopPrice = (decimal?)report.StopPrice;
+            this.MaxVisibleVolume = report.MaxVisibleVolume.ToDecimalSafe();
+            this.Price = (report.OrderType == OrderType.Stop ? report.StopPrice : report.Price).ToDecimalSafe();
+            this.LimitPrice = (report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null).ToDecimalSafe();
+            this.StopPrice = report.StopPrice.ToDecimalSafe();
             this.Created = report.Created;
             this.Modified = report.Modified;
             this.Expiration = report.Expiration;
@@ -515,14 +515,12 @@ namespace TickTrader.Algo.Common.Model
             this.Tag = report.Tag;
             this.StopLoss = report.StopLoss;
             this.TakeProfit = report.TakeProfit;
-            this.Swap = (decimal)report.Swap;
-            this.Commission = (decimal)report.Commission;
+            this.Swap = report.Swap.ToDecimalSafe();
+            this.Commission = report.Commission.ToDecimalSafe();
             this.ExecPrice = report.AveragePrice;
             this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
-
-            
         }
 
         private decimal? AmountToLots(decimal? volume)
