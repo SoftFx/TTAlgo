@@ -11,15 +11,13 @@ namespace TickTrader.Algo.Common.Model
 {
     public class EntityCache : EntityBase
     {
-        private AccountModel _acc;
-        private VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
-        private VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
+        private readonly AccountModel _acc;
+        private readonly VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
+        private readonly VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
 
         public EntityCache()
         {
             _acc = new AccountModel(_currencies, _symbols);
-            _symbols = new VarDictionary<string, SymbolModel>();
-            _currencies = new VarDictionary<string, CurrencyEntity>();
         }
 
         public IVarSet<string, SymbolModel> Symbols => _symbols;
