@@ -51,6 +51,12 @@ namespace TickTrader.Algo.Common.Model
                 if (!_isStarted)
                     throw new InvalidOperationException("No connection!");
 
+                if (from != null || to != null)
+                {
+                    from = from ?? new DateTime(1870, 0, 0);
+                    to = to ?? DateTime.UtcNow + TimeSpan.FromDays(2);
+                }
+
                 var rxChannel = Channel.NewInput<TradeReportEntity>(1000);
                 _connection.TradeProxy.GetTradeHistory(CreateBlocingChannel(rxChannel), from, to, skipCanceledOrders);
 
