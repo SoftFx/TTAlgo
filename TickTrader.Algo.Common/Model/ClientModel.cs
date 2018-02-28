@@ -266,7 +266,15 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Loaded account info.");
 
-            var accUpdate = new AccountModel.Snapshot(accInfo, new List<OrderEntity>(), new List<PositionEntity>(), accInfo.Assets);
+            PositionEntity[] positions = null;
+
+            if (accInfo.Type == AccountTypes.Net)
+            {
+                positions = await tradeApi.GetPositions();
+                logger.Debug("Loaded position snaphsot.");
+            }
+
+            var accUpdate = new AccountModel.Snapshot(accInfo, null, positions, accInfo.Assets);
             var snaphost = new EntityCache.Snapshot(symbols, currencies, accUpdate);
 
             await ApplyUpdate(snaphost);
@@ -392,6 +400,8 @@ namespace TickTrader.Algo.Common.Model
         {
             if (item is ExecutionReport)
                 return _cache.Account.GetOrderUpdate((ExecutionReport)item);
+            else if (item is PositionEntity)
+                return _cache.Account.GetPositionUpdate((PositionEntity)item);
 
             return null;
         }

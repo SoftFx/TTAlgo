@@ -168,7 +168,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Postion management
 
-        internal EntityCacheUpdate OnReport(PositionEntity report)
+        internal EntityCacheUpdate GetPositionUpdate(PositionEntity report)
         {
             if (report.IsEmpty)
                 return new PositionUpdateAction(report, OrderEntityAction.Removed);
@@ -336,9 +336,9 @@ namespace TickTrader.Algo.Common.Model
                 IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
             {
                 _accInfo = accInfo;
-                _orders = orders;
-                _positions = positions;
-                _assets = assets;
+                _orders = orders ?? Enumerable.Empty<OrderEntity>();
+                _positions = positions ?? Enumerable.Empty<PositionEntity>();
+                _assets = assets ?? Enumerable.Empty<AssetEntity>();
             }
 
             public void Apply(EntityCache cache)
@@ -419,6 +419,8 @@ namespace TickTrader.Algo.Common.Model
                     order = cache.Account.Orders.GetOrDefault(_report.OrderId);
                     order.Update(_report);
                 }
+                else
+                    order = new OrderModel(_report, cache.Account);
 
                 cache.Account.OrderUpdate?.Invoke(new OrderUpdateInfo(_report, _execAction, _entityAction, order));
                 cache.Account.UpdateBalance(_report);
