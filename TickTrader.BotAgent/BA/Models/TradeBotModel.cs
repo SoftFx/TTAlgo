@@ -139,24 +139,6 @@ namespace TickTrader.BotAgent.BA.Models
         public void ClearWorkingFolder()
         {
             AlgoData.Clear();
-
-            //foreach (var file in AlgoData.Files)
-            //{
-            //    try
-            //    {
-            //        AlgoData.DeleteFile(file.Name);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _log.Warn(ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
-            //    }
-            //}
-            //try
-            //{
-            //    if (Directory.Exists(AlgoData.Folder))
-            //        Directory.Delete(AlgoData.Folder);
-            //}
-            //catch { }
         }
 
         public void Start()
@@ -176,7 +158,6 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (_client.ConnectionState == ConnectionStates.Online)
                 StartExecutor();
-
         }
 
         public Task StopAsync()
@@ -201,17 +182,6 @@ namespace TickTrader.BotAgent.BA.Models
         {
             DoStop(null).Forget();
         }
-
-        //private Task StopInternal(string error = null)
-        //{
-        //    if (IsStopped())
-        //        return Task.FromResult(true);
-
-        //    if (State != BotStates.Stopping)
-        //        _stopTask = DoStop(error, isExecutorStopped);
-
-        //    return _stopTask;
-        //}
 
         private Task DoStop(string error)
         {
@@ -261,7 +231,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var setupModel = new BarBasedPluginSetup(_ref);
                 setupModel.Load(Config);
-                //setupModel.SetWorkingFolder(AlgoData.Folder);
+                setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
@@ -275,8 +245,8 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.AccInfoProvider = _client.PluginTradeInfo;
                 executor.TradeExecutor = _client.PluginTradeApi;
                 //executor.TradeHistoryProvider =  new TradeHistoryProvider(_client.Connection);
-                //executor.BotWorkingFolder = AlgoData.Folder;
-                //executor.WorkingFolder = AlgoData.Folder;
+                executor.BotWorkingFolder = AlgoData.Folder;
+                executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
