@@ -74,7 +74,7 @@ namespace ActorSharp
             }
             catch (Exception ex)
             {
-                Environment.FailFast("Uncaught exception in actor!", ex);
+                Environment.FailFast("Uncaught exception in actor: " + ex.Message, ex);
             }
             finally
             {

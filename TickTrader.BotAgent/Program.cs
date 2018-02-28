@@ -32,6 +32,9 @@ namespace TickTrader.BotAgent
             CoreLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
 
             var logger = LogManager.GetLogger(nameof(Startup));
+
+            SetupGlobalExceptionLogging(logger);
+
             var agent = new ServerModel.Handler(ServerModel.Load());
             
             try
@@ -397,5 +400,18 @@ namespace TickTrader.BotAgent
             if (p is Parameter)
                 Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
         }
+
+        private static void SetupGlobalExceptionLogging(Logger log)
+        {
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                var ex = e.ExceptionObject as Exception;
+                if (ex != null)
+                    log.Fatal(ex);
+                else
+                    log.Fatal("Unhandled Exception!");
+            };
+        }
+       
     }
 }
