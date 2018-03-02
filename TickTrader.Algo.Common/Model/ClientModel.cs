@@ -274,10 +274,16 @@ namespace TickTrader.Algo.Common.Model
                 logger.Debug("Loaded position snaphsot.");
             }
 
-            var accUpdate = new AccountModel.Snapshot(accInfo, null, positions, accInfo.Assets);
-            var snaphost = new EntityCache.Snapshot(symbols, currencies, accUpdate);
+            foreach (var update in _cache.GetMergeUpdate(currencies))
+                await ApplyUpdate(update);
 
-            await ApplyUpdate(snaphost);
+            foreach (var update in _cache.GetMergeUpdate(symbols))
+                await ApplyUpdate(update);
+
+
+            var accUpdate = new AccountModel.Snapshot(accInfo, null, positions, accInfo.Assets);
+
+            await ApplyUpdate(accUpdate);
 
             await initFeedTask;
 
@@ -352,7 +358,7 @@ namespace TickTrader.Algo.Common.Model
         private EntityCacheUpdate AddListener(ActorRef handleRef, Channel<EntityCacheUpdate> channel)
         {
             _tradeListeners.Add(handleRef, channel);
-            return _cache.GetSnapshot();
+            return _cache.GetAccSnapshot();
         }
 
         private async Task UnsyncListener(ActorRef handlerRef)
