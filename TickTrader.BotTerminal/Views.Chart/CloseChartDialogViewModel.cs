@@ -18,8 +18,6 @@ namespace TickTrader.BotTerminal
         
         public CloseChartDialogViewModel(ChartViewModel chart)
         {
-            HasStartedBots = chart.HasStartedBots;
-
             DisplayName = $"Close chart '{chart.DisplayName}'";
             Message = $"Are you sure you want to close chart '{chart.DisplayName}'?";
         }

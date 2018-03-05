@@ -64,12 +64,30 @@ namespace TickTrader.Algo.Common.Model.Setup
             _quoteToBarMappings.Clear();
             _quoteToDoubleMappings.Clear();
 
+            if (_extCollection?.FullBarToBarReductions != null)
+            {
+                foreach (var reduction in _extCollection.FullBarToBarReductions)
+                {
+                    _barToBarMappings.Add(new FullBarToBarMapping(reduction.DisplayName,
+                        reduction.CreateInstance<FullBarToBarReduction>()));
+                }
+            }
+
             if (_extCollection?.FullBarToDoubleReductions != null)
             {
                 foreach (var reduction in _extCollection.FullBarToDoubleReductions)
                 {
                     _barToDoubleMappings.Add(new FullBarToDoubleMapping(reduction.DisplayName,
                         reduction.CreateInstance<FullBarToDoubleReduction>()));
+                }
+            }
+
+            if (_extCollection?.QuoteToBarReductions != null)
+            {
+                foreach (var reduction in _extCollection.QuoteToBarReductions)
+                {
+                    _quoteToBarMappings.Add(new QuoteToBarMapping(reduction.DisplayName,
+                        reduction.CreateInstance<QuoteToBarReduction>()));
                 }
             }
 
@@ -98,7 +116,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                         foreach (var reductionBar in _extCollection.FullBarToBarReductions)
                         {
                             var instanceBar = reductionBar.CreateInstance<FullBarToBarReduction>();
-                            _barToBarMappings.Add(new FullBarToBarMapping(reductionBar.DisplayName, instanceBar));
                             _barToDoubleMappings.Add(new FullBarToDoubleMapping(reductionBar.DisplayName,
                                 instanceBar, reductionDouble.DisplayName, instanceDouble));
                         }
@@ -109,7 +126,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                         foreach (var reductionBar in _extCollection.QuoteToBarReductions)
                         {
                             var instanceBar = reductionBar.CreateInstance<QuoteToBarReduction>();
-                            _quoteToBarMappings.Add(new QuoteToBarMapping(reductionBar.DisplayName, instanceBar));
                             _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reductionBar.DisplayName,
                                 instanceBar, reductionDouble.DisplayName, instanceDouble));
                         }

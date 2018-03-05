@@ -1,5 +1,6 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -14,7 +15,12 @@ namespace TickTrader.Algo.Common.Model.Setup
 
 
         public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
-            string defaultMapping) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping)
+            string defaultMapping) : this(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, PluginSetupMode.New)
+        {
+        }
+
+        public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
+            string defaultMapping, PluginSetupMode mode) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, mode)
         {
             Init();
         }
@@ -25,18 +31,27 @@ namespace TickTrader.Algo.Common.Model.Setup
             var botConfig = cfg as TradeBotConfig;
             if (botConfig != null)
             {
-
+                InstanceId = botConfig.InstanceId;
+                AllowTrade = botConfig.Permissions.TradeAllowed;
+                Isolated = botConfig.Permissions.Isolated;
             }
 
             base.Load(cfg);
         }
 
-        public override object Clone()
+        public override object Clone(PluginSetupMode mode)
         {
             var config = Save();
-            var setupModel = new TradeBotSetupModel(PluginRef, Metadata, DefaultSymbolCode, DefaultTimeFrame, DefaultMapping);
+            var setupModel = new TradeBotSetupModel(PluginRef, Metadata, DefaultSymbolCode, DefaultTimeFrame, DefaultMapping, mode);
             setupModel.Load(config);
             return setupModel;
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+
+            Permissions = new PluginPermissions();
         }
 
 

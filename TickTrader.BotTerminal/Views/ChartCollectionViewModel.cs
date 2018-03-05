@@ -17,6 +17,7 @@ namespace TickTrader.BotTerminal
         private IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
         private PersistModel _storage;
+        private BotManagerViewModel _botManager;
 
 
         public object SelectedChartProxy
@@ -31,13 +32,14 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, PersistModel storage)
+        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, PersistModel storage, BotManagerViewModel botManager)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _clientModel = clientModel;
             _algoEnv = algoEnv;
             _shell = shell;
             _storage = storage;
+            _botManager = botManager;
 
             clientModel.Symbols.Updated += Symbols_Updated;
         }
@@ -52,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _storage));
+            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _storage, _botManager));
         }
 
         public void CloseItem(ChartViewModel chart)
@@ -100,7 +102,7 @@ namespace TickTrader.BotTerminal
                     {
                         return;
                     }
-                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _storage);
+                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _storage, _botManager);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }

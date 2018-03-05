@@ -10,6 +10,13 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
+    public enum PluginSetupMode
+    {
+        New,
+        Edit,
+    }
+
+
     public abstract class PluginSetupModel : ObservableObject, ICloneable
     {
         private List<PropertySetupModel> _allProperties;
@@ -20,6 +27,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         private TimeFrames _selectedTimeFrame;
         private ISymbolInfo _mainSymbol;
         private SymbolMapping _selectedMapping;
+        private string _instanceId;
+        private PluginPermissions _permissions;
 
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
@@ -112,6 +121,70 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public string DefaultMapping { get; }
 
+        public PluginSetupMode Mode { get; }
+
+        public bool IsEditMode => Mode == PluginSetupMode.Edit;
+
+        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.AlgoLogicType != AlgoTypes.Robot;
+
+        public string InstanceId
+        {
+            get { return _instanceId; }
+            set
+            {
+                if (_instanceId == value)
+                    return;
+
+                _instanceId = value;
+                NotifyPropertyChanged(nameof(InstanceId));
+                NotifyPropertyChanged(nameof(IsInstanceIdValid));
+                Validate();
+            }
+        }
+
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : Metadata.IdProvider.IsValidPluginId(Descriptor, InstanceId);
+
+        public PluginPermissions Permissions
+        {
+            get { return _permissions; }
+            set
+            {
+                if (_permissions == value)
+                    return;
+
+                _permissions = value;
+                NotifyPropertyChanged(nameof(Permissions));
+                NotifyPropertyChanged(nameof(AllowTrade));
+                NotifyPropertyChanged(nameof(Isolated));
+            }
+        }
+
+        public bool AllowTrade
+        {
+            get { return Permissions.TradeAllowed; }
+            set
+            {
+                if (Permissions.TradeAllowed == value)
+                    return;
+
+                Permissions.TradeAllowed = value;
+                NotifyPropertyChanged(nameof(AllowTrade));
+            }
+        }
+
+        public bool Isolated
+        {
+            get { return Permissions.Isolated; }
+            set
+            {
+                if (Permissions.Isolated == value)
+                    return;
+
+                Permissions.Isolated = value;
+                NotifyPropertyChanged(nameof(Isolated));
+            }
+        }
+
 
         private List<InputSetupModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
 
@@ -119,22 +192,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         public event Action ValidityChanged = delegate { };
 
 
-        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata)
-            : this(pRef, metadata, "EURUSD", TimeFrames.M1, "Bid")
-        {
-        }
-
-        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode)
-            : this(pRef, metadata, defaultSymbolCode, TimeFrames.M1, "Bid")
-        {
-        }
-
-        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame)
-            : this(pRef, metadata, defaultSymbolCode, defaultTimeFrame, "Bid")
-        {
-        }
-
-        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame, string defaultMapping)
+        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
+            string defaultMapping, PluginSetupMode mode)
         {
             PluginRef = pRef;
             Descriptor = pRef.Descriptor;
@@ -142,18 +201,17 @@ namespace TickTrader.Algo.Common.Model.Setup
             DefaultSymbolCode = defaultSymbolCode;
             DefaultTimeFrame = defaultTimeFrame;
             DefaultMapping = defaultMapping;
+            Mode = mode;
         }
 
 
-        public abstract object Clone();
-
-
-        public void Reset()
+        public object Clone()
         {
-            _parameters.ForEach(p => p.Reset());
-            foreach (var p in _allProperties)
-                p.Reset();
+            return Clone(Mode);
         }
+
+        public abstract object Clone(PluginSetupMode newMode);
+
 
         public virtual void Apply(IPluginSetupTarget target)
         {
@@ -164,6 +222,11 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public virtual void Load(PluginConfig cfg)
         {
+            SelectedTimeFrame = cfg.TimeFrame;
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(cfg.MainSymbol);
+            SelectedMapping = Metadata.SymbolMappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+            InstanceId = cfg.InstanceId;
+            Permissions = cfg.Permissions.Clone();
             foreach (var scrProperty in cfg.Properties)
             {
                 var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
@@ -175,6 +238,11 @@ namespace TickTrader.Algo.Common.Model.Setup
         public virtual PluginConfig Save()
         {
             var cfg = SaveToConfig();
+            cfg.TimeFrame = SelectedTimeFrame;
+            cfg.MainSymbol = MainSymbol.Name;
+            cfg.SelectedMapping = SelectedMapping.Name;
+            cfg.InstanceId = InstanceId;
+            cfg.Permissions = Permissions.Clone();
             foreach (var property in _allProperties)
                 cfg.Properties.Add(property.Save());
             return cfg;
@@ -191,20 +259,39 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
+        public virtual void Reset()
+        {
+            SelectedTimeFrame = DefaultTimeFrame;
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(DefaultSymbolCode);
+            SelectedMapping = Metadata.SymbolMappings.GetBarToBarMappingOrDefault(DefaultMapping);
+            InstanceId = Metadata.IdProvider.GeneratePluginId(Descriptor);
+
+            _parameters.ForEach(p => p.Reset());
+            foreach (var p in _allProperties)
+                p.Reset();
+        }
+
+        public void Validate()
+        {
+            IsValid = CheckValidity();
+            ValidityChanged();
+        }
+
 
         protected abstract PluginConfig SaveToConfig();
 
 
+        protected virtual bool CheckValidity()
+        {
+            return Descriptor.Error == null && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+        }
+
+
         protected void Init()
         {
-            AvailableTimeFrames = Enum.GetValues(typeof(TimeFrames)).Cast<TimeFrames>();
-            SelectedTimeFrame = DefaultTimeFrame;
-
+            AvailableTimeFrames = Enum.GetValues(typeof(TimeFrames)).Cast<TimeFrames>().Where(tf => tf != TimeFrames.TicksLevel2).ToList();
             AvailableSymbols = Metadata.GetAvaliableSymbols(DefaultSymbolCode);
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(DefaultSymbolCode);
-
             AvailableMappings = Metadata.SymbolMappings.BarToBarMappings;
-            SelectedMapping = Metadata.SymbolMappings.GetBarToBarMappingOrDefault(DefaultMapping);
 
             _parameters = Descriptor.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Descriptor.Inputs.Select(CreateBarBasedInput).ToList();
@@ -219,7 +306,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             Reset();
             Validate();
         }
-
 
 
         private ParameterSetupModel CreateParameter(ParameterDescriptor descriptor)
@@ -286,12 +372,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 case "TickTrader.Algo.Api.Bar": return new MarkerSeriesOutputSetupModel(descriptor);
                 default: return new OutputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedOutputType);
             }
-        }
-
-        private void Validate()
-        {
-            IsValid = Descriptor.Error == null && _allProperties.All(p => !p.HasError);
-            ValidityChanged();
         }
     }
 }

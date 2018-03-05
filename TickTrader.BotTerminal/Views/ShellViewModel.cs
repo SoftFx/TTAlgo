@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         private SymbolManagerViewModel _smbManager;
         private CustomFeedStorage _userSymbols = new CustomFeedStorage();
         private BotAgentManager _botAgentManager;
-        private BotAggregator _botAggregator;
+        private BotManager _botManagerModel;
 
         public ShellViewModel()
         {
@@ -63,13 +63,15 @@ namespace TickTrader.BotTerminal
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
-            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
+            _botManagerModel = new BotManager(algoEnv);
+            BotManager = new BotManagerViewModel(_botManagerModel, this, clientModel, algoEnv);
 
-            _botAggregator = new BotAggregator(Charts);
-            botsWarden = new BotsWarden(_botAggregator);
+            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage, BotManager);
+
+            botsWarden = new BotsWarden(_botManagerModel);
 
             _botAgentManager = new BotAgentManager(storage);
-            BotList = new BotListViewModel(this, _botAgentManager, clientModel, Charts);
+            BotList = new BotListViewModel(this, _botAgentManager, BotManager);
 
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
@@ -168,14 +170,14 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
+            var exit = new ExitDialogViewModel(_botManagerModel.HasRunningBots);
             wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
                 storage.ProfileManager.Stop();
                 if (exit.HasStartedBots)
                 {
-                    var shutdown = new ShutdownDialogViewModel(Charts);
+                    var shutdown = new ShutdownDialogViewModel(_botManagerModel);
                     wndManager.ShowDialog(shutdown, this);
                 }
             }
@@ -235,7 +237,7 @@ namespace TickTrader.BotTerminal
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public BotListViewModel BotList { get; }
         public WindowManager ToolWndManager => wndManager;
-        public IBotAggregator BotAggregator => _botAggregator;
+        public BotManagerViewModel BotManager { get; }
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;

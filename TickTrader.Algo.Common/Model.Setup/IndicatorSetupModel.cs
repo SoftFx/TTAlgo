@@ -1,5 +1,6 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -14,29 +15,34 @@ namespace TickTrader.Algo.Common.Model.Setup
 
 
         public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
-            string defaultMapping) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping)
+            string defaultMapping) : this(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, PluginSetupMode.New)
+        {
+        }
+
+        public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
+            string defaultMapping, PluginSetupMode mode) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, mode)
         {
             Init();
         }
 
 
-        public override void Load(PluginConfig cfg)
-        {
-            var indicatorConfig = cfg as IndicatorConfig;
-            if (indicatorConfig != null)
-            {
-
-            }
-
-            base.Load(cfg);
-        }
-
-        public override object Clone()
+        public override object Clone(PluginSetupMode mode)
         {
             var config = Save();
-            var setupModel = new IndicatorSetupModel(PluginRef, Metadata, DefaultSymbolCode, DefaultTimeFrame, DefaultMapping);
+            var setupModel = new IndicatorSetupModel(PluginRef, Metadata, DefaultSymbolCode, DefaultTimeFrame, DefaultMapping, mode);
             setupModel.Load(config);
             return setupModel;
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+
+            Permissions = new PluginPermissions
+            {
+                TradeAllowed = false,
+                Isolated = false,
+            };
         }
 
 

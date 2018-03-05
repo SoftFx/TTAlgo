@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
         {
             switch (catalogItem.Descriptor.AlgoLogicType)
             {
-                case AlgoTypes.Robot: return new TradeBotSetupModel(catalogItem, AlgoEnv, SymbolCode, TimeFrame, "Bid");
+                //case AlgoTypes.Robot: return new TradeBotSetupModel(catalogItem, AlgoEnv, SymbolCode, TimeFrame, "Bid");
                 case AlgoTypes.Indicator: return new IndicatorSetupModel(catalogItem, AlgoEnv, SymbolCode, TimeFrame, "Bid");
                 default: throw new ArgumentException("Unknown plugin type");
             }

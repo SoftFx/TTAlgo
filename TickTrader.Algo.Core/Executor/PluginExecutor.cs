@@ -206,20 +206,6 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public bool Isolated 
-        {
-            get { return _isolated; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    _isolated = value;
-                }
-            }
-        }
-
         public PluginPermissions Permissions
         {
             get { return _permissions; }

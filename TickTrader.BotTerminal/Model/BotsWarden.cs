@@ -14,13 +14,13 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly TimeSpan _delayPunishment = TimeSpan.FromSeconds(5);
         private Dictionary<TradeBotModel, CancellationTokenSource> _abortTasks;
-        private IBotAggregator _botAggregator;
+        private BotManager _botManager;
 
-        public BotsWarden(IBotAggregator aggregator)
+        public BotsWarden(BotManager botManager)
         {
             _abortTasks = new Dictionary<TradeBotModel, CancellationTokenSource>();
-            _botAggregator = aggregator;
-            _botAggregator.StateChanged += BotStateChanged;
+            _botManager = botManager;
+            _botManager.StateChanged += BotStateChanged;
         }
 
         private void BotStateChanged(TradeBotModel bot)
@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
 
                 AbortBotAfter(bot, _delayPunishment, tokenSource.Token).Forget();
             }
-            else if(bot.State == BotModelStates.Stopped)
+            else if (bot.State == BotModelStates.Stopped)
             {
                 СancelAbortTask(bot);
             }

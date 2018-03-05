@@ -25,11 +25,7 @@ namespace TickTrader.BotTerminal
 
         public PluginSetupModel Setup { get; private set; }
 
-        public string InstanceId { get; private set; }
-
-        public bool Isolated { get; private set; }
-
-        public PluginPermissions Permissions { get; private set; }
+        public string InstanceId => Setup.InstanceId;
 
         public IAlgoPluginHost Host => _host;
 
@@ -39,14 +35,11 @@ namespace TickTrader.BotTerminal
             Setup = pSetup.Setup;
             PluginRef = Setup.PluginRef;
             PluginFilePath = pSetup.PluginItem.FilePath;
-            InstanceId = pSetup.InstanceId;
-            Isolated = pSetup.Isolated;
-            Permissions = pSetup.Permissions;
 
             _executor = CreateExecutor();
             Setup.SetWorkingFolder(_executor.WorkingFolder);
             Setup.Apply(_executor);
-            
+
         }
 
         protected bool StartExcecutor()
@@ -64,16 +57,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected void Configurate(PluginSetupModel setup, PluginPermissions permissions, bool isolated)
+        protected void Configurate(PluginSetupModel setup)
         {
             Setup = setup;
-            Permissions = permissions;
-            Isolated = isolated;
 
             Setup.SetWorkingFolder(_executor.WorkingFolder);
             Setup.Apply(_executor);
-            _executor.Permissions = permissions;
-            _executor.Isolated = isolated;
+            _executor.Permissions = Setup.Permissions;
         }
 
         protected Task StopExecutor()
@@ -92,9 +82,10 @@ namespace TickTrader.BotTerminal
 
             executor.OnRuntimeError += Executor_OnRuntimeError;
 
+            executor.TimeFrame = Setup.SelectedTimeFrame;
+            executor.MainSymbolCode = Setup.MainSymbol.Name;
             executor.InstanceId = InstanceId;
-            executor.Isolated = Isolated;
-            executor.Permissions = Permissions;
+            executor.Permissions = Setup.Permissions;
             executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 

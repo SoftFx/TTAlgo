@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -13,5 +14,14 @@ namespace TickTrader.Algo.Common.Model.Setup
         IReadOnlyList<ISymbolInfo> Symbols { get; }
 
         SymbolMappingsCollection SymbolMappings { get; }
+
+        IPluginIdProvider IdProvider { get; }
+    }
+
+    public interface IPluginIdProvider
+    {
+        string GeneratePluginId(AlgoPluginDescriptor descriptor);
+
+        bool IsValidPluginId(AlgoPluginDescriptor descriptor, string pluginId);
     }
 }

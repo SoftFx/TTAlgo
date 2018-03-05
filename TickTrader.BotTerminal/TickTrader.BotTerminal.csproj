@@ -303,7 +303,6 @@
     <Compile Include="Model.Protocol\ProtocolClientSettings.cs" />
     <Compile Include="Model.Protocol\ProtocolConfigSection.cs" />
     <Compile Include="Model.Protocol\ProtocolSettings.cs" />
-    <Compile Include="Model\BotAggregator.cs" />
     <Compile Include="Model.Auth\AuthStorageEntry.cs" />
     <Compile Include="Model.Profiles\ChartStorageEntry.cs" />
     <Compile Include="Model.Profiles\PluginStorageEntry.cs" />

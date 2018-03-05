@@ -40,5 +40,7 @@ namespace TickTrader.BotTerminal
         public PluginIdProvider IdProvider => _idProvider;
         public IReadOnlyList<ISymbolInfo> Symbols { get; private set; }
         public SymbolMappingsCollection SymbolMappings => _symbolMappings;
+
+        IPluginIdProvider IAlgoSetupMetadata.IdProvider => _idProvider;
     }
 }

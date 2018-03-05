@@ -374,11 +374,11 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
                 <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt" IsEnabled="{Binding IsCreationMode}"
-                     Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
+                     Text="{Binding Setup.InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
                 <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
-                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Permissions.TradeAllowed}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Setup.AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
                 <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
-                <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Setup.Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             </Grid>
             <Grid Name="CommonParams" Grid.Row="2" Grid.Column="0">
                 <Grid.RowDefinitions>
@@ -418,6 +418,28 @@
                 <Setter TargetName="BotParams" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="PluginSelection" TargetType="Control">
+        <Grid Margin="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0" Grid.Column="0" Content="Run on" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Local instance" IsEnabled="False" />
+            <Label Grid.Row="2" Grid.Column="0" Content="Account" />
+            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="Current account" IsEnabled="False" />
+            <Label Grid.Row="4" Grid.Column="0" Content="Bot" />
+            <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Text="Selected plugin" IsEnabled="False" />
+        </Grid>
     </ControlTemplate>
 
     <!-- Old Template  -->
@@ -509,11 +531,14 @@
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
-                <StackPanel IsEnabled="{Binding IsEnabled}">
-                    <GroupBox Name="DescriptionGroup" Header="Description">
-                        <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="4"/>
+                <StackPanel IsEnabled="{Binding PluginIsStopped}">
+                    <GroupBox Name="PluginGroup" Header="Plugin" Margin="4" Visibility="Collapsed">
+                        <Control Template="{StaticResource PluginSelection}" />
                     </GroupBox>
-                    <GroupBox Name="GeneralGroup" Header="General" Margin="4">
+                    <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
+                        <TextBlock TextWrapping="Wrap" Text="{Binding Setup.Descriptor.Description}" Margin="3"/>
+                    </GroupBox>
+                    <GroupBox Name="GeneralGroup" Header="General" Margin="4" Visibility="Collapsed">
                         <Control Template="{StaticResource GeneralSettings}" />
                     </GroupBox>
                     <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
@@ -577,13 +602,17 @@
             <DataTrigger Binding="{Binding Setup.HasDescription}" Value="False">
                 <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
+            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
+                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot"/>
-                    <Condition Binding="{Binding IsEditMode}" Value="False"/>
+                    <Condition Binding="{Binding Setup.IsEditMode}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
                     <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
+                    <Setter TargetName="PluginGroup" Property="Visibility" Value="Visible"/>
                 </MultiDataTrigger.Setters>
             </MultiDataTrigger>
         </ControlTemplate.Triggers>

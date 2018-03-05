@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<BotControlViewModel> Closed = delegate { };
 
-        public bool IsStarted { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopping; } }
+        public bool IsStarted => Model.IsRunning;
         public bool CanBeClosed { get { return Model.State == BotModelStates.Stopped; } }
         public bool CanStartStop { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped; } }
         public bool CanStart => Model.State == BotModelStates.Stopped;
@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
         {
             if (dialogResult)
             {
-                Model.Configurate(setupVM.Setup, setupVM.Permissions, setupVM.Isolated);
+                Model.Configurate(setupVM.Setup);
             }
         }
 

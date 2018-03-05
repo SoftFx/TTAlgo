@@ -5,11 +5,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginIdProvider
+    internal class PluginIdProvider : IPluginIdProvider
     {
         private BotIdHelper _botIdHelper;
         private Dictionary<string, int> _bots;

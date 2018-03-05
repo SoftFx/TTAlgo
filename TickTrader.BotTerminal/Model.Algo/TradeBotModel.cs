@@ -21,6 +21,7 @@ namespace TickTrader.BotTerminal
         public string CustomStatus { get; private set; }
         public bool StateViewOpened { get; set; }
         public SettingsStorage<WindowStorageModel> StateViewSettings { get; private set; }
+        public bool IsRunning => State == BotModelStates.Running || State == BotModelStates.Stopping;
 
 
         public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
@@ -86,12 +87,12 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
-        new internal void Configurate(PluginSetupModel setup, PluginPermissions permissions, bool isolated)
+        new internal void Configurate(PluginSetupModel setup)
         {
             if (State != BotModelStates.Stopped)
                 return;
 
-            base.Configurate(setup, permissions, isolated);
+            base.Configurate(setup);
 
             ConfigurationChanged(this);
         }

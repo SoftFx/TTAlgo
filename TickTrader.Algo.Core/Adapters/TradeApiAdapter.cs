@@ -13,9 +13,9 @@ namespace TickTrader.Algo.Core
         private AccountAccessor account;
         private PluginLoggerAdapter logger;
         private string _isolationTag;
-        private ITradePermissions _permissions;
+        private IPluginPermissions _permissions;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
+        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger, IPluginPermissions tradePermissions, string isolationTag)
         {
             this.api = api;
             this.symbols = symbols;

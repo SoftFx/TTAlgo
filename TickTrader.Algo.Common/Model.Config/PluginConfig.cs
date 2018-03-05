@@ -24,6 +24,12 @@ namespace TickTrader.Algo.Common.Model.Config
 
         [DataMember(Name = "mapping")]
         public string SelectedMapping { get; set; }
+
+        [DataMember(Name = "instanceId")]
+        public string InstanceId { get; set; }
+
+        [DataMember(Name = "permissions")]
+        public PluginPermissions Permissions { get; set; }
     }
 
 
@@ -36,13 +42,5 @@ namespace TickTrader.Algo.Common.Model.Config
     [DataContract(Namespace = "")]
     public class TradeBotConfig : PluginConfig
     {
-        [DataMember(Name = "instanceId")]
-        public string InstanceId { get; set; }
-
-        [DataMember(Name = "isolated")]
-        public bool Isolated { get; set; }
-
-        [DataMember(Name = "permissions")]
-        public PluginPermissions Permissions { get; set; }
     }
 }

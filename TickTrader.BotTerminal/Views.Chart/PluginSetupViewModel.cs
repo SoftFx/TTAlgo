@@ -19,69 +19,50 @@ namespace TickTrader.BotTerminal
         private Logger _logger;
         private bool _dlgResult;
         private PluginCatalog _catalog;
-        private IAlgoSetupFactory _setupFactory;
-        private PluginIdProvider _idProvider;
-        private string _instanceId;
         private TradeBotModel _bot;
+        private bool _runBot;
 
-        public enum PluginSetupMode
-        {
-            New,
-            Edit
-        }
 
-        public bool IsEditMode { get { return Mode == PluginSetupMode.Edit; } }
-        public bool IsCreationMode { get { return Mode == PluginSetupMode.New; } }
-        public PluginSetupMode Mode { get; private set; }
-        public bool IsEnabled { get { return _bot == null ? true : _bot.State == BotModelStates.Stopped; } }
-        public PluginSetupModel Setup { get; private set; }
+        public PluginSetupModel Setup { get; }
+
         public PluginCatalogItem PluginItem { get; private set; }
-        public bool CanOk { get { return Setup.IsValid && IsInstanceIdValid && IsEnabled; } }
-        public bool SetupCanBeSkipped => Setup.IsEmpty && Setup.Descriptor.IsValid && Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot;
 
-        public string InstanceId
+        public bool PluginIsStopped => _bot == null ? true : _bot.State == BotModelStates.Stopped;
+
+        public bool CanOk => Setup.IsValid && PluginIsStopped;
+
+        public bool RunBot
         {
-            get { return _instanceId; }
+            get { return _runBot; }
             set
             {
-                _instanceId = value;
-                NotifyOfPropertyChange();
-                NotifyOfPropertyChange(nameof(IsInstanceIdValid));
-                Validate();
+                if (_runBot == value)
+                    return;
+
+                _runBot = value;
+                NotifyOfPropertyChange(nameof(RunBot));
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(PluginItem.Descriptor, InstanceId);
-        public bool Isolated { get; set; }
-        public bool RunBot { get; set; }
-        public PluginPermissions Permissions { get; set; }
 
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
 
-        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
-        public IReadOnlyList<ISymbolInfo> Symbols { get; set; }
 
         private PluginSetupViewModel()
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
-            Isolated = true;
             RunBot = true;
-            Permissions = new PluginPermissions();
         }
 
         public PluginSetupViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupFactory setupFactory) : this()
         {
-            Mode = PluginSetupMode.New;
-            DisplayName = $"Setting New Bot - {item.DisplayName}";
-            PluginItem = item;
-            _setupFactory = setupFactory;
             _catalog = algoEnv.Repo;
-            _idProvider = algoEnv.IdProvider;
-            Symbols = algoEnv.Symbols;
+            PluginItem = item;
+            Setup = setupFactory.CreateSetup(item.Ref);
+
+            DisplayName = $"Setting New Bot - {item.DisplayName}";
 
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
-
-            _instanceId = _idProvider.GeneratePluginId(PluginItem.Descriptor);
 
             Init();
         }
@@ -89,23 +70,15 @@ namespace TickTrader.BotTerminal
         public PluginSetupViewModel(TradeBotModel bot) : this()
         {
             _bot = bot;
-            Mode = PluginSetupMode.Edit;
+            Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupModel;
+
             DisplayName = $"Settings - {bot.InstanceId}";
-            Setup = bot.Setup.Clone() as TradeBotSetupModel;
-            InstanceId = bot.InstanceId;
-            Permissions = new PluginPermissions { TradeAllowed = bot.Permissions.TradeAllowed };
-            Isolated = bot.Isolated;
 
             _bot.StateChanged += BotStateChanged;
 
             Init();
         }
 
-        private void BotStateChanged(TradeBotModel obj)
-        {
-            NotifyOfPropertyChange(nameof(IsEnabled));
-            NotifyOfPropertyChange(nameof(CanOk));
-        }
 
         public void Reset()
         {
@@ -115,7 +88,6 @@ namespace TickTrader.BotTerminal
         public void Ok()
         {
             _dlgResult = true;
-
             TryClose();
         }
 
@@ -132,14 +104,15 @@ namespace TickTrader.BotTerminal
             Dispose();
         }
 
+
+        private void BotStateChanged(TradeBotModel obj)
+        {
+            NotifyOfPropertyChange(nameof(PluginIsStopped));
+            NotifyOfPropertyChange(nameof(CanOk));
+        }
+
         private void Init()
         {
-            if (Setup != null)
-                Setup.ValidityChanged -= Validate;
-
-            if (Mode == PluginSetupMode.New)
-                Setup = _setupFactory.CreateSetup(PluginItem.Ref);
-
             Setup.ValidityChanged += Validate;
             Validate();
 
@@ -147,8 +120,6 @@ namespace TickTrader.BotTerminal
                  + Setup.Parameters.Count() + " params "
                  + Setup.Inputs.Count() + " inputs "
                  + Setup.Outputs.Count() + " outputs ");
-
-            NotifyOfPropertyChange(nameof(Setup));
         }
 
         private void Validate()
@@ -179,6 +150,8 @@ namespace TickTrader.BotTerminal
                 _catalog.AllPlugins.Updated -= AllPlugins_Updated;
             if (_bot != null)
                 _bot.StateChanged -= BotStateChanged;
+            if (Setup != null)
+                Setup.ValidityChanged -= Validate;
         }
     }
 }
