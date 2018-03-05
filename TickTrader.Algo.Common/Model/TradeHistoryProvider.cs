@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
@@ -44,7 +45,7 @@ namespace TickTrader.Algo.Common.Model
             _updateQueue.Enqueue(report);
         }
 
-        private async Task GetTradeHistory(Channel<TradeReportEntity> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders)
+        private async void GetTradeHistory(Channel<TradeReportEntity> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders)
         {
             try
             {
@@ -123,7 +124,7 @@ namespace TickTrader.Algo.Common.Model
 
             internal async Task Init()
             {
-                AlgoAdapter = new AlgoHistoryProvider(); 
+                AlgoAdapter = new CrossDomainAapter(Actor);
                 var reportStream = Channel.NewOutput<TradeReportEntity>(1000);
                 await Actor.OpenChannel(reportStream, (a, c) => a._listeners.Add(_ref, c));
                 ReadUpdatesLoop(reportStream);
@@ -160,24 +161,36 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private class AlgoHistoryProvider : CrossDomainObject, ITradeHistoryProvider
+        private class CrossDomainAapter : CrossDomainObject, ITradeHistoryProvider
         {
+            private Ref<TradeHistoryProvider> _ref;
+
+            public CrossDomainAapter(Ref<TradeHistoryProvider> historyRef)
+            {
+                _ref = historyRef;
+            }
+
             IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(bool skipCancelOrders)
             {
-                throw new NotImplementedException();
-                //return GetTradeHistory(skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
+                return GetTradeHistoryInternal(null, null, skipCancelOrders)
+                    .AsCrossDomain(r => (TradeReport)r);
             }
 
             IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
             {
-                throw new NotImplementedException();
-                //return GetTradeHistory(from, to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
+                return GetTradeHistoryInternal(from, to, skipCancelOrders)
+                    .AsCrossDomain(r => (TradeReport)r);
             }
 
             IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime to, bool skipCancelOrders)
             {
-                throw new NotImplementedException();
-                //return GetTradeHistory(to, skipCancelOrders).Select(r => (TradeReport[])r).AsCrossDomain();
+                return GetTradeHistoryInternal(null, to, skipCancelOrders)
+                    .AsCrossDomain(r => (TradeReport)r);
+            }
+
+            private BlockingChannel<TradeReportEntity> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            {
+                return _ref.OpenBlockingChannel<TradeHistoryProvider, TradeReportEntity>(ChannelDirections.Out, 1000, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders));
             }
         }
     }

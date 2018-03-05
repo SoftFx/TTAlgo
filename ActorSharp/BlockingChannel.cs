@@ -8,24 +8,37 @@ namespace ActorSharp
     public class BlockingChannel<T>
     {
         private object _writeLock = new object();
+        private object _readLock = new object();
         private Reader _reader;
+        private Writer _writer;
         private LocalPage<T> _writePage1 = new LocalPage<T>();
         private LocalPage<T> _writePage2 = new LocalPage<T>();
+        private LocalPage<T> _readPage;
+        private int _readIndex;
         private int maxPageSize;
         private bool _isClosed;
         private bool _isCloseCompleted;
+        private Exception _writerError;
 
         internal BlockingChannel(Channel<T> channel)
         {
             if (SynchronizationContext.Current == null)
                 throw new Exception("No synchroniztion context! Blocking channel should be constructed under actor context!");
 
-            if (channel.Dicrection != ChannelDirections.In)
-                throw new Exception("Only 'In' channels are supported by now!");
+            if (channel.Dicrection == ChannelDirections.Duplex)
+                throw new Exception("Duplex channels are not supported by now!");
 
             maxPageSize = channel.MaxPageSize;
-            _reader = new Reader(this);
-            channel.Init(_reader);
+            if (channel.Dicrection == ChannelDirections.In)
+            {
+                _reader = new Reader(this);
+                channel.Init(_reader);
+            }
+            else
+            {
+                _writer = new Writer(this, channel.MaxPageSize);
+                channel.Init(_writer);
+            }
         }
 
         public bool Write(T item)
@@ -72,7 +85,42 @@ namespace ActorSharp
 
         public bool Read(out T item)
         {
-            throw new NotImplementedException();
+            lock (_readLock)
+            {
+                WaitRead();
+
+                if (_readPage == null && _isClosed)
+                {
+                    item = default(T);
+                    return false;
+                }
+
+                item = _readPage[_readIndex++];
+
+                if (_readIndex == _readPage.Count)
+                    ReturnPage();
+
+                return !_isClosed;
+            }
+        }
+
+        public T[] ReadPage()
+        {
+            lock (_readLock)
+            {
+                WaitRead();
+
+                if (_readPage == null && _isClosed)
+                    return null;
+
+                var resultSize = _readPage.Count - _readIndex;
+                var result = new T[resultSize];
+                _readPage.CopyTo(_readIndex, result, 0, resultSize);
+
+                ReturnPage();
+
+                return result;
+            }
         }
 
         public void ClearQueue()
@@ -82,24 +130,68 @@ namespace ActorSharp
 
         public void Close(Exception ex = null)
         {
-            lock (_writeLock)
+            CloseWriter(ex);
+            ClosedReader(ex);
+        }
+
+        #region Writer interop
+
+        private void OnPageWrite(LocalPage<T> page)
+        {
+            lock (_readLock)
+            {
+                if (_readPage != null)
+                    throw new Exception("Channel synchronization failure!");
+
+                _readPage = page;
+                _isClosed = page.Last;
+                _writerError = page.Error;
+                Monitor.PulseAll(_readLock);
+            }
+        }
+
+        private void WaitRead()
+        {
+            while (_readPage == null && !_isClosed)
+                Monitor.Wait(_readLock);
+        }
+
+        private void ReturnPage()
+        {
+            _readPage.Clear();
+            _writer.PostMessage(_readPage);
+            _readPage = null;
+            _readIndex = 0;
+        }
+
+        private void CloseWriter(Exception ex)
+        {
+            if (_reader == null)
+                return;
+
+            lock (_readLock)
             {
                 if (_isClosed)
                 {
-                    while (!_isCloseCompleted)
-                        Monitor.Wait(_writeLock);
+                    _isClosed = true;
+
+                    _readPage.Clear();
+                    _readPage = null;
+                    _readIndex = 0;
+
+                    var closeReq = new CloseWriterRequest(ex);
+                    _reader.PostMessage(closeReq);
+
+                    Monitor.PulseAll(_readLock);
+
                     return;
                 }
-
-                _isClosed = true;
-
-                if (_writePage1.Count == 0 && _writePage2.Count == 0)
-                    SendNextPage(); // send empty page 
-
-                while (!_isCloseCompleted)
-                    Monitor.Wait(_writeLock);
             }
         }
+
+        #endregion
+
+        #region Reader interop
 
         private void WaitWrite()
         {
@@ -147,6 +239,32 @@ namespace ActorSharp
             _reader.PostMessage(pageToSend);
             Monitor.PulseAll(_writeLock);
         }
+
+        private void ClosedReader(Exception ex)
+        {
+            if (_reader == null)
+                return;
+
+            lock (_writeLock)
+            {
+                if (_isClosed)
+                {
+                    while (!_isCloseCompleted)
+                        Monitor.Wait(_writeLock);
+                    return;
+                }
+
+                _isClosed = true;
+
+                if (_writePage1.Count == 0 && _writePage2.Count == 0)
+                    SendNextPage(); // send empty page 
+
+                while (!_isCloseCompleted)
+                    Monitor.Wait(_writeLock);
+            }
+        }
+
+        #endregion
 
         private class Reader : ActorPart, IChannelReader<T>, IAwaiter<bool>
         {
@@ -225,6 +343,165 @@ namespace ActorSharp
                     toCall();
                 }
             }
+        }
+
+        private class Writer : ActorPart, IChannelWriter<T>, IAwaitable<bool>, IAwaiter<bool>, IAwaitable, IAwaiter
+        {
+            private BlockingChannel<T> _src;
+            private LocalPage<T> _queuePage = new LocalPage<T>();
+            private LocalPage<T> _cachedPage = new LocalPage<T>();
+            private bool _isClosed;
+            private Action _callback;
+            private int _confirmationCounter;
+            private int _maxPageSize;
+
+            private bool IsCahnnelFree => _cachedPage != null;
+
+            public Writer(BlockingChannel<T> src, int pageSize)
+            {
+                _src = src;
+                _maxPageSize = pageSize;
+            }
+
+            public IAwaitable<bool> Write(T item)
+            {
+                CheckSync();
+
+                if (!_isClosed)
+                {
+                    _queuePage.Add(item);
+                    TrySendPage();
+                }
+
+                return this;
+            }
+
+            public void Clear()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IAwaitable Close(Exception ex = null)
+            {
+                CheckSync();
+
+                if (!_isClosed)
+                {
+                    _isClosed = true;
+                    _queuePage.Last = true;
+                    _queuePage.Error = ex;
+                    _confirmationCounter = 1;
+                    TrySendPage();
+                }
+
+                return this;
+            }
+
+            protected override void ProcessMessage(object message)
+            {
+                var page = message as LocalPage<T>;
+
+                if (page != null)
+                {
+                    if (_cachedPage != null || page.Count > 0)
+                        throw new Exception("Channel synchronization failure!");
+
+                    _cachedPage = page; // page is returned
+
+                    if (_queuePage.Count > 0 || _confirmationCounter > 0)
+                        SendPage();
+                }
+                else if (message is CloseWriterRequest)
+                {
+                    _isClosed = true;
+                    _queuePage.Clear();
+
+                    var toInvoke = _callback;
+                    _callback = null;
+                    toInvoke?.Invoke();
+                }
+                else
+                    throw new Exception("Unsupported message!");
+            }
+
+            private void CheckSync()
+            {
+                #region DEBUG
+                if (_callback != null || _confirmationCounter > 0)
+                    throw new InvalidOperationException("Channel is busy with another async operation!");
+                #endregion
+            }
+
+            private void TrySendPage()
+            {
+                if (IsCahnnelFree)
+                    SendPage();
+            }
+
+            private void SendPage()
+            {
+                _src.OnPageWrite(_queuePage);
+
+                _queuePage = _cachedPage;
+                _cachedPage = null;
+
+                if (_confirmationCounter == 0 || --_confirmationCounter == 0)
+                {
+                    var toInvoke = _callback;
+                    _callback = null;
+                    toInvoke?.Invoke();
+                }
+            }
+
+            #region IAwaitable<bool>
+
+            public bool IsCompleted => _confirmationCounter == 0 && _queuePage.Count < _maxPageSize; // read
+
+            public IAwaitable<bool> ConfirmRead()
+            {
+                CheckSync();
+
+                #if DEBUG
+                if (_confirmationCounter > 0)
+                    throw new Exception("Channel is already confirming read!");
+                #endif
+
+                _confirmationCounter = 2;
+                TrySendPage();
+                return this;
+            }
+
+            public IAwaiter<bool> GetAwaiter()
+            {
+                return this;
+            }
+
+            public bool GetResult()
+            {
+                return !_isClosed;
+            }
+
+            public void OnCompleted(Action continuation)
+            {
+                _callback = continuation;
+            }
+
+            #endregion
+
+            #region IAwaitable
+
+            bool IAwaiter.IsCompleted => _queuePage.Count == 0; // close
+
+            IAwaiter IAwaitable.GetAwaiter()
+            {
+                return this;
+            }
+
+            void IAwaiter.GetResult()
+            {
+            }
+
+            #endregion
         }
     }
 }

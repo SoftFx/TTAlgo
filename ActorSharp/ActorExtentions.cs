@@ -17,5 +17,18 @@ namespace ActorSharp
 
             return new LocalRef<TActor>(actor, actor.Context);
         }
+
+        public static BlockingChannel<TData> OpenBlockingChannel<TActor, TData>(this Ref<TActor> actor, ChannelDirections direction, int pageSize, Action<TActor, Channel<TData>> actorMethod)
+        {
+            var callTask = actor.Call(a =>
+            {
+                var actorSide = new Channel<TData>(direction, pageSize);
+                var handlerSide = new BlockingChannel<TData>(actorSide);
+                actorMethod(a, actorSide);
+                return handlerSide;
+            });
+
+            return callTask.Result;
+        }
     }
 }

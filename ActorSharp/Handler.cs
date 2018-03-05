@@ -47,15 +47,12 @@ namespace ActorSharp
 
         protected BlockingChannel<T> OpenInputChannel<T>(int pageSize, Action<TActor, Channel<T>> actorMethod)
         {
-            var callTask = Actor.Call(a =>
-            {
-                var actorSide = new Channel<T>(ChannelDirections.In, pageSize);
-                var handlerSide = new BlockingChannel<T>(actorSide);
-                actorMethod(a, actorSide);
-                return handlerSide;
-            });
+            return Actor.OpenBlockingChannel(ChannelDirections.In, pageSize, actorMethod);
+        }
 
-            return callTask.Result;
+        protected BlockingChannel<T> OpenOutputChannel<T>(Action<TActor, Channel<T>> actorMethod)
+        {
+            return Actor.OpenBlockingChannel(ChannelDirections.Out, 10, actorMethod);
         }
     }
 }
