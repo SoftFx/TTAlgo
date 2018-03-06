@@ -33,15 +33,15 @@ namespace TickTrader.Algo.Ext
     }
 
 
-    [Reduction("Forex")]
+    [Reduction("Average")]
     public class QuoteForexBarReduction : QuoteToBarReduction
     {
         public void Reduce(Quote quote, IBarWriter result)
         {
             result.Open = (quote.Ask + quote.Bid) / 2;
             result.Close = (quote.Ask + quote.Bid) / 2;
-            result.High = quote.Ask;
-            result.Low = quote.Bid;
+            result.High = (quote.Ask + quote.Bid) / 2;
+            result.Low = (quote.Ask + quote.Bid) / 2;
             result.Volume = 1;
         }
     }

@@ -49,6 +49,10 @@ namespace TickTrader.Algo.Api
         public string Category { get; set; }
         public string Version { get; set; }
         public string Description { get; set; }
+        /// <summary>
+        /// Defines whether MainSymbol setup should be shown during bot setup. True by default for bots
+        /// </summary>
+        public bool SetupMainSymbol { get; set; }
     }
 
     [Serializable]
@@ -65,11 +69,6 @@ namespace TickTrader.Algo.Api
         {
             SetupMainSymbol = true;
         }
-
-        /// <summary>
-        /// Defines whether MainSymbol setup should be shown during bot setup. True by default
-        /// </summary>
-        public bool SetupMainSymbol { get; set; }
     }
 
     [Serializable]

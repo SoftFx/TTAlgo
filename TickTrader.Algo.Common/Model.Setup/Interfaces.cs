@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -17,6 +18,17 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         IPluginIdProvider IdProvider { get; }
     }
+
+
+    public interface IAlgoSetupContext
+    {
+        TimeFrames DefaultTimeFrame { get; }
+
+        string DefaultSymbolCode { get; }
+
+        string DefaultMapping { get; }
+    }
+
 
     public interface IPluginIdProvider
     {

@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
     public enum SelectableChartTypes { Candle, OHLC, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
     public enum TimelineTypes { Real, Uniform }
 
-    internal abstract class ChartModelBase : PropertyChangedBase, IAlgoSetupFactory, IDisposable, IAlgoPluginHost
+    internal abstract class ChartModelBase : PropertyChangedBase, IDisposable, IAlgoPluginHost, IAlgoSetupContext
     {
         private Logger logger;
         private enum States { Idle, LoadingData, Online, Stopping, Closed, Faulted }
@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
             stateController.AddTransition(States.Stopping, Events.Stopped, States.Idle);
             stateController.AddTransition(States.Stopping, () => isConnected && !_isDisposed, States.LoadingData);
 
-            stateController.OnEnter(States.LoadingData, ()=> Update(CancellationToken.None));
+            stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
             stateController.OnEnter(States.Online, StartIndicators);
             stateController.OnEnter(States.Stopping, StopIndicators);
 
@@ -231,8 +231,6 @@ namespace TickTrader.BotTerminal
             return indicatorNextId++;
         }
 
-        protected abstract PluginSetupModel CreateSetup(AlgoPluginRef catalogItem);
-
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
@@ -362,11 +360,6 @@ namespace TickTrader.BotTerminal
             stateController.PushEvent(Events.Stopped);
         }
 
-        PluginSetupModel IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
-        {
-            return CreateSetup(catalogItem);
-        }
-
         #region IAlgoPluginHost
 
         void IAlgoPluginHost.Lock()
@@ -408,6 +401,17 @@ namespace TickTrader.BotTerminal
         public event System.Action StartEvent = delegate { };
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
         public event System.Action Connected;
+
+        #endregion
+
+
+        #region IAlgoSetupContext
+
+        Api.TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
+
+        string IAlgoSetupContext.DefaultSymbolCode => SymbolCode;
+
+        string IAlgoSetupContext.DefaultMapping => "Bid";
 
         #endregion
     }

@@ -147,6 +147,7 @@
                     </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
                         <DataTemplate DataType="{x:Type l:BotControlViewModel}">
+                            <!--<ContentControl cal:View.Model="{Binding}" />-->
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Style="{StaticResource LocalBotStateEllipseStyle}" />
                                 <TextBlock Text="{Binding Path=Model.InstanceId}" ToolTip="{Binding State}" />

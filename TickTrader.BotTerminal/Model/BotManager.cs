@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotManager : IAlgoSetupFactory
+    internal class BotManager : IAlgoSetupContext
     {
         private DynamicDictionary<string, TradeBotModel> _bots;
 
@@ -90,16 +90,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        #region IAlgoSetupFactory
+        #region IAlgoSetupContext
 
-        PluginSetupModel IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
-        {
-            switch (catalogItem.Descriptor.AlgoLogicType)
-            {
-                case AlgoTypes.Robot: return new TradeBotSetupModel(catalogItem, AlgoEnv, "EURUSD", TimeFrames.M1, "Bid");
-                default: throw new ArgumentException("Unknown plugin type");
-            }
-        }
+        TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrames.M1;
+
+        string IAlgoSetupContext.DefaultSymbolCode => "EURUSD";
+
+        string IAlgoSetupContext.DefaultMapping => "Bid";
 
         #endregion
     }

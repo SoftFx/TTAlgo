@@ -14,13 +14,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override bool AllowChangeMapping => true;
 
 
-        public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
-            string defaultMapping) : this(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, PluginSetupMode.New)
+        public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
+            : this(pRef, metadata, context, PluginSetupMode.New)
         {
         }
 
-        public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
-            string defaultMapping, PluginSetupMode mode) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, mode)
+        public TradeBotSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context, PluginSetupMode mode)
+            : base(pRef, metadata, context, mode)
         {
             Init();
         }
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override object Clone(PluginSetupMode mode)
         {
             var config = Save();
-            var setupModel = new TradeBotSetupModel(PluginRef, Metadata, DefaultSymbolCode, DefaultTimeFrame, DefaultMapping, mode);
+            var setupModel = new TradeBotSetupModel(PluginRef, Metadata, Context, mode);
             setupModel.Load(config);
             return setupModel;
         }

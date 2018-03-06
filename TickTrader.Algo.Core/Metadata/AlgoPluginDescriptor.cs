@@ -155,7 +155,6 @@ namespace TickTrader.Algo.Core.Metadata
             TradeBotAttribute botAttr = algoCustomType.GetCustomAttribute<TradeBotAttribute>(false);
             if (botAttr != null)
             {
-                SetupMainSymbol = botAttr.SetupMainSymbol;
                 InspectAlgoPluginAttr(algoCustomType, botAttr);
             }
         }
@@ -174,6 +173,7 @@ namespace TickTrader.Algo.Core.Metadata
                 Category = string.IsNullOrWhiteSpace(pluginAttr.Category) ? "Misc" : pluginAttr.Category;
                 Version = pluginAttr.Version;
                 Description = pluginAttr.Description;
+                SetupMainSymbol = pluginAttr.SetupMainSymbol;
             }
         }
 

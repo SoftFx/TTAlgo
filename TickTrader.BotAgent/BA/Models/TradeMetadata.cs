@@ -9,13 +9,18 @@ namespace TickTrader.BotAgent.BA.Models
 {
     public class TradeMetadata : IAlgoSetupMetadata
     {
+        public ExtCollection Extentions { get; }
+
+        public IReadOnlyList<ISymbolInfo> Symbols { get; }
+
+        public SymbolMappingsCollection SymbolMappings { get; }
+
+        public IPluginIdProvider IdProvider { get; }
+
         public TradeMetadata(IEnumerable<ISymbolInfo> symbols)
         {
-            Extentions = new ExtCollection();
+            //Extentions = new ExtCollection();
             Symbols = symbols.ToList();
         }
-
-        public ExtCollection Extentions { get; private set; }
-        public IReadOnlyList<ISymbolInfo> Symbols { get; private set; }
     }
 }

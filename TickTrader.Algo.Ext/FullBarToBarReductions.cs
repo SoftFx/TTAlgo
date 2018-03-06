@@ -39,15 +39,15 @@ namespace TickTrader.Algo.Ext
     }
 
 
-    [Reduction("Forex")]
+    [Reduction("Average")]
     public class ForexBarReduction : FullBarToBarReduction
     {
         public void Reduce(Bar bidBar, Bar askBar, IBarWriter result)
         {
             result.Open = (bidBar.Open + askBar.Open) / 2;
             result.Close = (bidBar.Close + askBar.Close) / 2;
-            result.High = askBar.High;
-            result.Low = bidBar.Low;
+            result.High = (bidBar.High + askBar.High) / 2;
+            result.Low = (bidBar.Low + askBar.Low) / 2;
             result.Volume = bidBar.Volume + askBar.Volume;
         }
     }

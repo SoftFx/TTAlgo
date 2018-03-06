@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol);
+            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Descriptor.SetupMainSymbol);
 
             periodActivatos.Add("MN1", () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add("W1", () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -278,7 +278,7 @@ namespace TickTrader.BotTerminal
             {
                 if (item.Descriptor.AlgoLogicType == AlgoTypes.Robot)
                 {
-                    _botManager.OpenBotSetup(item);
+                    _botManager.OpenBotSetup(item, Chart);
                     return;
                 }
 

@@ -3,6 +3,7 @@ using Machinarium.Qnil;
 using System;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.BotTerminal.Lib;
 
@@ -38,11 +39,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenBotSetup(PluginCatalogItem item)
+        public void OpenBotSetup(PluginCatalogItem item, IAlgoSetupContext context = null)
         {
             try
             {
-                var model = new PluginSetupViewModel(AlgoEnv, item, _botManagerModel);
+                var model = new PluginSetupViewModel(AlgoEnv, item, context ?? _botManagerModel);
                 _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 model.Closed += AlgoSetupClosed;
             }

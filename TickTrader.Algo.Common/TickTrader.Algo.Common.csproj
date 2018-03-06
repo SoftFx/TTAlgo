@@ -123,6 +123,7 @@
     <Compile Include="Model.Interop\SliceBuffer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
     <Compile Include="Model.Interop\SfxInterop.cs" />
+    <Compile Include="Model.Setup\AlgoSetupFactory.cs" />
     <Compile Include="Model.Setup\Extensions.cs" />
     <Compile Include="Model.Setup\IndicatorSetupModel.cs" />
     <Compile Include="Model.Setup\Inputs\MappedInputSetupModel.cs" />

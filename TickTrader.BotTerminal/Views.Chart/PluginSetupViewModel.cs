@@ -21,6 +21,7 @@ namespace TickTrader.BotTerminal
         private PluginCatalog _catalog;
         private TradeBotModel _bot;
         private bool _runBot;
+        private IAlgoSetupContext _setupContext;
 
 
         public PluginSetupModel Setup { get; }
@@ -44,6 +45,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public string PluginType { get; }
+
 
         public event Action<PluginSetupViewModel, bool> Closed = delegate { };
 
@@ -54,13 +57,16 @@ namespace TickTrader.BotTerminal
             RunBot = true;
         }
 
-        public PluginSetupViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupFactory setupFactory) : this()
+        public PluginSetupViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupContext setupContext) : this()
         {
             _catalog = algoEnv.Repo;
             PluginItem = item;
-            Setup = setupFactory.CreateSetup(item.Ref);
+            _setupContext = setupContext;
 
-            DisplayName = $"Setting New Bot - {item.DisplayName}";
+            Setup = AlgoSetupFactory.CreateSetup(item.Ref, algoEnv, setupContext);
+            PluginType = GetPluginTypeDisplayName(item.Descriptor);
+
+            DisplayName = $"Setting New {PluginType} - {item.DisplayName}";
 
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
@@ -71,6 +77,7 @@ namespace TickTrader.BotTerminal
         {
             _bot = bot;
             Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupModel;
+            PluginType = GetPluginTypeDisplayName(Setup.Descriptor);
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
@@ -152,6 +159,19 @@ namespace TickTrader.BotTerminal
                 _bot.StateChanged -= BotStateChanged;
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
+        }
+
+        private string GetPluginTypeDisplayName(AlgoPluginDescriptor descriptor)
+        {
+            switch (descriptor.AlgoLogicType)
+            {
+                case AlgoTypes.Robot:
+                    return "Bot";
+                case AlgoTypes.Indicator:
+                    return "Indicator";
+                default:
+                    return "PluginType";
+            }
         }
     }
 }

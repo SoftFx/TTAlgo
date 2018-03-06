@@ -1,5 +1,4 @@
-﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Config;
+﻿using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -14,13 +13,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override bool AllowChangeMapping => false;
 
 
-        public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
-            string defaultMapping) : this(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, PluginSetupMode.New)
+        public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
+            : this(pRef, metadata, context, PluginSetupMode.New)
         {
         }
 
-        public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, string defaultSymbolCode, TimeFrames defaultTimeFrame,
-            string defaultMapping, PluginSetupMode mode) : base(pRef, metadata, defaultSymbolCode, defaultTimeFrame, defaultMapping, mode)
+        public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context, PluginSetupMode mode)
+            : base(pRef, metadata, context, mode)
         {
             Init();
         }
@@ -29,7 +28,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override object Clone(PluginSetupMode mode)
         {
             var config = Save();
-            var setupModel = new IndicatorSetupModel(PluginRef, Metadata, DefaultSymbolCode, DefaultTimeFrame, DefaultMapping, mode);
+            var setupModel = new IndicatorSetupModel(PluginRef, Metadata, Context, mode);
             setupModel.Load(config);
             return setupModel;
         }
