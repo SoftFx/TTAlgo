@@ -21,6 +21,11 @@ namespace TickTrader.BotTerminal
             Order = order;
             PriceDigits = symbol?.PriceDigits ?? 5;
             ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
+
+            order.EssentialParametersChanged += o =>
+            {
+                NotifyOfPropertyChange(nameof(Price));
+            };
         }
 
         public OrderModel Order { get; private set; }

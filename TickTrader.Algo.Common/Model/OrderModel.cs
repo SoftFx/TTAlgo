@@ -521,6 +521,8 @@ namespace TickTrader.Algo.Common.Model
             this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
+
+            EssentialParametersChanged?.Invoke(this);
         }
 
         private decimal? AmountToLots(decimal? volume)

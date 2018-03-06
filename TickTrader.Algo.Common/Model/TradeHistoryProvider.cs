@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void TradeProxy_TradeTransactionReport(TradeReportEntity report)
         {
-            _updateQueue.Enqueue(report);
+            ContextInvoke(() => _updateQueue.Enqueue(report));
         }
 
         private async void GetTradeHistory(Channel<TradeReportEntity> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders)
