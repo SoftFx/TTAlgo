@@ -249,15 +249,20 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
+                        if (report.ImmediateOrCancel)
+                            return OnIocFilled(report);
+
                         if (report.LeavesVolume != 0)
                             return OnOrderUpdated(report, OrderExecAction.Filled);
-                        else if (Type != AccountTypes.Gross)
+
+                        if (Type != AccountTypes.Gross)
                             return OnOrderRemoved(report, OrderExecAction.Filled);
                     }
                     else if (report.OrderType == OrderType.Position)
                     {
                         if (report.OrderStatus == OrderStatus.PartiallyFilled)
                             return OnOrderUpdated(report, OrderExecAction.Closed);
+
                         if (report.OrderStatus == OrderStatus.Filled)
                             return OnOrderRemoved(report, OrderExecAction.Closed);
                     }
@@ -265,7 +270,8 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (Type == AccountTypes.Gross)
                             return MockMarkedFilled(report);
-                        else if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
+
+                        if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
                             return OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
@@ -276,6 +282,9 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
+            if (report.ImmediateOrCancel)
+                return null;
+
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.Added);
         }
 
@@ -283,6 +292,17 @@ namespace TickTrader.Algo.Common.Model
         {
             report.OrderType = OrderType.Position;
             return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.Added);
+        }
+
+        private OrderUpdateAction OnIocFilled(ExecutionReport report)
+        {
+            if (accType == AccountTypes.Cash)
+            {
+                report.OrderType = OrderType.Market;
+                return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
+            }
+            else
+                return OnOrderUpdated(report, OrderExecAction.Filled);
         }
 
         private OrderUpdateAction OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)

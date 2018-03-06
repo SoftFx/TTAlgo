@@ -395,6 +395,8 @@ namespace TickTrader.Algo.Common.Model
         public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
         public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
 
+        public OrderExecOptions ExecOptions { get; private set; }
+
         #endregion
 
         #region IOrderModel
@@ -463,7 +465,8 @@ namespace TickTrader.Algo.Common.Model
                 LastFillVolume = LastFillAmount,
                 Swap = (double)(Swap ?? 0),
                 Commission = (double)(Commission ?? 0),
-                Expiration = Expiration
+                Expiration = Expiration,
+                Options = ExecOptions
             };
         }
 
@@ -486,6 +489,7 @@ namespace TickTrader.Algo.Common.Model
             this.TakeProfit = record.TakeProfit;
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
+            this.ExecOptions = record.Options;
             //if (record.ImmediateOrCancel)
             //{
             //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -521,6 +525,9 @@ namespace TickTrader.Algo.Common.Model
             this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
+
+            if (report.ImmediateOrCancel)
+                ExecOptions = OrderExecOptions.ImmediateOrCancel;
 
             EssentialParametersChanged?.Invoke(this);
         }
