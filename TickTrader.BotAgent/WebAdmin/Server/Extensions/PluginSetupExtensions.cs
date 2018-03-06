@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
@@ -35,17 +36,20 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
         public static PluginConfig Parse(this PluginSetupDto setup)
         {
-            var barConfig = new BarBasedConfig()
+            var botConfig = new TradeBotConfig()
             {
+                TimeFrame = TimeFrames.M1,
                 MainSymbol = setup.Symbol,
-                PriceType = BarPriceType.Ask,
+                SelectedMapping = "Bid",
+                InstanceId = setup.InstanceId,
+                Permissions = setup.Permissions.Parse(),
             };
 
             var parameters = ParseParameters(setup);
 
-            barConfig.Properties.AddRange(parameters);
+            botConfig.Properties.AddRange(parameters);
 
-            return barConfig;
+            return botConfig;
         }
 
         private static IEnumerable<Property> ParseParameters(PluginSetupDto setup)
@@ -114,6 +118,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             var fileBytes = Convert.FromBase64String(base64Data);
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             System.IO.File.WriteAllBytes(filePath, fileBytes);
+        }
+
+        private static PluginPermissions Parse(this PermissionsDto permissions)
+        {
+            return new PluginPermissions
+            {
+                TradeAllowed = permissions.TradeAllowed,
+                Isolated = permissions.Isolated,
+            };
         }
     }
 }

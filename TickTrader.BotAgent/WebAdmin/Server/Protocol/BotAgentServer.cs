@@ -76,9 +76,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     bot => new BotModelEntity
                     {
                         InstanceId = bot.Id,
-                        Isolated = bot.Isolated,
                         State = ToProtocol.Convert(bot.State),
-                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed },
+                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
                         Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
                         Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
                     }).ToArray(),
@@ -153,9 +152,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     Item = new BotModelEntity
                     {
                         InstanceId = bot.Id,
-                        Isolated = bot.Isolated,
                         State = ToProtocol.Convert(bot.State),
-                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed },
+                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
                         Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
                         Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
                     }

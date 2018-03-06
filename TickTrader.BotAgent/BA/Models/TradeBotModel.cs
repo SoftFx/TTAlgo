@@ -7,9 +7,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.BotAgent.BA.Builders;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.Infrastructure;
@@ -33,29 +31,23 @@ namespace TickTrader.BotAgent.BA.Models
 
         public TradeBotModel(TradeBotModelConfig config)
         {
-            Id = config.InstanceId;
             Config = config.PluginConfig;
             PackageName = config.Plugin.PackageName;
-            Descriptor =  config.Plugin.DescriptorId;
-            Isolated = config.Isolated;
-            Permissions = config.Permissions;
+            Descriptor = config.Plugin.DescriptorId;
         }
 
         [DataMember(Name = "configuration")]
         public PluginConfig Config { get; private set; }
-        [DataMember(Name = "id")]
-        public string Id { get; private set; }
         [DataMember(Name = "package")]
         public string PackageName { get; private set; }
         [DataMember(Name = "descriptor")]
         public string Descriptor { get; private set; }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
-        [DataMember(Name = "isolated")]
-        public bool Isolated { get; private set; }
-        [DataMember(Name = "permissions")]
-        public PluginPermissions Permissions { get; private set; }
 
+
+        public string Id => Config.InstanceId;
+        public PluginPermissions Permissions => Config.Permissions;
         public BotStates State { get; private set; }
         public PackageModel Package { get; private set; }
         public Exception Fault { get; private set; }
@@ -77,9 +69,6 @@ namespace TickTrader.BotAgent.BA.Models
 
             _loggerFactory = logFactory;
             _log = _loggerFactory.CreateLogger<TradeBotModel>();
-
-            if (Permissions == null)
-                Permissions = new DefaultPermissionsBuilder().Build();
 
             _packageRepo = packageRepo;
             UpdatePackage();
@@ -105,8 +94,6 @@ namespace TickTrader.BotAgent.BA.Models
                 if (IsStopped())
                 {
                     Config = config.PluginConfig;
-                    Isolated = config.Isolated;
-                    Permissions = config.Permissions;
                     ConfigurationChanged?.Invoke(this);
                 }
                 else
@@ -269,17 +256,17 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 executor = _ref.CreateExecutor();
 
-                if (!(Config is BarBasedConfig))
+                if (!(Config is TradeBotConfig))
                     throw new Exception("Unsupported configuration!");
 
-                var setupModel = new BarBasedPluginSetup(_ref);
+                var setupModel = new TradeBotSetupModel(_ref, new SetupMetadata(_client.Symbols.Snapshot.Values), new SetupContext());
                 setupModel.Load(Config);
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
                 var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies.Snapshot, new SyncAdapter(_syncObj));
-                executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
-                executor.MainSymbolCode = setupModel.MainSymbol;
+                executor.InitBarStrategy(feedAdapter, Algo.Api.BarPriceType.Bid);
+                executor.MainSymbolCode = setupModel.MainSymbol.Name;
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
                 executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(1024);
@@ -290,7 +277,6 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.TradeHistoryProvider = new TradeHistoryProvider(_client.Connection);
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
-                executor.Isolated = Isolated;
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
                 _botListener = new BotListenerProxy(executor, () => StopInternal(null, true), _botLog);
@@ -390,7 +376,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void Abort()
         {
-            lock(_syncObj)
+            lock (_syncObj)
             {
                 if (State == BotStates.Stopping)
                     executor?.Abort();

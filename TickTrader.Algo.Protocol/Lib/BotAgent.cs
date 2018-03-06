@@ -3957,6 +3957,13 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetBool(offset_ + 0); }
         }
         
+        public bool Isolated
+        {
+            set { data_.SetBool(offset_ + 1, value); }
+            
+            get { return data_.GetBool(offset_ + 1); }
+        }
+        
         MessageData data_;
         int offset_;
     }
@@ -3971,7 +3978,7 @@ namespace SoftFX.Net.BotAgent
         
         public void New()
         {
-            data_.NewGroup(offset_, 1);
+            data_.NewGroup(offset_, 2);
         }
         
         public bool HasValue
@@ -3989,6 +3996,13 @@ namespace SoftFX.Net.BotAgent
             set { data_.SetBool(GetDataOffset() + 0, value); }
             
             get { return data_.GetBool(GetDataOffset() + 0); }
+        }
+        
+        public bool Isolated
+        {
+            set { data_.SetBool(GetDataOffset() + 1, value); }
+            
+            get { return data_.GetBool(GetDataOffset() + 1); }
         }
         
         int GetDataOffset()
@@ -4015,7 +4029,7 @@ namespace SoftFX.Net.BotAgent
         
         public void Resize(int length)
         {
-            data_.ResizeArray(offset_, length, 1);
+            data_.ResizeArray(offset_, length, 2);
         }
         
         public int Length
@@ -4027,7 +4041,7 @@ namespace SoftFX.Net.BotAgent
         {
             get
             {
-                int itemOffset = data_.GetArrayItemOffset(offset_, index, 1);
+                int itemOffset = data_.GetArrayItemOffset(offset_, index, 2);
                 
                 return new PluginPermissions(data_, itemOffset);
             }
@@ -4206,23 +4220,16 @@ namespace SoftFX.Net.BotAgent
             data_.WriteUString(offset_ + 0, stream);
         }
         
-        public bool Isolated
-        {
-            set { data_.SetBool(offset_ + 8, value); }
-            
-            get { return data_.GetBool(offset_ + 8); }
-        }
-        
         public BotState State
         {
-            set { data_.SetUInt(offset_ + 9, (uint) value); }
+            set { data_.SetUInt(offset_ + 8, (uint) value); }
             
-            get { return (BotState) data_.GetUInt(offset_ + 9); }
+            get { return (BotState) data_.GetUInt(offset_ + 8); }
         }
         
         public PluginPermissions Permissions
         {
-            get { return new PluginPermissions(data_, offset_ + 13); }
+            get { return new PluginPermissions(data_, offset_ + 12); }
         }
         
         public AccountKey Account
@@ -4294,23 +4301,16 @@ namespace SoftFX.Net.BotAgent
             data_.WriteUString(GetDataOffset() + 0, stream);
         }
         
-        public bool Isolated
-        {
-            set { data_.SetBool(GetDataOffset() + 8, value); }
-            
-            get { return data_.GetBool(GetDataOffset() + 8); }
-        }
-        
         public BotState State
         {
-            set { data_.SetUInt(GetDataOffset() + 9, (uint) value); }
+            set { data_.SetUInt(GetDataOffset() + 8, (uint) value); }
             
-            get { return (BotState) data_.GetUInt(GetDataOffset() + 9); }
+            get { return (BotState) data_.GetUInt(GetDataOffset() + 8); }
         }
         
         public PluginPermissions Permissions
         {
-            get { return new PluginPermissions(data_, GetDataOffset() + 13); }
+            get { return new PluginPermissions(data_, GetDataOffset() + 12); }
         }
         
         public AccountKey Account
@@ -8234,11 +8234,19 @@ namespace SoftFX.Net.BotAgent
             TradeAllowed.Optional = false;
             TradeAllowed.Repeatable = false;
             
+            FieldInfo Isolated = new FieldInfo();
+            Isolated.Name = "Isolated";
+            Isolated.Offset = 1;
+            Isolated.Type = FieldType.Bool;
+            Isolated.Optional = false;
+            Isolated.Repeatable = false;
+            
             PluginPermissions = new GroupInfo();
             PluginPermissions.Name = "PluginPermissions";
-            PluginPermissions.MinSize = 1;
-            PluginPermissions.Fields = new FieldInfo[1];
+            PluginPermissions.MinSize = 2;
+            PluginPermissions.Fields = new FieldInfo[2];
             PluginPermissions.Fields[0] = TradeAllowed;
+            PluginPermissions.Fields[1] = Isolated;
         }
         
         static void ConstructBotState()
@@ -8293,16 +8301,9 @@ namespace SoftFX.Net.BotAgent
             InstanceId.Optional = false;
             InstanceId.Repeatable = false;
             
-            FieldInfo Isolated = new FieldInfo();
-            Isolated.Name = "Isolated";
-            Isolated.Offset = 8;
-            Isolated.Type = FieldType.Bool;
-            Isolated.Optional = false;
-            Isolated.Repeatable = false;
-            
             FieldInfo State = new FieldInfo();
             State.Name = "State";
-            State.Offset = 9;
+            State.Offset = 8;
             State.Type = FieldType.Enum;
             State.EnumInfo = Info.BotState;
             State.Optional = false;
@@ -8310,7 +8311,7 @@ namespace SoftFX.Net.BotAgent
             
             FieldInfo Permissions = new FieldInfo();
             Permissions.Name = "Permissions";
-            Permissions.Offset = 13;
+            Permissions.Offset = 12;
             Permissions.Type = FieldType.Group;
             Permissions.GroupInfo = Info.PluginPermissions;
             Permissions.Optional = false;
@@ -8335,13 +8336,12 @@ namespace SoftFX.Net.BotAgent
             BotModel = new GroupInfo();
             BotModel.Name = "BotModel";
             BotModel.MinSize = 46;
-            BotModel.Fields = new FieldInfo[6];
+            BotModel.Fields = new FieldInfo[5];
             BotModel.Fields[0] = InstanceId;
-            BotModel.Fields[1] = Isolated;
-            BotModel.Fields[2] = State;
-            BotModel.Fields[3] = Permissions;
-            BotModel.Fields[4] = Account;
-            BotModel.Fields[5] = Plugin;
+            BotModel.Fields[1] = State;
+            BotModel.Fields[2] = Permissions;
+            BotModel.Fields[3] = Account;
+            BotModel.Fields[4] = Plugin;
         }
         
         static void ConstructConnectionState()
@@ -9069,7 +9069,7 @@ namespace SoftFX.Net.BotAgent
             BotAgent = new ProtocolInfo();
             BotAgent.Name = "BotAgent";
             BotAgent.MajorVersion = 1;
-            BotAgent.MinorVersion = 2;
+            BotAgent.MinorVersion = 3;
             BotAgent.AddMessageInfo(LoginRequest);
             BotAgent.AddMessageInfo(LoginReport_1);
             BotAgent.AddMessageInfo(LoginReport);

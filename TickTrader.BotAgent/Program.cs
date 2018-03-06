@@ -249,10 +249,10 @@ namespace TickTrader.BotAgent
 
                                 TradeBotModelConfig botCfg = new TradeBotModelConfig
                                 {
-                                    InstanceId = botId,
+                                    //InstanceId = botId,
                                     Plugin = botToAdd.Id,
                                     PluginConfig = botConfig,
-                                    Isolated = false
+                                    //Isolated = false
                                 };
 
                                 acc.AddBot(botCfg);
@@ -341,9 +341,9 @@ namespace TickTrader.BotAgent
 
         private static PluginConfig SetupBot(AlgoPluginDescriptor descriptor)
         {
-            var config = new BarBasedConfig();
+            var config = new TradeBotConfig();
 
-            config.PriceType = BarPriceType.Bid;
+            //config.PriceType = BarPriceType.Bid;
             config.MainSymbol = CommandUi.InputString("symbol");
 
             foreach (var prop in descriptor.AllProperties)

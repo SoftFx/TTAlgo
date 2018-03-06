@@ -9,8 +9,6 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using System.Net;
-using TickTrader.BotAgent.BA.Builders;
-using TickTrader.Algo.Core;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -194,12 +192,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 
                 var config = new TradeBotModelConfig
                 {
-                    InstanceId = setup.InstanceId,
                     Account = new AccountKey(setup.Account.Login, setup.Account.Server),
                     Plugin = new PluginKey(setup.PackageName, setup.PluginId),
                     PluginConfig = pluginCfg,
-                    Isolated = setup.Isolated,
-                    Permissions = ConvertToPluginPermissions(setup.Permissions)
                 };
 
                 var tradeBot = _botAgent.AddBot(config);
@@ -214,31 +209,20 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             }
         }
 
-        private PluginPermissions ConvertToPluginPermissions(PermissionsDto permissions)
-        {
-            if (permissions != null)
-                return new PluginPermissions
-                {
-                    TradeAllowed = permissions.TradeAllowed
-                };
-
-            return new DefaultPermissionsBuilder().Build();
-        }
-
         [HttpPut("{id}")]
         public IActionResult Put(string id, [FromBody]PluginSetupDto setup)
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var botId = WebUtility.UrlDecode(id);
+                var tradeBot = GetBotOrThrow(botId);
 
                 var pluginCfg = setup.Parse();
                 var config = new TradeBotModelConfig
                 {
                     PluginConfig = pluginCfg,
-                    Isolated = setup.Isolated,
-                    Permissions = ConvertToPluginPermissions(setup.Permissions)
                 };
+                config.PluginConfig.InstanceId = botId;
 
                 tradeBot.Configurate(config);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));

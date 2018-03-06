@@ -11,8 +11,6 @@ namespace TickTrader.BotTerminal
 
         public string InstanceId => _entity.InstanceId;
 
-        public bool Isolated => _entity.Isolated;
-
         public BotState State => _entity.State;
 
         public string AccountKey { get; }

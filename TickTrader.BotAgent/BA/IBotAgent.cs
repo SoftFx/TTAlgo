@@ -70,7 +70,6 @@ namespace TickTrader.BotAgent.BA
     public interface ITradeBot
     {
         string Id { get; }
-        bool Isolated { get; }
         bool IsRunning { get; }
         string FaultMessage { get; }
         IBotLog Log { get; }
