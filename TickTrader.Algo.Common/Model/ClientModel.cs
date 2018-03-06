@@ -91,8 +91,9 @@ namespace TickTrader.Algo.Common.Model
             ContextSend(() => _updateQueue.Enqueue(pr));
         }
 
-        private void TradeProxy_BalanceOperation(BalanceOperationReport obj)
+        private void TradeProxy_BalanceOperation(BalanceOperationReport rep)
         {
+            ContextSend(() => _updateQueue.Enqueue(rep));
         }
 
         private void TradeProxy_TradeTransactionReport(TradeReportEntity obj)
@@ -415,6 +416,8 @@ namespace TickTrader.Algo.Common.Model
                 return _cache.Account.GetOrderUpdate((ExecutionReport)item);
             else if (item is PositionEntity)
                 return _cache.Account.GetPositionUpdate((PositionEntity)item);
+            else if (item is BalanceOperationReport)
+                return _cache.Account.GetBalanceUpdate((BalanceOperationReport)item);
 
             return null;
         }

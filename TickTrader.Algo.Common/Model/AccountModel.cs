@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Common.Model
                 Calc.Recalculate();
         }
 
-        internal EntityCacheUpdate OnBalanceOperation(BalanceOperationReport report)
+        internal EntityCacheUpdate GetBalanceUpdate(BalanceOperationReport report)
         {
             return new BalanceUpdateAction(report);
         }

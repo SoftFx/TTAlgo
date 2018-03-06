@@ -22,11 +22,17 @@ namespace TickTrader.Algo.Common.Model
             _sync = sync;
 
             _cache.Account.OrderUpdate += Account_OrderUpdate;
+            _cache.Account.BalanceUpdate += Account_BalanceUpdate;
         }
 
         private void Account_OrderUpdate(OrderUpdateInfo update)
         {
             ExecReportToAlgo(update.ExecAction, update.EntityAction, update.Report, update.Order);
+        }
+
+        private void Account_BalanceUpdate(BalanceOperationReport rep)
+        {
+            AlgoEvent_BalanceUpdated?.Invoke(rep);
         }
 
         private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
