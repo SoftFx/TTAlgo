@@ -215,11 +215,11 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public static Task<FDK2.ExecutionReport> ReplaceOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
-            OrderSide side, double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
+            OrderSide side, double newQty, double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic)
         {
             var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
-            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime, stopLoss, takeProfit, comment, tag, magic);
+            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime, stopLoss, takeProfit, false, newQty, comment, tag, magic);
             return taskSrc.Task;
         }
 
