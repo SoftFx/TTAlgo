@@ -14,6 +14,8 @@ namespace TickTrader.Algo.Common.Model
 {
     public class TradeHistoryProvider : ActorPart
     {
+        private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<TradeHistoryProvider>();
+
         private ConnectionModel _connection;
         private AsyncLock _updateLock = new AsyncLock();
         private AsyncQueue<TradeReportEntity> _updateQueue;
@@ -26,11 +28,9 @@ namespace TickTrader.Algo.Common.Model
             _connection.InitProxies += () =>
             {
                 _connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
-                _updateQueue = new AsyncQueue<TradeReportEntity>();
-                Start();
-                _isStarted = true;
             };
 
+            _connection.AsyncInitalizing += (s, c) => Start();
             _connection.AsyncDisconnected += (s, c) => Stop();
 
             _connection.DeinitProxies += () =>
@@ -78,21 +78,37 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private void Start()
+        private Task Start()
         {
+            _updateQueue = new AsyncQueue<TradeReportEntity>();
+            _isStarted = true;
+
             UpdateLoop();
+
+            logger.Debug("Started.");
+
+            return Task.FromResult(this);
         }
 
         private async Task Stop()
         {
+            logger.Debug("Stopping...");
+
             _updateQueue.Close();
-            using (await _updateLock.GetLock()) { }; // wait till update loop is stopped
+
+            logger.Debug("Queue is closed.");
+
+            using (await _updateLock.GetLock("stop")) { }; // wait till update loop is stopped
             _updateQueue = null;
+
+            logger.Debug("Stopped.");
         }
 
         private async void UpdateLoop()
         {
-            using (await _updateLock.GetLock())
+            logger.Debug("UpdateLoop() enter");
+
+            using (await _updateLock.GetLock("loop"))
             {
                 while (await _updateQueue.Dequeue())
                 {
@@ -102,9 +118,13 @@ namespace TickTrader.Algo.Common.Model
                         await channel.Write(update);
                 }
 
+                logger.Debug("UpdateLoop() stopped, flushing...");
+
                 foreach (var channel in _listeners.Values) // flush all channels
                     await channel.ConfirmRead();
             }
+
+            logger.Debug("UpdateLoop() exit");
         }
 
         public class Handler : Handler<TradeHistoryProvider>
