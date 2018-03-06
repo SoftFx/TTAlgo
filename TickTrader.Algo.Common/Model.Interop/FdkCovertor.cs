@@ -380,6 +380,10 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (message.StartsWith("Order Not Found"))
                             return Api.OrderCmdResultCodes.OrderNotFound;
+                        else if (message.StartsWith("Max Visible Amount"))
+                            return Api.OrderCmdResultCodes.IncorrectMaxVisibleVolume;
+                        else if (message.StartsWith("Invalid Amount"))
+                            return Api.OrderCmdResultCodes.IncorrectVolume;
                         break;
                     }
             }
