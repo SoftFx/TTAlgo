@@ -119,20 +119,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
-        {
-            chartData.AddRange(
-            fdkData.Select(b => new Algo.Core.BarEntity()
-            {
-                Open = b.Open,
-                Close = b.Close,
-                High = b.High,
-                Low = b.Low,
-                OpenTime = b.From,
-                CloseTime =  b.To,
-                Volume = b.Volume
-            }));
-        }
+        //private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
+        //{
+        //    chartData.AddRange(
+        //    fdkData.Select(b => new Algo.Core.BarEntity()
+        //    {
+        //        Open = b.Open,
+        //        Close = b.Close,
+        //        High = b.High,
+        //        Low = b.Low,
+        //        OpenTime = b.From,
+        //        CloseTime =  b.To,
+        //        Volume = b.Volume
+        //    }));
+        //}
 
         protected override void UpdateSeries()
         {

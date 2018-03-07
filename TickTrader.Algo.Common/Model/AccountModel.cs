@@ -282,7 +282,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
-            if (report.ImmediateOrCancel)
+            if (report.OrderType == OrderType.Limit && report.ImmediateOrCancel)
                 return null;
 
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.Added);

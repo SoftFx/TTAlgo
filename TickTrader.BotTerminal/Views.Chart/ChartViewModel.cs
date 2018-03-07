@@ -1,7 +1,6 @@
 ﻿using Caliburn.Micro;
 using SciChart.Charting.ViewportManagers;
 using SciChart.Charting.Visuals.RenderableSeries;
-using SoftFX.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;

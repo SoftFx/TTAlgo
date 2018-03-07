@@ -99,18 +99,21 @@ namespace TickTrader.Algo.Core
                 listener(rep);
         }
 
-        private static OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
+        private OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
         {
-            if (eReport.OrderCopy.Type == OrderType.Market) // workaround for Gross accounts
+            var accProxy = context.Builder.Account;
+
+            if (eReport.OrderCopy.Type == OrderType.Market && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
                 eReport.OrderCopy.Type = OrderType.Position;
 
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
-            else if (eReport.Action == OrderEntityAction.Removed)
+            if (eReport.Action == OrderEntityAction.Removed)
                 return collection.Remove(eReport.OrderCopy);
-            else if (eReport.Action == OrderEntityAction.Updated)
+            if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
-            return null;
+
+            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
         }
 
         private void DataProvider_BalanceUpdated(BalanceOperationReport report)

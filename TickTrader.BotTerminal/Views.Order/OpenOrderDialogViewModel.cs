@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SoftFX.Extended;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common;
 
