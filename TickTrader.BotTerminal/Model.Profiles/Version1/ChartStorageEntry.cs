@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.Model.Profiles.Version1
 {
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Chart")]
+    [DataContract(Namespace = "", Name = "Chart")]
     internal class ChartStorageEntry
     {
         [DataMember]
@@ -22,6 +22,9 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public List<IndicatorStorageEntry> Indicators { get; set; }
 
+        [DataMember]
+        public List<TradeBotStorageEntry> Bots { get; set; }
+
 
         public ChartStorageEntry()
         {
@@ -37,6 +40,7 @@ namespace TickTrader.BotTerminal
                 SelectedChartType = SelectedChartType,
                 CrosshairEnabled = CrosshairEnabled,
                 Indicators = Indicators != null ? new List<IndicatorStorageEntry>(Indicators.Select(c => c.Clone())) : null,
+                Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
             };
         }
     }

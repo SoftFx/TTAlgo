@@ -136,7 +136,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error($"Can't open current profile {CurrentProfilePath}: {ex.Message}");
+                _logger.Error($"Can't open current profile at {CurrentProfilePath}: {ex.Message}");
             }
         }
 

@@ -40,18 +40,16 @@ namespace TickTrader.BotTerminal
         private readonly IShell shell;
         private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
         private readonly SymbolModel smb;
-        private PreferencesStorageModel _preferences;
         private BotManagerViewModel _botManager;
         private IDynamicListSource<BotControlViewModel> _botsBySymbol;
 
-        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage, BotManagerViewModel botManager)
+        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
             this.clientModel = clientModel;
             this.algoEnv = algoEnv;
             this.shell = shell;
-            _preferences = storage.PreferencesStorage.StorageModel;
             _botManager = botManager;
 
             ChartWindowId = "Chart" + ++idSeed;
@@ -126,7 +124,7 @@ namespace TickTrader.BotTerminal
             set
             {
                 selectedPeriod = value;
-                NotifyOfPropertyChange("SelectedPeriod");
+                NotifyOfPropertyChange(nameof(SelectedPeriod));
                 DisplayName = $"{Symbol}, {SelectedPeriod.Key}";
                 selectedPeriod.Value();
             }
@@ -177,18 +175,7 @@ namespace TickTrader.BotTerminal
                 {
                     DescriptorId = i.Model.Setup.Descriptor.Id,
                     PluginFilePath = i.Model.PluginFilePath,
-                    InstanceId = i.Model.InstanceId,
                     Config = i.Model.Setup.Save(),
-                }).ToList(),
-                Bots = Bots.Select(b => new TradeBotStorageEntry
-                {
-                    DescriptorId = b.Model.Setup.Descriptor.Id,
-                    PluginFilePath = b.Model.PluginFilePath,
-                    InstanceId = b.Model.InstanceId,
-                    Started = b.Model.State == BotModelStates.Running,
-                    Config = b.Model.Setup.Save(),
-                    StateViewOpened = b.Model.StateViewOpened,
-                    StateSettings = b.Model.StateViewSettings.StorageModel,
                 }).ToList(),
             };
         }
@@ -204,7 +191,6 @@ namespace TickTrader.BotTerminal
             Chart.SelectedChartType = snapshot.SelectedChartType;
             Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
-            snapshot.Bots?.ForEach(b => RestoreTradeBot(b));
         }
 
         private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
@@ -216,10 +202,6 @@ namespace TickTrader.BotTerminal
                 return null;
             }
             var setupModel = new PluginSetupViewModel(algoEnv, catalogItem, Chart);
-            if (snapshot is TradeBotStorageEntry)
-            {
-                setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _preferences.RestartBotsOnStartup;
-            }
             if (snapshot.Config != null)
             {
                 setupModel.Setup.Load(snapshot.Config);
@@ -243,26 +225,6 @@ namespace TickTrader.BotTerminal
             }
 
             AttachPlugin(setupModel);
-        }
-
-        private void RestoreTradeBot(TradeBotStorageEntry entry)
-        {
-            var setupModel = RestorePlugin(entry);
-
-            if (setupModel == null)
-            {
-                logger.Error($"Trade bot '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
-                return;
-            }
-
-            if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot)
-            {
-                logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not a trade bot!");
-                return;
-            }
-
-            //AttachTradeBot(setupModel, entry.StateSettings.Clone(), entry.StateViewOpened);
-            //AttachTradeBot(setupModel, new WindowStorageModel { Width = 300, Height = 300 }, false);
         }
 
         #region Algo
@@ -303,11 +265,13 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            var pluginType = setupModel.Setup.Descriptor.AlgoLogicType;
-
-            if (pluginType == AlgoTypes.Indicator)
+            switch (setupModel.Setup.Descriptor.AlgoLogicType)
             {
-                Chart.AddIndicator(setupModel);
+                case AlgoTypes.Indicator:
+                    Chart.AddIndicator(setupModel);
+                    break;
+                default:
+                    throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.AlgoLogicType}'");
             }
         }
 

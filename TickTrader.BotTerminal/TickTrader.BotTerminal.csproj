@@ -294,6 +294,11 @@
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Profiles\ProfileResolver.cs" />
+    <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
+    <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
+    <Compile Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
+    <Compile Include="Model.Profiles\Version1\ProfileResolver.cs" />
     <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
     <Compile Include="Model.Protocol\BotAgentModel.cs" />
@@ -308,7 +313,7 @@
     <Compile Include="Model.Profiles\PluginStorageEntry.cs" />
     <Compile Include="Model.Profiles\ProfileManager.cs" />
     <Compile Include="Model.Profiles\ProfileRepository.cs" />
-    <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
+    <Compile Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
     <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model.Lib\FilteredListModel.cs" />
     <Compile Include="Model\BotManager.cs" />
@@ -1108,6 +1113,7 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

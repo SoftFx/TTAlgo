@@ -10,19 +10,24 @@ namespace TickTrader.BotTerminal
     {
         public const int Delay = 100;
 
+
         private Logger _logger;
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
         private CancellationToken _token;
         private PluginCatalog _repo;
+        private BotManagerViewModel _botManager;
 
-        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token, PluginCatalog repo)
+
+        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token,
+            PluginCatalog repo, BotManagerViewModel botManager)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
             _profileManager = profileManager;
             _token = token;
             _repo = repo;
+            _botManager = botManager;
         }
 
         protected override void OnInitialize()
@@ -58,7 +63,8 @@ namespace TickTrader.BotTerminal
                     await Task.Delay(Delay, _token);
                 }
 
-                _charts.LoadProfileSnapshot(_profileManager.CurrentProfile, _token);
+                _charts.LoadChartsSnaphot(_profileManager.CurrentProfile, _token);
+                _botManager.LoadBotsSnapshot(_profileManager.CurrentProfile, _token);
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

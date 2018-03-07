@@ -16,7 +16,6 @@ namespace TickTrader.BotTerminal
         private TraderClientModel _clientModel;
         private IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
-        private PersistModel _storage;
         private BotManagerViewModel _botManager;
 
 
@@ -32,13 +31,12 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, PersistModel storage, BotManagerViewModel botManager)
+        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _clientModel = clientModel;
             _algoEnv = algoEnv;
             _shell = shell;
-            _storage = storage;
             _botManager = botManager;
 
             clientModel.Symbols.Updated += Symbols_Updated;
@@ -54,7 +52,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol)
         {
-            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _storage, _botManager));
+            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _botManager));
         }
 
         public void CloseItem(ChartViewModel chart)
@@ -78,7 +76,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SaveProfileSnapshot(ProfileStorageModel profileStorage)
+        public void SaveChartsSnapshot(ProfileStorageModel profileStorage)
         {
             try
             {
@@ -88,11 +86,11 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to save profile snapshot");
+                _logger.Error(ex, "Failed to save charts snapshot");
             }
-        }
+}
 
-        public void LoadProfileSnapshot(ProfileStorageModel profileStorage, CancellationToken token)
+        public void LoadChartsSnaphot(ProfileStorageModel profileStorage, CancellationToken token)
         {
             try
             {
@@ -102,7 +100,7 @@ namespace TickTrader.BotTerminal
                     {
                         return;
                     }
-                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _storage, _botManager);
+                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _botManager);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }
@@ -115,7 +113,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to load profile snapshot");
+                _logger.Error(ex, "Failed to load charts snapshot");
             }
         }
 

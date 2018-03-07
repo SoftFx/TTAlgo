@@ -1,8 +1,8 @@
 ﻿using System.Runtime.Serialization;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Common.Model.Config.Version1
 {
-    [DataContract(Name = "property", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "property", Namespace = "")]
     [KnownType(typeof(BoolParameter))]
     [KnownType(typeof(IntParameter))]
     [KnownType(typeof(NullableIntParameter))]
@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Config
     [KnownType(typeof(FileParameter))]
     [KnownType(typeof(ColoredLineOutput))]
     [KnownType(typeof(MarkerSeriesOutput))]
-    [KnownType(typeof(QuoteInput))]
+    [KnownType(typeof(QuoteToQuoteInput))]
     [KnownType(typeof(QuoteToDoubleInput))]
     [KnownType(typeof(BarToBarInput))]
     [KnownType(typeof(BarToDoubleInput))]
@@ -24,48 +24,48 @@ namespace TickTrader.Algo.Common.Model.Config
         public string Id { get; set; }
     }
 
-    [DataContract(Name = "Parameter", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "Parameter", Namespace = "")]
     public abstract class Parameter : Property
     {
         public abstract object ValObj { get; }
     }
 
-    [DataContract(Name = "bool", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "bool", Namespace = "")]
     public class BoolParameter : Parameter<bool>
     {
     }
 
-    [DataContract(Name = "int", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "int", Namespace = "")]
     public class IntParameter : Parameter<int>
     {
     }
 
-    [DataContract(Name = "nint", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "nint", Namespace = "")]
     public class NullableIntParameter : Parameter<int?>
     {
     }
 
-    [DataContract(Name = "double", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "double", Namespace = "")]
     public class DoubleParameter : Parameter<double>
     {
     }
 
-    [DataContract(Name = "ndouble", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "ndouble", Namespace = "")]
     public class NullableDoubleParameter : Parameter<double?>
     {
     }
 
-    [DataContract(Name = "string", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "string", Namespace = "")]
     public class StringParameter : Parameter<string>
     {
     }
 
-    [DataContract(Name = "enum", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "enum", Namespace = "")]
     public class EnumParameter : Parameter<string>
     {
     }
 
-    [DataContract(Name = "file", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "file", Namespace = "")]
     public class FileParameter : Parameter
     {
         [DataMember(Name = "fileName")]
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Common.Model.Config
         public override object ValObj => FileName;
     }
 
-    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Namespace = "")]
     public class Parameter<T> : Parameter
     {
         [DataMember(Name = "value")]

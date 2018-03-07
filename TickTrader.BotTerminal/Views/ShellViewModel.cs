@@ -64,9 +64,9 @@ namespace TickTrader.BotTerminal
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             _botManagerModel = new BotManager(algoEnv);
-            BotManager = new BotManagerViewModel(_botManagerModel, this, clientModel, algoEnv);
+            BotManager = new BotManagerViewModel(_botManagerModel, this, clientModel, algoEnv, storage);
 
-            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage, BotManager);
+            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, BotManager);
 
             botsWarden = new BotsWarden(_botManagerModel);
 
@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
             clientModel.Initializing += LoadConnectionProfile;
             clientModel.Connected += OpenDefaultChart;
 
-            storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
+            storage.ProfileManager.SaveProfileSnapshot = SaveProfileSnapshot;
 
             cManager.StateChanged += (f, t) =>
             {
@@ -348,6 +348,19 @@ namespace TickTrader.BotTerminal
         {
         }
 
+        private void SaveProfileSnapshot(ProfileStorageModel profileStorage)
+        {
+            try
+            {
+                Charts.SaveChartsSnapshot(profileStorage);
+                BotManager.SaveBotsSnapshot(profileStorage);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to save profile snapshot");
+            }
+        }
+
         #region OrderUi implementation
 
         public void OpenMarkerOrder(string symbol)
@@ -374,7 +387,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo, BotManager);
             wndManager.ShowDialog(loading, this);
         }
 

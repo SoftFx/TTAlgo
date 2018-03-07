@@ -3,23 +3,15 @@ using System.Windows.Media;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
 
-namespace TickTrader.Algo.Common.Model.Config
+namespace TickTrader.Algo.Common.Model.Config.Version1
 {
-    [DataContract(Name = "Output", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "Output", Namespace = "")]
     public abstract class Output : Property
     {
-        [DataMember]
-        public bool IsEnabled { get; set; }
-
-        [DataMember]
-        public OutputColor LineColor { get; set; }
-
-        [DataMember]
-        public int LineThickness { get; set; }
     }
 
 
-    [DataContract(Name = "OutputColor", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "OutputColor", Namespace = "")]
     public class OutputColor
     {
         [DataMember]
@@ -54,18 +46,36 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "ColoredLineOutput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "ColoredLineOutput", Namespace = "")]
     public class ColoredLineOutput : Output
     {
         [DataMember]
+        public OutputColor LineColor { get; set; }
+
+        [DataMember]
+        public int LineThickness { get; set; }
+
+        [DataMember]
         public LineStyles LineStyle { get; set; }
+
+        [DataMember]
+        public bool IsEnabled { get; set; }
     }
 
 
-    [DataContract(Name = "MarkerSeriesOutput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "MarkerSeriesOutput", Namespace = "")]
     public class MarkerSeriesOutput : Output
     {
         [DataMember]
+        public OutputColor LineColor { get; set; }
+
+        [DataMember]
+        public int LineThickness { get; set; }
+
+        [DataMember]
         public MarkerSizes MarkerSize { get; set; }
+
+        [DataMember]
+        public bool IsEnabled { get; set; }
     }
 }

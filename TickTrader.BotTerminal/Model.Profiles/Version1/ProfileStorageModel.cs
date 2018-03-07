@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace TickTrader.BotTerminal
+namespace TickTrader.BotTerminal.Model.Profiles.Version1
 {
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Profile")]
+    [DataContract(Namespace = "", Name = "Profile")]
     internal class ProfileStorageModel : StorageModelBase<ProfileStorageModel>
     {
         [DataMember]
@@ -13,9 +13,6 @@ namespace TickTrader.BotTerminal
 
         [DataMember]
         public List<ChartStorageEntry> Charts { get; set; }
-
-        [DataMember]
-        public List<TradeBotStorageEntry> Bots { get; set; }
 
 
         public ProfileStorageModel()
@@ -29,7 +26,6 @@ namespace TickTrader.BotTerminal
             {
                 SelectedChart = SelectedChart,
                 Charts = Charts != null ? new List<ChartStorageEntry>(Charts.Select(c => c.Clone())) : null,
-                Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
             };
         }
     }

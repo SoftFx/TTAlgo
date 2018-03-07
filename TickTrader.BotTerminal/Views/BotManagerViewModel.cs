@@ -1,10 +1,14 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Metadata;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -16,6 +20,7 @@ namespace TickTrader.BotTerminal
 
         private BotManager _botManagerModel;
         private IShell _shell;
+        private PreferencesStorageModel _preferences;
 
 
         public IDynamicListSource<BotControlViewModel> Bots { get; }
@@ -25,12 +30,13 @@ namespace TickTrader.BotTerminal
         public AlgoEnvironment AlgoEnv { get; }
 
 
-        public BotManagerViewModel(BotManager botManagerModel, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv)
+        public BotManagerViewModel(BotManager botManagerModel, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
         {
             _botManagerModel = botManagerModel;
             _shell = shell;
             ClientModel = clientModel;
             AlgoEnv = algoEnv;
+            _preferences = storage.PreferencesStorage.StorageModel;
 
             Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell.ToolWndManager, false, false));
             Bots.Updated += BotsOnUpdated;
@@ -50,6 +56,46 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex);
+            }
+        }
+
+        public void SaveBotsSnapshot(ProfileStorageModel profileStorage)
+        {
+            try
+            {
+                profileStorage.Bots = _botManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
+                {
+                    DescriptorId = b.Setup.Descriptor.Id,
+                    PluginFilePath = b.PluginFilePath,
+                    Started = b.State == BotModelStates.Running,
+                    Config = b.Setup.Save(),
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to save bots snapshot");
+            }
+        }
+
+        public void LoadBotsSnapshot(ProfileStorageModel profileStorage, CancellationToken token)
+        {
+            try
+            {
+                if (profileStorage.Bots == null)
+                    return;
+
+                foreach (var bot in profileStorage.Bots)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    RestoreTradeBot(bot);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load bots snapshot");
             }
         }
 
@@ -93,6 +139,32 @@ namespace TickTrader.BotTerminal
                 args.OldItem.Closed -= BotClosed;
                 args.OldItem.Dispose();
             }
+        }
+
+        private void RestoreTradeBot(TradeBotStorageEntry entry)
+        {
+            var catalogItem = AlgoEnv.Repo.AllPlugins.Where(
+                    (k, i) => i.Descriptor.Id == entry.DescriptorId &&
+                    i.FilePath == entry.PluginFilePath).Snapshot.FirstOrDefault().Value;
+
+            if (catalogItem == null)
+            {
+                _logger.Error($"Trade bot '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
+                return;
+            }
+            if (catalogItem.Descriptor.AlgoLogicType != AlgoTypes.Robot)
+            {
+                _logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not a trade bot!");
+                return;
+            }
+
+            var setupModel = new PluginSetupViewModel(AlgoEnv, catalogItem, _botManagerModel);
+            setupModel.RunBot = entry.Started && _preferences.RestartBotsOnStartup;
+            if (entry.Config != null)
+            {
+                setupModel.Setup.Load(entry.Config);
+            }
+            AddBot(setupModel);
         }
 
 

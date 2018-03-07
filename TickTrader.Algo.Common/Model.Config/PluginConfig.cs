@@ -5,7 +5,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Namespace = "")]
+    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
     [KnownType(typeof(IndicatorConfig))]
     [KnownType(typeof(TradeBotConfig))]
     public class PluginConfig
@@ -33,13 +33,13 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Namespace = "")]
+    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
     public class IndicatorConfig : PluginConfig
     {
     }
 
 
-    [DataContract(Namespace = "")]
+    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
     public class TradeBotConfig : PluginConfig
     {
     }

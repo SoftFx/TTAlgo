@@ -1,17 +1,17 @@
 ﻿using Machinarium.Qnil;
+using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     internal class BotManager : IAlgoSetupContext
     {
+        private static ILogger _logger = LogManager.GetCurrentClassLogger();
+
+
         private DynamicDictionary<string, TradeBotModel> _bots;
 
 
@@ -19,9 +19,9 @@ namespace TickTrader.BotTerminal
 
         public IDynamicDictionarySource<string, TradeBotModel> Bots => _bots;
 
-        public int RunningBotsCnt => Bots.Snapshot.Values.Count(b => b.IsRunning);
+        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => b.IsRunning);
 
-        public bool HasRunningBots => Bots.Snapshot.Values.Any(b => b.IsRunning);
+        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => b.IsRunning);
 
 
         public event Action<TradeBotModel> StateChanged = delegate { };
@@ -59,25 +59,6 @@ namespace TickTrader.BotTerminal
                 AlgoEnv.IdProvider.RemovePlugin(instanceId);
                 botModel.StateChanged -= StateChanged;
             }
-        }
-
-        public List<TradeBotStorageEntry> GetSnapshot()
-        {
-            return _bots.Values.Select(b => new TradeBotStorageEntry
-            {
-                DescriptorId = b.Setup.Descriptor.Id,
-                PluginFilePath = b.PluginFilePath,
-                InstanceId = b.InstanceId,
-                Started = b.State == BotModelStates.Running,
-                Config = b.Setup.Save(),
-                StateViewOpened = b.StateViewOpened,
-                StateSettings = b.StateViewSettings.StorageModel,
-            }).ToList();
-        }
-
-        public void RestoreFromSnapshot(List<TradeBotStorageEntry> snapshot)
-        {
-
         }
 
 

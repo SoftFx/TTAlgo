@@ -111,6 +111,10 @@
     <Compile Include="Model.Config\Outputs.cs" />
     <Compile Include="Model.Config\Parameters.cs" />
     <Compile Include="Model.Config\PluginConfig.cs" />
+    <Compile Include="Model.Config\Version1\Inputs.cs" />
+    <Compile Include="Model.Config\Version1\Outputs.cs" />
+    <Compile Include="Model.Config\Version1\Parameters.cs" />
+    <Compile Include="Model.Config\Version1\PluginConfig.cs" />
     <Compile Include="Model.FeedCache\BarSerializer.cs" />
     <Compile Include="Model.FeedCache\CustomFeedStorage.cs" />
     <Compile Include="Model.FeedCache\CustomSymbol.cs" />
