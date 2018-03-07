@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
                         serializer.WriteObject(xmlWriter, profile);
                     }
 #else
-                    serializer.WriteObject(xmlWriter, profile);
+                    serializer.WriteObject(file, profile);
 #endif
                 }
 
