@@ -235,6 +235,7 @@ namespace TickTrader.Algo.Common.Model
 
             void IQuoteDistributorSource.ModifySubscription(string symbol, int depth)
             {
+                Actor.Send(a => a.ModifySubscription(symbol, depth));
             }
         }
 
@@ -462,8 +463,18 @@ namespace TickTrader.Algo.Common.Model
                 await listener.Write(quote);
         }
 
-        void IQuoteDistributorSource.ModifySubscription(string symbol, int depth)
+        public async void ModifySubscription(string symbol, int depth)
         {
+            //System.Diagnostics.Debug.WriteLine("ModifySubscription(" + symbol + ", " + depth + ")");
+
+            try
+            {
+                await _connection.FeedProxy.SubscribeToQuotes(new string[] { symbol }, depth);
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Failed to modify quote subscription: " + ex.Message);
+            }
         }
 
         #endregion
