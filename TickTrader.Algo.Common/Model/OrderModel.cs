@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderModel(ExecutionReport report, IOrderDependenciesResolver resolver)
         {
-            this.Id = report.OrderId;
+            this.Id = report.OrderId ?? "0";
             this.clientOrderId = report.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = report.Symbol;

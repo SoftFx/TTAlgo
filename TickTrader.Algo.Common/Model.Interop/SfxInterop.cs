@@ -258,7 +258,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 try
                 {
-                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), to.ToUniversalTime(), DownloadTimeoutMs);
 
                     while (true)
                     {
@@ -282,7 +282,7 @@ namespace TickTrader.Algo.Common.Model
         {
             var result = new List<BarEntity>();
 
-            var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, count);
+            var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), count);
             return bars.Select(Convert).ToArray();
         }
 
@@ -338,7 +338,7 @@ namespace TickTrader.Algo.Common.Model
         {
             return Task.Factory.StartNew(() =>
             {
-                var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue, DateTime.MaxValue, DownloadTimeoutMs);
+                var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime(), DownloadTimeoutMs);
                 e.Close();
                 return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
             });
@@ -374,7 +374,7 @@ namespace TickTrader.Algo.Common.Model
 
         public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from, to, skipCancelOrders, rxStream);
+            _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
