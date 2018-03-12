@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Log Test Bot", Version = "1.0", Category = "Test Bot Routine",
-        Description = "Call all available log/status methods to test them.")]
+        SetupMainSymbol = false, Description = "Call all available log/status methods to test them.")]
     public class LogBot : TradeBot
     {
         protected override void OnStart()

@@ -5,7 +5,7 @@ namespace TickTrader.Algo.TestCollection.Bots
     public enum ExitVariants { Init, OnStart, OnQuote, OnStop }
 
     [TradeBot(DisplayName = "[T] Exit Bot", Version = "1.0", Category = "Test Bot Routine",
-        Description = "Call Exit function on specified moment of bot lifecycle")]
+        SetupMainSymbol = false, Description = "Call Exit function on specified moment of bot lifecycle")]
     public class ExitBot : TradeBot
     {
         [Parameter(DisplayName = "Exit on")]

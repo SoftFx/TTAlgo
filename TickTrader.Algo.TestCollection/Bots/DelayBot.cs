@@ -9,7 +9,7 @@ namespace TickTrader.Algo.TestCollection.Bots
     }
 
 
-    [TradeBot(DisplayName = "[T] Delay Bot", Version = "1.0", Category = "Test Bot Routine",
+    [TradeBot(DisplayName = "[T] Delay Bot", Version = "1.0", Category = "Test Bot Routine", SetupMainSymbol = false,
         Description = "Delays bot execution for configured number of milliseconds on specified moment of bot lifecycle")]
     public class DelayBot : TradeBot
     {

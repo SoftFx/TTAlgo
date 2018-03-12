@@ -4,8 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.3", Category = "Test Orders",
-        Description = "Modify Order by OrderId" +
-                      "Prints order execution result to bot status window. ")]
+        SetupMainSymbol = false, Description = "Modifies order by OrderId. Prints order execution result to bot status window.")]
     public class ModifyOrder : TradeBotCommon
     {
         [Parameter(DefaultValue = "")]
@@ -61,20 +60,29 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void ValidateVolume()
         {
-            if (Volume.HasValue && Volume <= 0)
+            if (Volume.HasValue)
             {
-                Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
-                Exit();
-                throw new Exception("Ivalid parameter. Volume cannot be negative.");
-            }
-            else if (Volume.HasValue && Volume < Symbol.MinTradeVolume)
-            {
-                Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
-                Exit();
-                throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                if (Volume <= 0)
+                {
+                    Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
+                    Exit();
+                    throw new Exception("Ivalid parameter. Volume cannot be negative.");
+                }
+                var order = Account.Orders[OrderId];
+                if (order?.IsNull ?? true)
+                    return;
+                var symbol = Symbols[order.Symbol];
+                if (symbol?.IsNull ?? true)
+                    return;
+                else if (Volume < symbol.MinTradeVolume)
+                {
+                    Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                    Exit();
+                    throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                }
             }
         }
     }
 
-    public enum IocTypes { NoneFlag, DropFlag, SetFlag}
+    public enum IocTypes { NoneFlag, DropFlag, SetFlag }
 }

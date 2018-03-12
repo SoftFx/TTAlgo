@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
@@ -8,7 +7,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Account History Bot", Version = "1.0", Category = "Test Plugin Info",
-        Description = "Prints account trade history records.")]
+        SetupMainSymbol = false, Description = "Prints account trade history records.")]
     public class TradeHistoryBot : TradeBot
     {
         private StringBuilder _builder = new StringBuilder();
@@ -47,7 +46,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     }
                     else if (Filter == TradeHistoryFilters.PreviousYear)
                     {
-                        var from = new DateTime(DateTime.Now.Year -1, 1, 1);
+                        var from = new DateTime(DateTime.Now.Year - 1, 1, 1);
                         var to = new DateTime(DateTime.Now.Year, 1, 1);
                         Print(Account.TradeHistory.GetRange(from, to, SkipCancels));
                     }

@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Exception Bot", Version = "1.0", Category = "Test Bot Routine",
+    [TradeBot(DisplayName = "[T] Exception Bot", Version = "1.0", Category = "Test Bot Routine", SetupMainSymbol = false,
         Description = "Throw exception on init, start, stop, new quote, balance update, order filled and order opened")]
     public class ExceptionBot : TradeBot
     {

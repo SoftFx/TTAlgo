@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Custom Feed Query Bot", Version = "1.0", Category = "Test Plugin Info",
-        Description = "Queries and prints series of quoets/bars for specified time preiod, periodicity and side.")]
+        Description = "Queries and prints series of quotes/bars for specified time period, periodicity and side.")]
     public class FeedQueryBot : TradeBot
     {
         [Parameter(DisplayName = "Symbol")]
