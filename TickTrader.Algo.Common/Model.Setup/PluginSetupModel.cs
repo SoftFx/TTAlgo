@@ -362,7 +362,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
                 case "System.Double": return new ColoredLineOutputSetupModel(descriptor);
-                case "TickTrader.Algo.Api.Bar": return new MarkerSeriesOutputSetupModel(descriptor);
+                case "TickTrader.Algo.Api.Marker": return new MarkerSeriesOutputSetupModel(descriptor);
                 default: return new OutputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedOutputType);
             }
         }

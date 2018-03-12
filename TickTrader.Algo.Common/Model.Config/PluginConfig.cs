@@ -11,10 +11,7 @@ namespace TickTrader.Algo.Common.Model.Config
     public class PluginConfig
     {
         [DataMember(Name = "properties")]
-        private List<Property> _properties = new List<Property>();
-
-
-        public List<Property> Properties => _properties;
+        public List<Property> Properties { get; internal set; }
 
         [DataMember(Name = "timeframe")]
         public TimeFrames TimeFrame { get; set; }
@@ -30,6 +27,12 @@ namespace TickTrader.Algo.Common.Model.Config
 
         [DataMember(Name = "permissions")]
         public PluginPermissions Permissions { get; set; }
+
+
+        public PluginConfig()
+        {
+            Properties = new List<Property>();
+        }
     }
 
 

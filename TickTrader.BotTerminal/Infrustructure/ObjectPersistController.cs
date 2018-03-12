@@ -42,6 +42,9 @@ namespace TickTrader.BotTerminal
         public bool CanSave => !_isClosed;
 
 
+        public Func<string, bool> TryResolveFormatError = f => false;
+
+
         public ObjectPersistController(string fileName, IObjectStorage storage)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
@@ -68,6 +71,9 @@ namespace TickTrader.BotTerminal
 
         public void Reopen()
         {
+            if (Value is IChangableObject)
+                ((IChangableObject)Value).Changed -= SetChanged;
+
             Value = null;
 
             Load();
@@ -93,6 +99,11 @@ namespace TickTrader.BotTerminal
             catch (System.IO.FileNotFoundException) { /* normal case */ }
             catch (Exception ex)
             {
+                if (TryResolveFormatError(_fileName))
+                {
+                    Load();
+                    return;
+                }
                 _logger.Error("ObjectPersistController.Load() FAILED " + ex.Message);
             }
 

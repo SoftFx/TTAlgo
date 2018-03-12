@@ -39,8 +39,8 @@ namespace TickTrader.Algo.Ext
     }
 
 
-    [Reduction("Average")]
-    public class ForexBarReduction : FullBarToBarReduction
+    [Reduction("Median")]
+    public class MedianBarReduction : FullBarToBarReduction
     {
         public void Reduce(Bar bidBar, Bar askBar, IBarWriter result)
         {

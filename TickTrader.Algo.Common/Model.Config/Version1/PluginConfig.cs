@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model.Config.Version1
 {

@@ -6,7 +6,7 @@ using TickTrader.Algo.Core;
 namespace TickTrader.BotTerminal.Model.Profiles.Version1
 {
     [DataContract(Namespace = "", Name = "Plugin")]
-    internal abstract class PluginStorageEntry<T> where T : PluginStorageEntry<T>, new()
+    internal abstract class PluginStorageEntry
     {
         [DataMember]
         public string DescriptorId { get; set; }
@@ -25,8 +25,12 @@ namespace TickTrader.BotTerminal.Model.Profiles.Version1
 
         [DataMember]
         public PluginPermissions Permissions { get; set; }
+    }
 
 
+    [DataContract(Namespace = "", Name = "PluginT")]
+    internal abstract class PluginStorageEntry<T> : PluginStorageEntry where T : PluginStorageEntry<T>, new()
+    {
         public virtual T Clone()
         {
             return new T

@@ -1,7 +1,5 @@
 ﻿using System.Runtime.Serialization;
 using System.Windows.Media;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.Algo.Common.Model.Config.Version1
 {
@@ -46,6 +44,17 @@ namespace TickTrader.Algo.Common.Model.Config.Version1
     }
 
 
+    public enum LineStyles
+    {
+        Solid,
+        Dots,
+        DotsRare,
+        DotsVeryRare,
+        LinesDots,
+        Lines
+    }
+
+
     [DataContract(Name = "ColoredLineOutput", Namespace = "")]
     public class ColoredLineOutput : Output
     {
@@ -60,6 +69,14 @@ namespace TickTrader.Algo.Common.Model.Config.Version1
 
         [DataMember]
         public bool IsEnabled { get; set; }
+    }
+
+
+    public enum MarkerSizes
+    {
+        Large,
+        Medium,
+        Small,
     }
 
 

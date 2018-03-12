@@ -40,6 +40,8 @@ namespace TickTrader.BotTerminal
             _logger = NLog.LogManager.GetCurrentClassLogger();
 
             _isSaving = false;
+
+            _storageController.TryResolveFormatError = ProfileResolver.TryResolveProfile;
         }
 
 

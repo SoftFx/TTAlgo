@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Common.Model.Config.Version1
 {
@@ -33,6 +32,13 @@ namespace TickTrader.Algo.Common.Model.Config.Version1
     [DataContract(Name = "BarInputBase", Namespace = "")]
     public abstract class BarInputBase : Input
     {
+    }
+
+
+    public enum BarPriceType
+    {
+        Bid = 1,
+        Ask = 2,
     }
 
 
