@@ -104,6 +104,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void CloseAllBots(CancellationToken token)
+        {
+            foreach (var instanceId in _botManagerModel.Bots.Snapshot.Keys.ToList())
+            {
+                if (token.IsCancellationRequested)
+                    return;
+
+                _botManagerModel.RemoveBot(instanceId);
+            }
+        }
+
 
         private void ClientModelOnConnected()
         {
@@ -128,8 +139,6 @@ namespace TickTrader.BotTerminal
         private void BotClosed(BotControlViewModel sender)
         {
             _botManagerModel.RemoveBot(sender.Model.InstanceId);
-            sender.Dispose();
-            sender.Closed -= BotClosed;
         }
 
         private void BotsOnUpdated(ListUpdateArgs<BotControlViewModel> args)
@@ -137,7 +146,6 @@ namespace TickTrader.BotTerminal
             if (args.Action == DLinqAction.Insert)
             {
                 args.NewItem.Closed += BotClosed;
-                args.NewItem.OpenState();
             }
             if (args.Action == DLinqAction.Remove)
             {

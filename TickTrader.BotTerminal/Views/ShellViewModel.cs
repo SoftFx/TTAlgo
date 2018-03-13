@@ -51,8 +51,6 @@ namespace TickTrader.BotTerminal
             clientModel = new TraderClientModel(cManager.Connection, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
 
-            ProfileManager = new ProfileManagerViewModel(this, storage);
-
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
@@ -67,6 +65,8 @@ namespace TickTrader.BotTerminal
             BotManager = new BotManagerViewModel(_botManagerModel, this, clientModel, algoEnv, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, BotManager);
+
+            ProfileManager = new ProfileManagerViewModel(this, storage);
 
             botsWarden = new BotsWarden(_botManagerModel);
 
@@ -133,6 +133,7 @@ namespace TickTrader.BotTerminal
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
             CanDisconnect = state == ConnectionModel.States.Online && !ConnectionLock.IsLocked;
+            ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }

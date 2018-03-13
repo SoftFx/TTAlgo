@@ -39,11 +39,6 @@ namespace TickTrader.BotTerminal
             _bots.Values.Foreach(StopBot);
         }
 
-        public void ClearBots()
-        {
-            _bots.Clear();
-        }
-
         public void AddBot(TradeBotModel botModel)
         {
             _bots.Add(botModel.InstanceId, botModel);
