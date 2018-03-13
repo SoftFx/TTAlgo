@@ -94,6 +94,14 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                if ((profileStorage.Charts?.Count ?? 0) == 0)
+                {
+                    _logger.Info($"Charts snapshot is empty");
+                    return;
+                }
+
+                _logger.Info($"Loading charts snapshot({profileStorage.Charts.Count} bots)");
+
                 foreach (var chart in profileStorage.Charts.Where(c => _clientModel.Symbols.GetOrDefault(c.Symbol) != null))
                 {
                     if (token.IsCancellationRequested)

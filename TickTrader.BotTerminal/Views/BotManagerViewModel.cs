@@ -81,8 +81,13 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (profileStorage.Bots == null)
+                if ((profileStorage.Bots?.Count ?? 0) == 0)
+                {
+                    _logger.Info($"Bots snapshot is empty");
                     return;
+                }
+
+                _logger.Info($"Loading bots snapshot({profileStorage.Bots.Count} bots)");
 
                 foreach (var bot in profileStorage.Bots)
                 {

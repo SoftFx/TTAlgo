@@ -92,6 +92,10 @@ namespace TickTrader.BotTerminal
                 token.ThrowIfCancellationRequested();
 
                 _profileLoader.ReloadProfile(token);
+
+                token.ThrowIfCancellationRequested();
+
+                _profileManager.StartCurrentProfile();
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }
@@ -114,6 +118,10 @@ namespace TickTrader.BotTerminal
                 token.ThrowIfCancellationRequested();
 
                 _profileLoader.ReloadProfile(token);
+
+                token.ThrowIfCancellationRequested();
+
+                _profileManager.StartCurrentProfile();
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

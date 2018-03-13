@@ -51,6 +51,8 @@ namespace TickTrader.BotTerminal
 
                 _token.ThrowIfCancellationRequested();
 
+                _botManager.LoadBotsSnapshot(_profileManager.CurrentProfile, _token);
+
                 if (_profileManager.CurrentProfile.Charts == null)
                 {
                     TryClose();
@@ -64,7 +66,6 @@ namespace TickTrader.BotTerminal
                 }
 
                 _charts.LoadChartsSnaphot(_profileManager.CurrentProfile, _token);
-                _botManager.LoadBotsSnapshot(_profileManager.CurrentProfile, _token);
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

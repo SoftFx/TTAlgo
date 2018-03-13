@@ -65,6 +65,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void StartCurrentProfile()
+        {
+            SaveLoop();
+        }
+
         public async void Stop()
         {
             await StopCurrentProfile();
@@ -133,8 +138,6 @@ namespace TickTrader.BotTerminal
                 _storageController.Reopen();
 
                 OnProfileUpdated();
-
-                SaveLoop();
             }
             catch (Exception ex)
             {
