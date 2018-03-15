@@ -71,7 +71,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>144CA0736B3DE500D38E5962DCF8B2D5AAC6B907</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>C3BF02FD4D50AD36FD9C042784AB834BDAE3E4B3</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
