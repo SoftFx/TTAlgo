@@ -98,5 +98,12 @@ namespace TickTrader.BotTerminal
         {
             Model.StateChanged -= BotStateChanged;
         }
+
+        public bool CanOpenChart => Model.PluginRef.Descriptor.SetupMainSymbol;
+
+        public void OpenChart()
+        {
+
+        }
     }
 }

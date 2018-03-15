@@ -10,25 +10,11 @@
     <Style x:Key="StatusEllipseStyle" TargetType="Ellipse">
         <Style.Setters>
             <Setter Property="Fill" Value="Black"/>
-            <Setter Property="Height" Value="10"/>
-            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="9"/>
+            <Setter Property="Width" Value="9"/>
             <Setter Property="Margin" Value="5,0"/>
             <Setter Property="StrokeThickness" Value="0"/>
         </Style.Setters>
-    </Style>
-
-    <Style x:Key="LocalBotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding State}" Value="Stopped">
-                <Setter Property="Fill" Value="Gray"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Running">
-                <Setter Property="Fill" Value="Green"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Stopping">
-                <Setter Property="Fill" Value="Orange"/>
-            </DataTrigger>
-        </Style.Triggers>
     </Style>
 
     <Style x:Key="BotAgentStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
@@ -100,6 +86,10 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="NotFocusableTreeViewItem" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="Focusable" Value="False"/>
+    </Style>
+
 
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
@@ -114,44 +104,16 @@
                 </TreeView.Resources>
 
                 <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
+                    <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource NotFocusableTreeViewItem}">
                         <Setter Property="IsExpanded" Value="True"/>
                     </Style>
                 </TreeView.ItemContainerStyle>
 
-                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}">
-                    <TreeViewItem.ItemContainerStyle>
-                        <Style TargetType="{x:Type TreeViewItem}">
-                            <Setter Property="ContextMenu">
-                                <Setter.Value>
-                                    <ContextMenu>
-                                        <MenuItem Header="Start" IsEnabled="{Binding CanStart}"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
-                                                  cal:Message.Attach="StartStop"/>
-                                        <MenuItem Header="Stop" IsEnabled="{Binding CanStop}"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
-                                                  cal:Message.Attach="StartStop"/>
-                                        <MenuItem Header="Status"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
-                                                  cal:Message.Attach="OpenState"/>
-                                        <MenuItem Header="Settings" IsEnabled="{Binding CanOpenSettings}"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
-                                                  cal:Message.Attach="OpenSettings"/>
-                                        <MenuItem Header="Delete" IsEnabled="{Binding CanBeClosed}"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" 
-                                                  cal:Message.Attach="Close"/>
-                                    </ContextMenu>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </TreeViewItem.ItemContainerStyle>
+                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}"
+                              ItemContainerStyle="{StaticResource NotFocusableTreeViewItem}">
                     <TreeViewItem.ItemTemplate>
                         <DataTemplate DataType="{x:Type l:BotControlViewModel}">
-                            <!--<ContentControl cal:View.Model="{Binding}" />-->
-                            <StackPanel Orientation="Horizontal">
-                                <Ellipse Style="{StaticResource LocalBotStateEllipseStyle}" />
-                                <TextBlock Text="{Binding Path=Model.InstanceId}" ToolTip="{Binding State}" />
-                            </StackPanel>
+                            <ContentControl cal:View.Model="{Binding}" />
                         </DataTemplate>
                     </TreeViewItem.ItemTemplate>
 
