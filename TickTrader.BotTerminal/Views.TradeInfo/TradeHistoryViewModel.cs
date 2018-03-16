@@ -336,7 +336,9 @@ namespace TickTrader.BotTerminal
 
         private bool MatchesCurrentFilter(TradeReportEntity tradeTransaction)
         {
-            if (tradeTransaction.ActionType == TradeExecActions.OrderCanceled && _skipCancel)
+            if (_skipCancel && (tradeTransaction.ActionType == TradeExecActions.OrderCanceled
+                || tradeTransaction.ActionType == TradeExecActions.OrderExpired
+                || tradeTransaction.ActionType == TradeExecActions.OrderActivated))
                 return false;
             return MatchesCurrentBoundaries(tradeTransaction.CloseTime);
         }
