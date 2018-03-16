@@ -54,8 +54,7 @@ namespace TickTrader.Algo.Common.Model
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
-            //return history.GetBars(symbolCode, priceType, timeFrame, from, to).Result;
-            throw new NotImplementedException();
+            return history.GetBarList(symbolCode, priceType, timeFrame, from, to).Result;
         }
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
