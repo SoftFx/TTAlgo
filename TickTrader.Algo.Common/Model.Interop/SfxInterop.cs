@@ -282,8 +282,15 @@ namespace TickTrader.Algo.Common.Model
         {
             var result = new List<BarEntity>();
 
-            var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), count);
-            return bars.Select(Convert).ToArray();
+            try
+            {
+                var bars = await _feedHistoryProxy.GetBarListAsync(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), count);
+                return bars.Select(Convert).ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new InteropException(ex.Message, ConnectionErrorCodes.NetworkError);
+            }
         }
 
         public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
@@ -427,6 +434,10 @@ namespace TickTrader.Algo.Common.Model
             {
                 var reason = Convert(eex.Report.RejectReason, eex.Message);
                 return new OrderInteropResult(reason, ConvertToEr(eex.Report, operationId));
+            }
+            catch (DisconnectException)
+            {
+                return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
             }
             catch (Exception ex)
             {

@@ -275,6 +275,14 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        private Exception Convert(Exception fdkException)
+        {
+            if (fdkException is AggregateException)
+                return Convert((AggregateException)fdkException).InnerException;
+
+            return new InteropException(fdkException.Message, ConnectionErrorCodes.NetworkError);
+        }
+
         #region IFeedServerApi
 
         public event Action<QuoteEntity> Tick;
@@ -335,11 +343,18 @@ namespace TickTrader.Algo.Common.Model
 
             return requestProcessor.EnqueueTask(() =>
             {
-                var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
-                var barArray = FdkConvertor.Convert(result.Bars).ToArray();
-                if (count < 0)
-                    Array.Reverse(barArray);
-                return barArray;
+                try
+                {
+                    var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
+                    var barArray = FdkConvertor.Convert(result.Bars).ToArray();
+                    if (count < 0)
+                        Array.Reverse(barArray);
+                    return barArray;
+                }
+                catch (Exception ex)
+                {
+                    throw Convert(ex);
+                }
             });
         }
 
