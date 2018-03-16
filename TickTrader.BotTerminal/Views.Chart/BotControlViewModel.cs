@@ -12,12 +12,35 @@ namespace TickTrader.BotTerminal
 {
     internal class BotControlViewModel : PropertyChangedBase
     {
-        private WindowManager wndManager;
+        private IShell _shell;
 
-        public BotControlViewModel(TradeBotModel model, WindowManager wndManager, bool runBot, bool openState)
+
+        public TradeBotModel Model { get; private set; }
+
+        public bool IsStarted => Model.IsRunning;
+
+        public bool CanBeClosed => Model.State == BotModelStates.Stopped;
+
+        public bool CanStartStop => Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped;
+
+        public bool CanStart => Model.State == BotModelStates.Stopped;
+
+        public bool CanStop => Model.State == BotModelStates.Running;
+
+        public BotModelStates State => Model.State;
+
+        public bool CanOpenSettings => Model.State == BotModelStates.Stopped;
+
+        public bool CanOpenChart => Model.PluginRef.Descriptor.SetupMainSymbol;
+
+
+        public event Action<BotControlViewModel> Closed = delegate { };
+
+
+        public BotControlViewModel(TradeBotModel model, IShell shell, bool runBot, bool openState)
         {
-            this.Model = model;
-            this.wndManager = wndManager;
+            Model = model;
+            _shell = shell;
 
             model.StateChanged += BotStateChanged;
 
@@ -31,6 +54,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
+
+        public void Dispose()
+        {
+            Model.StateChanged -= BotStateChanged;
+        }
+
         public async void StartStop()
         {
             if (Model.State == BotModelStates.Running)
@@ -39,41 +68,34 @@ namespace TickTrader.BotTerminal
                 Model.Start();
         }
 
-        public TradeBotModel Model { get; private set; }
-
         public void Close()
         {
             Model.Remove();
             Closed(this);
         }
 
-        public event Action<BotControlViewModel> Closed = delegate { };
-
-        public bool IsStarted => Model.IsRunning;
-        public bool CanBeClosed { get { return Model.State == BotModelStates.Stopped; } }
-        public bool CanStartStop { get { return Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped; } }
-        public bool CanStart => Model.State == BotModelStates.Stopped;
-        public bool CanStop => Model.State == BotModelStates.Running;
-        public BotModelStates State => Model.State;
-
-        public bool CanOpenSettings { get { return Model.State == BotModelStates.Stopped; } }
-
         public void OpenState()
         {
-            wndManager.OpenOrActivateWindow(Model, () => new BotStateViewModel(Model, wndManager));
+            _shell.ToolWndManager.OpenOrActivateWindow(Model, () => new BotStateViewModel(Model, _shell.ToolWndManager));
         }
 
         public void OpenSettings()
         {
             var key = $"BotSettings {Model.InstanceId}";
 
-            wndManager.OpenOrActivateWindow(key, () =>
+            _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
             {
                 var pSetup = new PluginSetupViewModel(Model);
                 pSetup.Closed += PluginSetupViewClosed;
                 return pSetup;
             });
         }
+
+        public void OpenChart()
+        {
+            _shell.ShowChart(Model.Setup.MainSymbol.Name, Model.Setup.SelectedTimeFrame.Convert());
+        }
+
 
         private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)
         {
@@ -92,18 +114,6 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanStart));
             NotifyOfPropertyChange(nameof(CanStop));
             NotifyOfPropertyChange(nameof(State));
-        }
-
-        public void Dispose()
-        {
-            Model.StateChanged -= BotStateChanged;
-        }
-
-        public bool CanOpenChart => Model.PluginRef.Descriptor.SetupMainSymbol;
-
-        public void OpenChart()
-        {
-
         }
     }
 }

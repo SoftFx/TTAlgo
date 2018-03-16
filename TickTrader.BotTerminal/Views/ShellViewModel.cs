@@ -223,6 +223,11 @@ namespace TickTrader.BotTerminal
             Charts.Open(smb);
         }
 
+        public void ShowChart(string smb, ChartPeriods period)
+        {
+            Charts.OpenOrActivate(smb, period);
+        }
+
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
         public AlgoListViewModel AlgoList { get; set; }

@@ -28,6 +28,9 @@ using System.Windows.Input;
 
 namespace TickTrader.BotTerminal
 {
+    public enum ChartPeriods { MN1, W1, D1, H4, H1, M30, M15, M5, M1, S10, S1, Ticks };
+
+
     class ChartViewModel : Screen, IDropHandler
     {
         private static int idSeed;
@@ -43,7 +46,7 @@ namespace TickTrader.BotTerminal
         private BotManagerViewModel _botManager;
         private IDynamicListSource<BotControlViewModel> _botsBySymbol;
 
-        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
+        public ChartViewModel(string symbol, ChartPeriods period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
@@ -78,32 +81,32 @@ namespace TickTrader.BotTerminal
             Panes = panes.AsObservable();
             _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Descriptor.SetupMainSymbol);
 
-            periodActivatos.Add("MN1", () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
-            periodActivatos.Add("W1", () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
-            periodActivatos.Add("D1", () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
-            periodActivatos.Add("H4", () => ActivateBarChart(TimeFrames.H4, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("H1", () => ActivateBarChart(TimeFrames.H1, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M30", () => ActivateBarChart(TimeFrames.M30, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M15", () => ActivateBarChart(TimeFrames.M15, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M5", () => ActivateBarChart(TimeFrames.M5, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M1", () => ActivateBarChart(TimeFrames.M1, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("S10", () => ActivateBarChart(TimeFrames.S10, "d MMMM yyyy HH:mm:ss"));
-            periodActivatos.Add("S1", () => ActivateBarChart(TimeFrames.S1, "d MMMM yyyy HH:mm:ss"));
-            periodActivatos.Add("Ticks", () => ActivateTickChart());
+            periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.D1, () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.H4, () => ActivateBarChart(TimeFrames.H4, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.H1, () => ActivateBarChart(TimeFrames.H1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M30, () => ActivateBarChart(TimeFrames.M30, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M15, () => ActivateBarChart(TimeFrames.M15, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M5, () => ActivateBarChart(TimeFrames.M5, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M1, () => ActivateBarChart(TimeFrames.M1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.S10, () => ActivateBarChart(TimeFrames.S10, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add(ChartPeriods.S1, () => ActivateBarChart(TimeFrames.S1, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add(ChartPeriods.Ticks, () => ActivateTickChart());
 
-            SelectedPeriod = periodActivatos.ElementAt(8);
+            SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
 
             CloseCommand = new GenericCommand(o => TryClose());
         }
 
         #region Bindable Properties
 
-        private readonly Dictionary<string, System.Action> periodActivatos = new Dictionary<string, System.Action>();
-        private KeyValuePair<string, System.Action> selectedPeriod;
+        private readonly Dictionary<ChartPeriods, System.Action> periodActivatos = new Dictionary<ChartPeriods, System.Action>();
+        private KeyValuePair<ChartPeriods, System.Action> selectedPeriod;
 
         public string ChartWindowId { get; private set; }
 
-        public Dictionary<string, System.Action> AvailablePeriods { get { return periodActivatos; } }
+        public Dictionary<ChartPeriods, System.Action> AvailablePeriods => periodActivatos;
 
         public ChartModelBase Chart
         {
@@ -118,7 +121,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public KeyValuePair<string, System.Action> SelectedPeriod
+        public KeyValuePair<ChartPeriods, System.Action> SelectedPeriod
         {
             get { return selectedPeriod; }
             set
@@ -187,7 +190,6 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            SelectedPeriod = AvailablePeriods.FirstOrDefault(p => p.Key == snapshot.SelectedPeriod);
             Chart.SelectedChartType = snapshot.SelectedChartType;
             Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));

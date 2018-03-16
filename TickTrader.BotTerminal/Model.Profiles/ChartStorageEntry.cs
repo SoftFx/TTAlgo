@@ -11,7 +11,7 @@ namespace TickTrader.BotTerminal
         public string Symbol { get; set; }
 
         [DataMember(Name = "Period")]
-        public string SelectedPeriod { get; set; }
+        public ChartPeriods SelectedPeriod { get; set; }
 
         [DataMember(Name = "ChartType")]
         public SelectableChartTypes SelectedChartType { get; set; }

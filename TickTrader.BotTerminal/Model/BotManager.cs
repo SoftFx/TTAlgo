@@ -46,6 +46,15 @@ namespace TickTrader.BotTerminal
             botModel.StateChanged += StateChanged;
         }
 
+        public void UpdateBot(TradeBotModel botModel)
+        {
+            if (_bots.ContainsKey(botModel.InstanceId))
+            {
+                _bots.Remove(botModel.InstanceId);
+                _bots.Add(botModel.InstanceId, botModel);
+            }
+        }
+
         public void RemoveBot(string instanceId)
         {
             if (_bots.TryGetValue(instanceId, out var botModel))

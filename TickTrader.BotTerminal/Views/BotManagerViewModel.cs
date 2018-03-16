@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
             AlgoEnv = algoEnv;
             _preferences = storage.PreferencesStorage.StorageModel;
 
-            Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell.ToolWndManager, false, false));
+            Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, false, false));
             Bots.Updated += BotsOnUpdated;
 
             ClientModel.Connected += ClientModelOnConnected;
@@ -52,6 +52,25 @@ namespace TickTrader.BotTerminal
                 var model = new PluginSetupViewModel(AlgoEnv, item, context ?? _botManagerModel);
                 _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 model.Closed += AlgoSetupClosed;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+
+        public void OpenBotSetup(TradeBotModel model)
+        {
+            try
+            {
+                var key = $"BotSettings {model.InstanceId}";
+
+                _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
+                {
+                    var pSetup = new PluginSetupViewModel(model);
+                    pSetup.Closed += AlgoSetupClosed;
+                    return pSetup;
+                });
             }
             catch (Exception ex)
             {
@@ -125,7 +144,16 @@ namespace TickTrader.BotTerminal
         {
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
-                AddBot(setupModel);
+            {
+                if (setupModel.Setup.IsEditMode)
+                {
+                    UpdateBot(setupModel);
+                }
+                else
+                {
+                    AddBot(setupModel);
+                }
+            }
         }
 
         private void AddBot(PluginSetupViewModel setupModel)
@@ -134,6 +162,12 @@ namespace TickTrader.BotTerminal
             _botManagerModel.AddBot(bot);
             if (setupModel.RunBot)
                 bot.Start();
+        }
+
+        private void UpdateBot(PluginSetupViewModel setupModel)
+        {
+            setupModel.Bot.Configurate(setupModel.Setup);
+            _botManagerModel.UpdateBot(setupModel.Bot);
         }
 
         private void BotClosed(BotControlViewModel sender)

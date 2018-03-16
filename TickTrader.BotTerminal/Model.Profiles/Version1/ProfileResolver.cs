@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             return new ChartStorageEntry
             {
                 Symbol = c.Symbol,
-                SelectedPeriod = c.SelectedPeriod,
+                SelectedPeriod = ParsePeriodVersion1(c.SelectedPeriod),
                 SelectedChartType = c.SelectedChartType,
                 CrosshairEnabled = c.CrosshairEnabled,
                 Indicators = c.Indicators.Select(i => ResolveIndicatorVersion1(i, c)).ToList(),
@@ -78,11 +78,11 @@ namespace TickTrader.BotTerminal
                 TradeAllowed = p.Permissions.TradeAllowed,
                 Isolated = p.Isolated,
             };
-            res.TimeFrame = ResolvePeriod(c.SelectedPeriod);
+            res.TimeFrame = ResolvePeriodVersion1(c.SelectedPeriod);
             return res;
         }
 
-        private static Algo.Api.TimeFrames ResolvePeriod(string selectedPeriod)
+        private static Algo.Api.TimeFrames ResolvePeriodVersion1(string selectedPeriod)
         {
             switch (selectedPeriod)
             {
@@ -98,6 +98,26 @@ namespace TickTrader.BotTerminal
                 case "S10": return Algo.Api.TimeFrames.S10;
                 case "S1": return Algo.Api.TimeFrames.S1;
                 case "Ticks": return Algo.Api.TimeFrames.Ticks;
+                default: throw new ArgumentException("Unknown period");
+            }
+        }
+
+        private static ChartPeriods ParsePeriodVersion1(string selectedPeriod)
+        {
+            switch (selectedPeriod)
+            {
+                case "MN1": return ChartPeriods.MN1;
+                case "W1": return ChartPeriods.W1;
+                case "D1": return ChartPeriods.D1;
+                case "H4": return ChartPeriods.H4;
+                case "H1": return ChartPeriods.H1;
+                case "M30": return ChartPeriods.M30;
+                case "M15": return ChartPeriods.M15;
+                case "M5": return ChartPeriods.M5;
+                case "M1": return ChartPeriods.M1;
+                case "S10": return ChartPeriods.S10;
+                case "S1": return ChartPeriods.S1;
+                case "Ticks": return ChartPeriods.Ticks;
                 default: throw new ArgumentException("Unknown period");
             }
         }

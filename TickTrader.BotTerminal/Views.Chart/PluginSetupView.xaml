@@ -617,7 +617,6 @@
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot"/>
                     <Condition Binding="{Binding Setup.Descriptor.SetupMainSymbol}" Value="True"/>
-                    <Condition Binding="{Binding Setup.IsEditMode}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
                     <Setter TargetName="MainSymbolGroup" Property="Visibility" Value="Visible"/>

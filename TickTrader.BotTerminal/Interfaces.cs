@@ -23,6 +23,7 @@ namespace TickTrader.BotTerminal
     internal interface IShell : IWindowModel
     {
         void OpenChart(string smb);
+        void ShowChart(string smb, ChartPeriods period);
 
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }

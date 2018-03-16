@@ -19,7 +19,6 @@ namespace TickTrader.BotTerminal
         private Logger _logger;
         private bool _dlgResult;
         private PluginCatalog _catalog;
-        private TradeBotModel _bot;
         private bool _runBot;
         private IAlgoSetupContext _setupContext;
 
@@ -28,7 +27,9 @@ namespace TickTrader.BotTerminal
 
         public PluginCatalogItem PluginItem { get; private set; }
 
-        public bool PluginIsStopped => _bot == null ? true : _bot.State == BotModelStates.Stopped;
+        public TradeBotModel Bot { get; }
+
+        public bool PluginIsStopped => Bot == null ? true : Bot.State == BotModelStates.Stopped;
 
         public bool CanOk => Setup.IsValid && PluginIsStopped;
 
@@ -75,13 +76,13 @@ namespace TickTrader.BotTerminal
 
         public PluginSetupViewModel(TradeBotModel bot) : this()
         {
-            _bot = bot;
+            Bot = bot;
             Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupModel;
             PluginType = GetPluginTypeDisplayName(Setup.Descriptor);
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
-            _bot.StateChanged += BotStateChanged;
+            Bot.StateChanged += BotStateChanged;
 
             Init();
         }
@@ -155,8 +156,8 @@ namespace TickTrader.BotTerminal
         {
             if (_catalog != null)
                 _catalog.AllPlugins.Updated -= AllPlugins_Updated;
-            if (_bot != null)
-                _bot.StateChanged -= BotStateChanged;
+            if (Bot != null)
+                Bot.StateChanged -= BotStateChanged;
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
         }

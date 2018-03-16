@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -50,9 +51,20 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void Open(string symbol)
+        public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
         {
-            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _botManager));
+            ActivateItem(new ChartViewModel(symbol, period, _shell, _clientModel, _algoEnv, _botManager));
+        }
+
+        public void OpenOrActivate(string symbol, ChartPeriods period)
+        {
+            var chart = Items.FirstOrDefault(c => c.Symbol == symbol && c.SelectedPeriod.Key == period);
+            if (chart != null)
+            {
+                ActivateItem(chart);
+                return;
+            }
+            Open(symbol, period);
         }
 
         public void CloseItem(ChartViewModel chart)
@@ -88,7 +100,7 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, "Failed to save charts snapshot");
             }
-}
+        }
 
         public void LoadChartsSnaphot(ProfileStorageModel profileStorage, CancellationToken token)
         {
@@ -108,7 +120,7 @@ namespace TickTrader.BotTerminal
                     {
                         return;
                     }
-                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _botManager);
+                    var item = new ChartViewModel(chart.Symbol, chart.SelectedPeriod, _shell, _clientModel, _algoEnv, _botManager);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }
