@@ -22,9 +22,14 @@ namespace TickTrader.BotTerminal
 
         private AuthStorageModel authStorage;
         private EventJournal journal;
+        private Task initTask;
+        private bool _loginFlag;
+        private ClientModel.Data _client;
 
-        public ConnectionManager(PersistModel appStorage, EventJournal journal)
+        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
         {
+            _client = client;
+
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
@@ -35,8 +40,7 @@ namespace TickTrader.BotTerminal
 
             InitAuthData();
 
-            var connectionOptions = new ConnectionOptions() { EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs, LogsFolder = EnvService.Instance.LogFolder };
-            Connection = new ConnectionModel(connectionOptions, new DispatcherStateMachineSync());
+            Connection = client.Connection;
 
             Connection.StateChanged += (from, to) =>
             {
@@ -51,7 +55,7 @@ namespace TickTrader.BotTerminal
 
                 logger.Debug("STATE {0}", to);
 
-                StateChanged?.Invoke(from, to);
+                ConnectionStateChanged?.Invoke(from, to);
             };
         }
 
@@ -82,14 +86,17 @@ namespace TickTrader.BotTerminal
         }
 
         public ConnectionModel.States State => Connection.State;
-        public ConnectionModel Connection { get; private set; }
+        public ConnectionModel.Handler Connection { get; private set; }
+        public bool IsLoggedIn { get; private set; }
 
         public AccountAuthEntry Creds { get; private set; }
         public ObservableCollection<AccountAuthEntry> Accounts { get; private set; }
         public ObservableCollection<ServerAuthEntry> Servers { get; private set; }
 
         public event Action CredsChanged = delegate { };
-        public event Action<ConnectionModel.States, ConnectionModel.States> StateChanged = delegate { };
+        public event Action<ConnectionModel.States, ConnectionModel.States> ConnectionStateChanged;
+        public event Action LoggedIn;
+        public event Action LoggedOut;
 
         public AccountAuthEntry GetLast()
         {
@@ -116,12 +123,19 @@ namespace TickTrader.BotTerminal
             Creds = newCreds;
             CredsChanged();
 
+            _loginFlag = true;
+
             try
             {
                 var result = await Connection.Connect(login, password, server, useSfx, cToken);
 
                 if (result.Code == ConnectionErrorCodes.None)
+                {
                     SaveLogin(newCreds);
+                    SetLoggedIn(true);
+                }
+
+                _loginFlag = false;
 
                 return result;
             }
@@ -133,9 +147,27 @@ namespace TickTrader.BotTerminal
             Disconnect().Forget();
         }
 
-        public Task Disconnect()
+        public async Task Disconnect()
         {
-            return Connection.Disconnect();
+            await Connection.Disconnect();
+
+            if (!_loginFlag)
+            {
+                SetLoggedIn(false);
+                _client.ClearCache();
+            }
+        }
+
+        private void SetLoggedIn(bool value)
+        {
+            if (IsLoggedIn != value)
+            {
+                IsLoggedIn = value;
+                if (value)
+                    LoggedIn?.Invoke();
+                else
+                    LoggedOut?.Invoke();
+            }
         }
 
         private void InitAuthData()

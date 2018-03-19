@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
         private PreferencesStorageModel _preferences;
 
 
-        public IDynamicListSource<BotControlViewModel> Bots { get; }
+        public IVarList<BotControlViewModel> Bots { get; }
 
         public TraderClientModel ClientModel { get; }
 
@@ -234,7 +234,7 @@ namespace TickTrader.BotTerminal
 
         ITradeHistoryProvider IAlgoPluginHost.GetTradeHistoryApi()
         {
-            return ClientModel.TradeHistory;
+            return ClientModel.TradeHistory.AlgoAdapter;
         }
 
         BotJournal IAlgoPluginHost.Journal => AlgoEnv.BotJournal;
@@ -242,8 +242,8 @@ namespace TickTrader.BotTerminal
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
-            plugin.AccInfoProvider = ClientModel.Account;
-            var feedProvider = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies.Snapshot, new DispatcherSync());
+            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
+            var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.Metadata = feedProvider;
             switch (plugin.TimeFrame)
             {

@@ -99,18 +99,21 @@ namespace TickTrader.Algo.Core
                 listener(rep);
         }
 
-        private static OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
+        private OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
         {
-            if (eReport.OrderCopy.Type == OrderType.Market) // workaround for Gross accounts
+            var accProxy = context.Builder.Account;
+
+            if (eReport.OrderCopy.Type == OrderType.Market && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
                 eReport.OrderCopy.Type = OrderType.Position;
 
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
-            else if (eReport.Action == OrderEntityAction.Removed)
+            if (eReport.Action == OrderEntityAction.Removed)
                 return collection.Remove(eReport.OrderCopy);
-            else if (eReport.Action == OrderEntityAction.Updated)
+            if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
-            return null;
+
+            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
         }
 
         private void DataProvider_BalanceUpdated(BalanceOperationReport report)
@@ -320,11 +323,12 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private async Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
+        private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Action<TRequest, ITradeExecutor, CrossDomainCallback<OrderCmdResultCodes>> executorInvoke)
             where TRequest : OrderRequest
         {
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
+            var callbackTask = new TaskCompletionSource<TradeResultEntity>();
 
             string operationId = Guid.NewGuid().ToString();
 
@@ -334,26 +338,27 @@ namespace TickTrader.Algo.Core
                 resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
             });
 
-            Action<OrderCmdResultCodes> callbackAction = code =>
+            orderRequest.OperationId = operationId;
+
+            var callback = new CrossDomainCallback<OrderCmdResultCodes>();
+
+            callback.Action = code =>
             {
                 if (code != OrderCmdResultCodes.Ok)
                     context.EnqueueTradeUpdate(b => InvokeListener(operationId, new OrderExecReport() { ResultCode = code }));
+
+                callback.Dispose();
             };
 
-            orderRequest.OperationId = operationId;
+            executorInvoke(orderRequest, _executor, callback);
 
-            using (var callback = new CrossDomainCallback<OrderCmdResultCodes>(callbackAction))
+            if (!isAsync)
             {
-                executorInvoke(orderRequest, _executor, callback);
-
-                if (!isAsync)
-                {
-                    while (!resultTask.Task.IsCompleted)
-                        context.ProcessNextOrderUpdate();
-                }
-
-                return await resultTask.Task;
+                while (!resultTask.Task.IsCompleted)
+                    context.ProcessNextOrderUpdate();
             }
+
+            return resultTask.Task;
         }
 
         private async Task<TradeResultEntity> ExecDoubleOrderTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,

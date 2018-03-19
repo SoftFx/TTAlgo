@@ -1,7 +1,6 @@
 ﻿using Caliburn.Micro;
 using SciChart.Charting.ViewportManagers;
 using SciChart.Charting.Visuals.RenderableSeries;
-using SoftFX.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,6 +24,7 @@ using Machinarium.Qnil;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using System.Windows.Input;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -41,10 +41,11 @@ namespace TickTrader.BotTerminal
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
         private readonly IShell shell;
-        private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
+        private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
         private BotManagerViewModel _botManager;
-        private IDynamicListSource<BotControlViewModel> _botsBySymbol;
+        private IVarList<BotControlViewModel> _botsBySymbol;
+
 
         public ChartViewModel(string symbol, ChartPeriods period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
@@ -57,7 +58,7 @@ namespace TickTrader.BotTerminal
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            smb = (SymbolModel)clientModel.Symbols[symbol];
+            smb = clientModel.Symbols.GetOrDefault(symbol);
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();

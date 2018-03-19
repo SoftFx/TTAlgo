@@ -9,19 +9,19 @@ using System.Threading.Tasks;
 namespace Machinarium.Qnil
 {
     [DataContract(Namespace = "")]
-    public class DynamicList<T> : IDynamicListSource<T>
+    public class VarList<T> : IVarList<T>
     {
         private ValuesCollection accessor;
         [DataMember(Name = "Elements")]
         private List<T> innerList;
 
-        public DynamicList()
+        public VarList()
         {
             innerList = new List<T>();
             Init(new StreamingContext());
         }
 
-        public DynamicList(IEnumerable<T> initialData)
+        public VarList(IEnumerable<T> initialData)
         {
             innerList = new List<T>(initialData);
             Init(new StreamingContext());
@@ -115,13 +115,13 @@ namespace Machinarium.Qnil
                 Updated(args);
         }
 
-        IReadOnlyList<T> IDynamicListSource<T>.Snapshot { get { return accessor; } }
+        IReadOnlyList<T> IVarList<T>.Snapshot { get { return accessor; } }
 
         public class ValuesCollection : IList<T>, IReadOnlyList<T>
         {
-            private DynamicList<T> parent;
+            private VarList<T> parent;
 
-            internal ValuesCollection(DynamicList<T> list)
+            internal ValuesCollection(VarList<T> list)
             {
                 this.parent = list;
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotAgent.BA.Models
@@ -21,6 +22,18 @@ namespace TickTrader.BotAgent.BA.Models
     }
 
 
+    public class StubSymbolInfo : ISymbolInfo
+    {
+        public string Name { get; set; }
+
+
+        public StubSymbolInfo(SymbolEntity symbolEntity)
+        {
+            Name = symbolEntity.Name;
+        }
+    }
+
+
     // stub
     public class SetupMetadata : IAlgoSetupMetadata
     {
@@ -30,10 +43,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         public IPluginIdProvider IdProvider { get; }
 
-        public SetupMetadata(IEnumerable<ISymbolInfo> symbols)
+        public SetupMetadata(IEnumerable<SymbolEntity> symbols)
         {
             //Extentions = new ExtCollection();
-            Symbols = symbols.ToList();
+            Symbols = symbols.Select(s => new StubSymbolInfo(s)).ToList();
             SymbolMappings = new SymbolMappingsCollection(null);
             IdProvider = new IdProviderStub();
         }

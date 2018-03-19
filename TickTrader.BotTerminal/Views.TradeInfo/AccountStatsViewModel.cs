@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         private string currencyFormatStr;
         private string precentFormatStr = "{0:F2}%";
 
-        public AccountStatsViewModel(TraderClientModel client)
+        public AccountStatsViewModel(TraderClientModel client, ConnectionManager cManager)
         {
             this.account = client.Account;
 
@@ -28,7 +28,17 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
                 Calc_Updated(account.Calc);
             };
-            client.Disconnected += () => account.Calc.Updated -= Calc_Updated;
+
+            cManager.LoggedOut += () =>
+            {
+                IsStatsVisible = false;
+                NotifyOfPropertyChange(nameof(IsStatsVisible));
+            };
+
+            client.Disconnected += () =>
+            {
+                account.Calc.Updated -= Calc_Updated;
+            };
         }
 
         private void Calc_Updated(AccountCalculatorModel calc)

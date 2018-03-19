@@ -39,7 +39,6 @@ namespace TickTrader.BotTerminal
             _executor = CreateExecutor();
             Setup.SetWorkingFolder(_executor.WorkingFolder);
             Setup.Apply(_executor);
-
         }
 
         protected bool StartExcecutor()

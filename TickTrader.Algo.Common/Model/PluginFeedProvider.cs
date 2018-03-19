@@ -7,6 +7,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
 using System.Threading.Tasks.Dataflow;
+using Machinarium.Qnil;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -14,8 +15,9 @@ namespace TickTrader.Algo.Common.Model
     {
         private ISyncContext _sync;
         private IFeedSubscription subscription;
-        private ISymbolManager symbols;
-        private FeedHistoryProviderModel history;
+        private IVarSet<string, SymbolModel> symbols;
+        private QuoteDistributor _distributor;
+        private FeedHistoryProviderModel.Handler history;
         private Action<QuoteEntity[]> feedUpdateHandler;
         private Dictionary<string, int> _subscriptionCache;
         private IReadOnlyDictionary<string, CurrencyEntity> currencies;
@@ -25,13 +27,13 @@ namespace TickTrader.Algo.Common.Model
 
         public ISynchronizationContext Sync { get { return this; } }
 
-        public PluginFeedProvider(ISymbolManager symbols, FeedHistoryProviderModel history,
-            IReadOnlyDictionary<string, CurrencyEntity> currencies, ISyncContext sync)
+        public PluginFeedProvider(EntityCache cache, QuoteDistributor quoteDistributor, FeedHistoryProviderModel.Handler history, ISyncContext sync)
         {
             _sync = sync;
-            this.symbols = symbols;
+            this.symbols = cache.Symbols;
+            _distributor = quoteDistributor;
             this.history = history;
-            this.currencies = currencies;
+            this.currencies = cache.Currencies.Snapshot;
             _subscriptionCache = new Dictionary<string, int>();
 
             rxBuffer = new BufferBlock<QuoteEntity>();
@@ -52,8 +54,7 @@ namespace TickTrader.Algo.Common.Model
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
-            //return history.GetBars(symbolCode, priceType, timeFrame, from, to).Result;
-            throw new NotImplementedException();
+            return history.GetBarList(symbolCode, priceType, timeFrame, from, to).Result;
         }
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame)
@@ -81,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
 
             feedUpdateHandler = handler;
 
-            subscription = symbols.SubscribeAll();
+            subscription = _distributor.SubscribeAll();
             subscription.NewQuote += q => rxBuffer.Post(q);
         }
 

@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
 
         public ObservableCollection<BotAgentServerEntry> PredefinedServers { get; set; }
 
-        public DynamicDictionary<string, BotAgentConnectionManager> BotAgents { get; set; }
+        public VarDictionary<string, BotAgentConnectionManager> BotAgents { get; set; }
 
 
         public BotAgentManager(PersistModel appStorage)
@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
                 PredefinedServers.Add(new BotAgentServerEntry(server));
             }
 
-            BotAgents = new DynamicDictionary<string, BotAgentConnectionManager>();
+            BotAgents = new VarDictionary<string, BotAgentConnectionManager>();
             foreach (var agent in _botAgentStorage.BotAgents.Values)
             {
                 BotAgents.Add(agent.ServerAddress, new BotAgentConnectionManager(agent));

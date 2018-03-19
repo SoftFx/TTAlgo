@@ -12,12 +12,12 @@ namespace TickTrader.BotTerminal
         private static ILogger _logger = LogManager.GetCurrentClassLogger();
 
 
-        private DynamicDictionary<string, TradeBotModel> _bots;
+        private VarDictionary<string, TradeBotModel> _bots;
 
 
         public AlgoEnvironment AlgoEnv { get; }
 
-        public IDynamicDictionarySource<string, TradeBotModel> Bots => _bots;
+        public IVarSet<string, TradeBotModel> Bots => _bots;
 
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => b.IsRunning);
 
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
         public BotManager(AlgoEnvironment algoEnv)
         {
             AlgoEnv = algoEnv;
-            _bots = new DynamicDictionary<string, TradeBotModel>();
+            _bots = new VarDictionary<string, TradeBotModel>();
         }
 
 

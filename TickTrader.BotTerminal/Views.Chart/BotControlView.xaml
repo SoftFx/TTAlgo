@@ -27,19 +27,6 @@
         <MenuItem Header="Settings"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenSettings" />
-        <MenuItem Header="Open chart"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="OpenChart">
-            <MenuItem.Style>
-                <Style TargetType="MenuItem">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding CanOpenChart}" Value="False">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </MenuItem.Style>
-        </MenuItem>
     </ContextMenu>
 
     <Style x:Key="StatusEllipseStyle" TargetType="Ellipse">

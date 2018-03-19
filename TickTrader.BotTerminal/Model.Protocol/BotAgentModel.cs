@@ -8,16 +8,16 @@ namespace TickTrader.BotTerminal
     internal class BotAgentModel : IBotAgentClient
     {
         private ISyncContext _syncContext;
-        private DynamicDictionary<string, AccountModelEntity> _accounts;
-        private DynamicDictionary<string, BotModelEntity> _bots;
-        private DynamicDictionary<string, PackageModelEntity> _packages;
+        private VarDictionary<string, AccountModelEntity> _accounts;
+        private VarDictionary<string, BotModelEntity> _bots;
+        private VarDictionary<string, PackageModelEntity> _packages;
 
 
-        public IDynamicDictionarySource<string, AccountModelEntity> Accounts => _accounts;
+        public IVarSet<string, AccountModelEntity> Accounts => _accounts;
 
-        public IDynamicDictionarySource<string, BotModelEntity> Bots => _bots;
+        public IVarSet<string, BotModelEntity> Bots => _bots;
 
-        public IDynamicDictionarySource<string, PackageModelEntity> Packages => _packages;
+        public IVarSet<string, PackageModelEntity> Packages => _packages;
 
 
         public Action<string> BotStateChanged = delegate { };
@@ -29,9 +29,9 @@ namespace TickTrader.BotTerminal
         {
             _syncContext = new DispatcherSync();
 
-            _accounts = new DynamicDictionary<string, AccountModelEntity>();
-            _bots = new DynamicDictionary<string, BotModelEntity>();
-            _packages = new DynamicDictionary<string, PackageModelEntity>();
+            _accounts = new VarDictionary<string, AccountModelEntity>();
+            _bots = new VarDictionary<string, BotModelEntity>();
+            _packages = new VarDictionary<string, PackageModelEntity>();
         }
 
 

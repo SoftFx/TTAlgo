@@ -13,9 +13,9 @@ namespace TickTrader.BotTerminal
         private BotManagerViewModel _botManager;
 
 
-        public IObservableListSource<BotControlViewModel> LocalBots { get; }
+        public IObservableList<BotControlViewModel> LocalBots { get; }
 
-        public IObservableListSource<BotAgentViewModel> BotAgents { get; }
+        public IObservableList<BotAgentViewModel> BotAgents { get; }
 
 
         public BotListViewModel(IShell shell, BotAgentManager botAgentManager, BotManagerViewModel botManager)

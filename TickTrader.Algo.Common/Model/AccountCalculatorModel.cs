@@ -16,12 +16,12 @@ namespace TickTrader.Algo.Common.Model
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<AccountCalculatorModel>();
 
-        private ClientCore _client;
+        private ClientModel.Data _client;
         private IFeedSubscription _subscription;
 
-        private AccountCalculatorModel() { }
+        protected AccountCalculatorModel() { }
 
-        private AccountCalculatorModel(AccountModel acc, ClientCore client)
+        private AccountCalculatorModel(AccountModel acc, ClientModel.Data client)
         {
             _client = client;
             Account = new AccountAdapter(acc);
@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Common.Model
             Updated?.Invoke(this);
         }
 
-        public static AccountCalculatorModel Create(AccountModel acc, ClientCore client)
+        public static AccountCalculatorModel Create(AccountModel acc, ClientModel.Data client)
         {
             try
             {
@@ -248,7 +248,7 @@ namespace TickTrader.Algo.Common.Model
         {
             private AccCalcAdapter calc;
 
-            public MarginCalc(AccountModel acc, ClientCore client)
+            public MarginCalc(AccountModel acc, ClientModel.Data client)
                 : base(acc, client)
             {
                 calc = new AccCalcAdapter(Account,  MarketModel);
@@ -273,7 +273,7 @@ namespace TickTrader.Algo.Common.Model
         {
             private CashAccountCalculator calc;
 
-            public CashCalc(AccountModel acc, ClientCore client)
+            public CashCalc(AccountModel acc, ClientModel.Data client)
                 : base(acc, client)
             {
                 this.calc = new CashAccountCalculator(Account, MarketModel);

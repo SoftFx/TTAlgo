@@ -9,6 +9,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using System.Net;
+using TickTrader.BotAgent.BA.Entities;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -28,7 +29,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public TradeBotDto[] Get()
         {
-            var bots = _botAgent.TradeBots.ToArray();
+            var bots = _botAgent.GetTradeBots();
             return bots.Select(b => b.ToDto()).ToArray();
         }
 
@@ -37,7 +38,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var tradeBot = _botAgent.GetBotInfo(WebUtility.UrlDecode(id));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -54,8 +55,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-                tradeBot.Log.Clear();
+                var botId = WebUtility.UrlDecode(id);
+                var log = _botAgent.GetBotLog(botId);
+                log.Clear();
 
                 return Ok();
             }
@@ -71,9 +73,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var botId = WebUtility.UrlDecode(id);
+                var log = _botAgent.GetBotLog(botId);
 
-                return Ok(tradeBot.Log.ToDto());
+                return Ok(log.ToDto());
             }
             catch (BAException ex)
             {
@@ -87,10 +90,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var botId = WebUtility.UrlDecode(id);
+                var log = _botAgent.GetBotLog(botId);
 
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = tradeBot.Log.GetFile(decodedFile);
+                var readOnlyFile = log.GetFile(decodedFile);
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
@@ -106,8 +110,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-                tradeBot.Log.DeleteFile(WebUtility.UrlDecode(file));
+                var botId = WebUtility.UrlDecode(id);
+                var log = _botAgent.GetBotLog(botId);
+                log.DeleteFile(WebUtility.UrlDecode(file));
 
                 return Ok();
             }
@@ -125,9 +130,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var botId = WebUtility.UrlDecode(id);
+                var algoData = _botAgent.GetAlgoData(botId);
 
-                var files = tradeBot.AlgoData.Files.Select(f => f.ToDto()).ToArray();
+                var files = algoData.Files.Select(f => f.ToDto()).ToArray();
 
                 return Ok(files);
             }
@@ -143,9 +149,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var botId = WebUtility.UrlDecode(id);
+                var algoData = _botAgent.GetAlgoData(botId);
+
                 var decodedFile = WebUtility.UrlDecode(file);
-                var readOnlyFile = tradeBot.AlgoData.GetFile(decodedFile);
+                var readOnlyFile = algoData.GetFile(decodedFile);
 
                 return File(readOnlyFile.OpenRead(), MimeMipping.GetContentType(decodedFile), decodedFile);
             }
@@ -162,12 +170,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
+                var botId = WebUtility.UrlDecode(id);
+                var log = _botAgent.GetBotLog(botId);
 
                 return Ok(new BotStatusDto
                 {
-                    Status = tradeBot.Log.Status,
-                    BotId = tradeBot.Id
+                    Status = log.Status,
+                    BotId = botId
                 });
             }
             catch (BAException ex)
@@ -180,7 +189,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet("{botName}/[action]")]
         public string BotId(string botName)
         {
-            return _botAgent.AutogenerateBotId(WebUtility.UrlDecode(botName));
+            return _botAgent.GenerateBotId(WebUtility.UrlDecode(botName));
         }
 
         [HttpPost]
@@ -189,15 +198,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var pluginCfg = setup.Parse();
+                var accountKey = new AccountKey(setup.Account.Login, setup.Account.Server);
 
-                var config = new TradeBotModelConfig
+                var config = new TradeBotConfig
                 {
-                    Account = new AccountKey(setup.Account.Login, setup.Account.Server),
                     Plugin = new PluginKey(setup.PackageName, setup.PluginId),
                     PluginConfig = pluginCfg,
                 };
 
-                var tradeBot = _botAgent.AddBot(config);
+                var tradeBot = _botAgent.AddBot(accountKey, config);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));
 
                 return Ok(tradeBot.ToDto());
@@ -215,17 +224,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var botId = WebUtility.UrlDecode(id);
-                var tradeBot = GetBotOrThrow(botId);
 
                 var pluginCfg = setup.Parse();
-                var config = new TradeBotModelConfig
+                var config = new TradeBotConfig
                 {
                     PluginConfig = pluginCfg,
                 };
                 config.PluginConfig.InstanceId = botId;
 
-                tradeBot.Configurate(config);
-                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));
+                _botAgent.ChangeBotConfig(botId, config);
+                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
 
                 return Ok();
             }
@@ -257,8 +265,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-                tradeBot.Start();
+                _botAgent.StartBot(WebUtility.UrlDecode(id));
 
                 return Ok();
             }
@@ -274,8 +281,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var tradeBot = GetBotOrThrow(WebUtility.UrlDecode(id));
-                tradeBot.StopAsync();
+                _botAgent.StopBotAsync(WebUtility.UrlDecode(id));
 
                 return Ok();
             }
@@ -284,15 +290,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 _logger.LogError(ex.Message);
                 return BadRequest(ex.ToBadResult());
             }
-        }
-
-        private ITradeBot GetBotOrThrow(string id)
-        {
-            var tradeBot = _botAgent.TradeBots.FirstOrDefault(tb => tb.Id == id);
-            if (tradeBot == null)
-                throw new BotNotFoundException($"Bot {id} not found");
-            else
-                return tradeBot;
         }
     }
 }

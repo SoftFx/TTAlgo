@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ListAdapter<T> : OperatorBase, IDynamicListSource<T>
+    internal class ListAdapter<T> : OperatorBase, IVarList<T>
     {
         private IReadOnlyList<T> list;
 

@@ -112,6 +112,7 @@
     <Compile Include="Builder\IndicatorBuilder.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\TimerFixture.cs" />
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
     <Compile Include="Executor\CalculatorFixture.cs" />

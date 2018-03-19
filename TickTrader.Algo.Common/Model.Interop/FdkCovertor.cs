@@ -178,6 +178,11 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
+        public static SymbolEntity[] Convert(SymbolInfo[] info)
+        {
+            return info.Select(Convert).ToArray();
+        }
+
         public static SymbolEntity Convert(SymbolInfo info)
         {
             return new SymbolEntity(info.Name)
@@ -236,6 +241,11 @@ namespace TickTrader.Algo.Common.Model
                 case MarginCalcMode.Futures: return BusinessObjects.MarginCalculationModes.Futures;
                 default: throw new NotImplementedException();
             }
+        }
+
+        public static CurrencyEntity[] Convert(CurrencyInfo[] info)
+        {
+            return info.Select(Convert).ToArray();
         }
 
         public static CurrencyEntity Convert(CurrencyInfo info)
@@ -370,6 +380,10 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (message.StartsWith("Order Not Found"))
                             return Api.OrderCmdResultCodes.OrderNotFound;
+                        else if (message.StartsWith("Max Visible Amount"))
+                            return Api.OrderCmdResultCodes.IncorrectMaxVisibleVolume;
+                        else if (message.StartsWith("Invalid Amount"))
+                            return Api.OrderCmdResultCodes.IncorrectVolume;
                         break;
                     }
             }

@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Api
         StatusApi StatusApi { get; }
         EnvironmentInfo Environment { get; }
         IHelperApi Helper { get; }
+        ITimerApi TimerApi { get; }
         DiagnosticInfo Diagnostics { get; }
         bool IsStopped { get; }
         void OnExit();
@@ -50,5 +51,11 @@ namespace TickTrader.Algo.Api
     internal interface IPluginActivator
     {
         IPluginContext Activate(AlgoPlugin instance);
+    }
+
+    internal interface ITimerApi
+    {
+        Timer CreateTimer(TimeSpan period, Action<Timer> callback);
+        Task Delay(TimeSpan period);
     }
 }

@@ -19,11 +19,11 @@ namespace TickTrader.BotTerminal
         private ProfileManager _profileManager;
         private CancellationTokenSource _cancelLoadSrc;
         private ProfileRepository _profileRepo;
-        private DynamicDictionary<string, string> _profiles;
+        private VarDictionary<string, string> _profiles;
         private bool _canLoadProfile;
 
 
-        public IObservableListSource<string> Profiles { get; }
+        public IObservableList<string> Profiles { get; }
 
         public bool CanLoadProfile
         {
@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
             _wndManager = shell.ToolWndManager;
             _profileManager = storage.ProfileManager;
 
-            _profiles = new DynamicDictionary<string, string>();
+            _profiles = new VarDictionary<string, string>();
             Profiles = _profiles.OrderBy((k, v) => v).Chain().AsObservable();
 
             StartRepository();

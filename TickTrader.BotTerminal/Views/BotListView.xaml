@@ -17,6 +17,27 @@
         </Style.Setters>
     </Style>
 
+    <Style x:Key="LocalBotStateEllipseStyle" TargetType="Ellipse">
+        <Style.Setters>
+            <Setter Property="Fill" Value="Black"/>
+            <Setter Property="Height" Value="9"/>
+            <Setter Property="Width" Value="9"/>
+            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="StrokeThickness" Value="0"/>
+        </Style.Setters>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding State}" Value="Stopped">
+                <Setter Property="Fill" Value="LightGray"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Running">
+                <Setter Property="Fill" Value="Green"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="Stopping">
+                <Setter Property="Fill" Value="Orange"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="BotAgentStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
         <Style.Setters>
             <Setter Property="Fill" Value="Red"/>
@@ -86,14 +107,64 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="NotFocusableTreeViewItem" TargetType="{x:Type TreeViewItem}">
-        
+    <Style x:Key="ExpandedTreeViewItem" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="IsExpanded" Value="True" />
     </Style>
+
+
+    <ContextMenu x:Key="LocalBotContextMenu">
+        <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="StartStop" >
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Setter Property="Header" Value="Start"></Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsStarted}" Value="True">
+                            <Setter Property="Header" Value="Stop"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <MenuItem Header="Status"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenState" />
+        <MenuItem Header="Settings"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenSettings" />
+        <MenuItem Header="Open chart"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenChart">
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CanOpenChart}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <MenuItem Header="Delete" IsEnabled="{Binding CanBeClosed}"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Close" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="BotAgentContextMenu">
+        <MenuItem Header="Connect" cal:Message.Attach="ConnectBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Disconnect" cal:Message.Attach="DisconnectBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Change connection" cal:Message.Attach="ChangeBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Remove connection" cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+    </ContextMenu>
 
 
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
-            <TreeView BorderThickness="0">
+            <TreeView BorderThickness="0" ItemContainerStyle="{StaticResource ExpandedTreeViewItem}">
 
                 <TreeView.Resources>
                     <CollectionViewSource x:Key="LocalBotsViewSrc" Source="{Binding LocalBots}">
@@ -103,17 +174,18 @@
                     </CollectionViewSource>
                 </TreeView.Resources>
 
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource NotFocusableTreeViewItem}">
-                        <Setter Property="IsExpanded" Value="True"/>
-                    </Style>
-                </TreeView.ItemContainerStyle>
-
-                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}"
-                              ItemContainerStyle="{StaticResource NotFocusableTreeViewItem}">
+                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}">
+                    <TreeViewItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="ContextMenu" Value="{StaticResource LocalBotContextMenu}" />
+                        </Style>
+                    </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
                         <DataTemplate DataType="{x:Type l:BotControlViewModel}">
-                            <ContentControl cal:View.Model="{Binding}" />
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Style="{StaticResource LocalBotStateEllipseStyle}" />
+                                <TextBlock Text="{Binding Model.InstanceId}" ToolTip="{Binding State}" />
+                            </StackPanel>
                         </DataTemplate>
                     </TreeViewItem.ItemTemplate>
 
@@ -130,23 +202,9 @@
                         </ContextMenu>
                     </TreeViewItem.ContextMenu>
                     <TreeViewItem.ItemContainerStyle>
-                        <Style TargetType="{x:Type TreeViewItem}">
-                            <Setter Property="IsExpanded" Value="True"/>
+                        <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource ExpandedTreeViewItem}">
                             <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TreeViewItem, AncestorLevel=1}}"/>
-                            <Setter Property="ContextMenu">
-                                <Setter.Value>
-                                    <ContextMenu>
-                                        <MenuItem Header="Connect" cal:Message.Attach="ConnectBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                        <MenuItem Header="Disconnect" cal:Message.Attach="DisconnectBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                        <MenuItem Header="Change connection" cal:Message.Attach="ChangeBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                        <MenuItem Header="Remove connection" cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                    </ContextMenu>
-                                </Setter.Value>
-                            </Setter>
+                            <Setter Property="ContextMenu" Value="{StaticResource BotAgentContextMenu}" />
                         </Style>
                     </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>

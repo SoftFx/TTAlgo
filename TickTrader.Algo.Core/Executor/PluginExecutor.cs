@@ -23,6 +23,7 @@ namespace TickTrader.Algo.Core
         private InvokeStartegy iStrategy;
         private CalculatorFixture calcFixture;
         private TradingFixture accFixture;
+        private TimerFixture _timerFixture;
         private StatusFixture statusFixture;
         private string mainSymbol;
         private PluginBuilder builder;
@@ -45,6 +46,7 @@ namespace TickTrader.Algo.Core
             this.statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
+            _timerFixture = new TimerFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
 
@@ -242,6 +244,7 @@ namespace TickTrader.Algo.Core
                     InitMetadata();
                     InitWorkingFolder();
                     builder.TradeApi = accFixture;
+                    builder.TimerApi = _timerFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
                     builder.Id = _botInstanceId;
                     builder.Isolated = _isolated;
@@ -266,8 +269,9 @@ namespace TickTrader.Algo.Core
                     pluginLogger?.Start();
                     statusFixture.Start();
                     accFixture.Start();
-                    calcFixture.Start();
+                    _timerFixture.Start();
                     fStrategy.Start(); // enqueue build action
+                    calcFixture.Start();
 
                     iStrategy.EnqueueCustomInvoke(b => b.InvokeOnStart());
 
@@ -356,6 +360,7 @@ namespace TickTrader.Algo.Core
                 calcFixture.Stop();
                 accFixture.Stop();
                 statusFixture.Stop();
+                _timerFixture.Stop();
 
                 builder.PluginProxy.Coordinator.Clear();
                 builder.PluginProxy.Dispose();
@@ -511,12 +516,6 @@ namespace TickTrader.Algo.Core
                 throw new InvalidOperationException("Feed has beed already initialized!");
         }
 
-        //private void ThrowIfAlreadyHasBufferStrategy()
-        //{
-        //    if (bStrategy != null)
-        //        throw new InvalidOperationException("Buffering strategy has beed already initialized!");
-        //}
-
         private void ChangeState(States newState)
         {
             state = newState;
@@ -532,11 +531,6 @@ namespace TickTrader.Algo.Core
                 IsRunningChanged(this);
             }
         }
-
-        //private void Feed_FeedUpdated(FeedUpdate[] updates)
-        //{
-        //    //iStrategy.OnUpdate(updates).Wait();
-        //}
 
         private void OnException(Exception pluginError)
         {
@@ -606,6 +600,11 @@ namespace TickTrader.Algo.Core
             iStrategy.EnqueueTradeUpdate(action);
         }
 
+        void IFixtureContext.EnqueueCustomInvoke(Action<PluginBuilder> action)
+        {
+            iStrategy.EnqueueCustomInvoke(action);
+        }
+
         void IFixtureContext.EnqueueQuote(QuoteEntity update)
         {
             iStrategy.EnqueueQuote(update);
@@ -631,84 +630,12 @@ namespace TickTrader.Algo.Core
             OnInternalException(ex);
         }
 
-        //void IFixtureContext.Subscribe(IRateSubscription subscriber)
-        //{
-        //    fStrategy.RateDispenser.Add(subscriber);
-        //}
-
-        //void IFixtureContext.Unsubscribe(IRateSubscription subscriber)
-        //{
-        //    fStrategy.RateDispenser.Remove(subscriber);
-        //}
-
-        //void IFixtureContext.Subscribe(IAllRatesSubscription subscriber)
-        //{
-        //    fStrategy.RateDispenser.Add(subscriber);
-        //}
-
-        //void IFixtureContext.Unsubscribe(IAllRatesSubscription subscriber)
-        //{
-        //    fStrategy.RateDispenser.Remove(subscriber);
-        //}
-
-        //void IFixtureContext.AddSetupAction(Action setupAction)
-        //{
-        //    setupActions.Add(setupAction);
-        //}
-
-        //IEnumerable<BarEntity> IFeedStrategyContext.QueryBars(string symbolCode, DateTime from, DateTime to, TimeFrames timeFrame)
-        //{
-        //    return feed.CustomQueryBars(symbolCode, from, to, timeFrame);
-        //}
-
-        //IEnumerable<QuoteEntity> IFeedStrategyContext.QueryTicks(string symbolCode, DateTime from, DateTime to)
-        //{
-        //    return feed.CustomQueryTicks(symbolCode, from, to, 1);
-        //}
-
-        //IEnumerable<QuoteEntityL2> IFeedStrategyContext.QueryTicksL2(string symbolCode, DateTime from, DateTime to)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //void IFeedStrategyContext.Add(IFeedFixture subscriber)
-        //{
-        //    subscriptionManager.Add(subscriber);
-        //}
-
-        //void IFeedStrategyContext.Remove(IFeedFixture subscriber)
-        //{
-        //    subscriptionManager.Remove(subscriber);
-        //}
-
-        //void IFeedStrategyContext.InvokeUpdateOnCustomSubscription(QuoteEntity update)
-        //{
-        //    builder.InvokeUpdateNotification(update);
-        //}
-
         #endregion
 
         #region DiagnosticInfo
 
         int DiagnosticInfo.FeedQueueSize { get { return iStrategy.FeedQueueSize; } }
 
-
         #endregion
-
-        //#region IInvokeStrategyContext
-
-        //IPluginInvoker IInvokeStrategyContext.Builder { get { return builder; } }
-
-        //BufferUpdateResults IInvokeStrategyContext.UpdateBuffers(FeedUpdate update)
-        //{
-        //    return fStrategy.UpdateBuffers(update);
-        //}
-
-        //void IInvokeStrategyContext.InvokeFeedEvents(FeedUpdate update)
-        //{
-        //    subscriptionManager.OnUpdateEvent(update.Quote);
-        //}
-
-        //#endregion
     }
 }

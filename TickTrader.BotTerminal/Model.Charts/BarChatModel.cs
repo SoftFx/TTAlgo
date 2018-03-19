@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.History.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
             //var loadedData = barArray.Reverse().ToArray();
 
             cToken.ThrowIfCancellationRequested();
@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
         public override void InitializePlugin(PluginExecutor plugin)
         {
             base.InitializePlugin(plugin);
-            var feed = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies.Snapshot, new DispatcherSync());
+            var feed = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.InitBarStrategy(feed, Algo.Api.BarPriceType.Bid);
             plugin.Metadata = feed;
         }
@@ -114,20 +114,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
-        {
-            chartData.AddRange(
-            fdkData.Select(b => new Algo.Core.BarEntity()
-            {
-                Open = b.Open,
-                Close = b.Close,
-                High = b.High,
-                Low = b.Low,
-                OpenTime = b.From,
-                CloseTime = b.To,
-                Volume = b.Volume
-            }));
-        }
+        //private static void Convert(List<SoftFX.Extended.Bar> fdkData, List<Algo.Core.BarEntity> chartData)
+        //{
+        //    chartData.AddRange(
+        //    fdkData.Select(b => new Algo.Core.BarEntity()
+        //    {
+        //        Open = b.Open,
+        //        Close = b.Close,
+        //        High = b.High,
+        //        Low = b.Low,
+        //        OpenTime = b.From,
+        //        CloseTime = b.To,
+        //        Volume = b.Volume
+        //    }));
+        //}
 
         protected override void UpdateSeries()
         {

@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class SetObservableCollection<T> : ObservableCollection<T>, IObservableListSource<T>
+    internal class SetObservableCollection<T> : ObservableCollection<T>, IObservableList<T>
     {
-        private IDynamicSetSource<T> _set;
+        private IVarSet<T> _set;
         private bool propogateDispose;
         private bool isDisposed;
 
-        public SetObservableCollection(IDynamicSetSource<T> set, bool propogateDispose)
+        public SetObservableCollection(IVarSet<T> set, bool propogateDispose)
             : base(set.Snapshot)
         {
             _set = set;

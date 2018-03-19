@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ObservableWrapper2<T> : ObservableCollection<T>, IObservableListSource<T>
+    internal class ObservableWrapper2<T> : ObservableCollection<T>, IObservableList<T>
     {
-        private IDynamicListSource<T> src;
+        private IVarList<T> src;
         private bool propogateDispose;
         private bool isDisposed;
 
-        public ObservableWrapper2(IDynamicListSource<T> src, bool propogateDispose)
+        public ObservableWrapper2(IVarList<T> src, bool propogateDispose)
             : base(src.Snapshot)
         {
             this.src = src;

@@ -5,6 +5,7 @@ using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
+using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
@@ -52,18 +53,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             return new AccountListReportEntity
             {
-                Accounts = _botAgent.Accounts.Select(
+                Accounts = _botAgent.GetAccounts().Select(
                     acc => new AccountModelEntity
                     {
-                        Login = acc.Username,
-                        Server = acc.Address,
-                        UseNewProtocol = acc.UseNewProtocol,
-                        ConnectionState = ToProtocol.Convert(acc.ConnectionState),
-                        LastError = new ConnectionErrorEntity
-                        {
-                            Code = ToProtocol.Convert(acc.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
-                            Text = acc.LastError?.TextMessage,
-                        },
+                        Login = acc.Login,
+                        Server = acc.Server,
+                        UseNewProtocol = acc.UseSfxProtocol,
+                        //ConnectionState = ToProtocol.Convert(acc.ConnectionState),
+                        //LastError = new ConnectionErrorEntity
+                        //{
+                        //    Code = ToProtocol.Convert(acc.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
+                        //    Text = acc.LastError?.TextMessage,
+                        //},
                     }).ToArray(),
             };
         }
@@ -72,14 +73,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             return new BotListReportEntity
             {
-                Bots = _botAgent.TradeBots.Select(
+                Bots = _botAgent.GetTradeBots().Select(
                     bot => new BotModelEntity
                     {
                         InstanceId = bot.Id,
                         State = ToProtocol.Convert(bot.State),
-                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
-                        Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
-                        Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
+                        //Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
+                        //Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
+                        //Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
                     }).ToArray(),
             };
         }
@@ -93,7 +94,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     {
                         Name = package.Name,
                         Created = package.Created,
-                        Plugins = package.GetPlugins().Select(
+                        Plugins = package.Plugins.Select(
                             plugin => new PluginInfoEntity
                             {
                                 Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
@@ -115,7 +116,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        private void OnAccountChanged(IAccount account, ChangeAction action)
+        private void OnAccountChanged(AccountInfo account, ChangeAction action)
         {
             try
             {
@@ -124,15 +125,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     Type = ToProtocol.Convert(action),
                     Item = new AccountModelEntity
                     {
-                        Login = account.Username,
-                        Server = account.Address,
-                        UseNewProtocol = account.UseNewProtocol,
-                        ConnectionState = ToProtocol.Convert(account.ConnectionState),
-                        LastError = new ConnectionErrorEntity
-                        {
-                            Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
-                            Text = account.LastError?.TextMessage,
-                        },
+                        Login = account.Login,
+                        Server = account.Server,
+                        UseNewProtocol = account.UseSfxProtocol,
+                        //ConnectionState = ToProtocol.Convert(account.ConnectionState),
+                        //LastError = new ConnectionErrorEntity
+                        //{
+                        //    Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
+                        //    Text = account.LastError?.TextMessage,
+                        //},
                     },
                 });
             }
@@ -142,7 +143,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotChanged(ITradeBot bot, ChangeAction action)
+        private void OnBotChanged(TradeBotInfo bot, ChangeAction action)
         {
             try
             {
@@ -153,9 +154,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     {
                         InstanceId = bot.Id,
                         State = ToProtocol.Convert(bot.State),
-                        Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
-                        Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
-                        Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
+                        //Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
+                        //Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
+                        //Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
                     }
                 });
             }
@@ -165,7 +166,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnPackageChanged(IPackage package, ChangeAction action)
+        private void OnPackageChanged(PackageInfo package, ChangeAction action)
         {
             try
             {
@@ -176,7 +177,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     {
                         Name = package.Name,
                         Created = package.Created,
-                        Plugins = package.GetPlugins().Select(
+                        Plugins = package.Plugins.Select(
                             plugin => new PluginInfoEntity
                             {
                                 Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
@@ -202,7 +203,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotStateChanged(ITradeBot bot)
+        private void OnBotStateChanged(TradeBotInfo bot)
         {
             try
             {
@@ -218,19 +219,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnAccountStateChanged(IAccount account)
+        private void OnAccountStateChanged(AccountInfo account)
         {
             try
             {
                 AccountStateUpdated(new AccountStateUpdateEntity
                 {
-                    Account = new AccountKeyEntity { Login = account.Username, Server = account.Address },
-                    ConnectionState = ToProtocol.Convert(account.ConnectionState),
-                    LastError = new ConnectionErrorEntity
-                    {
-                        Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
-                        Text = account.LastError?.TextMessage,
-                    },
+                    Account = new AccountKeyEntity { Login = account.Login, Server = account.Server },
+                    //ConnectionState = ToProtocol.Convert(account.ConnectionState),
+                    //LastError = new ConnectionErrorEntity
+                    //{
+                    //    Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
+                    //    Text = account.LastError?.TextMessage,
+                    //},
                 });
             }
             catch (Exception ex)

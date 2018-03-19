@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,53 +9,51 @@ namespace TickTrader.BotAgent.BA
 {
     public class LoggerAdapter : IAlgoCoreLogger
     {
-        private ILogger _msLogger;
+        private ILogger _innerLogger;
 
         public LoggerAdapter(ILogger msLogger)
         {
-            _msLogger = msLogger;
+            _innerLogger = msLogger;
         }
 
         public void Debug(string msg)
         {
-            _msLogger.LogDebug(msg);
+            _innerLogger.Debug(msg);
         }
 
         public void Debug(string msgFormat, params object[] msgParams)
         {
-            _msLogger.LogDebug(msgFormat, msgParams);
+            _innerLogger.Debug(msgFormat, msgParams);
         }
 
         public void Error(string msg)
         {
-            _msLogger.LogError(msg);
+            _innerLogger.Error(msg);
         }
 
         public void Error(Exception ex)
         {
-            _msLogger.LogError(ex.ToString());
+            _innerLogger.Error(ex);
         }
 
         public void Error(string msg, Exception ex)
         {
-            _msLogger.LogError(msg);
-            _msLogger.LogError(ex.ToString());
+            _innerLogger.Error(ex, msg);
         }
 
         public void Error(Exception ex, string msgFormat, params object[] msgParams)
         {
-            _msLogger.LogError(msgFormat, msgParams);
-            _msLogger.LogError(ex.ToString());
+            _innerLogger.Error(ex, msgFormat, msgParams);
         }
 
         public void Info(string msg)
         {
-            _msLogger.LogInformation(msg);
+            _innerLogger.Info(msg);
         }
 
         public void Info(string msgFormat, params object[] msgParams)
         {
-            _msLogger.LogInformation(msgFormat, msgParams);
+            _innerLogger.Info(msgFormat, msgParams);
         }
     }
 }

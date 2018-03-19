@@ -9,27 +9,26 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class AccountModel : CrossDomainObject, IAccountInfoProvider
+    public class AccountModel : CrossDomainObject, IOrderDependenciesResolver
     {
-        private readonly DynamicDictionary<string, PositionModel> positions = new DynamicDictionary<string, PositionModel>();
-        private readonly DynamicDictionary<string, AssetModel> assets = new DynamicDictionary<string, AssetModel>();
-        private readonly DynamicDictionary<string, OrderModel> orders = new DynamicDictionary<string, OrderModel>();
+        private readonly VarDictionary<string, PositionModel> positions = new VarDictionary<string, PositionModel>();
+        private readonly VarDictionary<string, AssetModel> assets = new VarDictionary<string, AssetModel>();
+        private readonly VarDictionary<string, OrderModel> orders = new VarDictionary<string, OrderModel>();
         private AccountTypes? accType;
-        private IOrderDependenciesResolver orderResolver;
-        private IReadOnlyDictionary<string, CurrencyEntity> _currencies;
-        private ClientCore _client;
-        private bool _isCalcEnabled;
+        private readonly IReadOnlyDictionary<string, CurrencyEntity> _currencies;
+        private readonly IReadOnlyDictionary<string, SymbolModel> _symbols;
+        private bool _isCalcStarted;
 
-        public AccountModel(ClientCore client, AccountModelOptions options)
+        public AccountModel(IVarSet<string, CurrencyEntity> currecnies, IVarSet<string, SymbolModel> symbols)
         {
-            _client = client;
-            _isCalcEnabled = options.HasFlag(AccountModelOptions.EnableCalculator);
+            _currencies = currecnies.Snapshot;
+            _symbols = symbols.Snapshot;
         }
 
         public event System.Action AccountTypeChanged = delegate { };
-        public IDynamicDictionarySource<string, PositionModel> Positions { get { return positions; } }
-        public IDynamicDictionarySource<string, OrderModel> Orders { get { return orders; } }
-        public IDynamicDictionarySource<string, AssetModel> Assets { get { return assets; } }
+        public IVarSet<string, PositionModel> Positions { get { return positions; } }
+        public IVarSet<string, OrderModel> Orders { get { return orders; } }
+        public IVarSet<string, AssetModel> Assets { get { return assets; } }
 
         public AccountTypes? Type
         {
@@ -52,218 +51,89 @@ namespace TickTrader.Algo.Common.Model
         public int Leverage { get; private set; }
         public AccountCalculatorModel Calc { get; private set; }
 
-        public event Action<ExecutionReport, OrderModel, OrderExecAction> OrderUpdate;
+        public event Action<OrderUpdateInfo> OrderUpdate;
+        public event Action<PositionModel, OrderExecAction> PositionUpdate;
+        public event Action<BalanceOperationReport> BalanceUpdate;
 
-        public void Init()
+        public EntityCacheUpdate CreateSnaphotUpdate(AccountEntity accInfo, List<OrderEntity> tradeRecords, List<PositionEntity> positions, List<AssetEntity> assets)
         {
-            var cache = _client.Cache;
-            var currencies = _client.Currencies;
-            var accInfo = cache.AccountInfo.Value;
-            var balanceCurrencyInfo = currencies.Snapshot.Read(accInfo.BalanceCurrency);
-            var tradeRecords = cache.TradeRecords.Snapshot.Values;
-            var positions = cache.Positions.Snapshot.Values;
-
             System.Diagnostics.Debug.WriteLine(string.Format("Init() symbols:{0} orders:{1} positions:{2}",
-                cache.Symbols.Snapshot.Count, cache.TradeRecords.Snapshot.Count, cache.Positions.Snapshot.Count));
+                _symbols.Count, tradeRecords.Count, positions.Count));
 
-            UpdateData(accInfo, currencies.Snapshot, _client.Symbols, tradeRecords, positions, accInfo.Assets);
+            return new Snapshot(accInfo, tradeRecords, positions, assets);
 
-            if (_isCalcEnabled)
+            //_client.BalanceReceived += OnBalanceOperation;
+            //_client.ExecutionReportReceived += OnReport;
+            //_client.PositionReportReceived += OnReport;
+        }
+
+        internal void StartCalculator(ClientModel.Data marketData)
+        {
+            if (!_isCalcStarted)
             {
-                Calc = AccountCalculatorModel.Create(this, _client);
+                _isCalcStarted = true;
+
+                Calc = AccountCalculatorModel.Create(this, marketData);
                 Calc.Recalculate();
             }
-
-            _client.BalanceReceived += OnBalanceOperation;
-            _client.ExecutionReportReceived += OnReport;
-            _client.PositionReportReceived += OnReport;
         }
 
         public void Deinit()
         {
-            _client.BalanceReceived -= OnBalanceOperation;
-            _client.ExecutionReportReceived -= OnReport;
-            _client.PositionReportReceived -= OnReport;
+            //_client.BalanceReceived -= OnBalanceOperation;
+            //_client.ExecutionReportReceived -= OnReport;
+            //_client.PositionReportReceived -= OnReport;
 
-            if (_isCalcEnabled && Calc != null)
+            if (_isCalcStarted && Calc != null)
             {
                 Calc.Dispose();
                 Calc = null;
+                _isCalcStarted = false;
             }
         }
 
-        private void UpdateData(AccountEntity accInfo,
-            IReadOnlyDictionary<string, CurrencyEntity> currencies,
-            IOrderDependenciesResolver orderResolver,
-            IEnumerable<OrderEntity> orders,
-            IEnumerable<PositionEntity> positions,
-            IEnumerable<AssetEntity> assets)
+        public AccountEntity GetAccountInfo()
         {
-            Id = accInfo.Id;
-
-            _currencies = currencies;
-
-            this.positions.Clear();
-            this.orders.Clear();
-            this.assets.Clear();
-
-            this.orderResolver = orderResolver;
-
-            var balanceCurrencyInfo = currencies.Read(accInfo.BalanceCurrency);
-
-            Account = accInfo.Id;
-            Type = accInfo.Type;
-            Balance = accInfo.Balance;
-            BalanceCurrency = accInfo.BalanceCurrency;
-            Leverage = accInfo.Leverage;
-            BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
-
-            foreach (var fdkPosition in positions)
-                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, orderResolver));
-
-            foreach (var fdkOrder in orders)
-                this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, orderResolver));
-
-            foreach (var fdkAsset in assets)
-                this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, currencies));
+            return new AccountEntity
+            {
+                Id = Id,
+                Balance = Balance,
+                BalanceCurrency = BalanceCurrency,
+                Leverage = Leverage,
+                Type = Type ?? AccountTypes.Gross,
+                Assets = Assets.Snapshot.Values.Select(a => a.GetEntity()).ToArray()
+            };
         }
 
-        protected void OnBalanceChanged()
+        internal void Clear()
         {
-            if (_isCalcEnabled)
+            positions.Clear();
+            orders.Clear();
+            assets.Clear();
+
+            Account = "";
+            Type = null;
+            Balance = 0;
+            BalanceCurrency = null;
+            Leverage = 0;
+            BalanceDigits = 2;
+        }
+
+        #region Balance and assets management
+
+        private void OnBalanceChanged()
+        {
+            if (_isCalcStarted)
                 Calc.Recalculate();
         }
 
-        private void OnBalanceOperation(BalanceOperationReport report)
+        internal EntityCacheUpdate GetBalanceUpdate(BalanceOperationReport report)
         {
-            if (Type == AccountTypes.Gross || Type == AccountTypes.Net)
-            {
-                Balance = report.Balance;
-                OnBalanceChanged();
-            }
-            else if (Type == AccountTypes.Cash)
-            {
-                if (report.Balance > 0)
-                {
-                    assets[report.CurrencyCode] = new AssetModel(report.Balance, report.CurrencyCode, _currencies);
-                }
-                else
-                {
-                    if (assets.ContainsKey(report.CurrencyCode))
-                    {
-                        assets.Remove(report.CurrencyCode);
-                    }
-                }
-            }
-
-            AlgoEvent_BalanceUpdated(new BalanceOperationReport(report.Balance, report.CurrencyCode, report.Amount));
+            return new BalanceUpdateAction(report);
         }
 
-        protected void OnReport(PositionEntity report)
+        private void UpdateBalance(ExecutionReport report)
         {
-            if (report.IsEmpty)
-                OnPositionRemoved(report);
-            else if (!positions.ContainsKey(report.Symbol))
-                OnPositionAdded(report);
-            else
-                OnPositionUpdated(report);
-        }
-
-        private void OnPositionUpdated(PositionEntity position)
-        {
-            var model = UpsertPosition(position);
-            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Modified));
-        }
-
-        private void OnPositionAdded(PositionEntity position)
-        {
-            var model = UpsertPosition(position);
-            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Opened));
-        }
-
-        private void OnPositionRemoved(PositionEntity position)
-        {
-            PositionModel model;
-
-            if (!positions.TryGetValue(position.Symbol, out model))
-                return;
-
-            positions.Remove(model.Symbol);
-            AlgoEvent_PositionUpdated(model.ToReport(OrderExecAction.Closed));
-        }
-
-        private PositionModel UpsertPosition(PositionEntity position)
-        {
-            var positionModel = new PositionModel(position, orderResolver);
-            positions[position.Symbol] = positionModel;
-
-            return positionModel;
-        }
-
-        private void OnReport(ExecutionReport report)
-        {
-            switch (report.ExecutionType)
-            {
-                case ExecutionType.Calculated:
-                    if (orders.ContainsKey(report.OrderId))
-                        OnOrderUpdated(report, OrderExecAction.Opened);
-                    else
-                        OnOrderAdded(report, OrderExecAction.Opened);
-                    break;
-
-                case ExecutionType.Replace:
-                    OnOrderUpdated(report, OrderExecAction.Modified);
-                    break;
-
-                case ExecutionType.Expired:
-                    OnOrderRemoved(report, OrderExecAction.Expired);
-                    break;
-
-                case ExecutionType.Canceled:
-                    OnOrderRemoved(report, OrderExecAction.Canceled);
-                    break;
-
-                case ExecutionType.Rejected:
-                    OnOrderRejected(report, OrderExecAction.Rejected);
-                    break;
-
-                case ExecutionType.None:
-                    if (report.OrderStatus == OrderStatus.Rejected)
-                        OnOrderRejected(report, OrderExecAction.Rejected);
-                    break;
-
-                case ExecutionType.Trade:
-                    if (report.OrderType == OrderType.StopLimit)
-                    {
-                        OnOrderRemoved(report, OrderExecAction.Activated);
-                    }
-                    else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
-                    {
-                        if (report.LeavesVolume != 0)
-                            OnOrderUpdated(report, OrderExecAction.Filled);
-                        else if (Type != AccountTypes.Gross)
-                            OnOrderRemoved(report, OrderExecAction.Filled);
-                    }
-                    else if (report.OrderType == OrderType.Position)
-                    {
-                        if (!double.IsNaN(report.Balance))
-                            Balance = report.Balance;
-
-                        if (report.OrderStatus == OrderStatus.PartiallyFilled)
-                            OnOrderUpdated(report, OrderExecAction.Closed);
-                        if (report.OrderStatus == OrderStatus.Filled)
-                            OnOrderRemoved(report, OrderExecAction.Closed);
-                    }
-                    else if (report.OrderType == OrderType.Market)
-                    {
-                        if (Type == AccountTypes.Gross)
-                            MockMarkedFilled(report);
-                        else if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
-                            OnMarketFilled(report, OrderExecAction.Filled);
-                    }
-                    break;
-            }
-
             if (Type == AccountTypes.Net && report.ExecutionType == ExecutionType.Trade)
             {
                 switch (report.OrderStatus)
@@ -286,60 +156,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private OrderModel UpsertOrder(ExecutionReport report)
-        {
-            OrderModel order = new OrderModel(report, orderResolver);
-            orders[order.Id] = order;
-            return order;
-        }
-
-        private void OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
-        {
-            var order = UpsertOrder(report);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Added, report, order);
-            OrderUpdate?.Invoke(report, order, algoAction);
-        }
-
-        // Makes position to exist in order list when open market method returns
-        private void MockMarkedFilled(ExecutionReport report)
-        {
-            var order = new OrderModel(report, orderResolver);
-            order.OrderType = OrderType.Position;
-            order.RemainingAmount = order.Amount;
-            var action = orders.ContainsKey(order.Id) ? OrderEntityAction.Updated : OrderEntityAction.Added; // fix for SFX sync problems
-            orders[order.Id] = order;
-            ExecReportToAlgo(OrderExecAction.Opened, action, report, order);
-            OrderUpdate?.Invoke(report, order, OrderExecAction.Opened);
-        }
-
-        private void OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
-        {
-            var order = new OrderModel(report, orderResolver);
-            ExecReportToAlgo(algoAction, OrderEntityAction.None, report, order);
-            OrderUpdate?.Invoke(report, order, algoAction);
-        }
-
-        private void OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
-        {
-            orders.Remove(report.OrderId);
-            var order = new OrderModel(report, orderResolver);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Removed, report, order);
-            OrderUpdate?.Invoke(report, order, algoAction);
-        }
-
-        private void OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
-        {
-            var order = UpsertOrder(report);
-            ExecReportToAlgo(algoAction, OrderEntityAction.Updated, report, order);
-            OrderUpdate?.Invoke(report, order, algoAction);
-        }
-
-        private void OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
-        {
-            ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
-            OrderUpdate?.Invoke(report, null, algoAction);
-        }
-
         private void UpdateAsset(AssetEntity assetInfo)
         {
             if (assetInfo.IsEmpty)
@@ -348,100 +164,360 @@ namespace TickTrader.Algo.Common.Model
                 assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
-        //void AccountInfoChanged(object sender, SoftFX.Extended.Events.AccountInfoEventArgs e)
-        //{
-        //    Type = e.Information.Type;
-        //}
+        #endregion
 
-        #region IAccountInfoProvider
+        #region Postion management
 
-        private event Action<OrderExecReport> AlgoEvent_OrderUpdated = delegate { };
-        private event Action<PositionExecReport> AlgoEvent_PositionUpdated = delegate { };
-        private event Action<BalanceOperationReport> AlgoEvent_BalanceUpdated = delegate { };
-
-        private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
+        internal EntityCacheUpdate GetPositionUpdate(PositionEntity report)
         {
-            OrderExecReport algoReport = new OrderExecReport();
-            if (newOrder != null)
-                algoReport.OrderCopy = newOrder.ToAlgoOrder();
-            algoReport.OperationId = GetOperationId(report);
-            algoReport.OrderId = report.OrderId;
-            algoReport.ExecAction = action;
-            algoReport.Action = entityAction;
-            if (algoReport.ExecAction == OrderExecAction.Rejected)
-                algoReport.ResultCode = report.RejectReason;
-            if (!double.IsNaN(report.Balance))
-                algoReport.NewBalance = report.Balance;
-            if (report.Assets != null)
-                algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _currencies).ToAlgoAsset()).ToList();
-            AlgoEvent_OrderUpdated(algoReport);
+            if (report.IsEmpty)
+                return new PositionUpdateAction(report, OrderEntityAction.Removed);
+            else if (!positions.ContainsKey(report.Symbol))
+                return new PositionUpdateAction(report, OrderEntityAction.Added);
+            else
+                return new PositionUpdateAction(report, OrderEntityAction.Updated);
         }
 
-        private string GetOperationId(ExecutionReport report)
+        private void OnPositionUpdated(PositionEntity position)
         {
-            if (!string.IsNullOrEmpty(report.ClosePositionRequestId))
-                return report.ClosePositionRequestId;
-            if (!string.IsNullOrEmpty(report.TradeRequestId))
-                return report.TradeRequestId;
-            return report.ClientOrderId;
+            var model = UpsertPosition(position);
+            PositionUpdate?.Invoke(model, OrderExecAction.Modified);
         }
 
-        public AccountEntity AccountInfo
+        private void OnPositionAdded(PositionEntity position)
         {
-            get
-            {
-                return new AccountEntity
-                {
-                    Id = Id,
-                    Balance = Balance,
-                    BalanceCurrency = BalanceCurrency,
-                    Leverage = Leverage,
-                    Type = Type.Value,
-                    Assets = Assets.Snapshot.Values.Select(a => a.ToAlgoAsset()).ToArray()
-                };
-            }
+            var model = UpsertPosition(position);
+            PositionUpdate?.Invoke(model, OrderExecAction.Opened);
         }
 
-        void IAccountInfoProvider.SyncInvoke(Action syncAction)
+        private void OnPositionRemoved(PositionEntity position)
         {
-            _client.TradeSync.Invoke(syncAction);
+            PositionModel model;
+
+            if (!positions.TryGetValue(position.Symbol, out model))
+                return;
+
+            positions.Remove(model.Symbol);
+            PositionUpdate?.Invoke(model, OrderExecAction.Closed);
         }
 
-        List<OrderEntity> IAccountInfoProvider.GetOrders()
+        private PositionModel UpsertPosition(PositionEntity position)
         {
-            return Orders.Snapshot.Select(pair => pair.Value.ToAlgoOrder()).ToList();
-        }
+            var positionModel = new PositionModel(position, this);
+            positions[position.Symbol] = positionModel;
 
-        IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions()
-        {
-            return Positions.Snapshot.Select(pair => pair.Value.ToReport(OrderExecAction.Opened)).ToList();
-        }
-
-        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated
-        {
-            add { AlgoEvent_OrderUpdated += value; }
-            remove { AlgoEvent_OrderUpdated -= value; }
-        }
-
-        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated
-        {
-            add { AlgoEvent_PositionUpdated += value; }
-            remove { AlgoEvent_PositionUpdated -= value; }
-        }
-
-        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated
-        {
-            add { AlgoEvent_BalanceUpdated += value; }
-            remove { AlgoEvent_BalanceUpdated -= value; }
+            return positionModel;
         }
 
         #endregion
+
+        #region Order management
+
+        internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
+        {
+            System.Diagnostics.Debug.WriteLine("ER  #" + report.OrderId + " " + report.OrderType + " " + report.ExecutionType + " opId=" + report.TradeRequestId);
+
+            switch (report.ExecutionType)
+            {
+                case ExecutionType.Calculated:
+                    if (orders.ContainsKey(report.OrderId))
+                        return OnOrderUpdated(report, OrderExecAction.Opened);
+                    else
+                        return OnOrderAdded(report, OrderExecAction.Opened);
+
+                case ExecutionType.Replace:
+                    return OnOrderUpdated(report, OrderExecAction.Modified);
+
+                case ExecutionType.Expired:
+                    return OnOrderRemoved(report, OrderExecAction.Expired);
+
+                case ExecutionType.Canceled:
+                    return OnOrderRemoved(report, OrderExecAction.Canceled);
+
+                case ExecutionType.Rejected:
+                    return OnOrderRejected(report, OrderExecAction.Rejected);
+
+                case ExecutionType.None:
+                    if (report.OrderStatus == OrderStatus.Rejected)
+                        return OnOrderRejected(report, OrderExecAction.Rejected);
+                    break;
+
+                case ExecutionType.Trade:
+                    if (report.OrderType == OrderType.StopLimit)
+                    {
+                        return OnOrderRemoved(report, OrderExecAction.Activated);
+                    }
+                    else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
+                    {
+                        if (report.ImmediateOrCancel)
+                            return OnIocFilled(report);
+
+                        if (report.LeavesVolume != 0)
+                            return OnOrderUpdated(report, OrderExecAction.Filled);
+
+                        if (Type != AccountTypes.Gross)
+                            return OnOrderRemoved(report, OrderExecAction.Filled);
+                    }
+                    else if (report.OrderType == OrderType.Position)
+                    {
+                        if (report.OrderStatus == OrderStatus.PartiallyFilled)
+                            return OnOrderUpdated(report, OrderExecAction.Closed);
+
+                        if (report.OrderStatus == OrderStatus.Filled)
+                            return OnOrderRemoved(report, OrderExecAction.Closed);
+                    }
+                    else if (report.OrderType == OrderType.Market)
+                    {
+                        if (Type == AccountTypes.Gross)
+                            return MockMarkedFilled(report);
+
+                        if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
+                            return OnMarketFilled(report, OrderExecAction.Filled);
+                    }
+                    break;
+            }
+
+            return null;
+        }
+
+        private OrderUpdateAction OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
+        {
+            if (report.OrderType == OrderType.Limit && report.ImmediateOrCancel)
+                return null;
+
+            return new OrderUpdateAction(report, algoAction, OrderEntityAction.Added);
+        }
+
+        private OrderUpdateAction MockMarkedFilled(ExecutionReport report)
+        {
+            report.OrderType = OrderType.Position;
+            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.Added);
+        }
+
+        private OrderUpdateAction OnIocFilled(ExecutionReport report)
+        {
+            if (accType == AccountTypes.Cash)
+            {
+                report.OrderType = OrderType.Market;
+                return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
+            }
+            else
+                return OnOrderUpdated(report, OrderExecAction.Filled);
+        }
+
+        private OrderUpdateAction OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
+        {
+            return new OrderUpdateAction(report, algoAction, OrderEntityAction.None);
+        }
+
+        private OrderUpdateAction OnOrderRemoved(ExecutionReport report, OrderExecAction algoAction)
+        {
+            return new OrderUpdateAction(report, algoAction, OrderEntityAction.Removed);
+        }
+
+        private OrderUpdateAction OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
+        {
+            return new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated);
+        }
+
+        private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
+        {
+            return new OrderUpdateAction(report, algoAction, OrderEntityAction.None);
+            //ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
+            //OrderUpdate?.Invoke(report, null, algoAction);
+        }
+
+        #endregion
+
+        SymbolModel IOrderDependenciesResolver.GetSymbolOrNull(string name)
+        {
+            return _symbols.GetOrDefault(name);
+        }
+
+        public EntityCacheUpdate GetSnapshotUpdate()
+        {
+            var info = GetAccountInfo();
+            var orders = Orders.Snapshot.Values.Select(o => o.GetEntity()).ToList();
+            var positions = Positions.Snapshot.Values.Select(p => p.GetEntity()).ToList();
+            var assets = Assets.Snapshot.Values.Select(a => a.GetEntity()).ToList();
+
+            return new Snapshot(info, orders, positions, assets);
+        }
+
+        [Serializable]
+        public class Snapshot : EntityCacheUpdate
+        {
+            private AccountEntity _accInfo;
+            private IEnumerable<OrderEntity> _orders;
+            private IEnumerable<PositionEntity> _positions;
+            private IEnumerable<AssetEntity> _assets;
+
+            public Snapshot(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
+                IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
+            {
+                _accInfo = accInfo;
+                _orders = orders ?? Enumerable.Empty<OrderEntity>();
+                _positions = positions ?? Enumerable.Empty<PositionEntity>();
+                _assets = assets ?? Enumerable.Empty<AssetEntity>();
+            }
+
+            public void Apply(EntityCache cache)
+            {
+                var acc = cache.Account;
+
+                acc.positions.Clear();
+                acc.orders.Clear();
+                acc.assets.Clear();
+
+                var balanceCurrencyInfo = acc._currencies.Read(_accInfo.BalanceCurrency);
+
+                acc.Account = _accInfo.Id;
+                acc.Type = _accInfo.Type;
+                acc.Balance = _accInfo.Balance;
+                acc.BalanceCurrency = _accInfo.BalanceCurrency;
+                acc.Leverage = _accInfo.Leverage;
+                acc.BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
+
+                foreach (var fdkPosition in _positions)
+                    acc.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, acc));
+
+                foreach (var fdkOrder in _orders)
+                    acc.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, acc));
+
+                foreach (var fdkAsset in _assets)
+                    acc.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, acc._currencies));
+            }
+        }
+
+        [Serializable]
+        public class LoadOrderUpdate : EntityCacheUpdate
+        {
+            public LoadOrderUpdate(OrderEntity order)
+            {
+                Order = order ?? throw new ArgumentNullException("symbol");
+            }
+
+            private OrderEntity Order { get; }
+
+            public void Apply(EntityCache cache)
+            {
+                var acc = cache.Account;
+                acc.orders.Add(Order.OrderId, new OrderModel(Order, acc));
+            }
+        }
+
+        [Serializable]
+        private class OrderUpdateAction: EntityCacheUpdate
+        {
+            private ExecutionReport _report;
+            private OrderExecAction _execAction;
+            private OrderEntityAction _entityAction;
+
+            public OrderUpdateAction(ExecutionReport report, OrderExecAction execAction, OrderEntityAction entityAction)
+            {
+                _report = report;
+                _execAction = execAction;
+                _entityAction = entityAction;
+            }
+
+            public void Apply(EntityCache cache)
+            {
+                OrderModel order = null;
+
+                if (_entityAction == OrderEntityAction.Added)
+                {
+                    order = new OrderModel(_report, cache.Account);
+                    cache.Account.orders[order.Id] = order;
+                }
+                else if (_entityAction == OrderEntityAction.Removed)
+                {
+                    order = cache.Account.Orders.GetOrDefault(_report.OrderId);
+                    cache.Account.orders.Remove(_report.OrderId);
+                }
+                else if (_entityAction == OrderEntityAction.Updated)
+                {
+                    order = cache.Account.Orders.GetOrDefault(_report.OrderId);
+                    order.Update(_report);
+                }
+                else
+                    order = new OrderModel(_report, cache.Account);
+
+                cache.Account.OrderUpdate?.Invoke(new OrderUpdateInfo(_report, _execAction, _entityAction, order));
+                cache.Account.UpdateBalance(_report);
+            }
+        }
+
+        [Serializable]
+        private class BalanceUpdateAction : EntityCacheUpdate
+        {
+            private BalanceOperationReport _report;
+
+            public BalanceUpdateAction(BalanceOperationReport report)
+            {
+                _report = report;
+            }
+
+            public void Apply(EntityCache cache)
+            {
+                var acc = cache.Account;
+
+                if (acc.Type == AccountTypes.Gross || acc.Type == AccountTypes.Net)
+                {
+                    acc.Balance = _report.Balance;
+                    acc.OnBalanceChanged();
+                }
+                else if (acc.Type == AccountTypes.Cash)
+                {
+                    if (_report.Balance > 0)
+                        acc.assets[_report.CurrencyCode] = new AssetModel(_report.Balance, _report.CurrencyCode, acc._currencies);
+                    else
+                    {
+                        if (acc.assets.ContainsKey(_report.CurrencyCode))
+                            acc.assets.Remove(_report.CurrencyCode);
+                    }
+                }
+
+                acc.BalanceUpdate?.Invoke(_report);
+            }
+        }
+
+        [Serializable]
+        private class PositionUpdateAction : EntityCacheUpdate
+        {
+            private PositionEntity _report;
+            private OrderEntityAction _entityAction;
+
+            public PositionUpdateAction(PositionEntity report, OrderEntityAction action)
+            {
+                _report = report;
+                _entityAction = action;
+            }
+
+            public void Apply(EntityCache cache)
+            {
+                if (_entityAction == OrderEntityAction.Added)
+                    cache.Account.OnPositionAdded(_report);
+                else if (_entityAction == OrderEntityAction.Updated)
+                    cache.Account.OnPositionUpdated(_report);
+                else if (_entityAction == OrderEntityAction.Removed)
+                    cache.Account.OnPositionRemoved(_report);
+            }
+        }
     }
 
-    [Flags]
-    public enum AccountModelOptions
+    public class OrderUpdateInfo
     {
-        None = 0,
-        EnableCalculator = 1
+        public OrderUpdateInfo(ExecutionReport report, OrderExecAction execAction, OrderEntityAction entityAction, OrderModel order)
+        {
+            Report = report;
+            ExecAction = execAction;
+            EntityAction = entityAction;
+            Order = order;
+        }
+
+        public ExecutionReport Report { get; }
+        public OrderExecAction ExecAction { get; }
+        public OrderEntityAction EntityAction { get; }
+        public OrderModel Order { get; }
     }
 }

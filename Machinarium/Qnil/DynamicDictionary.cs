@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    public partial class DynamicDictionary<TKey, TValue> : IDynamicDictionarySource<TKey, TValue>
+    public partial class VarDictionary<TKey, TValue> : IVarSet<TKey, TValue>
     {
         private Dictionary<TKey, TValue> snapshot = new Dictionary<TKey, TValue>();
         private KeyCollection _keySetProxy;
 
-        public DynamicDictionary()
+        public VarDictionary()
         {
             Snapshot = new SnapshpotAccessor(this);
             _keySetProxy = new KeyCollection(snapshot.Keys);
@@ -20,7 +20,7 @@ namespace Machinarium.Qnil
 
         public IReadOnlyDictionary<TKey, TValue> Snapshot { get; private set; }
         public int Count { get { return snapshot.Count; } }
-        public IDynamicSetSource<TKey> Keys => _keySetProxy;
+        public IVarSet<TKey> Keys => _keySetProxy;
         public IEnumerable<TValue> Values { get { return snapshot.Values; } }
 
         public event DictionaryUpdateHandler<TKey, TValue> Updated;
@@ -88,9 +88,9 @@ namespace Machinarium.Qnil
 
         private class SnapshpotAccessor : IReadOnlyDictionary<TKey, TValue>
         {
-            private DynamicDictionary<TKey, TValue> parent;
+            private VarDictionary<TKey, TValue> parent;
 
-            public SnapshpotAccessor(DynamicDictionary<TKey, TValue> parent)
+            public SnapshpotAccessor(VarDictionary<TKey, TValue> parent)
             {
                 this.parent = parent;
             }

@@ -9,34 +9,34 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    public interface IDynamicSetSource<T> : IDisposable
+    public interface IVarSet<T> : IDisposable
     {
         IEnumerable<T> Snapshot { get; }
         event SetUpdateHandler<T> Updated;
     }
 
-    public interface IDynamicListSource<T> : IDisposable
+    public interface IVarList<T> : IDisposable
     {
         IReadOnlyList<T> Snapshot { get; }
         event ListUpdateHandler<T> Updated;
     }
 
-    public interface IDynamicDictionarySource<TKey, TValue> : IDisposable
+    public interface IVarSet<TKey, TValue> : IDisposable
     {
         IReadOnlyDictionary<TKey, TValue> Snapshot { get; }
         event DictionaryUpdateHandler<TKey, TValue> Updated;
     }
 
-    public interface IDynamicDictionaryGrouping<TKey, TValue, TGroup> : IDynamicDictionarySource<TKey, TValue>
+    public interface IVarGrouping<TKey, TValue, TGroup> : IVarSet<TKey, TValue>
     {
         TGroup GroupKey { get; }
     }
 
-    public interface IObservableListSource<T> : IReadOnlyList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged, IDisposable
+    public interface IObservableList<T> : IReadOnlyList<T>, IList, INotifyCollectionChanged, INotifyPropertyChanged, IDisposable
     {
     }
 
-    public interface IDynamicPropertySource<T> : IDisposable
+    public interface IVarProperty<T> : IDisposable
     {
         T Value { get; }
         //event PropertyUpdateArgs<T> Updated 
@@ -48,7 +48,7 @@ namespace Machinarium.Qnil
 
     public struct SetUpdateArgs<T>
     {
-        public SetUpdateArgs(IDynamicSetSource<T> sender, DLinqAction action, T newItem = default(T), T oldItem = default(T))
+        public SetUpdateArgs(IVarSet<T> sender, DLinqAction action, T newItem = default(T), T oldItem = default(T))
             : this()
         {
             this.Sender = sender;
@@ -57,7 +57,7 @@ namespace Machinarium.Qnil
             this.OldItem = oldItem;
         }
 
-        public IDynamicSetSource<T> Sender { get; private set; }
+        public IVarSet<T> Sender { get; private set; }
         public DLinqAction Action { get; private set; }
         public T NewItem { get; private set; }
         public T OldItem { get; private set; }
@@ -65,7 +65,7 @@ namespace Machinarium.Qnil
 
     public struct ListUpdateArgs<T>
     {
-        public ListUpdateArgs(IDynamicListSource<T> sender, DLinqAction action, int index = -1, T newItem = default(T), T oldItem = default(T))
+        public ListUpdateArgs(IVarList<T> sender, DLinqAction action, int index = -1, T newItem = default(T), T oldItem = default(T))
             : this()
         {
             this.Sender = sender;
@@ -75,7 +75,7 @@ namespace Machinarium.Qnil
             this.OldItem = oldItem;
         }
 
-        public IDynamicListSource<T> Sender { get; private set; }
+        public IVarList<T> Sender { get; private set; }
         public DLinqAction Action { get; private set; }
         public int Index { get; private set; }
         public T NewItem { get; private set; }
@@ -84,7 +84,7 @@ namespace Machinarium.Qnil
 
     public struct DictionaryUpdateArgs<TKey, TValue>
     {
-        public DictionaryUpdateArgs(IDynamicDictionarySource<TKey, TValue> sender, DLinqAction action,
+        public DictionaryUpdateArgs(IVarSet<TKey, TValue> sender, DLinqAction action,
             TKey key = default(TKey), TValue newItem = default(TValue), TValue oldItem = default(TValue)) : this()
         {
             this.Sender = sender;
@@ -94,7 +94,7 @@ namespace Machinarium.Qnil
             this.OldItem = oldItem;
         }
 
-        public IDynamicDictionarySource<TKey, TValue> Sender { get; private set; }
+        public IVarSet<TKey, TValue> Sender { get; private set; }
         public DLinqAction Action { get; private set; }
         public TKey Key { get; private set; }
         public TValue NewItem { get; private set; }
@@ -102,5 +102,4 @@ namespace Machinarium.Qnil
     }
 
     public enum DLinqAction { Insert, Remove, Replace, Dispose };
-    public enum DPropertyAction { Update, Dispose }
 }

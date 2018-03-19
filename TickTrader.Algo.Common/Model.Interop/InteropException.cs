@@ -26,7 +26,6 @@ namespace TickTrader.Algo.Common.Model.Interop
         public static ConnectionErrorInfo UnknownNoText => unknownSingleton;
         public static ConnectionErrorInfo Canceled => canceledSingleton;
 
-
         public ConnectionErrorInfo(ConnectionErrorCodes code, string message = null)
         {
             Code = code;

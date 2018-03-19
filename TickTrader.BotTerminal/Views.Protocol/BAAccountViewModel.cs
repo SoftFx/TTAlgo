@@ -27,10 +27,10 @@ namespace TickTrader.BotTerminal
 
         public string AccountKey { get; }
 
-        public IObservableListSource<BABotViewModel> Bots { get; }
+        public IObservableList<BABotViewModel> Bots { get; }
 
 
-        public BAAccountViewModel(AccountModelEntity entity, IDynamicDictionarySource<string, BABotViewModel> bots, BotAgentModel botAgent)
+        public BAAccountViewModel(AccountModelEntity entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
         {
             _entity = entity;
             AccountKey = BotAgentModel.GetAccountKey(_entity);

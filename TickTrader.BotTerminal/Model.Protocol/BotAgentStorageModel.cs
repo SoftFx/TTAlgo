@@ -9,15 +9,15 @@ namespace TickTrader.BotTerminal
     internal class BotAgentStorageModel : StorageModelBase<BotAgentStorageModel>
     {
         [DataMember(Name = "BotAgents")]
-        private DynamicList<BotAgentStorageEntry> _botAgents;
+        private VarList<BotAgentStorageEntry> _botAgents;
 
 
-        public DynamicList<BotAgentStorageEntry> BotAgents => _botAgents;
+        public VarList<BotAgentStorageEntry> BotAgents => _botAgents;
 
 
         public BotAgentStorageModel()
         {
-            _botAgents = new DynamicList<BotAgentStorageEntry>();
+            _botAgents = new VarList<BotAgentStorageEntry>();
         }
 
 
@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
         {
             return new BotAgentStorageModel()
             {
-                _botAgents = new DynamicList<BotAgentStorageEntry>(_botAgents.Values.Select(b => b.Clone())),
+                _botAgents = new VarList<BotAgentStorageEntry>(_botAgents.Values.Select(b => b.Clone())),
             };
         }
 

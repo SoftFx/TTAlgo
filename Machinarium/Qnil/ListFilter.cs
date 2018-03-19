@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ListFilter<T> : IDynamicListSource<T>, IReadOnlyList<T>
+    internal class ListFilter<T> : IVarList<T>, IReadOnlyList<T>
     {
-        private IDynamicListSource<T> src;
+        private IVarList<T> src;
         private List<int> indexMap = new List<int>();
         private Predicate<T> filterPredicate;
         private bool propogateDispose;
 
-        public ListFilter(IDynamicListSource<T> src, Predicate<T> filterPredicate, bool propogateDispose)
+        public ListFilter(IVarList<T> src, Predicate<T> filterPredicate, bool propogateDispose)
         {
             this.src = src;
             this.filterPredicate = filterPredicate;

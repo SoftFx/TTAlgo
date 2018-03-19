@@ -62,8 +62,7 @@ namespace TickTrader.BotAgent.WebAdmin
             });
 
             services.AddSwaggerGen();
-            services.AddBotAgent()
-                    .AddStorageOptions(Configuration.GetSection("PackageStorage"));
+            services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
@@ -72,8 +71,6 @@ namespace TickTrader.BotAgent.WebAdmin
 
             loggerFactory.AddNLog();
             app.AddNLogWeb();
-
-            CoreLoggerFactory.Init(cn => new LoggerAdapter(loggerFactory.CreateLogger(cn)));
 
             LogUnhandledExceptions(loggerFactory);
 

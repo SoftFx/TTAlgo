@@ -2,6 +2,7 @@ namespace SoftFX.Net.BotAgent
 {
     using System;
     using System.IO;
+    using System.Net;
     using System.Collections.Generic;
     using System.Security.Cryptography.X509Certificates;
     using SoftFX.Net.Core;
@@ -2478,11 +2479,6 @@ namespace SoftFX.Net.BotAgent
             offset_ = offset;
         }
         
-        public void New()
-        {
-            data_.NewGroup(offset_, 16);
-        }
-        
         public bool HasValue
         {
             get { return data_.GetInt(offset_) != 0; }
@@ -2619,6 +2615,14 @@ namespace SoftFX.Net.BotAgent
         public int Length
         {
             get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginKeyNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 16);
+            
+            return new PluginKeyNull(data_, itemOffset);
         }
         
         public PluginKeyNull this[int index]
@@ -3011,11 +3015,6 @@ namespace SoftFX.Net.BotAgent
             offset_ = offset;
         }
         
-        public void New()
-        {
-            data_.NewGroup(offset_, 68);
-        }
-        
         public bool HasValue
         {
             get { return data_.GetInt(offset_) != 0; }
@@ -3353,6 +3352,14 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetArrayLength(offset_); }
         }
         
+        public PluginDescriptorNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 68);
+            
+            return new PluginDescriptorNull(data_, itemOffset);
+        }
+        
         public PluginDescriptorNull this[int index]
         {
             get
@@ -3395,11 +3402,6 @@ namespace SoftFX.Net.BotAgent
         {
             data_ = data;
             offset_ = offset;
-        }
-        
-        public void New()
-        {
-            data_.NewGroup(offset_, 84);
         }
         
         public bool HasValue
@@ -3486,6 +3488,14 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetArrayLength(offset_); }
         }
         
+        public PluginInfoNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 84);
+            
+            return new PluginInfoNull(data_, itemOffset);
+        }
+        
         public PluginInfoNull this[int index]
         {
             get
@@ -3562,11 +3572,6 @@ namespace SoftFX.Net.BotAgent
         {
             data_ = data;
             offset_ = offset;
-        }
-        
-        public void New()
-        {
-            data_.NewGroup(offset_, 24);
         }
         
         public bool HasValue
@@ -3687,6 +3692,14 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetArrayLength(offset_); }
         }
         
+        public PackageModelNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 24);
+            
+            return new PackageModelNull(data_, itemOffset);
+        }
+        
         public PackageModelNull this[int index]
         {
             get
@@ -3783,11 +3796,6 @@ namespace SoftFX.Net.BotAgent
         {
             data_ = data;
             offset_ = offset;
-        }
-        
-        public void New()
-        {
-            data_.NewGroup(offset_, 16);
         }
         
         public bool HasValue
@@ -3928,6 +3936,14 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetArrayLength(offset_); }
         }
         
+        public AccountKeyNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 16);
+            
+            return new AccountKeyNull(data_, itemOffset);
+        }
+        
         public AccountKeyNull this[int index]
         {
             get
@@ -3974,11 +3990,6 @@ namespace SoftFX.Net.BotAgent
         {
             data_ = data;
             offset_ = offset;
-        }
-        
-        public void New()
-        {
-            data_.NewGroup(offset_, 2);
         }
         
         public bool HasValue
@@ -4067,6 +4078,14 @@ namespace SoftFX.Net.BotAgent
         public int Length
         {
             get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public PluginPermissionsNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 2);
+            
+            return new PluginPermissionsNull(data_, itemOffset);
         }
         
         public PluginPermissionsNull this[int index]
@@ -4254,11 +4273,6 @@ namespace SoftFX.Net.BotAgent
             offset_ = offset;
         }
         
-        public void New()
-        {
-            data_.NewGroup(offset_, 46);
-        }
-        
         public bool HasValue
         {
             get { return data_.GetInt(offset_) != 0; }
@@ -4385,6 +4399,14 @@ namespace SoftFX.Net.BotAgent
         public int Length
         {
             get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public BotModelNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 46);
+            
+            return new BotModelNull(data_, itemOffset);
         }
         
         public BotModelNull this[int index]
@@ -4656,11 +4678,6 @@ namespace SoftFX.Net.BotAgent
             offset_ = offset;
         }
         
-        public void New()
-        {
-            data_.NewGroup(offset_, 12);
-        }
-        
         public bool HasValue
         {
             get { return data_.GetInt(offset_) != 0; }
@@ -4774,6 +4791,14 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetArrayLength(offset_); }
         }
         
+        public ConnectionErrorModelNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 12);
+            
+            return new ConnectionErrorModelNull(data_, itemOffset);
+        }
+        
         public ConnectionErrorModelNull this[int index]
         {
             get
@@ -4870,11 +4895,6 @@ namespace SoftFX.Net.BotAgent
         {
             data_ = data;
             offset_ = offset;
-        }
-        
-        public void New()
-        {
-            data_.NewGroup(offset_, 16);
         }
         
         public bool HasValue
@@ -5015,6 +5035,14 @@ namespace SoftFX.Net.BotAgent
             get { return data_.GetArrayLength(offset_); }
         }
         
+        public AccountModel_1Null New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 16);
+            
+            return new AccountModel_1Null(data_, itemOffset);
+        }
+        
         public AccountModel_1Null this[int index]
         {
             get
@@ -5130,11 +5158,6 @@ namespace SoftFX.Net.BotAgent
         {
             data_ = data;
             offset_ = offset;
-        }
-        
-        public void New()
-        {
-            data_.NewGroup(offset_, 33);
         }
         
         public bool HasValue
@@ -5292,6 +5315,14 @@ namespace SoftFX.Net.BotAgent
         public int Length
         {
             get { return data_.GetArrayLength(offset_); }
+        }
+        
+        public AccountModelNull New(int index)
+        {
+            int itemOffset = data_.GetArrayItemOffset(offset_, index, 4);
+            data_.NewGroup(itemOffset, 33);
+            
+            return new AccountModelNull(data_, itemOffset);
         }
         
         public AccountModelNull this[int index]
@@ -9096,6 +9127,8 @@ namespace SoftFX.Net.BotAgent
             BotAgent.AddMessageInfo(AccountStateUpdate);
         }
         
+        public const string Version = "1.3.0.0";
+        
         public static MessageInfo LoginRequest;
         public static MessageInfo LoginReport_1;
         public static MessageInfo LoginReport;
@@ -9294,7 +9327,7 @@ namespace SoftFX.Net.BotAgent
             coreSession_.Listener = coreSessionListener_;
             
             stateMutex_ = new object();
-            connected_ = false;
+            state_ = State.Disconnected;
             
             Event_LoginReport_262_14_LoginReport_ = new Event_LoginReport_262_14_LoginReport(this);
             Event_LoginReport_1_262_14_LoginReport_1_ = new Event_LoginReport_1_262_14_LoginReport_1(this);
@@ -9332,8 +9365,8 @@ namespace SoftFX.Net.BotAgent
             {
                 lock (stateMutex_)
                 {
-                    if (connected_)
-                        throw new Exception(string.Format("Session is connected : {0}({1})", coreSession_.Name, coreSession_.Guid));
+                    if (state_ != State.Disconnected)
+                        throw new Exception(string.Format("Session is not disconnected : {0}({1})", coreSession_.Name, coreSession_.Guid));
                     
                     listener_ = value;
                 }
@@ -9370,17 +9403,27 @@ namespace SoftFX.Net.BotAgent
             get { return coreSession_.ServerGuid; }
         }
         
+        public IPEndPoint ServerEndPoint
+        {
+            get { return coreSession_.ServerEndPoint; }
+        }
+        
+        public int SendDataLevel
+        {
+            get { return coreSession_.SendDataLevel; }
+        }
+        
         public void Connect(ConnectClientContext context, string address)
         {
             lock (stateMutex_)
             {
-                if (connected_)
+                if (state_ != State.Disconnected)
                     throw new Exception(string.Format("Session is not inactive : {0}({1})", coreSession_.Name, coreSession_.Guid));
                 
                 connectContext_ = context;
                 coreSession_.Connect(address);
                 
-                connected_ = true;
+                state_ = State.Connecting;
             }
         }
         
@@ -9390,17 +9433,23 @@ namespace SoftFX.Net.BotAgent
             
             lock (stateMutex_)
             {
-                if (connected_)
+                if (state_ == State.Connecting)
                 {
-                    connected_ = false;
+                    state_ = State.Disconnecting;
                     
-                    if (coreSession_.Disconnect(text))
-                    {
-                        disconnectContext_ = context;
-                        result = true;
-                    }
-                    else
-                        result = false;
+                    disconnectContext_ = context;
+                    result = coreSession_.Disconnect(text);
+                }
+                else if (state_ == State.Connected)
+                {
+                    state_ = State.Disconnecting;
+                    
+                    disconnectContext_ = context;
+                    result = coreSession_.Disconnect(text);
+                }
+                else if (state_ == State.Disconnecting)
+                {
+                    result = false;
                 }
                 else
                     result = false;
@@ -9805,6 +9854,14 @@ namespace SoftFX.Net.BotAgent
                 
                 if (session_.coreSession_.LogStates)
                     session_.coreSession_.LogState("Client : 260_10");
+            }
+            
+            public void Complete()
+            {
+                state_ = State_0_;
+                
+                if (session_.coreSession_.LogStates)
+                    session_.coreSession_.LogState("Client : 0");
             }
             
             public bool Completed
@@ -10330,6 +10387,14 @@ namespace SoftFX.Net.BotAgent
                     session_.coreSession_.LogState("ClientUpdate({0}) : 365_9", id_);
             }
             
+            public void Complete()
+            {
+                state_ = State_0_;
+                
+                if (session_.coreSession_.LogStates)
+                    session_.coreSession_.LogState("ClientUpdate : 0");
+            }
+            
             public bool Completed
             {
                 get { return state_ == State_0_; }
@@ -10564,6 +10629,14 @@ namespace SoftFX.Net.BotAgent
                 
                 if (session_.coreSession_.LogStates)
                     session_.coreSession_.LogState("ClientRequest({0}) : 416_9", id_);
+            }
+            
+            public void Complete()
+            {
+                state_ = State_0_;
+                
+                if (session_.coreSession_.LogStates)
+                    session_.coreSession_.LogState("ClientRequest : 0");
             }
             
             public bool Completed
@@ -11803,6 +11876,7 @@ namespace SoftFX.Net.BotAgent
         {
             try
             {
+                bool connecting;
                 ConnectClientContext connectContext;
                 
                 lock (stateMutex_)
@@ -11813,11 +11887,22 @@ namespace SoftFX.Net.BotAgent
                     
                     ClientRequestProcessorDictionary_ = new SortedDictionary<string, ClientRequestProcessor>();
                     
-                    connectContext = connectContext_;
-                    connectContext_ = null;
+                    if (state_ == State.Connecting)
+                    {
+                        connecting = true;
+                        connectContext = connectContext_;
+                        connectContext_ = null;
+                        
+                        state_ = State.Connected;
+                    }
+                    else
+                    {
+                        connecting = false;
+                        connectContext = null;
+                    }
                 }
                 
-                if (connectContext != null)
+                if (connecting)
                 {
                     if (listener_ != null)
                     {
@@ -11830,7 +11915,8 @@ namespace SoftFX.Net.BotAgent
                         }
                     }
                     
-                    connectContext.SetCompleted();
+                    if (connectContext != null)
+                        connectContext.SetCompleted();
                 }
                 else
                 {
@@ -11856,15 +11942,27 @@ namespace SoftFX.Net.BotAgent
         {
             try
             {
+                bool connecting;
                 ConnectClientContext connectContext;
                 
                 lock (stateMutex_)
                 {
-                    connectContext = connectContext_;
-                    connectContext_ = null;
+                    if (state_ == State.Connecting)
+                    {
+                        connecting = true;
+                        connectContext = connectContext_;
+                        connectContext_ = null;
+                        
+                        state_ = State.Disconnected;
+                    }
+                    else
+                    {
+                        connecting = false;
+                        connectContext = null;
+                    }
                 }
                 
-                if (connectContext != null)
+                if (connecting)
                 {
                     if (listener_ != null)
                     {
@@ -11877,7 +11975,8 @@ namespace SoftFX.Net.BotAgent
                         }
                     }
                     
-                    connectContext.SetCompleted();
+                    if (connectContext != null)
+                        connectContext.SetCompleted();
                 }
                 else
                 {
@@ -11903,13 +12002,25 @@ namespace SoftFX.Net.BotAgent
         {
             try
             {
+                bool disconnecting = false;
                 DisconnectClientContext disconnectContext;
                 List<ClientContext> contexList = new List<ClientContext>();
                 
                 lock (stateMutex_)
                 {
-                    disconnectContext = disconnectContext_;
-                    disconnectContext_ = null;
+                    if (state_ == State.Disconnecting)
+                    {
+                        disconnecting = true;
+                        disconnectContext = disconnectContext_;
+                        disconnectContext_ = null;
+                        
+                        state_ = State.Disconnected;
+                    }
+                    else
+                    {
+                        disconnecting = false;
+                        disconnectContext = null;
+                    }
                     
                     foreach(var processor in ClientUpdateProcessorDictionary_)
                         processor.Value.ProcessDisconnect(contexList);
@@ -11925,7 +12036,7 @@ namespace SoftFX.Net.BotAgent
                     ClientProcessor_ = null;
                 }
                 
-                if (disconnectContext != null)
+                if (disconnecting)
                 {
                     if (listener_ != null)
                     {
@@ -11939,9 +12050,13 @@ namespace SoftFX.Net.BotAgent
                     }
                     
                     foreach (ClientContext context in contexList)
-                        context.SetCompleted();
+                    {
+                        if (context != null)
+                            context.SetCompleted();
+                    }
                     
-                    disconnectContext.SetCompleted();
+                    if (disconnectContext != null)
+                        disconnectContext.SetCompleted();
                 }
                 else
                 {
@@ -11957,7 +12072,10 @@ namespace SoftFX.Net.BotAgent
                     }
                     
                     foreach (ClientContext context in contexList)
-                        context.SetCompleted();
+                    {
+                        if (context != null)
+                            context.SetCompleted();
+                    }
                 }
             }
             catch (Exception exception)
@@ -12096,6 +12214,14 @@ namespace SoftFX.Net.BotAgent
             }
         }
         
+        enum State
+        {
+            Disconnected,
+            Connecting,
+            Connected,
+            Disconnecting
+        }
+        
         Core.ClientSession coreSession_;
         CoreClientSessionListener coreSessionListener_;
         
@@ -12104,7 +12230,7 @@ namespace SoftFX.Net.BotAgent
         object stateMutex_;
         ConnectClientContext connectContext_;
         DisconnectClientContext disconnectContext_;
-        bool connected_;
+        State state_;
         
         ClientProcessor ClientProcessor_;
         SortedDictionary<string, ClientUpdateProcessor> ClientUpdateProcessorDictionary_;
@@ -12362,14 +12488,14 @@ namespace SoftFX.Net.BotAgent
             }
         }
         
-        public void Stop(string text)
+        public void Stop()
         {
             lock (stateMutex_)
             {
                 if (started_)
                 {
                     started_ = false;
-                    coreServer_.Stop(text);
+                    coreServer_.Stop();
                 }
             }
         }
@@ -12529,6 +12655,16 @@ namespace SoftFX.Net.BotAgent
                 get { return coreSession_.ClientGuid; }
             }
             
+            public IPEndPoint ClientEndPoint
+            {
+                get { return coreSession_.ClientEndPoint; }
+            }
+            
+            public int SendDataLevel
+            {
+                get { return coreSession_.SendDataLevel; }
+            }
+            
             public void Disconnect(string text)
             {
                 lock (stateMutex_)
@@ -12679,6 +12815,14 @@ namespace SoftFX.Net.BotAgent
                     
                     if (session_.coreSession_.LogStates)
                         session_.coreSession_.LogState("Server : 312_10");
+                }
+                
+                public void Complete()
+                {
+                    state_ = State_0_;
+                    
+                    if (session_.coreSession_.LogStates)
+                        session_.coreSession_.LogState("Server : 0");
                 }
                 
                 public bool Completed
@@ -13040,6 +13184,14 @@ namespace SoftFX.Net.BotAgent
                         session_.coreSession_.LogState("ServerUpdate({0}) : 390_9", id_);
                 }
                 
+                public void Complete()
+                {
+                    state_ = State_0_;
+                    
+                    if (session_.coreSession_.LogStates)
+                        session_.coreSession_.LogState("ServerUpdate : 0");
+                }
+                
                 public bool Completed
                 {
                     get { return state_ == State_0_; }
@@ -13237,6 +13389,14 @@ namespace SoftFX.Net.BotAgent
                     
                     if (session_.coreSession_.LogStates)
                         session_.coreSession_.LogState("ServerRequest({0}) : 451_9", id_);
+                }
+                
+                public void Complete()
+                {
+                    state_ = State_0_;
+                    
+                    if (session_.coreSession_.LogStates)
+                        session_.coreSession_.LogState("ServerRequest : 0");
                 }
                 
                 public bool Completed
@@ -13825,7 +13985,10 @@ namespace SoftFX.Net.BotAgent
                     }
                     
                     foreach (ServerContext context in contexList)
-                        context.SetCompleted();
+                    {
+                        if (context != null)
+                            context.SetCompleted();
+                    }
                 }
                 catch (Exception exception)
                 {

@@ -7,8 +7,8 @@ namespace TickTrader.BotTerminal
     internal class BotAgentViewModel : PropertyChangedBase
     {
         private string _server;
-        private IDynamicDictionarySource<string, BABotViewModel> _bots;
-        private IDynamicDictionarySource<string, BAAccountViewModel> _accounts;
+        private IVarSet<string, BABotViewModel> _bots;
+        private IVarSet<string, BAAccountViewModel> _accounts;
 
 
         public BotAgentConnectionManager Connection { get; }
@@ -28,9 +28,9 @@ namespace TickTrader.BotTerminal
 
         public string Status => Connection.Status;
 
-        public IObservableListSource<BABotViewModel> Bots { get; }
+        public IObservableList<BABotViewModel> Bots { get; }
 
-        public IObservableListSource<BAAccountViewModel> Accounts { get; }
+        public IObservableList<BAAccountViewModel> Accounts { get; }
 
 
         public BotAgentViewModel(BotAgentConnectionManager connection)

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal

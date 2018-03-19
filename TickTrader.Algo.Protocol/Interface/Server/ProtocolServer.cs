@@ -95,7 +95,7 @@ namespace TickTrader.Algo.Protocol
 
                     State = ServerStates.Stopped;
 
-                    Server.Stop(null);
+                    Server.Stop();
                     Server.Join();
                 }
             }

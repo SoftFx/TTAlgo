@@ -11,7 +11,7 @@ namespace Machinarium.UnitTest
         [TestMethod]
         public void DictionaryOrderByTest()
         {
-            var src = new DynamicDictionary<string, int>();
+            var src = new VarDictionary<string, int>();
 
             src.Add("key1", 5);
             src.Add("key2", 4);
@@ -54,8 +54,8 @@ namespace Machinarium.UnitTest
         [TestMethod]
         public void DictionaryStaticCompositionTest()
         {
-            var src1 = new DynamicDictionary<string, int>();
-            var src2 = new DynamicDictionary<string, int>();
+            var src1 = new VarDictionary<string, int>();
+            var src2 = new VarDictionary<string, int>();
 
             src1.Add("key1", 1);
             src1.Add("key2", 2);
@@ -97,7 +97,7 @@ namespace Machinarium.UnitTest
         [TestMethod]
         public void DictionaryWhereAndSelectTest()
         {
-            var src = new DynamicDictionary<string, int>();
+            var src = new VarDictionary<string, int>();
 
             src.Add("key1", 5);
             src.Add("key2", 4);
@@ -147,7 +147,7 @@ namespace Machinarium.UnitTest
         [TestMethod]
         public void DictionaryGroupingTest()
         {
-            var src = new DynamicDictionary<string, int>();
+            var src = new VarDictionary<string, int>();
 
             src.Add("key1", 1);
             src.Add("key2", 1);

@@ -15,14 +15,14 @@ namespace TickTrader.Algo.Common.Model
     public class FeedCache
     {
         private object _syncObj = new object();
-        private DynamicDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new DynamicDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
+        private VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
         private LevelDbStorage _diskStorage;
 
         public FeedCache()
         {
         }
 
-        public IDynamicSetSource<FeedCacheKey> Keys => _series.Keys;
+        public IVarSet<FeedCacheKey> Keys => _series.Keys;
         public LevelDbStorage Database => _diskStorage;
         protected object SyncObj => _syncObj;
 
@@ -286,7 +286,7 @@ namespace TickTrader.Algo.Common.Model
                 throw new Exception("Invalid operation! CustomFeedStorage is not started or already stopped!");
         }
 
-        public IDynamicSetSource<FeedCacheKey> GetKeysSyncCopy(ISyncContext context)
+        public IVarSet<FeedCacheKey> GetKeysSyncCopy(ISyncContext context)
         {
             lock (_syncObj)
                 return new SetSynchronizer<FeedCacheKey>(Keys, context);

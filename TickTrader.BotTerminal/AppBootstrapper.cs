@@ -3,10 +3,12 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,6 +18,7 @@ namespace TickTrader.BotTerminal
         private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
         private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
+        private SimpleContainer _container = new SimpleContainer();
 
         public AppBootstrapper()
         {
@@ -162,12 +165,45 @@ namespace TickTrader.BotTerminal
             _instanceRestrictor.Dispose();
         }
 
-        protected override void OnStartup(object sender, StartupEventArgs e)
+        protected override object GetInstance(Type service, string key)
+        {
+            return _container.GetInstance(service, key);
+        }
+
+        protected override void BuildUp(object instance)
+        {
+            _container.BuildUp(instance);
+        }
+
+        protected override IEnumerable<object> GetAllInstances(Type service)
+        {
+            return _container.GetAllInstances(service);
+        }
+
+        protected async override void OnStartup(object sender, StartupEventArgs e)
         {
             if (!_instanceRestrictor.EnsureSingleInstace())
                 Application.Current.Shutdown();
             else
+            {
+                var connectionOptions = new ConnectionOptions()
+                {
+                    AutoReconnect = true,
+                    EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs,
+                    LogsFolder = EnvService.Instance.LogFolder
+                };
+
+                var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
+                var dataHandler = clientHandler.CreateDataHandler();
+                await dataHandler.Init();
+
+                _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
+                _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
+                _container.Singleton<IEventAggregator, EventAggregator>();
+                _container.Singleton<ShellViewModel>();
+
                 DisplayRootViewFor<ShellViewModel>();
+            }
         }
     }
 }

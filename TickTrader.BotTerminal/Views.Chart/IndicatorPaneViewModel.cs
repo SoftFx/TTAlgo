@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
@@ -29,7 +30,7 @@ namespace TickTrader.BotTerminal
             ChartWindowId = indicator.ChartWindowId;
             Precision = 0;
 
-            var series = new DynamicList<IRenderableSeriesViewModel>();
+            var series = new VarList<IRenderableSeriesViewModel>();
             foreach (OutputSetupModel output in indicator.Model.Setup.Outputs.Where(o => o.Descriptor.Target == target))
             {
                 Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? symbol.Descriptor.Precision : output.Descriptor.Precision);
@@ -72,7 +73,7 @@ namespace TickTrader.BotTerminal
         public AxisBase TimeAxis { get; private set; }
         //public long IndicatorId { get { return indicator.Model.Id; } }
         public ChartModelBase Chart { get { return _chart; } }
-        public IObservableListSource<IRenderableSeriesViewModel> Series { get; private set; }
+        public IObservableList<IRenderableSeriesViewModel> Series { get; private set; }
         //public AnnotationCollection Annotations { get; private set; }
         public int Precision { get; private set; }
         public string YAxisLabelFormat { get; private set; }

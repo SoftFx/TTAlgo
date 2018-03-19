@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoListViewModel : PropertyChangedBase
     {
-        public IObservableListSource<AlgoItemViewModel> Plugins { get; private set; }
+        public IObservableList<AlgoItemViewModel> Plugins { get; private set; }
 
         public AlgoListViewModel(PluginCatalog catalog)
         {

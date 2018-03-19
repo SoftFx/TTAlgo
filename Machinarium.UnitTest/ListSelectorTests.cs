@@ -11,7 +11,7 @@ namespace Machinarium.UnitTest
         [TestMethod]
         public void InitFailedTest()
         {
-            var src = new DynamicDictionary<int, string>();
+            var src = new VarDictionary<int, string>();
 
             src.Add(1, "xxx");
             src.Add(2, "bbb");
